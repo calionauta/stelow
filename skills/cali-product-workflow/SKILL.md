@@ -14,10 +14,10 @@ description: >
 
   Skills externas embebidas (com créditos preservados):
   - Audit/Critique frameworks (impeccable ecosystem)
-  - JTBD Framework (cali-job-to-be-done-framework)
-  - Evolutionary Principles (cali-evolutionary-principles)
-  - Opportunity Mapping (cali-opportunity-mapping)
-  - Short-Cycle Product Method (cali-short-cycle-product)
+  - JTBD Framework (cali-product-job-to-be-done)
+  - Evolutionary Principles (cali-product-evolutionary-principles)
+  - Opportunity Mapping (cali-product-opportunity-mapping)
+  - Short-Cycle Product Method (cali-product-short-cycle)
 ---
 
 # Product Planner
@@ -302,10 +302,10 @@ ask_user_question({
 **Se usuário selecionar uma ou mais opções:**
 
 1. **Roda skills em paralelo** (subagent por skill):
-   - `cali-job-to-be-done-framework` para JTBD
-   - `cali-evolutionary-principles` para Evolutionary
-   - `cali-opportunity-mapping` para Opportunity Mapping
-   - `cali-short-cycle-product` para Short-Cycle (experimentos, pricing, canais, modelo)
+   - `cali-product-job-to-be-done` para JTBD
+   - `cali-product-evolutionary-principles` para Evolutionary
+   - `cali-product-opportunity-mapping` para Opportunity Mapping
+   - `cali-product-short-cycle` para Short-Cycle (experimentos, pricing, canais, modelo)
 
 2. **Gera arquivos individuais:**
    ```
