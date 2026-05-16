@@ -43,8 +43,7 @@ export interface Phase {
 }
 
 export interface Workflow {
-  slug: string;       // Human-readable display name (may change via rename)
-  name?: string;       // Legacy alias for slug
+  name: string;       // Human-readable display name (may change via rename)
   description: string;
   draftContent?: string;
   source?: string;

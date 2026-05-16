@@ -6,7 +6,7 @@ import { Container, Text, Spacer, SelectList } from "@earendil-works/pi-tui";
 import { WORKFLOW_DIR, PHASE_NAMES } from "./types";
 import {
   readTracking, writeTracking, readGlobalTracking, writeGlobalTracking,
-  getActiveWorkflow, renameWorkflow, slugify, reconcileTracking, scanWorkflowDirs,
+  getActiveWorkflow, renameWorkflow, toSafeName, reconcileTracking, scanWorkflowDirs,
   archiveWorkflowOnDisk
 } from "./state";
 import { updateFooter, notifyPhase, showOverlay } from "./ui";
@@ -63,19 +63,19 @@ function noActive(ctx: CmdCtx): void {
 }
 
 // ── Helper: remove workflow from both local and global tracking ─────
-function removeWorkflowFromTracking(cwd: string, slug: string): void {
+function removeWorkflowFromTracking(cwd: string, workflowName: string): void {
   // Mark archived on disk so reconcileTracking doesn't re-import it
-  archiveWorkflowOnDisk(cwd, slug);
+  archiveWorkflowOnDisk(cwd, workflowName);
 
   const t = readTracking(cwd);
   if (t) {
-    t.workflows = t.workflows.filter(w => w.slug !== slug);
+    t.workflows = t.workflows.filter(w => w.name !== workflowName);
     t.updated = new Date().toISOString();
     writeTracking(cwd, t);
   }
   const gt = readGlobalTracking();
   if (gt) {
-    gt.workflows = gt.workflows.filter(w => w.slug !== slug);
+    gt.workflows = gt.workflows.filter(w => w.name !== workflowName);
     gt.updated = new Date().toISOString();
     writeGlobalTracking(gt);
   }
@@ -89,7 +89,7 @@ function cmdStop(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
   // Gather all workflows from: current dir reconcile + global tracking (same cwd)
   const fromDisk = reconcileTracking(ctx.cwd);
   const fromGlobal = readGlobalTracking()?.workflows
-    .filter(w => !fromDisk.some(dw => dw.slug === w.slug)) ?? [];
+    .filter(w => !fromDisk.some(dw => dw.name === w.name)) ?? [];
   const allWfs = [...fromDisk, ...fromGlobal];
   const stoppable = allWfs.filter(w =>
     w.status === "in-progress" || w.status === "paused"
@@ -103,20 +103,20 @@ function cmdStop(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
   // ── /pw:stop all ───────────────────────────────────────────────
   if (parsed._.includes("all") || parsed.all !== undefined) {
     for (const w of stoppable) {
-      removeWorkflowFromTracking(ctx.cwd, w.slug);
+      removeWorkflowFromTracking(ctx.cwd, w.name);
     }
     ctx.ui?.notify(`❌ Stopped ${stoppable.length} workflow(s).`, "info");
     ctx.ui?.setStatus("workflow", undefined);
     return;
   }
 
-  // ── /pw:stop <slug1> <slug2> ───────────────────────────────────
+  // ── /pw:stop <name1> <name2> ───────────────────────────────────
   if (parsed._.length > 0) {
     let count = 0;
-    for (const slug of parsed._) {
-      const found = stoppable.find(w => w.slug === slug);
+    for (const wfName of parsed._) {
+      const found = stoppable.find(w => w.name === wfName);
       if (found) {
-        removeWorkflowFromTracking(ctx.cwd, slug);
+        removeWorkflowFromTracking(ctx.cwd, wfName);
         count++;
       }
     }
@@ -124,7 +124,7 @@ function cmdStop(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
       replyWarn(ctx, `No workflow found matching: ${parsed._.join(", ")}`);
     } else {
       ctx.ui?.notify(`❌ Stopped ${count} workflow(s).`, "info");
-      if (stoppable.some(w => w.slug === getActiveWorkflow(ctx.cwd)?.slug)) {
+      if (stoppable.some(w => w.name === getActiveWorkflow(ctx.cwd)?.name)) {
         ctx.ui?.setStatus("workflow", undefined);
       }
     }
@@ -133,9 +133,9 @@ function cmdStop(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
 
   // ── /pw:stop (no args) — picker se >1, direto se for 1 ──────
   if (stoppable.length === 1) {
-    const slug = stoppable[0].slug;
-    removeWorkflowFromTracking(ctx.cwd, slug);
-    ctx.ui?.notify(`❌ Workflow '${slug}' stopped.`, "info");
+    const wfName = stoppable[0].name;
+    removeWorkflowFromTracking(ctx.cwd, wfName);
+    ctx.ui?.notify(`❌ Workflow '${wfName}' stopped.`, "info");
     ctx.ui?.setStatus("workflow", undefined);
     return;
   }
@@ -145,7 +145,7 @@ function cmdStop(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
 }
 
 function showStopPicker(
-  ctx: CmdCtx, cwd: string, workflows: { slug: string; currentPhase: number }[]
+  ctx: CmdCtx, cwd: string, workflows: { name: string; currentPhase: number }[]
 ): void {
   if (!ctx.ui) return;
   ctx.ui.custom<string | null>(
@@ -157,9 +157,9 @@ function showStopPicker(
           description: `Stop all ${workflows.length} workflow(s)`
         },
         ...workflows.map(w => ({
-          value: w.slug,
-          label: `☐ ${w.slug}`,
-          description: `${PHASE_NAMES[w.currentPhase]} — /pw:stop ${w.slug}`
+          value: w.name,
+          label: `☐ ${w.name}`,
+          description: `${PHASE_NAMES[w.currentPhase]} — /pw:stop ${w.name}`
         })),
         {
           value: "__cancel__",
@@ -201,12 +201,12 @@ function showStopPicker(
     if (selection === "__all__") {
       const diskWfs = reconcileTracking(cwd);
       const globalWfs = (readGlobalTracking()?.workflows ?? [])
-        .filter(w => !diskWfs.some(dw => dw.slug === w.slug));
+        .filter(w => !diskWfs.some(dw => dw.name === w.name));
       const allWfs = [...diskWfs, ...globalWfs].filter(w =>
         w.status === "in-progress" || w.status === "paused"
       );
       for (const w of allWfs) {
-        removeWorkflowFromTracking(cwd, w.slug);
+        removeWorkflowFromTracking(cwd, w.name);
       }
       ctx.ui?.notify(`❌ Stopped ${allWfs.length} workflow(s).`, "info");
       ctx.ui?.setStatus("workflow", undefined);
@@ -228,7 +228,7 @@ function cmdPause(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
 
   const t = readTracking(ctx.cwd);
   if (t) {
-    const idx = t.workflows.findIndex(w => w.slug === wf.slug);
+    const idx = t.workflows.findIndex(w => w.name === wf.name);
     if (idx !== -1) {
       t.workflows[idx].status = "paused";
       t.workflows[idx].updated = new Date().toISOString();
@@ -237,13 +237,13 @@ function cmdPause(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
   }
   const gt = readGlobalTracking();
   if (gt) {
-    const idx = gt.workflows.findIndex(w => w.slug === wf.slug);
+    const idx = gt.workflows.findIndex(w => w.name === wf.name);
     if (idx !== -1) gt.workflows[idx].status = "paused";
     writeGlobalTracking(gt);
   }
 
-  ctx.ui?.setStatus("workflow", ctx.ui?.theme?.fg("warning", `⏸ ${wf.slug}`));
-  reply(ctx, `⏸ Workflow '${wf.slug}' paused.`);
+  ctx.ui?.setStatus("workflow", ctx.ui?.theme?.fg("warning", `⏸ ${wf.name}`));
+  reply(ctx, `⏸ Workflow '${wf.name}' paused.`);
 }
 
 function cmdResume(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
@@ -253,7 +253,7 @@ function cmdResume(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
   const gt = readGlobalTracking();
 
   const paused = name
-    ? t?.workflows.find(w => w.slug === name && w.status === "paused")
+    ? t?.workflows.find(w => w.name === name && w.status === "paused")
     : t?.workflows.find(w => w.status === "paused");
 
   if (!paused) {
@@ -265,18 +265,18 @@ function cmdResume(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
   }
 
   if (t) {
-    const idx = t.workflows.findIndex(w => w.slug === paused.slug);
+    const idx = t.workflows.findIndex(w => w.name === paused.name);
     if (idx !== -1) t.workflows[idx].status = "in-progress";
     writeTracking(ctx.cwd, t);
   }
   if (gt) {
-    const idx = gt.workflows.findIndex(w => w.slug === paused.slug);
+    const idx = gt.workflows.findIndex(w => w.name === paused.name);
     if (idx !== -1) gt.workflows[idx].status = "in-progress";
     writeGlobalTracking(gt);
   }
 
   updateFooter(ctx, ctx.cwd);
-  reply(ctx, `▶️ '${paused.slug}' resumed. Stage: ${PHASE_NAMES[paused.currentPhase]}`);
+  reply(ctx, `▶️ '${paused.name}' resumed. Stage: ${PHASE_NAMES[paused.currentPhase]}`);
 }
 
 // ── STATUS ───────────────────────────────────────────────────────────
@@ -287,7 +287,7 @@ function cmdStatus(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
     const g = readGlobalTracking()?.workflows.find(w => w.status === "in-progress");
     if (g) {
       reply(ctx, [
-        `▶️ ${g.slug}`,
+        `▶️ ${g.name}`,
         `   ${PHASE_NAMES[g.currentPhase]}`,
         `   Project: ${g.cwd}`,
         `   cd ${g.cwd}`
@@ -299,7 +299,7 @@ function cmdStatus(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
   }
 
   reply(ctx, [
-    `◆ Workflow: ${wf.slug}`,
+    `◆ Workflow: ${wf.name}`,
     `Stage: ${wf.currentPhase + 1}/${PHASE_NAMES.length} — ${PHASE_NAMES[wf.currentPhase]}`,
     wf.draftContent
       ? `\n📝 ${wf.draftContent.slice(0, 300)}${wf.draftContent.length > 300 ? "..." : ""}`
@@ -335,7 +335,7 @@ function cmdList(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
       const icon = dw.status === "in-progress" ? "◆" :
         dw.status === "paused" ? "⏸" :
         dw.status === "completed" ? "✓" : "○";
-      lines.push(`  ${icon} ${dw.slug} — ${PHASE_NAMES[dw.currentPhase] || "?"} (${dw.status})`);
+      lines.push(`  ${icon} ${dw.name} — ${PHASE_NAMES[dw.currentPhase] || "?"} (${dw.status})`);
     }
     reply(ctx, lines.join("\n"));
     return;
@@ -345,14 +345,14 @@ function cmdList(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
   if (parsed._.includes("all") || parsed.all !== undefined) {
     // Scan all directories that have product-workflow/ subfolders
     const globalTracking = readGlobalTracking();
-    const allProjects = new Map<string, string[]>();  // dir → [slug, ...]
+    const allProjects = new Map<string, string[]>();  // dir → [name, ...]
 
     // Collect from global tracking
     if (globalTracking) {
       for (const w of globalTracking.workflows) {
         const dir = w.cwd || "?";
         if (!allProjects.has(dir)) allProjects.set(dir, []);
-        allProjects.get(dir)!.push(w.slug);
+        allProjects.get(dir)!.push(w.name);
       }
     }
 
@@ -369,12 +369,12 @@ function cmdList(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
       if (diskWfs.length === 0) continue;
       lines.push(`📁 ${dir}:`);
       for (const dw of diskWfs) {
-        if (seen.has(dw.slug)) continue;
-        seen.add(dw.slug);
+        if (seen.has(dw.name)) continue;
+        seen.add(dw.name);
         const icon = dw.status === "in-progress" ? "◆" :
           dw.status === "paused" ? "⏸" :
           dw.status === "completed" ? "✓" : "○";
-        lines.push(`  ${icon} ${dw.slug} — ${PHASE_NAMES[dw.currentPhase] || "?"} (${dw.status})`);
+        lines.push(`  ${icon} ${dw.name} — ${PHASE_NAMES[dw.currentPhase] || "?"} (${dw.status})`);
       }
       lines.push("");
     }
@@ -396,7 +396,7 @@ function cmdList(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
     }
     lines.push(`📁 ${ctx.cwd} (archived):`);
     for (const dw of diskWfs) {
-      lines.push(`  ○ ${dw.slug}`);
+      lines.push(`  ○ ${dw.name}`);
     }
     reply(ctx, lines.join("\n"));
     return;
@@ -412,7 +412,7 @@ function cmdList(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
         w.status === "paused" ? "⏸" :
         w.status === "completed" ? "✓" : "○";
       const note = w.status === "archived" ? " (archived)" : "";
-      lines.push(`  ${icon} ${w.slug} — ${PHASE_NAMES[w.currentPhase]}${note}`);
+      lines.push(`  ${icon} ${w.name} — ${PHASE_NAMES[w.currentPhase]}${note}`);
     }
     lines.push("");
   }
@@ -420,15 +420,15 @@ function cmdList(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
   // Append other-projects section from global tracking (not in current dir)
   const gt = readGlobalTracking();
   if (gt) {
-    const currentSlugs = new Set(reconciled.map(w => w.slug));
-    const other = gt.workflows.filter(gw => !currentSlugs.has(gw.slug));
+    const currentNames = new Set(reconciled.map(w => w.name));
+    const other = gt.workflows.filter(gw => !currentNames.has(gw.name));
     if (other.length > 0) {
       lines.push("🌐 Other Projects:");
       for (const w of other) {
         const icon = w.status === "in-progress" ? "◆" :
           w.status === "paused" ? "⏸" :
           w.status === "completed" ? "✓" : "○";
-        lines.push(`  ${icon} ${w.slug} — ${PHASE_NAMES[w.currentPhase]} (${w.status})`);
+        lines.push(`  ${icon} ${w.name} — ${PHASE_NAMES[w.currentPhase]} (${w.status})`);
         lines.push(`     ${w.cwd}`);
       }
     }
@@ -446,11 +446,11 @@ function cmdList(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
 function cmdSetPhase(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
   const parsed = parseArgs(args);
   const raw = parsed.phase;
-  const name = parsed.phasename;
+  const phaseName = parsed.phasename;
 
   let phase: number | null = null;
   if (raw !== undefined) phase = parseInt(String(raw), 10);
-  else if (name) phase = PHASE_NAMES.findIndex(p => p.toLowerCase() === String(name).toLowerCase());
+  else if (phaseName) phase = PHASE_NAMES.findIndex(p => p.toLowerCase() === String(phaseName).toLowerCase());
 
   if (phase === null || isNaN(phase) || phase < 0 || phase >= PHASE_NAMES.length) {
     replyWarn(ctx, [
@@ -468,7 +468,7 @@ function cmdSetPhase(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
 
   const t = readTracking(ctx.cwd);
   if (t) {
-    const idx = t.workflows.findIndex(w => w.slug === wf.slug);
+    const idx = t.workflows.findIndex(w => w.name === wf.name);
     if (idx !== -1) {
       t.workflows[idx].currentPhase = phase;
       t.workflows[idx].phases.forEach((p, i) => {
@@ -480,7 +480,7 @@ function cmdSetPhase(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
   }
   const gt = readGlobalTracking();
   if (gt) {
-    const idx = gt.workflows.findIndex(w => w.slug === wf.slug);
+    const idx = gt.workflows.findIndex(w => w.name === wf.name);
     if (idx !== -1) gt.workflows[idx].currentPhase = phase;
     writeGlobalTracking(gt);
   }
@@ -505,7 +505,7 @@ function cmdNext(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
   const oldPhase = wf.currentPhase;
   const t = readTracking(ctx.cwd);
   if (t) {
-    const idx = t.workflows.findIndex(w => w.slug === wf.slug);
+    const idx = t.workflows.findIndex(w => w.name === wf.name);
     if (idx !== -1) {
       t.workflows[idx].currentPhase = next;
       t.workflows[idx].phases.forEach((p, i) => {
@@ -517,7 +517,7 @@ function cmdNext(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
   }
   const gt = readGlobalTracking();
   if (gt) {
-    const idx = gt.workflows.findIndex(w => w.slug === wf.slug);
+    const idx = gt.workflows.findIndex(w => w.name === wf.name);
     if (idx !== -1) gt.workflows[idx].currentPhase = next;
     writeGlobalTracking(gt);
   }
@@ -537,7 +537,7 @@ function cmdComplete(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
 
   const t = readTracking(ctx.cwd);
   if (t) {
-    const idx = t.workflows.findIndex(w => w.slug === wf.slug);
+    const idx = t.workflows.findIndex(w => w.name === wf.name);
     if (idx !== -1) {
       t.workflows[idx].status = "completed";
       t.workflows[idx].updated = new Date().toISOString();
@@ -546,12 +546,12 @@ function cmdComplete(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
   }
   const gt = readGlobalTracking();
   if (gt) {
-    const idx = gt.workflows.findIndex(w => w.slug === wf.slug);
+    const idx = gt.workflows.findIndex(w => w.name === wf.name);
     if (idx !== -1) gt.workflows[idx].status = "completed";
     writeGlobalTracking(gt);
   }
 
-  ctx.ui?.notify(`🎉 ${wf.slug} completed!`, "success");
+  ctx.ui?.notify(`🎉 ${wf.name} completed!`, "success");
 }
 
 // ── GOTO ─────────────────────────────────────────────────────────────
@@ -563,7 +563,7 @@ function cmdGoto(_pi: ExtensionAPI, args: string, _ctx: CmdCtx) {
   if (!gt) { replyWarn(_ctx, "No global workflows."); return; }
 
   const wf = name
-    ? gt.workflows.find(w => w.slug === name)
+    ? gt.workflows.find(w => w.name === name)
     : gt.workflows.find(w => w.status === "in-progress");
 
   if (!wf) {
@@ -572,10 +572,10 @@ function cmdGoto(_pi: ExtensionAPI, args: string, _ctx: CmdCtx) {
   }
 
   reply(_ctx, [
-    `📍 ${wf.slug}`,
+    `📍 ${wf.name}`,
     `Project: ${wf.cwd}`,
     `Stage: ${PHASE_NAMES[wf.currentPhase]}`,
-    `\ncd ${wf.cwd}\n/pw:resume name=${wf.slug}`
+    `\ncd ${wf.cwd}\n/pw:resume name=${wf.name}`
   ].join("\n"));
 }
 
@@ -583,7 +583,7 @@ function cmdGoto(_pi: ExtensionAPI, args: string, _ctx: CmdCtx) {
 
 function cmdRename(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
   const parsed = parseArgs(args);
-  // Join all positional tokens (like cmdStart) — renameWorkflow slugifies internally
+  // Join all positional tokens (like cmdStart) — renameWorkflow toSafeNames internally
   const newName = parsed.name || (parsed._.length > 0 ? parsed._.join(" ") : undefined);
   if (!newName || newName.trim().length < 2) {
     replyWarn(ctx, "Usage: /pw:rename novo-nome");
@@ -593,11 +593,11 @@ function cmdRename(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
   const wf = getActiveWorkflow(ctx.cwd);
   if (!wf) { noActive(ctx); return; }
 
-  const result = renameWorkflow(ctx.cwd, wf.slug, newName);
+  const result = renameWorkflow(ctx.cwd, wf.name, newName);
   if (!result.ok) { replyWarn(ctx, `❌ ${result.error}`); return; }
 
   updateFooter(ctx, ctx.cwd);
-  ctx.ui?.notify(`✨ Renamed to "${slugify(newName)}"`, "success");
+  ctx.ui?.notify(`✨ Renamed to "${toSafeName(newName)}"`, "success");
 }
 
 // ── MENU ─────────────────────────────────────────────────────────────
@@ -626,12 +626,11 @@ function cmdClean(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
         rmSync(dirPath, { recursive: true, force: true });
         deleted++;
       } catch { /* skip if can't delete */ }
-      removeWorkflowFromTracking(ctx.cwd, dw.slug);
+      removeWorkflowFromTracking(ctx.cwd, dw.name);
     }
     reply(ctx, `🗑️ Purged ${deleted} archived workflow(s) from disk.`);
     return;
   }
-
 
   const hours = parseInt(parsed.hours || "4", 10);
   const cutoff = Date.now() - hours * 60 * 60 * 1000;
@@ -650,7 +649,7 @@ function cmdClean(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
   }
 
   for (const o of orphans) {
-    const idx = t.workflows.findIndex(w => w.slug === o.slug);
+    const idx = t.workflows.findIndex(w => w.name === o.name);
     if (idx !== -1) t.workflows[idx].status = "archived";
   }
   writeTracking(ctx.cwd, t);
@@ -658,7 +657,7 @@ function cmdClean(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
   const gt = readGlobalTracking();
   if (gt) {
     for (const o of orphans) {
-      const idx = gt.workflows.findIndex(w => w.slug === o.slug);
+      const idx = gt.workflows.findIndex(w => w.name === o.name);
       if (idx !== -1) gt.workflows[idx].status = "archived";
     }
     writeGlobalTracking(gt);
@@ -666,7 +665,7 @@ function cmdClean(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
 
   reply(ctx, [
     `🧹 Archived ${orphans.length} orphan(s) (>${hours}h):`,
-    ...orphans.map(o => `  ○ ${o.slug} — ${PHASE_NAMES[o.currentPhase]}`),
+    ...orphans.map(o => `  ○ ${o.name} — ${PHASE_NAMES[o.currentPhase]}`),
     "",
     "/pw:start"
   ].join("\n"));
@@ -700,15 +699,15 @@ const CMD_MAP: [CmdHandler, string, string][] = [
 
 const COMMAND_DESCRIPTIONS: Record<string, string> = {
   "product-workflow-start": "Start a new workflow. Usage: /pw:start [name=...] [description=...] [@file]",
-  "product-workflow-stop":  "Stop workflow(s): /pw:stop | all | slug1 slug2",
+  "product-workflow-stop":  "Stop workflow(s): /pw:stop | all | name1 name2",
   "product-workflow-pause": "Pause active workflow: /pw:pause",
-  "product-workflow-resume":"Resume paused workflow: /pw:resume [name=slug]",
+  "product-workflow-resume":"Resume paused workflow: /pw:resume [name=name]",
   "product-workflow-status":"Show active workflow status: /pw:status",
   "product-workflow-list":  "List workflows: /pw:ls | all | archived | path=DIR",
   "product-workflow-setphase":"Jump to phase: /pw:setphase phase=N | phasename=Name",
   "product-workflow-next":  "Advance to next phase: /pw:next",
   "product-workflow-complete":"Mark active workflow complete: /pw:complete",
-  "product-workflow-goto":  "Go to a workflow: /pw:goto [name=slug]",
+  "product-workflow-goto":  "Go to a workflow: /pw:goto [name=name]",
   "product-workflow-rename":"Rename active workflow: /pw:rename novo-nome | name=novo-nome",
   "product-workflow-menu":  "Open workflow overview overlay: /pw:menu",
   "product-workflow-clean": "Archive stale or purge archived: /pw:clean [hours=4] | purge",

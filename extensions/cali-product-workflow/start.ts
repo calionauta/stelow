@@ -7,7 +7,7 @@ import {
   parsedInputStore, readTracking, writeTracking,
   readGlobalTracking, writeGlobalTracking,
   getAllActiveWorkflows,
-  slugify, generatePlaceholderSlug, generateDirHash, getDateStamp,
+  toSafeName, generatePlaceholderName, generateDirHash, getDateStamp,
   readSourceFile, truncateText
 } from "./state";
 import { updateFooter, showOrphanOverlay } from "./ui";
@@ -71,17 +71,17 @@ export default async function cmdStart(
   }
 
   // 2. Determine display name and directory hash
-  const displaySlug = userGivenName
-    ? slugify(userGivenName)
+  const displayName = userGivenName
+    ? toSafeName(userGivenName)
     : draftText && draftText.length > 3
-      ? slugify(draftText)
+      ? toSafeName(draftText)
       : sources.length > 0
-        ? slugify(basename(sources[0], extname(sources[0])))
+        ? toSafeName(basename(sources[0], extname(sources[0])))
         : null;
 
-  const slug = (displaySlug && displaySlug.length >= 2)
-    ? displaySlug
-    : generatePlaceholderSlug();
+  const name = (displayName && displayName.length >= 2)
+    ? displayName
+    : generatePlaceholderName();
   const dirHash = generateDirHash();
 
   // 3. Load sources
@@ -104,13 +104,13 @@ export default async function cmdStart(
     };
   }
 
-  const finalSlug = tracking.workflows.some(w => w.slug === slug)
-    ? `${slug}-${Date.now().toString(36).slice(-3)}`
-    : slug;
+  const finalName = tracking.workflows.some(w => w.name === name)
+    ? `${name}-${Date.now().toString(36).slice(-3)}`
+    : name;
 
   // 5. Build workflow object
   const wf: Workflow = {
-    slug: finalSlug,
+    name: finalName,
     description: truncateText(draftText, 500) || "",
     draftContent: fullDraft ? truncateText(fullDraft, 5000) : undefined,
     source: sources.length > 0 ? sources[0] : undefined,
@@ -140,7 +140,7 @@ export default async function cmdStart(
   writeFileSync(join(wfDir, "index.json"), JSON.stringify({
     version: "1.0", created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-    slug: finalSlug, _dir: dirHash,
+    name: finalName, _dir: dirHash,
     workflow_status: "in-progress",
     current_phase: "clarify", current_phase_index: 0,
     artifacts: {}, approved: false, approved_at: null,
@@ -163,7 +163,7 @@ export default async function cmdStart(
 
   // 10. Output — use notify so user sees feedback immediately
   const lines = [
-    `✅ Workflow '${finalSlug}' started!`,
+    `✅ Workflow '${finalName}' started!`,
     `Stage: ${PHASE_NAMES[0]}`,
     `Dir:   ${wfDir.replace(ctx.cwd + "/", "")}`,
   ];
@@ -178,11 +178,11 @@ export default async function cmdStart(
     "  /skill:cali-product-workflow",
     "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
   );
-  if (slug.startsWith("untitled-") && draftText) {
+  if (name.startsWith("untitled-") && draftText) {
     lines.push("", "💡 After Clarify, the workflow will be renamed automatically.");
   }
 
   reply(ctx, lines.join("\n"));
 
-  pi.sendUserMessage("/skill:cali-product-workflow\n\n[Auto-Discovery: SKIP — workflow '" + finalSlug + "' recém-criado. Prossiga direto para Fase 1: Clarify.]", { deliverAs: "followUp" });
+  pi.sendUserMessage("/skill:cali-product-workflow\n\n[Auto-Discovery: SKIP — workflow '" + finalName + "' recém-criado. Prossiga direto para Fase 1: Clarify.]", { deliverAs: "followUp" });
 }

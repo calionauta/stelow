@@ -51,7 +51,7 @@ export default function (pi: ExtensionAPI) {
     updateFooter(ctx, ctx.cwd);
     const wf = getActiveWorkflow(ctx.cwd);
     if (wf) {
-      ctx.ui.notify(`◆ ${wf.slug} (${wf.currentPhase + 1}/${wf.phases.length})`, "info");
+      ctx.ui.notify(`◆ ${wf.name} (${wf.currentPhase + 1}/${wf.phases.length})`, "info");
       return;
     }
 
@@ -64,12 +64,12 @@ export default function (pi: ExtensionAPI) {
     if (!projectWf) return;
 
     const tracking = readTracking(ctx.cwd);
-    if (tracking && !tracking.workflows.some(w => w.slug === projectWf.slug)) {
+    if (tracking && !tracking.workflows.some(w => w.name === projectWf.name)) {
       tracking.workflows.push(projectWf);
       writeTracking(ctx.cwd, tracking);
     }
     updateFooter(ctx, ctx.cwd);
-    ctx.ui.notify(`◆ ${projectWf.slug} (${projectWf.currentPhase + 1}/${projectWf.phases.length})", "info`);
+    ctx.ui.notify(`◆ ${projectWf.name} (${projectWf.currentPhase + 1}/${projectWf.phases.length})`, "info");
   });
 
   // ── Tracking file writes ✓ ───────────────────────────────────────
@@ -88,7 +88,7 @@ export default function (pi: ExtensionAPI) {
     const tracking = readTracking(ctx.cwd);
     if (!tracking) return;
 
-    const current = tracking.workflows.find(w => w.slug === wf.slug);
+    const current = tracking.workflows.find(w => w.name === wf.name);
     if (current && current.currentPhase !== wf.currentPhase) {
       const oldPhase = wf.currentPhase;
       wf.currentPhase = current.currentPhase;

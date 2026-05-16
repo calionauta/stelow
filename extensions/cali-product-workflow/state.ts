@@ -92,10 +92,10 @@ export function getAllActiveWorkflows(cwd: string): Workflow[] {
   );
 }
 
-// ── Slugs ────────────────────────────────────────────────────────────
+// ── Name utilities ───────────────────────────────────────────────────
 
-/** Create a URL-safe, human-readable slug from text */
-export function slugify(text: string): string {
+/** Create a URL-safe, human-readable name from text */
+export function toSafeName(text: string): string {
   return text
     .toLowerCase()
     .replace(/[^a-z0-9\s-]/g, " ")
@@ -106,8 +106,8 @@ export function slugify(text: string): string {
     .slice(0, 40);
 }
 
-/** Placeholder display slug when user hasn't provided context yet */
-export function generatePlaceholderSlug(): string {
+/** Placeholder display name when user hasn't provided context yet */
+export function generatePlaceholderName(): string {
   untitledCounter++;
   return `untitled-${untitledCounter}`;
 }
@@ -116,7 +116,7 @@ export function generatePlaceholderSlug(): string {
 export function generateDirHash(): string {
   const ts = Date.now().toString(36).slice(-4);
   const rand = Math.random().toString(36).substring(2, 8);
-  return `wf-${ts}-${rand}`;
+  return `pw-${ts}-${rand}`;
 }
 
 /** Readable date-stamped directory, e.g. "2026-05-16" */
@@ -124,8 +124,8 @@ export function getDateStamp(date?: Date): string {
   return (date || new Date()).toISOString().slice(0, 10);
 }
 
-/** Suggest a friendlier slug from draft content */
-export function suggestSlugFromDraft(draft: string): string | null {
+/** Suggest a friendlier name from draft content */
+export function suggestNameFromDraft(draft: string): string | null {
   const clean = draft
     .replace(/```[\s\S]*?```/g, "")
     .replace(/=== FILE:.*?===/g, "")
@@ -135,26 +135,26 @@ export function suggestSlugFromDraft(draft: string): string | null {
   // First sentence under 80 chars
   const firstLine = clean.split("\n")[0]?.trim();
   if (firstLine && firstLine.length > 3 && firstLine.length < 80) {
-    return slugify(firstLine);
+    return toSafeName(firstLine);
   }
 
   // First 4 significant words
   const words = clean.split(/\s+/).filter(w => w.length > 2).slice(0, 4);
-  if (words.length >= 2) return slugify(words.join(" "));
+  if (words.length >= 2) return toSafeName(words.join(" "));
 
   return null;
 }
 
 // ── Rename ───────────────────────────────────────────────────────────
 
-/** Rename a workflow's display slug. Directory stays unchanged. */
+/** Rename a workflow's display name. Directory stays unchanged. */
 export function renameWorkflow(
   cwd: string,
-  oldSlug: string,
+  oldName: string,
   newName: string
 ): { ok: true } | { ok: false; error: string } {
-  const finalSlug = slugify(newName);
-  if (!finalSlug || finalSlug.length < 2) {
+  const finalName = toSafeName(newName);
+  if (!finalName || finalName.length < 2) {
     return { ok: false, error: "Name must be at least 2 characters" };
   }
 
@@ -162,31 +162,31 @@ export function renameWorkflow(
   const tracking = readTracking(cwd);
   if (!tracking) return { ok: false, error: "No tracking file" };
 
-  const wf = tracking.workflows.find(w => w.slug === oldSlug);
-  if (!wf) return { ok: false, error: `Workflow '${oldSlug}' not found` };
+  const wf = tracking.workflows.find(w => w.name === oldName);
+  if (!wf) return { ok: false, error: `Workflow '${oldName}' not found` };
 
-  wf.slug = finalSlug;
+  wf.name = finalName;
   wf.updated = new Date().toISOString();
   writeTracking(cwd, tracking);
 
   // 2. Global tracking
   const globalTracking = readGlobalTracking();
   if (globalTracking) {
-    const gwf = globalTracking.workflows.find(w => w.slug === oldSlug);
+    const gwf = globalTracking.workflows.find(w => w.name === oldName);
     if (gwf) {
-      gwf.slug = finalSlug;
+      gwf.name = finalName;
       gwf.updated = new Date().toISOString();
     }
     writeGlobalTracking(globalTracking);
   }
 
-  // 3. index.json (directory name = oldSlug = stable initial slug)
+  // 3. index.json
   const ds = getDateStamp(new Date(wf.created));
-  const idxPath = join(cwd, "product-workflow", ds, oldSlug, "index.json");
+  const idxPath = join(cwd, "product-workflow", ds, oldName, "index.json");
   if (existsSync(idxPath)) {
     try {
       const idx = JSON.parse(readFileSync(idxPath, "utf-8"));
-      idx.slug = finalSlug;
+      idx.name = finalName;
       idx.updated_at = new Date().toISOString();
       writeFileSync(idxPath, JSON.stringify(idx, null, 2));
     } catch {
@@ -200,7 +200,7 @@ export function renameWorkflow(
 // ── Scan workflow directories from disk ─────────────────────────────
 
 interface DiskWorkflow {
-  slug: string;
+  name: string;
   status: string;
   currentPhase: number;
   created: string;
@@ -232,7 +232,7 @@ export function scanWorkflowDirs(cwd: string): DiskWorkflow[] {
         try {
           const raw = JSON.parse(readFileSync(indexPath, "utf-8"));
           result.push({
-            slug: raw.slug || wfDir,
+            name: raw.name || raw.slug || wfDir,
             status: raw.workflow_status || "unknown",
             currentPhase: raw.current_phase_index ?? 0,
             created: raw.created_at || "",
@@ -252,7 +252,7 @@ export function scanWorkflowDirs(cwd: string): DiskWorkflow[] {
 
 /**
  * Reconcile workflows found on disk with the local tracking file.
- * Any disk workflow not present in tracking is added as "orphan" in tracking.
+ * Only auto-imports active disk workflows (in-progress, paused).
  * Returns the reconciled list (tracking + newly-imported orphans).
  */
 export function reconcileTracking(cwd: string): Workflow[] {
@@ -264,11 +264,11 @@ export function reconcileTracking(cwd: string): Workflow[] {
   for (const dw of diskWfs) {
     // Only auto-import active workflows (stopped/archived on disk stay out)
     if (dw.status !== "in-progress" && dw.status !== "paused") continue;
-    const exists = known.some(w => w.slug === dw.slug);
+    const exists = known.some(w => w.name === dw.name);
     if (!exists) {
       // Convert DiskWorkflow → Workflow and add to tracking
       const wf: Workflow = {
-        slug: dw.slug,
+        name: dw.name,
         description: "",
         draftContent: dw.draftContent,
         status: dw.status,
@@ -307,7 +307,7 @@ export function reconcileTracking(cwd: string): Workflow[] {
  * Mark a workflow as archived in its index.json on disk.
  * Returns true if found and updated, false if not found.
  */
-export function archiveWorkflowOnDisk(cwd: string, slug: string): boolean {
+export function archiveWorkflowOnDisk(cwd: string, workflowName: string): boolean {
   const base = join(cwd, WORKFLOW_DIR);
   if (!existsSync(base)) return false;
 
@@ -322,7 +322,8 @@ export function archiveWorkflowOnDisk(cwd: string, slug: string): boolean {
         if (!existsSync(indexPath)) continue;
         try {
           const raw = JSON.parse(readFileSync(indexPath, "utf-8"));
-          if (raw.slug === slug) {
+          const rawName = raw.name || raw.slug;
+          if (rawName === workflowName) {
             raw.workflow_status = "archived";
             raw.updated_at = new Date().toISOString();
             writeFileSync(indexPath, JSON.stringify(raw, null, 2));

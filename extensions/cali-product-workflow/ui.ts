@@ -9,7 +9,7 @@ import { PHASE_NAMES, PHASE_HINTS } from "./types";
 import {
   getActiveWorkflow, readTracking, writeTracking,
   readGlobalTracking, writeGlobalTracking,
-  getAllActiveWorkflows, renameWorkflow, suggestSlugFromDraft
+  getAllActiveWorkflows, renameWorkflow, suggestNameFromDraft
 } from "./state";
 
 // =============================================================================
@@ -29,16 +29,16 @@ function buildCompactStatus(workflow: Workflow, theme: any): string {
   const icon = isComplete ? theme.fg("success", "●") :
     isActive ? theme.fg("accent", "◆") : theme.fg("dim", "○");
 
-  const slug = theme.fg("success", workflow.slug);
+  const name = theme.fg("success", workflow.name);
   const phase = `${icon} ${phaseName} ${phaseNum}`;
   const hint = getPhaseHint(workflow, theme);
   const hintStr = hint ? `  │  ${hint}` : "";
 
-  return `${slug}  │  ${phase}${hintStr}`;
+  return `${name}  │  ${phase}${hintStr}`;
 }
 
 function getPhaseHint(workflow: Workflow, theme: any): string | null {
-  if (workflow.slug.startsWith("untitled-") && workflow.draftContent && workflow.currentPhase >= 1) {
+  if (workflow.name.startsWith("untitled-") && workflow.draftContent && workflow.currentPhase >= 1) {
     return theme.fg("warning", "rename pending...");
   }
   const hint = PHASE_HINTS[workflow.currentPhase];
@@ -65,23 +65,23 @@ export function notifyPhase(ctx: ExtensionContext, wf: Workflow, oldPhase: numbe
   if (!ctx.ui || oldPhase === wf.currentPhase) return;
   const name = PHASE_NAMES[wf.currentPhase] || "?";
   ctx.ui.notify(
-    `◆ ${wf.slug} — entered ${name} (${wf.currentPhase + 1}/${PHASE_NAMES.length})`,
+    `◆ ${wf.name} — entered ${name} (${wf.currentPhase + 1}/${PHASE_NAMES.length})`,
     "info"
   );
-  triggerAutoRename(ctx, wf.slug);
+  triggerAutoRename(ctx, wf.name);
 }
 
-async function triggerAutoRename(ctx: ExtensionContext, currentSlug: string): Promise<void> {
-  if (!currentSlug.startsWith("untitled-")) return;
+async function triggerAutoRename(ctx: ExtensionContext, currentName: string): Promise<void> {
+  if (!currentName.startsWith("untitled-")) return;
   const tracking = readTracking(ctx.cwd);
   if (!tracking) return;
-  const wf = tracking.workflows.find(w => w.slug === currentSlug);
+  const wf = tracking.workflows.find(w => w.name === currentName);
   if (!wf || !wf.draftContent) return;
 
-  const suggestion = suggestSlugFromDraft(wf.draftContent);
+  const suggestion = suggestNameFromDraft(wf.draftContent);
   if (!suggestion || suggestion.startsWith("untitled-")) return;
 
-  const result = renameWorkflow(ctx.cwd, currentSlug, suggestion);
+  const result = renameWorkflow(ctx.cwd, currentName, suggestion);
   if (result.ok && ctx.ui) {
     updateFooter(ctx, ctx.cwd);
     ctx.ui.notify(`✨ Workflow renamed to "${suggestion}"`, "success");
@@ -112,7 +112,7 @@ export function showOverlay(ctx: ExtensionContext, cwd: string): void {
       });
 
       const c = new Container();
-      c.addChild(new Text(theme.fg("accent", theme.bold(`◆ ${wf.slug}`)), 1, 0));
+      c.addChild(new Text(theme.fg("accent", theme.bold(`◆ ${wf.name}`)), 1, 0));
       c.addChild(new Spacer(1));
 
       const sl = new SelectList(items, Math.min(items.length + 2, 10), {
@@ -168,8 +168,8 @@ export async function showOrphanOverlay(
             description: `${orphans.length} workflow(s) will be archived`
           },
           ...orphans.map(o => ({
-            value: o.slug,
-            label: `${theme.fg("muted", "○")} ${o.slug}`,
+            value: o.name,
+            label: `${theme.fg("muted", "○")} ${o.name}`,
             description: `${PHASE_NAMES[o.currentPhase]}`
           })),
           {
@@ -218,7 +218,7 @@ export async function showOrphanOverlay(
         const tracking = readTracking(cwd);
         if (tracking) {
           for (const o of orphans) {
-            const idx = tracking.workflows.findIndex(w => w.slug === o.slug);
+            const idx = tracking.workflows.findIndex(w => w.name === o.name);
             if (idx !== -1) tracking.workflows[idx].status = "archived";
           }
           writeTracking(cwd, tracking);
@@ -226,7 +226,7 @@ export async function showOrphanOverlay(
         const gt = readGlobalTracking();
         if (gt) {
           for (const o of orphans) {
-            const idx = gt.workflows.findIndex(w => w.slug === o.slug);
+            const idx = gt.workflows.findIndex(w => w.name === o.name);
             if (idx !== -1) gt.workflows[idx].status = "archived";
           }
           writeGlobalTracking(gt);
