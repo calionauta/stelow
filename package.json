@@ -1,7 +1,7 @@
 {
-  "name": "@cali/pi-product-workflow",
+  "name": "@renatocaliari/pi-product-workflow",
   "version": "1.0.0",
-  "description": "Product workflow for pi.dev: Shape Up + Interface + Tech Planning + Critique + Gate. Includes 15 product skills: workflow, short-cycle, opportunity-mapping, job-to-be-done, evolutionary, ads, business-models, health, marketplace-playbook, open-source, pricing, promotions, trust-building, multi-method-market-analysis, scope-executor. Integrates with pi-subagents, pi-goal, plannotator, autoresearch, intercom, supervisor.",
+  "description": "Product workflow for pi.dev: Shape Up + Interface + Tech Planning + Critique + Gate. Includes 15 product skills: workflow, short-cycle, opportunity-mapping, job-to-be-done, evolutionary, ads, business-models, health, marketplace-playbook, open-source, pricing, promotions, trust-building, multi-method-market-analysis, scope-executor. Integrates with pi-subagents (nicobailon), pi-goal (capyup), plannotator (backnotprop), autoresearch (davebcn87), ask-user-question (juicesharp), intercom (nicobailon), and supervisor (tintinweb)."
   "keywords": [
     "pi-package",
     "pi-skill",

@@ -11,7 +11,7 @@
 pi install ./pi-product-workflow
 
 # Or from npm (when published)
-pi install npm:@cali/pi-product-workflow
+pi install npm:@renatocaliari/pi-product-workflow
 ```
 
 ## Development

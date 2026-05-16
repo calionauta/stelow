@@ -1,4 +1,4 @@
-# @cali/pi-product-workflow
+# @renatocaliari/pi-product-workflow
 
 Product workflow package for pi.dev coding agent. Includes 15 specialized skills for product planning, strategy, and execution.
 
@@ -45,6 +45,10 @@ This package integrates with other pi.dev extensions for full orchestration:
 
 ### 1. Install the package
 ```bash
+# From npm (when published)
+pi install npm:@renatocaliari/pi-product-workflow
+
+# Or from local path
 pi install ./path/to/pi-product-workflow
 ```
 

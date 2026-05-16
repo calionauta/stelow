@@ -1,5 +1,5 @@
 {
-  "name": "@cali/pi-product-workflow-extension",
+  "name": "@renatocaliari/pi-product-workflow-extension",
   "version": "1.0.0",
   "description": "Product workflow extension for pi.dev",
   "main": "index.ts",
