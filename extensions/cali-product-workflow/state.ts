@@ -48,11 +48,30 @@ function getGlobalTrackingPath(): string {
 
 // ── Read / Write ─────────────────────────────────────────────────────
 
+/** Normalize legacy "slug" → "name" for old tracking data */
+function migrateWorkflow(wf: any): any {
+  if (wf.slug && !wf.name) {
+    wf.name = wf.slug;
+  }
+  if (wf.name && !wf.slug) {
+    wf.slug = wf.name; // keep backward compat
+  }
+  return wf;
+}
+
+function migrateTrackingData(data: any): TrackingData {
+  if (data?.workflows) {
+    data.workflows = data.workflows.map(migrateWorkflow);
+  }
+  return data as TrackingData;
+}
+
 export function readTracking(cwd: string): TrackingData | null {
   const path = getTrackingPath(cwd);
   if (!existsSync(path)) return null;
   try {
-    return JSON.parse(readFileSync(path, "utf-8"));
+    const raw = JSON.parse(readFileSync(path, "utf-8"));
+    return migrateTrackingData(raw);
   } catch {
     return null;
   }
@@ -62,7 +81,8 @@ export function readGlobalTracking(): TrackingData | null {
   const path = getGlobalTrackingPath();
   if (!existsSync(path)) return null;
   try {
-    return JSON.parse(readFileSync(path, "utf-8"));
+    const raw = JSON.parse(readFileSync(path, "utf-8"));
+    return migrateTrackingData(raw);
   } catch {
     return null;
   }
