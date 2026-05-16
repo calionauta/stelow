@@ -49,41 +49,30 @@ interface TrackingData {
 
 // ============ INPUT PARSING ============
 
-// Regex to match @filename references (with optional line numbers)
 const FILE_REF_REGEX = /@[\w\-\/\.]+(?::\d+(?::\d+)?)?/g;
 
 function parseInputForWorkflow(input: string): { sources: string[], draftText: string } {
   const sources: string[] = [];
-  let draftText = "";
   
-  // Extract @filename references
   const matches = input.match(FILE_REF_REGEX);
   if (matches) {
     for (const match of matches) {
-      // Remove @ and any line numbers
       let filePath = match.slice(1).split(':')[0];
-      
-      // Handle paths starting with ./ or /
       if (!filePath.startsWith('./') && !filePath.startsWith('/')) {
         filePath = './' + filePath;
       }
-      
       sources.push(filePath);
     }
   }
   
-  // Extract text after the command (strip @filename refs and command itself)
-  // Remove @filenames and any key=value pairs
   let text = input
     .replace(FILE_REF_REGEX, ' ')
-    .replace(/\/[a-z-]+(\s|$)/gi, ' ')  // Remove command name
-    .replace(/[a-z]+=[^\s]+/gi, ' ')    // Remove key=value pairs
+    .replace(/\/[a-z-]+(\s|$)/gi, ' ')
+    .replace(/[a-z]+=[^\s]+/gi, ' ')
     .replace(/\s+/g, ' ')
     .trim();
   
-  draftText = text;
-  
-  return { sources, draftText };
+  return { sources, draftText: text };
 }
 
 // ============ STATE MANAGEMENT ============
@@ -92,8 +81,8 @@ function getTrackingPath(cwd: string): string {
   return join(cwd, TRACKING_FILE);
 }
 
-function getGlobalTrackingPath(cwd: string): string {
-  const home = process.env.HOME || dirname(cwd);
+function getGlobalTrackingPath(): string {
+  const home = process.env.HOME || dirname(process.cwd());
   return join(home, GLOBAL_TRACKING_FILE);
 }
 
@@ -108,7 +97,7 @@ function readTracking(cwd: string): TrackingData | null {
 }
 
 function readGlobalTracking(): TrackingData | null {
-  const path = getGlobalTrackingPath(process.cwd());
+  const path = getGlobalTrackingPath();
   if (!existsSync(path)) return null;
   try {
     return JSON.parse(readFileSync(path, "utf-8"));
@@ -118,13 +107,11 @@ function readGlobalTracking(): TrackingData | null {
 }
 
 function writeTracking(cwd: string, data: TrackingData): void {
-  const path = getTrackingPath(cwd);
-  writeFileSync(path, JSON.stringify(data, null, 2));
+  writeFileSync(getTrackingPath(cwd), JSON.stringify(data, null, 2));
 }
 
 function writeGlobalTracking(data: TrackingData): void {
-  const path = getGlobalTrackingPath(process.cwd());
-  writeFileSync(path, JSON.stringify(data, null, 2));
+  writeFileSync(getGlobalTrackingPath(), JSON.stringify(data, null, 2));
 }
 
 function getActiveWorkflow(cwd: string): Workflow | null {
@@ -146,22 +133,22 @@ function generateSlug(): string {
 }
 
 function readSourceFile(sourcePath: string): string | null {
-  // Handle paths with ./ or without
   if (!sourcePath.startsWith('./') && !sourcePath.startsWith('/')) {
     sourcePath = './' + sourcePath;
   }
-  
   if (!existsSync(sourcePath)) return null;
-  
   try {
     const stat = statSync(sourcePath);
-    if (stat.isDirectory()) {
-      return `Directory: ${sourcePath}`;
-    }
-    return readFileSync(sourcePath, "utf-8").slice(0, 50000); // Limit to 50KB
+    if (stat.isDirectory()) return `Directory: ${sourcePath}`;
+    return readFileSync(sourcePath, "utf-8").slice(0, 50000);
   } catch {
     return null;
   }
+}
+
+function truncateText(text: string, maxLen: number): string {
+  if (text.length <= maxLen) return text;
+  return text.slice(0, maxLen - 100) + "\n\n[... truncated ...]";
 }
 
 // ============ UI HELPERS ============
@@ -195,7 +182,6 @@ function getProgressBar(workflow: Workflow, theme: any): string[] {
   }).join(" ");
   
   lines.push(phaseLine);
-  
   return lines;
 }
 
@@ -221,171 +207,94 @@ function updateWorkflowUI(ctx: ExtensionContext, cwd: string): void {
 
 function notifyPhaseChange(ctx: ExtensionContext, workflow: Workflow, oldPhase: number): void {
   if (!ctx.ui) return;
-  
-  const newPhase = workflow.currentPhase;
-  if (oldPhase !== newPhase) {
-    const phaseName = PHASE_NAMES[newPhase] || "Unknown";
-    ctx.ui.notify(
-      `📍 Phase ${newPhase + 1}: ${phaseName}`,
-      "info"
-    );
+  if (oldPhase !== workflow.currentPhase) {
+    const phaseName = PHASE_NAMES[workflow.currentPhase] || "Unknown";
+    ctx.ui.notify(`📍 Phase ${workflow.currentPhase + 1}: ${phaseName}`, "info");
   }
-}
-
-function truncateText(text: string, maxLen: number): string {
-  if (text.length <= maxLen) return text;
-  return text.slice(0, maxLen - 100) + "\n\n[... " + (text.length - maxLen) + " more characters truncated ...]";
 }
 
 // ============ COMMANDS ============
 
 function registerCommands(pi: ExtensionAPI): void {
   
-  // /workflow-start - Start a new workflow
-  pi.registerCommand("workflow-start", {
+  // /product-workflow-start - Start a new workflow
+  pi.registerCommand("product-workflow-start", {
     description: "Start a new product workflow. Auto-generates slug if not provided. Parses @filename references as source files and trailing text as draft content.",
     handler: async (args, ctx) => {
-      // Get parsed input from input event
       const sessionId = ctx.sessionId || "default";
       const parsed = parsedInputStore.get(sessionId) || { sources: [], draftText: "" };
       
-      // Determine parameters (args override parsed input)
       let slug = args?.slug;
       const name = args?.name;
       const description = args?.description;
       const sources = args?.source ? [args.source] : parsed.sources;
       const draftText = args?.description || parsed.draftText;
       
-      // Generate slug if not provided
       if (!slug) {
-        // Try to generate from description/draft
         if (draftText && draftText.length > 3) {
-          slug = draftText.toLowerCase()
-            .replace(/[^a-z0-9\s]/g, ' ')
-            .trim()
-            .split(/\s+/)
-            .slice(0, 3)
-            .join('-');
-          // Clean up and limit length
+          slug = draftText.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').trim().split(/\s+/).slice(0, 3).join('-');
           slug = slug.replace(/[^a-z0-9-]/g, '').slice(0, 40);
-          if (slug.length < 3) {
-            slug = generateSlug();
-          }
+          if (slug.length < 3) slug = generateSlug();
         } else if (sources.length > 0) {
-          // Use first source filename as slug base
           const srcName = basename(sources[0], extname(sources[0]));
           slug = srcName.toLowerCase().replace(/[^a-z0-9-]/g, '-').slice(0, 40);
-          if (slug.length < 3) {
-            slug = generateSlug();
-          }
+          if (slug.length < 3) slug = generateSlug();
         } else {
           slug = generateSlug();
         }
       }
       
-      // Normalize slug
       slug = slug.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
       
       let tracking = readTracking(ctx.cwd);
       if (!tracking) {
-        tracking = {
-          "$schema": SCHEMA_URL,
-          "version": "1.0",
-          "created": new Date().toISOString(),
-          "updated": new Date().toISOString(),
-          "workflows": []
-        };
+        tracking = { "$schema": SCHEMA_URL, "version": "1.0", "created": new Date().toISOString(), "updated": new Date().toISOString(), "workflows": [] };
       }
       
-      // Check if already exists
       if (tracking.workflows.some(w => w.slug === slug)) {
-        return `Workflow '${slug}' already exists.\nUse /workflow-status to see it.`;
+        return `Workflow '${slug}' already exists.\nUse /product-workflow-status to see it.`;
       }
       
-      // Read source files content
       let allSourceContent = "";
       for (const src of sources) {
         const content = readSourceFile(src);
-        if (content) {
-          allSourceContent += `\n\n=== FILE: ${src} ===\n${content}\n`;
-        }
+        if (content) allSourceContent += `\n\n=== FILE: ${src} ===\n${content}\n`;
       }
       
-      // Combine draft text with source content
-      let fullDraft = "";
-      if (draftText) {
-        fullDraft = `### Initial Draft\n\n${draftText}\n\n`;
-      }
-      if (allSourceContent) {
-        fullDraft += allSourceContent;
-      }
+      let fullDraft = draftText ? `### Initial Draft\n\n${draftText}\n\n` : "";
+      if (allSourceContent) fullDraft += allSourceContent;
       
-      // Create workflow
       const workflow: Workflow = {
-        slug,
-        name: name || slug,
-        description: truncateText(draftText, 500) || "",
+        slug, name: name || slug, description: truncateText(draftText, 500) || "",
         draftContent: fullDraft ? truncateText(fullDraft, 5000) : undefined,
         source: sources.length > 0 ? sources[0] : undefined,
-        status: "in-progress",
-        currentPhase: 0,
-        phases: PHASE_NAMES.map((name, i) => ({
-          id: `${i}-${name.toLowerCase()}`,
-          name,
-          status: i === 0 ? "in-progress" : "pending"
-        })),
-        created: new Date().toISOString(),
-        updated: new Date().toISOString(),
-        cwd: ctx.cwd
+        status: "in-progress", currentPhase: 0,
+        phases: PHASE_NAMES.map((name, i) => ({ id: `${i}-${name.toLowerCase()}`, name, status: i === 0 ? "in-progress" : "pending" })),
+        created: new Date().toISOString(), updated: new Date().toISOString(), cwd: ctx.cwd
       };
       
       tracking.workflows.push(workflow);
       writeTracking(ctx.cwd, tracking);
       
-      // Update global tracking
-      const globalTracking = readGlobalTracking() || {
-        "$schema": SCHEMA_URL,
-        "version": "1.0",
-        "created": new Date().toISOString(),
-        "updated": new Date().toISOString(),
-        "workflows": []
-      };
+      const globalTracking = readGlobalTracking() || { "$schema": SCHEMA_URL, "version": "1.0", "created": new Date().toISOString(), "updated": new Date().toISOString(), "workflows": [] };
       globalTracking.workflows.push(workflow);
       writeGlobalTracking(globalTracking);
       
-      // Update UI
       updateWorkflowUI(ctx, ctx.cwd);
-      
-      // Clear parsed input
       parsedInputStore.delete(sessionId);
       
-      // Build response
-      const lines: string[] = [
-        `✅ Workflow '${slug}' started!`,
-        `Current phase: ${PHASE_NAMES[0]}`,
-        `Project: ${ctx.cwd}`
-      ];
-      
-      if (sources.length > 0) {
-        lines.push(`📎 Sources: ${sources.join(', ')}`);
-      }
-      
-      if (draftText) {
-        lines.push(`\n📝 Draft:\n${draftText.slice(0, 300)}${draftText.length > 300 ? '...' : ''}`);
-      }
-      
-      if (allSourceContent) {
-        lines.push(`\n📄 Source content loaded (${allSourceContent.length} chars from ${sources.length} file(s))`);
-      }
-      
+      const lines: string[] = [`✅ Workflow '${slug}' started!`, `Current phase: ${PHASE_NAMES[0]}`, `Project: ${ctx.cwd}`];
+      if (sources.length > 0) lines.push(`📎 Sources: ${sources.join(', ')}`);
+      if (draftText) lines.push(`\n📝 Draft:\n${draftText.slice(0, 300)}${draftText.length > 300 ? '...' : ''}`);
+      if (allSourceContent) lines.push(`\n📄 Source content loaded (${allSourceContent.length} chars)`);
       lines.push("", `Run /skill:cali-product-workflow to begin planning.`);
       
       return lines.join("\n");
     }
   });
   
-  // /workflow-stop - Stop and clear the active workflow
-  pi.registerCommand("workflow-stop", {
+  // /product-workflow-stop - Stop and clear
+  pi.registerCommand("product-workflow-stop", {
     description: "Stop the active workflow immediately, clear all UI elements, and abort any running work.",
     handler: async (args, ctx) => {
       const workflow = getActiveWorkflow(ctx.cwd);
@@ -422,115 +331,75 @@ function registerCommands(pi: ExtensionAPI): void {
       
       ctx.ui.notify("Workflow stopped and cleared", "info");
       
-      return [
-        `❌ Workflow '${workflow.slug}' stopped and cleared.`,
-        `UI has been reset.`,
-        `You can start a new workflow with /workflow-start.`
-      ].join("\n");
+      return `❌ Workflow '${workflow.slug}' stopped and cleared.\nUI has been reset.\nYou can start a new workflow with /product-workflow-start.`;
     }
   });
   
-  // /workflow-pause - Pause the workflow
-  pi.registerCommand("workflow-pause", {
+  // /product-workflow-pause - Pause
+  pi.registerCommand("product-workflow-pause", {
     description: "Pause the active workflow (keeps state for later).",
     handler: async (args, ctx) => {
       const workflow = getActiveWorkflow(ctx.cwd);
-      if (!workflow) {
-        return "No active workflow to pause.\nUse /workflow-list to see all workflows.";
-      }
+      if (!workflow) return "No active workflow to pause.\nUse /product-workflow-list to see all workflows.";
       
       const tracking = readTracking(ctx.cwd);
       if (tracking) {
         const idx = tracking.workflows.findIndex(w => w.slug === workflow.slug);
-        if (idx !== -1) {
-          tracking.workflows[idx].status = "paused";
-          writeTracking(ctx.cwd, tracking);
-        }
+        if (idx !== -1) tracking.workflows[idx].status = "paused";
+        writeTracking(ctx.cwd, tracking);
       }
       
       const globalTracking = readGlobalTracking();
       if (globalTracking) {
         const idx = globalTracking.workflows.findIndex(w => w.slug === workflow.slug);
-        if (idx !== -1) {
-          globalTracking.workflows[idx].status = "paused";
-          writeGlobalTracking(globalTracking);
-        }
+        if (idx !== -1) globalTracking.workflows[idx].status = "paused";
+        writeGlobalTracking(globalTracking);
       }
       
-      if (ctx.ui) {
-        ctx.ui.setStatus("workflow", ctx.ui.theme.fg("warning", "⏸ " + workflow.slug + " [PAUSED]"));
-      }
+      if (ctx.ui) ctx.ui.setStatus("workflow", ctx.ui.theme.fg("warning", "⏸ " + workflow.slug + " [PAUSED]"));
       
-      return [
-        `⏸ Workflow '${workflow.slug}' paused.`,
-        `State preserved.`,
-        `Resume with /workflow-resume`
-      ].join("\n");
+      return `⏸ Workflow '${workflow.slug}' paused.\nState preserved.\nResume with /product-workflow-resume`;
     }
   });
   
-  // /workflow-resume - Resume a paused workflow
-  pi.registerCommand("workflow-resume", {
+  // /product-workflow-resume - Resume
+  pi.registerCommand("product-workflow-resume", {
     description: "Resume a paused workflow. Optionally specify slug.",
     handler: async (args, ctx) => {
       const slug = args?.slug;
-      
       const tracking = readTracking(ctx.cwd);
       const globalTracking = readGlobalTracking();
       
       let paused = tracking?.workflows.find(w => w.status === "paused");
-      if (!paused && globalTracking) {
-        paused = globalTracking.workflows.find(w => w.status === "paused");
-      }
+      if (!paused && globalTracking) paused = globalTracking.workflows.find(w => w.status === "paused");
       
       if (!paused) {
-        if (slug) {
-          return `Paused workflow '${slug}' not found.`;
-        }
-        return [
-          "No paused workflow found.",
-          "Use /workflow-list to see all workflows.",
-          "Or specify slug: /workflow-resume slug=my-feature"
-        ].join("\n");
+        return slug ? `Paused workflow '${slug}' not found.` : "No paused workflow found.\nUse /product-workflow-list to see all workflows.\nOr: /product-workflow-resume slug=my-feature";
       }
       
-      const target = slug 
-        ? (tracking?.workflows.find(w => w.slug === slug && w.status === "paused") || 
-           globalTracking?.workflows.find(w => w.slug === slug && w.status === "paused"))
-        : paused;
-      
-      if (!target) {
-        return `Paused workflow '${slug || "unknown"}' not found.`;
-      }
+      const target = slug ? (tracking?.workflows.find(w => w.slug === slug && w.status === "paused") || globalTracking?.workflows.find(w => w.slug === slug && w.status === "paused")) : paused;
+      if (!target) return `Paused workflow '${slug || "unknown"}' not found.`;
       
       if (tracking) {
         const idx = tracking.workflows.findIndex(w => w.slug === target.slug);
-        if (idx !== -1) {
-          tracking.workflows[idx].status = "in-progress";
-          writeTracking(ctx.cwd, tracking);
-        }
+        if (idx !== -1) tracking.workflows[idx].status = "in-progress";
+        writeTracking(ctx.cwd, tracking);
       }
       
       if (globalTracking) {
         const idx = globalTracking.workflows.findIndex(w => w.slug === target.slug);
-        if (idx !== -1) {
-          globalTracking.workflows[idx].status = "in-progress";
-          writeGlobalTracking(globalTracking);
-        }
+        if (idx !== -1) globalTracking.workflows[idx].status = "in-progress";
+        writeGlobalTracking(globalTracking);
       }
       
       updateWorkflowUI(ctx, ctx.cwd);
       
-      return [
-        `▶️ Workflow '${target.slug}' resumed.`,
-        `Current phase: ${PHASE_NAMES[target.currentPhase]}`,
-        `Project: ${target.cwd || ctx.cwd}`
-      ].join("\n");
+      return `▶️ Workflow '${target.slug}' resumed.\nCurrent phase: ${PHASE_NAMES[target.currentPhase]}\nProject: ${target.cwd || ctx.cwd}`;
     }
   });
   
-  // /workflow-status - Show current status
-  pi.registerCommand("workflow-status", {
+  // /product-workflow-status - Show status
+  pi.registerCommand("product-workflow-status", {
     description: "Show current workflow status with progress bar and phase details.",
     handler: async (args, ctx) => {
       const workflow = getActiveWorkflow(ctx.cwd);
@@ -538,27 +407,10 @@ function registerCommands(pi: ExtensionAPI): void {
       if (!workflow) {
         const global = getActiveWorkflowGlobal();
         if (global) {
-          return [
-            `📍 Global workflow: ${global.slug}`,
-            `Phase: ${global.currentPhase + 1}/${PHASE_NAMES.length} — ${PHASE_NAMES[global.currentPhase]}`,
-            `Project: ${global.cwd}`,
-            `Status: ${global.status}`,
-            "",
-            `Navigate to project folder to continue: cd ${global.cwd}`
-          ].join("\n");
+          return `📍 Global workflow: ${global.slug}\nPhase: ${global.currentPhase + 1}/${PHASE_NAMES.length} — ${PHASE_NAMES[global.currentPhase]}\nProject: ${global.cwd}\nStatus: ${global.status}\n\nNavigate to project folder to continue: cd ${global.cwd}`;
         }
         
-        return [
-          "No active workflow in this project.",
-          "",
-          "Start one with:",
-          "  /workflow-start",
-          "  /workflow-start @brief.md",
-          "  /workflow-start @doc.md \"extra context here\"",
-          "  /workflow-start slug=my-feature source=./brief.md",
-          "",
-          "Or check /workflow-list for other workflows."
-        ].join("\n");
+        return "No active workflow in this project.\n\nStart one with:\n  /product-workflow-start\n  /product-workflow-start @brief.md\n  /product-workflow-start @doc.md \"extra context here\"\n  /product-workflow-start slug=my-feature source=./brief.md\n\nOr check /product-workflow-list for other workflows.";
       }
       
       const pct = Math.round(((workflow.currentPhase + 1) / PHASE_NAMES.length) * 100);
@@ -566,20 +418,9 @@ function registerCommands(pi: ExtensionAPI): void {
       const filled = Math.round((pct / 100) * barLen);
       const bar = "█".repeat(filled) + "░".repeat(barLen - filled);
       
-      const lines: string[] = [
-        `📋 Workflow: ${workflow.slug}`,
-        `Progress: [${bar}] ${pct}%`,
-        `Phase: ${workflow.currentPhase + 1}/${PHASE_NAMES.length} — ${PHASE_NAMES[workflow.currentPhase]}`,
-      ];
-      
-      if (workflow.name !== workflow.slug) {
-        lines.push(`Name: ${workflow.name}`);
-      }
-      
-      if (workflow.source) {
-        lines.push(`Source: ${workflow.source}`);
-      }
-      
+      const lines: string[] = [`📋 Workflow: ${workflow.slug}`, `Progress: [${bar}] ${pct}%`, `Phase: ${workflow.currentPhase + 1}/${PHASE_NAMES.length} — ${PHASE_NAMES[workflow.currentPhase]}`];
+      if (workflow.name !== workflow.slug) lines.push(`Name: ${workflow.name}`);
+      if (workflow.source) lines.push(`Source: ${workflow.source}`);
       if (workflow.draftContent) {
         lines.push("", `Draft Preview:`);
         lines.push(workflow.draftContent.slice(0, 500) + (workflow.draftContent.length > 500 ? '...' : ''));
@@ -587,8 +428,7 @@ function registerCommands(pi: ExtensionAPI): void {
       
       lines.push("", "Phases:");
       workflow.phases.forEach((p, i) => {
-        const icon = p.status === "completed" ? "✅" : 
-                     p.status === "in-progress" ? "🔄" : "⬜";
+        const icon = p.status === "completed" ? "✅" : p.status === "in-progress" ? "🔄" : "⬜";
         const prefix = i === workflow.currentPhase ? "▶ " : "  ";
         lines.push(`${prefix}${icon} ${i + 1}. ${p.name}`);
       });
@@ -597,19 +437,17 @@ function registerCommands(pi: ExtensionAPI): void {
     }
   });
   
-  // /workflow-list - List all workflows
-  pi.registerCommand("workflow-list", {
+  // /product-workflow-list - List all
+  pi.registerCommand("product-workflow-list", {
     description: "List all workflows in current project and global.",
     handler: async (args, ctx) => {
       const lines: string[] = [];
-      
       const tracking = readTracking(ctx.cwd);
+      
       if (tracking && tracking.workflows.length > 0) {
         lines.push("📁 Current Project:");
         for (const w of tracking.workflows) {
-          const statusIcon = w.status === "in-progress" ? "🔄" :
-                            w.status === "paused" ? "⏸" :
-                            w.status === "completed" ? "✅" : "⬜";
+          const statusIcon = w.status === "in-progress" ? "🔄" : w.status === "paused" ? "⏸" : w.status === "completed" ? "✅" : "⬜";
           lines.push(`  ${statusIcon} ${w.slug} [${w.status}] — Phase ${w.currentPhase + 1}: ${PHASE_NAMES[w.currentPhase]}`);
         }
         lines.push("");
@@ -617,61 +455,41 @@ function registerCommands(pi: ExtensionAPI): void {
       
       const globalTracking = readGlobalTracking();
       if (globalTracking && globalTracking.workflows.length > 0) {
-        const globalOnly = globalTracking.workflows.filter(w => 
-          !tracking?.workflows.some(tw => tw.slug === w.slug)
-        );
-        
+        const globalOnly = globalTracking.workflows.filter(w => !tracking?.workflows.some(tw => tw.slug === w.slug));
         if (globalOnly.length > 0) {
           lines.push("🌐 Global (other projects):");
           for (const w of globalOnly) {
-            const statusIcon = w.status === "in-progress" ? "🔄" :
-                              w.status === "paused" ? "⏸" :
-                              w.status === "completed" ? "✅" : "⬜";
+            const statusIcon = w.status === "in-progress" ? "🔄" : w.status === "paused" ? "⏸" : w.status === "completed" ? "✅" : "⬜";
             lines.push(`  ${statusIcon} ${w.slug} [${w.status}] — ${PHASE_NAMES[w.currentPhase]}`);
             lines.push(`     Project: ${w.cwd}`);
           }
         }
       }
       
-      if (lines.length === 0) {
-        return "No workflows found.\nStart one with /workflow-start";
-      }
-      
-      return lines.join("\n");
+      return lines.length === 0 ? "No workflows found.\nStart one with /product-workflow-start" : lines.join("\n");
     }
   });
   
-  // /workflow-setphase - Set current phase
-  pi.registerCommand("workflow-setphase", {
+  // /product-workflow-setphase - Set phase
+  pi.registerCommand("product-workflow-setphase", {
     description: "Set the current phase of the active workflow. Phase is 0-5: 0=Clarify, 1=Shape, 2=Bet, 3=Build, 4=Critique, 5=Gate",
     handler: async (args, ctx) => {
       const phaseArg = args?.phase;
       const phaseName = args?.phasename;
       
       let phase: number | null = null;
-      
       if (phaseArg !== undefined) {
         phase = parseInt(String(phaseArg));
       } else if (phaseName) {
-        phase = PHASE_NAMES.findIndex(p => 
-          p.toLowerCase() === String(phaseName).toLowerCase()
-        );
+        phase = PHASE_NAMES.findIndex(p => p.toLowerCase() === String(phaseName).toLowerCase());
       }
       
       if (phase === null || isNaN(phase) || phase < 0 || phase >= PHASE_NAMES.length) {
-        return [
-          `Usage: /workflow-setphase phase=N  (where N is 0-${PHASE_NAMES.length - 1})`,
-          "Or: /workflow-setphase phasename=Clarify",
-          "",
-          "Available phases:",
-          ...PHASE_NAMES.map((name, i) => `  ${i}: ${name}`)
-        ].join("\n");
+        return `Usage: /product-workflow-setphase phase=N  (N is 0-${PHASE_NAMES.length - 1})\nOr: /product-workflow-setphase phasename=Clarify\n\nAvailable phases:\n${PHASE_NAMES.map((name, i) => `  ${i}: ${name}`).join("\n")}`;
       }
       
       const workflow = getActiveWorkflow(ctx.cwd);
-      if (!workflow) {
-        return "No active workflow.\nStart one with /workflow-start";
-      }
+      if (!workflow) return "No active workflow.\nStart one with /product-workflow-start";
       
       const oldPhase = workflow.currentPhase;
       
@@ -695,41 +513,27 @@ function registerCommands(pi: ExtensionAPI): void {
       const globalTracking = readGlobalTracking();
       if (globalTracking) {
         const idx = globalTracking.workflows.findIndex(w => w.slug === workflow.slug);
-        if (idx !== -1) {
-          globalTracking.workflows[idx].currentPhase = phase;
-          writeGlobalTracking(globalTracking);
-        }
+        if (idx !== -1) globalTracking.workflows[idx].currentPhase = phase;
+        writeGlobalTracking(globalTracking);
       }
       
       updateWorkflowUI(ctx, ctx.cwd);
+      if (oldPhase !== phase) notifyPhaseChange(ctx, workflow, oldPhase);
       
-      if (oldPhase !== phase) {
-        notifyPhaseChange(ctx, workflow, oldPhase);
-      }
-      
-      return [
-        `📍 Phase set to ${phase}: ${PHASE_NAMES[phase!]}`,
-        `Progress: ${phase! + 1}/${PHASE_NAMES.length}`,
-        `UI updated.`
-      ].join("\n");
+      return `📍 Phase set to ${phase}: ${PHASE_NAMES[phase!]}\nProgress: ${phase! + 1}/${PHASE_NAMES.length}\nUI updated.`;
     }
   });
   
-  // /workflow-next - Advance to next phase
-  pi.registerCommand("workflow-next", {
+  // /product-workflow-next - Advance phase
+  pi.registerCommand("product-workflow-next", {
     description: "Advance the active workflow to the next phase.",
     handler: async (args, ctx) => {
       const workflow = getActiveWorkflow(ctx.cwd);
-      if (!workflow) {
-        return "No active workflow.\nStart one with /workflow-start";
-      }
+      if (!workflow) return "No active workflow.\nStart one with /product-workflow-start";
       
       const nextPhase = workflow.currentPhase + 1;
       if (nextPhase >= PHASE_NAMES.length) {
-        return [
-          `Workflow '${workflow.slug}' is already on the last phase: ${PHASE_NAMES[workflow.currentPhase]}`,
-          `Use /workflow-complete to mark as finished.`
-        ].join("\n");
+        return `Workflow '${workflow.slug}' is already on the last phase: ${PHASE_NAMES[workflow.currentPhase]}\nUse /product-workflow-complete to mark as finished.`;
       }
       
       const tracking = readTracking(ctx.cwd);
@@ -751,30 +555,23 @@ function registerCommands(pi: ExtensionAPI): void {
       const globalTracking = readGlobalTracking();
       if (globalTracking) {
         const idx = globalTracking.workflows.findIndex(w => w.slug === workflow.slug);
-        if (idx !== -1) {
-          globalTracking.workflows[idx].currentPhase = nextPhase;
-          writeGlobalTracking(globalTracking);
-        }
+        if (idx !== -1) globalTracking.workflows[idx].currentPhase = nextPhase;
+        writeGlobalTracking(globalTracking);
       }
       
       updateWorkflowUI(ctx, ctx.cwd);
       notifyPhaseChange(ctx, workflow, nextPhase - 1);
       
-      return [
-        `✅ Advanced to Phase ${nextPhase + 1}: ${PHASE_NAMES[nextPhase]}`,
-        `Workflow: ${workflow.slug}`
-      ].join("\n");
+      return `✅ Advanced to Phase ${nextPhase + 1}: ${PHASE_NAMES[nextPhase]}\nWorkflow: ${workflow.slug}`;
     }
   });
   
-  // /workflow-complete - Mark workflow as completed
-  pi.registerCommand("workflow-complete", {
+  // /product-workflow-complete - Complete
+  pi.registerCommand("product-workflow-complete", {
     description: "Mark the active workflow as completed.",
     handler: async (args, ctx) => {
       const workflow = getActiveWorkflow(ctx.cwd);
-      if (!workflow) {
-        return "No active workflow to complete.";
-      }
+      if (!workflow) return "No active workflow to complete.";
       
       ctx.ui.setStatus("workflow", undefined);
       ctx.ui.setWidget("workflow-progress", undefined);
@@ -792,55 +589,29 @@ function registerCommands(pi: ExtensionAPI): void {
       const globalTracking = readGlobalTracking();
       if (globalTracking) {
         const idx = globalTracking.workflows.findIndex(w => w.slug === workflow.slug);
-        if (idx !== -1) {
-          globalTracking.workflows[idx].status = "completed";
-          writeGlobalTracking(globalTracking);
-        }
+        if (idx !== -1) globalTracking.workflows[idx].status = "completed";
+        writeGlobalTracking(globalTracking);
       }
       
       ctx.ui.notify(`🎉 Workflow '${workflow.slug}' completed!`, "info");
       
-      return [
-        `🎉 Workflow '${workflow.slug}' completed!`,
-        `All phases finished.`,
-        `Project: ${ctx.cwd}`
-      ].join("\n");
+      return `🎉 Workflow '${workflow.slug}' completed!\nAll phases finished.\nProject: ${ctx.cwd}`;
     }
   });
   
-  // /workflow-goto - Go to workflow in another project
-  pi.registerCommand("workflow-goto", {
+  // /product-workflow-goto - Go to workflow in another project
+  pi.registerCommand("product-workflow-goto", {
     description: "Switch to a workflow from another project. Shows instructions to navigate.",
     handler: async (args, ctx) => {
       const slug = args?.slug;
-      
       const globalTracking = readGlobalTracking();
-      if (!globalTracking) {
-        return "No global workflows found.";
-      }
+      if (!globalTracking) return "No global workflows found.";
       
-      const workflow = slug 
-        ? globalTracking.workflows.find(w => w.slug === slug)
-        : globalTracking.workflows.find(w => w.status === "in-progress");
+      const workflow = slug ? globalTracking.workflows.find(w => w.slug === slug) : globalTracking.workflows.find(w => w.status === "in-progress");
       
-      if (!workflow) {
-        return [
-          `Workflow '${slug || "active"}' not found.`,
-          "Use /workflow-list to see all workflows."
-        ].join("\n");
-      }
+      if (!workflow) return `Workflow '${slug || "active"}' not found.\nUse /product-workflow-list to see all workflows.`;
       
-      return [
-        `📍 Workflow: ${workflow.slug}`,
-        `Project: ${workflow.cwd}`,
-        `Phase: ${PHASE_NAMES[workflow.currentPhase]}`,
-        "",
-        `To continue this workflow:`,
-        `  1. Navigate: cd ${workflow.cwd}`,
-        `  2. Resume: /workflow-resume slug=${workflow.slug}`,
-        "",
-        `Or the LLM will auto-detect it when you open that project.`
-      ].join("\n");
+      return `📍 Workflow: ${workflow.slug}\nProject: ${workflow.cwd}\nPhase: ${PHASE_NAMES[workflow.currentPhase]}\n\nTo continue this workflow:\n  1. Navigate: cd ${workflow.cwd}\n  2. Resume: /product-workflow-resume slug=${workflow.slug}\n\nOr the LLM will auto-detect it when you open that project.`;
     }
   });
 }
@@ -851,7 +622,7 @@ export default function (pi: ExtensionAPI) {
   
   // 0. Parse input for @filename refs and draft text
   pi.on("input", async (event, ctx) => {
-    if (!event.text.startsWith("/workflow-start")) return;
+    if (!event.text.startsWith("/product-workflow-start")) return;
     
     const sessionId = ctx.sessionId || "default";
     const parsed = parseInputForWorkflow(event.text);
@@ -868,13 +639,7 @@ export default function (pi: ExtensionAPI) {
     
     const trackingPath = getTrackingPath(ctx.cwd);
     if (!existsSync(trackingPath)) {
-      const template: TrackingData = {
-        "$schema": SCHEMA_URL,
-        "version": "1.0",
-        "created": new Date().toISOString(),
-        "updated": new Date().toISOString(),
-        "workflows": []
-      };
+      const template: TrackingData = { "$schema": SCHEMA_URL, "version": "1.0", "created": new Date().toISOString(), "updated": new Date().toISOString(), "workflows": [] };
       writeFileSync(trackingPath, JSON.stringify(template, null, 2));
     }
     
@@ -885,28 +650,19 @@ export default function (pi: ExtensionAPI) {
       
       const workflow = getActiveWorkflow(ctx.cwd);
       if (workflow) {
-        ctx.ui.notify(
-          `📍 Resumed: ${workflow.slug} (Phase ${workflow.currentPhase + 1}: ${PHASE_NAMES[workflow.currentPhase]})`,
-          "info"
-        );
+        ctx.ui.notify(`📍 Resumed: ${workflow.slug} (Phase ${workflow.currentPhase + 1}: ${PHASE_NAMES[workflow.currentPhase]})`, "info");
       } else {
         const globalTracking = readGlobalTracking();
         if (globalTracking) {
-          const projectWorkflow = globalTracking.workflows.find(w => 
-            w.cwd === ctx.cwd && w.status !== "completed"
-          );
+          const projectWorkflow = globalTracking.workflows.find(w => w.cwd === ctx.cwd && w.status !== "completed");
           if (projectWorkflow) {
             const tracking = readTracking(ctx.cwd);
             if (tracking && !tracking.workflows.some(w => w.slug === projectWorkflow.slug)) {
               tracking.workflows.push(projectWorkflow);
               writeTracking(ctx.cwd, tracking);
             }
-            
             updateWorkflowUI(ctx, ctx.cwd);
-            ctx.ui.notify(
-              `📍 Found workflow: ${projectWorkflow.slug} (Phase ${projectWorkflow.currentPhase + 1}: ${PHASE_NAMES[projectWorkflow.currentPhase]})`,
-              "info"
-            );
+            ctx.ui.notify(`📍 Found workflow: ${projectWorkflow.slug} (Phase ${projectWorkflow.currentPhase + 1}: ${PHASE_NAMES[projectWorkflow.currentPhase]})`, "info");
           }
         }
       }
@@ -933,10 +689,7 @@ export default function (pi: ExtensionAPI) {
   // 3. Update on agent_end
   pi.on("agent_end", async (_event, ctx) => {
     if (!ctx.ui) return;
-    
     const currentWorkflow = getActiveWorkflow(ctx.cwd);
-    if (currentWorkflow) {
-      updateWorkflowUI(ctx, ctx.cwd);
-    }
+    if (currentWorkflow) updateWorkflowUI(ctx, ctx.cwd);
   });
 }
