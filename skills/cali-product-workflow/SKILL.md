@@ -503,23 +503,23 @@ Justificativa: [1-2 frases].`,
       },
       {
         label: "A — Proposta A",
-        description: "{resumo da proposta A: 1-2 frases com a abordagem principal}"
+        description: "Arquétipo A ({nome do arquétipo}) — {resumo: 1-2 frases com a abordagem principal}"
       },
       {
         label: "B — Proposta B",
-        description: "{resumo da proposta B}"
+        description: "Arquétipo B ({nome do arquétipo}) — {resumo}"
       },
       {
         label: "C — Proposta C",
-        description: "{resumo da proposta C}"
+        description: "Arquétipo C ({nome do arquétipo}) — {resumo}"
       },
       {
         label: "D — Proposta D",
-        description: "{resumo da proposta D}"
+        description: "Arquétipo D ({nome do arquétipo}) — {resumo}"
       },
       {
         label: "E — Proposta E",
-        description: "{resumo da proposta E}"
+        description: "Arquétipo E ({nome do arquétipo}) — {resumo}"
       }
     ]
   }]
