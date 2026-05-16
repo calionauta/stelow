@@ -1,7 +1,9 @@
+import { rmSync } from "node:fs";
+import { join } from "node:path";
 import { homedir } from "node:os";
 import type { ExtensionAPI, ExtensionCommandContext } from "@earendil-works/pi-coding-agent";
 import { Container, Text, Spacer, SelectList } from "@earendil-works/pi-tui";
-import { PHASE_NAMES } from "./types";
+import { WORKFLOW_DIR, PHASE_NAMES } from "./types";
 import {
   readTracking, writeTracking, readGlobalTracking, writeGlobalTracking,
   getActiveWorkflow, renameWorkflow, slugify, reconcileTracking, scanWorkflowDirs,
@@ -385,6 +387,21 @@ function cmdList(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
     return;
   }
 
+  // ── /pw:ls archived — show archived workflows from disk ───────
+  if (parsed._.includes("archived") || parsed.archived !== undefined) {
+    const diskWfs = scanWorkflowDirs(ctx.cwd).filter(dw => dw.status === "archived");
+    if (diskWfs.length === 0) {
+      replyWarn(ctx, "No archived workflows.");
+      return;
+    }
+    lines.push(`📁 ${ctx.cwd} (archived):`);
+    for (const dw of diskWfs) {
+      lines.push(`  ○ ${dw.slug}`);
+    }
+    reply(ctx, lines.join("\n"));
+    return;
+  }
+
   // ── /pw:ls (default) — current dir with disk reconciliation ────
   const reconciled = reconcileTracking(ctx.cwd);
 
@@ -594,6 +611,29 @@ function cmdMenu(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
 
 function cmdClean(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
   const parsed = parseArgs(args);
+
+  // ── /pw:clean purge — delete archived workflow dirs from disk ──
+  if (parsed._.includes("purge") || parsed.purge !== undefined) {
+    const diskWfs = scanWorkflowDirs(ctx.cwd).filter(dw => dw.status === "archived");
+    if (diskWfs.length === 0) {
+      replyWarn(ctx, "No archived workflows to purge.");
+      return;
+    }
+    let deleted = 0;
+    for (const dw of diskWfs) {
+      const dirPath = join(ctx.cwd, WORKFLOW_DIR, dw.dateStamp, dw.dirHash);
+      try {
+        rmSync(dirPath, { recursive: true, force: true });
+        deleted++;
+      } catch { /* skip if can't delete */ }
+      removeWorkflowFromTracking(ctx.cwd, dw.slug);
+    }
+    reply(ctx, `🗑️ Purged ${deleted} archived workflow(s) from disk.`);
+    return;
+  }
+
+
+  const parsed = parseArgs(args);
   const hours = parseInt(parsed.hours || "4", 10);
   const cutoff = Date.now() - hours * 60 * 60 * 1000;
 
@@ -665,14 +705,14 @@ const COMMAND_DESCRIPTIONS: Record<string, string> = {
   "product-workflow-pause": "Pause active workflow: /pw:pause",
   "product-workflow-resume":"Resume paused workflow: /pw:resume [name=slug]",
   "product-workflow-status":"Show active workflow status: /pw:status",
-  "product-workflow-list":  "List workflows: /pw:ls | all | path=DIR",
+  "product-workflow-list":  "List workflows: /pw:ls | all | archived | path=DIR",
   "product-workflow-setphase":"Jump to phase: /pw:setphase phase=N | phasename=Name",
   "product-workflow-next":  "Advance to next phase: /pw:next",
   "product-workflow-complete":"Mark active workflow complete: /pw:complete",
   "product-workflow-goto":  "Go to a workflow: /pw:goto [name=slug]",
   "product-workflow-rename":"Rename active workflow: /pw:rename novo-nome | name=novo-nome",
   "product-workflow-menu":  "Open workflow overview overlay: /pw:menu",
-  "product-workflow-clean": "Archive stale workflows: /pw:clean [hours=4]",
+  "product-workflow-clean": "Archive stale or purge archived: /pw:clean [hours=4] | purge",
 };
 
 export function registerCommands(pi: ExtensionAPI): void {
