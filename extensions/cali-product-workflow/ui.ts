@@ -18,32 +18,21 @@ import {
 // =============================================================================
 
 /**
- * Build a single-line footer string.
- *   "auth-system  │  ◆ Shape 3/7  │  2 scopes"
+ * Build footer status string.
+ *   "[pw] auth-system  │  ◆ Shape 3/7"
  */
 function buildCompactStatus(workflow: Workflow, theme: any): string {
   const phaseName = PHASE_NAMES[workflow.currentPhase] || "?";
   const phaseNum = `${workflow.currentPhase + 1}/${PHASE_NAMES.length}`;
 
-  const isComplete = workflow.phases[workflow.currentPhase]?.status === "completed";
   const isActive = workflow.phases[workflow.currentPhase]?.status === "in-progress";
-  const icon = isComplete ? theme.fg("success", "●") :
-    isActive ? theme.fg("accent", "◆") : theme.fg("dim", "○");
+  const icon = isActive ? theme.fg("accent", "◆") : theme.fg("success", "●");
 
+  const prefix = theme.fg("dim", "[pw]");
   const name = theme.fg("success", workflow.name);
   const phase = `${icon} ${phaseName} ${phaseNum}`;
-  const hint = getPhaseHint(workflow, theme);
-  const hintStr = hint ? `  │  ${hint}` : "";
 
-  return `${name}  │  ${phase}${hintStr}`;
-}
-
-function getPhaseHint(workflow: Workflow, theme: any): string | null {
-  if (workflow.name.startsWith("untitled-") && workflow.draftContent && workflow.currentPhase >= 1) {
-    return theme.fg("warning", "rename pending...");
-  }
-  const hint = PHASE_HINTS[workflow.currentPhase];
-  return hint ? `0 ${hint}` : null;
+  return `${prefix} ${name}  │  ${phase}`;
 }
 
 export function updateFooter(ctx: ExtensionContext, cwd: string): void {

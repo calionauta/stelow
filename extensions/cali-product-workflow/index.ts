@@ -84,18 +84,20 @@ export default function (pi: ExtensionAPI) {
 
   // ── Phase change detection ✓ ─────────────────────────────────────
   pi.on("turn_end", async (_event, ctx) => {
+    if (!ctx.ui) return;
     const wd = resolveProjectDir(ctx.cwd);
-    const wf = getActiveWorkflow(wd);
-    if (!wf || !ctx.ui) return;
 
+    // Always refresh footer so tracking updates from commands are picked up
+    updateFooter(ctx, wd);
+
+    // Also check for phase changes to show notification
     const tracking = readTracking(wd);
-    if (!tracking) return;
-
+    const wf = getActiveWorkflow(wd);
+    if (!wf || !tracking) return;
     const current = tracking.workflows.find(w => w.name === wf.name);
     if (current && current.currentPhase !== wf.currentPhase) {
       const oldPhase = wf.currentPhase;
       wf.currentPhase = current.currentPhase;
-      updateFooter(ctx, wd);
       notifyPhase(ctx, wf, oldPhase);
     }
   });

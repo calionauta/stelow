@@ -491,6 +491,8 @@ function cmdSetPhase(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
     writeGlobalTracking(gt);
   }
 
+  // Sync wf in-memory so notifyPhase compares correctly
+  wf.currentPhase = phase;
   updateFooter(ctx, wd);
   if (oldPhase !== phase) notifyPhase(ctx, wf, oldPhase);
   reply(ctx, `▶️ Phase: ${PHASE_NAMES[phase]} (${phase + 1}/${PHASE_NAMES.length})`);
@@ -529,6 +531,8 @@ function cmdNext(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
     writeGlobalTracking(gt);
   }
 
+  // Sync wf in-memory so notifyPhase compares correctly
+  wf.currentPhase = next;
   updateFooter(ctx, wd);
   notifyPhase(ctx, wf, oldPhase);
   reply(ctx, `✅ ${PHASE_NAMES[next]} (${next + 1}/${PHASE_NAMES.length})`);
