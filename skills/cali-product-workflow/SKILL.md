@@ -5,18 +5,16 @@ description: >
   Interface Brainstorming (conditional), Tech Planning Sequencing, Solution Critique,
   and Plannotator Gate. Use to transform an idea into an approved plan ready for execution.
   
-  This orchestrator delegates to subskills:
-  - /skill:cali-shape-up - Shape Up planning
-  - /skill:cali-interface-brainstorm - Interface brainstorming
-  - /skill:cali-plan-critique - Plan critique
-  - /skill:cali-tech-planning - Tech planning
+  Sub-skills (4 workflow phases):
+  - /skill:cali-shape-up — Shape Up planning
+  - /skill:cali-interface-brainstorm — Interface brainstorming
+  - /skill:cali-plan-critique — Plan critique
+  - /skill:cali-tech-planning — Tech planning
   
-  Embedded external skills:
-  - Audit/Critique frameworks (impeccable ecosystem)
-  - JTBD Framework (cali-job-to-be-done-framework)
-  - Evolutionary Principles (cali-evolutionary-principles)
-  - Opportunity Mapping (cali-opportunity-mapping)
-  - Short-Cycle Product Method (cali-short-cycle-product)
+  Standalone loading: skills-workflow/cali-{name}/SKILL.md
+  
+  External skills: JTBD, Evolutionary, Opportunity Mapping, Short-Cycle, Ads, Business Models,
+  Health, Marketplace, Open Source, Pricing, Promotions, Trust Building
 ---
 
 # Product Planner (Orchestrator)
