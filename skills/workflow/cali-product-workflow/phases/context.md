@@ -1,6 +1,6 @@
 ## Phase 2: Strategic Context (optional)
 
-> **Part of cali-product-workflow** — See [`SKILL.md`](../SKILL.md) for phase sequence, safety rules, and capability reference.
+> **Part of cali-product-workflow** — See [`SKILL.md`](./SKILL.md) for phase sequence, safety rules, and capability reference.
 
 **After Phase 1 (Setup)**, the flow enters Phase 2 to enrich planning with optional context.
 The LLM checks if the user should be offered strategic analysis and/or domain libraries.

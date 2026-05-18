@@ -1,6 +1,45 @@
 # @renatocaliari/pi-product-workflow
 
-Complete product workflow package for pi.dev coding agent. Includes **15 specialized skills**, a powerful **extension with workflow commands**, and real-time **TUI tracking**.
+Complete product workflow package for pi.dev coding agent. Includes **19 specialized skills** (5 workflow + 5 strategic-analysis + 8 domain-libraries + 1 execution), a powerful **extension with workflow commands**, and real-time **TUI tracking**.
+
+## Skills Overview
+
+### Workflow Skills (Orchestrator + Subskills)
+| Skill | Description |
+|---|---|
+| `cali-product-workflow` | **Orchestrator** - Coordinates all phases |
+| `cali-shape-up` | Shape Up planning (standalone or via orchestrator) |
+| `cali-interface-brainstorm` | Interface brainstorming (standalone or via orchestrator) |
+| `cali-plan-critique` | Plan critique with audit checklists (standalone or via orchestrator) |
+| `cali-tech-planning` | Tech planning and scope sequencing (standalone or via orchestrator) |
+
+### Strategic Analysis Skills
+| Skill | Description |
+|---|---|
+| `cali-product-short-cycle` | Short-cycle product learning method |
+| `cali-product-opportunity-mapping` | Strategic opportunity mapping |
+| `cali-product-job-to-be-done` | JTBD framework |
+| `cali-evolutionary-principles` | Evolutionary product thinking |
+| `cali-product-multi-method-market-analysis` | Multi-method market analysis (PESTLE, Wardley, etc.) |
+
+### Domain Libraries
+| Skill | Description |
+|---|---|
+| `cali-product-ads` | Advertising strategies (Transtheoretical Model) |
+| `cali-product-business-models` | Business model creativity |
+| `cali-product-health` | Product health monitoring |
+| `cali-product-marketplace-playbook` | Marketplace stimulation |
+| `cali-product-open-source` | Open source strategy |
+| `cali-product-pricing` | Pricing strategies |
+| `cali-product-promotions` | Launch promotions (MAGIC framework) |
+| `cali-product-trust-building` | Trust building mechanisms |
+
+### Execution Skills
+| Skill | Description |
+|---|---|
+| `cali-product-scope-executor` | Autonomous scope execution |
+
+---
 
 ---
 

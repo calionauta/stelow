@@ -1,15 +1,51 @@
-## Phase 7: Tech Planning Sequencing
+---
+name: cali-tech-planning
+description: >
+  [Cali] Technical planning and scope sequencing skill. Generates typed scopes
+  (feature/optimization/spike), sequences them, and creates /sisyphus goals.
+  Part of cali-product-workflow but can be used standalone.
+---
 
-> **Part of cali-product-workflow** — See [`SKILL.md`](../SKILL.md) for phase sequence, safety rules, and capability reference.
+# Tech Planning Sequencing
+
+## Overview
+
+This skill executes the Tech Planning phase. It can be run:
+1. **Standalone:** `/skill:cali-tech-planning` — after Shape Up and Critique
+2. **Via Orchestrator:** Called by `/skill:cali-product-workflow`
+
+## Prerequisites
+
+**Security check:** Read the YAML frontmatter of spec-product.md:
+```bash
+head -10 spec-product_{v}.md | grep "approved:"
+```
+- ✅ `approved: true` → proceed
+- ❌ No `approved: true` → **GO BACK to Phase 6. Do not proceed.**
+
+This check is **deterministic** — does not depend on memory.
+
+## References Index
+
+Read the `references/` files to guide the process:
+
+| File | Covers | When to read |
+|---|---|---|
+| `references/TECH-CONTEXT.md` | Tech planning context, prerequisites, workflow position | **Before starting** — sets planning context |
+| `references/SCOPES-AND-SEQUENCING.md` | Scope types (feature/optimization/spike), executor routing, sequencing principles | **During generation** — defines scope structure |
+| `references/TECH-OUTPUT.md` | Tech plan output format, frontmatter, receipts | **After generation** — formats output |
+| `references/generation-principles.md` | Generation principles, constraints, quality standards | **During generation** — guides implementation |
+
+## Process
 
 ### 7a. Scope Generation
 
-Read `references/tech-planning/` (TECH-CONTEXT.md, SCOPES-AND-SEQUENCING.md, TECH-OUTPUT.md, generation-principles.md) and launch subagent:
+Use the references above to generate technical scopes:
 
 ```typescript
 subagent({
   agent: "planner",
-  task: `Generate tech scopes for the approved spec-product.md using references/tech-planning/.
+  task: `Generate tech scopes for the approved spec-product.md using references/.
 
 1. Check strategic stability (Step 0)
 2. Codebase awareness check (Step 1)
@@ -28,14 +64,6 @@ Input: .cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md`,
 
 Output: `.cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_{v}.md`
 Input: `.cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md`
-
-⚠️ **Security check:** Read the YAML frontmatter of spec-product.md:
-```bash
-head -10 ...spec-product_{v}.md | grep "approved:"
-```
-- ✅ `approved: true` → proceed
-- ❌ No `approved: true` → **GO BACK to Phase 6. Do not proceed.**
-  This check is **deterministic** — does not depend on memory.
 
 ### 5b. Conditional Review Gate
 
@@ -93,3 +121,21 @@ Deps: {scope dependencies}
 - Scopes with dependencies: create goal AFTER the dependency is complete
 - Use `pause_goal` with reason if a scope gets blocked
 - `/goal-tweak` for scope adjustments during execution
+
+## Output
+
+Tech plan is saved to:
+```
+.cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_{v}.md
+```
+
+## Related Skills
+
+- **cali-shape-up**: Produces the shaped proposal
+- **cali-plan-critique**: Reviews the proposal before tech planning
+- **cali-product-workflow** (orchestrator): Coordinates this skill with execution
+
+## Environment Adaptation
+
+If a tool is unavailable, check:
+`../cali-product-workflow/references/environment-adaptation.md`

@@ -1,15 +1,16 @@
 ---
 name: cali-product-workflow
 description: >
-  [Cali] Complete product strategic planning. Executes Shape Up Planning,
-  Interface Brainstorming (conditional), Tech Planning Sequencing, Solution
-  Critique, and Plannotator Gate. Use to transform an idea into an approved
-  plan ready for execution.
-
-  Tool calls centralized in this file. Detailed procedures in procedures/.
-  Domain references in references/. Check environment-adaptation.md
-  if a tool is not available.
-
+  [Cali] Complete product strategic planning orchestrator. Executes Shape Up Planning,
+  Interface Brainstorming (conditional), Tech Planning Sequencing, Solution Critique,
+  and Plannotator Gate. Use to transform an idea into an approved plan ready for execution.
+  
+  This orchestrator delegates to subskills:
+  - /skill:cali-shape-up - Shape Up planning
+  - /skill:cali-interface-brainstorm - Interface brainstorming
+  - /skill:cali-plan-critique - Plan critique
+  - /skill:cali-tech-planning - Tech planning
+  
   Embedded external skills:
   - Audit/Critique frameworks (impeccable ecosystem)
   - JTBD Framework (cali-job-to-be-done-framework)
@@ -18,9 +19,9 @@ description: >
   - Short-Cycle Product Method (cali-short-cycle-product)
 ---
 
-# Product Planner
+# Product Planner (Orchestrator)
 
-You are a strategic product planner following the Shape Up method.
+You are a strategic product planner following the Shape Up method. This is the **orchestrator** skill that coordinates subskills for each phase.
 
 **CRITICAL RULES — NEVER SKIP:**
 1. **NEVER** skip any phase. Follow the sequence below.
@@ -44,8 +45,6 @@ Keep package names **exact** — pi may have multiple extensions with the same t
 | `intercom` | **pi-intercom** (nicobailon) | Cross-session messaging | `send`, `ask` |
 | `/supervise` | **pi-supervisor** (tintinweb) | Execution steering | `single` |
 | `safe-change` | **pi-agent-codebase-workflows** (PriNova) | Regression check | `single` |
-
-> In workflow text, tools are referred by name (e.g., `subagent`). Use the corresponding package.
 
 ---
 
@@ -73,26 +72,24 @@ In Phase 2 (Strategic Context), the user can choose strategic analyses **in para
 | Approach | Skill | What It Produces |
 |---|---|---|
 | **Jobs To Be Done** | `cali-product-job-to-be-done` | Contextual segmentation, desired outcomes, job map |
-| **Evolutionary Principles** | `cali-product-evolutionary-principles` | Stepping-stones, novelty map, evolutionary forces |
-| **Opportunity Mapping** | `cali-product-opportunity-mapping` | Ranked opportunities, solution candidates |
+| **Evolutionary Principles** | `cali-evolutionary-principles` | Stepping-stones, novelty map, evolutionary forces |
+| **Opportunity Mapping** | `cali-opportunity-mapping` | Ranked opportunities, solution candidates |
 | **Multi-Method Market Analysis** | `cali-product-multi-method-market-analysis` | PESTLE, Wardley Maps, Foresight, trends |
 | **Short-Cycle Product** | `cali-product-short-cycle` | Experiment plan, metrics, pricing |
 
 All execute **concurrently** via `subagent({tasks: [...], concurrency: N})`.
-See `procedures/phase-2-context.md` for the full flow — the LLM offers these to the user
-and invokes the selected ones via subagent.
+See `phases/context.md` for the full flow.
 
 ---
 
 ## 📚 Complementary Domain Libraries (Phase 2b)
 
-Domain playbooks available for tactical reference during planning/execution.
-The LLM loads them automatically when detecting relevance in the user's request (Phase 2b).
+Domain playbooks available for tactical reference during planning/execution:
 
 | Library | Skill | Covers |
 |---|---|---|
 | **Ads** | `cali-product-ads` | Transtheoretical Model, 5 awareness stages |
-| **Business Models** | `cali-product-business-models` | Cost reduction, revenue generation (Strategyn) |
+| **Business Models** | `cali-product-business-models` | Cost reduction, revenue generation |
 | **Health** | `cali-product-health` | Signals in tension, success vs counterbalance |
 | **Marketplace Playbook** | `cali-product-marketplace-playbook` | 19 marketplace stimulation tactics |
 | **Open Source** | `cali-product-open-source` | OSS business models, fair code |
@@ -100,28 +97,22 @@ The LLM loads them automatically when detecting relevance in the user's request 
 | **Promotions** | `cali-product-promotions` | MAGIC framework, 4 launch strategies |
 | **Trust Building** | `cali-product-trust-building` | 10 pillars, guarantees, perception |
 
-When signaled, the LLM uses `ask_user_question({ multiSelect: true, options: [...] })` to offer these
-(see `procedures/phase-2-context.md` for domain detection and routing).
-If the user's request is purely domain-specific (e.g., "help me define pricing"), the flow may route directly to that skill instead of proceeding to Shape Up.
-
-Selected libraries are loaded via `subagent` or read directly during planning.
-
 ---
 
 ## 📋 Phase Index
 
-Follow the sequence below. For each phase, read the procedure in `procedures/` and the indicated references.
+Follow the sequence below. For phases 3-5 and 7, delegate to subskills via `/skill:`.
 
-| # | Phase | Procedure | Domain References |
+| # | Phase | Delegation | Domain References |
 |---|-------|-----------|-------------------|
-| 1 | **Project Setup** | `procedures/phase-1-setup.md` | — |
-| 2 | **Strategic Context** (optional) | `procedures/phase-2-context.md` | `references/strategic-exploration.md` |
-| 3 | **Shape Up Planning** | `procedures/phase-3-shape.md` | `references/shape-up/` |
-| 4 | **Interface Brainstorming** | `procedures/phase-4-interface.md` | `references/interface/` |
-| 5 | **Plan Critique** | `procedures/phase-5-critique.md` | `references/plan-critique/` |
-| 6 | **Review Gate** | `procedures/phase-6-gate.md` | — |
-| 7 | **Tech Planning** | `procedures/phase-7-tech-planning.md` | `references/tech-planning/` |
-| 8 | **Supervisor + Execution** | `procedures/phase-8-execution.md` | — |
+| 1 | **Project Setup** | `phases/setup.md` | — |
+| 2 | **Strategic Context** (optional) | `phases/context.md` | `references/strategic-exploration.md` |
+| 3 | **Shape Up Planning** | `/skill:cali-shape-up` | `cali-shape-up/references/` |
+| 4 | **Interface Brainstorming** | `/skill:cali-interface-brainstorm` | `cali-interface-brainstorm/references/` |
+| 5 | **Plan Critique** | `/skill:cali-plan-critique` | `cali-plan-critique/references/` |
+| 6 | **Review Gate** | `phases/gate.md` | — |
+| 7 | **Tech Planning** | `/skill:cali-tech-planning` | `cali-tech-planning/references/` |
+| 8 | **Supervisor + Execution** | `phases/execution.md` | — |
 
 ### Auto-chaining rules
 
@@ -161,21 +152,6 @@ Follow the sequence below. For each phase, read the procedure in `procedures/` a
 
 ---
 
-## 📊 Expected Output
-
-Always return:
-1. Problem and context (summary of approved shaping)
-2. Chosen interface direction (if applicable) and why
-3. Plan with typed scopes (`feature` / `optimization` / `spike`)
-4. Execution routing: each scope mapped to its executor
-5. Defined metrics for `optimization` scopes
-6. Review Gate approval status
-7. Next step
-
----
-
 ## 🌐 Environment Adaptation
 
 If a mentioned tool is not available, check `references/environment-adaptation.md`.
-It covers: ask_user_question, subagent, plannotator, /supervise, /skill:scope-executor, todo,
-and rules for pi.dev vs Fusion vs other environments.

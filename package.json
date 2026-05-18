@@ -24,23 +24,29 @@
     "url": "https://github.com/cali/pi-product-workflow/issues"
   },
   "pi": {
-    "extensions": ["./extensions/cali-product-workflow"],
+    "extensions": [
+      "./extensions/cali-product-workflow"
+    ],
     "skills": [
       "./skills/workflow/cali-product-workflow",
-      "./skills/strategic-analysis/cali-product-short-cycle",
-      "./skills/strategic-analysis/cali-product-opportunity-mapping",
-      "./skills/strategic-analysis/cali-product-job-to-be-done",
-      "./skills/strategic-analysis/cali-product-evolutionary-principles",
-      "./skills/strategic-analysis/cali-product-multi-method-market-analysis",
-      "./skills/execution/cali-product-scope-executor",
-      "./skills/domain-libraries/cali-product-ads",
-      "./skills/domain-libraries/cali-product-business-models",
-      "./skills/domain-libraries/cali-product-health",
-      "./skills/domain-libraries/cali-product-marketplace-playbook",
-      "./skills/domain-libraries/cali-product-open-source",
-      "./skills/domain-libraries/cali-product-pricing",
-      "./skills/domain-libraries/cali-product-promotions",
-      "./skills/domain-libraries/cali-product-trust-building"
+      "./skills/workflow/cali-shape-up",
+      "./skills/workflow/cali-interface-brainstorm",
+      "./skills/workflow/cali-plan-critique",
+      "./skills/workflow/cali-tech-planning",
+      "./skills/skills-strategic-analysis/cali-product-short-cycle",
+      "./skills/skills-strategic-analysis/cali-product-opportunity-mapping",
+      "./skills/skills-strategic-analysis/cali-product-job-to-be-done",
+      "./skills/skills-strategic-analysis/cali-product-evolutionary-principles",
+      "./skills/skills-strategic-analysis/cali-product-multi-method-market-analysis",
+      "./skills/skills-execution/cali-product-scope-executor",
+      "./skills/skills-domain-libraries/cali-product-ads",
+      "./skills/skills-domain-libraries/cali-product-business-models",
+      "./skills/skills-domain-libraries/cali-product-health",
+      "./skills/skills-domain-libraries/cali-product-marketplace-playbook",
+      "./skills/skills-domain-libraries/cali-product-open-source",
+      "./skills/skills-domain-libraries/cali-product-pricing",
+      "./skills/skills-domain-libraries/cali-product-promotions",
+      "./skills/skills-domain-libraries/cali-product-trust-building"
     ]
   },
   "peerDependencies": {
