@@ -101,18 +101,18 @@ Domain playbooks available for tactical reference during planning/execution:
 
 ## 📋 Phase Index
 
-Follow the sequence below. For phases 3-5 and 7, delegate to subskills via `/skill:`.
+Follow the sequence below. For phases 3-5 and 7, delegate to subskills via `/skill:`. Each subskill has its own **Reference Index** — load the skill to see it.
 
-| # | Phase | Delegation | Domain References |
+| # | Phase | Delegation |
 |---|-------|-----------|-------------------|
-| 1 | **Project Setup** | `phases/setup.md` | — |
-| 2 | **Strategic Context** (optional) | `phases/context.md` | `references/strategic-exploration.md` |
-| 3 | **Shape Up Planning** | `/skill:cali-shape-up` | `cali-shape-up/references/` |
-| 4 | **Interface Brainstorming** | `/skill:cali-interface-brainstorm` | `cali-interface-brainstorm/references/` |
-| 5 | **Plan Critique** | `/skill:cali-plan-critique` | `cali-plan-critique/references/` |
-| 6 | **Review Gate** | `phases/gate.md` | — |
-| 7 | **Tech Planning** | `/skill:cali-tech-planning` | `cali-tech-planning/references/` |
-| 8 | **Supervisor + Execution** | `phases/execution.md` | — |
+| 1 | **Project Setup** | `phases/setup.md` |
+| 2 | **Strategic Context** (optional) | `phases/context.md` |
+| 3 | **Shape Up Planning** | `/skill:cali-shape-up` |
+| 4 | **Interface Brainstorming** | `/skill:cali-interface-brainstorm` |
+| 5 | **Plan Critique** | `/skill:cali-plan-critique` |
+| 6 | **Review Gate** | `phases/gate.md` |
+| 7 | **Tech Planning** | `/skill:cali-tech-planning` |
+| 8 | **Supervisor + Execution** | `phases/execution.md` |
 
 ### Auto-chaining rules
 
