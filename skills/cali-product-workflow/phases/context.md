@@ -7,7 +7,8 @@ The LLM checks if the user should be offered strategic analysis and/or domain li
 
 ### 2a. Strategic Exploration (always ask)
 
-**ALWAYS ask** — use **Pattern 1** from `phases/ask-patterns.md`.
+**ALWAYS ask** — use **Pattern 1** from `phases/ask-patterns.md` for the question format.
+**ALSO read** the "Strategic Approaches" table in the main `SKILL.md` for the full approach list with skill names and outputs.
 
 > **⚠️ Multi-Select Rule:** When using `multiSelect: true`, DO NOT include "None", "Skip", or similar meta-options. User can select nothing to skip.
 

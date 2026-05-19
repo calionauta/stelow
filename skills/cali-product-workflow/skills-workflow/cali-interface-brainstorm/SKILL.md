@@ -16,30 +16,28 @@ This skill executes the Interface Brainstorming phase. It can be run:
 
 ## Process
 
-Read the `references/` files to guide the process:
+**Step 1:** Read the `references/` files to guide the process:
 
 | File | Covers | When to read |
 |---|---|---|
-| `references/INTERFACE-CONTEXT.md` | Progressive Clarification, when to use, system equivalents | **Before starting** — sets behavioral rules |
-| `references/INTERFACE-RECONSTRUCTION.md` | Context reconstruction, hidden job extraction | **Before generating** — prepare context |
-| `references/INTERFACE-RULES.md` | Separation Rule, Forced Trade-Off Rule, output quality | **Before generating** — core generation rules |
-| `references/archetypes.md` | 5 archetypes with descriptions | **During generation** — guide each proposal |
-| `references/INTERFACE-EVALUATION.md` | Evaluation criteria, post-selection integration | **After generating** — evaluate proposals |
-| `references/output-format.md` | Output format specification | **After generating** — format output |
-| `references/hybrid-recommendation.md` | Hybrid recommendation strategy | **After evaluation** — create final recommendation |
+| `references/INTERFACE-CONTEXT.md` | Progressive Clarification, when to use, system equivalents | **Before starting** |
+| `references/INTERFACE-RECONSTRUCTION.md` | Context reconstruction, hidden job extraction | **Before generating** |
+| `references/INTERFACE-RULES.md` | Separation Rule, Forced Trade-Off Rule, output quality | **Before generating** |
+| `references/archetypes.md` | 5 archetypes with descriptions | **During generation** |
+| `references/hybrid-recommendation.md` | Hybrid recommendation strategy | **Step 3 only** |
 
-## Generate Proposals
+## Generate Proposals (Step 1-2)
 
-**Generate each proposal individually in parallel** (5 independent workers):
+**Step 1:** Generate 5 proposals in parallel (5 independent workers):
 
 ```typescript
 subagent({
   tasks: [
-    { agent: "worker", task: `Generate Proposal A (Archetype A — [description from references/archetypes.md]) for [product context]. Markdown output in full proposal format with ASCII wireframes, breadboarding and trade-offs.` },
-    { agent: "worker", task: `Generate Proposal B (Archetype B — [archetype description]) for [product context]. Full format.` },
-    { agent: "worker", task: `Generate Proposal C (Archetype C — [archetype description]) for [product context]. Full format.` },
-    { agent: "worker", task: `Generate Proposal D (Archetype D — [archetype description]) for [product context]. Full format.` },
-    { agent: "worker", task: `Generate Proposal E + Hybrid (Archetype E — [archetype description]) for [product context]. Include hybrid recommendation combining strong elements from multiple archetypes. Full format.` },
+    { agent: "worker", task: `Generate Proposal A (Archetype A — Conventional Standard) for [product context]. Full format per references/output-format.md.` },
+    { agent: "worker", task: `Generate Proposal B (Archetype B — Interaction Paradigm Shift) for [product context]. Full format per references/output-format.md.` },
+    { agent: "worker", task: `Generate Proposal C (Archetype C — Technological Vanguard) for [product context]. Full format per references/output-format.md.` },
+    { agent: "worker", task: `Generate Proposal D (Archetype D — Radical Simplicity) for [product context]. Full format per references/output-format.md.` },
+    { agent: "worker", task: `Generate Proposal E (Archetype E — Expert/Command-First) for [product context]. Full format per references/output-format.md.` },
   ],
   concurrency: 5,
   context: "fork"
@@ -48,23 +46,44 @@ subagent({
 
 - Each worker generates **one** proposal (independent, no cross-contamination)
 - Combined output: `.cali-product-workflow/{YYYY-MM-DD}/{_dir}/interfaces/interfaces_{v}.md`
-- **Do not ask for input** — generate everything at once
 
-## Visual Review
 
-After generating the 5 proposals, submit to Plannotator for visualization:
+**Step 2:** Read `references/output-format.md` to format and concatenate all proposals.
 
-```bash
-plannotator annotate .cali-product-workflow/{YYYY-MM-DD}/{_dir}/interfaces/interfaces_{v}.md
+
+## Generate Hybrid (Step 3 — AFTER proposals complete)
+
+
+**CRITICAL:** Hybrid is generated **AFTER** all 5 proposals are complete to avoid bias.
+
+```typescript
+subagent({
+  agent: "worker",
+  task: `Read the 5 proposals (A-E) from .cali-product-workflow/{YYYY-MM-DD}/{_dir}/interfaces/interfaces_{v}.md.
+Then generate a **Hybrid Proposal** that combines the strongest elements from 2 or more archetypes.
+Follow references/hybrid-recommendation.md for the strategy.
+Append to the interfaces file.`,
+  reads: [`.cali-product-workflow/{YYYY-MM-DD}/{_dir}/interfaces/interfaces_{v}.md`]
+})
 ```
 
-## User Selection
 
-After visual review, ask the user which proposal to follow.
+## Visual Review (Phase 8 Gate)
 
-**Read** `../../phases/ask-patterns.md` for the standardized question pattern with previews.
 
-After selection, create `spec-product_{v+1}.md` incorporating the chosen interface (ASCII sketches).
+After all proposals + Hybrid, submit to Plannotator for **mandatory** visual review:
+
+```bash
+plannotator annotate .cali-product-workflow/{YYYY-MM-DD}/{_dir}/interfaces/interfaces_{v}.md --gate
+```
+
+
+**⚠️ The `--gate` flag is MANDATORY.** Without it, Plannotator does not show the Approve button. The workflow will not proceed until approved.
+
+## User Selection (Phase 9)
+
+
+After visual review and approval, use **Pattern 2** from `../../phases/ask-patterns.md` to ask the user which proposal to follow.
 
 ## Output
 
