@@ -67,29 +67,7 @@ Input: `.cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md`
 
 ### 5b. Conditional Review Gate
 
-**If standalone (no Shape Up/Interface):** execute the Review Gate on `spec-tech.md`:
-
-```bash
-plannotator annotate .cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_{v}.md --gate
-```
-
-After approval, stamp spec-tech.md (same procedure as Phase 6):
-1. Add to YAML frontmatter:
-   ```yaml
-   approved: true
-   approved_at: "<timestamp>"
-   approved_via: plannotator --gate
-   ```
-2. Create receipt at `.plannotator/approvals/{_dir}/spec-tech_{v}.approved.md`:
-   ```bash
-   mkdir -p .plannotator/approvals/{_dir} && cat > .plannotator/approvals/{_dir}/spec-tech_{v}.approved.md << 'EOF'
-   # Approval: spec-tech_{v}.md
-   - Approved at: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
-   - Spec hash: `git hash-object .cali-product-workflow/.../spec-tech_{v}.md`
-   - Verdict: approved
-   EOF
-   ```
-3. spec-tech.md is frozen. Future revisions create `spec-tech_{v+1}.md`.
+**If standalone (no Shape Up/Interface):** use `references/plannotator-rules.md` for the Plannotator command.
 
 **If post-Shape-Up:** the gate already ran in Phase 6 — skip this step.
 

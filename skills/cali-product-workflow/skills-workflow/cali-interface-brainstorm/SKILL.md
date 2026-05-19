@@ -70,15 +70,7 @@ Append to the interfaces file.`,
 
 ## Visual Review (Phase 8 Gate)
 
-
-After all proposals + Hybrid, submit to Plannotator for **mandatory** visual review:
-
-```bash
-plannotator annotate .cali-product-workflow/{YYYY-MM-DD}/{_dir}/interfaces/interfaces_{v}.md --gate
-```
-
-
-**⚠️ The `--gate` flag is MANDATORY.** Without it, Plannotator does not show the Approve button. The workflow will not proceed until approved.
+After all proposals + Hybrid, use `references/plannotator-rules.md` for the Plannotator command format.
 
 ## User Selection (Phase 9)
 

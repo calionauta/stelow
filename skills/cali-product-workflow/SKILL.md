@@ -161,10 +161,7 @@ Phase 11: Execution
 ## ⚠️ Safety Rules
 
 ### Review Gate (Phase 5)
-1. **Verbal approval in chat does NOT replace the gate.** Even if the user says "approved", "go ahead" — run Plannotator with --gate.
-2. **Plannotator with --gate is MANDATORY.** Only proceed AFTER "approved".
-3. After approval: stamp the frontmatter (`approved: true`) + create receipt.
-4. Spec is frozen after approval. Future changes = `spec-product_{v+1}.md` + new gate.
+Use `references/plannotator-rules.md` for all Plannotator gate rules, command format, and approval workflow.
 
 ### Scope Adjustment (Phase 6)
 - Use **Pattern 3** from `phases/ask-patterns.md`
@@ -173,8 +170,7 @@ Phase 11: Execution
 - If removing items, update spec in-place
 
 ### Interface Gate (Phase 8)
-- Visual review of all interface proposals before selection
-- Same rules as Phase 5 Gate — never skip
+Use `references/plannotator-rules.md` for Plannotator command. Visual review of all interface proposals before selection.
 
 ### Interface Selection (Phase 9)
 - Use **Pattern 2** from `phases/ask-patterns.md`
