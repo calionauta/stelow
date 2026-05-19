@@ -21,32 +21,99 @@
 ## 🔄 Workflow Flow
 
 ```mermaid
-flowchart LR
-    subgraph Phases["11 Phases"]
-        direction LR
-        P1["1. Clarify"]
-        P2["2. Shape Up"]
-        P3["3. Interface"]
-        P4["4. Critique"]
-        P5["5. Gate"]
-        P6["6. Planning"]
-        P7["7-9. Strategic"]
-        P10["10. Testing"]
-        P11["11. Execution"]
+flowchart TB
+    subgraph Setup["1. Setup"]
+        S["Project initialization"]
     end
     
-    P1 --> P2 --> P3 --> P4 --> P5 --> P6 --> P7 --> P10 --> P11
+    subgraph Strategic["2. Strategic Context (Optional)"]
+        direction LR
+        JTBD["JTBD"]
+        EVO["Evolutionary"]
+        OPP["Opportunity"]
+        MKT["Market Analysis"]
+        SHORT["Short-Cycle"]
+        
+        JTBD === EVO === OPP === MKT === SHORT
+    end
     
-    P7:::strategic
-    P10:::testing
-    P11:::execution
+    subgraph Core["Core Workflow"]
+        direction TB
+        SU["3. Shape Up"]
+        PC["4. Plan Critique"]
+        G1["5. Gate (Plannotator)"]
+        SA["6. Scope Adjustment"]
+        TP["10. Tech Planning"]
+    end
     
-    classDef strategic fill:#9b59b6,color:#fff
-    classDef testing fill:#27ae60,color:#fff
-    classDef execution fill:#e74c3c,color:#fff
+    subgraph Interface["7-9. Interface (Conditional)"]
+        direction LR
+        IB["7. Interface Brainstorm"]
+        IG["8. Interface Gate"]
+        IS["9. Interface Selection"]
+        IB --> IG --> IS
+    end
+    
+    subgraph Testing["Testing (Software Only)"]
+        direction TB
+        TS["cali-testing-ai-code"]
+        test、绿色["Greenfield: test-unit, test-integration,<br/>test-security, test-behavior"]
+        test、棕色["Brownfield: test-regression,<br/>test-characterization, test-impact"]
+        TS --> test、绿色
+        TS --> test、棕色
+    end
+    
+    subgraph Domain["Domain Libraries (Reference)"]
+        direction LR
+        DL1["Ads"]
+        DL2["Business Models"]
+        DL3["Health"]
+        DL4["Marketplace"]
+        DL5["Open Source"]
+        DL6["Pricing"]
+        DL7["Promotions"]
+        DL8["Trust Building"]
+        
+        DL1 --- DL2 --- DL3 --- DL4 --- DL5 --- DL6 --- DL7 --- DL8
+    end
+    
+    subgraph Execution["11. Execution"]
+        EX["Scope Executor"]
+    end
+    
+    Setup --> Strategic
+    Strategic --> SU
+    SU --> PC --> G1 --> SA
+    
+    SA -->|"Shape Up only"| TP
+    SA -->|"+ Interface"| IB
+    IB --> IG --> IS --> TP
+    
+    TP -->|product_type: software| Testing
+    TP -->|other| EX
+    Testing --> EX
+    
+    Strategic:::optional
+    Interface:::optional
+    Testing:::conditional
+    Domain:::reference
+    
+    classDef optional fill:#f5f5f5,color:#333,stroke:#999,stroke-width:1px
+    classDef conditional fill:#e8f5e9,color:#2e7d32,stroke:#4caf50
+    classDef reference fill:#fff8e1,color:#f57c00,stroke:#ffb74d
+    
+    linkStyle 10 stroke:#4caf50,stroke-width:3px
 ```
 
-> **Note:** Phases 7-9 run strategic analysis (JTBD, Opportunity, Market) in parallel if selected.
+> **Legend:**
+> - **Solid lines** = mandatory flow
+> - **Dashed box** = optional (run if selected)
+> - **Green box** = conditional (run if product_type: software/hybrid)
+> - **Orange box** = reference only (available anytime)
+
+> **Strategic Context (Phase 2):** Runs 1 or more analyses in parallel via `subagent({tasks: [...], concurrency: N})`
+
+> **Domain Libraries:** Available as tactical reference during planning/execution — not executed as a phase.
 
 ### Phase Descriptions
 
