@@ -67,7 +67,7 @@ Input: `.cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md`
 
 ### 5b. Conditional Review Gate
 
-**If standalone (no Shape Up/Interface):** use `references/plannotator-rules.md` for the Plannotator command.
+**If standalone (no Shape Up/Interface):** use `references/pi-tools/plannotator.md` for the Plannotator command.
 
 **If post-Shape-Up:** the gate already ran in Phase 6 — skip this step.
 
@@ -116,4 +116,4 @@ Tech plan is saved to:
 ## Environment Adaptation
 
 If a tool is unavailable, check:
-`../../../cali-product-workflow/references/environment-adaptation.md`
+`../../../cali-product-workflow/references/pi-tools/`

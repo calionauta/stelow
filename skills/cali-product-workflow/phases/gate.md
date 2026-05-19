@@ -46,7 +46,7 @@ grep -E '\`[^\`]+:[0-9]+\`' .cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spe
 3. If the reviewer requests changes, adjust and re-submit.
 4. After approval, spec-product.md is frozen.
 
-**Use `references/plannotator-rules.md`** for:
+**Use `references/pi-tools/plannotator.md`** for:
 - Plannotator command format
 - After-approval workflow (stamp + receipt)
 - Frozen file rules

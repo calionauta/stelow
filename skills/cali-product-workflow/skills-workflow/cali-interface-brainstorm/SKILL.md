@@ -72,7 +72,7 @@ Append to the interfaces file.`,
 
 ## Visual Review (Phase 8 Gate)
 
-After all proposals + Hybrid, use `references/plannotator-rules.md` for the Plannotator command format.
+After all proposals + Hybrid, use `references/pi-tools/plannotator.md` for the Plannotator command format.
 
 ## User Selection (Phase 9)
 
@@ -94,4 +94,4 @@ Interface proposals are saved to:
 ## Environment Adaptation
 
 If a tool is unavailable, check:
-`../../../cali-product-workflow/references/environment-adaptation.md`
+`../../../cali-product-workflow/references/pi-tools/`
