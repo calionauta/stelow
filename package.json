@@ -49,17 +49,17 @@
     ]
   },
   "peerDependencies": {
+    "@capyup/pi-goal": ">=0.6.0",
     "@earendil-works/pi-coding-agent": ">=0.74.0",
     "@earendil-works/pi-tui": "*",
-    "typebox": "*",
-    "pi-subagents": ">=0.24.0",
-    "@capyup/pi-goal": ">=0.6.0",
-    "@plannotator/pi-extension": ">=0.19.0",
-    "pi-autoresearch": ">=0.1.0",
     "@juicesharp/rpiv-ask-user-question": ">=1.6.0",
+    "@plannotator/pi-extension": ">=0.19.0",
+    "pi-agent-codebase-workflows": "*",
+    "pi-autoresearch": ">=0.1.0",
     "pi-intercom": ">=0.6.0",
+    "pi-subagents": ">=0.24.0",
     "pi-supervisor": ">=0.4.0",
-    "pi-agent-codebase-workflows": "*"
+    "typebox": "*"
   },
   "optionalPeerDependencies": {
     "cali-short-cycle-product": "*",
@@ -89,5 +89,17 @@
     "README.md",
     "LICENSE",
     "CHANGELOG.md"
-  ]
+  ],
+  "scripts": {
+    "test": "vitest run",
+    "test:unit": "vitest run tests/unit",
+    "test:integration": "vitest run tests/integration",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:smoke": "vitest run tests/unit/state.test.ts tests/unit/phases.test.ts"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^4.1.6",
+    "vitest": "^4.1.6"
+  }
 }
