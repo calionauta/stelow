@@ -31,6 +31,10 @@ import {
   toSafeName,
   getDateStamp,
   suggestNameFromDraft,
+  readSourceFile,
+  truncateText,
+  isInsideWorktree,
+  getDefaultBranch,
 } from '../../extensions/cali-product-workflow/state';
 import type { Workflow, TrackingData } from '../../extensions/cali-product-workflow/types';
 
@@ -392,7 +396,7 @@ describe('REAL State Functions', () => {
 
   // ── Utility Functions ──────────────────────────────────────────────
 
-  describe('Utility Functions', () => {
+describe('Utility Functions', () => {
     it('generateDirHash creates pw- prefixed hash', () => {
       const hash1 = generateDirHash();
       const hash2 = generateDirHash();
@@ -424,6 +428,72 @@ describe('REAL State Functions', () => {
 
       expect(suggestion).toBeTruthy();
       expect(suggestion?.length).toBeGreaterThan(0);
+    });
+  });
+
+  // ── Additional Utility Functions ─────────────────────────────────────
+
+  describe('readSourceFile', () => {
+    it('returns null for non-existent file', () => {
+      const result = readSourceFile('./nonexistent-file-xyz.txt');
+      expect(result).toBeNull();
+    });
+
+    it('returns directory info for directory', () => {
+      const result = readSourceFile(tempDir);
+      expect(result).toContain('Directory:');
+    });
+
+    it('reads file content for existing file', () => {
+      writeFileSync(join(tempDir, 'test.txt'), 'Hello World');
+      const result = readSourceFile(join(tempDir, 'test.txt'));
+      expect(result).toBe('Hello World');
+    });
+
+    it('prepends ./ if missing', () => {
+      writeFileSync(join(tempDir, 'test2.txt'), 'Test content');
+      const result = readSourceFile(join(tempDir, 'test2.txt').replace('./', ''));
+      expect(result).toBe('Test content');
+    });
+
+    it('truncates large files to 50000 chars', () => {
+      const largeContent = 'x'.repeat(60000);
+      writeFileSync(join(tempDir, 'large.txt'), largeContent);
+      const result = readSourceFile(join(tempDir, 'large.txt'));
+      expect(result?.length).toBeLessThanOrEqual(50000);
+    });
+  });
+
+  describe('truncateText', () => {
+    it('returns text unchanged if under maxLen', () => {
+      const text = 'Short text';
+      expect(truncateText(text, 100)).toBe(text);
+    });
+
+    it('truncates text over maxLen', () => {
+      const text = 'x'.repeat(200);
+      const result = truncateText(text, 100);
+      expect(result).toContain('[... truncated ...]');
+      expect(result.length).toBeLessThan(150);
+    });
+
+    it('leaves room for truncation marker', () => {
+      const result = truncateText('Hello World', 5);
+      expect(result).toMatch(/\.\.\. truncated \.\.\./);
+    });
+  });
+
+  describe('isInsideWorktree', () => {
+    it('returns boolean (not throws) for invalid git dir', () => {
+      // Non-git directory should return false, not throw
+      expect(() => isInsideWorktree(tempDir)).not.toThrow();
+    });
+  });
+
+  describe('getDefaultBranch', () => {
+    it('returns string (main fallback for non-git)', () => {
+      // Non-git directory should return 'main' fallback, not throw
+      expect(() => getDefaultBranch(tempDir)).not.toThrow();
     });
   });
 });
