@@ -38,6 +38,7 @@ Complete product workflow package for pi.dev coding agent. Includes **19 special
 | Skill | Description |
 |---|---|
 | `cali-product-scope-executor` | Autonomous scope execution |
+| `cali-testing-ai-code` | **AI-aware testing strategy** — mutation targets, TDD guidance, regression protection (software products only) |
 
 ---
 
@@ -140,9 +141,9 @@ All TUI elements use clear, user-facing names:
 
 ---
 
-## 📋 Skills (15)
+## 📋 Skills (16)
 
-### Core Planning Skills (7)
+### Core Planning Skills (8)
 
 | Skill | Invocation | What it Does |
 |-------|-----------|--------------|
@@ -153,6 +154,7 @@ All TUI elements use clear, user-facing names:
 | **Evolutionary Principles** | `/skill:cali-product-evolutionary-principles` | Stepping-stones, product evolution |
 | **Multi-Method Market** | `/skill:cali-product-multi-method-market-analysis` | PESTLE, Wardley Maps, Delphi, Foresight |
 | **Scope Executor** | `/skill:cali-product-scope-executor` | Execute approved scopes autonomously |
+| **Testing AI Code** | `/skill:cali-testing-ai-code` | AI-aware testing strategy for software products — mutation targets, TDD guidance, regression protection |
 
 ### Growth & Marketing Skills (8)
 
@@ -219,6 +221,7 @@ cp ~/Development/pi-product-workflow/AGENTS.md ~/.pi/agent/AGENTS.md
         │   └── interfaces_v{N}.md
         ├── plans/                # Tech plans + scopes
         │   ├── spec-tech_v{N}.md
+        │   ├── testing-strategy.md  # AI-aware testing strategy (software products)
         │   └── scopes/
         ├── critiques/            # Plan critique reports
         │   └── critique-report_v{N}.md

@@ -2,7 +2,9 @@
 
 ## Project Overview
 
-`pi-product-workflow` is a pi.dev extension package that provides product planning workflows using Shape Up methodology. It bundles 13 specialized skills for product planning, strategy, and execution.
+`pi-product-workflow` is a pi.dev extension package that provides product planning workflows using Shape Up methodology. It bundles **16 specialized skills** for product planning, strategy, and execution.
+
+**New (2026-05):** AI-aware testing strategy (`cali-testing-ai-code`) for software products — mutation targets, TDD guidance, and regression protection based on empirical research.
 
 ## Quick Start
 
@@ -120,12 +122,25 @@ pi-product-workflow/
 │   │   ├── cali-product-pricing/
 │   │   ├── cali-product-promotions/
 │   │   └── cali-product-trust-building/
-│   └── execution/                   # 1 autonomous executor
-│       └── cali-product-scope-executor/
+│   └── execution/                   # 2 execution skills
+│       ├── cali-product-scope-executor/
+│       └── cali-testing-ai-code/    # AI-aware testing (software products)
 ├── extensions/
 │   └── cali-product-workflow/
 └── scripts/
 ```
+
+### Testing Skills for AI Code
+
+For software products, the workflow auto-activates `cali-testing-ai-code` with context-aware strategies:
+
+| Context | Testing Approach |
+|---------|-----------------|
+| **Greenfield** | TDD-first, full mutation coverage (70/50/30%) |
+| **Brownfield** | TDD critical paths, test-after + regression/impact analysis |
+| **Hybrid** | Separate new from existing, protect invariants |
+
+**New test scope types:** `test-unit`, `test-integration`, `test-security`, `test-behavior`, `test-regression`, `test-characterization`, `test-simulation`, `test-impact`
 
 ## Test Coverage
 
