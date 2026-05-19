@@ -65,11 +65,33 @@ Input: .cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md`,
 Output: `.cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_{v}.md`
 Input: `.cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md`
 
-### 5b. Conditional Review Gate
+### 5b. Tech Planning Review Gate
 
-**If standalone (no Shape Up/Interface):** use `references/pi-tools/plannotator.md` for the Plannotator command.
+**⚠️ MANDATORY — NEVER SKIP unless spec-tech was already approved.**
 
-**If post-Shape-Up:** the gate already ran in Phase 6 — skip this step.
+**Run Plannotator gate for the tech plan BEFORE generating goals:**
+
+```bash
+plannotator annotate .cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_{v}.md --gate
+```
+
+See `references/pi-tools/plannotator.md` for command format, after-approval workflow, and frozen file rules.
+
+| Scenario | Action |
+|---------|--------|
+| **Standalone Tech Planning** | **ALWAYS run gate** — visual review of all scopes |
+| **Post Shape-Up + Interface** | Gate already ran → **SKIP this step** |
+| **Post Shape-Up, no Interface** | Gate already ran → **SKIP this step** |
+
+**If approved:**
+1. Stamp `approved: true, approved_at: ...` in spec-tech.yaml frontmatter
+2. Create receipt in `approvals/` directory
+3. Proceed to Goal Generation
+
+**If user requests changes:**
+1. Adjust the tech plan
+2. Re-submit via `plannotator annotate ... --gate`
+3. Repeat until approved
 
 ### 5c. Goal Generation (Step 9)
 

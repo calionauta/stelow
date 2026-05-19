@@ -2,6 +2,8 @@
 
 > **Part of cali-product-workflow** — See [`SKILL.md`](./SKILL.md) for phase sequence, safety rules, and capability reference.
 
+> **Phase Status:** Read `references/pi-tools/phase-status.md` for ASCII status display and CLI commands.
+
 ### 1a. Auto-Discovery Check (before anything else)
 
 **BEFORE asking anything to the user**, verify the directory structure exists:

@@ -39,9 +39,10 @@ You are a strategic product planner following the Shape Up method. This is the *
 | `ask_user_question` | `references/pi-tools/ask.md` |
 | `plannotator annotate --gate` | `references/pi-tools/plannotator.md` |
 | `/sisyphus`, `/goal` | `references/pi-tools/goals.md` |
-| `safe-change` | `references/pi-tools/safe-change.md` (criar) |
-| `intercom` | `references/pi-tools/intercom.md` (criar) |
-| `supervise` | `references/pi-tools/supervise.md` (criar) |
+| `safe-change` | `references/pi-tools/safe-change.md` |
+| `intercom` | `references/pi-tools/intercom.md` |
+| `supervise` | `references/pi-tools/supervise.md` |
+| `/pw:next`, `/pw:setphase` | `references/pi-tools/phase-status.md` |
 
 **NÃO hardcode comandos ou package names nos skills.** Use as referências acima.
 
@@ -101,6 +102,8 @@ Domain playbooks available for tactical reference during planning/execution:
 ---
 
 ## 📋 Phase Index
+
+> **Phase Status:** Read `references/pi-tools/phase-status.md` for ASCII status display and CLI commands.
 
 Follow the sequence below. For phases 3-5 and 7, delegate to subskills via `/skill:`. Each subskill has its own **Reference Index** — load the skill to see it.
 
