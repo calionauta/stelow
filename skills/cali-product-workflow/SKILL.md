@@ -167,6 +167,7 @@ Phase 11: Execution
 4. Spec is frozen after approval. Future changes = `spec-product_{v+1}.md` + new gate.
 
 ### Scope Adjustment (Phase 6)
+- Use **Pattern 3** from `phases/ask-patterns.md`
 - No Plannotator re-run after scope changes — ask tool confirms selections
 - If adding items to IN, create new spec version (user is aware)
 - If removing items, update spec in-place
@@ -174,6 +175,9 @@ Phase 11: Execution
 ### Interface Gate (Phase 8)
 - Visual review of all interface proposals before selection
 - Same rules as Phase 5 Gate — never skip
+
+### Interface Selection (Phase 9)
+- Use **Pattern 2** from `phases/ask-patterns.md`
 
 ### Tech Planning (Phase 10)
 - Before generating scopes: verify `approved: true` in spec-product.md

@@ -231,6 +231,60 @@ ask_user_question({
 
 ---
 
+## Pattern 5: Stage Selection (Phase 1b)
+
+Used in `phases/setup.md` for workflow stage selection and safe-change.
+
+> **Note:** This is the ONLY place with multiple questions in parallel.
+
+```typescript
+ask_user_question({
+  questions: [
+    {
+      question: `Which Product Definition Workflow stages should be activated?
+Recommendation: [Shape Up + Interface + Tech Planning] | [Shape Up only] | etc.
+Justification: [1-2 sentences explaining why].
+
+Select the desired stages:`,
+      header: "Workflow",
+      multiSelect: true,
+      options: [
+        {
+          label: "Shape Up Planning (Recommended)",
+          description: "Understand problem, expose assumptions, map risks, define IN/OUT scope. Generates spec-product.md. → Automatically activates Plan Critique + Review Gate."
+        },
+        {
+          label: "Interface Brainstorming",
+          description: "Explore 5 interface directions with ASCII wireframes, breadboarding and trade-offs. → Automatically activates Plan Critique + Review Gate."
+        },
+        {
+          label: "Tech Planning Sequencing",
+          description: "Break into scopes with DoD + acceptance criteria. If standalone (no Shape Up/Interface): includes own Review Gate. If post-approval: no gate."
+        }
+      ]
+    },
+    {
+      question: "Before starting, would you like to validate the impact of changes on existing code?",
+      header: "Safe-change",
+      options: [
+        {
+          label: "Yes — run safe-change (Recommended)",
+          description: "+ Checks regressions automatically | + Catches issues before planning | - ~2-5 min extra\n  → Executes safe-change from pi-agent-codebase-workflows (PriNova)"
+        },
+        {
+          label: "No — proceed directly",
+          description: "+ Faster | + No automatic validation | - No safety net"
+        }
+      ]
+    }
+  ]
+})
+```
+
+**If user chooses "Yes" for safe-change:** Run `safe-change` BEFORE proceeding.
+
+---
+
 ## Usage Rules
 
 1. **Read this file** before any `ask_user_question` call

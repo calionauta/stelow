@@ -173,56 +173,12 @@ After identifying the workflow:
 
 ### 1b. Stage Selection
 
-Ask the user about workflow stages AND about safe-change:
+Use **Pattern 5** from `phases/ask-patterns.md`.
 
-```typescript
-ask_user_question({
-  questions: [{
-    question: `Which Product Definition Workflow stages should be activated?
-Recommendation: [Shape Up + Interface + Tech Planning] | [Shape Up only] | etc.
-Justification: [1-2 sentences explaining why].
-
-Select the desired stages:`,
-    header: "Workflow",
-    multiSelect: true,
-    options: [
-      {
-        label: "Shape Up Planning (Recommended)",
-        description: "Understand problem, expose assumptions, map risks, define IN/OUT scope. Generates spec-product.md. → Automatically activates Plan Critique + Review Gate."
-      },
-      {
-        label: "Interface Brainstorming",
-        description: "Explore 5 interface directions with ASCII wireframes, breadboarding and trade-offs. → Automatically activates Plan Critique + Review Gate."
-      },
-      {
-        label: "Tech Planning Sequencing",
-        description: "Break into scopes with DoD + acceptance criteria. If standalone (no Shape Up/Interface): includes own Review Gate. If post-approval: no gate."
-      }
-    ]
-  },
-  {
-    question: \`Before starting, would you like to validate the impact of changes on existing code?\`,
-    header: "Safe-change",
-    options: [
-      {
-        label: "Yes — run safe-change (Recommended)",
-        description: "+ Checks regressions automatically | + Catches issues before planning | - ~2-5 min extra\n  → Executes safe-change from pi-agent-codebase-workflows (PriNova)"
-      },
-      {
-        label: "No — proceed directly",
-        description: "+ Faster | + No automatic validation | - No safety net"
-      }
-    ]
-  }]
-})
-```
 **If user chooses "Yes" for safe-change:**
-Run \`safe-change\` from **pi-agent-codebase-workflows** (PriNova) BEFORE proceeding.
+Run `safe-change` from **pi-agent-codebase-workflows** (PriNova) BEFORE proceeding.
 
-**If user chooses "No":** proceed directly to Phase 2 (Strategic Context).
-
-**If user selects no workflow option:** proceed to Phase 2b (domain detection may offer direct skill routing),
-but safe-change is still offered.
+**If user selects no workflow option:** proceed to Phase 2 (Strategic Context).
 
 ### Auto-chaining rules
 
