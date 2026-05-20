@@ -136,15 +136,17 @@ Front-load:
 
 ### Analysis Mode
 
-#### suggestive (default)
-Infer:
-- hidden risks
-- implied dependencies
-- probable spikes
-- missing enablers
+| Mode | Behavior | Markers |
+|------|----------|---------|
+| **sugestivo (default)** | Infer hidden risks, implied dependencies, probable spikes, missing enablers | Mark inferred elements with `[suggested]` |
 
-#### strict
-Only analyze explicitly provided elements.
+**sugestivo mode rules:**
+- Evaluate if tasks are marked as "arriscada" or imply fundamental uncertainties
+- Infer technical risks not explicitly stated
+- Identify missing enablers or dependencies
+- Propose spike scopes for novel/unclear areas
+
+**Note:** Plannotator review gate replaces any "strict" mode — user sees and approves all inferred content.
 
 ---
 

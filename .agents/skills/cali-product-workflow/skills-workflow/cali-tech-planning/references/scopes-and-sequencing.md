@@ -136,16 +136,20 @@ Never invoke autoresearch directly in the main agent — this creates infinite l
 
 ## Scope Detail Template
 
-For each scope, generate:
-- **type**: `feature` | `optimization` | `spike`
-- **objective**
-- **implementation rationale**
-- **dependencies**
-- **technical considerations**
-- **Definition of Done**
-- **acceptance criteria**
-- **metric** (required when executor is `autoresearch`, optional otherwise): the measurable target with unit and direction, e.g. `API P95 latency < 200ms (lower is better)`, `complexity < 10 (lower is better)`
-- **rollout implications**
+**Tasks template (markdown table):**
+
+| # | Task | Components | Risk | Done Criterion | Order Rationale |
+|---|------|-----------|------|---------------|-----------------|
+| 1.1 | Task name | api-user, db-schema | LOW/HIGH (1-5) | Done criterion | P0: External mock |
+| 1.2 | Task name | ui-auth | HIGH (4) | Done criterion | P3: High-risk first |
+
+**Task fields:**
+- **#**: hierarchical ID (`scope.task`, e.g., `3.2`)
+- **Task**: Short action description
+- **Components**: Key technical areas involved (e.g., `api-user`, `db-schema`, `ui-login`)
+- **Risk**: LOW/HIGH or numeric 1-5 scale
+- **Done Criterion**: Completion standard
+- **Order Rationale** (REQUIRED): Which Principle (0-6) justifies this position. E.g., `P3: Risk score 4`, `P0: External dependency`, `P5: Nice-to-have`. If inferred (not in original input), mark with `[suggested]`.
 
 ---
 
@@ -163,7 +167,30 @@ Create internal API mocks to enable parallel development of UI and backend compo
 Identify and implement key enablers—foundational components that unlock multiple downstream tasks.
 
 ### Principle 3: High-Risk Mitigation
+**Task-level equivalent of "riskiest-first" scope strategy.**
 Identify and address high-risk technical tasks early. Introduce `[spike]` tasks before implementation when uncertainty is fundamental.
+
+**Risk Scoring (1-5 scale):**
+| Score | Complexity | Novelty | Legacy Risk | Action |
+|-------|------------|---------|------------|--------|
+| 1 | Simple, well-understood | No new tech | No legacy touch | Standard sequencing |
+| 2 | Moderate | Some new patterns | Minor touch | Monitor |
+| 3 | Complex | New tech, some uncertainty | Moderate coupling | Front-load if needed |
+| 4 | Very complex | Novel tech/stack | Legacy with refactoring | **Priority — front-load** |
+| 5 | Extremely complex | Research-grade | Fragile legacy | **Critical — spike first** |
+
+**Rules:**
+- Scopes/tasks with risk >= 4 should be front-loaded (riskiest-first)
+- Score >= 5 requires `[spike]` BEFORE implementation
+
+### Principle 3.1: Minimal Implementation for Unblocking
+When a high-risk scope/task depends on a lower-risk dependency not yet ready:
+- **DO NOT wait** for the full dependency to be complete
+- Implement only the **minimum contract / functional placeholder** needed to unblock
+- Place this minimum implementation immediately before the dependent task
+- The remaining dependency will be sequenced later
+
+**Example:** `"auth: minimal mock for payment validation" → unlocks "payment: core logic spike"`
 
 ### Principle 4: Smart Unblocking for Cross-Scope Risks
 Position tasks that unblock risks in subsequent scopes strategically.
@@ -181,4 +208,4 @@ Order remaining tasks based on their dependencies. Ensure task names are clear a
 1. The first scope should typically establish core domain foundations, enabling architecture, and workflow backbone.
 2. Scopes should optimize for vertical coherence, deployment safety, operational independence, and incremental validation.
 
-Apply the sequencing principles (references/principles.md) for detailed task ordering within each scope.
+Apply the sequencing principles (see above, Principles 0-6) for detailed task ordering within each scope.

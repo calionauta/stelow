@@ -98,6 +98,25 @@ Out-of-scope protects focus.
 
 ---
 
+### 📋 Scope Table (OUT/IN)
+
+Use OUT/IN order (convention from Shape Up):
+- **OUT**: what's intentionally excluded
+- **IN**: what's committed to this cycle
+
+| OUT | IN |
+|-----|-----|
+| Multi-language support | English only |
+| Admin dashboard | User-facing features only |
+| [feature-x] | [feature-y] |
+
+**Rules:**
+- If unclear, mark as OUT (conservative scoping)
+- IN items should be completable within the appetite
+- OUT items can be revisited in future cycles
+
+---
+
 ## 4. Output Frontmatter Template
 
 The proposal MUST include this YAML frontmatter at the top:
