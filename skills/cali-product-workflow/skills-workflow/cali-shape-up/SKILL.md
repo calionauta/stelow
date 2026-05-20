@@ -51,10 +51,10 @@ Read the `references/` files to guide the process:
 
 | File | Covers |
 |---|---|
-| `references/SHAPING-COMPLETE.md` | Context, clarification, responsibilities |
-| `references/SHAPING-PRINCIPLES.md` | Core shaping principles |
-| `references/RISK-ANALYSIS.md` | Risk analysis and strategic alternatives |
-| `references/EXECUTION-GUIDE.md` | Sequencing, persistence, cross-domain adaptation |
+| `references/shaping-complete.md` | Context, clarification, responsibilities |
+| `references/shaping-principles.md` | Core shaping principles |
+| `references/risk-analysis.md` | Risk analysis and strategic alternatives |
+| `references/execution-guide.md` | Sequencing, persistence, cross-domain adaptation |
 | `references/proposal-structure.md` | Output structure for the shaped proposal |
 | `references/output-expectations.md` | Strong vs weak output criteria |
 

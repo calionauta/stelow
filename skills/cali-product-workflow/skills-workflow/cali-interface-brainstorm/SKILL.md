@@ -22,9 +22,9 @@ This skill executes the Interface Brainstorming phase. It can be run:
 
 | File | Covers | When to read |
 |---|---|---|
-| `references/INTERFACE-CONTEXT.md` | Progressive Clarification, when to use, system equivalents | **Before starting** |
-| `references/INTERFACE-RECONSTRUCTION.md` | Context reconstruction, hidden job extraction | **Before generating** |
-| `references/INTERFACE-RULES.md` | Separation Rule, Forced Trade-Off Rule, output quality | **Before generating** |
+| `references/interface-context.md` | Progressive Clarification, when to use, system equivalents | **Before starting** |
+| `references/interface-reconstruction.md` | Context reconstruction, hidden job extraction | **Before generating** |
+| `references/interface-rules.md` | Separation Rule, Forced Trade-Off Rule, output quality | **Before generating** |
 | `references/archetypes.md` | 5 archetypes with descriptions | **During generation** |
 | `references/hybrid-recommendation.md` | Hybrid recommendation strategy | **Step 3 only** |
 

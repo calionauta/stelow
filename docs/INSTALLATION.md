@@ -1,18 +1,58 @@
 # Installation Guide
 
-## One-Command Installation
+## Quick Start
 
 ```bash
 ./install.sh
 ```
 
-The installer auto-detects your CLI and installs everything needed.
+One command installs everything needed for your CLI.
 
 ---
 
-## Installation per CLI
+## Two Installation Options
 
-### Pi (Recommended)
+### Option 1: Full Integration (Recommended)
+
+```bash
+./install.sh
+```
+
+Installs everything for your detected CLI:
+
+| CLI | What's Installed |
+|-----|------------------|
+| **Pi** | Core package + Extension + Supporting packages + Skills |
+| **OpenCode** | Plugin + Skills |
+| **Claude Code** | Plugin + Skills |
+| **Codex** | Plugin + Skills |
+
+**Updates:** `pi update --extensions` (Pi) or `./install.sh update` (all CLIs)
+
+---
+
+### Option 2: Skills Only (npx skills)
+
+For when you want just the skills without full CLI integration:
+
+```bash
+npx skills add renatocaliari/pi-product-workflow
+```
+
+This installs skills to `~/.agents/skills/` — works across multiple CLIs without deep integration.
+
+**Updates:** `npx skills update`
+
+**Use this when:**
+- You use multiple CLIs and want unified skills
+- You don't need plugins/extensions
+- You prefer manual control over integration
+
+---
+
+## CLI-Specific Installation
+
+### Pi
 
 ```bash
 ./install.sh
@@ -20,11 +60,11 @@ The installer auto-detects your CLI and installs everything needed.
 PRODUCT_WORKFLOW_CLI=pi ./install.sh
 ```
 
-Installs:
-- Core package (skills, adapters, commands)
-- Stub extension (Pi integration)
-- Supporting packages (pi-subagents, pi-goal, etc.)
-- Skills
+Installs: Core + Extension + Supporting packages + Skills
+
+**Update:** `pi update --extensions` or `pi update npm:@renatocaliari/pi-product-workflow`
+
+**Uninstall:** `pi remove npm:@renatocaliari/pi-product-workflow npm:@renatocaliari/cali-product-workflow-pi`
 
 ### OpenCode
 
@@ -34,9 +74,11 @@ Installs:
 PRODUCT_WORKFLOW_CLI=opencode ./install.sh
 ```
 
-Installs:
-- Plugin to `opencode.json`
-- Skills
+Installs: Plugin in `opencode.json` + Skills
+
+**Update:** `./install.sh update`
+
+**Uninstall:** `./install.sh remove` or manually remove from `opencode.json`
 
 ### Claude Code
 
@@ -46,9 +88,11 @@ Installs:
 PRODUCT_WORKFLOW_CLI=claude-code ./install.sh
 ```
 
-Installs:
-- Plugin (marketplace or local)
-- Skills
+Installs: Plugin + Skills
+
+**Update:** `./install.sh update`
+
+**Uninstall:** `./install.sh remove` or `claude /plugin uninstall pi-product-workflow`
 
 ### Codex
 
@@ -58,17 +102,11 @@ Installs:
 PRODUCT_WORKFLOW_CLI=codex ./install.sh
 ```
 
-Installs:
-- Plugin (marketplace)
-- Skills
+Installs: Marketplace plugin + Skills
 
-### Generic (Fallback)
+**Update:** `./install.sh update`
 
-```bash
-./install.sh
-```
-
-When no specific CLI is detected, installs skills only via `npx skills`.
+**Uninstall:** `./install.sh remove` or `codex plugin uninstall pi-product-workflow`
 
 ---
 
@@ -92,23 +130,23 @@ When no specific CLI is detected, installs skills only via `npx skills`.
 
 ## Manual Installation
 
-### Pi
+### Pi (Dual-Install)
 
 ```bash
 # Core package
 pi install npm:@renatocaliari/pi-product-workflow
 
-# Stub extension
+# Extension
 pi install npm:@renatocaliari/cali-product-workflow-pi
 
-# Supporting packages
+# Supporting
 pi install npm:pi-subagents npm:pi-goal npm:pi-intercom npm:pi-supervisor npm:pi-autoresearch npm:@juicesharp/rpiv-ask-user-question npm:@plannotator/pi-extension
 ```
 
 ### OpenCode
 
 ```json
-// Add to ~/.config/opencode/opencode.json:
+// ~/.config/opencode/opencode.json
 {
   "plugin": ["@renatocaliari/pi-product-workflow"]
 }
@@ -128,35 +166,35 @@ npx codex-marketplace add renatocaliari/pi-product-workflow --plugins
 
 ---
 
-## Skills Only (npx skills)
-
-If you only want skills without full CLI integration:
+## Skills Management (npx skills)
 
 ```bash
 # Install for all CLIs
 npx skills add renatocaliari/pi-product-workflow
 
 # Install for specific CLI
-npx skills add renatocaliari/pi-product-workflow -a pi
+npx skills add renatocaliari/pi-product-workflow -a pi -a opencode
 
 # Update
 npx skills update
 
 # Remove
 npx skills remove cali-product-workflow
+
+# List installed
+npx skills list
 ```
 
 ---
 
-## Installation Summary
+## Summary
 
-| CLI | Command | Includes |
-|-----|---------|----------|
-| Pi | `./install.sh` | Core + Extension + Supporting + Skills |
-| OpenCode | `./install.sh` | Plugin + Skills |
-| Claude Code | `./install.sh` | Plugin + Skills |
-| Codex | `./install.sh` | Plugin + Skills |
-| Generic | `./install.sh` | Skills only |
+| Method | When to Use |
+|--------|-------------|
+| `./install.sh` | Full integration, one command |
+| `pi update --extensions` | Update Pi packages |
+| `npx skills add ...` | Skills only, lightweight |
+| `npx skills update` | Update skills |
 
 ---
 
@@ -173,7 +211,7 @@ Or manually:
 pi remove npm:@renatocaliari/pi-product-workflow
 pi remove npm:@renatocaliari/cali-product-workflow-pi
 
-# All CLIs
+# Skills
 npx skills remove cali-product-workflow
 
 # Auto-trigger

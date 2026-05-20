@@ -22,8 +22,8 @@ Read the `references/` files to guide the process:
 
 | File | Covers | When to read |
 |---|---|---|
-| `references/PLAN-CRITIQUE-CONTEXT.md` | Role definition, when to use, workflow position | **Before starting** — sets reviewer role |
-| `references/CHECKLISTS.md` | Flow, state, affordance, data, system, feasibility checks | **During analysis** — primary checklist |
+| `references/plan-critique-context.md` | Role definition, when to use, workflow position | **Before starting** — sets reviewer role |
+| `references/checklists.md` | Flow, state, affordance, data, system, feasibility checks | **During analysis** — primary checklist |
 | `references/critique-frameworks.md` | Nielsen heuristics, emotional journey, cognitive load, personas, AI slop | **During analysis** — UX evaluation frameworks |
 | `references/audit-dimensions.md` | 5 audit dimensions (a11y, perf, theming, responsive, anti-patterns) | **During analysis** — technical audit framework |
 | `references/auto-resolve-rules.md` | Rules for automatic gap resolution | **After analysis** — for auto-resolve mode |
@@ -37,7 +37,7 @@ Launch subagent with checklists from `references/`:
 subagent({
   agent: "reviewer",
   task: `Review the spec-product.md using checklists from references/.
-Use: PLAN-CRITIQUE-CONTEXT.md (role), CHECKLISTS.md (primary), critique-frameworks.md (UX), audit-dimensions.md (technical).
+Use: plan-critique-context.md (role), checklists.md (primary), critique-frameworks.md (UX), audit-dimensions.md (technical).
 Output: Executive Summary + Critical Questions (🚨) + Important (🤔) + Minor (🔎) + Strengths.
 Do NOT resolve gaps — only identify and classify.
 Format per output-format.md.
