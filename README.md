@@ -1,8 +1,8 @@
-# @renatocaliari/pi-product-workflow
+# @renatocaliari/cali-product-workflow
 
-[![CI](https://github.com/renatocaliari/pi-product-workflow/actions/workflows/ci.yml/badge.svg)](https://github.com/renatocaliari/pi-product-workflow/actions/workflows/ci.yml)
-[![Mutation Testing](https://github.com/renatocaliari/pi-product-workflow/actions/workflows/mutation.yml/badge.svg)](https://github.com/renatocaliari/pi-product-workflow/actions/workflows/mutation.yml)
-[![Coverage](https://img.shields.io/badge/coverage-70%25-brightgreen)](https://github.com/renatocaliari/pi-product-workflow/actions/workflows/ci.yml)
+[![CI](https://github.com/renatocaliari/cali-product-workflow/actions/workflows/ci.yml/badge.svg)](https://github.com/renatocaliari/cali-product-workflow/actions/workflows/ci.yml)
+[![Mutation Testing](https://github.com/renatocaliari/cali-product-workflow/actions/workflows/mutation.yml/badge.svg)](https://github.com/renatocaliari/cali-product-workflow/actions/workflows/mutation.yml)
+[![Coverage](https://img.shields.io/badge/coverage-70%25-brightgreen)](https://github.com/renatocaliari/cali-product-workflow/actions/workflows/ci.yml)
 
 **Transform product ideas into approved, testable plans — systematically.**
 
@@ -47,7 +47,7 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 
 **Traditional AI development:** "Here's what I want. Start coding."
 
-**With pi-product-workflow:** The user just says:
+**With cali-product-workflow:** The user just says:
 
 ```
 /pw:start "Here's what I want to build"
@@ -109,7 +109,7 @@ And the workflow begins asking questions, exploring scope, shaping the proposal,
 
 This workflow combines product planning, domain knowledge, and technical execution for digital products. Here's how it compares:
 
-| Aspect | Standard Agent | Heavy Framework | pi-product-workflow |
+| Aspect | Standard Agent | Heavy Framework | cali-product-workflow |
 |--------|---------------|-----------------|---------------------|
 | **Scope** | Open-ended | Full lifecycle | Shaped proposals with IN/OUT |
 | **Review** | Manual chat | Configured | Adversarial critique + Gate |
@@ -133,7 +133,7 @@ Both have a "plan" mode, but it's basic — restrict tools and add generic plann
 
 Both frameworks enforce structure for general software engineering. Here's what differentiates this workflow:
 
-| Aspect | [BMAD Method](https://github.com/bmad-code-org/BMAD-METHOD) | [Superpowers](https://github.com/obra/superpowers) | pi-product-workflow |
+| Aspect | [BMAD Method](https://github.com/bmad-code-org/BMAD-METHOD) | [Superpowers](https://github.com/obra/superpowers) | cali-product-workflow |
 |--------|--------|---------|-----------|
 | **Stars** | ~47K | ~199K | — |
 | **Focus** | Enterprise team simulation (12+ workflows) | TDD-first engineering methodology | Product planning + domain knowledge + execution |
@@ -154,8 +154,8 @@ Both frameworks enforce structure for general software engineering. Here's what 
 npm install -g @mariozechner/pi-coding-agent
 
 # 2. Clone and install
-git clone https://github.com/renatocaliari/pi-product-workflow.git
-cd pi-product-workflow
+git clone https://github.com/renatocaliari/cali-product-workflow.git
+cd cali-product-workflow
 ./install.sh
 ```
 
@@ -193,7 +193,7 @@ Installs everything for your detected CLI:
 For when you want just the skills without full CLI integration:
 
 ```bash
-npx skills add renatocaliari/pi-product-workflow
+npx skills add renatocaliari/cali-product-workflow
 ```
 
 This installs skills to `~/.agents/skills/` — works across multiple CLIs without deep integration.
@@ -215,9 +215,9 @@ PRODUCT_WORKFLOW_CLI=pi ./install.sh
 
 Installs: Core + Extension + Supporting packages + Skills
 
-**Update:** `pi update --extensions` or `pi update npm:@renatocaliari/pi-product-workflow`
+**Update:** `pi update --extensions` or `pi update npm:@renatocaliari/cali-product-workflow`
 
-**Uninstall:** `pi remove npm:@renatocaliari/pi-product-workflow npm:@renatocaliari/cali-product-workflow-pi`
+**Uninstall:** `pi remove npm:@renatocaliari/cali-product-workflow npm:@renatocaliari/cali-product-workflow-pi`
 
 #### OpenCode
 
@@ -283,7 +283,7 @@ Installs: Marketplace plugin + Skills
 
 ```bash
 # Core package
-pi install npm:@renatocaliari/pi-product-workflow
+pi install npm:@renatocaliari/cali-product-workflow
 
 # Extension
 pi install npm:@renatocaliari/cali-product-workflow-pi
@@ -297,30 +297,30 @@ pi install npm:pi-subagents npm:pi-goal npm:pi-intercom npm:pi-supervisor npm:pi
 ```json
 // ~/.config/opencode/opencode.json
 {
-  "plugin": ["@renatocaliari/pi-product-workflow"]
+  "plugin": ["@renatocaliari/cali-product-workflow"]
 }
 ```
 
 #### Claude Code
 
 ```bash
-claude /plugin install /path/to/pi-product-workflow
+claude /plugin install /path/to/cali-product-workflow
 ```
 
 #### Codex
 
 ```bash
-npx codex-marketplace add renatocaliari/pi-product-workflow --plugins
+npx codex-marketplace add renatocaliari/cali-product-workflow --plugins
 ```
 
 ### Skills Management (npx skills)
 
 ```bash
 # Install for all CLIs
-npx skills add renatocaliari/pi-product-workflow
+npx skills add renatocaliari/cali-product-workflow
 
 # Install for specific CLI
-npx skills add renatocaliari/pi-product-workflow -a pi -a opencode
+npx skills add renatocaliari/cali-product-workflow -a pi -a opencode
 
 # Update
 npx skills update
@@ -351,7 +351,7 @@ Or manually:
 
 ```bash
 # Pi
-pi remove npm:@renatocaliari/pi-product-workflow
+pi remove npm:@renatocaliari/cali-product-workflow
 pi remove npm:@renatocaliari/cali-product-workflow-pi
 
 # Skills
@@ -521,5 +521,5 @@ MIT
 ## 📞 Support
 
 - [Documentation](docs/)
-- [Issues](https://github.com/renatocaliari/pi-product-workflow/issues)
-- [Discussions](https://github.com/renatocaliari/pi-product-workflow/discussions)
+- [Issues](https://github.com/renatocaliari/cali-product-workflow/issues)
+- [Discussions](https://github.com/renatocaliari/cali-product-workflow/discussions)

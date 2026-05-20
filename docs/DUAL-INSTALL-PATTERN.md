@@ -2,11 +2,11 @@
 
 **Status:** Spike Complete  
 **Date:** 2026-05-20  
-**Project:** pi-product-workflow
+**Project:** cali-product-workflow
 
 ## Overview
 
-This document analyzes the dual-install pattern used by context-mode to understand how to implement a similar pattern for pi-product-workflow. The pattern allows a package to be installed both as a global CLI tool (via npm) and as a pi extension (via pi install).
+This document analyzes the dual-install pattern used by context-mode to understand how to implement a similar pattern for cali-product-workflow. The pattern allows a package to be installed both as a global CLI tool (via npm) and as a pi extension (via pi install).
 
 ## Pattern Summary
 
@@ -166,7 +166,7 @@ The `pi.skills` field points to `./skills` in the main package, allowing skills 
 | Native Modules | better-sqlite3 needs postinstall healing | Include postinstall.mjs script |
 | Dependency Duplication | better-sqlite3 installed twice (main + stub) | Accept as necessary for isolation |
 
-## Recommendations for pi-product-workflow
+## Recommendations for cali-product-workflow
 
 1. **Follow the same pattern**: Main npm package with `pi` field, stub extension in `.pi/extensions/`
 2. **Include version-sync**: Run on npm version hook to keep stub version in sync
@@ -188,7 +188,7 @@ The `pi.skills` field points to `./skills` in the main package, allowing skills 
 
 ## Conclusion
 
-The dual-install pattern is well-proven by context-mode (14K+ stars, used at Microsoft, Google, Meta, etc.). For pi-product-workflow to integrate with pi as both a CLI tool and an extension, following this pattern is recommended.
+The dual-install pattern is well-proven by context-mode (14K+ stars, used at Microsoft, Google, Meta, etc.). For cali-product-workflow to integrate with pi as both a CLI tool and an extension, following this pattern is recommended.
 
 ## References
 

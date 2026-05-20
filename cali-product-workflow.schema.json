@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
-  "$id": "https://raw.githubusercontent.com/cali/pi-product-workflow/main/cali-product-workflow.schema.json",
+  "$id": "https://raw.githubusercontent.com/cali/cali-product-workflow/main/cali-product-workflow.schema.json",
   "title": "Cali Product Workflow Tracking",
   "description": "Schema for tracking product workflow execution and status",
   "type": "object",

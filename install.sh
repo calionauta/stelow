@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# pi-product-workflow Installer
+# cali-product-workflow Installer
 # Auto-detects CLI and installs with full integration
 # For specific CLIs: single installation that includes everything
 # For generic: npx skills only
@@ -80,7 +80,7 @@ detect_cli() {
 install_pi() {
   log_info "Installing for Pi (dual-install pattern)..."
 
-  local core_pkg="npm:@renatocaliari/pi-product-workflow"
+  local core_pkg="npm:@renatocaliari/cali-product-workflow"
   local stub_pkg="npm:@renatocaliari/cali-product-workflow-pi"
 
   # Check if pi is available
@@ -125,7 +125,7 @@ install_pi() {
 
   # 4. Skills via npx (for universal skill paths)
   log_info "Installing skills..."
-  npx skills add renatocaliari/pi-product-workflow -a pi -y 2>/dev/null || {
+  npx skills add renatocaliari/cali-product-workflow -a pi -y 2>/dev/null || {
     log_warn "Could not install skills via npx skills"
   }
 
@@ -145,7 +145,7 @@ install_opencode() {
   fi
 
   local config_file="$HOME/.config/opencode/opencode.json"
-  local pkg="@renatocaliari/pi-product-workflow"
+  local pkg="@renatocaliari/cali-product-workflow"
 
   # 1. Add plugin to opencode.json
   mkdir -p "$(dirname "$config_file")"
@@ -173,7 +173,7 @@ EOF
 
   # 2. Skills via npx
   log_info "Installing skills..."
-  npx skills add renatocaliari/pi-product-workflow -a opencode -y 2>/dev/null || {
+  npx skills add renatocaliari/cali-product-workflow -a opencode -y 2>/dev/null || {
     log_warn "Could not install skills via npx skills"
   }
 
@@ -195,7 +195,7 @@ install_claude_code() {
   # 1. Try to add as plugin from npm or local
   log_info "Configuring plugin..."
   
-  if npx @anthropic/claude-plugin-cli add renatocaliari/pi-product-workflow 2>/dev/null; then
+  if npx @anthropic/claude-plugin-cli add renatocaliari/cali-product-workflow 2>/dev/null; then
     log_success "Plugin added via marketplace"
   else
     log_info "Trying local plugin installation..."
@@ -206,7 +206,7 @@ install_claude_code() {
 
   # 2. Skills via npx
   log_info "Installing skills..."
-  npx skills add renatocaliari/pi-product-workflow -a claude-code -y 2>/dev/null || {
+  npx skills add renatocaliari/cali-product-workflow -a claude-code -y 2>/dev/null || {
     log_warn "Could not install skills via npx skills"
   }
 
@@ -228,14 +228,14 @@ install_codex() {
   # 1. Try codex-marketplace
   if command -v npx &>/dev/null; then
     log_info "Trying codex-marketplace..."
-    npx codex-marketplace add renatocaliari/pi-product-workflow --plugins 2>/dev/null || {
+    npx codex-marketplace add renatocaliari/cali-product-workflow --plugins 2>/dev/null || {
       log_info "codex-marketplace not available. Skipping."
     }
   fi
 
   # 2. Skills via npx
   log_info "Installing skills..."
-  npx skills add renatocaliari/pi-product-workflow -a codex -y 2>/dev/null || {
+  npx skills add renatocaliari/cali-product-workflow -a codex -y 2>/dev/null || {
     log_warn "Could not install skills via npx skills"
   }
 
@@ -260,7 +260,7 @@ install_generic() {
   
   log_info "Installing skills via npx skills..."
   
-  npx skills add renatocaliari/pi-product-workflow -a pi -a opencode -a claude-code -a codex -y 2>/dev/null || {
+  npx skills add renatocaliari/cali-product-workflow -a pi -a opencode -a claude-code -a codex -y 2>/dev/null || {
     log_error "Failed to install skills. Is npx available?"
     exit 1
   }
@@ -282,20 +282,20 @@ uninstall_all() {
 
   case "$cli" in
     pi)
-      pi remove npm:@renatocaliari/pi-product-workflow 2>/dev/null || true
+      pi remove npm:@renatocaliari/cali-product-workflow 2>/dev/null || true
       pi remove npm:@renatocaliari/cali-product-workflow-pi 2>/dev/null || true
       ;;
     opencode)
       local config="$HOME/.config/opencode/opencode.json"
       if [[ -f "$config" ]] && command -v jq &>/dev/null; then
-        jq '.plugin -= ["@renatocaliari/pi-product-workflow"]' "$config" > "${config}.tmp" && mv "${config}.tmp" "$config"
+        jq '.plugin -= ["@renatocaliari/cali-product-workflow"]' "$config" > "${config}.tmp" && mv "${config}.tmp" "$config"
       fi
       ;;
     claude-code)
-      claude /plugin uninstall pi-product-workflow 2>/dev/null || true
+      claude /plugin uninstall cali-product-workflow 2>/dev/null || true
       ;;
     codex)
-      codex plugin uninstall pi-product-workflow 2>/dev/null || true
+      codex plugin uninstall cali-product-workflow 2>/dev/null || true
       ;;
   esac
 
@@ -314,7 +314,7 @@ uninstall_all() {
 
 show_help() {
   cat << 'EOF'
-pi-product-workflow Installer
+cali-product-workflow Installer
 
 Usage: install.sh [command]
 

@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 #
-# pi-product-workflow CLI-specific installation helpers
+# cali-product-workflow CLI-specific installation helpers
 # Uses npx skills for skill management
 #
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO="renatocaliari/pi-product-workflow"
+REPO="renatocaliari/cali-product-workflow"
 
 # Colors
 if [[ -t 1 ]] && command -v tput &>/dev/null && [[ $(tput colors 2>/dev/null || echo 0) -ge 8 ]]; then
@@ -29,7 +29,7 @@ log_warn() { echo "${YELLOW}[warn]${RESET} $*"; }
 # ─────────────────────────────────────────────────────────────────────────────
 
 install_skills() {
-  log_info "Installing pi-product-workflow skills via npx skills..."
+  log_info "Installing cali-product-workflow skills via npx skills..."
   
   # Install to all supported agents
   npx skills add "$REPO" \
@@ -43,7 +43,7 @@ install_skills() {
 }
 
 update_skills() {
-  log_info "Updating pi-product-workflow skills..."
+  log_info "Updating cali-product-workflow skills..."
   
   npx skills update cali-product-workflow -y || {
     log_warn "Could not update specific skill, trying all..."
@@ -52,7 +52,7 @@ update_skills() {
 }
 
 remove_skills() {
-  log_info "Removing pi-product-workflow skills..."
+  log_info "Removing cali-product-workflow skills..."
   
   npx skills remove cali-product-workflow -y || {
     log_warn "Could not remove specific skill, trying interactive..."
@@ -80,24 +80,24 @@ install_opencode_plugin() {
   # Update opencode.json with plugin entry
   if [[ -f "$config_file" ]]; then
     # Check if plugin already exists
-    if grep -q "pi-product-workflow" "$config_file" 2>/dev/null; then
+    if grep -q "cali-product-workflow" "$config_file" 2>/dev/null; then
       log_info "Plugin already configured in opencode.json"
     else
       # Use jq if available, otherwise manual append
       if command -v jq &>/dev/null; then
         local temp_file="${config_file}.tmp"
-        jq '.plugin += ["@renatocaliari/pi-product-workflow"]' "$config_file" > "$temp_file"
+        jq '.plugin += ["@renatocaliari/cali-product-workflow"]' "$config_file" > "$temp_file"
         mv "$temp_file" "$config_file"
       else
         log_warn "jq not found. Please manually add to opencode.json:"
-        log_info '  Add "plugin": ["@renatocaliari/pi-product-workflow"]'
+        log_info '  Add "plugin": ["@renatocaliari/cali-product-workflow"]'
       fi
     fi
   else
     cat > "$config_file" << 'EOF'
 {
   "$schema": "https://opencode.ai/config.json",
-  "plugin": ["@renatocaliari/pi-product-workflow"]
+  "plugin": ["@renatocaliari/cali-product-workflow"]
 }
 EOF
   fi
@@ -116,10 +116,10 @@ install_claude_code() {
   log_info "2. To use as a full plugin, create marketplace entry"
   log_info ""
   log_info "To add as plugin from local source:"
-  log_info "  claude /plugin install /path/to/pi-product-workflow"
+  log_info "  claude /plugin install /path/to/cali-product-workflow"
   log_info ""
   log_info "To add from GitHub (marketplace):"
-  log_info "  claude /plugin marketplace add renatocaliari/pi-product-workflow"
+  log_info "  claude /plugin marketplace add renatocaliari/cali-product-workflow"
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -133,10 +133,10 @@ install_codex() {
   log_info "2. For hooks, add to ~/.codex/hooks.json"
   log_info ""
   log_info "To install as plugin:"
-  log_info "  npx codex-marketplace add renatocaliari/pi-product-workflow --plugins"
+  log_info "  npx codex-marketplace add renatocaliari/cali-product-workflow --plugins"
   log_info ""
   log_info "For skills:"
-  log_info "  npx codex-marketplace add renatocaliari/pi-product-workflow --skills"
+  log_info "  npx codex-marketplace add renatocaliari/cali-product-workflow --skills"
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -145,7 +145,7 @@ install_codex() {
 
 show_help() {
   cat << 'EOF'
-pi-product-workflow CLI Management
+cali-product-workflow CLI Management
 
 Usage: cli-install.sh <command>
 
@@ -172,7 +172,7 @@ Skills are installed to:
   - codex:    ~/.codex/skills/
 
 For more control, use npx skills directly:
-  npx skills add renatocaliari/pi-product-workflow -a opencode -a claude-code
+  npx skills add renatocaliari/cali-product-workflow -a opencode -a claude-code
   npx skills update
   npx skills remove
 EOF

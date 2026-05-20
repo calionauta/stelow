@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# pi-product-workflow uninstall script
+# cali-product-workflow uninstall script
 # Removes this package and cleans up configuration
 # Handles dual-install pattern: core + stub extension
 #
@@ -10,7 +10,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PACKAGE_DIR="$(dirname "$SCRIPT_DIR")"
 
 echo "╔════════════════════════════════════════════════════════════╗"
-echo "║  pi-product-workflow Uninstall                            ║"
+echo "║  cali-product-workflow Uninstall                            ║"
 echo "╚════════════════════════════════════════════════════════════╝"
 echo ""
 
@@ -23,8 +23,8 @@ fi
 echo "📦 Removing packages (dual-install pattern)..."
 if command -v pi &> /dev/null; then
   # Remove core package
-  echo "   → @renatocaliari/pi-product-workflow (core)"
-  pi remove npm:@renatocaliari/pi-product-workflow 2>/dev/null || {
+  echo "   → @renatocaliari/cali-product-workflow (core)"
+  pi remove npm:@renatocaliari/cali-product-workflow 2>/dev/null || {
     echo "   Note: Core package may not be installed"
   }
   
@@ -56,15 +56,15 @@ echo "║  Uninstall Complete!                                       ║"
 echo "╚════════════════════════════════════════════════════════════╝"
 echo ""
 echo "What was removed:"
-echo "  • @renatocaliari/pi-product-workflow (core)"
+echo "  • @renatocaliari/cali-product-workflow (core)"
 echo "  • @renatocaliari/cali-product-workflow-pi (stub extension)"
 echo "  • ~/.pi/agent/AGENTS.md (if it was ours)"
 echo ""
 echo "What remains:"
 echo "  • Supporting packages (pi-subagents, pi-goal, etc.) — remove separately if desired"
-echo "  • Project files in ~/pi-product-workflow — delete manually if desired"
+echo "  • Project files in ~/cali-product-workflow — delete manually if desired"
 echo ""
 echo "To fully remove all traces:"
 echo "  pi remove npm:pi-subagents npm:pi-goal npm:@plannotator/pi-extension"
-echo "  rm -rf ~/pi-product-workflow"
+echo "  rm -rf ~/cali-product-workflow"
 echo ""

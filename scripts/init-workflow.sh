@@ -1,8 +1,8 @@
 #!/bin/bash
-# Init workflow script for @cali/pi-product-workflow
+# Init workflow script for @cali/cali-product-workflow
 
 TRACKING_FILE="cali-product-workflow.json"
-SCHEMA_URL="https://raw.githubusercontent.com/cali/pi-product-workflow/main/cali-product-workflow.schema.json"
+SCHEMA_URL="https://raw.githubusercontent.com/cali/cali-product-workflow/main/cali-product-workflow.schema.json"
 
 if [ -f "$TRACKING_FILE" ]; then
     echo "Tracking file already exists: $TRACKING_FILE"

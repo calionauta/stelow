@@ -1,4 +1,4 @@
-# pi-product-workflow Auto-Trigger
+# cali-product-workflow Auto-Trigger
 
 ## What This Does
 
@@ -19,7 +19,7 @@ Any mention of:
 rm ~/.pi/agent/AGENTS.md
 ```
 
-Or use the uninstall script in your pi-product-workflow directory.
+Or use the uninstall script in your cali-product-workflow directory.
 
 ## Alternative: Use Skill Directly
 

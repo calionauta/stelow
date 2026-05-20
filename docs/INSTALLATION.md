@@ -36,7 +36,7 @@ Installs everything for your detected CLI:
 For when you want just the skills without full CLI integration:
 
 ```bash
-npx skills add renatocaliari/pi-product-workflow
+npx skills add renatocaliari/cali-product-workflow
 ```
 
 This installs skills to `~/.agents/skills/` — works across multiple CLIs without deep integration.
@@ -62,9 +62,9 @@ PRODUCT_WORKFLOW_CLI=pi ./install.sh
 
 Installs: Core + Extension + Supporting packages + Skills
 
-**Update:** `pi update --extensions` or `pi update npm:@renatocaliari/pi-product-workflow`
+**Update:** `pi update --extensions` or `pi update npm:@renatocaliari/cali-product-workflow`
 
-**Uninstall:** `pi remove npm:@renatocaliari/pi-product-workflow npm:@renatocaliari/cali-product-workflow-pi`
+**Uninstall:** `pi remove npm:@renatocaliari/cali-product-workflow npm:@renatocaliari/cali-product-workflow-pi`
 
 ### OpenCode
 
@@ -92,7 +92,7 @@ Installs: Plugin + Skills
 
 **Update:** `./install.sh update`
 
-**Uninstall:** `./install.sh remove` or `claude /plugin uninstall pi-product-workflow`
+**Uninstall:** `./install.sh remove` or `claude /plugin uninstall cali-product-workflow`
 
 ### Codex
 
@@ -106,7 +106,7 @@ Installs: Marketplace plugin + Skills
 
 **Update:** `./install.sh update`
 
-**Uninstall:** `./install.sh remove` or `codex plugin uninstall pi-product-workflow`
+**Uninstall:** `./install.sh remove` or `codex plugin uninstall cali-product-workflow`
 
 ---
 
@@ -134,7 +134,7 @@ Installs: Marketplace plugin + Skills
 
 ```bash
 # Core package
-pi install npm:@renatocaliari/pi-product-workflow
+pi install npm:@renatocaliari/cali-product-workflow
 
 # Extension
 pi install npm:@renatocaliari/cali-product-workflow-pi
@@ -148,20 +148,20 @@ pi install npm:pi-subagents npm:pi-goal npm:pi-intercom npm:pi-supervisor npm:pi
 ```json
 // ~/.config/opencode/opencode.json
 {
-  "plugin": ["@renatocaliari/pi-product-workflow"]
+  "plugin": ["@renatocaliari/cali-product-workflow"]
 }
 ```
 
 ### Claude Code
 
 ```bash
-claude /plugin install /path/to/pi-product-workflow
+claude /plugin install /path/to/cali-product-workflow
 ```
 
 ### Codex
 
 ```bash
-npx codex-marketplace add renatocaliari/pi-product-workflow --plugins
+npx codex-marketplace add renatocaliari/cali-product-workflow --plugins
 ```
 
 ---
@@ -170,10 +170,10 @@ npx codex-marketplace add renatocaliari/pi-product-workflow --plugins
 
 ```bash
 # Install for all CLIs
-npx skills add renatocaliari/pi-product-workflow
+npx skills add renatocaliari/cali-product-workflow
 
 # Install for specific CLI
-npx skills add renatocaliari/pi-product-workflow -a pi -a opencode
+npx skills add renatocaliari/cali-product-workflow -a pi -a opencode
 
 # Update
 npx skills update
@@ -208,7 +208,7 @@ Or manually:
 
 ```bash
 # Pi
-pi remove npm:@renatocaliari/pi-product-workflow
+pi remove npm:@renatocaliari/cali-product-workflow
 pi remove npm:@renatocaliari/cali-product-workflow-pi
 
 # Skills
@@ -223,7 +223,7 @@ rm ~/.pi/agent/AGENTS.md
 ## From Source
 
 ```bash
-git clone https://github.com/renatocaliari/pi-product-workflow.git
-cd pi-product-workflow
+git clone https://github.com/renatocaliari/cali-product-workflow.git
+cd cali-product-workflow
 ./install.sh
 ```

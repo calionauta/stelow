@@ -30,7 +30,7 @@ When `~/.pi/agent/AGENTS.md` exists, pi loads it for **every project**. This mea
 
 ```bash
 # After running ./scripts/setup.sh
-cp ~/pi-product-workflow/AGENTS.md ~/.pi/agent/AGENTS.md
+cp ~/cali-product-workflow/AGENTS.md ~/.pi/agent/AGENTS.md
 ```
 
 ### How to disable
@@ -59,7 +59,7 @@ If you want the workflow in specific projects only:
 
 ```bash
 # In project directory
-cp ~/pi-product-workflow/AGENTS.md .pi/AGENTS.md
+cp ~/cali-product-workflow/AGENTS.md .pi/AGENTS.md
 ```
 
 This makes it active only in that project, not globally.

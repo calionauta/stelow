@@ -279,9 +279,9 @@ This means `better-sqlite3` is installed twice (once for npm global, once for th
 | Dependency isolation | Shared | Separate stub dependencies |
 | Build output | One location | Must be accessible from stub |
 
-## Recommendation for pi-product-workflow
+## Recommendation for cali-product-workflow
 
-Based on this research, the dual-install pattern is well-proven by context-mode. For pi-product-workflow:
+Based on this research, the dual-install pattern is well-proven by context-mode. For cali-product-workflow:
 
 1. **Follow the same pattern**: Main npm package with `pi` field, plus a stub extension in `.pi/extensions/`
 2. **Use version-sync**: Ensure the stub's package.json version matches the main package

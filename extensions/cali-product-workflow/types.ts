@@ -4,7 +4,7 @@ export const WORKFLOW_DIR = ".cali-product-workflow";
 export const TRACKING_FILE = "cali-product-workflow.json";
 export const GLOBAL_TRACKING_FILE = ".cali-product-workflow-global.json";
 export const SCHEMA_URL =
-  "https://raw.githubusercontent.com/renatocaliari/pi-product-workflow/main/cali-product-workflow.schema.json";
+  "https://raw.githubusercontent.com/renatocaliari/cali-product-workflow/main/cali-product-workflow.schema.json";
 
 export const PHASE_NAMES = [
   "Setup",     // 0 — Phase 1: Project Setup

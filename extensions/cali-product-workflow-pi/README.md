@@ -1,10 +1,10 @@
 # cali-product-workflow-pi
 
-Pi extension stub for [cali-product-workflow](https://github.com/cali/pi-product-workflow).
+Pi extension stub for [cali-product-workflow](https://github.com/cali/cali-product-workflow).
 
 ## Overview
 
-This is a lightweight stub package that allows `cali-product-workflow` to be installed as a pi extension. The actual extension implementation lives in the main [`@renatocaliari/pi-product-workflow`](https://www.npmjs.com/package/@renatocaliari/pi-product-workflow) package.
+This is a lightweight stub package that allows `cali-product-workflow` to be installed as a pi extension. The actual extension implementation lives in the main [`@renatocaliari/cali-product-workflow`](https://www.npmjs.com/package/@renatocaliari/cali-product-workflow) package.
 
 ## Installation
 
@@ -15,7 +15,7 @@ pi install npm:cali-product-workflow-pi
 Or via the main package:
 
 ```bash
-pi install npm:@renatocaliari/pi-product-workflow
+pi install npm:@renatocaliari/cali-product-workflow
 ```
 
 ## Dual-Install Pattern
@@ -24,7 +24,7 @@ This package follows the dual-install pattern (same as [context-mode](https://gi
 
 | Install Method | Target | Purpose |
 |---------------|--------|---------|
-| `npm install -g @renatocaliari/pi-product-workflow` | CLI + Skills | CLI tools and 16 product skills |
+| `npm install -g @renatocaliari/cali-product-workflow` | CLI + Skills | CLI tools and 16 product skills |
 | `pi install npm:cali-product-workflow-pi` | Extension | Pi extension hooks and UI |
 
 ## Usage
@@ -43,5 +43,5 @@ Once installed, the extension automatically:
 
 ## See Also
 
-- [Main Package](https://github.com/cali/pi-product-workflow) - Full documentation
-- [DUAL-INSTALL-PATTERN.md](https://github.com/cali/pi-product-workflow/blob/main/docs/DUAL-INSTALL-PATTERN.md) - Pattern reference
+- [Main Package](https://github.com/cali/cali-product-workflow) - Full documentation
+- [DUAL-INSTALL-PATTERN.md](https://github.com/cali/cali-product-workflow/blob/main/docs/DUAL-INSTALL-PATTERN.md) - Pattern reference

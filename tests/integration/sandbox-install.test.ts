@@ -31,7 +31,7 @@ describe('Sandbox Install Verification', () => {
 
     it('should have valid package name', () => {
       const pkg = JSON.parse(readFileSync(join(PROJECT_ROOT, 'package.json'), 'utf-8'));
-      expect(pkg.name).toBe('@renatocaliari/pi-product-workflow');
+      expect(pkg.name).toBe('@renatocaliari/cali-product-workflow');
     });
 
     it('should declare pi extension via exports', () => {
@@ -71,7 +71,7 @@ describe('Sandbox Install Verification', () => {
 
     it('should have package.json with correct name', () => {
       const extPkg = JSON.parse(readFileSync(join(extPath, 'package.json'), 'utf-8'));
-      expect(extPkg.name).toMatch(/@renatocaliari\/pi-product-workflow/);
+      expect(extPkg.name).toMatch(/@renatocaliari\/cali-product-workflow/);
     });
   });
 

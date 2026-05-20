@@ -17,7 +17,7 @@ date: 2026-05-20
 ## 0. Product Context
 
 ### Problem Statement
-pi-product-workflow currently only works on Pi. Goal: support OpenCode, Claude Code, and Codex with a single codebase.
+cali-product-workflow currently only works on Pi. Goal: support OpenCode, Claude Code, and Codex with a single codebase.
 
 ### Key Decisions (from approved plan)
 1. **AGENTS.md is NOT duplicated** - Single generic version with CLI detection

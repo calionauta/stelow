@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# pi-product-workflow setup script
+# cali-product-workflow setup script
 # Installs all required dependencies for this package
 # Handles dual-install pattern: core + stub extension
 #
@@ -10,7 +10,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PACKAGE_DIR="$(dirname "$SCRIPT_DIR")"
 
 echo "╔════════════════════════════════════════════════════════════╗"
-echo "║  pi-product-workflow Setup                                  ║"
+echo "║  cali-product-workflow Setup                                  ║"
 echo "╚════════════════════════════════════════════════════════════╝"
 echo ""
 
@@ -52,8 +52,8 @@ echo ""
 
 echo "📦 Installing packages (dual-install pattern)..."
 # 1. Core package (skills, adapters, etc.)
-echo "   → @renatocaliari/pi-product-workflow (core)"
-pi install npm:@renatocaliari/pi-product-workflow 2>/dev/null || {
+echo "   → @renatocaliari/cali-product-workflow (core)"
+pi install npm:@renatocaliari/cali-product-workflow 2>/dev/null || {
   echo "   Note: Installing from local source instead"
   pi install "$PACKAGE_DIR" 2>/dev/null || true
 }
@@ -71,7 +71,7 @@ echo "║  Setup Complete!                                           ║"
 echo "╚════════════════════════════════════════════════════════════╝"
 echo ""
 echo "Installed packages:"
-echo "  • @renatocaliari/pi-product-workflow (core - skills, adapters)"
+echo "  • @renatocaliari/cali-product-workflow (core - skills, adapters)"
 echo "  • @renatocaliari/cali-product-workflow-pi (stub extension)"
 echo ""
 echo "Next steps:"
@@ -79,7 +79,7 @@ echo "  1. Run: pi"
 echo "  2. Use: /skill:cali-product-workflow"
 echo ""
 echo "Optional: Enable auto-trigger (adds context to ALL projects):"
-echo "  cp ~/pi-product-workflow/AGENTS.md ~/.pi/agent/AGENTS.md"
+echo "  cp ~/cali-product-workflow/AGENTS.md ~/.pi/agent/AGENTS.md"
 echo ""
 echo "  To disable: rm ~/.pi/agent/AGENTS.md"
 echo ""

@@ -1,5 +1,5 @@
 /**
- * Test utilities for pi-product-workflow tests
+ * Test utilities for cali-product-workflow tests
  */
 import { mkdtempSync, rmSync, writeFileSync, readFileSync, mkdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
@@ -88,7 +88,7 @@ export function createMinimalWorkflow(cwd: string, name = 'test-workflow') {
 // ── Tracking File Helper ────────────────────────────────────────────
 
 export const mockTrackingData = {
-  $schema: "https://raw.githubusercontent.com/renatocaliari/pi-product-workflow/main/cali-product-workflow.schema.json",
+  $schema: "https://raw.githubusercontent.com/renatocaliari/cali-product-workflow/main/cali-product-workflow.schema.json",
   version: "1.0",
   created: "2026-05-19T00:00:00.000Z",
   updated: "2026-05-19T00:00:00.000Z",

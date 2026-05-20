@@ -6,7 +6,7 @@
  * This stub allows pi to install and load the extension from npm.
  * 
  * Pattern: Dual-Install (same as context-mode)
- * - npm install @renatocaliari/pi-product-workflow → CLI and skills available
+ * - npm install @renatocaliari/cali-product-workflow → CLI and skills available
  * - pi install npm:cali-product-workflow-pi → Extension loaded from this stub
  */
 
