@@ -316,15 +316,65 @@ flaky_rate: > 5% → WARN
 
 ## 📦 Installation
 
+### Quick Setup (Recommended)
+
 ```bash
-# From local path
+# 1. Install pi (if not already)
+npm install -g @mariozechner/pi-coding-agent
+
+# 2. Clone this repo
+git clone git@github.com:renatocaliari/pi-product-workflow.git ~/pi-product-workflow
+
+# 3. Run setup (installs dependencies + this package)
+cd ~/pi-product-workflow && ./scripts/setup.sh
+```
+
+### Manual Installation
+
+```bash
+# Install dependencies first
+pi install npm:pi-subagents npm:pi-goal npm:pi-intercom npm:pi-supervisor \\
+  npm:pi-autoresearch npm:@juicesharp/rpiv-ask-user-question \\
+  npm:@plannotator/pi-extension
+
+# Then install this package
 pi install ~/Development/pi-product-workflow
+```
 
-# From npm (after publishing)
-pi install npm:@renatocaliari/pi-product-workflow
+### Auto-Trigger (Optional)
 
-# Copy AGENTS.md for automatic triggering
-cp ~/Development/pi-product-workflow/AGENTS.md ~/.pi/agent/AGENTS.md
+By default, the workflow is NOT auto-triggered in all projects. See [docs/ABOUT-AUTO-TRIGGER.md](docs/ABOUT-AUTO-TRIGGER.md) for the reasoning.
+
+**To enable auto-trigger:**
+```bash
+cp ~/pi-product-workflow/AGENTS.md ~/.pi/agent/AGENTS.md
+```
+
+**To disable:**
+```bash
+rm ~/.pi/agent/AGENTS.md
+# Or use: ./scripts/uninstall.sh
+```
+
+### Uninstallation
+
+```bash
+cd ~/pi-product-workflow && ./scripts/uninstall.sh
+```
+
+This removes the package and cleans up `~/.pi/agent/AGENTS.md`.
+
+### Verify
+
+```bash
+pi list
+# Should show: @renatocaliari/pi-product-workflow + dependencies
+```
+
+### Quick Test (without installing)
+
+```bash
+pi -e npm:@renatocaliari/pi-product-workflow
 ```
 
 ---
