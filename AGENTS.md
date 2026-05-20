@@ -1,59 +1,79 @@
-# cali-product-workflow Auto-Trigger
+# cali-product-workflow
 
-## What This Does
+**Transform product ideas into approved, testable plans — systematically.**
 
-Provides automatic triggering of `/skill:cali-product-workflow` when detecting product development discussions.
+## Quick Commands
 
-## When It Triggers
+| Command | Description |
+|---------|-------------|
+| `/skill:cali-product-workflow` | Start the workflow |
+| `/pw:start` | Begin planning |
+| `/pw:menu` | Show status |
 
-Any mention of:
-- Product planning, roadmap, features, requirements
-- Interface design, UX, screens, components
-- Technical planning, architecture, implementation
-- Product critique, review, feedback
-- Market analysis, business models, pricing
+## Workflow Phases
 
-## How to Disable
+```
+Setup → Strategic → Shape Up → Interface → Critique → Tech Planning
+  1         2           3          4          5           6
+```
+
+## Key Differentiators
+
+- **Shape Up methodology** — Appetite, Hill Chart, Rabbit Holes, IN/OUT scope boundaries
+- **Job To Be Done** — Understand what job users hire the product to do
+- **Gap analysis** — Adversarial critique identifying gaps, risks, and assumptions
+- **Product domain libraries** — 8 domains auto-detected (Pricing, Trust, Ads, Promotions, Open Source, Health, Marketplace, Business Models)
+- **Visual review gate** — Plannotator opens the full plan for point-by-point comments
+- **Interface exploration** — 5 approaches in ASCII art, then LLM creates hybrid
+- **Typed technical scopes** — feature, spike, optimize, test-* with dependency mapping
+
+## Key Principles
+
+- **Measure twice, cut once** — Shape proposals with IN/OUT boundaries BEFORE coding
+- **Visual review gate** — Plans must pass Plannotator before execution
+- **Domain-driven** — Auto-detects product domain from your language
+- **Technical scope mapping** — Breaks down into typed scopes, maps dependencies
+
+## Installation
 
 ```bash
-rm ~/.pi/agent/AGENTS.md
+./install.sh  # Auto-detects CLI (pi, opencode, claude-code, codex)
 ```
 
-Or use the uninstall script in your cali-product-workflow directory.
+For detailed docs: [docs/INSTALLATION.md](docs/INSTALLATION.md)
 
-## Alternative: Use Skill Directly
+## File Naming
 
-Instead of auto-trigger, use explicitly:
-```
-/skill:cali-product-workflow
-```
+All project files must use `lowercase-kebab-case`:
+- ✅ `spec-product.md`, `tech-planning.md`
+- ❌ `SpecProduct.md`, `TECH-PLANNING.md`
 
-This keeps your context cleaner for non-product tasks.
+## Auto-Trigger
 
-## 📁 File Naming Convention
+### How it works (pi only)
 
-**All project files must use `lowercase-kebab-case`:**
+Pi reads `~/.pi/agent/AGENTS.md` at startup and matches keywords against user input. When detecting:
+- Product planning, roadmap, features
+- Interface design, UX, components
+- Technical planning, architecture
+- Product critique, review
 
-```bash
-# ✅ Correct
-spec-product.md
-tech-planning.md
-cali-testing-ai-code/
+It automatically triggers `/skill:cali-product-workflow`.
 
-# ❌ Wrong
-SpecProduct.md  # PascalCase
-TECH-PLANNING.md  # UPPERCASE
-techPlanning.md  # camelCase
-```
+### Why not other CLIs?
 
-**Rationale:**
-- Consistent with URL standards (lowercase is standard for web paths)
-- Easier tab completion
-- Cross-platform compatibility (macOS is case-insensitive by default)
-- Easier to type and remember
+| CLI | AGENTS.md Support | Auto-Trigger |
+|-----|-------------------|---------------|
+| **pi** | ✅ Global `~/.pi/agent/AGENTS.md` | ✅ Keyword-based |
+| **opencode** | ✅ Project-level rules | ❌ Manual `/skill` |
+| **claude-code** | ✅ Plugin manifest | ❌ Manual |
+| **codex** | ✅ Global + local | ❌ Heuristic-based |
 
-**Applies to:**
-- Markdown files (.md)
-- Configuration files (.yaml, .json, .toml)
-- Directories and folders
-- Source code files (use language conventions, but prefer lowercase for project files)
+**To disable (pi):** `rm ~/.pi/agent/AGENTS.md`
+
+## For Developers
+
+- **Skills:** 16 specialized skills in `skills/` directory
+- **CLI Support:** pi, opencode, claude-code, codex
+- **License:** MIT
+- **Repo:** https://github.com/renatocaliari/cali-product-workflow

@@ -1,39 +1,37 @@
-# AGENTS.md Plan - REVISED
+# AGENTS.md Plan - FINAL
 
-## Feedback do Plannotator
+## Feedback do Plannotator (2 items)
 
-1. **"O principal é installation?"** - Sim! AGENTS.md no repo deve ser útil para outros desenvolvedores
-2. **"Sumarize melhor baseado no README"** - Principios devem vir dos diferenciais
-3. **Remover "Betting table"** - Não quer esse conceito
-4. **"pq pi only?"** - Auto-trigger é específico do pi, mas o resto serve para todos
+1. **Falta Shape Up + Gap Analysis nos diferenciais** - Adicionar
+2. **Por que auto-trigger só funciona no Pi?** - Explicar que é mecanismo específico do Pi
 
-## Análise do AGENTS.md Global do Usuário
+## Respostas
 
-O `~/.pi/agent/AGENTS.md` contém:
-- Regras de codificação (KISS, DRY, Locality of Behavior, SSE-first, HATEOS)
-- Context Mode obrigator
-- Testing Protocol
-- Subagents workflow
-- Plannotator gate
-- File naming convention
+### 1. Diferenciais Completos
 
-**Isso é específico da instalação local, não do repo.**
+Adicionar:
+- **Shape Up methodology** - Appetite, Hill Chart, Rabbit Holes, IN/OUT scope
+- **Gap analysis** - Adversarial critique com identification de gaps, risks, assumptions
+- **Job To Be Done** - Entender o "job" que o usuário contrata o produto para fazer
 
-## Propósito do AGENTS.md do Repo
+### 2. Por que auto-trigger só funciona no Pi?
 
-O AGENTS.md do repo serve para:
-1. **Desenvolvedores que clonam** → orientações gerais do projeto
-2. **LLMs de outros agents** (opencode, claude-code, codex) → sabem como usar o workflow
-3. **Pi (quando usado em outros projetos)** → o auto-trigger funciona
+O Pi tem um mecanismo específico:
+- Lê `~/.pi/agent/AGENTS.md` automaticamente ao iniciar
+- Compara keywords do AGENTS.md com entrada do usuário
+- Dispara skill automaticamente quando detecta match
 
-## Novo AGENTS.md Proposto
+Outros CLIs:
+- **opencode**: Lê AGENTS.md como "rules" mas NÃO tem auto-trigger por keyword
+- **claude-code**: Plugin system, AGENTS.md é para agents customizados
+- **codex**: Lê AGENTS.md para contexto global, mas auto-trigger seria baseado em heurística diferente
+
+## Novo AGENTS.md Final
 
 ```markdown
 # cali-product-workflow
 
 **Transform product ideas into approved, testable plans — systematically.**
-
-This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI coding agents.
 
 ## Quick Commands
 
@@ -52,23 +50,25 @@ Setup → Strategic → Shape Up → Interface → Critique → Tech Planning
 
 ## Key Differentiators
 
-- **Product domain libraries** — 8 domains auto-detected from your language (Pricing, Trust, Ads, Promotions, Open Source, Health, Marketplace, Business Models)
+- **Shape Up methodology** — Appetite, Hill Chart, Rabbit Holes, IN/OUT scope boundaries
+- **Job To Be Done** — Understand what job users hire the product to do
+- **Gap analysis** — Adversarial critique identifying gaps, risks, and assumptions
+- **Product domain libraries** — 8 domains auto-detected (Pricing, Trust, Ads, Promotions, Open Source, Health, Marketplace, Business Models)
 - **Visual review gate** — Plannotator opens the full plan for point-by-point comments
 - **Interface exploration** — 5 approaches in ASCII art, then LLM creates hybrid
-- **IN/OUT scope boundaries** — Define what NOT to build before coding
 - **Typed technical scopes** — feature, spike, optimize, test-* with dependency mapping
 
 ## Key Principles
 
 - **Measure twice, cut once** — Shape proposals with IN/OUT boundaries BEFORE coding
 - **Visual review gate** — Plans must pass Plannotator before execution
-- **Domain libraries** — Auto-detects 8 product domains from your input
-- **Technical scope mapping** — Breaks down into typed scopes, maps dependencies, sequences execution
+- **Domain-driven** — Auto-detects product domain from your language
+- **Technical scope mapping** — Breaks down into typed scopes, maps dependencies
 
 ## Installation
 
 ```bash
-./install.sh  # Auto-detects CLI
+./install.sh  # Auto-detects CLI (pi, opencode, claude-code, codex)
 ```
 
 For detailed docs: [docs/INSTALLATION.md](docs/INSTALLATION.md)
@@ -79,15 +79,28 @@ All project files must use `lowercase-kebab-case`:
 - ✅ `spec-product.md`, `tech-planning.md`
 - ❌ `SpecProduct.md`, `TECH-PLANNING.md`
 
-## Auto-Trigger (pi only)
+## Auto-Trigger
 
-This file auto-triggers when detecting:
+### How it works (pi only)
+
+Pi reads `~/.pi/agent/AGENTS.md` at startup and matches keywords against user input. When detecting:
 - Product planning, roadmap, features
 - Interface design, UX, components
 - Technical planning, architecture
 - Product critique, review
 
-**To disable:** `rm ~/.pi/agent/AGENTS.md`
+It automatically triggers `/skill:cali-product-workflow`.
+
+### Why not other CLIs?
+
+| CLI | AGENTS.md Support | Auto-Trigger |
+|-----|-------------------|--------------|
+| **pi** | ✅ Global `~/.pi/agent/AGENTS.md` | ✅ Keyword-based |
+| **opencode** | ✅ Project-level rules | ❌ Manual `/skill` |
+| **claude-code** | ✅ Plugin manifest | ❌ Manual |
+| **codex** | ✅ Global + local | ❌ Heuristic-based |
+
+**To disable (pi):** `rm ~/.pi/agent/AGENTS.md`
 
 ## For Developers
 
@@ -97,26 +110,27 @@ This file auto-triggers when detecting:
 - **Repo:** https://github.com/renatocaliari/cali-product-workflow
 ```
 
-## Documentos Questionáveis - Diagnóstico
+## Executar Cleanup
 
-| Arquivo | Diagnóstico | Ação |
-|---------|-------------|------|
-| `docs/PORTABILITY.md` | Arquitectura técnica útil para devs que vão adaptar para outros CLIs | **Manter** - documenta decisões de design |
-| `docs/CI-TEST-PRACTICES.md` | Best practices de testes - útil mas muito específico | **Mover para `.github/`** como doc interno |
-| `docs/ABOUT-AUTO-TRIGGER.md` | Explica trade-off do auto-trigger - conteúdo já está no AGENTS.md | **Remover** - redundante |
-| `RELEASE_WORKFLOW.md` | Instruções para LLMs fazerem releases | **Mover para `.github/`** como doc interno |
-| `cali-product-workflow.json` | Schema JSON - necessário para validação | **Manter** |
-| `cali-product-workflow.schema.json` | Schema JSON - necessário para validação | **Manter** |
+```bash
+# 1. Remove arquivos temporários
+rm progress.md context.md research.md
+rm docs/ABOUT-AUTO-TRIGGER.md
 
-## Resumo das Ações
+# 2. Mover para .github/
+mv docs/CI-TEST-PRACTICES.md .github/
+mv RELEASE_WORKFLOW.md .github/
 
-| Tipo | Arquivos |
-|------|----------|
-| **Remover** | `docs/ABOUT-AUTO-TRIGGER.md`, `progress.md`, `context.md`, `research.md` |
-| **Mover para .github/** | `docs/CI-TEST-PRACTICES.md`, `RELEASE_WORKFLOW.md` |
-| **Manter** | `docs/PORTABILITY.md`, `docs/INSTALLATION.md`, `docs/DUAL-INSTALL-PATTERN.md` |
-| **Atualizar** | `AGENTS.md` com novo conteúdo |
+# 3. Atualizar AGENTS.md
+# (escrever novo conteúdo)
+
+# 4. Commit
+git add -A && git commit -m "chore: cleanup - remove temp files, move docs, update AGENTS.md"
+
+# 5. Push
+git push origin main
+```
 
 ## Recommended Action
 
-**APPROVE** - Execute cleanup plan and update AGENTS.md
+**APPROVE** - Execute cleanup and update AGENTS.md
