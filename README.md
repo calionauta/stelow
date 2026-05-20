@@ -92,6 +92,20 @@ Both have a "plan" mode, but it's basic — restrict tools and add generic plann
 - **Domain libraries** — auto-detect from user input (pricing, ads, trust, etc.)
 - **Visual review gate** — Plannotator opens the full plan for point-by-point comments (not just chat)
 
+**Interface exploration comparison:**
+
+| Aspect | Superpowers Brainstorming | pi-product-workflow |
+|--------|---------------------------|---------------------|
+| **Approaches** | 2-3 options | 5 archetypes |
+| **Format** | Text descriptions | ASCII art diagrams |
+| **Trade-offs** | Listed in text | Visual with flows |
+| **Recommendation** | Agent picks best | LLM creates hybrid |
+| **Focus** | Code architecture | User interface |
+
+Superpowers brainstorming: proposes 2-3 approaches in text (200-300 words each), optional "Visual Companion" browser tool for mockups.
+
+This workflow: generates 5 interface archetypes as ASCII art with flows and trade-offs in seconds, then LLM creates a hybrid combining best points for the context.
+
 **vs. BMAD Method (45K ⭐) and Superpowers (180K ⭐):**
 
 Both frameworks enforce structure for general software engineering. Here's what differentiates this workflow:
@@ -102,8 +116,8 @@ Both frameworks enforce structure for general software engineering. Here's what 
 | **Scope Definition** | General user stories | Implementation plans | Shape Up with IN/OUT boundaries |
 | **Domain Knowledge** | Generic workflows | Code patterns | Job To Be Done, Pricing, Trust, Ads, Open Source, etc. |
 | **Review** | Manual or configured | Subagent quality check | Plannotator visual gate with point-by-point comments |
-| **Interface** | PRD, diagrams | Plan documents | ASCII art exploration + LLM hybrid creation |
-| **Testing** | Depends on setup | TDD with subagents | AI-aware mutation with coverage targets |
+| **Interface** | 1 UX design workflow | 2-3 text approaches + optional browser | 5 ASCII archetypes + LLM hybrid |
+| **Testing** | Manual/sprint-based | TDD-first (subagent) | Context-aware: TDD for critical paths, mutation targets, greenfield/brownfield |
 
 **Key differentiators:**
 
@@ -113,6 +127,14 @@ Both frameworks enforce structure for general software engineering. Here's what 
 - **Shape Up methodology** — IN/OUT scope boundaries, betting table concepts, aphorisms
 - **Typed technical scopes** — feature, spike, optimize, test-* with dependency mapping and sequencing
 - **Real-time TUI tracking** — see workflow state as it progresses
+
+**Testing differentiators:**
+
+- **Context-aware strategy** — different approaches for greenfield, brownfield, and hybrid products
+- **8 test scope types** — test-unit, test-integration, test-security, test-behavior, test-regression, test-characterization, test-simulation, test-impact
+- **Mutation coverage targets** — 70% for critical paths (payments, auth), 50% for standard, 30% for experimental
+- **TDD for critical paths** — test-first for new code; test-after + regression for existing code
+- **Security gates** — automated security tests for auth, payment, and data-sensitive operations
 
 *"Measure thrice, cut once"* — applies to product decisions, not just code.
 
