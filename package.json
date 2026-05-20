@@ -1,11 +1,11 @@
 {
   "name": "@renatocaliari/pi-product-workflow",
   "version": "0.2.0-alpha",
-  "description": "Product workflow for pi.dev: Shape Up + Interface + Tech Planning + Critique + Gate. Includes 16 product skills: workflow, short-cycle, opportunity-mapping, job-to-be-done, evolutionary, ads, business-models, health, marketplace-playbook, open-source, pricing, promotions, trust-building, multi-method-market-analysis, scope-executor, testing-ai-code. Integrates with pi-subagents (nicobailon), pi-goal (capyup), plannotator (backnotprop), autoresearch (davebcn87), ask-user-question (juicesharp), intercom (nicobailon), supervisor (tintinweb), and pi-agent-codebase-workflows (PriNova).",
+  "description": "Product workflow for AI coding agents: Shape Up + Interface + Tech Planning + Critique + Gate. Includes 16 product skills: workflow, short-cycle, opportunity-mapping, job-to-be-done, evolutionary, ads, business-models, health, marketplace-playbook, open-source, pricing, promotions, trust-building, multi-method-market-analysis, scope-executor, testing-ai-code. Works with pi.dev, OpenCode, Claude Code, and Codex.",
   "keywords": [
-    "pi-package",
     "pi-skill",
     "pi-extension",
+    "ai-coding-agent",
     "workflow",
     "shape-up",
     "product-planning",
@@ -23,34 +23,20 @@
   "bugs": {
     "url": "https://github.com/cali/pi-product-workflow/issues"
   },
-  "pi": {
-    "extensions": [
-      "./extensions/cali-product-workflow"
-    ],
-    "skills": [
-      "./skills/cali-product-workflow/skills-workflow/cali-shape-up",
-      "./skills/cali-product-workflow/skills-workflow/cali-interface-brainstorm",
-      "./skills/cali-product-workflow/skills-workflow/cali-plan-critique",
-      "./skills/cali-product-workflow/skills-workflow/cali-tech-planning",
-      "./skills/cali-product-workflow/skills-workflow/cali-product-workflow",
-      "./skills/cali-product-workflow/skills-strategic-analysis/cali-product-discovery",
-      "./skills/cali-product-workflow/skills-strategic-analysis/cali-product-opportunity-mapping",
-      "./skills/cali-product-workflow/skills-strategic-analysis/cali-product-job-to-be-done",
-      "./skills/cali-product-workflow/skills-strategic-analysis/cali-product-evolutionary-principles",
-      "./skills/cali-product-workflow/skills-strategic-analysis/cali-product-multi-method-market-analysis",
-      "./skills/cali-product-workflow/skills-execution/cali-product-scope-executor",
-      "./skills/cali-product-workflow/skills-execution/cali-testing-ai-code",
-      "./skills/cali-product-workflow/skills-domain-libraries/cali-product-ads",
-      "./skills/cali-product-workflow/skills-domain-libraries/cali-product-business-models",
-      "./skills/cali-product-workflow/skills-domain-libraries/cali-product-health",
-      "./skills/cali-product-workflow/skills-domain-libraries/cali-product-marketplace-playbook",
-      "./skills/cali-product-workflow/skills-domain-libraries/cali-product-open-source",
-      "./skills/cali-product-workflow/skills-domain-libraries/cali-product-pricing",
-      "./skills/cali-product-workflow/skills-domain-libraries/cali-product-promotions",
-      "./skills/cali-product-workflow/skills-domain-libraries/cali-product-trust-building"
-    ]
+  "exports": {
+    "./skills": "./skills",
+    "./cli-tools": "./cli-tools",
+    "./skills-workflow": "./skills/cali-product-workflow/skills-workflow",
+    "./skills-strategic-analysis": "./skills/cali-product-workflow/skills-strategic-analysis",
+    "./skills-execution": "./skills/cali-product-workflow/skills-execution",
+    "./skills-domain-libraries": "./skills/cali-product-workflow/skills-domain-libraries",
+    "./extensions": "./extensions",
+    "./package.json": "./package.json"
   },
   "peerDependencies": {
+    "typebox": "*"
+  },
+  "optionalPeerDependencies": {
     "@capyup/pi-goal": ">=0.6.0",
     "@earendil-works/pi-coding-agent": ">=0.74.0",
     "@earendil-works/pi-tui": "*",
@@ -61,9 +47,6 @@
     "pi-intercom": ">=0.6.0",
     "pi-subagents": ">=0.24.0",
     "pi-supervisor": ">=0.4.0",
-    "typebox": "*"
-  },
-  "optionalPeerDependencies": {
     "cali-short-cycle-product": "*",
     "cali-opportunity-mapping": "*",
     "cali-job-to-be-done-framework": "*",

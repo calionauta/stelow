@@ -14,6 +14,23 @@ cd pi-product-workflow
 pi install ./
 ```
 
+### Install Pi-Specific Dependencies
+
+```bash
+# Install all Pi integrations as optional dependencies
+pi install npm:@renatocaliari/pi-product-workflow
+
+# Or manually install the integrations you need:
+pi install npm:pi-subagents
+pi install npm:pi-goal
+pi install npm:plannotator
+pi install npm:pi-intercom
+pi install npm:pi-supervisor
+pi install npm:ask-user-question
+pi install npm:pi-autoresearch
+pi install npm:context-mode
+```
+
 ### Optional: Auto-trigger
 
 Enable auto-trigger in all projects:
@@ -31,33 +48,19 @@ rm ~/.pi/agent/AGENTS.md
 
 ## Installation Methods
 
-### Method 1: NPM Package (Recommended)
-
-```bash
-pi install npm:@renatocaliari/pi-product-workflow
-```
-
-This installs the package with all skills and dependencies.
-
-### Method 2: From Source
-
-```bash
-git clone https://github.com/renatocaliari/pi-product-workflow.git ~/pi-product-workflow
-cd ~/pi-product-workflow
-pi install ./
-```
-
-### Method 3: Quick Test (No Install)
-
-```bash
-pi -e npm:@renatocaliari/pi-product-workflow
-```
-
 ---
 
 ## Dependencies
 
-### Required
+### Required (all CLIs)
+
+| Package | Purpose | Min Version |
+|---------|---------|-------------|
+| typebox | Runtime type validation | * |
+
+### Pi-Specific (optional peer dependencies)
+
+Install these separately for Pi integration:
 
 | Package | Purpose | Min Version |
 |---------|---------|-------------|
@@ -67,17 +70,15 @@ pi -e npm:@renatocaliari/pi-product-workflow
 | ask-user-question | Structured questions | 1.6.0 |
 | intercom | Cross-session messaging | 0.6.0 |
 | supervisor | Outcome steering | 0.4.0 |
-
-### Optional
-
-| Package | Purpose | Benefit |
-|---------|---------|---------|
-| context-mode | Context reduction (98%) | Lower token usage |
-| autoresearch | Optimization loops | Experiment automation |
+| @earendil-works/pi-coding-agent | Core Pi agent | 0.74.0 |
+| @earendil-works/pi-tui | Terminal UI | * |
+| pi-agent-codebase-workflows | Codebase workflows | * |
+| pi-autoresearch | Optimization loops | 0.1.0 |
+| context-mode | Context reduction (98%) | 1.0.0 |
 
 ---
 
-## Setup Script
+## Setup Script (Pi only)
 
 Run the setup script for automated installation:
 
@@ -91,9 +92,19 @@ This script:
 2. Copies AGENTS.md to enable auto-trigger
 3. Verifies installation
 
+**Note:** This script is Pi-specific. Other CLIs use their native plugin systems.
+
 ---
 
 ## Verification
+
+### Generic verification
+
+```bash
+npm list @renatocaliari/pi-product-workflow
+```
+
+### Pi-specific verification
 
 Check installation:
 
@@ -108,6 +119,14 @@ You should see:
 ---
 
 ## For Other CLIs
+
+### Generic Install (npm)
+
+```bash
+npm install @renatocaliari/pi-product-workflow
+```
+
+This works on any system with Node.js >= 20.0.0.
 
 ### opencode
 
@@ -125,7 +144,7 @@ You should see:
 
 ### codex
 
-Installation method TBD ( Codex may use different plugin system).
+Installation method TBD (Codex may use different plugin system).
 
 ---
 

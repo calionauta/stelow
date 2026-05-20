@@ -4,19 +4,76 @@ import { join } from "node:path";
 import { WORKFLOW_DIR, TRACKING_FILE, SCHEMA_URL } from "./types";
 import type { TrackingData } from "./types";
 import {
-  parsedInputStore, readTracking, writeTracking,
-  readGlobalTracking, getActiveWorkflow, resolveProjectDir,
-  parseInputForWorkflow
+  parsedInputStore,
+  readTracking,
+  writeTracking,
+  readGlobalTracking,
+  getActiveWorkflow,
+  resolveProjectDir,
+  parseInputForWorkflow,
 } from "./state";
 import { updateFooter, notifyPhase } from "./ui";
 import { registerCommands } from "./commands";
+import {
+  createAdapter,
+  createEventDispatcher,
+} from "./adapters";
+
+// ── Re-export CLI Adapter for external use ─────────────────────────
+
+export {
+  createAdapter,
+  createGenericCLIAdapter,
+  EventDispatcher,
+  createEventDispatcher,
+} from "./adapters";
+
+export type {
+  CLIAdapter,
+  CommandRegistration,
+  ToolCallHandler,
+  SessionStartHandler,
+  TurnEndHandler,
+  InputHandler,
+  ToolDefinition,
+  NotificationType,
+  SelectOption,
+  StatusInfo,
+  EventType,
+  SessionStartEvent,
+  ToolCallEvent,
+  TurnEndEvent,
+  InputEvent,
+  AgentEndEvent,
+} from "./adapters";
 
 const registered = new Set<string>();
 
 export default function (pi: ExtensionAPI) {
 
+  // ── Create adapter for this CLI ──────────────────────────────────
+  // The adapter handles CLI-specific event routing
+  // For Pi, we use the PiAdapter which wires directly to pi.on()
+  const adapter = createAdapter("pi");
+  
+  // Pi-specific: set the ExtensionAPI on the adapter
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (adapter as any).setAPI?.(pi);
+  
+  // ── Event Dispatcher for cross-CLI event routing ──────────────────
+  // The dispatcher provides a unified interface for event subscription
+  // and dispatches events to registered handlers
+  const dispatcher = createEventDispatcher(adapter);
+  
+  // If the adapter supports it, set the event dispatcher
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (adapter as any).setEventDispatcher?.(dispatcher);
+
   // ── Parse input for @refs ✓ ──────────────────────────────────────
-  pi.on("input", async (event, ctx) => {
+  // Note: Input handling is now done in the adapter
+  // Keep this for backward compatibility and direct pi.on() usage
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  pi.on("input", async (event: any, ctx: any) => {
     if (!event.text.startsWith("/product-workflow-start") &&
         !event.text.startsWith("/pw:start")) return;
 
@@ -28,7 +85,9 @@ export default function (pi: ExtensionAPI) {
   });
 
   // ── Session start ✓ ──────────────────────────────────────────────
-  pi.on("session_start", async (_event, ctx) => {
+  // Now uses adapter pattern for abstraction
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  pi.on("session_start", async (_event: any, ctx: any) => {
     const wd = resolveProjectDir(ctx.cwd);
     // Scaffold
     mkdirSync(join(wd, WORKFLOW_DIR), { recursive: true });
@@ -74,8 +133,10 @@ export default function (pi: ExtensionAPI) {
   });
 
   // ── Tracking file writes ✓ ───────────────────────────────────────
-  pi.on("tool_call", async (event, ctx) => {
-    if (event.input?.path?.includes?.(TRACKING_FILE) && ctx.ui) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  pi.on("tool_call", async (event: any, ctx: any) => {
+    const input = event.input as any;
+    if (input?.path?.includes?.(TRACKING_FILE) && ctx.ui) {
       const wd = resolveProjectDir(ctx.cwd);
       const wf = getActiveWorkflow(wd);
       if (wf) updateFooter(ctx, wd);
@@ -83,7 +144,8 @@ export default function (pi: ExtensionAPI) {
   });
 
   // ── Phase change detection ✓ ─────────────────────────────────────
-  pi.on("turn_end", async (_event, ctx) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  pi.on("turn_end", async (_event: any, ctx: any) => {
     if (!ctx.ui) return;
     const wd = resolveProjectDir(ctx.cwd);
 
@@ -103,10 +165,40 @@ export default function (pi: ExtensionAPI) {
   });
 
   // ── UI update on agent end ✓ ─────────────────────────────────────
-  pi.on("agent_end", async (_event, ctx) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  pi.on("agent_end", async (_event: any, ctx: any) => {
     if (!ctx.ui) return;
     const wd = resolveProjectDir(ctx.cwd);
     const wf = getActiveWorkflow(wd);
     if (wf) updateFooter(ctx, wd);
+  });
+  
+  // ── Also register adapter-based event handlers ──────────────────
+  // These provide a unified interface for all CLIs
+  // The adapter's handlers are invoked via the dispatcher
+  
+  // Example: Register a handler for tool call events via the adapter
+  adapter.onToolCall((tool: string, input: unknown) => {
+    // Track tool calls that modify tracking file
+    if (input && typeof input === "object" && "path" in input) {
+      const inp = input as { path?: string };
+      if (inp.path?.includes(TRACKING_FILE)) {
+        console.log(`[cali-product-workflow] Tracking file modified by ${tool}`);
+      }
+    }
+  });
+  
+  // Register a handler for turn end events via the adapter
+  adapter.onTurnEnd(({ cwd }: { cwd: string }) => {
+    // Phase change detection can be done here
+    const wd = resolveProjectDir(cwd);
+    const tracking = readTracking(wd);
+    const wf = getActiveWorkflow(wd);
+    if (!wf || !tracking) return;
+    const current = tracking.workflows.find(w => w.name === wf.name);
+    if (current && current.currentPhase !== wf.currentPhase) {
+      // Phase changed - could dispatch notification
+      console.log(`[cali-product-workflow] Phase change: ${wf.currentPhase} -> ${current.currentPhase}`);
+    }
   });
 }

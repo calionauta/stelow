@@ -35,6 +35,154 @@ export const PHASE_HINTS: Record<number, string> = {
   10: "execution"
 };
 
+// ── CLI Types ─────────────────────────────────────────────────────
+
+export type CLI = "pi" | "opencode" | "claude-code" | "codex" | "generic";
+
+/**
+ * Capabilities supported by each CLI harness.
+ * Used to determine which features are available.
+ */
+export interface CLICapabilities {
+  /** CLI identifier */
+  cli: CLI;
+  
+  /** Plugin system */
+  hasPluginSystem: boolean;
+  pluginFormat: "npm" | "json" | "marketplace" | null;
+  
+  /** Commands */
+  hasCommands: boolean;
+  commandPrefix: string;  // e.g., "/" for slash commands
+  
+  /** Events */
+  hasSessionStart: boolean;
+  hasToolCall: boolean;
+  hasTurnEnd: boolean;
+  hasPreCompact: boolean;
+  
+  /** Tools */
+  hasSubagent: boolean;
+  hasAskUserQuestion: boolean;
+  hasGoals: boolean;
+  hasIntercom: boolean;
+  hasSupervise: boolean;
+  
+  /** UI */
+  hasTUI: boolean;
+  hasNotifications: boolean;
+  hasSelectList: boolean;
+  hasStatusLine: boolean;
+  
+  /** MCP */
+  hasMCPSupport: boolean;
+}
+
+/**
+ * Get capabilities for a CLI.
+ */
+export function getCLICapabilities(cli: CLI): CLICapabilities {
+  const base: CLICapabilities = {
+    cli,
+    hasPluginSystem: false,
+    pluginFormat: null,
+    hasCommands: true,
+    commandPrefix: "/",
+    hasSessionStart: false,
+    hasToolCall: false,
+    hasTurnEnd: false,
+    hasPreCompact: false,
+    hasSubagent: true,
+    hasAskUserQuestion: false,
+    hasGoals: false,
+    hasIntercom: false,
+    hasSupervise: false,
+    hasTUI: false,
+    hasNotifications: false,
+    hasSelectList: false,
+    hasStatusLine: false,
+    hasMCPSupport: false,
+  };
+
+  const overrides: Record<CLI, Partial<CLICapabilities>> = {
+    "pi": {
+      hasPluginSystem: true,
+      pluginFormat: "npm",
+      hasSessionStart: true,
+      hasToolCall: true,
+      hasTurnEnd: true,
+      hasPreCompact: false,
+      hasSubagent: true,
+      hasAskUserQuestion: true,
+      hasGoals: true,
+      hasIntercom: true,
+      hasSupervise: true,
+      hasTUI: true,
+      hasNotifications: true,
+      hasSelectList: true,
+      hasStatusLine: true,
+      hasMCPSupport: true,
+    },
+    "opencode": {
+      hasPluginSystem: true,
+      pluginFormat: "npm",
+      hasSessionStart: true,
+      hasToolCall: true,
+      hasTurnEnd: true,
+      hasPreCompact: true,
+      hasSubagent: true,
+      hasAskUserQuestion: false,
+      hasGoals: false,
+      hasIntercom: false,
+      hasSupervise: false,
+      hasTUI: true,
+      hasNotifications: true,
+      hasSelectList: false,
+      hasStatusLine: false,
+      hasMCPSupport: true,
+    },
+    "claude-code": {
+      hasPluginSystem: true,
+      pluginFormat: "marketplace",
+      hasSessionStart: true,
+      hasToolCall: true,
+      hasTurnEnd: true,
+      hasPreCompact: true,
+      hasSubagent: true,
+      hasAskUserQuestion: false,
+      hasGoals: false,
+      hasIntercom: false,
+      hasSupervise: false,
+      hasTUI: true,
+      hasNotifications: true,
+      hasSelectList: false,
+      hasStatusLine: false,
+      hasMCPSupport: true,
+    },
+    "codex": {
+      hasPluginSystem: true,
+      pluginFormat: "json",
+      hasSessionStart: true,
+      hasToolCall: true,
+      hasTurnEnd: true,
+      hasPreCompact: true,
+      hasSubagent: true,
+      hasAskUserQuestion: false,
+      hasGoals: false,
+      hasIntercom: false,
+      hasSupervise: false,
+      hasTUI: true,
+      hasNotifications: false,
+      hasSelectList: false,
+      hasStatusLine: false,
+      hasMCPSupport: true,
+    },
+    "generic": {},
+  };
+
+  return { ...base, ...overrides[cli] };
+}
+
 // ── Types ────────────────────────────────────────────────────────────
 
 export interface ParsedInput {

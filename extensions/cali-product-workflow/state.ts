@@ -1,40 +1,140 @@
 import { existsSync, readFileSync, writeFileSync, statSync, readdirSync } from "node:fs";
 import { join, basename, dirname, extname } from "node:path";
-import type { Workflow, TrackingData, ParsedInput } from "./types";
-import { WORKFLOW_DIR, TRACKING_FILE, GLOBAL_TRACKING_FILE, SCHEMA_URL, PHASE_NAMES } from "./types";
+import { homedir } from "node:os";
+import type { Workflow, TrackingData, ParsedInput, CLI } from "./types";
+import { WORKFLOW_DIR, TRACKING_FILE, GLOBAL_TRACKING_FILE, SCHEMA_URL, PHASE_NAMES, getCLICapabilities } from "./types";
 
 // ── CLI Detection ────────────────────────────────────────────────────
+
+/**
+ * Detection signals for each CLI.
+ * Priority: 1. Env var, 2. Config directories, 3. Command availability, 4. Generic
+ */
+const CLI_DETECTION_SIGNALS: Record<CLI, { dirs: string[]; cmds: string[]; confidence: "high" | "medium" | "low" }> = {
+  "pi": {
+    dirs: ["~/.pi"],
+    cmds: ["pi"],
+    confidence: "high",
+  },
+  "opencode": {
+    dirs: ["~/.config/opencode", "~/.opencode"],
+    cmds: ["opencode"],
+    confidence: "high",
+  },
+  "claude-code": {
+    dirs: ["~/.claude", ".claude-plugin"],
+    cmds: ["claude"],
+    confidence: "high",
+  },
+  "codex": {
+    dirs: ["~/.codex", ".codex-plugin"],
+    cmds: ["codex"],
+    confidence: "high",
+  },
+  "generic": {
+    dirs: [],
+    cmds: [],
+    confidence: "low",
+  },
+};
 
 /**
  * Detect the current AI coding agent harness.
  * Uses PRODUCT_WORKFLOW_CLI env var (primary) or platform-specific files (fallback).
  * Returns "generic" if detection fails.
  */
-export function detectCLI(): string {
+export function detectCLI(): CLI {
   // Primary: explicit environment variable
   const envCli = process.env.PRODUCT_WORKFLOW_CLI;
   if (envCli && envCli.trim()) {
-    return envCli.trim().toLowerCase();
+    const cli = envCli.trim().toLowerCase() as CLI;
+    if (["pi", "opencode", "claude-code", "codex", "generic"].includes(cli)) {
+      return cli;
+    }
+    console.warn(`[cali-product-workflow] Unknown PRODUCT_WORKFLOW_CLI: ${cli}, defaulting to generic`);
+    return "generic";
   }
 
-  // Fallback: check platform-specific files
-  const home = process.env.HOME || dirname(process.cwd());
-
+  // Fallback: check platform-specific directories (highest confidence)
+  const home = homedir();
+  
   if (existsSync(join(home, ".pi"))) {
     return "pi";
   }
-  if (existsSync(join(home, ".opencode"))) {
+  if (existsSync(join(home, ".config", "opencode")) || existsSync(join(home, ".opencode"))) {
     return "opencode";
   }
-  if (existsSync(join(home, ".claude"))) {
+  if (existsSync(join(home, ".claude")) || existsSync(".claude-plugin")) {
     return "claude-code";
   }
-  if (existsSync(join(home, ".codex"))) {
+  if (existsSync(join(home, ".codex")) || existsSync(".codex-plugin")) {
     return "codex";
   }
 
+  // Tertiary: check command availability (lower confidence)
+  const { execSync } = require("child_process");
+  
+  try {
+    execSync("pi --version 2>/dev/null", { stdio: "ignore" });
+    return "pi";
+  } catch { /* not available */ }
+  
+  try {
+    execSync("opencode --version 2>/dev/null", { stdio: "ignore" });
+    return "opencode";
+  } catch { /* not available */ }
+  
+  try {
+    execSync("claude --version 2>/dev/null", { stdio: "ignore" });
+    return "claude-code";
+  } catch { /* not available */ }
+  
+  try {
+    execSync("codex --version 2>/dev/null", { stdio: "ignore" });
+    return "codex";
+  } catch { /* not available */ }
+
   // Default to generic (safe fallback)
   return "generic";
+}
+
+/**
+ * Get detection info for diagnostics.
+ */
+export function getCLIDetectionInfo(): { cli: CLI; confidence: "high" | "medium" | "low"; reason: string } {
+  const envCli = process.env.PRODUCT_WORKFLOW_CLI;
+  if (envCli && envCli.trim()) {
+    const cli = envCli.trim().toLowerCase() as CLI;
+    if (["pi", "opencode", "claude-code", "codex", "generic"].includes(cli)) {
+      return { cli, confidence: "medium", reason: "PRODUCT_WORKFLOW_CLI set" };
+    }
+    return { cli: "generic", confidence: "low", reason: `Unknown PRODUCT_WORKFLOW_CLI: ${cli}` };
+  }
+  
+  const home = homedir();
+  
+  if (existsSync(join(home, ".pi"))) {
+    return { cli: "pi", confidence: "high", reason: "~/.pi directory exists" };
+  }
+  if (existsSync(join(home, ".config", "opencode"))) {
+    return { cli: "opencode", confidence: "high", reason: "~/.config/opencode directory exists" };
+  }
+  if (existsSync(join(home, ".claude"))) {
+    return { cli: "claude-code", confidence: "high", reason: "~/.claude directory exists" };
+  }
+  if (existsSync(join(home, ".codex"))) {
+    return { cli: "codex", confidence: "high", reason: "~/.codex directory exists" };
+  }
+  
+  return { cli: "generic", confidence: "low", reason: "No CLI detected, using generic fallback" };
+}
+
+/**
+ * Get CLI capabilities for the current or specified CLI.
+ */
+export function getCLICapabilites(cli?: CLI): ReturnType<typeof getCLICapabilities> {
+  const detected = cli || detectCLI();
+  return getCLICapabilities(detected);
 }
 
 /**

@@ -12,7 +12,15 @@ import {
 import { updateFooter, notifyPhase, showOverlay } from "./ui";
 import cmdStart from "./start";
 
+// ── Import Command Dispatcher for Multi-CLI Support ─────────────────
+import { WORKFLOW_COMMANDS, type CommandDescriptor } from "./adapters/commands/dispatcher";
+
 type CmdCtx = ExtensionCommandContext;
+
+// Pi passes the raw text after the command name as the first argument (a string).
+interface CmdHandler {
+  (pi: ExtensionAPI, args: string, ctx: CmdCtx): void | Promise<void>;
+}
 
 // ── Helper: parse command args ───────────────────────────────────────
 // Pi passes the raw text after the command name as a string.
@@ -720,13 +728,37 @@ function cmdClean(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
 }
 
 // =============================================================================
-// REGISTRATION
+// COMMAND DESCRIPTIONS (Source of Truth)
 // =============================================================================
 
-// Pi passes the raw text after the command name as the first argument (a string).
-interface CmdHandler {
-  (pi: ExtensionAPI, args: string, ctx: CmdCtx): void | Promise<void>;
+// Re-export WORKFLOW_COMMANDS for other modules that need command definitions
+export { WORKFLOW_COMMANDS } from "./adapters/commands/dispatcher";
+export type { CommandDescriptor } from "./adapters/commands/dispatcher";
+
+const COMMAND_DESCRIPTIONS: Record<string, string> = {
+  "product-workflow-start": "Start a new workflow. Usage: /pw:start [name=...] [description=...] [@file]",
+  "product-workflow-stop":  "Stop workflow(s): /pw:stop | all | name1 name2",
+  "product-workflow-pause": "Pause active workflow: /pw:pause",
+  "product-workflow-resume":"Resume paused workflow: /pw:resume [name=name]",
+  "product-workflow-status":"Show active workflow status: /pw:status",
+  "product-workflow-list":  "List workflows: /pw:ls | all | archived | path=DIR",
+  "product-workflow-setphase":"Jump to phase: /pw:setphase phase=N | phasename=Name",
+  "product-workflow-next":  "Advance to next phase: /pw:next",
+  "product-workflow-complete":"Mark active workflow complete: /pw:complete",
+  "product-workflow-goto":  "Go to a workflow: /pw:goto [name=name]",
+  "product-workflow-rename":"Rename active workflow: /pw:rename novo-nome | name=novo-nome",
+  "product-workflow-menu":  "Open workflow overview overlay: /pw:menu",
+  "product-workflow-clean": "Archive stale or purge archived: /pw:clean [hours=4] | purge",
+};
+
+// Helper to get description from canonical name
+function getCommandDescription(canonicalName: string): string {
+  return COMMAND_DESCRIPTIONS[canonicalName] || "";
 }
+
+// =============================================================================
+// REGISTRATION
+// =============================================================================
 
 // Canonical + alias map: handler → list of command names
 const CMD_MAP: [CmdHandler, string, string][] = [
@@ -745,27 +777,120 @@ const CMD_MAP: [CmdHandler, string, string][] = [
   [cmdClean,   "product-workflow-clean", "pw:clean"],
 ];
 
-const COMMAND_DESCRIPTIONS: Record<string, string> = {
-  "product-workflow-start": "Start a new workflow. Usage: /pw:start [name=...] [description=...] [@file]",
-  "product-workflow-stop":  "Stop workflow(s): /pw:stop | all | name1 name2",
-  "product-workflow-pause": "Pause active workflow: /pw:pause",
-  "product-workflow-resume":"Resume paused workflow: /pw:resume [name=name]",
-  "product-workflow-status":"Show active workflow status: /pw:status",
-  "product-workflow-list":  "List workflows: /pw:ls | all | archived | path=DIR",
-  "product-workflow-setphase":"Jump to phase: /pw:setphase phase=N | phasename=Name",
-  "product-workflow-next":  "Advance to next phase: /pw:next",
-  "product-workflow-complete":"Mark active workflow complete: /pw:complete",
-  "product-workflow-goto":  "Go to a workflow: /pw:goto [name=name]",
-  "product-workflow-rename":"Rename active workflow: /pw:rename novo-nome | name=novo-nome",
-  "product-workflow-menu":  "Open workflow overview overlay: /pw:menu",
-  "product-workflow-clean": "Archive stale or purge archived: /pw:clean [hours=4] | purge",
-};
+/**
+ * Get command handler by command name.
+ * Used by adapters to route commands to their handlers.
+ */
+export function getCommandHandler(commandName: string): CmdHandler | null {
+  for (const [handler, canonical, alias] of CMD_MAP) {
+    if (canonical === commandName || alias === commandName) {
+      return handler;
+    }
+  }
+  return null;
+}
 
+/**
+ * Get all command names (canonical + aliases) for the given CLI.
+ */
+export function getCommandNames(): Array<{ canonical: string; alias: string; description: string }> {
+  return CMD_MAP.map(([, canonical, alias]) => ({
+    canonical,
+    alias,
+    description: getCommandDescription(canonical),
+  }));
+}
+
+/**
+ * Execute a command by name.
+ * Used by adapters when handling CLI-specific command triggers.
+ */
+export function executeCommand(
+  pi: ExtensionAPI,
+  commandName: string,
+  args: string,
+  ctx: CmdCtx
+): void | Promise<void> {
+  const handler = getCommandHandler(commandName);
+  if (handler) {
+    handler(pi, args, ctx);
+  }
+}
+
+/**
+ * Register commands with the Pi extension.
+ * This is the main entry point for command registration.
+ * 
+ * For multi-CLI support, adapters use the WORKFLOW_COMMANDS array
+ * and generate appropriate command files for their CLI.
+ */
 export function registerCommands(pi: ExtensionAPI): void {
   for (const [handler, canonical, alias] of CMD_MAP) {
     const wrapper = async (args: string, ctx: any) => handler(pi, args ?? "", ctx as CmdCtx);
-    const desc = COMMAND_DESCRIPTIONS[canonical] || "";
+    const desc = getCommandDescription(canonical);
     pi.registerCommand(canonical, { description: desc, handler: wrapper });
     pi.registerCommand(alias, { description: `Alias: ${desc}`, handler: wrapper });
   }
+}
+
+// ── Command Registration System for Multi-CLI ───────────────────────
+
+/**
+ * Get command files for a specific CLI.
+ * Used by adapters to generate CLI-specific command files.
+ */
+export function getCommandFilesForCLI(cli: string): Array<{ path: string; content: string }> {
+  const commandFiles: Array<{ path: string; content: string }> = [];
+  
+  for (const cmd of WORKFLOW_COMMANDS) {
+    const description = getCommandDescription(cmd.canonicalName);
+    const usage = description.replace(/^[^:]+: /, "");
+    
+    switch (cli) {
+      case "opencode":
+      case "claude-code":
+        // Skills-based command files
+        commandFiles.push({
+          path: `skills/${cmd.name.replace(":", "-")}.md`,
+          content: generateSkillFile(cmd.name, description, usage),
+        });
+        break;
+      case "codex":
+        // Command files for Codex
+        commandFiles.push({
+          path: `commands/${cmd.name.replace(":", "-")}.md`,
+          content: generateCommandFile(cmd.name, description, usage),
+        });
+        break;
+      // Pi and generic don't need file-based commands
+    }
+  }
+  
+  return commandFiles;
+}
+
+function generateSkillFile(name: string, description: string, usage: string): string {
+  return `---
+name: ${name}
+description: ${description}
+---
+
+// Usage: ${usage}
+
+/skill:cali-product-workflow
+
+${name} {args}
+`;
+}
+
+function generateCommandFile(name: string, description: string, usage: string): string {
+  return `---
+name: ${name}
+description: ${description}
+---
+
+@agent
+// Usage: ${usage}
+${name} {args}
+`;
 }

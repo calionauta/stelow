@@ -2,6 +2,26 @@
 
 All notable changes to `@renatocaliari/pi-product-workflow` will be documented in this file.
 
+## [Unreleased]
+
+### Changed
+
+- **Multi-CLI support**: Package now installs on any CLI (pi, opencode, claude-code, codex)
+  - Removed `pi:` field from package.json
+  - Moved Pi-specific peerDependencies to `optionalPeerDependencies`
+  - Added `exports` field for skills and cli-tools subpaths
+  - Updated description to reflect multi-CLI support
+  - Removed "pi-package" from keywords
+
+### Documentation
+
+- Updated `docs/INSTALLATION.md` with:
+  - Clear separation of required vs Pi-specific dependencies
+  - Generic npm install instructions for non-Pi CLIs
+  - CLI-specific installation methods (opencode, claude-code, codex)
+
+---
+
 ## [0.1.0-alpha] - 2026-05-15
 
 ### Added
