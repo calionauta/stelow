@@ -231,6 +231,8 @@ Installs: Plugin in `opencode.json` + Skills
 
 **Update:** `./install.sh update`
 
+**Uninstall:** `./install.sh remove`
+
 #### Claude Code
 
 ```bash
@@ -243,6 +245,8 @@ Installs: Plugin + Skills
 
 **Update:** `./install.sh update`
 
+**Uninstall:** `./install.sh remove`
+
 #### Codex
 
 ```bash
@@ -254,6 +258,8 @@ PRODUCT_WORKFLOW_CLI=codex ./install.sh
 Installs: Marketplace plugin + Skills
 
 **Update:** `./install.sh update`
+
+**Uninstall:** `./install.sh remove`
 
 ### Usage
 
