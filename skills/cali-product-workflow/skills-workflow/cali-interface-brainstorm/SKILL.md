@@ -8,7 +8,7 @@ description: >
 
 # Interface Brainstorming
 
-> **Tools:** See `references/pi-tools/subagents.md` for subagent patterns.
+> **Tools:** See `references/cli-tools/subagents.md` for subagent patterns.
 
 ## Overview
 
@@ -72,7 +72,7 @@ Append to the interfaces file.`,
 
 ## Visual Review (Phase 8 Gate)
 
-After all proposals + Hybrid, use `references/pi-tools/plannotator.md` for the Plannotator command format.
+After all proposals + Hybrid, use `references/cli-tools/plannotator.md` for the Plannotator command format.
 
 ## User Selection (Phase 9)
 
@@ -94,4 +94,4 @@ Interface proposals are saved to:
 ## Environment Adaptation
 
 If a tool is unavailable, check:
-`../../../cali-product-workflow/references/pi-tools/`
+`../../../cali-product-workflow/references/cli-tools/`

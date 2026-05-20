@@ -9,7 +9,7 @@ description: >
 
 # Shape Up Planning
 
-> **Tools:** See `references/pi-tools/subagents.md` for subagent patterns.
+> **Tools:** See `references/cli-tools/subagents.md` for subagent patterns.
 
 ## Overview
 
@@ -143,4 +143,4 @@ See `references/proposal-structure.md` for the expected output format.
 ## Environment Adaptation
 
 If a tool is unavailable, check:
-`../../../cali-product-workflow/references/pi-tools/`
+`../../../cali-product-workflow/references/cli-tools/`

@@ -9,7 +9,7 @@ description: >
 
 # Tech Planning Sequencing
 
-> **Tools:** See `references/pi-tools/subagents.md` for subagent patterns, `references/pi-tools/goals.md` for goal commands.
+> **Tools:** See `references/cli-tools/subagents.md` for subagent patterns, `references/cli-tools/goals.md` for goal commands.
 
 This skill executes the Tech Planning phase. It can be run:
 1. **Standalone:** `/skill:cali-tech-planning` — after Shape Up and Critique
@@ -119,7 +119,7 @@ Based on testing-strategy.md, add scopes for:
 plannotator annotate .cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_{v}.md --gate
 ```
 
-See `references/pi-tools/plannotator.md` for command format, after-approval workflow, and frozen file rules.
+See `references/cli-tools/plannotator.md` for command format, after-approval workflow, and frozen file rules.
 
 | Scenario | Action |
 |---------|--------|
@@ -204,4 +204,4 @@ See `skills-execution/cali-testing-ai-code/SKILL.md`
 ## Environment Adaptation
 
 If a tool is unavailable, check:
-`../../../cali-product-workflow/references/pi-tools/`
+`../../../cali-product-workflow/references/cli-tools/`

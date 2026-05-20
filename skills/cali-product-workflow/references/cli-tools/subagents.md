@@ -1,24 +1,65 @@
-# Tool: subagent
+# Subagents
 
-> Parallel task delegation for PI using pi-subagents (nicobailon).
+## Quick Summary
 
----
+> Delegate parallel work to built-in subagents with task handoff. Alternative: execute directly with context preservation.
 
-## Specific Command (PI)
+## Available Commands by CLI
+
+| CLI | Command | Package | Available |
+|-----|---------|---------|-----------|
+| pi | `subagent({ agent, task, context })` | pi-subagents | ✅ |
+| opencode | `subagent({ agent, task, context })` | Built-in | ✅ |
+| claude-code | `subagent({ agent, task, context })` | Built-in | ✅ |
+| codex | `subagent({ agent, task, context })` | Built-in | ✅ |
+| generic | Execute directly with file-based handoff | — | ✅ |
+
+## Command Details
+
+### pi
 
 ```typescript
 subagent({
   agent: "[type]",
   task: "...",
   output: "...",
-  context: "[fork|fresh]"
+  context: "fork"
 })
 ```
 
-| Info | Value |
-|------|-------|
-| Package | pi-subagents (nicobailon) |
-| Modes | parallel (tasks[], concurrency), chain, single |
+| Package | Source |
+|---------|--------|
+| pi-subagents | nicobailon |
+
+### opencode, claude-code, codex
+
+```typescript
+subagent({
+  agent: "[type]",
+  task: "...",
+  output: "...",
+  context: "fork"
+})
+```
+
+Built-in delegate/subagent functionality.
+
+### generic (Fallback)
+
+When subagent is not available:
+
+1. Execute task directly in current context
+2. Save outputs to files
+3. Read files in next task for continuation
+
+```typescript
+// Instead of subagent, execute directly:
+// 1. Do the work
+// 2. Save to file
+write({ path: "output.md", content: "..." })
+// 3. Next task reads the file
+read({ path: "output.md" })
+```
 
 ---
 
@@ -38,6 +79,7 @@ subagent({
 ## Common Patterns
 
 ### Parallel (Step 1 - 5 proposals)
+
 ```typescript
 subagent({
   tasks: [
@@ -53,6 +95,7 @@ subagent({
 ```
 
 ### Single (Step 3 - Hybrid)
+
 ```typescript
 subagent({
   agent: "worker",
@@ -62,6 +105,7 @@ subagent({
 ```
 
 ### Parallel with Review
+
 ```typescript
 subagent({
   tasks: [
@@ -74,6 +118,7 @@ subagent({
 ```
 
 ### Scouting
+
 ```typescript
 subagent({
   agent: "scout",
@@ -98,6 +143,7 @@ subagent({
 ## Output Files
 
 For tasks that save output, use meaningful paths:
+
 ```
 .cali-product-workflow/{YYYY-MM-DD}/{_dir}/interfaces/interfaces_v{N}.md
 .cali-product-workflow/.../strategic/{name}.md
@@ -105,11 +151,11 @@ For tasks that save output, use meaningful paths:
 
 ---
 
-## Fallback (Other Harnesses)
+## Fallback (Generic)
 
-If `subagent` is not available:
-- Execute task directly while preserving context
-- Keep outputs in files for continuation
-- Use harness equivalent (e.g., Fusion's `fn_delegate_task`)
+> Delegate parallel work to built-in subagents with task handoff pattern. Use the agent's native subagent/delegate tool.
 
-**Abstraction:** "Parallel task delegation with specialized agent"
+If no subagent available:
+- Execute tasks directly
+- Save outputs to files
+- Read files for continuation

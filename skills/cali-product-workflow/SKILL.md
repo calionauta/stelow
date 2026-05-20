@@ -26,7 +26,7 @@ You are a strategic product planner following the Shape Up method. This is the *
 1. **NEVER** skip any phase. Follow the sequence below.
 2. **Review Gate (Plannotator --gate) is MANDATORY.** Verbal approval is not a substitute.
 3. **NEVER activate the supervisor during Phases 3-10.** Only in Phase 11.
-4. If a tool is unavailable, the fallback is documented in each `references/pi-tools/*.md` file.
+4. If a tool is unavailable, the fallback is documented in each `references/cli-tools/*.md` file.
 
 ---
 
@@ -36,14 +36,14 @@ You are a strategic product planner following the Shape Up method. This is the *
 
 | Tool | Reference |
 |------|----------|
-| `subagent` | `references/pi-tools/subagents.md` |
-| `ask_user_question` | `references/pi-tools/ask.md` |
-| `plannotator annotate --gate` | `references/pi-tools/plannotator.md` |
-| `/sisyphus`, `/goal` | `references/pi-tools/goals.md` |
-| `safe-change` | `references/pi-tools/safe-change.md` |
-| `intercom` | `references/pi-tools/intercom.md` |
-| `supervise` | `references/pi-tools/supervise.md` |
-| `/pw:next`, `/pw:setphase` | `references/pi-tools/phase-status.md` |
+| `subagent` | `references/cli-tools/subagents.md` |
+| `ask_user_question` | `references/cli-tools/ask.md` |
+| `plannotator annotate --gate` | `references/cli-tools/plannotator.md` |
+| `/sisyphus`, `/goal` | `references/cli-tools/goals.md` |
+| `safe-change` | `references/cli-tools/safe-change.md` |
+| `intercom` | `references/cli-tools/intercom.md` |
+| `supervise` | `references/cli-tools/supervise.md` |
+| `/pw:next`, `/pw:setphase` | `references/cli-tools/phase-status.md` |
 
 **NÃO hardcode comandos ou package names nos skills.** Use as referências acima.
 
@@ -104,7 +104,7 @@ Domain playbooks available for tactical reference during planning/execution:
 
 ## 📋 Phase Index
 
-> **Phase Status:** Read `references/pi-tools/phase-status.md` for ASCII status display and CLI commands.
+> **Phase Status:** Read `references/cli-tools/phase-status.md` for ASCII status display and CLI commands.
 
 Follow the sequence below. For phases 3-5 and 7, delegate to subskills via `/skill:`. Each subskill has its own **Reference Index** — load the skill to see it.
 
@@ -183,7 +183,7 @@ Phase 11: Execution
 ## ⚠️ Safety Rules
 
 ### Review Gate (Phase 5)
-Use `references/pi-tools/plannotator.md` for Plannotator gate rules.
+Use `references/cli-tools/plannotator.md` for Plannotator gate rules.
 
 ### Scope Adjustment (Phase 6)
 - Use **Pattern 3** from `phases/ask-patterns.md`
@@ -192,7 +192,7 @@ Use `references/pi-tools/plannotator.md` for Plannotator gate rules.
 - If removing items, update spec in-place
 
 ### Interface Gate (Phase 8)
-Use `references/pi-tools/plannotator.md` for Plannotator command.
+Use `references/cli-tools/plannotator.md` for Plannotator command.
 
 ### Interface Selection (Phase 9)
 - Use **Pattern 2** from `phases/ask-patterns.md`
@@ -227,4 +227,4 @@ Use `references/pi-tools/plannotator.md` for Plannotator command.
 
 ## 🌐 Environment Adaptation
 
-Each tool in `references/pi-tools/` documents its own fallback.
+Each tool in `references/cli-tools/` documents its own fallback.

@@ -8,7 +8,7 @@ description: >
 
 # Plan Critique
 
-> **Tools:** See `references/pi-tools/subagents.md` for subagent patterns.
+> **Tools:** See `references/cli-tools/subagents.md` for subagent patterns.
 
 This skill executes the Plan Critique phase. It can be run:
 1. **Standalone:** `/skill:cali-plan-critique` — after a Shape Up session
@@ -77,4 +77,4 @@ Updated spec (after gap resolution):
 ## Environment Adaptation
 
 If a tool is unavailable, check:
-`../../../cali-product-workflow/references/pi-tools/`
+`../../../cali-product-workflow/references/cli-tools/`
