@@ -60,3 +60,9 @@ npm-debug.log*
 pnpm-lock.yaml
 # yarn.lock (uncomment if needed)
 # package-lock.json (uncomment if needed)
+# Local skills (pi installs here)
+.agents/
+# Plugin configs (Claude Code, Codex, OpenCode)
+.claude-plugin/
+.codex-plugin/
+.opencode-plugin/
