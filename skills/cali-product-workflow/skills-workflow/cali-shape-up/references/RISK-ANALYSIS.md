@@ -9,11 +9,26 @@ date: 2026-05-15
 ## Risk Analysis Framework
 
 Analyze:
-
 1. assumptions and gaps
 2. systemic touchpoints
 3. investigation questions
 4. actionable risks
+
+---
+
+### Risk Severity Classification
+
+| Severity | Impact | Action Required |
+|----------|--------|-----------------|
+| **LOW** | Minor delay possible | Monitor, document in spec |
+| **MEDIUM** | Could affect timeline | Spike investigation before betting |
+| **HIGH** | Threatens project viability | Must resolve before betting |
+| **CRITICAL** | Project should not proceed | Block — requires re-shaping |
+
+**Rules:**
+- Classify risks during analysis, not at the end
+- HIGH/CRITICAL risks should have investigation spikes in the plan
+- LOW risks can be accepted with monitoring
 
 ---
 

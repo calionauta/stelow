@@ -30,6 +30,30 @@ Instead of auto-trigger, use explicitly:
 
 This keeps your context cleaner for non-product tasks.
 
-## For Full Documentation
+## 📁 File Naming Convention
 
-See: https://github.com/renatocaliari/pi-product-workflow/blob/main/README.md
+**All project files must use `lowercase-kebab-case`:**
+
+```bash
+# ✅ Correct
+spec-product.md
+tech-planning.md
+cali-testing-ai-code/
+
+# ❌ Wrong
+SpecProduct.md  # PascalCase
+TECH-PLANNING.md  # UPPERCASE
+techPlanning.md  # camelCase
+```
+
+**Rationale:**
+- Consistent with URL standards (lowercase is standard for web paths)
+- Easier tab completion
+- Cross-platform compatibility (macOS is case-insensitive by default)
+- Easier to type and remember
+
+**Applies to:**
+- Markdown files (.md)
+- Configuration files (.yaml, .json, .toml)
+- Directories and folders
+- Source code files (use language conventions, but prefer lowercase for project files)
