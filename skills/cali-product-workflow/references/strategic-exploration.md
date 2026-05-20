@@ -9,7 +9,7 @@ Otherwise, proceed to the next phase (2b or 3).
 
 Look for user mentions of:
 - Strategic direction: "how to evolve", "new features", "opportunities", "strategy"
-- Methods: JTBD, jobs-to-be-done, evolutionary, opportunity mapping, short-cycle
+- Methods: JTBD, jobs-to-be-done, evolutionary, opportunity mapping, product-discovery
 - Exploration: "what to build", "ideas for the product"
 
 ## Ask
@@ -34,7 +34,7 @@ ask_user_question({
         description: "Opportunities ranked by impact and effort. Quick wins + strategic bets."
       },
       {
-        label: "Short-Cycle Product Method",
+        label: "Product Discovery Method",
         description: "Validation with quick experiments. Metrics, channels, pricing, business model."
       },
       {

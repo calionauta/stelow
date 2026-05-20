@@ -14,7 +14,7 @@ description: >
   
   Standalone loading: skills-workflow/cali-{name}/SKILL.md
   
-  External skills: JTBD, Evolutionary, Opportunity Mapping, Short-Cycle, Ads, Business Models,
+  External skills: JTBD, Evolutionary, Opportunity Mapping, Product Discovery, Ads, Business Models,
   Health, Marketplace, Open Source, Pricing, Promotions, Trust Building
 ---
 
@@ -78,7 +78,7 @@ In Phase 2 (Strategic Context), the user can choose strategic analyses **in para
 | **Evolutionary Principles** | `cali-evolutionary-principles` | Stepping-stones, novelty map, evolutionary forces |
 | **Opportunity Mapping** | `cali-opportunity-mapping` | Ranked opportunities, solution candidates |
 | **Multi-Method Market Analysis** | `cali-product-multi-method-market-analysis` | PESTLE, Wardley Maps, Foresight, trends |
-| **Short-Cycle Product** | `cali-product-short-cycle` | Experiment plan, metrics, pricing |
+| **Product Discovery** | `cali-product-discovery` | Experiment plan, metrics, pricing |
 
 All execute **concurrently** via `subagent({tasks: [...], concurrency: N})`.
 See `phases/context.md` for the full flow.

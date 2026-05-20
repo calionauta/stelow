@@ -1,5 +1,5 @@
 ---
-name: cali-short-cycle-product
+name: cali-product-discovery
 description: >
   [Cali] Complete expert in the short-cycle product learning method,
   based on the e-book "Guide to Creating Products with Short Learning Cycles" by Cali (Renato Caliari).

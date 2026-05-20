@@ -2,7 +2,7 @@
 
 **Transform product ideas into approved, testable plans — systematically.**
 
-This package brings Shape Up's betting table methodology to pi.dev. Instead of open-ended feature lists, you shape proposals with clear scope boundaries, validate them through adversarial critique, and generate typed technical scopes ready for autonomous execution. Includes 16 specialized product skills (JTBD, Opportunity Mapping, Short-Cycle validation, pricing strategies, trust building, and more), a real-time TUI for workflow state, and AI-aware mutation testing strategy for software products.
+This package brings Shape Up's betting table methodology to pi.dev. Instead of open-ended feature lists, you shape proposals with clear scope boundaries, validate them through adversarial critique, and generate typed technical scopes ready for autonomous execution. Includes 16 specialized product skills (JTBD, Opportunity Mapping, Product Discovery validation, pricing strategies, trust building, and more), a real-time TUI for workflow state, and AI-aware mutation testing strategy for software products.
 
 ---
 
@@ -148,6 +148,7 @@ pi -e npm:@renatocaliari/pi-product-workflow
 ## 🔄 Workflow Flow
 
 ```
+
 ╔══════════════════════════════════════════════════════════════════╗
 ║                    PRODUCT WORKFLOW                            ║
 ╚══════════════════════════════════════════════════════════════════╝
@@ -161,7 +162,7 @@ pi -e npm:@renatocaliari/pi-product-workflow
  ┌─────────────────────────────────────────────────────────────┐
  │  2. Strategic Context (Optional) ─── parallel exploration ──┐
  │  ┌──────┐  ┌──────────┐  ┌──────────┐  ┌──────┐  ┌─────┐ │
- │  │ JTBD │─▶│Evolution │─▶│Opportun. │─▶│Market│─▶│Short│ │
+ │  │ JTBD │─▶│Evolution │─▶│Opportun. │─▶│Market│─▶│Discovery│ │
  │  └──────┘  └──────────┘  └──────────┘  └──────┘  └─────┘ │
  │                      Explore before betting                 │
  └──────────────────────┬──────────────────────────────────────┘
@@ -225,11 +226,10 @@ pi -e npm:@renatocaliari/pi-product-workflow
 ```
 
 ┌─────────────────────────────────────────────────────────────┐
-│  🔍 Domain Libraries (auto-detected on triggers)            │
+│  🔍 Domain Libraries (auto-detected on triggers)           │
 │     Pricing · Promotions · Ads · Trust · Business Models    │
 │     Health · Marketplace · Open Source                      │
 └─────────────────────────────────────────────────────────────┘
-```
 
 ### Domain Libraries (Automatic Detection)
 
@@ -253,7 +253,7 @@ The LLM automatically detects domain signals in your request and suggests releva
 │  DOMAIN LIBRARIES (auto-detected on user input)              │
 │                                                              │
 │  ┌──────────┐ ┌───────────────┐ ┌─────────┐ ┌────────────┐   │
-│  │   Ads    │ │Business Models│ │ Pricing │ │Promotions │   │
+│  │   Ads    │ │Business Models│ │ Pricing │ │ Promotions │   │
 │  └──────────┘ └───────────────┘ └─────────┘ └────────────┘   │
 │  ┌──────────┐ ┌───────────────┐ ┌─────────┐ ┌────────────┐   │
 │  │  Health  │ │  Marketplace  │ │Open Src │ │Trust Build │   │
@@ -261,7 +261,6 @@ The LLM automatically detects domain signals in your request and suggests releva
 └──────────────────────────────────────────────────────────────┘
 ```
 
-Every plan gets adversarial critique. Gate approval prevents wasted technical work.
 
 
 
@@ -413,7 +412,7 @@ flaky_rate: > 5% → WARN
 ### Strategic Analysis
 | Skill | Command | Description |
 |-------|---------|-------------|
-| **Short Cycle** | `/skill:cali-product-short-cycle` | Rapid validation method |
+| **Product Discovery** | `/skill:cali-product-short-cycle` | Rapid validation method |
 | **Opportunity Mapping** | `/skill:cali-product-opportunity-mapping` | Strategic opportunities |
 | **Job-to-Be-Done** | `/skill:cali-product-job-to-be-done` | JTBD framework |
 | **Evolutionary Principles** | `/skill:cali-evolutionary-principles` | Product evolution |

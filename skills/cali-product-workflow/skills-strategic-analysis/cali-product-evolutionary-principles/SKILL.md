@@ -728,7 +728,7 @@ This skill pairs especially well with:
 - `cali-scope-executor`
   for routing approved scopes to the correct executor
 
-- `cali-short-cycle-product`
+- `cali-product-discovery`
   for validating ideas with short learning cycles
 
 ---

@@ -62,7 +62,7 @@ Recommendation: [justification based on project context].`,
         description: "PESTLE, Foresight, Wardley Maps. Useful for understanding competition, trends and positioning."
       },
       {
-        label: "Short-Cycle Product",
+        label: "Product Discovery",
         description: "Quick idea validation with short learning cycles. Ideal for unvalidated hypotheses."
       }
     ]
