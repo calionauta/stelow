@@ -1,13 +1,31 @@
-# Dependencies
-node_modules/
+# ==== cali-product-workflow cleanup ====
 
-# Build outputs
-dist/
-build/
+# Session checkpoints (local only)
+progress.md
+context.md
+research.md
 
-# Logs
-*.log
-npm-debug.log*
+# Test results (CI output)
+test-results/
+stryker-reports/
+
+# Local workflow artifacts (auto-generated at runtime)
+.pi/
+.pi-*
+.cali-product-workflow/
+.cali-product-workflow-global.json
+
+# OpenCode session plans
+.opencode/plans/
+
+# Coverage
+coverage/
+
+# Temporary files
+*.tmp
+*.temp
+.tmp/
+temp/
 
 # OS files
 .DS_Store
@@ -19,52 +37,26 @@ Thumbs.db
 *.swp
 *.swo
 
+# Build outputs
+dist/
+build/
+
+# Dependencies
+node_modules/
+
 # Environment
 .env
 .env.local
 .env.*.local
 
-# pi specific
-.pi/
-.pi-*
-
-# OpenCode agent plans (local session artifacts)
-.opencode/
-
-# Local workflow tracking (auto-generated at runtime)
-cali-product-workflow.json
-.cali-product-workflow-global.json
-
-# Product workflow plan artifacts (auto-generated)
-.cali-product-workflow/
-
-# Git worktrees for parallel workflow execution
+# Git worktrees for parallel execution
 .worktrees/
 
-# Test coverage
-coverage/
+# Logs
+*.log
+npm-debug.log*
 
-# Temporary files
-*.tmp
-*.temp
-.tmp/
-temp/
-
-# Lock files (optional - some prefer to keep)
-# package-lock.json
+# Lock files
 pnpm-lock.yaml
-
-# ==== pi-product-workflow cleanup ====
-# Session checkpoints (local only)
-progress.md
-
-# Test results (CI output)
-test-results/
-
-# Old planning docs (historical, outdated)
-docs/2026-05-18/
-docs/2026-05-19/
-
-# Publishing docs (personal notes)
-docs/NPM-PUBLISHING.md
-docs/UI-ENHANCEMENTS.md
+# yarn.lock (uncomment if needed)
+# package-lock.json (uncomment if needed)
