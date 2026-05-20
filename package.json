@@ -1,6 +1,6 @@
 {
   "name": "@renatocaliari/cali-product-workflow",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Product workflow for AI coding agents: Shape Up + Interface + Tech Planning + Critique + Gate. Includes 16 product skills: workflow, short-cycle, opportunity-mapping, job-to-be-done, evolutionary, ads, business-models, health, marketplace-playbook, open-source, pricing, promotions, trust-building, multi-method-market-analysis, scope-executor, testing-ai-code. Works with pi.dev, OpenCode, Claude Code, and Codex.",
   "keywords": [
     "pi-skill",

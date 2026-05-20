@@ -1,55 +1,47 @@
-# AGENTS.md Plan for cali-product-workflow
+# AGENTS.md Plan - REVISED
 
-## Current State
+## Feedback do Plannotator
 
-O AGENTS.md atual tem:
-- Auto-trigger instructions (quando usar `/skill`)
-- File naming convention (lowercase-kebab-case)
-- Quando desabilitar
+1. **"O principal é installation?"** - Sim! AGENTS.md no repo deve ser útil para outros desenvolvedores
+2. **"Sumarize melhor baseado no README"** - Principios devem vir dos diferenciais
+3. **Remover "Betting table"** - Não quer esse conceito
+4. **"pq pi only?"** - Auto-trigger é específico do pi, mas o resto serve para todos
 
-Faltando:
-- Propósito do pacote
-- Comandos disponíveis
-- Fases do workflow
-- Princípios-chave
-- Instalação rápida
+## Análise do AGENTS.md Global do Usuário
 
-## Research: O que AGENTS.md deve conter
+O `~/.pi/agent/AGENTS.md` contém:
+- Regras de codificação (KISS, DRY, Locality of Behavior, SSE-first, HATEOS)
+- Context Mode obrigator
+- Testing Protocol
+- Subagents workflow
+- Plannotator gate
+- File naming convention
 
-Baseado na pesquisa sobre pi, opencode, claude-code e codex:
+**Isso é específico da instalação local, não do repo.**
 
-### Padrão Comum (todos suportam AGENTS.md)
+## Propósito do AGENTS.md do Repo
 
-| CLI | Como usa AGENTS.md |
-|-----|-------------------|
-| **pi** | `~/.pi/agent/AGENTS.md` - carrega automaticamente |
-| **opencode** | `.opencode/AGENTS.md` ou raiz - "rules" |
-| **claude-code** | `.claude/AGENTS.md` - plugin system |
-| **codex** | `~/.codex/AGENTS.md` - hierarquia global>local |
+O AGENTS.md do repo serve para:
+1. **Desenvolvedores que clonam** → orientações gerais do projeto
+2. **LLMs de outros agents** (opencode, claude-code, codex) → sabem como usar o workflow
+3. **Pi (quando usado em outros projetos)** → o auto-trigger funciona
 
-### Conteúdo Recomendado
-
-1. **Header**: Nome e propósito
-2. **Quick Reference**: Comandos principais
-3. **Workflow Phases**: Mapa do processo
-4. **Key Principles**: Filosofia e convenções
-5. **Installation**: Como ativar
-6. **Best Practices**: Convenções de nomenclatura
-
-## Proposta: Novo AGENTS.md
+## Novo AGENTS.md Proposto
 
 ```markdown
-# @renatocaliari/cali-product-workflow
+# cali-product-workflow
 
 **Transform product ideas into approved, testable plans — systematically.**
+
+This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI coding agents.
 
 ## Quick Commands
 
 | Command | Description |
 |---------|-------------|
 | `/skill:cali-product-workflow` | Start the workflow |
-| `/pw:start` | Begin planning session |
-| `/pw:menu` | Show workflow status |
+| `/pw:start` | Begin planning |
+| `/pw:menu` | Show status |
 
 ## Workflow Phases
 
@@ -58,12 +50,34 @@ Setup → Strategic → Shape Up → Interface → Critique → Tech Planning
   1         2           3          4          5           6
 ```
 
+## Key Differentiators
+
+- **Product domain libraries** — 8 domains auto-detected from your language (Pricing, Trust, Ads, Promotions, Open Source, Health, Marketplace, Business Models)
+- **Visual review gate** — Plannotator opens the full plan for point-by-point comments
+- **Interface exploration** — 5 approaches in ASCII art, then LLM creates hybrid
+- **IN/OUT scope boundaries** — Define what NOT to build before coding
+- **Typed technical scopes** — feature, spike, optimize, test-* with dependency mapping
+
 ## Key Principles
 
-- **Measure twice, cut once** — Define IN/OUT scope before coding
-- **Betting table** — Every proposal has a budget (appetite)
+- **Measure twice, cut once** — Shape proposals with IN/OUT boundaries BEFORE coding
 - **Visual review gate** — Plans must pass Plannotator before execution
-- **Typed scopes** — feature, spike, optimize, test-*
+- **Domain libraries** — Auto-detects 8 product domains from your input
+- **Technical scope mapping** — Breaks down into typed scopes, maps dependencies, sequences execution
+
+## Installation
+
+```bash
+./install.sh  # Auto-detects CLI
+```
+
+For detailed docs: [docs/INSTALLATION.md](docs/INSTALLATION.md)
+
+## File Naming
+
+All project files must use `lowercase-kebab-case`:
+- ✅ `spec-product.md`, `tech-planning.md`
+- ❌ `SpecProduct.md`, `TECH-PLANNING.md`
 
 ## Auto-Trigger (pi only)
 
@@ -75,53 +89,34 @@ This file auto-triggers when detecting:
 
 **To disable:** `rm ~/.pi/agent/AGENTS.md`
 
-## File Naming
+## For Developers
 
-All project files must use `lowercase-kebab-case`:
-- ✅ `spec-product.md`, `tech-planning.md`
-- ❌ `SpecProduct.md`, `TECH-PLANNING.md`
-
-## Installation
-
-```bash
-./install.sh  # Auto-detects CLI
+- **Skills:** 16 specialized skills in `skills/` directory
+- **CLI Support:** pi, opencode, claude-code, codex
+- **License:** MIT
+- **Repo:** https://github.com/renatocaliari/cali-product-workflow
 ```
 
-For detailed docs: [INSTALLATION.md](docs/INSTALLATION.md)
-```
+## Documentos Questionáveis - Diagnóstico
 
-## Changes from Current
+| Arquivo | Diagnóstico | Ação |
+|---------|-------------|------|
+| `docs/PORTABILITY.md` | Arquitectura técnica útil para devs que vão adaptar para outros CLIs | **Manter** - documenta decisões de design |
+| `docs/CI-TEST-PRACTICES.md` | Best practices de testes - útil mas muito específico | **Mover para `.github/`** como doc interno |
+| `docs/ABOUT-AUTO-TRIGGER.md` | Explica trade-off do auto-trigger - conteúdo já está no AGENTS.md | **Remover** - redundante |
+| `RELEASE_WORKFLOW.md` | Instruções para LLMs fazerem releases | **Mover para `.github/`** como doc interno |
+| `cali-product-workflow.json` | Schema JSON - necessário para validação | **Manter** |
+| `cali-product-workflow.schema.json` | Schema JSON - necessário para validação | **Manter** |
 
-| Aspect | Current | Proposed |
-|--------|---------|----------|
-| Header | Auto-trigger only | Full purpose + commands |
-| Commands | Only `/skill` | Full table with descriptions |
-| Workflow | Not shown | 6-phase map |
-| Principles | None | 4 key principles |
-| Installation | None | Quick reference |
-| File naming | Extensive | Condensed (already good) |
+## Resumo das Ações
 
-## Impact Analysis
-
-- ✅ **Pi**: Gets proper instructions, not just auto-trigger
-- ✅ **opencode**: Works with rules system
-- ✅ **claude-code**: Works with plugin manifest
-- ✅ **codex**: Works with AGENTS.md hierarchy
-- ⚠️ **Breaking**: None - additive only
-
-## Verification Plan
-
-1. Update AGENTS.md
-2. Run tests: `npm run test`
-3. Verify typecheck: `npm run typecheck`
-4. Commit and push
-5. Test in a fresh clone
-
-## Risks
-
-- **Low**: AGENTS.md é arquivo markdown simples
-- **Reversible**: Git guarda histórico
+| Tipo | Arquivos |
+|------|----------|
+| **Remover** | `docs/ABOUT-AUTO-TRIGGER.md`, `progress.md`, `context.md`, `research.md` |
+| **Mover para .github/** | `docs/CI-TEST-PRACTICES.md`, `RELEASE_WORKFLOW.md` |
+| **Manter** | `docs/PORTABILITY.md`, `docs/INSTALLATION.md`, `docs/DUAL-INSTALL-PATTERN.md` |
+| **Atualizar** | `AGENTS.md` com novo conteúdo |
 
 ## Recommended Action
 
-**APPROVE** - Update AGENTS.md with new content
+**APPROVE** - Execute cleanup plan and update AGENTS.md
