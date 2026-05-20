@@ -6,6 +6,39 @@ This package brings Shape Up's betting table methodology to AI coding agents. In
 
 ---
 
+## Philosophy
+
+> *"Let's go slow to go fast: invest time in thorough planning to gain speed and deliver value in execution."*
+
+**Traditional AI development:** "Here's what I want. Start coding."
+
+**With pi-product-workflow:** The user just says:
+
+```
+/pw:start "Here's what I want to build"
+```
+
+And the workflow begins asking questions, exploring scope, shaping the proposal, reviewing for gaps, getting visual approval, and only then generating typed technical scopes for execution.
+
+## About the Author
+
+**[Renato Caliari](https://www.linkedin.com/in/calirenato82/)** — Product specialist with hands-on experience:
+
+### 📚 Published Work
+
+- **E-books (Portuguese):**
+  - *Jobs-to-be-Done em Produto Digital*
+  - *Product Discovery com Short Learning Cycles*
+
+### 💼 Experience
+
+- Former **Product Manager** at tech companies
+- **Product Consultant** helping leaders with strategy and teams with processes
+
+### 🌐 Resources
+
+| Site | Description |
+|----
 ## Why This Exists
 
 **The Problem:** Building products with AI agents often leads to:
@@ -19,11 +52,13 @@ This package brings Shape Up's betting table methodology to AI coding agents. In
 **The Solution:** A structured workflow that makes AI think like a product manager:
 
 - ✅ **Measure thrice, cut once** — shapes proposals with IN/OUT boundaries BEFORE coding
+- ✅ **Strategic exploration** — Job To Be Done, Opportunity Mapping, Evolutionary Principles, Market Analysis, and Product Discovery knowledge integrated
 - ✅ **Adversarial critique** — reviews every plan for gaps, risks, and assumptions
 - ✅ **Visual review gate** — Plannotator opens the full plan for point-by-point comments (not just chat)
-- ✅ **Interface exploration in ASCII** — visualize tradeoffs and fluxos in seconds, no wasted development time
-- ✅ **LLM hybrid recommendation** — from multiple interface approaches, picks the best of each
+- ✅ **Interface exploration in ASCII art** — visualize 5 different approaches in seconds, no coding wasted
+- ✅ **LLM hybrid creation** — analyzes alternatives and creates a hybrid version combining the best of each
 - ✅ **Domain libraries** — auto-detects 8 product domains (Pricing, Trust, Ads, etc.) from your language
+- ✅ **Technical scope mapping** — breaks down into typed scopes, maps dependencies, sequences execution
 - ✅ **AI-aware mutation testing** — for software products, with coverage targets and CI gates
 - ✅ **Greenfield & Brownfield** — works for new products and existing product evolution
 
@@ -58,43 +93,15 @@ Both have a "plan" mode, but it's basic — restrict tools and add generic plann
 
 **vs. BMAD Method / Superpowers:**
 
-These frameworks enforce structure too, but for general software engineering. This workflow is purpose-built for **product planning**:
+These frameworks enforce structure too, but for general software engineering. This workflow is purpose-built for **digital product planning and technical execution**:
 
 - *"Measure thrice, cut once"* — intentional depth across scope, interface, and critique before writing a line of code
+- **Product + Technical scope** — not just planning, but breaks down into typed scopes, maps dependencies, sequences execution
 - Product-specific skills — Job To Be Done, Pricing, Trust Building, Ads, Promotions, etc.
-- Interface exploration with ASCII art — visualize tradeoffs and fluxos in seconds
-- LLM creates a hybrid version from the best points of each alternative
+- Interface exploration with ASCII art — visualize 5 approaches and create hybrid in seconds
 - Works for **greenfield** (new products) and **brownfield** (existing products)
 
-### Philosophy
-
-**Traditional AI development:** "Here's what I want. Start coding."
-
-**With pi-product-workflow:** The user just says:
-
-```
-/pw:start "Here's what I want to build"
-```
-
-And the workflow begins asking questions, exploring scope, shaping the proposal, reviewing for gaps, getting visual approval, and only then generating typed technical scopes for execution.## About the Author
-
-**[Renato Caliari](https://www.linkedin.com/in/calirenato82/)** — Product specialist with hands-on experience:
-
-### 📚 Published Work
-
-- **E-books (Portuguese):**
-  - *Jobs-to-be-Done em Produto Digital*
-  - *Product Discovery com Short Learning Cycles*
-
-### 💼 Experience
-
-- Former **Product Manager** at tech companies
-- **Product Consultant** helping leaders with strategy and teams with processes
-
-### 🌐 Resources
-
-| Site | Description |
-|------|-------------|
+#--|-------------|
 | **[timeproduto.com.br](https://www.timeproduto.com.br/)** | Product process divided into stages, with AI tools and prompts for each stage |
 | **[calirenato82.substack.com](https://calirenato82.substack.com)** | Blog on product topics, published prompts, and free e-books |
 
