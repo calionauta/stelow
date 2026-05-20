@@ -8,7 +8,7 @@
 |---------|-------------|
 | `/skill:cali-product-workflow` | Start the workflow |
 | `/pw:start` | Begin planning |
-| `/pw:menu` | Show status |
+| `/pw:menu` | Show workflow status |
 
 ## Workflow Phases
 
@@ -48,28 +48,58 @@ All project files must use `lowercase-kebab-case`:
 - ✅ `spec-product.md`, `tech-planning.md`
 - ❌ `SpecProduct.md`, `TECH-PLANNING.md`
 
-## Auto-Trigger
+## How to Integrate with Your AGENTS.md
 
-### How it works (pi only)
+All AI coding agents read `AGENTS.md` files and include their content in the LLM context. This works identically across all CLIs.
 
-Pi reads `~/.pi/agent/AGENTS.md` at startup and matches keywords against user input. When detecting:
-- Product planning, roadmap, features
-- Interface design, UX, components
-- Technical planning, architecture
-- Product critique, review
+**To use this workflow, add the following section to your global/user AGENTS.md:**
 
-It automatically triggers `/skill:cali-product-workflow`.
+```markdown
+---
 
-### Why not other CLIs?
+## cali-product-workflow Integration
 
-| CLI | AGENTS.md Support | Auto-Trigger |
-|-----|-------------------|---------------|
-| **pi** | ✅ Global `~/.pi/agent/AGENTS.md` | ✅ Keyword-based |
-| **opencode** | ✅ Project-level rules | ❌ Manual `/skill` |
-| **claude-code** | ✅ Plugin manifest | ❌ Manual |
-| **codex** | ✅ Global + local | ❌ Heuristic-based |
+When working on software projects, trigger the product workflow:
 
-**To disable (pi):** `rm ~/.pi/agent/AGENTS.md`
+1. **Trigger:** Use `/skill:cali-product-workflow` or `/pw:start`
+2. **Process:** Follow the 6-phase workflow
+3. **Execute:** Only after visual review gate (Plannotator approval)
+
+### Supported CLIs
+
+| CLI | Command |
+|-----|---------|
+| pi | `/skill:cali-product-workflow` or `/pw:start` |
+| opencode | `/skill cali-product-workflow` |
+| claude-code | `/skill cali-product-workflow` |
+| codex | `/skill cali-product-workflow` |
+
+### Best Practices
+
+- Run `/skill:cali-product-workflow` at the start of any product/feature work
+- Use `/pw:menu` to track workflow state
+- Get Plannotator approval before executing technical scopes
+```
+
+### Where to Add This
+
+| CLI | Your AGENTS.md Location |
+|-----|-------------------------|
+| **pi** | `~/.pi/agent/AGENTS.md` |
+| **opencode** | Project-level or `~/.config/opencode/` config |
+| **claude-code** | `~/.claude/AGENTS.md` or plugin config |
+| **codex** | `~/.codex/AGENTS.md` |
+
+### Quick Setup (pi)
+
+```bash
+# Copy this project's AGENTS.md content to your global config
+./scripts/setup.sh
+# Or manually copy the section above to ~/.pi/agent/AGENTS.md
+
+# To disable, remove:
+rm ~/.pi/agent/AGENTS.md
+```
 
 ## For Developers
 

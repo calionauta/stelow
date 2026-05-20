@@ -1,7 +1,7 @@
 {
   "name": "@renatocaliari/cali-product-workflow",
   "version": "0.2.2",
-  "description": "Product workflow for AI coding agents: Shape Up + Interface + Tech Planning + Critique + Gate. Includes 16 product skills: workflow, short-cycle, opportunity-mapping, job-to-be-done, evolutionary, ads, business-models, health, marketplace-playbook, open-source, pricing, promotions, trust-building, multi-method-market-analysis, scope-executor, testing-ai-code. Works with pi.dev, OpenCode, Claude Code, and Codex.",
+  "description": "Product workflow for AI coding agents: Shape Up + Interface + Tech Planning + Critique + Gate. Includes 16 product skills.",
   "keywords": [
     "pi-skill",
     "pi-extension",
@@ -9,51 +9,40 @@
     "workflow",
     "shape-up",
     "product-planning",
-    "product-management",
-    "safe-change"
+    "product-management"
   ],
   "license": "MIT",
   "author": "Cali",
   "type": "module",
+  "main": "./build/index.js",
+  "exports": {
+    ".": {
+      "import": "./build/index.js",
+      "types": "./build/index.d.ts"
+    },
+    "./skills": "./skills/",
+    "./extensions": "./extensions",
+    "./adapters": "./build/adapters/index.js"
+  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cali/cali-product-workflow.git"
+    "url": "git+https://github.com/renatocaliari/cali-product-workflow.git"
   },
-  "homepage": "https://github.com/cali/cali-product-workflow#readme",
+  "homepage": "https://github.com/renatocaliari/cali-product-workflow#readme",
   "bugs": {
-    "url": "https://github.com/cali/cali-product-workflow/issues"
-  },
-  "exports": {
-    ".": "./extensions/cali-product-workflow/index.js",
-    "./skills": "./skills/",
-    "./extensions": "./extensions"
+    "url": "https://github.com/renatocaliari/cali-product-workflow/issues"
   },
   "peerDependencies": {
     "typebox": "*"
   },
   "optionalPeerDependencies": {
-    "@capyup/pi-goal": ">=0.6.0",
     "@earendil-works/pi-coding-agent": ">=0.74.0",
     "@earendil-works/pi-tui": "*",
     "@juicesharp/rpiv-ask-user-question": ">=1.6.0",
     "@plannotator/pi-extension": ">=0.19.0",
-    "pi-agent-codebase-workflows": "*",
-    "pi-autoresearch": ">=0.1.0",
     "pi-intercom": ">=0.6.0",
     "pi-subagents": ">=0.24.0",
     "pi-supervisor": ">=0.4.0",
-    "cali-short-cycle-product": "*",
-    "cali-opportunity-mapping": "*",
-    "cali-job-to-be-done-framework": "*",
-    "cali-evolutionary-principles": "*",
-    "cali-product-ads": "*",
-    "cali-product-business-models": "*",
-    "cali-product-health": "*",
-    "cali-product-marketplace-playbook": "*",
-    "cali-product-open-source": "*",
-    "cali-product-pricing": "*",
-    "cali-product-promotions": "*",
-    "cali-product-trust-building": "*",
     "context-mode": ">=1.0.0"
   },
   "publishConfig": {
@@ -63,19 +52,20 @@
     "node": ">=20.0.0"
   },
   "files": [
-    "extensions/cali-product-workflow/",
+    "build/",
     "skills/",
+    "extensions/cali-product-workflow/",
+    "extensions/cali-product-workflow-pi/",
     "scripts/",
     "install.sh",
     "cali-product-workflow.schema.json",
     "README.md",
     "LICENSE",
-    "CHANGELOG.md",
-    ".claude-plugin/",
-    ".codex-plugin/",
-    ".opencode-plugin/"
+    "CHANGELOG.md"
   ],
   "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "npm run build",
     "test": "vitest run",
     "test:unit": "vitest run tests/unit",
     "test:integration": "vitest run tests/integration",
@@ -98,5 +88,13 @@
     "@vitest/coverage-v8": "^4.1.6",
     "typescript": "^6.0.3",
     "vitest": "^4.1.6"
+  },
+  "pi": {
+    "extensions": [
+      "./extensions/cali-product-workflow-pi/index.js"
+    ],
+    "skills": [
+      "./skills"
+    ]
   }
 }
