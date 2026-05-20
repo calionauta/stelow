@@ -2,7 +2,7 @@
 
 **Transform product ideas into approved, testable plans — systematically.**
 
-This package brings [Shape Up](https://basecamp.com/shapeup)'s betting table methodology to AI coding agents. Instead of open-ended feature lists, you shape proposals with clear scope boundaries, validate them through adversarial critique, and generate typed technical scopes ready for autonomous execution.
+This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI coding agents. Instead of open-ended feature lists, you shape proposals with clear scope boundaries, validate them through adversarial critique, and generate typed technical scopes ready for autonomous execution.
 
 ---
 
