@@ -3,6 +3,94 @@ import { join, basename, dirname, extname } from "node:path";
 import type { Workflow, TrackingData, ParsedInput } from "./types";
 import { WORKFLOW_DIR, TRACKING_FILE, GLOBAL_TRACKING_FILE, SCHEMA_URL, PHASE_NAMES } from "./types";
 
+// ── CLI Detection ────────────────────────────────────────────────────
+
+/**
+ * Detect the current AI coding agent harness.
+ * Uses PRODUCT_WORKFLOW_CLI env var (primary) or platform-specific files (fallback).
+ * Returns "generic" if detection fails.
+ */
+export function detectCLI(): string {
+  // Primary: explicit environment variable
+  const envCli = process.env.PRODUCT_WORKFLOW_CLI;
+  if (envCli && envCli.trim()) {
+    return envCli.trim().toLowerCase();
+  }
+
+  // Fallback: check platform-specific files
+  const home = process.env.HOME || dirname(process.cwd());
+
+  if (existsSync(join(home, ".pi"))) {
+    return "pi";
+  }
+  if (existsSync(join(home, ".opencode"))) {
+    return "opencode";
+  }
+  if (existsSync(join(home, ".claude"))) {
+    return "claude-code";
+  }
+  if (existsSync(join(home, ".codex"))) {
+    return "codex";
+  }
+
+  // Default to generic (safe fallback)
+  return "generic";
+}
+
+/**
+ * Get CLI-specific tool configuration.
+ * Maps abstract tool names to CLI-specific implementations.
+ */
+export function getCLITools(cli: string = detectCLI()): Record<string, string> {
+  const baseTools: Record<string, string> = {
+    read: "read",
+    write: "write",
+    bash: "bash",
+    edit: "edit",
+  };
+
+  const cliTools: Record<string, Record<string, string>> = {
+    pi: {
+      subagent: "subagent",
+      ask: "ask_user_question",
+      plannotator: "plannotator annotate --gate",
+      goals: "goal/sisyphus",
+      intercom: "intercom",
+      supervise: "supervise",
+    },
+    "opencode": {
+      subagent: "subagent",
+      ask: "Prompt",
+      plannotator: "@plannotator/opencode",
+      goals: "N/A",
+      intercom: "N/A",
+      supervise: "N/A",
+    },
+    "claude-code": {
+      subagent: "subagent",
+      ask: "Prompt",
+      plannotator: "plannotator annotate --gate",
+      goals: "N/A",
+      intercom: "N/A",
+      supervise: "N/A",
+    },
+    codex: {
+      subagent: "subagent",
+      ask: "Prompt",
+      plannotator: "!plannotator review",
+      goals: "N/A",
+      intercom: "N/A",
+      supervise: "N/A",
+    },
+  };
+
+  // Merge base tools with CLI-specific overrides
+  return {
+    ...baseTools,
+    ...(cliTools[cli] || {}),
+  };
+}
+
 // ── Shared State ─────────────────────────────────────────────────────
 
 export const parsedInputStore: Map<string, ParsedInput> = new Map();

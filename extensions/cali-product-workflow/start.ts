@@ -8,7 +8,7 @@ import {
   readGlobalTracking, writeGlobalTracking,
   getAllActiveWorkflows, resolveProjectDir,
   toSafeName, generateDirHash, hashToWorkflowId, getDateStamp,
-  readSourceFile, truncateText
+  readSourceFile, truncateText, detectCLI
 } from "./state";
 import { updateFooter, showOrphanOverlay } from "./ui";
 
@@ -125,6 +125,7 @@ export default async function cmdStart(
     updated: new Date().toISOString(),
     cwd: wd,
     dirHash,  // CRITICAL: needed for rename/archive operations
+    detectedCLI: detectCLI(),  // CLI harness detected at workflow creation
   };
 
   tracking.workflows.push(wf);
@@ -148,6 +149,7 @@ export default async function cmdStart(
     artifacts: {}, approved: false, approved_at: null,
     draft: fullDraft ? truncateText(fullDraft, 10000) : undefined,
     sources,
+    detected_cli: detectCLI(),
   }, null, 2));
 
   // 8. Global tracking
