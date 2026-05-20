@@ -10,8 +10,6 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 
 ---
 
-
-
 **Key differentiators:**
 
 - **Product domain libraries** — 8 domains auto-detected from your language (Pricing, Trust, Ads, Promotions, Open Source, Health, Marketplace, Business Models)
@@ -42,10 +40,6 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 - [License](#license)
 
 ---
-
-
----
-
 
 ## Philosophy
 
@@ -153,465 +147,373 @@ Both frameworks enforce structure for general software engineering. Here's what 
 
 ---
 
-
-
-
-
-
-
 ## 🚀 Quick Start
 
+```bash
+# 1. Install pi (if not already)
+npm install -g @mariozechner/pi-coding-agent
+
+# 2. Clone and install
+git clone https://github.com/renatocaliari/pi-product-workflow.git
+cd pi-product-workflow
+./install.sh
+```
+
+That's it! The installer auto-detects your CLI (pi, opencode, claude-code, codex) and installs everything needed.
+
+See [docs/INSTALLATION.md](docs/INSTALLATION.md) for detailed options.
+
 ---
-
-
-
-
-
-
-
 
 ## 📦 Installation
 
 ### Quick Setup (Recommended)
 
 ```bash
-# 1. Install pi (if not already)
-npm install -g @mariozechner/pi-coding-agent
+./install.sh
+```
 
-# 2. Clone this repo
-git clone git@github.com:renatocaliari/pi-product-workflow.git ~/pi-product-workflow
+The installer auto-detects your CLI and installs everything needed.
 
-# 3. Run setup (installs dependencies + this package)
-cd ~/pi-product-workflow && ./scripts/setup.sh
+### Two Installation Options
+
+**Option 1: Full Integration (Recommended)**
+
+Installs everything for your detected CLI:
+
+| CLI | What's Installed |
+|-----|------------------|
+| **Pi** | Core package + Extension + Supporting packages + Skills |
+| **OpenCode** | Plugin + Skills |
+| **Claude Code** | Plugin + Skills |
+| **Codex** | Plugin + Skills |
+
+**Option 2: Skills Only (npx skills)**
+
+For when you want just the skills without full CLI integration:
+
+```bash
+npx skills add renatocaliari/pi-product-workflow
+```
+
+This installs skills to `~/.agents/skills/` — works across multiple CLIs without deep integration.
+
+**Use this when:**
+- You use multiple CLIs and want unified skills
+- You don't need plugins/extensions
+- You prefer manual control over integration
+
+### CLI-Specific Installation
+
+#### Pi (Dual-Install)
+
+```bash
+./install.sh
+# Or force:
+PRODUCT_WORKFLOW_CLI=pi ./install.sh
+```
+
+Installs: Core + Extension + Supporting packages + Skills
+
+**Update:** `pi update --extensions` or `pi update npm:@renatocaliari/pi-product-workflow`
+
+**Uninstall:** `pi remove npm:@renatocaliari/pi-product-workflow npm:@renatocaliari/cali-product-workflow-pi`
+
+#### OpenCode
+
+```bash
+./install.sh
+# Or force:
+PRODUCT_WORKFLOW_CLI=opencode ./install.sh
+```
+
+Installs: Plugin in `opencode.json` + Skills
+
+**Update:** `./install.sh update`
+
+#### Claude Code
+
+```bash
+./install.sh
+# Or force:
+PRODUCT_WORKFLOW_CLI=claude-code ./install.sh
+```
+
+Installs: Plugin + Skills
+
+**Update:** `./install.sh update`
+
+#### Codex
+
+```bash
+./install.sh
+# Or force:
+PRODUCT_WORKFLOW_CLI=codex ./install.sh
+```
+
+Installs: Marketplace plugin + Skills
+
+**Update:** `./install.sh update`
+
+### Usage
+
+```bash
+# Install (auto-detect CLI)
+./install.sh
+
+# Update
+./install.sh update
+
+# Remove
+./install.sh remove
+
+# Help
+./install.sh help
 ```
 
 ### Manual Installation
 
-```bash
-# Install dependencies first
-pi install npm:pi-subagents npm:pi-goal npm:pi-intercom npm:pi-supervisor \\
-  npm:pi-autoresearch npm:@juicesharp/rpiv-ask-user-question \\
-  npm:@plannotator/pi-extension
+#### Pi (Dual-Install)
 
-# Then install this package
-pi install ~/Development/pi-product-workflow
+```bash
+# Core package
+pi install npm:@renatocaliari/pi-product-workflow
+
+# Extension
+pi install npm:@renatocaliari/cali-product-workflow-pi
+
+# Supporting
+pi install npm:pi-subagents npm:pi-goal npm:pi-intercom npm:pi-supervisor npm:pi-autoresearch npm:@juicesharp/rpiv-ask-user-question npm:@plannotator/pi-extension
 ```
 
-### Auto-Trigger (Optional)
+#### OpenCode
 
-By default, the workflow is NOT auto-triggered in all projects. See [docs/ABOUT-AUTO-TRIGGER.md](docs/ABOUT-AUTO-TRIGGER.md) for the reasoning.
-
-**To enable auto-trigger:**
-```bash
-cp ~/pi-product-workflow/AGENTS.md ~/.pi/agent/AGENTS.md
+```json
+// ~/.config/opencode/opencode.json
+{
+  "plugin": ["@renatocaliari/pi-product-workflow"]
+}
 ```
 
-**To disable:**
+#### Claude Code
+
 ```bash
+claude /plugin install /path/to/pi-product-workflow
+```
+
+#### Codex
+
+```bash
+npx codex-marketplace add renatocaliari/pi-product-workflow --plugins
+```
+
+### Skills Management (npx skills)
+
+```bash
+# Install for all CLIs
+npx skills add renatocaliari/pi-product-workflow
+
+# Install for specific CLI
+npx skills add renatocaliari/pi-product-workflow -a pi -a opencode
+
+# Update
+npx skills update
+
+# Remove
+npx skills remove cali-product-workflow
+
+# List installed
+npx skills list
+```
+
+### Summary
+
+| Method | When to Use |
+|--------|-------------|
+| `./install.sh` | Full integration, one command |
+| `pi update --extensions` | Update Pi packages |
+| `npx skills add ...` | Skills only, lightweight |
+| `npx skills update` | Update skills |
+
+### Uninstall
+
+```bash
+./install.sh remove
+```
+
+Or manually:
+
+```bash
+# Pi
+pi remove npm:@renatocaliari/pi-product-workflow
+pi remove npm:@renatocaliari/cali-product-workflow-pi
+
+# Skills
+npx skills remove cali-product-workflow
+
+# Auto-trigger
 rm ~/.pi/agent/AGENTS.md
-# Or use: ./scripts/uninstall.sh
-```
-
-### Uninstallation
-
-```bash
-cd ~/pi-product-workflow && ./scripts/uninstall.sh
-```
-
-This removes the package and cleans up `~/.pi/agent/AGENTS.md`.
-
-### Verify
-
-```bash
-pi list
-# Should show: @renatocaliari/pi-product-workflow + dependencies
-```
-
-### Quick Test (without installing)
-
-```bash
-pi -e npm:@renatocaliari/pi-product-workflow
 ```
 
 ---
-
-
-
-
-
-
-
-
-
-
-
-
 
 ## 🔧 Dependencies
 
-| Extension | Package | Purpose |
-|-----------|---------|---------|
-| **pi-subagents** | `pi-subagents` | Parallel execution |
-| **pi-goal** | `@capyup/pi-goal` | `/goal`, `/sisyphus` modes |
-| **plannotator** | `@plannotator/pi-extension` | Plan review with `--gate` |
-| **autoresearch** | `pi-autoresearch` | Optimization experiments |
-| **ask-user-question** | `@juicesharp/rpiv-ask-user-question` | Structured questions |
-| **intercom** | `pi-intercom` | Session messaging |
-| **supervisor** | `pi-supervisor` | Outcome steering |
+### Required
+
+| Package | Purpose |
+|---------|---------|
+| `pi-subagents` | Parallel subagent orchestration |
+| `pi-goal` | Goal management and tracking |
+| `pi-intercom` | Session-to-session coordination |
+| `pi-supervisor` | Conversation supervision and steering |
+| `pi-autoresearch` | Autonomous experiment loops |
+| `@juicesharp/rpiv-ask-user-question` | Question UI component |
+| `@plannotator/pi-extension` | Visual plan annotation |
+
+### Development
+
+| Package | Purpose |
+|---------|---------|
+| `typescript` | Type safety |
+| `vitest` | Unit testing |
+| `@stryker-mutator/core` | Mutation testing |
 
 ---
-
-
-
-
-
-
-
-
-
-
-
-
 
 ## 📁 Artifact Directory
 
+All workflow artifacts are stored in:
+
 ```
-.cali-product-workflow/
-└── {YYYY-MM-DD}/
-    └── {_dir}/          # Hash-based, stable on rename
-        ├── index.json
-        ├── specs/               # spec-product.md
-        ├── interfaces/          # interfaces.md
-        ├── plans/               # spec-tech.md, testing-strategy.md
-        ├── critiques/          # critique-report.md
-        ├── strategic/           # Job To Be Done, opportunity, market analysis
-        ├── approvals/           # *.receipt.md
-        └── sessions/            # checkpoint.json
+<project>/.pi/workflow/
 ```
+
+| Subdirectory | Contents |
+|--------------|----------|
+| `input/` | User's original idea |
+| `phases/` | Phase outputs (JTBD, Shape Up, Interface, etc.) |
+| `plans/` | Technical plans and specs |
+| `reviews/` | Plannotator feedback |
+| `scopes/` | Typed execution scopes |
+| `logs/` | Workflow execution logs |
 
 ---
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ## 🔄 Process
 
-```
+The workflow runs through six phases:
 
-╔══════════════════════════════════════════════════════════════════╗
-║                    PRODUCT WORKFLOW                            ║
-╚══════════════════════════════════════════════════════════════════╝
-
- ┌─────────────────────────────────────────────────────────────┐
- │  1. Setup                                                   │
- │     Initialize project context & scope                       │
- └──────────────────────┬──────────────────────────────────────┘
-                        │
-                        ▼
- ┌─────────────────────────────────────────────────────────────┐
- │  2. Strategic Context (Optional) — parallel exploration —┐
- │  ┌──────┐  ┌──────────┐  ┌──────────┐  ┌──────┐  ┌────────┐ │
- │  │ JTBD  │─▶│Evolution│─▶│Opportun.│─▶│Market│─▶│Discover│ │
- │  └──────┘  └──────────┘  └──────────┘  └──────┘  └────────┘ │
- │                      Explore before betting                 │
- └──────────────────────┬──────────────────────────────────────┘
-                        │
-                        ▼
- ┌─────────────────────────────────────────────────────────────┐
- │  3. Proposal (Shape Up)                                                │
- │     Define: problem → solution → scope → rabbit holes       │
- └──────────────────────┬──────────────────────────────────────┘
-                        │
-                        ▼
- ┌─────────────────────────────────────────────────────────────┐
- │  4. Plan Critique     ◀── Adversarial review               │
- │     Gaps · Risks · Assumptions · Scope boundaries           │
- └──────────────────────┬──────────────────────────────────────┘
-                        │
-                        ▼
- ┌─────────────────────────────────────────────────────────────┐
- │  5. Gate ──── Plannotator approval ──── Approve or Reject  │
- └──────────────────────┬──────────────────────────────────────┘
-                        │
-                        ▼
-              ┌─────────┴─────────┐
-              │                   │
-              │     Interface?    │
-              │    (optional)      │
-              ▼                   ▼
-     ┌────────────────┐   ┌─────────────────────────┐
-     │  skip to #10    │   │  6-9. Brainstorm → Gate │
-     └────────┬───────┘   └───────────┬───────────────┘
-              │                       │
-              └───────────┬───────────┘
-                          │
-                          ▼
- ┌─────────────────────────────────────────────────────────────┐
- │  10. Tech Planning                                          │
- │     Typed scopes: feature · spike · test-* · optimize       │
- └──────────────────────┬──────────────────────────────────────┘
-                        │
-                        ▼
-              ┌─────────┴─────────┐
-              │                   │
-              ▼                   ▼
-     ┌────────────────┐   ┌─────────────────────────┐
-     │   Software       │   │   Other Product         │
-     │   Products       │   │   (skip testing)        │
-     │  ┌───────────┐  │   └───────────────────────┘
-     │  │ cali-     │  │
-     │  │ testing-  │  │
-     │  │ ai-code   │  │
-     │  └───────────┘  │
-     └────────┬───────┘
-              │
-              ▼
- ┌─────────────────────────────────────────────────────────────┐
- │  11. Execution ─── Autonomous via /goal                     │
- └─────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────┐
-│  🔍 Domain Libraries (auto-detected on triggers)           │
-│     Pricing · Promotions · Ads · Trust · Business Models    │
-│     Health · Marketplace · Open Source                      │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Domain Libraries (Automatic Detection)
-
-Each domain has its own dedicated skill. The LLM automatically detects signals in your request and suggests relevant playbooks.
-
-**Available Skills:**
-- `/skill:cali-product-pricing` — Pricing strategies
-- `/skill:cali-product-promotions` — Launch framework
-- `/skill:cali-product-ads` — Advertising stages
-- `/skill:cali-product-trust-building` — Trust mechanisms
-- `/skill:cali-product-business-models` — Revenue models
-- `/skill:cali-product-marketplace-playbook` — Supply/demand
-- `/skill:cali-product-health` — Product signals
-- `/skill:cali-product-open-source` — OSS strategy
-
-**Triggers (auto-detected):**
-
-| User says... | Suggests... |
-|---|---|
-| "pricing", "subscription", "how much to charge" | Pricing strategy |
-| "launch", "promotion", "black friday", "coupon" | Promotions framework |
-| "ads", "paid traffic", "facebook ads" | Advertising stages |
-| "trust", "guarantee", "social proof" | Trust building |
-| "business model", "revenue", "monetize" | Business models |
-| "open source", "community edition" | Open source strategy |
-| "product health", "wellbeing", "ethics" | Product health |
-| "marketplace", "supply/demand" | Marketplace tactics |
-
-**Usage:** Invoke via `/skill:cali-product-{name}` when relevant during planning/execution.
-
-```
-┌──────────────────────────────────────────────────────────────┐
-│  DOMAIN LIBRARIES (auto-detected on user input)              │
-│                                                              │
-│  ┌──────────┐ ┌───────────────┐ ┌─────────┐ ┌────────────┐   │
-│  │   Ads    │ │Business Models│ │ Pricing │ │ Promotions │   │
-│  └──────────┘ └───────────────┘ └─────────┘ └────────────┘   │
-│  ┌──────────┐ ┌───────────────┐ ┌─────────┐ ┌────────────┐   │
-│  │  Health  │ │  Marketplace  │ │Open Src │ │Trust Build │   │
-│  └──────────┘ └───────────────┘ └─────────┘ └────────────┘   │
-└──────────────────────────────────────────────────────────────┘
-```
-
-
-
+1. **Setup** — User provides initial idea, AI asks clarifying questions
+2. **Strategic** — Job To Be Done, Opportunity Mapping, Evolutionary Principles, Market Analysis, Product Discovery
+3. **Shape Up** — Appetite, Hill Chart, Rabbit Holes, distant future, enemies, solutions, scope boundaries (IN/OUT), betting table
+4. **Interface** — ASCII art exploration, trade-offs, LLM hybrid creation
+5. **Critique** — Adversarial review, gaps, risks, assumptions
+6. **Tech Planning** — Typed scopes (feature, spike, optimize, test-*), dependency mapping, sequencing
 
 ---
-
-
-
-
-
-
-
 
 ## 🎮 Commands
 
-All commands use the `/product-workflow-` prefix. Short `/pw:` aliases work too.
+### Primary Commands
 
-### Navigation
+| Command | Description |
+|---------|-------------|
+| `/pw:start` or `/pw:begin` | Start the workflow |
+| `/pw:menu` | Show workflow state and controls |
+| `/pw:continue` | Continue to next phase |
+| `/pw:help` | Show available commands |
+| `/pw:status` | Display current phase and progress |
+| `/pw:reset` | Reset workflow state |
 
-| Command | Alias | Description |
-|---------|-------|-------------|
-| `/product-workflow-start` | `/pw:start` | Start workflow with optional `@files` and text |
-| `/product-workflow-stop` | `/pw:stop` | Stop workflow, clear UI immediately |
-| `/product-workflow-pause` | `/pw:pause` | Pause workflow, keeps state |
-| `/product-workflow-resume` | `/pw:resume` | Resume paused workflow |
-| `/product-workflow-complete` | `/pw:complete` | Mark workflow complete, clear UI |
-| `/product-workflow-menu` | `/pw:menu` | Open interactive overlay with phase list |
+### Phase Commands
 
-### Visual Feedback
+| Command | Description |
+|---------|-------------|
+| `/pw:jtbd` | Run Job To Be Done phase |
+| `/pw:shape` | Run Shape Up phase |
+| `/pw:interface` | Run Interface phase |
+| `/pw:critique` | Run Critique phase |
+| `/pw:tech` | Run Tech Planning phase |
 
-| Action | Result |
-|--------|--------|
-| Start | Footer shows `│ {name} │ ◆ {phase} {n}/7 │` |
-| Pause | Footer shows `│ ⏸ {name} │` (warning color) |
-| Resume | Footer returns to normal |
-| Stop/Complete | Footer cleared |
-| Phase advance | Toast: `◆ {name} — entered {phase} ({n}/7)` |
+### Utility Commands
+
+| Command | Description |
+|---------|-------------|
+| `/pw:export <phase>` | Export phase output |
+| `/pw:import <file>` | Import saved workflow |
+| `/pw:log` | Show workflow execution log |
+| `/pw:review` | Open Plannotator for review |
+| `/pw:scope <name>` | Create typed scope |
+| `/pw:goals` | Manage execution goals |
 
 ---
-
-
-
-
-
-
-
-
-
-
-
-
 
 ## 🖥️ TUI Visual
 
-**Active Workflow:**
-```
-│ auth-system  │  ◆ Shape 3/7  │  2 assumptions  │  /pw:menu for details
-└─────────────────────────────────────────────────────────────────────
-```
+The workflow includes a real-time TUI overlay showing:
 
-**Active with Artifacts:**
-```
-│ auth-system  │  ◆ Interface 3/7  │  5 proposals · hybrid:C  │  /pw:menu
-└─────────────────────────────────────────────────────────────────────────
-```
+- Current phase and progress
+- Phase artifacts and outputs
+- Upcoming tasks
+- Quick actions
 
-**Paused:**
-```
-│ ⏸ auth-system                                       │  ← Warning color
-└─────────────────────────────────────────────────────────────────────
-```
-
-### Interactive Overlay (`/pw:menu`)
-
-```
-╔═══════════════════════════════════╗
-║  ◆ auth-system                    ║
-║                                   ║
-║  ✓ Clarify                       ║
-║  ◆ Shape   ← current             ║
-║  ○ Interface                     ║
-║  ○ Critique                      ║
-║  ○ Gate                          ║
-║  ○ Planning                      ║
-║  ○ Execution                     ║
-║                                   ║
-║  ↑↓ navigate  n:next  s:stop     ║
-╚═══════════════════════════════════╝
-```
+Toggle with `/pw:menu`.
 
 ---
-
-
-
-
-
-
-
-
-
-
-
-
 
 ## 📋 Skills (16)
 
-### Orchestrator
-| Skill | Command | Description |
-|-------|---------|-------------|
-| **Product Workflow** | `/skill:cali-product-workflow` | Main orchestrator (11 phases) |
+### Strategic Skills (5)
 
-### Planning
-| Skill | Command | Description |
-|-------|---------|-------------|
-| **Shape Up** | `/skill:cali-shape-up` | Shape proposals (problem/solution/scope) |
-| **Interface Brainstorm** | `/skill:cali-interface-brainstorm` | 5 interface archetypes |
-| **Plan Critique** | `/skill:cali-plan-critique` | Audit checklists |
-| **Tech Planning** | `/skill:cali-tech-planning` | Scope sequencing |
+| Skill | Purpose |
+|-------|---------|
+| `cali-jtbd` | Job To Be Done — understand what job users hire the product to do |
+| `cali-opportunity-mapping` | Map opportunities to see where to focus |
+| `cali-evolutionary` | Evolutionary principles for sustainable development |
+| `cali-short-cycle` | Rapid feedback loops |
+| `cali-product-discovery` | Customer discovery and validation |
 
-### Strategic Analysis
-| Skill | Command | Description |
-|-------|---------|-------------|
-| **Product Discovery** | `/skill:cali-product-short-cycle` | Rapid validation method |
-| **Opportunity Mapping** | `/skill:cali-product-opportunity-mapping` | Strategic opportunities |
-| **Job-to-Be-Done** | `/skill:cali-product-job-to-be-done` | Job To Be Done framework |
-| **Evolutionary Principles** | `/skill:cali-evolutionary-principles` | Product evolution |
-| **Multi-Method Market** | `/skill:cali-product-multi-method-market-analysis` | PESTLE, Wardley, Foresight |
+### Domain Skills (8)
 
-### Domain Libraries
-| Skill | Command | Description |
-|-------|---------|-------------|
-| **Ads** | `/skill:cali-product-ads` | Transtheoretical advertising |
-| **Business Models** | `/skill:cali-product-business-models` | Business model creativity |
-| **Health** | `/skill:cali-product-health` | Product health monitoring |
-| **Marketplace** | `/skill:cali-product-marketplace-playbook` | Supply/demand balance |
-| **Open Source** | `/skill:cali-product-open-source` | Open source strategy |
-| **Pricing** | `/skill:cali-product-pricing` | Pricing strategies |
-| **Promotions** | `/skill:cali-product-promotions` | MAGIC launch framework |
-| **Trust Building** | `/skill:cali-product-trust-building` | Trust mechanisms |
+| Skill | Purpose |
+|-------|---------|
+| `cali-pricing` | Pricing strategy and tactics |
+| `cali-ads` | Advertising and growth channels |
+| `cali-trust` | Trust-building mechanisms |
+| `cali-promotions` | Promotions and campaigns |
+| `cali-business-models` | Business model canvas and options |
+| `cali-health` | Product health metrics |
+| `cali-marketplace` | Marketplace dynamics |
+| `cali-open-source` | Open source strategy |
 
-### Execution
-| Skill | Command | Description |
-|-------|---------|-------------|
-| **Scope Executor** | `/skill:cali-product-scope-executor` | Autonomous scope execution |
-| **Testing AI Code** | `/skill:cali-testing-ai-code` | AI-aware testing strategy (software products) |
+### Workflow Skills (3)
 
-> **Note:** See `cali-testing-ai-code` skill documentation for mutation-based testing strategy generation.
+| Skill | Purpose |
+|-------|---------|
+| `cali-shape-up` | Shape Up planning methodology |
+| `cali-interface-brainstorm` | Interface exploration and ASCII art |
+| `cali-plan-critique` | Adversarial plan review |
+| `cali-tech-planning` | Technical scope generation |
 
 ---
 
+## 📊 Version
 
+Current: **1.0.0-alpha**
 
-
-
-
-
-
-
-
-
-
+See [CHANGELOG.md](CHANGELOG.md) for release history.
 
 ---
-
-## 📊 Version## 📊 Version
-
-**Current**: 0.2.2-alpha
-
-**Latest Release:** [v0.2.2-alpha](https://github.com/renatocaliari/pi-product-workflow/releases/latest)
-
----
-
-
-
-
-
-
-
-
-
-
-
-
 
 ## License
 
-MIT - Cali 2024
+MIT
+
+---
+
+## 📞 Support
+
+- [Documentation](docs/)
+- [Issues](https://github.com/renatocaliari/pi-product-workflow/issues)
+- [Discussions](https://github.com/renatocaliari/pi-product-workflow/discussions)

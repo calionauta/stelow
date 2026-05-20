@@ -96,7 +96,7 @@ Each scope with justification based on sequencing strategy and principles.
 For each scope:
 - **Scope:** `[name]`
 - **Type:** `feature` | `optimization` | `spike` | `test-*`
-- **Risk Score:** 1-5 (see Principles 0-6 in SCOPES-AND-SEQUENCING.md)
+- **Risk Score:** 1-5 (see Principles 0-6 in scopes-and-sequencing.md)
 - **Overall Scope Goal:** concise description
 - **Scope DoD:** what defines this scope as complete
 - **Dependencies:** which scopes must complete first
@@ -119,8 +119,7 @@ For each scope:
 ### 4. Final Summary – Main Functional Scope Names
 
 ### Notes
-- Suggestive mode: mark suggestions with `💡`
-- Strict mode: no suggestions, only explicit info
+- Suggestive mode: mark suggestions with `[suggested]`
 
 ---
 
