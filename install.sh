@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
-#===============================================================================
-# pi-product-workflow Installation Script
-# Auto-detects CLI (pi, opencode, claude-code, codex) and installs accordingly
-# Works on macOS and Linux
-#===============================================================================
+#
+# pi-product-workflow Installer
+# Auto-detects CLI and installs with full integration
+# For specific CLIs: single installation that includes everything
+# For generic: npx skills only
+#
 
 set -euo pipefail
 
-# Script directory (resolve symlinks)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Colors (with fallback for non-color terminals)
+# Colors
 if [[ -t 1 ]] && command -v tput &>/dev/null && [[ $(tput colors 2>/dev/null || echo 0) -ge 8 ]]; then
   BOLD="$(tput bold)"
   RESET="$(tput sgr0)"
@@ -19,422 +19,361 @@ if [[ -t 1 ]] && command -v tput &>/dev/null && [[ $(tput colors 2>/dev/null || 
   YELLOW="$(tput setaf 3)"
   BLUE="$(tput setaf 4)"
 else
-  BOLD=""
-  RESET=""
-  RED=""
-  GREEN=""
-  YELLOW=""
-  BLUE=""
+  BOLD="" RESET="" RED="" GREEN="" YELLOW="" BLUE=""
 fi
 
-#-------------------------------------------------------------------------------
-# Helper Functions
-#-------------------------------------------------------------------------------
+log_info() { echo "${BLUE}[info]${RESET} $*"; }
+log_success() { echo "${GREEN}[ok]${RESET} $*"; }
+log_warn() { echo "${YELLOW}[warn]${RESET} $*"; }
+log_error() { echo "${RED}[error]${RESET} $*" >&2; }
 
-log_info() {
-  echo "${BLUE}[info]${RESET} $*"
-}
-
-log_success() {
-  echo "${GREEN}[ok]${RESET} $*"
-}
-
-log_warn() {
-  echo "${YELLOW}[warn]${RESET} $*"
-}
-
-log_error() {
-  echo "${RED}[error]${RESET} $*" >&2
-}
-
-#-------------------------------------------------------------------------------
+# ─────────────────────────────────────────────────────────────────────────────
 # CLI Detection
-#-------------------------------------------------------------------------------
+# ─────────────────────────────────────────────────────────────────────────────
 
 detect_cli() {
-  # Priority: 1. Environment variable override, 2. Config directories, 3. Commands
+  # Priority: env var override > config directories > command availability
 
-  # 1. Environment variable override
   if [[ -n "${PRODUCT_WORKFLOW_CLI:-}" ]]; then
     echo "$PRODUCT_WORKFLOW_CLI"
     return
   fi
 
-  # 2. Config directories (higher priority = more specific checks first)
-
-  # Pi: PI_CONFIG_DIR or PI_DIR environment variable
+  # Pi
   if [[ -n "${PI_CONFIG_DIR:-}" ]] || [[ -n "${PI_DIR:-}" ]] || [[ -d "$HOME/.pi" ]]; then
     echo "pi"
     return
   fi
 
-  # OpenCode: ~/.config/opencode/ or .opencode/
-  if [[ -d "$HOME/.config/opencode" ]] || [[ -d "$HOME/.opencode" ]] || [[ -f "$HOME/.config/opencode.json" ]]; then
+  # OpenCode
+  if [[ -d "$HOME/.config/opencode" ]] || [[ -d "$HOME/.opencode" ]]; then
     echo "opencode"
     return
   fi
 
-  # Claude Code: ~/.claude/ or CLAUDE_API_KEY env var + .claude directory
-  if [[ -n "${CLAUDE_API_KEY:-}" ]] && [[ -d "$HOME/.claude" || -d "$HOME/.claude-plugin" ]]; then
-    echo "claude-code"
-    return
-  fi
+  # Claude Code
   if [[ -d "$HOME/.claude" ]] || [[ -d "$HOME/.claude-plugin" ]]; then
     echo "claude-code"
     return
   fi
 
-  # Codex: ~/.codex/ or OPENAI_API_KEY + .codex-plugin directory
-  if [[ -n "${OPENAI_API_KEY:-}" ]] && [[ -d "$HOME/.codex" || -d "$HOME/.codex-plugin" ]]; then
-    echo "codex"
-    return
-  fi
+  # Codex
   if [[ -d "$HOME/.codex" ]] || [[ -d "$HOME/.codex-plugin" ]]; then
     echo "codex"
     return
   fi
 
-  # 3. Command availability
-  if command -v pi &>/dev/null; then
-    echo "pi"
-    return
-  fi
-
-  if command -v opencode &>/dev/null; then
-    echo "opencode"
-    return
-  fi
-
-  if command -v claude &>/dev/null; then
-    echo "claude-code"
-    return
-  fi
-
-  if command -v codex &>/dev/null; then
-    echo "codex"
-    return
-  fi
+  # Command availability
+  if command -v pi &>/dev/null; then echo "pi"; return; fi
+  if command -v opencode &>/dev/null; then echo "opencode"; return; fi
+  if command -v claude &>/dev/null; then echo "claude-code"; return; fi
+  if command -v codex &>/dev/null; then echo "codex"; return; fi
 
   # Fallback
   echo "generic"
 }
 
-#-------------------------------------------------------------------------------
-# Package Manager Detection
-#-------------------------------------------------------------------------------
+# ─────────────────────────────────────────────────────────────────────────────
+# Pi Installation (Dual-Install)
+# ─────────────────────────────────────────────────────────────────────────────
 
-detect_package_manager() {
-  if [[ -n "${PACKAGE_MANAGER:-}" ]]; then
-    echo "$PACKAGE_MANAGER"
-    return
+install_pi() {
+  log_info "Installing for Pi (dual-install pattern)..."
+
+  local core_pkg="npm:@renatocaliari/pi-product-workflow"
+  local stub_pkg="npm:@renatocaliari/cali-product-workflow-pi"
+
+  # Check if pi is available
+  if ! command -v pi &>/dev/null; then
+    log_error "pi command not found. Install pi first:"
+    log_error "  npm install -g @mariozechner/pi-coding-agent"
+    exit 1
   fi
 
-  if command -v pnpm &>/dev/null; then
-    echo "pnpm"
-    return
-  fi
+  # 1. Core package (skills, adapters, CLI tools)
+  log_info "Installing core package..."
+  pi install "$core_pkg" 2>/dev/null || {
+    log_warn "Could not install from npm. Installing from local source..."
+    pi install "$SCRIPT_DIR" 2>/dev/null || {
+      log_warn "Local install failed. Run './scripts/setup.sh' instead."
+    }
+  }
 
-  if command -v bun &>/dev/null; then
-    echo "bun"
-    return
-  fi
+  # 2. Stub extension (Pi integration)
+  log_info "Installing Pi extension..."
+  pi install "$stub_pkg" 2>/dev/null || {
+    log_warn "Could not install stub from npm. Installing from local source..."
+    pi install "$SCRIPT_DIR/extensions/cali-product-workflow-pi" 2>/dev/null || true
+  }
 
-  if command -v npm &>/dev/null; then
-    echo "npm"
-    return
-  fi
-
-  echo "none"
-}
-
-#-------------------------------------------------------------------------------
-# Installation Functions
-#-------------------------------------------------------------------------------
-
-install_base_package() {
-  local pkg_manager="$1"
-  local dry_run="$2"
-
-  log_info "Installing base package (pi-product-workflow)..."
-
-  if [[ "$dry_run" == "true" ]]; then
-    log_info "[dry-run] Would run: $pkg_manager install -g @renatocaliari/pi-product-workflow"
-    return
-  fi
-
-  case "$pkg_manager" in
-    pnpm)
-      pnpm install -g @renatocaliari/pi-product-workflow
-      ;;
-    bun)
-      bun add -g @renatocaliari/pi-product-workflow
-      ;;
-    npm)
-      npm install -g @renatocaliari/pi-product-workflow
-      ;;
-    none)
-      log_error "No package manager found. Please install npm, pnpm, or bun."
-      exit 1
-      ;;
-  esac
-
-  log_success "Base package installed"
-}
-
-install_pi_packages() {
-  local dry_run="$1"
-
-  log_info "Installing Pi-specific packages..."
-
-  # Dual-install pattern: core + lightweight stub extension
-  local pi_packages=(
-    "pi-subagents"
-    "pi-goal"
-    "pi-intercom"
-    "pi-supervisor"
-    "pi-autoresearch"
+  # 3. Supporting packages
+  log_info "Installing supporting packages..."
+  local supporting=(
+    "npm:pi-subagents"
+    "npm:pi-goal"
+    "npm:pi-intercom"
+    "npm:pi-supervisor"
+    "npm:pi-autoresearch"
+    "npm:@juicesharp/rpiv-ask-user-question"
+    "npm:@plannotator/pi-extension"
   )
 
-  # 1. Install core package globally (if not already installed)
-  if [[ "$dry_run" == "true" ]]; then
-    log_info "[dry-run] Would install: @renatocaliari/pi-product-workflow"
-  else
-    if command -v pi &>/dev/null; then
-      log_info "Installing core package via Pi..."
-      pi install npm:@renatocaliari/pi-product-workflow 2>/dev/null || \
-        log_warn "Could not install core package via pi install"
-    else
-      log_warn "pi command not found. Install manually or run in Pi environment."
-    fi
-  fi
-
-  # 2. Install lightweight stub extension
-  if [[ "$dry_run" == "true" ]]; then
-    log_info "[dry-run] Would install: @renatocaliari/cali-product-workflow-pi (stub extension)"
-  else
-    if command -v pi &>/dev/null; then
-      log_info "Installing lightweight Pi extension..."
-      pi install npm:@renatocaliari/cali-product-workflow-pi 2>/dev/null || \
-        log_warn "Could not install Pi extension via pi install"
-    fi
-  fi
-
-  # 3. Install supporting packages
-  for pkg in "${pi_packages[@]}"; do
-    if [[ "$dry_run" == "true" ]]; then
-      log_info "[dry-run] Would install: $pkg"
-    else
-      if command -v pi &>/dev/null; then
-        log_info "Installing $pkg..."
-        pi install npm:"$pkg" 2>/dev/null || log_warn "Could not install $pkg via pi install"
-      fi
-    fi
+  for pkg in "${supporting[@]}"; do
+    log_info "  → $pkg"
+    pi install "$pkg" 2>/dev/null || log_warn "  Could not install $pkg"
   done
 
-  if [[ "$dry_run" != "true" ]]; then
-    log_success "Pi installation complete (core + extension + packages)"
-  fi
+  # 4. Skills via npx (for universal skill paths)
+  log_info "Installing skills..."
+  npx skills add renatocaliari/pi-product-workflow -a pi -y 2>/dev/null || {
+    log_warn "Could not install skills via npx skills"
+  }
+
+  log_success "Pi installation complete!"
 }
 
-install_opencode_plugin() {
-  local dry_run="$1"
+# ─────────────────────────────────────────────────────────────────────────────
+# OpenCode Installation
+# ─────────────────────────────────────────────────────────────────────────────
 
-  log_info "Configuring OpenCode plugin..."
+install_opencode() {
+  log_info "Installing for OpenCode..."
 
-  local config_dir="${HOME}/.config/opencode"
-  local config_file="${config_dir}/plugins.json"
-
-  if [[ "$dry_run" == "true" ]]; then
-    log_info "[dry-run] Would update: ${config_file}"
-    return
+  if ! command -v opencode &>/dev/null; then
+    log_error "opencode command not found."
+    exit 1
   fi
 
-  # Create config directory if needed
-  mkdir -p "$config_dir"
+  local config_file="$HOME/.config/opencode/opencode.json"
+  local pkg="@renatocaliari/pi-product-workflow"
 
-  # Update plugins.json
+  # 1. Add plugin to opencode.json
+  mkdir -p "$(dirname "$config_file")"
+
   if [[ -f "$config_file" ]]; then
-    local existing_content
-    existing_content=$(cat "$config_file")
-    # Add our plugin to the list if not already present
-    if ! echo "$existing_content" | grep -q "pi-product-workflow"; then
-      log_info "Adding pi-product-workflow to plugins.json..."
-      # Simple append (proper JSON manipulation would require jq)
-      echo "${existing_content}" | grep -v '^$' > "${config_file}.tmp"
-      echo '  "pi-product-workflow": true' >> "${config_file}.tmp"
-      mv "${config_file}.tmp" "$config_file"
+    if grep -q "$pkg" "$config_file" 2>/dev/null; then
+      log_info "Plugin already in opencode.json"
+    else
+      if command -v jq &>/dev/null; then
+        local tmp="${config_file}.tmp"
+        jq '.plugin += ["'"$pkg"'"]' "$config_file" > "$tmp" && mv "$tmp" "$config_file"
+      else
+        log_warn "jq not found. Please manually add to opencode.json:"
+        log_info '  Add "plugin": ["'"$pkg"'"]'
+      fi
     fi
   else
-    echo '{"pi-product-workflow": true}' > "$config_file"
+    cat > "$config_file" << EOF
+{
+  "\$schema": "https://opencode.ai/config.json",
+  "plugin": ["$pkg"]
+}
+EOF
   fi
 
-  log_success "OpenCode plugin configured"
+  # 2. Skills via npx
+  log_info "Installing skills..."
+  npx skills add renatocaliari/pi-product-workflow -a opencode -y 2>/dev/null || {
+    log_warn "Could not install skills via npx skills"
+  }
+
+  log_success "OpenCode installation complete!"
 }
 
-install_claude_code_plugin() {
-  local dry_run="$1"
+# ─────────────────────────────────────────────────────────────────────────────
+# Claude Code Installation
+# ─────────────────────────────────────────────────────────────────────────────
 
-  log_info "Adding Claude Code plugin..."
+install_claude_code() {
+  log_info "Installing for Claude Code..."
 
-  if [[ "$dry_run" == "true" ]]; then
-    log_info "[dry-run] Would run: claude /plugin marketplace add pi-product-workflow"
-    return
+  if ! command -v claude &>/dev/null; then
+    log_error "claude command not found."
+    exit 1
   fi
 
-  if command -v claude &>/dev/null; then
-    claude /plugin marketplace add pi-product-workflow 2>/dev/null || \
-      log_warn "Could not add plugin via Claude CLI. Please add manually."
+  # 1. Try to add as plugin from npm or local
+  log_info "Configuring plugin..."
+  
+  if npx @anthropic/claude-plugin-cli add renatocaliari/pi-product-workflow 2>/dev/null; then
+    log_success "Plugin added via marketplace"
   else
-    log_warn "claude command not found. Install Claude Code and run: claude /plugin marketplace add pi-product-workflow"
+    log_info "Trying local plugin installation..."
+    claude /plugin install "$SCRIPT_DIR" 2>/dev/null || {
+      log_warn "Plugin install may require manual configuration"
+    }
   fi
 
-  log_success "Claude Code plugin instructions shown"
+  # 2. Skills via npx
+  log_info "Installing skills..."
+  npx skills add renatocaliari/pi-product-workflow -a claude-code -y 2>/dev/null || {
+    log_warn "Could not install skills via npx skills"
+  }
+
+  log_success "Claude Code installation complete!"
 }
 
-install_codex_plugin() {
-  local dry_run="$1"
+# ─────────────────────────────────────────────────────────────────────────────
+# Codex Installation
+# ─────────────────────────────────────────────────────────────────────────────
 
-  log_info "Installing Codex plugin..."
+install_codex() {
+  log_info "Installing for Codex..."
 
-  if [[ "$dry_run" == "true" ]]; then
-    log_info "[dry-run] Would run: codex plugin install pi-product-workflow"
-    return
+  if ! command -v codex &>/dev/null; then
+    log_error "codex command not found."
+    exit 1
   fi
 
-  if command -v codex &>/dev/null; then
-    codex plugin install pi-product-workflow 2>/dev/null || \
-      log_warn "Could not install plugin via Codex CLI. Please install manually."
-  else
-    log_warn "codex command not found. Install Codex and run: codex plugin install pi-product-workflow"
+  # 1. Try codex-marketplace
+  if command -v npx &>/dev/null; then
+    log_info "Trying codex-marketplace..."
+    npx codex-marketplace add renatocaliari/pi-product-workflow --plugins 2>/dev/null || {
+      log_info "codex-marketplace not available. Skipping."
+    }
   fi
 
-  log_success "Codex plugin installation attempted"
+  # 2. Skills via npx
+  log_info "Installing skills..."
+  npx skills add renatocaliari/pi-product-workflow -a codex -y 2>/dev/null || {
+    log_warn "Could not install skills via npx skills"
+  }
+
+  log_success "Codex installation complete!"
 }
 
-install_cli_specific() {
-  local cli="$1"
-  local dry_run="$2"
+# ─────────────────────────────────────────────────────────────────────────────
+# Generic Installation (npx skills only)
+# ─────────────────────────────────────────────────────────────────────────────
+
+install_generic() {
+  log_info "Generic CLI detected."
+  log_info ""
+  log_info "Installing skills only (no full CLI integration)."
+  log_info ""
+  log_info "For full integration with a specific CLI:"
+  log_info "  - Pi:        ./install.sh (from Pi environment)"
+  log_info "  - OpenCode:  npm install -g && configure opencode.json"
+  log_info "  - Claude:    claude /plugin install"
+  log_info "  - Codex:     codex plugin install"
+  log_info ""
+  
+  log_info "Installing skills via npx skills..."
+  
+  npx skills add renatocaliari/pi-product-workflow -a pi -a opencode -a claude-code -a codex -y 2>/dev/null || {
+    log_error "Failed to install skills. Is npx available?"
+    exit 1
+  }
+
+  log_success "Skills installed!"
+  log_info ""
+  log_info "To update later: npx skills update"
+  log_info "To remove: npx skills remove cali-product-workflow"
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Uninstall
+# ─────────────────────────────────────────────────────────────────────────────
+
+uninstall_all() {
+  local cli=$(detect_cli)
+
+  log_info "Uninstalling for $cli..."
 
   case "$cli" in
     pi)
-      install_pi_packages "$dry_run"
+      pi remove npm:@renatocaliari/pi-product-workflow 2>/dev/null || true
+      pi remove npm:@renatocaliari/cali-product-workflow-pi 2>/dev/null || true
       ;;
     opencode)
-      install_opencode_plugin "$dry_run"
+      local config="$HOME/.config/opencode/opencode.json"
+      if [[ -f "$config" ]] && command -v jq &>/dev/null; then
+        jq '.plugin -= ["@renatocaliari/pi-product-workflow"]' "$config" > "${config}.tmp" && mv "${config}.tmp" "$config"
+      fi
       ;;
     claude-code)
-      install_claude_code_plugin "$dry_run"
+      claude /plugin uninstall pi-product-workflow 2>/dev/null || true
       ;;
     codex)
-      install_codex_plugin "$dry_run"
-      ;;
-    generic)
-      log_info "Generic CLI detected. Only base package will be installed."
-      log_info "For CLI-specific features, set PRODUCT_WORKFLOW_CLI env var."
+      codex plugin uninstall pi-product-workflow 2>/dev/null || true
       ;;
   esac
+
+  # Remove skills
+  npx skills remove cali-product-workflow -y 2>/dev/null || true
+
+  # Remove auto-trigger
+  [[ -f "$HOME/.pi/agent/AGENTS.md" ]] && grep -q "Product Workflow" "$HOME/.pi/agent/AGENTS.md" && rm "$HOME/.pi/agent/AGENTS.md"
+
+  log_success "Uninstallation complete!"
 }
 
-#-------------------------------------------------------------------------------
-# Main Installation
-#-------------------------------------------------------------------------------
-
-main() {
-  local dry_run="false"
-  local cli=""
-  local pkg_manager=""
-
-  # Parse flags
-  while [[ $# -gt 0 ]]; do
-    case "$1" in
-      --dry-run)
-        dry_run="true"
-        shift
-        ;;
-      --help|-h)
-        show_help
-        exit 0
-        ;;
-      *)
-        log_error "Unknown option: $1"
-        show_help
-        exit 1
-        ;;
-    esac
-  done
-
-  # Detect environment
-  cli=$(detect_cli)
-  pkg_manager=$(detect_package_manager)
-
-  echo ""
-  echo "${BOLD}pi-product-workflow Installer${RESET}"
-  echo "================================"
-  echo ""
-  log_info "Detected CLI: ${BOLD}${cli}${RESET}"
-  log_info "Package manager: ${BOLD}${pkg_manager}${RESET}"
-  echo ""
-
-  if [[ "$dry_run" == "true" ]]; then
-    log_warn "DRY RUN MODE - No changes will be made"
-    echo ""
-  fi
-
-  # Install base package
-  install_base_package "$pkg_manager" "$dry_run"
-  echo ""
-
-  # Install CLI-specific packages
-  install_cli_specific "$cli" "$dry_run"
-  echo ""
-
-  if [[ "$dry_run" == "true" ]]; then
-    log_success "Dry run complete. Run without --dry-run to install."
-  else
-    log_success "Installation complete!"
-    echo ""
-    echo "Next steps:"
-    echo "  - Restart your CLI to load the new package"
-    echo "  - Run 'pi-product-workflow' or use the /pw: commands"
-    echo ""
-    echo "For help: $0 --help"
-  fi
-}
-
-#-------------------------------------------------------------------------------
-# Help
-#-------------------------------------------------------------------------------
+# ─────────────────────────────────────────────────────────────────────────────
+# Main
+# ─────────────────────────────────────────────────────────────────────────────
 
 show_help() {
   cat << 'EOF'
 pi-product-workflow Installer
 
-Usage: install.sh [OPTIONS]
+Usage: install.sh [command]
 
-Auto-detects your CLI (pi, opencode, claude-code, codex) and installs
-pi-product-workflow with appropriate CLI-specific configuration.
+Commands:
+  install     Install for detected CLI (default)
+  update      Update installation
+  remove      Uninstall completely
+  help        Show this help
 
-OPTIONS:
-  --dry-run    Show what would be installed without making changes
-  --help, -h   Show this help message
+Installation:
+  - Detects your CLI (pi, opencode, claude-code, codex, generic)
+  - Installs everything needed for that CLI in one command
+  - Skills are included in all installations
 
-ENVIRONMENT VARIABLES:
+Environment Variables:
   PRODUCT_WORKFLOW_CLI  Override CLI detection (pi, opencode, claude-code, codex, generic)
-  PACKAGE_MANAGER       Override package manager detection (npm, pnpm, bun)
 
-EXAMPLES:
-  ./install.sh              # Install with auto-detection
-  ./install.sh --dry-run    # Preview installation steps
+Examples:
+  ./install.sh              # Install for detected CLI
+  ./install.sh update        # Update
+  ./install.sh remove        # Uninstall
+
   PRODUCT_WORKFLOW_CLI=pi ./install.sh  # Force Pi installation
-
-SUPPORTED CLIs:
-  - pi: Installs pi-subagents, pi-goal, pi-intercom, pi-supervisor, pi-autoresearch
-  - opencode: Adds plugin to OpenCode config
-  - claude-code: Runs /plugin marketplace add
-  - codex: Runs codex plugin install
-  - generic: Installs base package only
 EOF
 }
 
-# Run main
+main() {
+  local command="${1:-install}"
+
+  case "$command" in
+    install|i)
+      local cli=$(detect_cli)
+      echo ""
+      log_info "Detected CLI: ${BOLD}$cli${RESET}"
+      echo ""
+
+      case "$cli" in
+        pi) install_pi ;;
+        opencode) install_opencode ;;
+        claude-code) install_claude_code ;;
+        codex) install_codex ;;
+        generic) install_generic ;;
+      esac
+      ;;
+    update|u)
+      npx skills update -y
+      ;;
+    remove|uninstall|r)
+      uninstall_all
+      ;;
+    help|h|--help|-h)
+      show_help
+      ;;
+    *)
+      log_error "Unknown command: $command"
+      show_help
+      exit 1
+      ;;
+  esac
+}
+
 main "$@"
