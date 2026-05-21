@@ -90,6 +90,8 @@ function buildCompactStatus(workflow: Workflow, capabilityLevel: string): string
 }
 
 export function updateFooter(ctx: ExtensionContext, cwd: string): void {
+  // Ensure Pi context is set for status updates
+  initUIAdapter(ctx);
   const adapter = getUIAdapter();
   const wf = getActiveWorkflow(cwd);
   

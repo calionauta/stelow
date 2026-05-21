@@ -3,5 +3,212 @@
   "version": "1.0",
   "created": "2026-05-20T13:54:20.104Z",
   "updated": "2026-05-20T13:54:20.104Z",
-  "workflows": []
+  "workflows": [
+    {
+      "name": "wf-enz84q",
+      "description": "",
+      "status": "archived",
+      "currentPhase": 0,
+      "phases": [
+        {
+          "id": "0-setup",
+          "name": "Setup",
+          "status": "in-progress"
+        },
+        {
+          "id": "1-context",
+          "name": "Context",
+          "status": "pending"
+        },
+        {
+          "id": "2-shape",
+          "name": "Shape",
+          "status": "pending"
+        },
+        {
+          "id": "3-critique",
+          "name": "Critique",
+          "status": "pending"
+        },
+        {
+          "id": "4-gate",
+          "name": "Gate",
+          "status": "pending"
+        },
+        {
+          "id": "5-scope",
+          "name": "Scope",
+          "status": "pending"
+        },
+        {
+          "id": "6-interface",
+          "name": "Interface",
+          "status": "pending"
+        },
+        {
+          "id": "7-int.gate",
+          "name": "Int.Gate",
+          "status": "pending"
+        },
+        {
+          "id": "8-selection",
+          "name": "Selection",
+          "status": "pending"
+        },
+        {
+          "id": "9-planning",
+          "name": "Planning",
+          "status": "pending"
+        },
+        {
+          "id": "10-execution",
+          "name": "Execution",
+          "status": "pending"
+        }
+      ],
+      "created": "2026-05-21T16:33:39.358Z",
+      "updated": "2026-05-21T16:33:39.358Z",
+      "cwd": "/Users/cali/Development/cali-product-workflow",
+      "dirHash": "pw-mvxa-enz84q",
+      "detectedCLI": "pi",
+      "slug": "wf-enz84q"
+    },
+    {
+      "name": "wf-eoq7r9",
+      "description": "",
+      "status": "archived",
+      "currentPhase": 0,
+      "phases": [
+        {
+          "id": "0-setup",
+          "name": "Setup",
+          "status": "in-progress"
+        },
+        {
+          "id": "1-context",
+          "name": "Context",
+          "status": "pending"
+        },
+        {
+          "id": "2-shape",
+          "name": "Shape",
+          "status": "pending"
+        },
+        {
+          "id": "3-critique",
+          "name": "Critique",
+          "status": "pending"
+        },
+        {
+          "id": "4-gate",
+          "name": "Gate",
+          "status": "pending"
+        },
+        {
+          "id": "5-scope",
+          "name": "Scope",
+          "status": "pending"
+        },
+        {
+          "id": "6-interface",
+          "name": "Interface",
+          "status": "pending"
+        },
+        {
+          "id": "7-int.gate",
+          "name": "Int.Gate",
+          "status": "pending"
+        },
+        {
+          "id": "8-selection",
+          "name": "Selection",
+          "status": "pending"
+        },
+        {
+          "id": "9-planning",
+          "name": "Planning",
+          "status": "pending"
+        },
+        {
+          "id": "10-execution",
+          "name": "Execution",
+          "status": "pending"
+        }
+      ],
+      "created": "2026-05-21T16:41:14.506Z",
+      "updated": "2026-05-21T16:41:14.506Z",
+      "cwd": "/Users/cali/Development/cali-product-workflow",
+      "dirHash": "pw-wn4a-eoq7r9",
+      "detectedCLI": "pi",
+      "slug": "wf-eoq7r9"
+    },
+    {
+      "name": "wf-31fl47",
+      "description": "",
+      "status": "in-progress",
+      "currentPhase": 0,
+      "phases": [
+        {
+          "id": "0-setup",
+          "name": "Setup",
+          "status": "in-progress"
+        },
+        {
+          "id": "1-context",
+          "name": "Context",
+          "status": "pending"
+        },
+        {
+          "id": "2-shape",
+          "name": "Shape",
+          "status": "pending"
+        },
+        {
+          "id": "3-critique",
+          "name": "Critique",
+          "status": "pending"
+        },
+        {
+          "id": "4-gate",
+          "name": "Gate",
+          "status": "pending"
+        },
+        {
+          "id": "5-scope",
+          "name": "Scope",
+          "status": "pending"
+        },
+        {
+          "id": "6-interface",
+          "name": "Interface",
+          "status": "pending"
+        },
+        {
+          "id": "7-int.gate",
+          "name": "Int.Gate",
+          "status": "pending"
+        },
+        {
+          "id": "8-selection",
+          "name": "Selection",
+          "status": "pending"
+        },
+        {
+          "id": "9-planning",
+          "name": "Planning",
+          "status": "pending"
+        },
+        {
+          "id": "10-execution",
+          "name": "Execution",
+          "status": "pending"
+        }
+      ],
+      "created": "2026-05-21T16:44:04.984Z",
+      "updated": "2026-05-21T16:44:04.984Z",
+      "cwd": "/Users/cali/Development/cali-product-workflow",
+      "dirHash": "pw-0anr-31fl47",
+      "detectedCLI": "pi"
+    }
+  ]
 }
