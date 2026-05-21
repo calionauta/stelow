@@ -57,6 +57,7 @@ subagent({
 
 
 **CRITICAL:** Hybrid is generated **AFTER** all 5 proposals are complete to avoid bias.
+**`agent` parameter is REQUIRED** — always use `"worker"`:
 
 ```typescript
 subagent({
@@ -70,9 +71,15 @@ Append to the interfaces file.`,
 ```
 
 
-## Visual Review (Phase 8 Gate)
+## Visual Review (Phase 8 Gate — Automatic)
 
-After all proposals + Hybrid, use `references/cli-tools/plannotator.md` for the Plannotator command format.
+**After all proposals + Hybrid, proceed DIRECTLY to Plannotator.** Do NOT ask the user for permission.
+
+```bash
+plannotator annotate .cali-product-workflow/{YYYY-MM-DD}/{_dir}/interfaces/interfaces_{v}.md --gate
+```
+
+See `references/cli-tools/plannotator.md` for details.
 
 ## User Selection (Phase 9)
 

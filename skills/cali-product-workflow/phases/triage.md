@@ -4,7 +4,7 @@
 
 ### When This Phase Activates
 
-Triggered when the user's initial request contains multiple items (bullets, numbered list, "and", "also", "também", etc.) or when explicitly invoked.
+Triggered when the user's initial request contains multiple items (bullets, numbered list, enumerations) or when explicitly invoked.
 
 ### Process
 

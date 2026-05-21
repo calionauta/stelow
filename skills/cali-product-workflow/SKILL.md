@@ -199,7 +199,8 @@ Use `references/cli-tools/plannotator.md` for Plannotator gate rules.
 - If removing items, update spec in-place
 
 ### Interface Gate (Phase 8)
-Use `references/cli-tools/plannotator.md` for Plannotator command.
+- **Proceed automatically** — do NOT ask the user for permission
+- Use `references/cli-tools/plannotator.md` for Plannotator command
 
 ### Interface Selection (Phase 9)
 - Use **Pattern 2** from `phases/ask-patterns.md`
