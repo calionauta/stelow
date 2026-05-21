@@ -198,5 +198,5 @@ export default async function cmdStart(
 
   reply(ctx, lines.join("\n"));
 
-  pi.sendUserMessage("/skill:cali-product-workflow\n\n[Auto-Discovery: SKIP - workflow '" + displayLabel + "' recently created. Proceed to Phase 1: Clarify.]", { deliverAs: "followUp" });
+  pi.sendUserMessage("/skill:cali-product-workflow\n\n>>> WORKFLOW STARTED: '" + displayLabel + "' <<<\nALL prior work is PAUSED. Do NOT continue previous tasks.\nFollow the workflow one phase at a time via /pw:next.\nPhase 1: Setup/Clarify — ask questions, gather context.\nDo NOT implement anything until Phase 10 (Planning).", { deliverAs: "followUp" });
 }
