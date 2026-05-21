@@ -1,378 +1,299 @@
 #!/usr/bin/env bash
 #
 # cali-product-workflow Installer
-# Auto-detects CLI and installs with full integration
-# For specific CLIs: single installation that includes everything
-# For generic: npx skills only
+# Auto-detects ALL installed CLIs and installs for each one.
+# Uses Git-based distribution — no npm dependency.
 #
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+GITHUB_REPO="https://github.com/renatocaliari/cali-product-workflow"
 
 # Colors
 if [[ -t 1 ]] && command -v tput &>/dev/null && [[ $(tput colors 2>/dev/null || echo 0) -ge 8 ]]; then
-  BOLD="$(tput bold)"
-  RESET="$(tput sgr0)"
-  RED="$(tput setaf 1)"
-  GREEN="$(tput setaf 2)"
-  YELLOW="$(tput setaf 3)"
-  BLUE="$(tput setaf 4)"
+  BOLD="$(tput bold)"  RESET="$(tput sgr0)"
+  RED="$(tput setaf 1)" GREEN="$(tput setaf 2)" YELLOW="$(tput setaf 3)" BLUE="$(tput setaf 4)"
 else
   BOLD="" RESET="" RED="" GREEN="" YELLOW="" BLUE=""
 fi
 
-log_info() { echo "${BLUE}[info]${RESET} $*"; }
+log_info()    { echo "${BLUE}[info]${RESET} $*"; }
 log_success() { echo "${GREEN}[ok]${RESET} $*"; }
-log_warn() { echo "${YELLOW}[warn]${RESET} $*"; }
-log_error() { echo "${RED}[error]${RESET} $*" >&2; }
+log_warn()    { echo "${YELLOW}[warn]${RESET} $*"; }
+log_error()   { echo "${RED}[error]${RESET} $*" >&2; }
 
-# ─────────────────────────────────────────────────────────────────────────────
 # CLI Detection
-# ─────────────────────────────────────────────────────────────────────────────
-
-detect_cli() {
-  # Priority: env var override > config directories > command availability
-
-  if [[ -n "${PRODUCT_WORKFLOW_CLI:-}" ]]; then
-    echo "$PRODUCT_WORKFLOW_CLI"
-    return
-  fi
-
-  # Pi
-  if [[ -n "${PI_CONFIG_DIR:-}" ]] || [[ -n "${PI_DIR:-}" ]] || [[ -d "$HOME/.pi" ]]; then
-    echo "pi"
-    return
-  fi
-
-  # OpenCode
-  if [[ -d "$HOME/.config/opencode" ]] || [[ -d "$HOME/.opencode" ]]; then
-    echo "opencode"
-    return
-  fi
-
-  # Claude Code
-  if [[ -d "$HOME/.claude" ]] || [[ -d "$HOME/.claude-plugin" ]]; then
-    echo "claude-code"
-    return
-  fi
-
-  # Codex
-  if [[ -d "$HOME/.codex" ]] || [[ -d "$HOME/.codex-plugin" ]]; then
-    echo "codex"
-    return
-  fi
-
-  # Command availability
-  if command -v pi &>/dev/null; then echo "pi"; return; fi
-  if command -v opencode &>/dev/null; then echo "opencode"; return; fi
-  if command -v claude &>/dev/null; then echo "claude-code"; return; fi
-  if command -v codex &>/dev/null; then echo "codex"; return; fi
-
-  # Fallback
-  echo "generic"
+has_cli() {
+  local name="$1"
+  case "$name" in
+    pi)          [[ -d "$HOME/.pi" ]] || command -v pi &>/dev/null ;;
+    opencode)    [[ -d "$HOME/.config/opencode" ]] || command -v opencode &>/dev/null ;;
+    claude-code) [[ -d "$HOME/.claude" ]] || command -v claude &>/dev/null ;;
+    codex)       [[ -d "$HOME/.codex" ]] || command -v codex &>/dev/null ;;
+  esac
 }
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Pi Installation (Dual-Install)
-# ─────────────────────────────────────────────────────────────────────────────
+detect_all_clis() {
+  if [[ -n "${PRODUCT_WORKFLOW_CLI:-}" ]]; then echo "$PRODUCT_WORKFLOW_CLI"; return; fi
+  local clis=""
+  has_cli pi          && clis+="pi "
+  has_cli opencode    && clis+="opencode "
+  has_cli claude-code && clis+="claude-code "
+  has_cli codex       && clis+="codex "
+  echo "${clis:-generic}"
+}
 
+# Print manual AGENTS.md setup instructions
+print_agents_setup() {
+  echo ""
+  log_info "${BOLD}━━ Manual setup ━━${RESET}"
+  log_info "Add this to your agent's AGENTS.md / CLAUDE.md:"
+  echo ""
+  if has_cli pi;          then log_info "  - Pi:          ~/.pi/agent/AGENTS.md"; fi
+  if has_cli opencode;    then log_info "  - OpenCode:    ~/.config/opencode/AGENTS.md"; fi
+  if has_cli claude-code; then log_info "  - Claude Code: ~/.claude/CLAUDE.md or ./CLAUDE.md"; fi
+  if has_cli codex;       then log_info "  - Codex:       ~/.codex/AGENTS.md"; fi
+  echo ""
+  cat << 'EOF'
+\`\`\`
+## cali-product-workflow Integration
+
+When working on software projects, trigger the product workflow:
+
+1. **Trigger:** Use \`/skill cali-product-workflow\`
+2. **Process:** Follow the 6-phase workflow
+3. **Execute:** Only after visual review gate (Plannotator approval)
+\`\`\`
+EOF
+  echo ""
+}
+
+# Route to CLI-specific installer
+install_for_cli() {
+  case "$1" in
+    pi) install_pi ;;
+    opencode) install_opencode ;;
+    claude-code) install_claude_code ;;
+    codex) install_codex ;;
+    *) install_generic ;;
+  esac
+}
+
+# Pi
 install_pi() {
-  log_info "Installing for Pi (dual-install pattern)..."
+  log_info "  -> Installing for Pi..."
+  if ! command -v pi &>/dev/null; then log_warn "    pi not found. Skipping."; return; fi
 
-  local core_pkg="npm:@renatocaliari/cali-product-workflow"
-  local stub_pkg="npm:@renatocaliari/cali-product-workflow-pi"
+  log_info "    Installing core package..."
+  pi install "git:github.com/renatocaliari/cali-product-workflow" 2>/dev/null || {
+    log_info "    (using local path)"
+    pi install "$SCRIPT_DIR" 2>/dev/null || true
+  }
 
-  # Check if pi is available
-  if ! command -v pi &>/dev/null; then
-    log_error "pi command not found. Install pi first:"
-    log_error "  npm install -g @mariozechner/pi-coding-agent"
-    exit 1
+  log_info "    Installing Pi extension..."
+  pi install "$SCRIPT_DIR/extensions/cali-product-workflow-pi" 2>/dev/null || true
+
+  if [[ -z "${INSTALL_SKILLS_ONLY:-}" ]]; then
+    log_info "    Installing supporting packages..."
+    for pkg in \
+      "npm:pi-subagents" "npm:@capyup/pi-goal" "npm:pi-intercom" \
+      "npm:pi-supervisor" "npm:pi-autoresearch" \
+      "npm:@juicesharp/rpiv-ask-user-question" \
+      "@plannotator/pi-extension"; do
+      pi install "$pkg" 2>/dev/null || true
+    done
+  else
+    log_info "    INSTALL_SKILLS_ONLY set -- skipping npm packages"
   fi
 
-  # 1. Core package (skills, adapters, CLI tools)
-  log_info "Installing core package..."
-  pi install "$core_pkg" 2>/dev/null || {
-    log_warn "Could not install from npm. Installing from local source..."
-    pi install "$SCRIPT_DIR" 2>/dev/null || {
-      log_warn "Local install failed. Run './scripts/setup.sh' instead."
-    }
-  }
+  # Clean up duplicate skill locations to avoid conflicts
+  rm -rf "$SCRIPT_DIR/.pi/skills/cali-product-workflow" 2>/dev/null || true
+  rm -rf "$SCRIPT_DIR/.agents/skills/cali-product-workflow" 2>/dev/null || true
 
-  # 2. Stub extension (Pi integration)
-  log_info "Installing Pi extension..."
-  pi install "$stub_pkg" 2>/dev/null || {
-    log_warn "Could not install stub from npm. Installing from local source..."
-    pi install "$SCRIPT_DIR/extensions/cali-product-workflow-pi" 2>/dev/null || true
-  }
-
-  # 3. Supporting packages
-  log_info "Installing supporting packages..."
-  local supporting=(
-    "npm:pi-subagents"
-    "npm:pi-goal"
-    "npm:pi-intercom"
-    "npm:pi-supervisor"
-    "npm:pi-autoresearch"
-    "npm:@juicesharp/rpiv-ask-user-question"
-    "npm:@plannotator/pi-extension"
-  )
-
-  for pkg in "${supporting[@]}"; do
-    log_info "  → $pkg"
-    pi install "$pkg" 2>/dev/null || log_warn "  Could not install $pkg"
-  done
-
-  # 4. Skills via npx (for universal skill paths)
-  log_info "Installing skills..."
-  npx skills add renatocaliari/cali-product-workflow -a pi -y 2>/dev/null || {
-    log_warn "Could not install skills via npx skills"
-  }
-
-  log_success "Pi installation complete!"
+  log_success "  v Pi done"
 }
 
-# ─────────────────────────────────────────────────────────────────────────────
-# OpenCode Installation
-# ─────────────────────────────────────────────────────────────────────────────
-
+# OpenCode
 install_opencode() {
-  log_info "Installing for OpenCode..."
+  log_info "  -> Installing for OpenCode..."
+  if ! command -v opencode &>/dev/null; then log_warn "    opencode not found. Skipping."; return; fi
 
-  if ! command -v opencode &>/dev/null; then
-    log_error "opencode command not found."
-    exit 1
-  fi
+  local cfg="$HOME/.config/opencode/opencode.json"
+  local skdir="$HOME/.config/opencode/skills"
 
-  local config_file="$HOME/.config/opencode/opencode.json"
-  local pkg="@renatocaliari/cali-product-workflow"
+  log_info "    Installing skills..."
+  npx skills add renatocaliari/cali-product-workflow -a opencode -g -y 2>/dev/null || {
+    mkdir -p "$skdir"
+    [[ ! -d "$skdir/cali-product-workflow" ]] && cp -r "$SCRIPT_DIR/skills/cali-product-workflow" "$skdir/"
+  }
 
-  # 1. Add plugin to opencode.json
-  mkdir -p "$(dirname "$config_file")"
-
-  if [[ -f "$config_file" ]]; then
-    if grep -q "$pkg" "$config_file" 2>/dev/null; then
-      log_info "Plugin already in opencode.json"
-    else
-      if command -v jq &>/dev/null; then
-        local tmp="${config_file}.tmp"
-        jq '.plugin += ["'"$pkg"'"]' "$config_file" > "$tmp" && mv "$tmp" "$config_file"
-      else
-        log_warn "jq not found. Please manually add to opencode.json:"
-        log_info '  Add "plugin": ["'"$pkg"'"]'
-      fi
+  mkdir -p "$(dirname "$cfg")"
+  if command -v jq &>/dev/null; then
+    if ! jq -e ".skills.paths | index(\"$skdir\")" "$cfg" &>/dev/null 2>&1; then
+      jq '.skills.paths += ["'"$skdir"'"]' "$cfg" > "${cfg}.tmp" && mv "${cfg}.tmp" "$cfg" 2>/dev/null || true
     fi
   else
-    cat > "$config_file" << EOF
-{
-  "\$schema": "https://opencode.ai/config.json",
-  "plugin": ["$pkg"]
-}
-EOF
+    log_warn "    jq not found. Add to opencode.json:"
+    log_info '      "skills": { "paths": ["'"$skdir"'"] }'
   fi
 
-  # 2. Skills via npx
-  log_info "Installing skills..."
-  npx skills add renatocaliari/cali-product-workflow -a opencode -y 2>/dev/null || {
-    log_warn "Could not install skills via npx skills"
-  }
-
-  log_success "OpenCode installation complete!"
+  log_success "  v OpenCode done"
 }
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Claude Code Installation
-# ─────────────────────────────────────────────────────────────────────────────
-
+# Claude Code
 install_claude_code() {
-  log_info "Installing for Claude Code..."
+  log_info "  -> Installing for Claude Code..."
+  if ! command -v claude &>/dev/null; then log_warn "    claude not found. Skipping."; return; fi
 
-  if ! command -v claude &>/dev/null; then
-    log_error "claude command not found."
-    exit 1
-  fi
+  log_info "    Installing skills..."
+  npx skills add renatocaliari/cali-product-workflow -a claude-code -g -y 2>/dev/null || true
 
-  # 1. Try to add as plugin from npm or local
-  log_info "Configuring plugin..."
-  
-  if npx @anthropic/claude-plugin-cli add renatocaliari/cali-product-workflow 2>/dev/null; then
-    log_success "Plugin added via marketplace"
+  log_info "    Adding plugin marketplace..."
+  if claude plugin marketplace add "$SCRIPT_DIR" 2>/dev/null; then
+    log_info "    Plugin marketplace added. Install:"
+    log_info "      claude plugin install cali-product-workflow@marketplace-name"
+  elif claude plugin marketplace add "$GITHUB_REPO" 2>/dev/null; then
+    log_info "    Plugin marketplace added from GitHub. Install:"
+    log_info "      claude plugin install cali-product-workflow@marketplace-name"
   else
-    log_info "Trying local plugin installation..."
-    claude /plugin install "$SCRIPT_DIR" 2>/dev/null || {
-      log_warn "Plugin install may require manual configuration"
-    }
+    log_info "    Add marketplace manually:"
+    log_info "      claude plugin marketplace add $GITHUB_REPO"
+    log_info "      claude plugin install cali-product-workflow@marketplace-name"
   fi
 
-  # 2. Skills via npx
-  log_info "Installing skills..."
-  npx skills add renatocaliari/cali-product-workflow -a claude-code -y 2>/dev/null || {
-    log_warn "Could not install skills via npx skills"
-  }
-
-  log_success "Claude Code installation complete!"
+  log_success "  v Claude Code done"
 }
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Codex Installation
-# ─────────────────────────────────────────────────────────────────────────────
-
+# Codex
 install_codex() {
-  log_info "Installing for Codex..."
+  log_info "  -> Installing for Codex..."
+  if ! command -v codex &>/dev/null; then log_warn "    codex not found. Skipping."; return; fi
 
-  if ! command -v codex &>/dev/null; then
-    log_error "codex command not found."
-    exit 1
+  log_info "    Installing skills..."
+  npx skills add renatocaliari/cali-product-workflow -a codex -g -y 2>/dev/null || true
+
+  log_info "    Adding plugin marketplace..."
+  if codex plugin marketplace add "$SCRIPT_DIR" 2>/dev/null; then
+    log_info "    Plugin marketplace added. Install:"
+    log_info "      codex plugin add cali-product-workflow@marketplace-name"
+  elif codex plugin marketplace add "$GITHUB_REPO" 2>/dev/null; then
+    log_info "    Plugin marketplace added from GitHub. Install:"
+    log_info "      codex plugin add cali-product-workflow@marketplace-name"
+  else
+    log_info "    Add marketplace manually (plugins feature required):"
+    log_info "      codex plugin marketplace add $GITHUB_REPO"
+    log_info "      codex plugin add cali-product-workflow@marketplace-name"
   fi
 
-  # 1. Try codex-marketplace
-  if command -v npx &>/dev/null; then
-    log_info "Trying codex-marketplace..."
-    npx codex-marketplace add renatocaliari/cali-product-workflow --plugins 2>/dev/null || {
-      log_info "codex-marketplace not available. Skipping."
-    }
-  fi
-
-  # 2. Skills via npx
-  log_info "Installing skills..."
-  npx skills add renatocaliari/cali-product-workflow -a codex -y 2>/dev/null || {
-    log_warn "Could not install skills via npx skills"
-  }
-
-  log_success "Codex installation complete!"
+  log_success "  v Codex done"
 }
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Generic Installation (npx skills only)
-# ─────────────────────────────────────────────────────────────────────────────
-
+# Generic
 install_generic() {
-  log_info "Generic CLI detected."
-  log_info ""
-  log_info "Installing skills only (no full CLI integration)."
-  log_info ""
-  log_info "For full integration with a specific CLI:"
-  log_info "  - Pi:        ./install.sh (from Pi environment)"
-  log_info "  - OpenCode:  npm install -g && configure opencode.json"
-  log_info "  - Claude:    claude /plugin install"
-  log_info "  - Codex:     codex plugin install"
-  log_info ""
-  
-  log_info "Installing skills via npx skills..."
-  
-  npx skills add renatocaliari/cali-product-workflow -a pi -a opencode -a claude-code -a codex -y 2>/dev/null || {
-    log_error "Failed to install skills. Is npx available?"
-    exit 1
+  log_info "  -> Installing skills for all agents..."
+  npx skills add renatocaliari/cali-product-workflow -a pi -a opencode -a claude-code -a codex -g -y 2>/dev/null || {
+    log_error "    npx skills failed."
+    return 1
   }
-
-  log_success "Skills installed!"
-  log_info ""
-  log_info "To update later: npx skills update"
-  log_info "To remove: npx skills remove cali-product-workflow"
+  log_success "  v Generic done"
 }
 
-# ─────────────────────────────────────────────────────────────────────────────
+# Update
+update_all() {
+  log_info "Updating..."
+  npx skills update -y 2>/dev/null || true
+  for cli in $(detect_all_clis); do
+    case "$cli" in
+      pi)          d="$HOME/.pi/agent/skills/cali-product-workflow" ;;
+      opencode)    d="$HOME/.config/opencode/skills/cali-product-workflow" ;;
+      claude-code) d="$HOME/.claude/skills/cali-product-workflow" ;;
+      codex)       d="$HOME/.codex/skills/cali-product-workflow" ;;
+    esac
+    if [[ -d "${d:-}" ]]; then log_success "  - ${cli}: skills present"
+    else log_warn "  - ${cli}: skills missing -- re-run install"; fi
+  done
+  log_success "Update complete!"
+}
+
 # Uninstall
-# ─────────────────────────────────────────────────────────────────────────────
-
 uninstall_all() {
-  local cli=$(detect_cli)
-
-  log_info "Uninstalling for $cli..."
-
-  case "$cli" in
-    pi)
-      pi remove npm:@renatocaliari/cali-product-workflow 2>/dev/null || true
-      pi remove npm:@renatocaliari/cali-product-workflow-pi 2>/dev/null || true
-      ;;
-    opencode)
-      local config="$HOME/.config/opencode/opencode.json"
-      if [[ -f "$config" ]] && command -v jq &>/dev/null; then
-        jq '.plugin -= ["@renatocaliari/cali-product-workflow"]' "$config" > "${config}.tmp" && mv "${config}.tmp" "$config"
-      fi
-      ;;
-    claude-code)
-      claude /plugin uninstall cali-product-workflow 2>/dev/null || true
-      ;;
-    codex)
-      codex plugin uninstall cali-product-workflow 2>/dev/null || true
-      ;;
-  esac
-
-  # Remove skills
+  local clis=$(detect_all_clis)
+  log_info "Uninstalling for: $clis"
+  for cli in $clis; do
+    case "$cli" in
+      pi)
+        pi remove "git:github.com/renatocaliari/cali-product-workflow" 2>/dev/null || true
+        npx skills remove cali-product-workflow -a pi -g -y 2>/dev/null || true
+        rm -rf "$HOME/.pi/agent/skills/cali-product-workflow" 2>/dev/null || true
+        log_success "  v Pi" ;;
+      opencode)
+        npx skills remove cali-product-workflow -a opencode -g -y 2>/dev/null || true
+        local cfg="$HOME/.config/opencode/opencode.json"
+        local skdir="$HOME/.config/opencode/skills"
+        if [[ -f "$cfg" ]] && command -v jq &>/dev/null; then
+          jq '.skills.paths -= ["'"$skdir"'"]' "$cfg" > "${cfg}.tmp" && mv "${cfg}.tmp" "$cfg" 2>/dev/null || true
+        fi
+        rm -rf "$skdir/cali-product-workflow" 2>/dev/null || true
+        log_success "  v OpenCode" ;;
+      claude-code)
+        npx skills remove cali-product-workflow -a claude-code -g -y 2>/dev/null || true
+        claude plugin uninstall "cali-product-workflow" 2>/dev/null || true
+        rm -rf "$HOME/.claude/skills/cali-product-workflow" 2>/dev/null || true
+        log_success "  v Claude Code" ;;
+      codex)
+        npx skills remove cali-product-workflow -a codex -g -y 2>/dev/null || true
+        codex plugin remove "cali-product-workflow" 2>/dev/null || true
+        rm -rf "$HOME/.codex/skills/cali-product-workflow" 2>/dev/null || true
+        log_success "  v Codex" ;;
+    esac
+  done
   npx skills remove cali-product-workflow -y 2>/dev/null || true
-
-  # Remove auto-trigger
-  [[ -f "$HOME/.pi/agent/AGENTS.md" ]] && grep -q "Product Workflow" "$HOME/.pi/agent/AGENTS.md" && rm "$HOME/.pi/agent/AGENTS.md"
-
+  echo ""
   log_success "Uninstallation complete!"
+  log_info "Manual AGENTS.md/CLAUDE.md entries were not removed."
 }
 
-# ─────────────────────────────────────────────────────────────────────────────
 # Main
-# ─────────────────────────────────────────────────────────────────────────────
-
 show_help() {
   cat << 'EOF'
 cali-product-workflow Installer
 
+Auto-detects ALL your installed AI coding agents and installs for each one.
+Uses Git-based distribution -- no npm dependency.
+
 Usage: install.sh [command]
 
 Commands:
-  install     Install for detected CLI (default)
-  update      Update installation
-  remove      Uninstall completely
+  install     Install for all detected CLIs (default)
+  update      Update skills
+  remove      Uninstall from all detected CLIs
   help        Show this help
 
-Installation:
-  - Detects your CLI (pi, opencode, claude-code, codex, generic)
-  - Installs everything needed for that CLI in one command
-  - Skills are included in all installations
-
-Environment Variables:
-  PRODUCT_WORKFLOW_CLI  Override CLI detection (pi, opencode, claude-code, codex, generic)
+Environment:
+  INSTALL_SKILLS_ONLY  Skip npm packages (Pi only, skills-only)
+  PRODUCT_WORKFLOW_CLI  Limit to one CLI (pi|opencode|claude-code|codex)
 
 Examples:
-  ./install.sh              # Install for detected CLI
-  ./install.sh update        # Update
-  ./install.sh remove        # Uninstall
-
-  PRODUCT_WORKFLOW_CLI=pi ./install.sh  # Force Pi installation
+  ./install.sh                                    # All detected CLIs
+  PRODUCT_WORKFLOW_CLI=opencode ./install.sh      # Only OpenCode
+  ./install.sh update                              # Update skills
+  ./install.sh remove                              # Uninstall from all
 EOF
 }
 
 main() {
-  local command="${1:-install}"
-
-  case "$command" in
+  local cmd="${1:-install}"
+  case "$cmd" in
     install|i)
-      local cli=$(detect_cli)
-      echo ""
-      log_info "Detected CLI: ${BOLD}$cli${RESET}"
-      echo ""
-
-      case "$cli" in
-        pi) install_pi ;;
-        opencode) install_opencode ;;
-        claude-code) install_claude_code ;;
-        codex) install_codex ;;
-        generic) install_generic ;;
-      esac
-      ;;
-    update|u)
-      npx skills update -y
-      ;;
-    remove|uninstall|r)
-      uninstall_all
-      ;;
-    help|h|--help|-h)
-      show_help
-      ;;
-    *)
-      log_error "Unknown command: $command"
-      show_help
-      exit 1
-      ;;
+      local clis=$(detect_all_clis)
+      echo ""; log_info "Detected CLIs: ${BOLD}$clis${RESET}"; echo ""
+      for cli in $clis; do install_for_cli "$cli"; done
+      echo ""; log_success "All installations complete!"; print_agents_setup ;;
+    update|u) update_all ;;
+    remove|uninstall|r) uninstall_all ;;
+    help|h|--help|-h) show_help ;;
+    *) log_error "Unknown command: $cmd"; show_help; exit 1 ;;
   esac
 }
 
