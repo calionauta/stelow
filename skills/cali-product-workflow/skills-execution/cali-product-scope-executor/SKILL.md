@@ -228,7 +228,7 @@ Before generating the final report, cross-reference the original plan (spec-tech
    - If extra scopes were created: document the justification
 2. **DoD:** did each executed scope meet its Definition of Done?
    - If not: document the gap
-3. **Principles:** read `references/tech-planning/generation-principles.md`
+3. **Principles:** read `../../skills-workflow/cali-tech-planning/references/generation-principles.md`
    and check if principles were followed in the generated code
    - If violations were detected by parallel-review: were they fixed?
 4. **Verification result:** APPROVED | CAVEATS | REJECTED
