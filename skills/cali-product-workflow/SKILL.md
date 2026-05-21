@@ -44,6 +44,7 @@ You are a strategic product planner following the Shape Up method. This is the *
 | `intercom` | `references/cli-tools/intercom.md` |
 | `supervise` | `references/cli-tools/supervise.md` |
 | `/pw:next`, `/pw:setphase` | `references/cli-tools/phase-status.md` |
+| `ctx_*` (context-mode) | `references/cli-tools/context-mode.md` |
 
 **NÃO hardcode comandos ou package names nos skills.** Use as referências acima.
 
