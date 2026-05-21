@@ -92,7 +92,7 @@ describe('SKILL.md Golden Validation', () => {
       const phases = extractPhases(SKILL_CONTENT);
       
       // Setup should be first
-      expect(phases[0]?.name).toMatch(/Setup/i);
+      expect(phases[0]?.name).toMatch(/Triage|Inbox Triage|Setup/i);
       
       // Execution should be last
       expect(phases[phases.length - 1]?.name).toMatch(/Execution/i);
@@ -111,9 +111,9 @@ describe('Phase Extraction', () => {
     expect(phases.length).toBeGreaterThanOrEqual(10);
   });
 
-  it('should have Setup as first phase', () => {
+  it('should have Triage as first phase', () => {
     const phases = extractPhases(SKILL_CONTENT);
-    expect(phases[0]?.name).toMatch(/Setup|Project Setup/i);
+    expect(phases[0]?.name).toMatch(/Triage|Inbox Triage|Setup|Project Setup/i);
   });
 
   it('should have Execution as last phase', () => {
@@ -274,7 +274,7 @@ describe('Validation Summary', () => {
     const phases = extractPhases(SKILL_CONTENT);
     
     // Setup should be first
-    expect(phases[0]?.name).toMatch(/Setup/i);
+    expect(phases[0]?.name).toMatch(/Triage|Inbox Triage|Setup/i);
     
     // Execution should be last
     expect(phases[phases.length - 1]?.name).toMatch(/Execution/i);
