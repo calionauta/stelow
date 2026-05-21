@@ -107,20 +107,7 @@ install_pi() {
     log_info "    INSTALL_SKILLS_ONLY set -- skipping npm packages"
   fi
 
-  # Suppress Pi skill conflict: tell Pi to skip loading skills from the git package
-  # (skills are already available via the universal path ~/.agents/skills/)
-  if command -v jq &>/dev/null; then
-    local pi_settings="$HOME/.pi/agent/settings.json"
-    if [[ -f "$pi_settings" ]]; then
-      local idx
-      idx=$(jq '(.packages // []) | map(.source // .) | index("git:github.com/renatocaliari/cali-product-workflow")' "$pi_settings" 2>/dev/null)
-      if [[ "$idx" != "null" && -n "$idx" ]]; then
-        jq '.packages['"$idx"'] |= {source: (.source // .), skills: [], extensions: ["extensions/*.ts"]}' "$pi_settings" > "${pi_settings}.tmp" && mv "${pi_settings}.tmp" "$pi_settings" 2>/dev/null || true
-      fi
-    fi
-  fi
-
-  # Clean up project-level duplicate skill locations
+  # Clean up project-level duplicates
   rm -rf "$SCRIPT_DIR/.pi/skills/cali-product-workflow" 2>/dev/null || true
   rm -rf "$SCRIPT_DIR/.agents/skills/cali-product-workflow" 2>/dev/null || true
 
