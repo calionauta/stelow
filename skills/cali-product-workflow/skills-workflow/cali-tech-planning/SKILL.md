@@ -116,7 +116,7 @@ Based on testing-strategy.md, add scopes for:
 **Run Plannotator gate for the tech plan BEFORE generating goals:**
 
 ```bash
-plannotator annotate .cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_{v}.md --gate
+[use the Plannotator gate command — see `references/cli-tools/plannotator.md`]
 ```
 
 See `references/cli-tools/plannotator.md` for command format, after-approval workflow, and frozen file rules.
@@ -134,17 +134,17 @@ See `references/cli-tools/plannotator.md` for command format, after-approval wor
 
 **If user requests changes:**
 1. Adjust the tech plan
-2. Re-submit via `plannotator annotate ... --gate`
+2. Re-submit via the Plannotator gate command (see `references/cli-tools/plannotator.md`)
 3. Repeat until approved
 
 ### 5c. Goal Generation (Step 9)
 
-After tech plan approval, convert each scope into a `/sisyphus` goal with DoD as completion criteria:
+After tech plan approval, convert each scope into a goal (see `references/cli-tools/goals.md`) with DoD as completion criteria:
 
 **For each scope in the approved spec-tech.md:**
 
 ```typescript
-/sisyphus Scope: {scope_name}
+[goal command — see `references/cli-tools/goals.md`]
 
 Steps:
 1. {step 1}
@@ -163,8 +163,8 @@ Deps: {scope dependencies}
 
 **Rules:**
 - Scopes with dependencies: create goal AFTER the dependency is complete
-- Use `pause_goal` with reason if a scope gets blocked
-- `/goal-tweak` for scope adjustments during execution
+- Use the goal pause command (see `references/cli-tools/goals.md`) if a scope gets blocked
+- Use the goal tweak command (see `references/cli-tools/goals.md`) for scope adjustments during execution
 
 ## Output
 
@@ -180,7 +180,7 @@ Tech plan is saved to:
 After Plannotator approval on spec-tech_v{N}.md:
 1. Run `/skill:cali-product-scope-executor` for scope routing
 2. Execute scopes based on type:
-   - `feature` → `/sisyphus` + `/supervise`
+   - `feature` → goal (see `references/cli-tools/goals.md`) + supervise (see `references/cli-tools/supervise.md`)
    - `optimization` → `/skill:autoresearch-create`
    - `test-unit`, `test-integration`, `test-security`, `test-behavior` → `/sisyphus` (with testing gates)
 

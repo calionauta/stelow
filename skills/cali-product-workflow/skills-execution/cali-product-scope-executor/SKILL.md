@@ -3,7 +3,7 @@ name: cali-scope-executor
 description: >
   [Cali] Reads an approved product plan with typed scopes (feature, optimization, spike, test-*)
   and routes each scope to its correct executor. Acts as the autonomous overnight
-  "set and forget" orchestrator — the pi equivalent of /goal for approved plans.
+  "set and forget" orchestrator — the equivalent of the goal command (see `references/cli-tools/goals.md`) for approved plans.
   For test-* scopes, enforces hard blocks (mutation score, security gates).
 ---
 
@@ -317,7 +317,7 @@ This skill runs **after** the Plannotator gate approves the plan, replacing manu
 from the objective. Use the supervision command before starting:
 
 ```bash
-/supervise Execute the approved plan in docs/{YYYY-MM-DD}/{slug}/plans/spec-tech_{v}.md
+[Use the supervise command — see `references/cli-tools/supervise.md`] Execute the approved plan in docs/{YYYY-MM-DD}/{slug}/plans/spec-tech_{v}.md
 routing scopes correctly. Save report to execution-report.md.
 ```
 

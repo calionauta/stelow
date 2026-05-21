@@ -58,7 +58,7 @@ Read the `references/` files to guide the process:
 | `references/proposal-structure.md` | Output structure for the shaped proposal |
 | `references/output-expectations.md` | Strong vs weak output criteria |
 
-Use `ask_user_question` for strategic questions when needed.
+Use the ask tool (see `references/cli-tools/ask.md`) for strategic questions when needed.
 
 After shaping:
 - Save to `.cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md`
@@ -91,8 +91,8 @@ When triggered by the orchestrator:
 
 Show the IN/OUT scope table. Ask:
 
-1. **Remove from IN?** — `ask_user_question` multiSelect with current IN scopes
-2. **Add to IN?** — `ask_user_question` multiSelect with OUT scope items
+1. **Remove from IN?** — use the ask tool with multiSelect (see `references/cli-tools/ask.md`) with current IN scopes
+2. **Add to IN?** — use the ask tool with multiSelect (see `references/cli-tools/ask.md`) with OUT scope items
 
 ```typescript
 ask_user_question({
