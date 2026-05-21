@@ -2,7 +2,7 @@
 name: cali-tech-planning
 description: >
   [Cali] Technical planning and scope sequencing skill. Generates typed scopes
-  (feature/optimization/spike + test-*), sequences them, and creates /sisyphus goals.
+  (feature/optimization/spike + test-*), sequences them, and creates goals (see references/cli-tools/goals.md).
   For software products, also generates testing-strategy.md via cali-testing-ai-code.
   Part of cali-product-workflow but can be used standalone.
 ---
@@ -182,7 +182,7 @@ After Plannotator approval on spec-tech_v{N}.md:
 2. Execute scopes based on type:
    - `feature` → goal (see `references/cli-tools/goals.md`) + supervise (see `references/cli-tools/supervise.md`)
    - `optimization` → `/skill:autoresearch-create`
-   - `test-unit`, `test-integration`, `test-security`, `test-behavior` → `/sisyphus` (with testing gates)
+   - `test-unit`, `test-integration`, `test-security`, `test-behavior` → goal (see `references/cli-tools/goals.md`) with testing gates
 
 See `phases/execution.md` for full execution flow.
 

@@ -94,30 +94,7 @@ Show the IN/OUT scope table. Ask:
 1. **Remove from IN?** — use the ask tool with multiSelect (see `references/cli-tools/ask.md`) with current IN scopes
 2. **Add to IN?** — use the ask tool with multiSelect (see `references/cli-tools/ask.md`) with OUT scope items
 
-```typescript
-ask_user_question({
-  questions: [
-    {
-      question: "What should be REMOVED from IN scope? (select none to keep current)",
-      header: "Remove IN",
-      multiSelect: true,
-      options: [
-        { label: "{IN scope item 1}", description: "{description}" },
-        { label: "{IN scope item 2}", description: "{description}" }
-      ]
-    },
-    {
-      question: "What should be ADDED to IN scope? (select none to keep current)",
-      header: "Add to IN",
-      multiSelect: true,
-      options: [
-        { label: "{OUT scope item 1}", description: "{description}" },
-        { label: "{OUT scope item 2}", description: "{description}" }
-      ]
-    }
-  ]
-})
-```
+[Use the ask tool — see `references/cli-tools/ask.md`]
 
 **If user removes items:** update spec
 **If user adds items:** create `spec-product_{v+1}.md` (user is aware)
