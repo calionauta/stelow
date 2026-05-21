@@ -108,6 +108,8 @@ Domain playbooks available for tactical reference during planning/execution:
 
 Follow the sequence below. For phases 3-5 and 7, delegate to subskills via `/skill:`. Each subskill has its own **Reference Index** — load the skill to see it.
 
+> ⚠️ **Bypass awareness:** If the user asks you to implement code before Phase 11 (Execution), the workflow has been bypassed. The footer will show `⚠️ bypassed`. Guide the user back: remind them of the current phase and suggest `/pw:next` to advance properly. Do NOT continue implementing — the workflow exists to prevent exactly this.
+
 | # | Phase | Description | Trigger |
 |---|-------|-------------|---------|
 | 0 | **Inbox Triage** | Extract items from list, accept/group/defer/reject | Auto (list detected) |

@@ -4,6 +4,20 @@
 
 > **Phase Status:** Read `references/cli-tools/phase-status.md` for ASCII status display and CLI commands.
 
+### 0a. Backlog Check (always)
+
+**Before anything else**, check if there are deferred items from previous sessions:
+
+```bash
+BACKLOG=".cali-product-workflow/backlog/items.yaml"
+if [ -f "$BACKLOG" ]; then
+  echo "DEFERRED_ITEMS_FOUND"
+  cat "$BACKLOG"
+fi
+```
+
+If deferred items exist, offer the user to review them: "You have N deferred items from a previous session. Review them now?" If yes, proceed to Phase 0 (Triage). If no, continue to setup.
+
 ### 1a. Auto-Discovery Check (before anything else)
 
 **BEFORE asking anything to the user**, verify the directory structure exists:
