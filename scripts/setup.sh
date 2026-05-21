@@ -30,7 +30,7 @@ echo ""
 # Required packages
 REQUIRED_PACKAGES=(
   "npm:pi-subagents"
-  "npm:pi-goal"
+  "npm:@capyup/pi-goal"
   "npm:pi-intercom"
   "npm:pi-supervisor"
   "npm:pi-autoresearch"
@@ -50,20 +50,17 @@ for pkg in "${REQUIRED_PACKAGES[@]}"; do
 done
 echo ""
 
-echo "📦 Installing packages (dual-install pattern)..."
+echo "📦 Installing packages (Git-based distribution)..."
 # 1. Core package (skills, adapters, etc.)
-echo "   → @renatocaliari/cali-product-workflow (core)"
-pi install npm:@renatocaliari/cali-product-workflow 2>/dev/null || {
+echo "   → cali-product-workflow (core)"
+pi install "git:github.com/renatocaliari/cali-product-workflow" 2>/dev/null || {
   echo "   Note: Installing from local source instead"
   pi install "$PACKAGE_DIR" 2>/dev/null || true
 }
 
 # 2. Stub extension (lightweight Pi integration)
-echo "   → @renatocaliari/cali-product-workflow-pi (stub extension)"
-pi install npm:@renatocaliari/cali-product-workflow-pi 2>/dev/null || {
-  echo "   Note: Installing stub extension from local source"
-  pi install "$PACKAGE_DIR/extensions/cali-product-workflow-pi" 2>/dev/null || true
-}
+echo "   → cali-product-workflow-pi (stub extension)"
+pi install "$PACKAGE_DIR/extensions/cali-product-workflow-pi" 2>/dev/null || true
 echo ""
 
 echo "╔════════════════════════════════════════════════════════════╗"

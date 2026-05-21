@@ -3,227 +3,147 @@
 ## Quick Start
 
 ```bash
-./install.sh
-```
-
-One command installs everything needed for your CLI.
-
----
-
-## Two Installation Options
-
-### Option 1: Full Integration (Recommended)
-
-```bash
-./install.sh
-```
-
-Installs everything for your detected CLI:
-
-| CLI | What's Installed |
-|-----|------------------|
-| **Pi** | Core package + Extension + Supporting packages + Skills |
-| **OpenCode** | Plugin + Skills |
-| **Claude Code** | Plugin + Skills |
-| **Codex** | Plugin + Skills |
-
-**Updates:** `pi update --extensions` (Pi) or `./install.sh update` (all CLIs)
-
----
-
-### Option 2: Skills Only (npx skills)
-
-For when you want just the skills without full CLI integration:
-
-```bash
-npx skills add renatocaliari/cali-product-workflow
-```
-
-This installs skills to `~/.agents/skills/` — works across multiple CLIs without deep integration.
-
-**Updates:** `npx skills update`
-
-**Use this when:**
-- You use multiple CLIs and want unified skills
-- You don't need plugins/extensions
-- You prefer manual control over integration
-
----
-
-## CLI-Specific Installation
-
-### Pi
-
-```bash
-./install.sh
-# Or force:
-PRODUCT_WORKFLOW_CLI=pi ./install.sh
-```
-
-Installs: Core + Extension + Supporting packages + Skills
-
-**Update:** `pi update --extensions` or `pi update npm:@renatocaliari/cali-product-workflow`
-
-**Uninstall:** `pi remove npm:@renatocaliari/cali-product-workflow npm:@renatocaliari/cali-product-workflow-pi`
-
-### OpenCode
-
-```bash
-./install.sh
-# Or force:
-PRODUCT_WORKFLOW_CLI=opencode ./install.sh
-```
-
-Installs: Plugin in `opencode.json` + Skills
-
-**Update:** `./install.sh update`
-
-**Uninstall:** `./install.sh remove` or manually remove from `opencode.json`
-
-### Claude Code
-
-```bash
-./install.sh
-# Or force:
-PRODUCT_WORKFLOW_CLI=claude-code ./install.sh
-```
-
-Installs: Plugin + Skills
-
-**Update:** `./install.sh update`
-
-**Uninstall:** `./install.sh remove` or `claude /plugin uninstall cali-product-workflow`
-
-### Codex
-
-```bash
-./install.sh
-# Or force:
-PRODUCT_WORKFLOW_CLI=codex ./install.sh
-```
-
-Installs: Marketplace plugin + Skills
-
-**Update:** `./install.sh update`
-
-**Uninstall:** `./install.sh remove` or `codex plugin uninstall cali-product-workflow`
-
----
-
-## Usage
-
-```bash
-# Install (auto-detect CLI)
-./install.sh
-
-# Update
-./install.sh update
-
-# Remove
-./install.sh remove
-
-# Help
-./install.sh help
-```
-
----
-
-## Manual Installation
-
-### Pi (Dual-Install)
-
-```bash
-# Core package
-pi install npm:@renatocaliari/cali-product-workflow
-
-# Extension
-pi install npm:@renatocaliari/cali-product-workflow-pi
-
-# Supporting
-pi install npm:pi-subagents npm:pi-goal npm:pi-intercom npm:pi-supervisor npm:pi-autoresearch npm:@juicesharp/rpiv-ask-user-question npm:@plannotator/pi-extension
-```
-
-### OpenCode
-
-```json
-// ~/.config/opencode/opencode.json
-{
-  "plugin": ["@renatocaliari/cali-product-workflow"]
-}
-```
-
-### Claude Code
-
-```bash
-claude /plugin install /path/to/cali-product-workflow
-```
-
-### Codex
-
-```bash
-npx codex-marketplace add renatocaliari/cali-product-workflow --plugins
-```
-
----
-
-## Skills Management (npx skills)
-
-```bash
-# Install for all CLIs
-npx skills add renatocaliari/cali-product-workflow
-
-# Install for specific CLI
-npx skills add renatocaliari/cali-product-workflow -a pi -a opencode
-
-# Update
-npx skills update
-
-# Remove
-npx skills remove cali-product-workflow
-
-# List installed
-npx skills list
-```
-
----
-
-## Summary
-
-| Method | When to Use |
-|--------|-------------|
-| `./install.sh` | Full integration, one command |
-| `pi update --extensions` | Update Pi packages |
-| `npx skills add ...` | Skills only, lightweight |
-| `npx skills update` | Update skills |
-
----
-
-## Uninstall
-
-```bash
-./install.sh remove
-```
-
-Or manually:
-
-```bash
-# Pi
-pi remove npm:@renatocaliari/cali-product-workflow
-pi remove npm:@renatocaliari/cali-product-workflow-pi
-
-# Skills
-npx skills remove cali-product-workflow
-
-# Auto-trigger
-rm ~/.pi/agent/AGENTS.md
-```
-
----
-
-## From Source
-
-```bash
 git clone https://github.com/renatocaliari/cali-product-workflow.git
 cd cali-product-workflow
 ./install.sh
 ```
+
+Auto-detects ALL your CLIs and installs for each one. One command, zero npm.
+
+---
+
+## What's Installed per CLI
+
+| CLI | Method | How It Works |
+|-----|--------|-------------|
+| **Pi** | `git:` + `npx skills` | Clones from GitHub, loads JS extensions + skills |
+| **OpenCode** | `npx skills` + config | Skills via npx skills, registers path in opencode.json |
+| **Claude Code** | marketplace + `npx skills` | Adds GitHub repo as marketplace, skills via npx |
+| **Codex** | marketplace + `npx skills` | Adds GitHub repo as marketplace, skills via npx |
+
+---
+
+## Commands
+
+```bash
+./install.sh              # Install for all detected CLIs
+./install.sh update       # Update skills
+./install.sh remove       # Uninstall from all detected CLIs
+
+# Limit to one CLI
+PRODUCT_WORKFLOW_CLI=opencode ./install.sh
+```
+
+---
+
+## Skills Only
+
+```bash
+npx skills add renatocaliari/cali-product-workflow -g
+```
+
+Installs skills to `~/.agents/skills/` — works on any CLI. No plugins, no config, no JS.
+
+---
+
+## Manual Setup by CLI
+
+<details>
+<summary><strong>Pi</strong></summary>
+
+```bash
+# Full install
+pi install git:github.com/renatocaliari/cali-product-workflow
+pi install ./extensions/cali-product-workflow-pi
+pi install npm:pi-subagents npm:@capyup/pi-goal npm:pi-intercom npm:pi-supervisor npm:pi-autoresearch npm:@juicesharp/rpiv-ask-user-question npm:@plannotator/pi-extension
+
+# Update
+pi update
+
+# Remove
+pi remove git:github.com/renatocaliari/cali-product-workflow
+```
+</details>
+
+<details>
+<summary><strong>OpenCode</strong></summary>
+
+```bash
+# Skills
+npx skills add renatocaliari/cali-product-workflow -a opencode -g
+
+# Config: add to ~/.config/opencode/opencode.json
+# "skills": { "paths": ["~/.config/opencode/skills"] }
+```
+</details>
+
+<details>
+<summary><strong>Claude Code</strong></summary>
+
+```bash
+# Plugin marketplace
+claude plugin marketplace add https://github.com/renatocaliari/cali-product-workflow
+claude plugin install cali-product-workflow@marketplace-name
+
+# Skills
+npx skills add renatocaliari/cali-product-workflow -a claude-code -g
+
+# Remove
+claude plugin uninstall cali-product-workflow
+```
+</details>
+
+<details>
+<summary><strong>Codex</strong></summary>
+
+```bash
+# Plugin marketplace
+codex plugin marketplace add https://github.com/renatocaliari/cali-product-workflow
+codex plugin add cali-product-workflow@marketplace-name
+
+# Skills
+npx skills add renatocaliari/cali-product-workflow -a codex -g
+
+# Remove
+codex plugin remove cali-product-workflow
+```
+</details>
+
+---
+
+## Agent Instructions Setup
+
+The installer does **not** modify your AGENTS.md/CLAUDE.md automatically. Add this manually:
+
+```markdown
+## cali-product-workflow Integration
+
+When working on software projects, trigger the product workflow:
+
+1. **Trigger:** Use `/skill cali-product-workflow`
+2. **Process:** Follow the 6-phase workflow
+3. **Execute:** Only after visual review gate (Plannotator approval)
+```
+
+| CLI | File |
+|-----|------|
+| **Pi** | `~/.pi/agent/AGENTS.md` |
+| **OpenCode** | `~/.config/opencode/AGENTS.md` or project `AGENTS.md` |
+| **Claude Code** | `~/.claude/CLAUDE.md` or project `CLAUDE.md` |
+| **Codex** | `~/.codex/AGENTS.md` or project `AGENTS.md` |
+
+---
+
+## Why Git-Based (No npm)
+
+Distributing exclusively via GitHub is a deliberate security choice:
+
+| Risk | npm packages | Git-based (this project) |
+|------|--------------|--------------------------|
+| **Supply chain worms** (Shai-Hulud) | ❌ Worm self-propagates via stolen npm tokens | ✅ No npm token to steal |
+| **`preinstall` code execution** | ❌ Scripts run automatically on install | ✅ Only markdown + assets copied |
+| **Registry compromise** | ❌ Single centralized registry | ✅ GitHub distributed, auditable |
+| **Account takeover blast radius** | ❌ npm token publishes many packages | ✅ Only your repo, no self-propagation |
+| **Dependency confusion** | ❌ Possible if public name conflicts | ✅ Impossible — GitHub only source |
+
+**Tradeoff:** Without npm, CLIs that rely on npm for JS plugins (e.g., OpenCode) are limited to skills. Deep integrations (hooks, TUI, slash commands) work only on Pi, which supports native Git install via `pi install git:...`.

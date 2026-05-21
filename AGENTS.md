@@ -6,16 +6,19 @@
 
 | Command | Description |
 |---------|-------------|
-| `/skill:cali-product-workflow` | Start the workflow |
 | `/pw:start` | Begin planning |
 | `/pw:menu` | Show workflow status |
 
 ## Workflow Phases
 
 ```
-Setup → Strategic → Shape Up → Interface → Critique → Tech Planning
-  1         2           3          4          5           6
+Setup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Execution
+  0       1         2        3         4      5       6           7           8           9          10
 ```
+
+Phases 2-3 and 7 run as skills (`cali-shape-up`, `cali-plan-critique`, `cali-interface-brainstorm`).
+Gates (4, 7) require Plannotator visual approval — never skip.
+Phase 10 (Planning) generates typed scopes with dependency mapping.
 
 ## Key Differentiators
 
@@ -34,13 +37,30 @@ Setup → Strategic → Shape Up → Interface → Critique → Tech Planning
 - **Domain-driven** — Auto-detects product domain from your language
 - **Technical scope mapping** — Breaks down into typed scopes, maps dependencies
 
-## Installation
+## Development
+
+Requires Node >=20 and npm.
 
 ```bash
-./install.sh  # Auto-detects CLI (pi, opencode, claude-code, codex)
+npm run build            # Compile TypeScript (tsc -p tsconfig.build.json)
+npm test                 # Run all tests (vitest)
+npm run test:unit        # Unit tests only
+npm run test:integration # Integration tests only
+npm run test:skills      # Skill structure tests
+npm run test:ci          # CI test suite (scripts/test-ci.sh)
+npm run typecheck        # Type check (tsc --noEmit)
+npm run mutate           # Mutation testing (stryker)
+npm run version:sync     # Sync version across plugin configs
 ```
 
-For detailed docs: [docs/INSTALLATION.md](docs/INSTALLATION.md)
+- Do NOT use `npm install` in CI — use `npm ci` with committed `package-lock.json`
+- Do NOT edit generated files in `build/`
+- Do NOT use `require()` — this is ESM (`"type": "module"`)
+
+## Commits
+
+Use conventional commits: `feat:`, `fix:`, `chore:`, `refactor:`, `test:`, `docs:`.
+Keep PRs focused. Squash merge to main.
 
 ## File Naming
 
@@ -48,62 +68,57 @@ All project files must use `lowercase-kebab-case`:
 - ✅ `spec-product.md`, `tech-planning.md`
 - ❌ `SpecProduct.md`, `TECH-PLANNING.md`
 
-## How to Integrate with Your AGENTS.md
+## Skills
 
-All AI coding agents read `AGENTS.md` files and include their content in the LLM context. This works identically across all CLIs.
+19 specialized skills in `skills/` directory:
 
-**To use this workflow, add the following section to your global/user AGENTS.md:**
-
-```markdown
----
-
-## cali-product-workflow Integration
-
-When working on software projects, trigger the product workflow:
-
-1. **Trigger:** Use `/skill:cali-product-workflow` or `/pw:start`
-2. **Process:** Follow the 6-phase workflow
-3. **Execute:** Only after visual review gate (Plannotator approval)
-
-### Supported CLIs
-
-| CLI | Command |
-|-----|---------|
-| pi | `/skill:cali-product-workflow` or `/pw:start` |
-| opencode | `/skill cali-product-workflow` |
-| claude-code | `/skill cali-product-workflow` |
-| codex | `/skill cali-product-workflow` |
-
-### Best Practices
-
-- Run `/skill:cali-product-workflow` at the start of any product/feature work
-- Use `/pw:menu` to track workflow state
-- Get Plannotator approval before executing technical scopes
+```
+skills/cali-product-workflow/
+├── skills-workflow/              # Shape Up, Interface, Critique, Tech Planning
+│   ├── cali-shape-up/
+│   ├── cali-interface-brainstorm/
+│   ├── cali-plan-critique/
+│   └── cali-tech-planning/
+├── skills-strategic-analysis/    # JTBD, Discovery, Opportunity Mapping, Market Analysis, Evolution
+│   ├── cali-product-job-to-be-done/
+│   ├── cali-product-discovery/
+│   ├── cali-product-opportunity-mapping/
+│   ├── cali-product-multi-method-market-analysis/
+│   └── cali-product-evolutionary-principles/
+├── skills-domain-libraries/      # 8 domain playbooks
+│   ├── cali-product-pricing/
+│   ├── cali-product-ads/
+│   ├── cali-product-trust-building/
+│   ├── cali-product-promotions/
+│   ├── cali-product-business-models/
+│   ├── cali-product-health/
+│   ├── cali-product-marketplace-playbook/
+│   └── cali-product-open-source/
+└── skills-execution/             # Scope routing, AI testing strategy
+    ├── cali-product-scope-executor/
+    └── cali-testing-ai-code/
 ```
 
-### Where to Add This
+## Extensions
 
-| CLI | Your AGENTS.md Location |
-|-----|-------------------------|
-| **pi** | `~/.pi/agent/AGENTS.md` |
-| **opencode** | Project-level or `~/.config/opencode/` config |
-| **claude-code** | `~/.claude/AGENTS.md` or plugin config |
-| **codex** | `~/.codex/AGENTS.md` |
+- `extensions/cali-product-workflow/` — Pi extension (13 slash commands, event hooks, TUI)
+- `extensions/cali-product-workflow-pi/` — Pi stub (re-exports from build)
+- `.claude-plugin/` — Claude Code marketplace plugin definition (gitignored, local only)
+- `.codex-plugin/` — Codex marketplace plugin definition (gitignored, local only)
+- `.opencode-plugin/` — OpenCode plugin definition, skills only (gitignored, local only)
 
-### Quick Setup (pi)
+## CLI Support
 
-```bash
-# Copy this project's AGENTS.md content to your global config
-./scripts/setup.sh
-# Or manually copy the section above to ~/.pi/agent/AGENTS.md
+| CLI | How it loads skills | Deeper integration |
+|-----|-------------------|-------------------|
+| **Pi** | `pi install git:...` + `npx skills` | ✅ JS extension (hooks, TUI, commands) |
+| **OpenCode** | `npx skills` + `skills.paths` | ❌ Skills only |
+| **Claude Code** | `npx skills` + marketplace | ⚠️ Via GitHub marketplace |
+| **Codex** | `npx skills` + marketplace | ⚠️ Via GitHub marketplace |
 
-# To disable, remove:
-rm ~/.pi/agent/AGENTS.md
-```
+## Distribution
 
-## For Developers
+Git-based primary distribution (npm publish configured but not actively used — see [docs/SECURITY.md](docs/SECURITY.md) for rationale).
 
-- **Skills:** 16 specialized skills in `skills/` directory
-- **CLI Support:** pi, opencode, claude-code, codex
-- **License:** MIT
 - **Repo:** https://github.com/renatocaliari/cali-product-workflow
+- **License:** MIT
