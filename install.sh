@@ -110,7 +110,6 @@ install_pi() {
   # Clean up duplicate skill locations to avoid conflicts
   rm -rf "$SCRIPT_DIR/.pi/skills/cali-product-workflow" 2>/dev/null || true
   rm -rf "$SCRIPT_DIR/.agents/skills/cali-product-workflow" 2>/dev/null || true
-  rm -rf "$HOME/.agents/skills/cali-product-workflow" 2>/dev/null || true
 
   log_success "  v Pi done"
 }
