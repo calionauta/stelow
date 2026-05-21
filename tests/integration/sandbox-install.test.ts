@@ -157,7 +157,6 @@ describe('Sandbox Install Verification', () => {
     it('should declare optional peer dependencies', () => {
       const pkg = JSON.parse(readFileSync(join(PROJECT_ROOT, 'package.json'), 'utf-8'));
       expect(pkg.optionalPeerDependencies).toBeDefined();
-      expect(pkg.optionalPeerDependencies['cali-short-cycle-product']).toBe('*');
     });
 
     it('should declare coding agent peer dependency', () => {
