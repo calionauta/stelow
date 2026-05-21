@@ -13,7 +13,7 @@ import {
   resolveProjectDir,
   parseInputForWorkflow,
 } from "./state";
-import { updateFooter, notifyPhase } from "./ui";
+import { updateFooter, notifyPhase, setBypassed, isBypassed } from "./ui";
 import { registerCommands } from "./commands";
 import {
   createAdapter,
@@ -133,10 +133,24 @@ export default function (pi: ExtensionAPI) {
     ctx.ui.notify(`◆ ${projectWf.name} (${projectWf.currentPhase + 1}/${projectWf.phases.length})`, "info");
   });
 
-  // ── Tracking file writes ✓ ───────────────────────────────────────
+  // ── Tool call: detect bypass + tracking file writes ✓ ──────────
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   pi.on("tool_call", async (event: any, ctx: any) => {
+    const tool = event.toolName || "";
     const input = event.input as any;
+    
+    // Detect implementation tools during early phases (0-8)
+    const isImplTool = ["write", "edit", "bash"].includes(tool);
+    if (isImplTool && ctx.ui) {
+      const wd = resolveProjectDir(ctx.cwd);
+      const wf = getActiveWorkflow(wd);
+      if (wf && wf.currentPhase < 9) {
+        setBypassed(true);
+        updateFooter(ctx, wd);
+      }
+    }
+    
+    // Tracking file write detection
     if (input?.path?.includes?.(TRACKING_FILE) && ctx.ui) {
       const wd = resolveProjectDir(ctx.cwd);
       const wf = getActiveWorkflow(wd);
@@ -149,6 +163,12 @@ export default function (pi: ExtensionAPI) {
   pi.on("turn_end", async (_event: any, ctx: any) => {
     if (!ctx.ui) return;
     const wd = resolveProjectDir(ctx.cwd);
+
+    // Clear bypass flag if agent advanced phase via /pw:next
+    if (isBypassed()) {
+      const wf = getActiveWorkflow(wd);
+      if (wf && wf.currentPhase >= 9) setBypassed(false);
+    }
 
     // Always refresh footer so tracking updates from commands are picked up
     updateFooter(ctx, wd);

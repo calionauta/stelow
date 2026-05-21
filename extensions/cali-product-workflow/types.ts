@@ -7,32 +7,36 @@ export const SCHEMA_URL =
   "https://raw.githubusercontent.com/renatocaliari/cali-product-workflow/main/cali-product-workflow.schema.json";
 
 export const PHASE_NAMES = [
-  "Setup",     // 0 — Phase 1: Project Setup
-  "Context",   // 1 — Phase 2: Strategic Context
-  "Shape",     // 2 — Phase 3: Shape Up Planning
-  "Critique",  // 3 — Phase 4: Plan Critique
-  "Gate",      // 4 — Phase 5: Review Gate
-  "Scope",     // 5 — Phase 6: Scope Adjustment
-  "Interface", // 6 — Phase 7: Interface Brainstorming
-  "Int.Gate", // 7 — Phase 8: Interface Gate
-  "Selection",// 8 — Phase 9: Interface Selection
-  "Planning",  // 9 — Phase 10: Tech Planning
-  "Execution"  // 10 — Phase 11: Execution
+  "Triage",    // 0 — Phase 0: Inbox Triage
+  "Select",    // 1 — Phase 1: Item Selection
+  "Setup",     // 2 — Phase 2: Project Setup
+  "Context",   // 3 — Phase 3: Strategic Context
+  "Shape",     // 4 — Phase 4: Shape Up Planning
+  "Critique",  // 5 — Phase 5: Plan Critique
+  "Gate",      // 6 — Phase 6: Review Gate
+  "Scope",     // 7 — Phase 7: Scope Adjustment
+  "Interface", // 8 — Phase 8: Interface Brainstorming
+  "Int.Gate", // 9 — Phase 9: Interface Gate
+  "Select",   // 10 — Phase 10: Interface Selection
+  "Planning",  // 11 — Phase 11: Tech Planning
+  "Execution"  // 12 — Phase 12: Execution
 ];
 
 /** Display hints shown in compact TUI per phase */
 export const PHASE_HINTS: Record<number, string> = {
-  0: "setup",
-  1: "context",
-  2: "shape",
-  3: "critique",
-  4: "gate",
-  5: "scope",
-  6: "interface",
-  7: "int.gate",
-  8: "selection",
-  9: "planning",
-  10: "execution"
+  0: "triage",
+  1: "select",
+  2: "setup",
+  3: "context",
+  4: "shape",
+  5: "critique",
+  6: "gate",
+  7: "scope",
+  8: "interface",
+  9: "int.gate",
+  10: "selection",
+  11: "planning",
+  12: "execution"
 };
 
 // ── CLI Types ─────────────────────────────────────────────────────

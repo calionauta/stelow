@@ -110,17 +110,19 @@ Follow the sequence below. For phases 3-5 and 7, delegate to subskills via `/ski
 
 | # | Phase | Description | Trigger |
 |---|-------|-------------|---------|
-| 1 | **Project Setup** | Stages selection, safe-change | — |
-| 2 | **Strategic Context** (optional) | Strategic exploration + domain detection | — |
-| 3 | **Shape Up** | Create spec with problem/solution/scope | — |
-| 4 | **Plan Critique** | Pre-flight check (LLM automatic) | — |
-| 5 | **Review Gate (Plannotator)** | Visual approval — **never skip** | — |
-| 6 | **Scope Adjustment** | Add/remove from IN/OUT (ask) | — |
-| 7 | **Interface Brainstorming** | 5 proposals + hybrid (if selected) | — |
-| 8 | **Interface Gate (Plannotator)** | Visual review of all interfaces | — |
-| 9 | **Interface Selection** | User picks via ask with preview | — |
-| 10 | **Tech Planning** | Typed scopes + sequencing | — |
-| 11 | **Execution** | Goal/scope executor | — |
+| 0 | **Inbox Triage** | Extract items from list, accept/group/defer/reject | Auto (list detected) |
+| 1 | **Item Selection** | Rank accepted items, user picks one | After Triage |
+| 2 | **Project Setup** | Stages selection, safe-change | — |
+| 3 | **Strategic Context** (optional) | Strategic exploration + domain detection | — |
+| 4 | **Shape Up** | Create spec with problem/solution/scope | — |
+| 5 | **Plan Critique** | Pre-flight check (LLM automatic) | — |
+| 6 | **Review Gate (Plannotator)** | Visual approval — **never skip** | — |
+| 7 | **Scope Adjustment** | Add/remove from IN/OUT (ask) | — |
+| 8 | **Interface Brainstorming** | 5 proposals + hybrid (if selected) | — |
+| 9 | **Interface Gate (Plannotator)** | Visual review of all interfaces | — |
+| 10 | **Interface Selection** | User picks via ask with preview | — |
+| 11 | **Tech Planning** | Typed scopes + sequencing | — |
+| 12 | **Execution** | Goal/scope executor | — |
 
 ### AI-Aware Testing (Conditional)
 
@@ -141,27 +143,30 @@ See `skills-execution/cali-testing-ai-code/SKILL.md`
 ### Flow Diagram
 
 ```
-Phase 1: Setup
+Phase 0: Inbox Triage (auto — if list detected)
+Phase 1: Item Selection (auto — if triage ran)
     ↓
-Phase 2: Strategic Context (optional)
+Phase 2: Setup
     ↓
-Phase 3: Shape Up
+Phase 3: Strategic Context (optional)
     ↓
-Phase 4: Plan Critique (pre-flight)
+Phase 4: Shape Up
     ↓
-Phase 5: Plannotator Gate ← visual pause
+Phase 5: Plan Critique (pre-flight)
     ↓
-Phase 6: Scope Adjustment (ask)
+Phase 6: Plannotator Gate ← visual pause
     ↓
-Phase 7: Interface Brainstorming (if selected)
+Phase 7: Scope Adjustment (ask)
     ↓
-Phase 8: Plannotator Gate (interfaces) ← visual pause
+Phase 8: Interface Brainstorming (if selected)
     ↓
-Phase 9: Interface Selection (ask with preview)
+Phase 9: Plannotator Gate (interfaces) ← visual pause
     ↓
-Phase 10: Tech Planning
+Phase 10: Interface Selection (ask with preview)
     ↓
-Phase 11: Execution
+Phase 11: Tech Planning
+    ↓
+Phase 12: Execution
 ```
 
 ### Auto-chaining rules
