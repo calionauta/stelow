@@ -73,13 +73,13 @@ Append to the interfaces file.`,
 
 ## Visual Review (Phase 8 Gate — Automatic)
 
-**After all proposals + Hybrid, proceed DIRECTLY to Plannotator.** Do NOT ask the user for permission.
+**After all proposals + Hybrid, RUN this command directly.** Do NOT describe it to the user — execute it now:
 
 ```bash
 plannotator annotate .cali-product-workflow/{YYYY-MM-DD}/{_dir}/interfaces/interfaces_{v}.md --gate
 ```
 
-See `references/cli-tools/plannotator.md` for details.
+The `--gate` flag blocks until the user approves or rejects. Wait for the result. If approved, advance to Phase 9.
 
 ## User Selection (Phase 9)
 
