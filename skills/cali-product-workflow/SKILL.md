@@ -203,7 +203,8 @@ Use `references/cli-tools/plannotator.md` for Plannotator gate rules.
 - Use `references/cli-tools/plannotator.md` for Plannotator command
 
 ### Interface Selection (Phase 9)
-- Use **Pattern 2** from `phases/ask-patterns.md`
+- **Proceed automatically** after Gate approval — do NOT describe the next step, execute it
+- Use **Pattern 2** from `phases/ask-patterns.md` immediately
 
 ### Tech Planning (Phase 10)
 - Before generating scopes: verify `approved: true` in spec-product.md
