@@ -290,12 +290,18 @@ This project distributes **exclusively via GitHub** — no npm publishing. This 
 | **Registry compromise** | ❌ Single centralized registry | ✅ GitHub distributed, auditable |
 | **Account takeover blast radius** | ❌ npm token publishes many packages | ✅ Only your repo, no self-propagation |
 | **Dependency confusion** | ❌ Possible if public name conflicts | ✅ Impossible — GitHub only source |
+| **Maintainer compromise** | ⚠️ Attacker publishes malicious version | ⚠️ **Same risk** — attacker pushes malicious commit |
+| **Third-party npm deps** (pi-subagents, etc.) | ⚠️ Subject to all npm risks above | ⚠️ **Same risk** — installed via npm regardless |
 
 **Tradeoff:** Without npm, CLIs that rely on npm for JS plugins (e.g., OpenCode) are limited to skills. Deep integrations (hooks, TUI, slash commands) work only on Pi, which supports native Git install via `pi install git:...`.
 
+**Bottom line:** Git-based distribution solves the risks we *control* (how we ship our code). Risks we *inherit* (maintainer compromise, third-party deps) are shared with all software — managed through defense in depth, not eliminated.
+
 ### Third-Party Dependency Management
 
-Third-party npm dependencies exist **only for Pi**. OpenCode, Claude Code, and Codex use only skills (markdown files) via `npx skills` — zero npm exposure.
+Third-party npm dependencies exist **only for Pi**. OpenCode, Claude Code, and Codex use only skills (markdown files) — our code is never distributed via npm. (The `npx skills` CLI itself is an npm package, but it's a well-audited Vercel tool used to fetch markdown from GitHub — not our runtime.)
+
+For protection against supply chain risks (for Pi's npm deps and general development), see [docs/SECURITY.md](docs/SECURITY.md).
 
 Pi requires these npm packages for deep integration (slash commands, TUI, event hooks):
 

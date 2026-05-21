@@ -119,24 +119,12 @@ install_opencode() {
   log_info "  -> Installing for OpenCode..."
   if ! command -v opencode &>/dev/null; then log_warn "    opencode not found. Skipping."; return; fi
 
-  local cfg="$HOME/.config/opencode/opencode.json"
-  local skdir="$HOME/.config/opencode/skills"
-
   log_info "    Installing skills..."
   npx skills add renatocaliari/cali-product-workflow -a opencode -g -y 2>/dev/null || {
+    local skdir="$HOME/.agents/skills"
     mkdir -p "$skdir"
     [[ ! -d "$skdir/cali-product-workflow" ]] && cp -r "$SCRIPT_DIR/skills/cali-product-workflow" "$skdir/"
   }
-
-  mkdir -p "$(dirname "$cfg")"
-  if command -v jq &>/dev/null; then
-    if ! jq -e ".skills.paths | index(\"$skdir\")" "$cfg" &>/dev/null 2>&1; then
-      jq '.skills.paths += ["'"$skdir"'"]' "$cfg" > "${cfg}.tmp" && mv "${cfg}.tmp" "$cfg" 2>/dev/null || true
-    fi
-  else
-    log_warn "    jq not found. Add to opencode.json:"
-    log_info '      "skills": { "paths": ["'"$skdir"'"] }'
-  fi
 
   log_success "  v OpenCode done"
 }
