@@ -91,7 +91,7 @@
   },
   "pi": {
     "extensions": [
-      "./extensions/cali-product-workflow-pi/index.js"
+      "./extensions/cali-product-workflow/index.ts"
     ],
     "skills": [
       "./skills"
