@@ -1,6 +1,6 @@
 {
   "name": "@renatocaliari/cali-product-workflow-pi",
-  "version": "0.2.2",
+  "version": "0.2.3-alpha",
   "description": "Pi extension stub for cali-product-workflow - re-exports from main package",
   "main": "index.js",
   "type": "module",
