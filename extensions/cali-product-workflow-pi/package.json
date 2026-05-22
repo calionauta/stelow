@@ -2,7 +2,7 @@
   "name": "@renatocaliari/cali-product-workflow-pi",
   "version": "0.2.2",
   "description": "Pi extension stub for cali-product-workflow - re-exports from main package",
-  "main": "../cali-product-workflow/build/extensions/cali-product-workflow/index.js",
+  "main": "index.js",
   "type": "module",
   "peerDependencies": {
     "@renatocaliari/cali-product-workflow": "workspace:*"

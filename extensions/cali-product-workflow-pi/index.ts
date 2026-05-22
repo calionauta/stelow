@@ -9,4 +9,4 @@
  * - npm install @renatocaliari/cali-product-workflow → skills, adapters, CLI
  * - pi install npm:@renatocaliari/cali-product-workflow-pi → Pi extension
  */
-export { default } from "../cali-product-workflow/build/extensions/cali-product-workflow/index.js";
+export { default } from "./index.js";
