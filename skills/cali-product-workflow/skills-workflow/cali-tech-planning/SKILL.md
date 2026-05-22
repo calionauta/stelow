@@ -1,19 +1,38 @@
 ---
 name: cali-tech-planning
+version: 1.0.0
 description: >
   [Cali] Technical planning and scope sequencing skill. Generates typed scopes
   (feature/optimization/spike + test-*), sequences them, and creates goals (see references/cli-tools/goals.md).
   For software products, also generates testing-strategy.md via cali-testing-ai-code.
   Part of cali-product-workflow but can be used standalone.
+
+  Trigger keywords: tech planning, scope generation, typed scopes, feature spike optimization,
+  sequence scopes, technical plan, spec-tech
+
+  NOT for: direct execution (use cali-product-scope-executor instead)
 ---
 
 # Tech Planning Sequencing
 
-> **Tools:** See `references/cli-tools/subagents.md` for subagent patterns, `references/cli-tools/goals.md` for goal commands.
+## Goal
 
-This skill executes the Tech Planning phase. It can be run:
-1. **Standalone:** `/skill:cali-tech-planning` — after Shape Up and Critique
-2. **Via Orchestrator:** Called by `/skill:cali-product-workflow`
+Generate a technical plan from an approved spec-product.md, including:
+- **Typed scopes** (feature/optimization/spike + test-*)
+- **Sequenced execution order**
+- **Definition of Done + Acceptance criteria** per scope
+
+## When to Use
+
+Activate when:
+- User wants technical planning from a shaped proposal
+- Generating scopes from spec-product.md
+- Sequencing execution plan
+- Tech planning phase of cali-product-workflow
+
+**Do NOT activate for:**
+- Direct execution (use cali-product-scope-executor)
+- Debugging existing code
 
 ## Prerequisites
 
@@ -28,14 +47,14 @@ This check is **deterministic** — does not depend on memory.
 
 ### AI-Aware Testing Check
 
-**For software products**, also check `product_type`:
-```bash
-head -10 spec-product_{v}.md | grep "product_type:"
-```
-- ✅ `product_type: software` or `product_type: hybrid` → activate cali-testing-ai-code
-- ❌ `product_type: service` → skip testing strategy
+If `product_type: software` or `product_type: hybrid` in frontmatter:
+- Activate `/skill:cali-testing-ai-code` to generate testing-strategy.md
+- Add `test-*` scope types to spec-tech.md
+- See `skills-execution/cali-testing-ai-code/SKILL.md`
 
-## References Index
+## Process
+
+### 7a. Scope Generation
 
 Read the `references/` files to guide the process:
 
@@ -45,10 +64,6 @@ Read the `references/` files to guide the process:
 | `references/scopes-and-sequencing.md` | Scope types (feature/optimization/spike + test-*), executor routing, sequencing principles | **During generation** — defines scope structure |
 | `references/tech-output.md` | Tech plan output format, frontmatter, receipts | **After generation** — formats output |
 | `references/generation-principles.md` | Generation principles, constraints, quality standards | **During generation** — guides implementation |
-
-## Process
-
-### 7a. Scope Generation
 
 Use the references above to generate technical scopes:
 
@@ -72,134 +87,88 @@ Input: .cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md`,
 })
 ```
 
-Output: `.cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_{v}.md`
-Input: `.cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md`
+**Output:** `spec-tech_{v}.md`
+**Input:** `spec-product_{v}.md`
 
 ### 7b. AI-Aware Testing Strategy (Software Products Only)
 
-**If `product_type: software` or `product_type: hybrid`**:
+**Trigger:** `product_type: software` or `product_type: hybrid` in spec-product.md frontmatter.
 
-1. **Generate testing-strategy.md:**
-```typescript
-subagent({
-  agent: "cali-testing-ai-code",
-  task: `Generate testing strategy for software product.
-Input: spec-product.md (frontmatter with product_type: software)
-Output: .cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/testing-strategy.md
+Run `/skill:cali-testing-ai-code` to generate `testing-strategy.md`.
 
-Include:
-- Mutation score targets (70/50/30%)
-- Tech stack detection
-- CI/CD gates (hard blocks)
-- Anti-patterns (over-mocking, 100% coverage)`,
-  output: ".cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/testing-strategy.md"
-})
+This skill:
+- Generates mutation-based testing plans
+- Defines security gates
+- Sets coverage targets
+
+See `skills-execution/cali-testing-ai-code/SKILL.md` for full documentation.
+
+## Scope Types
+
+| Type | Executor | Use Case |
+|------|----------|----------|
+| `feature` | `/sisyphus` + `/supervise` | Standard features |
+| `optimization` | `autoresearch-create` | Performance tuning |
+| `spike` | `/sisyphus` + `/supervise` | Research/uncertainty |
+| `test-*` | `/sisyphus` + testing gates | Test coverage |
+
+### Executor Override (`[EXECUTOR]`)
+
+**Optional.** When present, overrides the default routing by type.
+
+```
+[SCOPE-4]
+[TYPE] feature
+[EXECUTOR] autoresearch
+[METRIC] Average cyclomatic complexity < 10 (lower is better)
 ```
 
-2. **Add test-* scopes to spec-tech.md:**
+**Rule: when to add `[EXECUTOR] autoresearch`**
+- Scope has measurable metric (e.g., perf, bundle size, test coverage)
+- Metric can be auto-benchmarked
+- Optimization target is clear
 
-Based on testing-strategy.md, add scopes for:
-- `test-unit`: Unit tests for critical business logic (TDD recommended)
-- `test-integration`: Integration tests for DB, APIs, external services
-- `test-security`: Security scanning gates
-- `test-mutation`: Mutation testing validation
+## Output Format
 
-**Note on TDD:** Research shows TDD alone is insufficient for AI-generated code.
-- Use TDD for critical business logic (isolated, deterministic)
-- Use Test-After + Mutation for standard paths
-- Never use same AI for both code AND test generation
+This skill produces:
+- **spec-tech_{v}.md** — Technical plan with typed scopes
+- **testing-strategy.md** — AI-aware testing strategy (software products only)
 
-### 5b. Tech Planning Review Gate
+See `references/tech-output.md` for the expected output format.
 
-**⚠️ MANDATORY — NEVER SKIP unless spec-tech was already approved.**
+Tech plan must contain:
+- **Scopes** — Typed, sequenced, with DoD + acceptance criteria
+- **Dependencies** — Between scopes
+- **Risks** — Technical risks identified
+- **Receipt** — Plannotator approval record
 
-**Run Plannotator gate for the tech plan BEFORE generating goals:**
+## Gotchas
 
-```bash
-[use the Plannotator gate command — see `references/cli-tools/plannotator.md`]
-```
+1. **Approval check** — Always verify `approved: true` before generating scopes
+2. **AI-aware testing** — Only for software/hybrid products, not for non-software
+3. **Executor routing** — Use correct executor per scope type
+4. **Sequencing** — Riskiest-first or UI-first, not alphabetical
+5. **Version tracking** — spec-tech_{v} must match spec-product_{v}
 
-See `references/cli-tools/plannotator.md` for command format, after-approval workflow, and frozen file rules.
+## Testing
 
-| Scenario | Action |
-|---------|--------|
-| **Standalone Tech Planning** | **ALWAYS run gate** — visual review of all scopes |
-| **Post Shape-Up + Interface** | Gate already ran → **SKIP this step** |
-| **Post Shape-Up, no Interface** | Gate already ran → **SKIP this step** |
+### Trigger Tests
+- "Generate tech plan" → should trigger
+- "Create scopes from spec" → should trigger
+- "Sequence the execution" → should trigger
+- "Fix the auth bug" → should NOT trigger
 
-**If approved:**
-1. Stamp `approved: true, approved_at: ...` in spec-tech.yaml frontmatter
-2. Create receipt in `approvals/` directory
-3. Proceed to Goal Generation
-
-**If user requests changes:**
-1. Adjust the tech plan
-2. Re-submit via the Plannotator gate command (see `references/cli-tools/plannotator.md`)
-3. Repeat until approved
-
-### 5c. Goal Generation (Step 9)
-
-After tech plan approval, convert each scope into a goal (see `references/cli-tools/goals.md`) with DoD as completion criteria:
-
-**For each scope in the approved spec-tech.md:**
-
-```typescript
-[goal command — see `references/cli-tools/goals.md`]
-
-Steps:
-1. {step 1}
-   Done: {criterion}
-2. {step 2}
-   Done: {criterion}
-...
-
-DoD: {scope DoD}
-AC: {acceptance criteria}
-Deps: {scope dependencies}
-```
-
-**Optimization/spike scopes with metrics → `/skill:autoresearch-create`**
-(they become experiment loops, not goals)
-
-**Rules:**
-- Scopes with dependencies: create goal AFTER the dependency is complete
-- Use the goal pause command (see `references/cli-tools/goals.md`) if a scope gets blocked
-- Use the goal tweak command (see `references/cli-tools/goals.md`) for scope adjustments during execution
-
-## Output
-
-Tech plan is saved to:
-```
-.cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_{v}.md
-```
-
-## After Tech Planning — EXECUTE AUTOMATICALLY
-
-**DO NOT ask user what to do next. Execution is automatic.**
-
-After Plannotator approval on spec-tech_v{N}.md:
-1. Run `/skill:cali-product-scope-executor` for scope routing
-2. Execute scopes based on type:
-   - `feature` → goal (see `references/cli-tools/goals.md`) + supervise (see `references/cli-tools/supervise.md`)
-   - `optimization` → `/skill:autoresearch-create`
-   - `test-unit`, `test-integration`, `test-security`, `test-behavior` → goal (see `references/cli-tools/goals.md`) with testing gates
-
-See `phases/execution.md` for full execution flow.
-
-### Testing Gates (test-* scopes)
-
-For test-* scopes, the execution includes hard blocks:
-- **test-mutation**: mutation_score >= target → BLOCK if below
-- **test-security**: security_findings == 0 on critical paths → BLOCK if found
-- **test-integration**: flaky_rate < 5% → WARN if above
-
-See `skills-execution/cali-testing-ai-code/SKILL.md`
+### Output Tests
+- spec-tech.md contains typed scopes (feature/optimization/spike)
+- Each scope has DoD + acceptance criteria
+- Scopes are sequenced (not alphabetical)
+- Testing strategy exists for software products
 
 ## Related Skills
 
-- **cali-shape-up**: Produces the shaped proposal
-- **cali-plan-critique**: Reviews the proposal before tech planning
-- **cali-product-workflow** (orchestrator): Coordinates this skill with execution
+- **cali-shape-up**: Produces the spec-product.md that feeds this planning
+- **cali-product-workflow**: Coordinates this skill with other phases
+- **cali-product-scope-executor**: Executes the scopes generated here
 
 ## Environment Adaptation
 
