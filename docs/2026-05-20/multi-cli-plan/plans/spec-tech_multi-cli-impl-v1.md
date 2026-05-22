@@ -290,14 +290,14 @@ export interface CLIAdapter {
 
 **Type:** feature  
 **Objective:** Abstract command registration across CLIs  
-**Rationale:** `/pw:start` needs to work on all CLIs
+**Rationale:** `/pw-start` needs to work on all CLIs
 
 ### Definition of Done
-- [ ] `/pw:start` works on Pi
-- [ ] `/pw:start` works on OpenCode
-- [ ] `/pw:start` works on Claude Code
-- [ ] `/pw:start` works on Codex
-- [ ] `/pw:stop`, `/pw:pause` work on all CLIs
+- [ ] `/pw-start` works on Pi
+- [ ] `/pw-start` works on OpenCode
+- [ ] `/pw-start` works on Claude Code
+- [ ] `/pw-start` works on Codex
+- [ ] `/pw-stop`, `/pw-pause` work on all CLIs
 
 ### Implementation Tasks
 
@@ -309,7 +309,7 @@ export interface CLIAdapter {
 | 4.4 | Implement OpenCode handler | Uses plugin hooks | HIGH |
 | 4.5 | Implement Claude Code handler | Uses `commands/` directory | MEDIUM |
 | 4.6 | Implement Codex handler | Uses `commands/` directory | MEDIUM |
-| 4.7 | Create command files per CLI | `/pw:start.md` format | MEDIUM |
+| 4.7 | Create command files per CLI | `/pw-start.md` format | MEDIUM |
 | 4.8 | Test commands on all CLIs | All commands register | HIGH |
 
 ### Command Files Format
@@ -317,10 +317,10 @@ export interface CLIAdapter {
 For Claude Code / Codex (skill-based):
 ```markdown
 ---
-name: pw:start
+name: pw-start
 description: Start a new product workflow
 ---
-/pw:start {args}
+/pw-start {args}
 ```
 
 ### Dependencies
@@ -446,10 +446,10 @@ describe('CLI Detection', () => {
 **Rationale:** Verify full workflow works on each CLI
 
 ### Definition of Done
-- [ ] `/pw:start` completes on Pi
-- [ ] `/pw:start` completes on OpenCode
-- [ ] `/pw:start` completes on Claude Code
-- [ ] `/pw:start` completes on Codex
+- [ ] `/pw-start` completes on Pi
+- [ ] `/pw-start` completes on OpenCode
+- [ ] `/pw-start` completes on Claude Code
+- [ ] `/pw-start` completes on Codex
 - [ ] State persists correctly across sessions
 
 ### Test Strategy

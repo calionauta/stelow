@@ -8,7 +8,7 @@
 - **Status:** PI-SPECIFIC. All event handlers are pi-exclusive.
 
 ### 2. `extensions/cali-product-workflow/commands.ts` (lines 1-450)
-- Registers CLI commands: `/pw:start`, `/pw:stop`, `/pw:pause`, etc.
+- Registers CLI commands: `/pw-start`, `/pw-stop`, `/pw-pause`, etc.
 - Uses `pi.registerCommand()` API
 - **Status:** PI-SPECIFIC. Command registration uses pi's API.
 
@@ -133,7 +133,7 @@ export function getCLITools(cli: string = detectCLI()): Record<string, string> {
    - Option B: Terminal-compatible UI (always ASCII, works everywhere)
    - Option C: Hybrid (pi gets TUI, others get ANSI)
 
-3. **Command Syntax**: `/pw:start` works for pi. Other CLIs may use different conventions.
+3. **Command Syntax**: `/pw-start` works for pi. Other CLIs may use different conventions.
 
 4. **Workflow Persistence**: Cross-session state must work without pi's event system.
 
