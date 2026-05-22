@@ -1,22 +1,39 @@
 ---
 name: cali-plan-critique
+version: 1.0.0
 description: >
   [Cali] Plan critique skill using audit checklists and frameworks. Reviews
   spec-product.md for gaps, risks, and improvements. Part of cali-product-workflow
   but can be used standalone after Shape Up.
+
+  Trigger keywords: plan critique, review spec, identify gaps, pre-flight check,
+  critical questions, audit checklist
+
+  NOT for: implementation, execution (use cali-product-scope-executor instead)
 ---
 
 # Plan Critique
 
-> **Tools:** See `references/cli-tools/subagents.md` for subagent patterns.
+## Goal
 
-This skill executes the Plan Critique phase. It can be run:
-1. **Standalone:** `/skill:cali-plan-critique` — after a Shape Up session
-2. **Via Orchestrator:** Called by `/skill:cali-product-workflow`
+Review a shaped proposal (spec-product.md) using comprehensive audit checklists to identify gaps, risks, and improvements before execution.
+
+## When to Use
+
+Activate when:
+- User wants to critique a shaped proposal
+- Pre-flight check before execution
+- Identifying gaps in product planning
+- Plan review phase of cali-product-workflow
+
+**Do NOT activate for:**
+- Direct implementation
+- Debugging existing code
+- Quick questions
 
 ## Process
 
-### 5a. Read reference files
+### 5a. Read Reference Files
 
 Read the `references/` files to guide the process:
 
@@ -29,7 +46,7 @@ Read the `references/` files to guide the process:
 | `references/auto-resolve-rules.md` | Rules for automatic gap resolution | **After analysis** — for auto-resolve mode |
 | `references/output-format.md` | Critique report format | **After analysis** — format output |
 
-### 5b. Analysis via subagent
+### 5b. Analysis via Subagent
 
 Launch subagent with checklists from `references/`:
 
@@ -56,17 +73,39 @@ Ask mode: **Auto-resolve** (applies rules from `references/auto-resolve-rules.md
 - Manual: ask each 🚨 and 🤔 individually
 - After resolving, create `spec-product_{v+1}.md` with documented resolutions
 
-## Output
+## Output Format
 
-Critique report is saved to:
-```
-.cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/critique-report.md
-```
+This skill produces:
+- **critique-report_{v}.md** — Critique report with categorized findings
+- **spec-product_{v+1}.md** — Updated spec with resolved gaps (if resolution occurred)
 
-Updated spec (after gap resolution):
-```
-.cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v+1}.md
-```
+Critique report format:
+- **Executive Summary** — High-level overview
+- **🚨 Critical Questions** — Must resolve before execution
+- **🤔 Important** — Should address before execution
+- **🔎 Minor** — Optional improvements
+- **Strengths** — What's working well
+
+## Gotchas
+
+1. **Do NOT resolve gaps** — Only identify and classify, unless auto-resolve is selected
+2. **Gap severity** — 🚨 must be resolved before execution; 🤔 should be; 🔎 optional
+3. **Auto-resolve rules** — If selected, rules from auto-resolve-rules.md apply
+4. **Versioning** — If gaps are resolved, create spec-product_{v+1}.md
+5. **After critique** — Proceed to Plannotator Gate automatically
+
+## Testing
+
+### Trigger Tests
+- "Review this spec" → should trigger
+- "Critique the product plan" → should trigger
+- "Identify gaps" → should trigger
+- "Fix the auth bug" → should NOT trigger
+
+### Output Tests
+- Critique contains 🚨, 🤔, 🔎 categories
+- Critical questions are specific and actionable
+- Auto-resolve creates new spec version if gaps resolved
 
 ## Related Skills
 
