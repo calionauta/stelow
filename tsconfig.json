@@ -23,6 +23,7 @@
   "exclude": [
     "node_modules",
     "dist",
-    "tests/**/*"
+    "tests/**/*",
+    "extensions/cali-product-workflow-pi/**/*"
   ]
 }
