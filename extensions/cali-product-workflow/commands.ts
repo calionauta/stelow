@@ -69,7 +69,7 @@ function replyWarn(ctx: CmdCtx, text: string): void {
 }
 
 function noActive(ctx: CmdCtx): void {
-  replyWarn(ctx, "No active Workflow. Start with /pw:start");
+  replyWarn(ctx, "No active Workflow. Start with /pw-start");
 }
 
 // ── Helper: remove workflow from both local and global tracking ─────
@@ -111,7 +111,7 @@ function cmdStop(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
     return;
   }
 
-  // ── /pw:stop all ───────────────────────────────────────────────
+  // ── /pw-stop all ───────────────────────────────────────────────
   if (parsed._.includes("all") || parsed.all !== undefined) {
     for (const w of stoppable) {
       removeWorkflowFromTracking(wd, w.name);
@@ -121,7 +121,7 @@ function cmdStop(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
     return;
   }
 
-  // ── /pw:stop <name1> <name2> ───────────────────────────────────
+  // ── /pw-stop <name1> <name2> ───────────────────────────────────
   if (parsed._.length > 0) {
     let count = 0;
     for (const wfName of parsed._) {
@@ -142,7 +142,7 @@ function cmdStop(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
     return;
   }
 
-  // ── /pw:stop (no args) — picker se >1, direto se for 1 ──────
+  // ── /pw-stop (no args) — picker se >1, direto se for 1 ──────
   if (stoppable.length === 1) {
     const wfName = stoppable[0].name;
     removeWorkflowFromTracking(wd, wfName);
@@ -170,7 +170,7 @@ function showStopPicker(
         ...workflows.map(w => ({
           value: w.name,
           label: `☐ ${w.name}`,
-          description: `${PHASE_NAMES[w.currentPhase]} — /pw:stop ${w.name}`
+          description: `${PHASE_NAMES[w.currentPhase]} — /pw-stop ${w.name}`
         })),
         {
           value: "__cancel__",
@@ -279,14 +279,14 @@ function cmdResume(pi: ExtensionAPI, args: string, ctx: CmdCtx) {
       updateFooter(ctx, wd);
       reply(ctx, `▶️ '${inProgress.name}' resuming from ${PHASE_NAMES[inProgress.currentPhase]}...`);
       pi.sendUserMessage(
-        `/skill:cali-product-workflow\n\n[RESUME: workflow '${inProgress.name}', current phase: ${inProgress.currentPhase} (${PHASE_NAMES[inProgress.currentPhase]}). Auto-Discovery will find this in-progress workflow. User already confirmed via /pw:resume — proceed without asking, jump to the current phase and continue from there.]`,
+        `/skill:cali-product-workflow\n\n[RESUME: workflow '${inProgress.name}', current phase: ${inProgress.currentPhase} (${PHASE_NAMES[inProgress.currentPhase]}). Auto-Discovery will find this in-progress workflow. User already confirmed via /pw-resume — proceed without asking, jump to the current phase and continue from there.]`,
         { deliverAs: "followUp" }
       );
       return;
     }
 
     replyWarn(ctx, name
-      ? `Workflow '${name}' not found. /pw:ls`
+      ? `Workflow '${name}' not found. /pw-ls`
       : "No paused or active Workflow."
     );
     return;
@@ -323,7 +323,7 @@ function cmdStatus(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
       ].join("\n"));
       return;
     }
-    replyWarn(ctx, "No active Workflow.\n\n/pw:start\n/pw:start @brief.md\n/pw:start \"desc\"");
+    replyWarn(ctx, "No active Workflow.\n\n/pw-start\n/pw-start @brief.md\n/pw-start \"desc\"");
     return;
   }
 
@@ -341,7 +341,7 @@ function cmdStatus(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
       return `${i === wf.currentPhase ? "→ " : "  "}${icon} ${i + 1}. ${p.name}`;
     }),
     "",
-    "/pw:next  /pw:stop  /pw:menu"
+    "/pw-next  /pw-stop  /pw-menu"
   ].join("\n"));
 }
 
@@ -352,7 +352,7 @@ function cmdList(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
   const parsed = parseArgs(args);
   const lines: string[] = [];
 
-  // ── /pw:ls path=... ────────────────────────────────────────────
+  // ── /pw-ls path=... ────────────────────────────────────────────
   if (parsed.path) {
     const targetDir = parsed.path;
     const diskWfs = scanWorkflowDirs(targetDir);
@@ -373,7 +373,7 @@ function cmdList(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
     return;
   }
 
-  // ── /pw:ls all ─────────────────────────────────────────────────
+  // ── /pw-ls all ─────────────────────────────────────────────────
   if (parsed._.includes("all") || parsed.all !== undefined) {
     // Scan all directories that have .cali-product-workflow/ subfolders
     const globalTracking = readGlobalTracking();
@@ -425,7 +425,7 @@ function cmdList(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
     return;
   }
 
-  // ── /pw:ls archived — show archived workflows from disk ───────
+  // ── /pw-ls archived — show archived workflows from disk ───────
   if (parsed._.includes("archived") || parsed.archived !== undefined) {
     const diskWfs = scanWorkflowDirs(wd).filter(dw => dw.status === "archived");
     if (diskWfs.length === 0) {
@@ -440,7 +440,7 @@ function cmdList(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
     return;
   }
 
-  // ── /pw:ls (default) — current dir with disk reconciliation ────
+  // ── /pw-ls (default) — current dir with disk reconciliation ────
   const reconciled = reconcileTracking(wd);
 
   if (reconciled.length > 0) {
@@ -482,7 +482,7 @@ function cmdList(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
   }
 
   if (lines.length === 0) {
-    replyWarn(ctx, "No Workflows found. /pw:start");
+    replyWarn(ctx, "No Workflows found. /pw-start");
   } else {
     reply(ctx, lines.join("\n"));
   }
@@ -502,8 +502,8 @@ function cmdSetPhase(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
 
   if (phase === null || isNaN(phase) || phase < 0 || phase >= PHASE_NAMES.length) {
     replyWarn(ctx, [
-      "Usage: /pw:setphase phase=N",
-      "   or: /pw:setphase phasename=Name",
+      "Usage: /pw-setphase phase=N",
+      "   or: /pw-setphase phasename=Name",
       "",
       ...PHASE_NAMES.map((n, i) => `  ${i}: ${n}`),
     ].join("\n"));
@@ -549,7 +549,7 @@ function cmdNext(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
 
   const next = wf.currentPhase + 1;
   if (next >= PHASE_NAMES.length) {
-    reply(ctx, "All phases complete. /pw:complete");
+    reply(ctx, "All phases complete. /pw-complete");
     return;
   }
 
@@ -622,7 +622,7 @@ function cmdGoto(_pi: ExtensionAPI, args: string, _ctx: CmdCtx) {
     : gt.workflows.find(w => w.status === "in-progress");
 
   if (!wf) {
-    replyWarn(_ctx, `'${name || "active"}' not found. /pw:ls`);
+    replyWarn(_ctx, `'${name || "active"}' not found. /pw-ls`);
     return;
   }
 
@@ -630,7 +630,7 @@ function cmdGoto(_pi: ExtensionAPI, args: string, _ctx: CmdCtx) {
     `📍 ${wf.name}`,
     `Project: ${wf.cwd}`,
     `Stage: ${PHASE_NAMES[wf.currentPhase]}`,
-    `\ncd ${wf.cwd}\n/pw:resume name=${wf.name}`
+    `\ncd ${wf.cwd}\n/pw-resume name=${wf.name}`
   ].join("\n"));
 }
 
@@ -642,7 +642,7 @@ function cmdRename(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
   // Join all positional tokens (like cmdStart) — renameWorkflow toSafeNames internally
   const newName = parsed.name || (parsed._.length > 0 ? parsed._.join(" ") : undefined);
   if (!newName || newName.trim().length < 2) {
-    replyWarn(ctx, "Usage: /pw:rename novo-nome");
+    replyWarn(ctx, "Usage: /pw-rename novo-nome");
     return;
   }
 
@@ -670,7 +670,7 @@ function cmdArchive(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
   const wd = resolveProjectDir(ctx.cwd);
   const parsed = parseArgs(args);
 
-  // ── /pw:archive purge — delete archived workflow dirs from disk ──
+  // ── /pw-archive purge — delete archived workflow dirs from disk ──
   if (parsed._.includes("purge") || parsed.purge !== undefined) {
     const diskWfs = scanWorkflowDirs(wd).filter(dw => dw.status === "archived");
     if (diskWfs.length === 0) {
@@ -690,7 +690,7 @@ function cmdArchive(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
     return;
   }
 
-  // ── /pw:archive name=X — archive specific workflow ─────────────
+  // ── /pw-archive name=X — archive specific workflow ─────────────
   const name = parsed.name || parsed._[0];
   if (name) {
     const t = readTracking(wd);
@@ -698,7 +698,7 @@ function cmdArchive(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
     const wf = t?.workflows.find(w => w.name === name) ||
                gt?.workflows.find(w => w.name === name);
     if (!wf) {
-      replyWarn(ctx, `Workflow '${name}' not found. /pw:ls`);
+      replyWarn(ctx, `Workflow '${name}' not found. /pw-ls`);
       return;
     }
     // Mark archived on disk
@@ -726,7 +726,7 @@ function cmdArchive(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
     return;
   }
 
-  // ── /pw:archive — archive active workflow ─────────────────────
+  // ── /pw-archive — archive active workflow ─────────────────────
   const wf = getActiveWorkflow(wd);
   if (!wf) { noActive(ctx); return; }
 
@@ -759,7 +759,7 @@ function cmdUnarchive(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
   const name = parsed.name || parsed._[0];
 
   if (!name) {
-    replyWarn(ctx, "Usage: /pw:unarchive name=<workflow>");
+    replyWarn(ctx, "Usage: /pw-unarchive name=<workflow>");
     return;
   }
 
@@ -768,7 +768,7 @@ function cmdUnarchive(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
   const archived = diskWfs.find(dw => dw.name === name && dw.status === "archived");
 
   if (!archived) {
-    replyWarn(ctx, `Archived workflow '${name}' not found. /pw:ls archived`);
+    replyWarn(ctx, `Archived workflow '${name}' not found. /pw-ls archived`);
     return;
   }
 
@@ -803,7 +803,7 @@ function cmdUnarchive(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
     }
   }
 
-  reply(ctx, `📦 Workflow '${name}' unarchived. Use /pw:resume name=${name} to continue.`);
+  reply(ctx, `📦 Workflow '${name}' unarchived. Use /pw-resume name=${name} to continue.`);
 }
 
 // =============================================================================
@@ -815,20 +815,20 @@ export { WORKFLOW_COMMANDS } from "./adapters/commands/dispatcher";
 export type { CommandDescriptor } from "./adapters/commands/dispatcher";
 
 const COMMAND_DESCRIPTIONS: Record<string, string> = {
-  "product-workflow-start": "Start a new workflow. Usage: /pw:start [name=...] [description=...] [@file]",
-  "product-workflow-stop":  "Stop workflow(s): /pw:stop | all | name1 name2",
-  "product-workflow-pause": "Pause active workflow: /pw:pause",
-  "product-workflow-resume":"Resume paused workflow: /pw:resume [name=name]",
-  "product-workflow-status":"Show active workflow status: /pw:status",
-  "product-workflow-list":  "List workflows: /pw:ls | all | archived | path=DIR",
-  "product-workflow-setphase":"Jump to phase: /pw:setphase phase=N | phasename=Name",
-  "product-workflow-next":  "Advance to next phase: /pw:next",
-  "product-workflow-complete":"Mark active workflow complete: /pw:complete",
-  "product-workflow-goto":  "Go to a workflow: /pw:goto [name=name]",
-  "product-workflow-rename":"Rename active workflow: /pw:rename novo-nome | name=novo-nome",
-  "product-workflow-menu":  "Open workflow overview overlay: /pw:menu",
-  "product-workflow-archive": "Archive workflows: /pw:archive | /pw:archive name=X | /pw:archive purge",
-  "product-workflow-unarchive": "Unarchive a workflow: /pw:unarchive name=<workflow>",
+  "pw-start": "Start a new workflow. Usage: /pw-start [name=...] [description=...] [@file]",
+  "pw-stop":  "Stop workflow(s): /pw-stop | all | name1 name2",
+  "pw-pause": "Pause active workflow: /pw-pause",
+  "pw-resume":"Resume paused workflow: /pw-resume [name=name]",
+  "pw-status":"Show active workflow status: /pw-status",
+  "pw-ls":  "List workflows: /pw-ls | all | archived | path=DIR",
+  "pw-setphase":"Jump to phase: /pw-setphase phase=N | phasename=Name",
+  "pw-next":  "Advance to next phase: /pw-next",
+  "pw-complete":"Mark active workflow complete: /pw-complete",
+  "pw-goto":  "Go to a workflow: /pw-goto [name=name]",
+  "pw-rename":"Rename active workflow: /pw-rename novo-nome | name=novo-nome",
+  "pw-menu":  "Open workflow overview overlay: /pw-menu",
+  "pw-archive": "Archive workflows: /pw-archive | /pw-archive name=X | /pw-archive purge",
+  "pw-unarchive": "Unarchive a workflow: /pw-unarchive name=<workflow>",
 };
 
 // Helper to get description from canonical name
@@ -842,20 +842,20 @@ function getCommandDescription(canonicalName: string): string {
 
 // Canonical + alias map: handler → list of command names
 const CMD_MAP: [CmdHandler, string, string][] = [
-  [cmdStart,     "product-workflow-start",     "pw:start"],
-  [cmdStop,      "product-workflow-stop",      "pw:stop"],
-  [cmdPause,     "product-workflow-pause",     "pw:pause"],
-  [cmdResume,    "product-workflow-resume",     "pw:resume"],
-  [cmdStatus,    "product-workflow-status",    "pw:status"],
-  [cmdList,      "product-workflow-list",      "pw:ls"],
-  [cmdSetPhase,  "product-workflow-setphase",   "pw:setphase"],
-  [cmdNext,      "product-workflow-next",      "pw:next"],
-  [cmdComplete,  "product-workflow-complete",  "pw:complete"],
-  [cmdGoto,      "product-workflow-goto",      "pw:goto"],
-  [cmdRename,    "product-workflow-rename",    "pw:rename"],
-  [cmdMenu,      "product-workflow-menu",      "pw:menu"],
-  [cmdArchive,   "product-workflow-archive",   "pw:archive"],
-  [cmdUnarchive, "product-workflow-unarchive", "pw:unarchive"],
+  [cmdStart, "pw-start",     "pw-start"],
+  [cmdStop, "pw-stop",      "pw-stop"],
+  [cmdPause, "pw-pause",     "pw-pause"],
+  [cmdResume, "pw-resume",     "pw-resume"],
+  [cmdStatus, "pw-status",    "pw-status"],
+  [cmdList, "pw-ls",      "pw-ls"],
+  [cmdSetPhase, "pw-setphase",   "pw-setphase"],
+  [cmdNext, "pw-next",      "pw-next"],
+  [cmdComplete, "pw-complete",  "pw-complete"],
+  [cmdGoto, "pw-goto",      "pw-goto"],
+  [cmdRename, "pw-rename",    "pw-rename"],
+  [cmdMenu, "pw-menu",      "pw-menu"],
+  [cmdArchive, "pw-archive",   "pw-archive"],
+  [cmdUnarchive, "pw-unarchive", "pw-unarchive"],
 ];
 
 /**
