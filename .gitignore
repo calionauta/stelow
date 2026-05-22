@@ -13,7 +13,7 @@ stryker-reports/
 .pi/
 .pi-*
 .cali-product-workflow/
-.cali-product-workflow-global.json
+.cali-pw-global.json
 
 # OpenCode session plans
 .opencode/plans/
