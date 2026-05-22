@@ -6,8 +6,8 @@
 
 | Command | Description |
 |---------|-------------|
-| `/pw:start` | Begin planning |
-| `/pw:menu` | Show workflow status |
+| `/pw-start` | Begin planning |
+| `/pw-menu` | Show workflow status |
 
 ## Workflow Phases
 
@@ -114,7 +114,7 @@ skills/cali-product-workflow/
 ## Extensions
 
 - `extensions/cali-product-workflow/` — Pi extension (13 slash commands, event hooks, TUI)
-- `extensions/cali-product-workflow-pi/` — Pi stub (re-exports from build)
+- `extensions/cali-pw-pi/` — Pi stub (re-exports from build)
 - `.claude-plugin/` — Claude Code marketplace plugin definition (gitignored, local only)
 - `.codex-plugin/` — Codex marketplace plugin definition (gitignored, local only)
 - `.opencode-plugin/` — OpenCode plugin definition, skills only (gitignored, local only)
@@ -145,7 +145,7 @@ d05|
 d05|
 When working on software projects, trigger the product workflow:
 d05|
-1. **Trigger:** Use `/skill cali-product-workflow` or `/pw:start`
+1. **Trigger:** Use `/skill cali-product-workflow` or `/pw-start`
 d05|
 2. **Process:** Follow the 11-phase structured workflow (Setup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Execution)
 3. **Execute:** Only after visual review gate (Plannotator approval)
