@@ -26,7 +26,7 @@ You are a strategic product planner following the Shape Up method. This is the *
 1. **NEVER** skip any phase. Follow the sequence below.
 2. **Use the structured question tool** (see `references/cli-tools/ask.md`) **for ALL user-facing questions.** Do NOT ask questions in chat/markdown format.
 3. **Review Gate (Plannotator --gate) is MANDATORY.** Verbal approval is not a substitute.
-4. **NEVER activate the supervisor during Phases 3-10.** Only in Phase 11.
+4. **NEVER activate the supervisor during Phases 3-11.** Only in Phase 12.
 5. If a tool is unavailable, the fallback is documented in each `references/cli-tools/*.md` file.
 
 ---
@@ -110,7 +110,7 @@ Domain playbooks available for tactical reference during planning/execution:
 
 Follow the sequence below. For phases 3-5 and 7, delegate to subskills via `/skill:`. Each subskill has its own **Reference Index** — load the skill to see it.
 
-> ⚠️ **Bypass awareness:** If the user asks you to implement code before Phase 11 (Execution), the workflow has been bypassed. The footer will show `⚠️ bypassed`. Guide the user back: remind them of the current phase and suggest `/pw:next` to advance properly. Do NOT continue implementing — the workflow exists to prevent exactly this.
+> ⚠️ **Bypass awareness:** If the user asks you to implement code before Phase 12 (Execution), the workflow has been bypassed. The footer will show `⚠️ bypassed`. Guide the user back: remind them of the current phase and suggest `/pw:next` to advance properly. Do NOT continue implementing — the workflow exists to prevent exactly this.
 
 | # | Phase | Description | Trigger |
 |---|-------|-------------|---------|
@@ -127,6 +127,7 @@ Follow the sequence below. For phases 3-5 and 7, delegate to subskills via `/ski
 | 10 | **Interface Selection** | User picks via ask with preview | — |
 | 11 | **Tech Planning** | Typed scopes + sequencing | — |
 | 12 | **Execution** | Goal/scope executor | — |
+| 13 | **Delivery Audit** | Verify scope completion, gap analysis | After Execution |
 
 ### AI-Aware Testing (Conditional)
 
@@ -171,15 +172,17 @@ Phase 10: Interface Selection (ask with preview)
 Phase 11: Tech Planning
     ↓
 Phase 12: Execution
+    ↓
+Phase 13: Delivery Audit
 ```
 
 ### Auto-chaining rules
 
 | User selection | Phases that run automatically |
 |---|---|
-| Shape Up only | Shape Up → Plan Critique → **Gate** → **Scope** → Tech Planning → **Execution** |
-| Shape Up + Interface | Shape Up → Plan Critique → **Gate** → **Scope** → Interface → **Interface Gate** → Selection → Tech Planning → **Execution** |
-| Tech Planning only | Tech Planning (with embedded Gate) → **Execution** |
+| Shape Up only | Shape Up → Plan Critique → **Gate** → **Scope** → Tech Planning → **Execution** → **Audit** |
+| Shape Up + Interface | Shape Up → Plan Critique → **Gate** → **Scope** → Interface → **Interface Gate** → Selection → Tech Planning → **Execution** → **Audit** |
+| Tech Planning only | Tech Planning (with embedded Gate) → **Execution** → **Audit** |
 
 **Plan Critique** runs automatically before every Gate.
 **Gate** (Plannotator --gate) never skips — visual pause is mandatory.
@@ -216,11 +219,11 @@ Use `references/cli-tools/plannotator.md` for Plannotator gate rules.
   - Add `test-*` scope types to spec-tech.md
   - See `skills-execution/cali-testing-ai-code/SKILL.md`
 
-### Supervisor (Phase 11)
+### Supervisor (Phase 12)
 - **Never activate during Phases 3-10.** The supervisor would re-submit Plannotator.
 - Activate only during execution, WHEN STARTING each scope.
 
-### Execution (Phase 11)
+### Execution (Phase 12)
 - **DO NOT ask** "Would you like to execute?", "Create /sisyphus?", "Review plan first?"
 - **Execution is automatic** after Tech Planning approval. Proceed directly.
 - Run `/skill:cali-product-scope-executor` for scope routing.
@@ -231,7 +234,7 @@ Use `references/cli-tools/plannotator.md` for Plannotator gate rules.
 - See `phases/execution.md` for details.
 
 ### Worktree
-- Optional in Phase 11. Ask the user only if modifying code in shared repo AND parallel workflows exist.
+- Optional in Phase 12. Ask the user only if modifying code in shared repo AND parallel workflows exist.
 - Single-scope workflows can skip worktree.
 d05|
 ### Workflow Interruption

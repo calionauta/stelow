@@ -1,10 +1,10 @@
-## Phase 11: Supervisor + Execution
+## Phase 12: Supervisor + Execution
 
 > **Part of cali-product-workflow** — See [`SKILL.md`](./SKILL.md) for phase sequence, safety rules, and capability reference.
 
 ### ⚠️ Activate the supervisor ONLY during execution
 **Never activate during Phases 3-10.** The supervisor would re-submit Plannotator.
-**Activate in Phase 11 only** — when starting scope execution.
+**Activate in Phase 12 only** — when starting scope execution.
 
 ### 6a. Git Worktree Check (before executing scopes)
 
@@ -131,7 +131,61 @@ Proceed directly to scope execution in the current directory.
 
 See `skills-execution/cali-testing-ai-code/SKILL.md`
 
-## Phase 11: Execution — AUTOMATIC
+## Phase 12: Execution — AUTOMATIC
+
+> **CRITICAL: After Tech Planning approval, execution is MANDATORY.**
+> Do NOT ask the user "what to do next". The workflow proceeds automatically.
+
+### Execution Flow
+
+After Plannotator approval on spec-tech_v{N}.md:
+
+1. **Worktree check** (if modifying code in shared repo)
+2. **Route to executor** based on scope type:
+
+| Scope Type | Executor | Command |
+|------------|----------|--------|
+| `feature` | `/sisyphus` + `/supervise` | `/skill:cali-product-scope-executor` |
+| `optimization` | `/skill:autoresearch-create` | `/skill:autoresearch-create` |
+| `spike` | `/sisyphus` + `/supervise` | `/skill:cali-product-scope-executor` |
+| `test-*` | `/sisyphus` + testing gates | `/skill:cali-product-scope-executor` |
+
+### Executing Scopes
+
+Run `/skill:cali-product-scope-executor` — this routes each scope to its correct executor.
+
+**For feature scopes:**
+```bash
+/sisyphus Scope: [scope-name]
+  Objective: {from scope description}
+  Done when:
+  - [ ] Criterion 1
+  - [ ] Criterion 2
+/supervise outcome="Execute scope '[scope-name]' per spec-tech.md. DoD: {DoD}. Do not deviate."
+```
+
+**For optimization scopes:**
+```bash
+/skill:autoresearch-create
+```
+
+### ⚠️ NEVER ASK
+
+After Tech Planning approval, **DO NOT** ask:
+- "Would you like to execute now?"
+- "Create /sisyphus goal?"
+- "Review plan first?"
+- Any variation of "what would you like to do next"
+
+**The workflow proceeds automatically to execution, then to Delivery Audit.**
+
+### After Execution
+
+After completing all scopes:
+1. **Do not ask user** what to do next
+2. **Automatically proceed** to Phase 13 (Delivery Audit)
+3. Run the audit process per [`delivery-audit.md`](./delivery-audit.md)
+4. Generate `delivery-audit.md` in the plan directory
 
 > **CRITICAL: After Tech Planning approval, execution is MANDATORY.**
 > Do NOT ask the user "what to do next". The workflow proceeds automatically.
