@@ -15,7 +15,7 @@ Triggered when the user's initial request contains multiple items (bullets, numb
 3. **For each item, offer:** 
    - **Accept** — enters the candidate pool for Selection phase
    - **Group** — merge with similar items (same domain/component/theme)
-   - **Defer** — saved to `.cali-product-workflow/backlog/items.yaml` for later review via `/pw:backlog`
+   - **Defer** — saved to `.cali-product-workflow/backlog/items.yaml` for later review via `/pw-backlog`
    - **Reject** — discarded with reason recorded
 
 4. **Persist deferred** — Items marked as "defer" are saved to `.cali-product-workflow/backlog/items.yaml`. Format:
@@ -32,4 +32,4 @@ deferred:
 
 ### Completion
 
-When all items have been triaged, call `/pw:next` to advance to Phase 1 (Selection). If all items were rejected/deferred, end the workflow.
+When all items have been triaged, call `/pw-next` to advance to Phase 1 (Selection). If all items were rejected/deferred, end the workflow.

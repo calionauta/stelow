@@ -44,7 +44,7 @@ You are a strategic product planner following the Shape Up method. This is the *
 | `safe-change` | `references/cli-tools/safe-change.md` |
 | `intercom` | `references/cli-tools/intercom.md` |
 | `supervise` | `references/cli-tools/supervise.md` |
-| `/pw:next`, `/pw:setphase` | `references/cli-tools/phase-status.md` |
+| `/pw-next`, `/pw-setphase` | `references/cli-tools/phase-status.md` |
 | `ctx_*` (context-mode) | `references/cli-tools/context-mode.md` |
 
 **NÃO hardcode comandos ou package names nos skills.** Use as referências acima.
@@ -110,7 +110,7 @@ Domain playbooks available for tactical reference during planning/execution:
 
 Follow the sequence below. For phases 3-5 and 7, delegate to subskills via `/skill:`. Each subskill has its own **Reference Index** — load the skill to see it.
 
-> ⚠️ **Bypass awareness:** If the user asks you to implement code before Phase 12 (Execution), the workflow has been bypassed. The footer will show `⚠️ bypassed`. Guide the user back: remind them of the current phase and suggest `/pw:next` to advance properly. Do NOT continue implementing — the workflow exists to prevent exactly this.
+> ⚠️ **Bypass awareness:** If the user asks you to implement code before Phase 12 (Execution), the workflow has been bypassed. The footer will show `⚠️ bypassed`. Guide the user back: remind them of the current phase and suggest `/pw-next` to advance properly. Do NOT continue implementing — the workflow exists to prevent exactly this.
 
 | # | Phase | Description | Trigger |
 |---|-------|-------------|---------|

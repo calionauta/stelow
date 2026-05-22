@@ -46,7 +46,7 @@ if [ "$count" -eq 0 ]; then
 fi
 ```
 
-> ⚠️ Note: The `/product-workflow-start` extension already runs a cleanup overlay
+> ⚠️ Note: The `/pw-start` extension already runs a cleanup overlay
 > **before** creating a workflow, archiving orphaned workflows. At this point
 > there should be at most 1 active workflow. If there are more, investigate.
 
@@ -69,17 +69,17 @@ ask_user_question({
       },
       {
         label: "Cancel workflow",
-        description: `Archive and start fresh. Use /pw:start for new.`
+        description: `Archive and start fresh. Use /pw-start for new.`
       }
     ]
   }]
 })
 ```
-3. If **multiple active workflows**: show the list and recommend `/pw:clean`:
+3. If **multiple active workflows**: show the list and recommend `/pw-clean`:
 ```typescript
 ask_user_question({
   questions: [{
-    question: `There are ${count} active workflows. Use /pw:clean to organize or select: Continue for: ${name}`,
+    question: `There are ${count} active workflows. Use /pw-clean to organize or select: Continue for: ${name}`,
     header: "Multiple",
     options: [
       {
@@ -91,7 +91,7 @@ ask_user_question({
         description: `View all active workflows.`
       },
       {
-        label: "Run /pw:clean",
+        label: "Run /pw-clean",
         description: `Archive orphaned/stalled workflows.`
       }
     ]
@@ -104,7 +104,7 @@ ask_user_question({
 
 ### Resume Mechanics (when [RESUME] is present)
 
-When the skill is invoked with `[RESUME: workflow X, phase Y]` context (from `/pw:resume`),
+When the skill is invoked with `[RESUME: workflow X, phase Y]` context (from `/pw-resume`),
 follow this flow INSTEAD OF asking the user:
 
 **Step 1: Identify the correct workflow directory by name**
@@ -181,7 +181,7 @@ After identifying the workflow:
    - If checkpoint has `phase == current_phase_index` → jump to `checkpoint.step`
    - If checkpoint has `phase < current_phase_index` → previous phase is done; start current phase
    - If no checkpoint → start current phase from beginning
-   - If `current_phase_index >= 10` and spec-tech approved → skip to Phase 11 (Execution)
+   - If `current_phase_index >= 10` and spec-tech approved → skip to Phase 12 (Execution)
 
 6. **DO NOT re-ask answered questions.** Use `user_choices` from checkpoint.
 

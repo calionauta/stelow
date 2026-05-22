@@ -27,10 +27,10 @@
 
 ## Activation
 
-**⚠️ IMPORTANT:** Never activate during Phases 3-10.
+**⚠️ IMPORTANT:** Never activate during Phases 3-11.
 Supervisor re-submits Plannotator, causing loops.
 
-Activate ONLY when STARTING each scope in Phase 11.
+Activate ONLY when STARTING each scope in Phase 12.
 
 ---
 

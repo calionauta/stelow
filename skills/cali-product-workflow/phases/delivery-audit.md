@@ -152,7 +152,7 @@ Based on audit results:
 
 ### Update Phase Status
 
-After audit completes, call `/pw:setphase phase=13` to mark complete.
+After audit completes, call `/pw-setphase phase=13` to mark complete.
 
 ### Auto-chain
 
