@@ -55,6 +55,9 @@ ask_user_question({
 | Pattern 3 | Phase 6 | Scope adjustment (add/remove) |
 | Pattern 4 | General | Simple confirmation |
 | Pattern 5 | Phase 1b | Stage selection |
+57:ef6| Pattern 5 | Phase 1b | Stage selection |
+d05|
+e8c| Pattern 6 | Orchestrator | Workflow interruption (mid-workflow new request) |
 
 ---
 

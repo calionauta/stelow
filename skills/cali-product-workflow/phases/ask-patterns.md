@@ -284,6 +284,51 @@ Select the desired stages:`,
 **If user chooses "Yes" for safe-change:** Run `safe-change` BEFORE proceeding.
 
 ---
+fd6|
+d05|
+2eb|## Pattern 6: Workflow Interruption
+d05|
+4c0|Used by the orchestrator when user introduces new work mid-workflow.
+ce8|
+6f9|> **Trigger:** User asks for something different or substantially changes the current request.
+d05|
+d0c|> **Do not auto-abandon** an active workflow without confirmation.
+d05|
+d6d|```typescript
+b33|ask_user_question({
+6ef|  questions: [{
+44f|    question: `You have an active workflow: "{workflow-name}" ({phase}).
+7e9|What would you like to do?`,
+d1c|    header: "Workflow",
+de4|    options: [
+1fc|      {
+54a|        label: "Continue current",
+ea2|        description: "Finish the current workflow first, then address the new request."
+2f6|      },
+1fc|      {
+56b|        label: "Switch to new",
+a16|        description: "Archive current and start a new workflow with: {new-request-preview}"
+2f6|      },
+1fc|      {
+63f|        label: "Merge into current",
+aee|        description: "Expand the current workflow to include: {new-request-preview}"
+18b|      }
+0b5|    ]
+717|  }]
+417|})
+d05|
+fd6|
+73c|> **After user selection:**
+d05|
+66f|- **Continue current**: return to workflow, note new request for later
+38f|- **Switch to new**: archive current workflow, start fresh with new request
+2b9|- **Merge into current**: adjust scope/plan to incorporate new request
+d05|
+2c1|> **Note:** If workflow is near completion (Execution phase), recommend "Continue current" as default.
+ce8|
+605|/// END PATTERN 6
+d05|
+85a|
 
 ## Usage Rules
 

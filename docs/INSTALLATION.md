@@ -134,6 +134,21 @@ When working on software projects, trigger the product workflow:
 
 ---
 
+## Third-Party Skills
+
+Some workflow phases reference external skills. Install them for full functionality:
+
+| Skill | Required for | Install (Pi) | Install (Other CLIs) |
+|-------|-------------|--------------|----------------------|
+| `pi-agent-codebase-workflows` | Phase 2 (safe-change) | `pi install git:github.com/PriNova/pi-agent-codebase-workflows` | `npx skills add Prinova/pi-agent-codebase-workflows -a <cli> -g` |
+| `thermo-nuclear` (codequality-review) | Phase 11 (final gate) | `pi install git:github.com/cursor/plugins` | `npx skills add cursor/plugins -a <cli> -g` |
+
+Replace `<cli>` with: `opencode`, `claude-code`, or `codex`.
+
+Without these skills, the workflow falls back to manual alternatives documented in each tool's reference file.
+
+---
+
 ## Why Git-Based (No npm)
 
 Distributing exclusively via GitHub is a deliberate security choice:

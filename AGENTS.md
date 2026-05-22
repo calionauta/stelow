@@ -29,6 +29,7 @@ Phase 10 (Planning) generates typed scopes with dependency mapping.
 - **Visual review gate** — Plannotator opens the full plan for point-by-point comments
 - **Interface exploration** — 5 approaches in ASCII art, then LLM creates hybrid
 - **Typed technical scopes** — feature, spike, optimize, test-* with dependency mapping
+- **External skill references** — third-party skills documented in `references/cli-tools/` with install instructions and fallbacks
 
 ## Key Principles
 
@@ -65,6 +66,17 @@ Keep PRs focused. Squash merge to main.
 ## File Naming
 
 All project files must use `lowercase-kebab-case`:
+## External Skill Dependencies
+
+Any skill referenced by this workflow that is NOT part of cali-product-workflow must:
+1. Have a reference file in `references/cli-tools/{descriptive-name}.md`
+2. Include:
+   - Install instructions for CLIs or generic
+   - Quick summary of what it does
+   - Fallback instructions when not installed
+
+Example: `codequality-review.md` for the thermo-nuclear review.
+
 - ✅ `spec-product.md`, `tech-planning.md`
 - ❌ `SpecProduct.md`, `TECH-PLANNING.md`
 
@@ -119,6 +131,26 @@ skills/cali-product-workflow/
 ## Distribution
 
 Git-based primary distribution (npm publish configured but not actively used — see [docs/SECURITY.md](docs/SECURITY.md) for rationale).
+d05|
+## Tool Reference Pattern
+d05|
+For skills development, see [docs/TOOL-REFERENCE-PATTERN.md](docs/TOOL-REFERENCE-PATTERN.md) for the pattern that ensures portability across CLIs.
+d05|
+Rules:
+- Skills reference tools via `references/cli-tools/{tool}.md`, not direct calls
+- Question templates come from `phases/ask-patterns.md`
+- When adding a new tool, create the reference doc first following the pattern
+d05|
+## Workflow Integration
+d05|
+When working on software projects, trigger the product workflow:
+d05|
+1. **Trigger:** Use `/skill cali-product-workflow` or `/pw:start`
+d05|
+2. **Process:** Follow the 11-phase structured workflow (Setup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Execution)
+3. **Execute:** Only after visual review gate (Plannotator approval)
+d05|
+- **Repo:** https://github.com/renatocaliari/cali-product-workflow
 
 - **Repo:** https://github.com/renatocaliari/cali-product-workflow
 - **License:** MIT
