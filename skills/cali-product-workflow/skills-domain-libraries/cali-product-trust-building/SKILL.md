@@ -1,6 +1,5 @@
 ---
 name: cali-product-trust-building
-version: 1.0.0
 description: >
   [Cali] Trust-building strategies for products. Covers signal design, transparency,
   reliability, and competence signals that reduce perceived risk and increase

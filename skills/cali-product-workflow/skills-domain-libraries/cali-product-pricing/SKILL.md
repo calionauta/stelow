@@ -1,6 +1,5 @@
 ---
 name: cali-product-pricing
-version: 1.0.0
 description: >
   [Cali] Pricing strategies and models for product offerings. Covers exchange bases,
   consumption control, interest alignment, and perception techniques to formalize

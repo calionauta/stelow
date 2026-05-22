@@ -1,6 +1,5 @@
 ---
 name: cali-tech-planning
-version: 1.0.0
 description: >
   [Cali] Technical planning and scope sequencing skill. Generates typed scopes
   (feature/optimization/spike + test-*), sequences them, and creates goals (see references/cli-tools/goals.md).

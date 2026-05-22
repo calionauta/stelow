@@ -1,6 +1,5 @@
 ---
 name: cali-product-workflow
-version: 1.0.0
 description: >
   [Cali] Complete product strategic planning orchestrator. Executes Shape Up Planning,
   Interface Brainstorming (conditional), Tech Planning Sequencing, Solution Critique,

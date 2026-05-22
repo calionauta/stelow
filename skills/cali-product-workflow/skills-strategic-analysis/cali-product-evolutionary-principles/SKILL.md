@@ -1,6 +1,5 @@
 ---
 name: cali-evolutionary-principles
-version: 1.0.0
 description: >
   [Cali] Strategic product evolution and innovation framework inspired by
   evolutionary systems thinking, novelty search, and stepping-stones theory.

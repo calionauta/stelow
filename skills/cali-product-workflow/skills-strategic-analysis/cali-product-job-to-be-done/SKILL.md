@@ -1,6 +1,5 @@
 ---
 name: cali-product-jtbd
-version: 1.0.0
 description: >
   [Cali] Jobs To Be Done (JTBD) framework for understanding why customers "hire"
   products to do jobs in their lives. Covers interview techniques, progress-making,

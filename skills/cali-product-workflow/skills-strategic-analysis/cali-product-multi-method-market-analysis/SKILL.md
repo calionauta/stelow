@@ -1,6 +1,5 @@
 ---
 name: cali-product-multi-method-market-analysis
-version: 1.0.0
 description: >
   [Cali] Multi-method market analysis combining qualitative and quantitative research.
   Covers surveys, analytics, qualitative interviews, and how to synthesize insights

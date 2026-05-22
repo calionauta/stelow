@@ -1,6 +1,5 @@
 ---
 name: cali-scope-executor
-version: 1.0.0
 description: >
   [Cali] Reads an approved product plan with typed scopes (feature, optimization, spike, test-*)
   and routes each scope to its correct executor. Acts as the autonomous overnight

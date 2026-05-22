@@ -1,6 +1,5 @@
 ---
 name: cali-product-business-models
-version: 1.0.0
 description: >
   [Cali] Business model frameworks and patterns for products. Covers value creation,
   delivery, capture mechanisms, and model selection criteria to formalize

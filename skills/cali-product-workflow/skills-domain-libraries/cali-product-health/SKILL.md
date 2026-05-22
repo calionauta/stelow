@@ -1,6 +1,5 @@
 ---
 name: cali-product-health
-version: 1.0.0
 description: >
   [Cali] Health and wellness product strategies. Covers digital therapeutics,
   habit formation, data privacy, and regulatory considerations for health products.

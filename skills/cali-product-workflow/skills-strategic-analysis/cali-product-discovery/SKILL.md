@@ -1,6 +1,5 @@
 ---
 name: cali-product-discovery
-version: 1.0.0
 description: >
   [Cali] Customer discovery and validation for products. Covers interview techniques,
   problem interviews, solution interviews, and MVP testing to validate hypotheses

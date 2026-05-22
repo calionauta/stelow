@@ -1,6 +1,5 @@
 ---
 name: cali-product-opportunity-mapping
-version: 1.0.0
 description: >
   [Cali] Opportunity mapping for product strategy. Covers how to identify, prioritize,
   and pursue market opportunities through a systematic opportunity assessment process.

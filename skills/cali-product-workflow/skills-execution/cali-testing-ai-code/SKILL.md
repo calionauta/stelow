@@ -1,6 +1,5 @@
 ---
 name: cali-testing-ai-code
-version: 1.0.0
 description: >
   [Cali] AI-aware testing strategy skill for software products.
   Generates mutation-based testing plans, security gates, and coverage targets.

@@ -1,6 +1,5 @@
 ---
 name: cali-product-marketplace-playbook
-version: 1.0.0
 description: >
   [Cali] Marketplace strategies for products. Covers supply/demand dynamics,
   quality control, trust mechanisms, and platform economics to build

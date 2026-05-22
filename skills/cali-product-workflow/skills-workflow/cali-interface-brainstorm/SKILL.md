@@ -1,6 +1,5 @@
 ---
 name: cali-interface-brainstorm
-version: 1.0.0
 description: >
   [Cali] Interface brainstorming skill. Use when generating interface proposals
   using the 5 archetypes method. Produces 5 independent proposals + hybrid recommendation.

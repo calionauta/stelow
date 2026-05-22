@@ -1,6 +1,5 @@
 ---
 name: cali-product-open-source
-version: 1.0.0
 description: >
   [Cali] Open source strategies for products. Covers licensing, community building,
   governance, monetization, and sustainability for open source projects.

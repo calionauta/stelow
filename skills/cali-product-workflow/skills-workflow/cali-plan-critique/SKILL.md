@@ -1,6 +1,5 @@
 ---
 name: cali-plan-critique
-version: 1.0.0
 description: >
   [Cali] Plan critique skill using audit checklists and frameworks. Reviews
   spec-product.md for gaps, risks, and improvements. Part of cali-product-workflow

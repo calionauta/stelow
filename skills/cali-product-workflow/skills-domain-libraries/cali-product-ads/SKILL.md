@@ -1,6 +1,5 @@
 ---
 name: cali-product-ads
-version: 1.0.0
 description: >
   [Cali] Ads and monetization strategies for products. Covers exchange mechanisms,
   ad formats, metrics, and anti-patterns to avoid. For sustainable monetization

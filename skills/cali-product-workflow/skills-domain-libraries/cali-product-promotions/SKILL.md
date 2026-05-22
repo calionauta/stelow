@@ -1,6 +1,5 @@
 ---
 name: cali-product-promotions
-version: 1.0.0
 description: >
   [Cali] Promotional strategies and tactics for products. Covers promotional vehicles,
   mechanics, sequencing, and psychology to drive awareness, consideration,

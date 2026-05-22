@@ -1,6 +1,5 @@
 ---
 name: cali-shape-up
-version: 1.0.0
 description: >
   [Cali] Shape Up product planning skill. Use when the user wants to shape
   a product proposal using the Shape Up method. Produces a shaped proposal
