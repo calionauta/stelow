@@ -113,7 +113,6 @@ tests/
 ├── artifacts/
 │   └── artifact-schema.test.ts    # Schema definitions
 ├── integration/
-│   ├── phase-transitions.test.ts # Phase advancement
 │   ├── skill-orchestration.test.ts # Skill chains
 │   └── workflow-lifecycle.test.ts  # Workflow CRUD
 ├── skills/

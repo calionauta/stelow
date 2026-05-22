@@ -200,7 +200,7 @@ Footer now shows X/11 instead of X/8
         <testcase classname="tests/integration/smoke.test.ts" name="Workflow Start (pi-test-harness) &gt; should create index.json when workflow starts" time="0">
             <skipped/>
         </testcase>
-        <testcase classname="tests/integration/smoke.test.ts" name="Phase Advancement (pi-test-harness) &gt; should handle /pw:next command" time="0">
+        <testcase classname="tests/integration/smoke.test.ts" name="Phase Advancement (pi-test-harness) &gt; should handle /pw-next command" time="0">
             <skipped/>
         </testcase>
         <testcase classname="tests/integration/smoke.test.ts" name="Phase Advancement (pi-test-harness) &gt; should call plannotator gate after Critique" time="0">
