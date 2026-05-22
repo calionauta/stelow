@@ -1,225 +1,246 @@
 ---
-name: cali-multi-method-market-analysis
-description: Conduct deep, structured market analysis using multiple methodologies (PESTLE, Foresight, Delphi, Wardley Maps). Use this skill whenever the user asks for market analysis, competitive intelligence, industry research, market trends, weekly intelligence reports, or strategic market insights. Also trigger when the user mentions PESTLE, Wardley Maps, Foresight signals, or wants to understand a market, niche, or industry in depth — even if they don't explicitly ask for "market analysis".
+name: cali-product-multi-method-market-analysis
+version: 1.0.0
+description: >
+  [Cali] Multi-method market analysis combining qualitative and quantitative research.
+  Covers surveys, analytics, qualitative interviews, and how to synthesize insights
+  for confident product decisions.
+
+  Trigger keywords: market analysis, survey design, quantitative research, qualitative research,
+  data synthesis, product analytics, customer feedback analysis
+
+  NOT for: small-sample qualitative deep dives (use cali-product-discovery instead)
 ---
 
 # Multi-Method Market Analysis
 
-A skill for producing rigorous, structured market analysis using multiple complementary methodologies. Two prompt variants are available depending on the user's goal.
+## Goal
 
----
+Synthesize multiple research methods to build confident, evidence-based product decisions — combining the depth of qualitative with the breadth of quantitative.
 
-## Interaction Tool Guidelines
+## Domain Context
 
-**IMPORTANT**: When the user needs to choose between predefined options, ALWAYS use the `question` tool (if available) with enumerated format:
-- Options with short `label` and `description`
-- Examples: variant selection (General Deep/Weekly Intelligence), topic confirmation, geographic focus, etc.
+No single method tells the whole story. Key themes:
+- **Qualitative + Quantitative** — Combining depth and breadth
+- **Survey Design** — Asking the right questions the right way
+- **Analytics** — Using behavioral data to understand behavior
+- **Synthesis** — Turning data into actionable insights
 
-When `question` tool is not available, use enumerated text in chat (A/B/C/D or 1/2/3).
+## Research Method Selection
 
----
+### Method Comparison
 
-## When to Use Each Variant
+| Method | Depth | Breadth | Speed | Cost | Best For |
+|--------|-------|---------|-------|------|----------|
+| **Interviews** | High | Low | Slow | Medium | Understanding motivations, edge cases |
+| **Surveys** | Low | High | Medium | Low | Quantifying prevalence, measuring attitudes |
+| **Analytics** | Medium | High | Fast | Low | Behavioral patterns, funnel analysis |
+| **Usability Tests** | High | Low | Medium | Medium | Specific interaction problems |
+| **A/B Tests** | Medium | High | Medium | Medium | Causal impact of changes |
 
-- **General Deep Analysis**: For broad, timeless strategic studies of a topic, market, or industry over time horizons (past → present → future 5 years).
-- **Weekly Intelligence Canvas**: For fast-moving, 7-day competitive intelligence reports. Works best with real-time search tools (e.g., Grok, Perplexity, or Claude with web search).
+### Mixed Methods Strategy
 
----
+**Qual → Quant → Qual loop:**
+1. **Qualitative first:** Explore the problem space, generate hypotheses
+2. **Quantitative second:** Test hypotheses with larger samples
+3. **Qualitative third:** Deep dive on surprising or conflicting results
 
-## Variant 1: General Deep Market Analysis
+## Survey Design
 
-Use this when the user wants a comprehensive, methodologically rigorous study of a topic across time.
+### Survey Fundamentals
 
-### Prompt Template
+**Types of questions:**
 
-```
-Study Topic: [FILL IN]
-Focus on: [Enter 'Global' or the specific country/region name here]
+**1. Closed-ended (quantitative):**
+- Multiple choice (single or multi-select)
+- Rating scales (Likert, NPS, satisfaction)
+- Binary (yes/no, true/false)
 
-Goal: Conduct a DEEP market analysis of the study topic.
-Cover [Focus on] insights in English.
+**2. Open-ended (qualitative):**
+- Free text responses
+- Ranking/prioritization
+- Card sorting
 
-Methodologies: Use the following methodologies with in-depth details:
-- PESTLE
-- Foresight (Weak and Strong Signals)
-- Delphi
-- Wardley Maps
+**3. Behavioral:**
+- Frequency questions (how often?)
+- Recency questions (how recently?)
+- Quantity questions (how much?)
 
-Organize the analysis into:
-- Recent Past (1 year ago)
-- Current Trends (Today to 1 year)
-- Future Predictions (Next 5 years)
-```
+### Survey Best Practices
 
-### How to Apply
+**Do:**
+✅ Keep surveys short (5-10 minutes maximum)
+✅ Start with easy, engaging questions
+✅ Use simple, unambiguous language
+✅ Randomize order of non-sequential questions
+✅ Pilot test with 5 users before launch
 
-1. **Ask the user for their inputs** (if not already provided):
-   - Use `question` tool to confirm:
-     - **Variant**: "General Deep Analysis" (broad strategic study) or "Weekly Intelligence Canvas" (7-day competitive intelligence)
-     - **Study Topic**: The market, industry, or topic to analyze
-     - **Geographic Focus**: "Global" or specific country/region
-   - Always include option: "I want you to recommend based on context"
-   - Fallback (no question tool): "What would you like to analyze? (variant: General Deep or Weekly Intelligence, topic: [your topic], focus: Global or [region])"
+**Don't:**
+❌ Ask leading questions
+❌ Use double-barreled questions
+❌ Offer too many response options
+❌ Force answers that don't apply
+❌ Ask for recall beyond 2 weeks
 
-2. Apply all four methodologies to each time horizon.
-3. Synthesize findings into a coherent narrative, not just isolated frameworks.
+### Common Survey Mistakes
 
----
+**1. Acquiescence bias:** People agree with statements
+- **Fix:** Include reverse-coded items
 
-## Variant 2: Weekly Intelligence Canvas
+**2. Social desirability bias:** People answer what they think sounds good
+- **Fix:** Assure anonymity, ask indirectly
 
-Use this for a structured 7-day competitive intelligence report. Best suited for users who want to track a specific niche or business context on a recurring basis.
+**3. Halo effect:** One impression colors everything
+- **Fix:** Separate topics, randomize order
 
-### Required Inputs (ask the user if not provided)
+**4. Fatigue:** Late questions get lower quality answers
+- **Fix:** Put most important questions first
 
-- Use `question` tool to gather:
-  - `{my business}`: The user's company or product
-  - `{my job to be done or niche}`: The market/niche to analyze
-- Always include option: "I want you to recommend based on context"
-- Fallback (no question tool): Ask directly for business and niche/topic
+### Survey Question Examples
 
-### Prompt Template
+**Problem validation:**
+- "On a scale of 0-10, how frustrated are you with [problem]?"
+- "How often do you experience [problem]?"
+- "Have you tried to solve [problem]? What did you try?"
 
-```
-**Context:**
-{my business}: [fill it here]
-{my job to be done or niche}: [fill it here]
+**Solution validation:**
+- "How appealing is this solution? (Not at all → Extremely)"
+- "What would this solution replace?"
+- "Would you pay for this? If yes, how much?"
 
-You are an industry analyst specializing in {my job to be done or niche}.
+**Customer profiling:**
+- "Which best describes your role?"
+- "How large is your team/company?"
+- "How long have you been dealing with this problem?"
 
-### 🎯 Task
-For the past 7 days, collect and analyze all relevant:
-- 📰 Announcements, product releases, and feature updates
-- 🤝 Partnerships, M&A, funding rounds
-- ⚖️ Regulatory or policy changes
-- 🔍 Strategic signals and foresight indicators
+## Analytics
 
-### 🌐 Data Sources
-Search across:
-- Company blogs, press releases, GitHub changelogs
-- News sites relevant to the niche
-- LinkedIn, X (Twitter), Reddit (practitioner communities)
-- Traditional forums where relevant
+### Analytics Framework
 
-### 🧮 Analytical Lenses
-Apply multi-method market analysis:
-- 🎯 Identify indirect and hidden competitors (tools, services, AI agents, startups addressing similar jobs)
-- 🏛 PESTLE: Political, Economic, Social, Technological, Legal, Environmental
-- 🔮 Foresight: Weak & strong signals + strategic implications
-- 🗣 Delphi Method: Expert consensus from practitioner sentiment
-- 🗺 Wardley Mapping (ASCII): Visualize capability evolution
+**1. Acquisition:**
+- Where do users come from?
+- Which channels drive qualified traffic?
+- What's the cost per acquisition?
 
-### 🧾 OUTPUT FORMAT: EXECUTIVE CANVAS (Markdown)
+**2. Activation:**
+- Do users reach their "aha moment"?
+- What's the activation rate?
+- Where do users drop off?
 
-#### 📊 Weekly Intelligence Canvas
-**Period:** Last 7 Days
-**Focus:** {my job to be done or niche}
+**3. Retention:**
+- Do users come back?
+- What's the retention curve?
+- What behaviors predict retention?
 
----
+**4. Revenue:**
+- How do we monetize?
+- What's the revenue per user?
+- What's the lifetime value?
 
-#### 🎯 1. Executive Summary (3 bullets max)
-> • One-sentence market shift
-> • Top 2 leaders and their moves
-> • Emerging threat or disruption
+**5. Referral:**
+- Do users recommend us?
+- What's the viral coefficient?
+- What's the net promoter score?
 
----
+### Key Metrics
 
-#### 🚀 2. Top Announcements (Grid)
-| 🏢 Company | 🧩 Type | 📰 Summary | 🔗 Link |
-|------------|---------|------------|---------|
+**Funnel Metrics:**
+- Conversion rates between stages
+- Drop-off points
+- Time to conversion
 
----
+**Engagement Metrics:**
+- DAU/MAU (stickiness)
+- Session frequency and duration
+- Feature adoption rates
 
-#### 💡 3. Key Insights (Mermaid Flow + Bullets)
+**Revenue Metrics:**
+- MRR/ARR (recurring revenue)
+- ARPU (average revenue per user)
+- LTV (lifetime value)
+- CAC (customer acquisition cost)
 
-```mermaid
-graph TD
-    A[Core Trend] --> B[Impact]
-    C[Signal] --> D[Outcome]
-    style A fill:#e3f2fd,stroke:#1976d2
-    style C fill:#fff3e0,stroke:#f9a825
-```
+**Health Metrics:**
+- NPS (Net Promoter Score)
+- CSAT (Customer Satisfaction)
+- CES (Customer Effort Score)
 
-- Short insight 1
-- Short insight 2
-- PESTLE highlight (1 line)
+### Analytics Tools
 
----
+**Product Analytics:**
+- Amplitude, Mixpanel, PostHog, Heap
 
-#### 🧭 4. Competitive Snapshot
+**Web Analytics:**
+- Google Analytics, Plausible, Fathom
 
-##### 4.1 This Week's Movers
-| Platform | Move | Impact | Position |
-|----------|------|--------|----------|
+**Attribution:**
+- Branch, AppsFlyer, Adjust
 
-##### 4.2 Hidden Threats (JTBD)
-| 🕵️ Entity | Category | Job Solved | Displacement Risk | 🔗 Main Link | 📚 Sources |
-|-----------|----------|-----------|-------------------|--------------|------------|
+## Qualitative + Quantitative Synthesis
 
-> 1 concise paragraph on how these shift buyer perception, pricing, or adoption.
+### The Synthesis Process
 
----
+**1. Organize:**
+- Group data by theme or topic
+- Create data visualization (charts, graphs)
+- Identify patterns and trends
 
-#### 🔮 5. Foresight Signals
-| 🔎 Signal | Strength | Implication |
-|-----------|----------|-------------|
+**2. Connect:**
+- Map qualitative themes to quantitative metrics
+- Identify correlations
+- Look for causation (vs. correlation)
 
----
+**3. Interpret:**
+- What does the data tell us?
+- What are the key insights?
+- What surprised us?
 
-#### 🗺 6. Wardley Evolution (ASCII)
+**4. Recommend:**
+- What actions should we take?
+- What should we build, change, or stop?
+- What's the priority?
 
-```
-Users
-  ↓
-[Custom]
-  ↓
-[Product]
-  ↓
-[Commodity]
-  ↓
-[Genesis]
-```
+### Insight Quality Check
 
-**Brief Explanation (2 bullets max):**
-- **↑ This Week**: [What moved up] → becoming more mature/standardized.
-- **Implication**: [1-sentence strategic meaning]
+**Strong insight:**
+- Based on multiple data sources
+- Specific and actionable
+- Surprising (not just confirming what we knew)
+- Tied to customer impact
 
----
-
-#### ✅ 7. Recommended Actions
-1. Tactical response to top competitor
-2. Counter to hidden threat
-3. Strategic product/marketing play
-4. Community or partnership idea
-
----
-
-#### 📎 Sources & Links
-- [Source 1 Title](URL)
-- [Source 2 Title](URL)
-```
-
-### Style Rules for the Canvas
-- Use emojis consistently (🏢 🚀 💡 🧭 🔮 🗺 ✅ 📎)
-- Keep all text scannable (< 2 pages)
-- Use **bold** for emphasis, not italics
-- Include a Mermaid flow in section 3 and an ASCII Wardley Map in section 6
-- Cite sources with real clickable links — no inline citations
-
----
-
-## Methodology Reference
-
-| Methodology | Purpose |
-|-------------|---------|
-| **PESTLE** | Macro-environment scan across 6 dimensions |
-| **Foresight** | Identify weak and strong signals for future shifts |
-| **Delphi** | Synthesize expert/practitioner consensus |
-| **Wardley Maps** | Visualize the evolution of capabilities in a value chain |
-
----
+**Weak insight:**
+- Based on single source
+- Vague and general
+- Just confirming existing beliefs
+- Not tied to action
 
 ## Output Format
 
-- Variant 1: Structured markdown report organized by time horizon and methodology
-- Variant 2: Executive Canvas in markdown, ready for Notion, Miro, or Canva
+This domain skill contributes to:
+- **spec-product.md** — Market analysis section
+- **Research synthesis reports** — Combined insights from multiple methods
+- **Decision briefs** — Evidence-based recommendations
+
+Multi-method analysis artifacts:
+- **Survey results** — Quantitative findings
+- **Interview synthesis** — Qualitative themes
+- **Analytics report** — Behavioral patterns
+- **Combined insights** — Full synthesis with recommendations
+
+## Gotchas
+
+1. **Sample size matters** — Small samples can't support big claims
+2. **Correlation ≠ causation** — Behavioral data shows what, not why
+3. **Representativeness** — Survey results only valid for your sample
+4. **Synthesize across methods** — No single method is definitive
+
+## Related Skills
+
+- **cali-product-discovery**: Provides qualitative deep-dive capability
+- **cali-product-workflow**: Market analysis fits into Phase 2
+- **cali-product-opportunity-mapping**: Uses market data for opportunity assessment
+
+## Environment Adaptation
+
+If a tool is unavailable, check:
+`../../../../cali-product-workflow/references/cli-tools/`
