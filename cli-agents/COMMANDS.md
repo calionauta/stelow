@@ -9,21 +9,21 @@ Every CLI's AGENTS.md and commands reference this file.
 
 | Command | Pi | OpenCode | Claude | Codex | Description |
 |---------|----|----------|--------|-------|-------------|
-| `/pw:start` | ✅ | ✅ | ✅ | ✅ | Start workflow (with optional @brief.md or description) |
-| `/pw:menu` | ✅ | ✅ | ✅ | ✅ | Show interactive workflow menu |
-| `/pw:status` | ✅ | ✅ | ✅ | ✅ | Show active workflow status |
-| `/pw:help` | ✅ | ✅ | ✅ | ✅ | Help about workflow |
-| `/pw:next` | ✅ | ⚠️ | ⚠️ | ⚠️ | Advance to next phase |
-| `/pw:stop` | ✅ | ⚠️ | ⚠️ | ⚠️ | Stop workflow(s) |
-| `/pw:pause` | ✅ | ⚠️ | ⚠️ | ⚠️ | Pause active workflow |
-| `/pw:resume` | ✅ | ⚠️ | ⚠️ | ⚠️ | Resume paused workflow |
-| `/pw:ls` | ✅ | ⚠️ | ⚠️ | ⚠️ | List workflows (all, archived, path=) |
-| `/pw:goto` | ✅ | ⚠️ | ⚠️ | ⚠️ | Go to a workflow |
-| `/pw:complete` | ✅ | ⚠️ | ⚠️ | ⚠️ | Mark workflow complete |
-| `/pw:rename` | ✅ | ⚠️ | ⚠️ | ⚠️ | Rename active workflow |
-| `/pw:archive` | ✅ | ❌ | ❌ | ❌ | Archive current workflow |
-| `/pw:unarchive` | ✅ | ❌ | ❌ | ❌ | Unarchive workflow |
-| `/pw:setphase` | ✅ | ⚠️ | ⚠️ | ⚠️ | Jump to specific phase |
+| `/pw-start` | ✅ | ✅ | ✅ | ✅ | Start workflow (with optional @brief.md or description) |
+| `/pw-menu` | ✅ | ✅ | ✅ | ✅ | Show interactive workflow menu |
+| `/pw-status` | ✅ | ✅ | ✅ | ✅ | Show active workflow status |
+| `/pw-help` | ✅ | ✅ | ✅ | ✅ | Help about workflow |
+| `/pw-next` | ✅ | ⚠️ | ⚠️ | ⚠️ | Advance to next phase |
+| `/pw-stop` | ✅ | ⚠️ | ⚠️ | ⚠️ | Stop workflow(s) |
+| `/pw-pause` | ✅ | ⚠️ | ⚠️ | ⚠️ | Pause active workflow |
+| `/pw-resume` | ✅ | ⚠️ | ⚠️ | ⚠️ | Resume paused workflow |
+| `/pw-ls` | ✅ | ⚠️ | ⚠️ | ⚠️ | List workflows (all, archived, path=) |
+| `/pw-goto` | ✅ | ⚠️ | ⚠️ | ⚠️ | Go to a workflow |
+| `/pw-complete` | ✅ | ⚠️ | ⚠️ | ⚠️ | Mark workflow complete |
+| `/pw-rename` | ✅ | ⚠️ | ⚠️ | ⚠️ | Rename active workflow |
+| `/pw-archive` | ✅ | ❌ | ❌ | ❌ | Archive current workflow |
+| `/pw-unarchive` | ✅ | ❌ | ❌ | ❌ | Unarchive workflow |
+| `/pw-setphase` | ✅ | ⚠️ | ⚠️ | ⚠️ | Jump to specific phase |
 
 ✅ = Full support | ⚠️ = Partial (skill invocation) | ❌ = Not available
 
