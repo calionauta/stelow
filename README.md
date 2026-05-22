@@ -50,7 +50,7 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 **With cali-product-workflow:** The user just says:
 
 ```
-/pw:start "Here's what I want to build"
+/pw-start "Here's what I want to build"
 ```
 
 And the workflow begins asking questions, exploring scope, shaping the proposal, reviewing for gaps, getting visual approval, and only then generating typed technical scopes for execution.
@@ -101,7 +101,7 @@ And the workflow begins asking questions, exploring scope, shaping the proposal,
 **Key Features:**
 
 - 16 specialized product skills (Job To Be Done, Opportunity Mapping, Product Discovery, Pricing, Promotions, Trust Building, and more)
-- Real-time TUI tracking with visual overlay (`/pw:menu`)
+- Real-time TUI tracking with visual overlay (`/pw-menu`)
 - Gate approval via Plannotator — review, comment, approve or reject before implementation
 - Typed scopes for autonomous execution (feature, spike, test-*, optimize)
 
@@ -397,33 +397,33 @@ The workflow runs through six phases:
 
 | Command | Description |
 |---------|-------------|
-| `/pw:start` or `/pw:begin` | Start the workflow |
-| `/pw:menu` | Show workflow state and controls |
-| `/pw:continue` | Continue to next phase |
-| `/pw:help` | Show available commands |
-| `/pw:status` | Display current phase and progress |
-| `/pw:reset` | Reset workflow state |
+| `/pw-start` or `/pw-begin` | Start the workflow |
+| `/pw-menu` | Show workflow state and controls |
+| `/pw-continue` | Continue to next phase |
+| `/pw-help` | Show available commands |
+| `/pw-status` | Display current phase and progress |
+| `/pw-reset` | Reset workflow state |
 
 ### Phase Commands
 
 | Command | Description |
 |---------|-------------|
-| `/pw:jtbd` | Run Job To Be Done phase |
-| `/pw:shape` | Run Shape Up phase |
-| `/pw:interface` | Run Interface phase |
-| `/pw:critique` | Run Critique phase |
-| `/pw:tech` | Run Tech Planning phase |
+| `/pw-jtbd` | Run Job To Be Done phase |
+| `/pw-shape` | Run Shape Up phase |
+| `/pw-interface` | Run Interface phase |
+| `/pw-critique` | Run Critique phase |
+| `/pw-tech` | Run Tech Planning phase |
 
 ### Utility Commands
 
 | Command | Description |
 |---------|-------------|
-| `/pw:export <phase>` | Export phase output |
-| `/pw:import <file>` | Import saved workflow |
-| `/pw:log` | Show workflow execution log |
-| `/pw:review` | Open Plannotator for review |
-| `/pw:scope <name>` | Create typed scope |
-| `/pw:goals` | Manage execution goals |
+| `/pw-export <phase>` | Export phase output |
+| `/pw-import <file>` | Import saved workflow |
+| `/pw-log` | Show workflow execution log |
+| `/pw-review` | Open Plannotator for review |
+| `/pw-scope <name>` | Create typed scope |
+| `/pw-goals` | Manage execution goals |
 
 ---
 
@@ -436,7 +436,7 @@ The workflow includes a real-time TUI overlay showing:
 - Upcoming tasks
 - Quick actions
 
-Toggle with `/pw:menu`.
+Toggle with `/pw-menu`.
 
 ---
 
