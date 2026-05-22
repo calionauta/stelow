@@ -2,7 +2,7 @@
 
 export const WORKFLOW_DIR = ".cali-product-workflow";
 export const TRACKING_FILE = "cali-product-workflow.json";
-export const GLOBAL_TRACKING_FILE = ".cali-product-workflow-global.json";
+export const GLOBAL_TRACKING_FILE = ".cali-pw-global.json";
 export const SCHEMA_URL =
   "https://raw.githubusercontent.com/renatocaliari/cali-product-workflow/main/cali-product-workflow.schema.json";
 
@@ -19,7 +19,8 @@ export const PHASE_NAMES = [
   "Int.Gate", // 9 — Phase 9: Interface Gate
   "Select",   // 10 — Phase 10: Interface Selection
   "Planning",  // 11 — Phase 11: Tech Planning
-  "Execution"  // 12 — Phase 12: Execution
+  "Execution",  // 12 — Phase 12: Execution
+  "Audit"       // 13 — Phase 13: Delivery Audit
 ];
 
 /** Display hints shown in compact TUI per phase */

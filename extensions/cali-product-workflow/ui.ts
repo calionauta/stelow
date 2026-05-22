@@ -103,7 +103,7 @@ function buildCompactStatus(workflow: Workflow, capabilityLevel: string): string
     icon = isActive ? "◆" : "●";
   }
   
-  const bypassText = _bypassed ? `  ⚠️ bypassed (${phaseName} ${phaseNum} — /pw:next resume)` : "";
+  const bypassText = _bypassed ? `  ⚠️ bypassed (${phaseName} ${phaseNum} — /pw-next resume)` : "";
   return `${prefix} ${name}  │  ${icon} ${phaseName} ${phaseNum}${bypassText}`;
 }
 
@@ -254,8 +254,8 @@ function showPiOverlay(ctx: ExtensionContext, wf: Workflow): void {
       overlayOptions: { width: "50%", minWidth: 44, maxHeight: "70%", anchor: "center" },
     }
   ).then((action: any) => {
-    if (action === "next") getUIAdapter().notify("Use /pw:next", "info");
-    else if (action === "stop") getUIAdapter().notify("Use /pw:stop", "info");
+    if (action === "next") getUIAdapter().notify("Use /pw-next", "info");
+    else if (action === "stop") getUIAdapter().notify("Use /pw-stop", "info");
   });
 }
 
@@ -272,9 +272,9 @@ function showGenericOverlay(wf: Workflow): void {
   
   adapter.select(options, `◆ ${wf.name}`).then((result: any) => {
     if (result === "next") {
-      adapter.notify("Use /pw:next", "info");
+      adapter.notify("Use /pw-next", "info");
     } else if (result === "stop") {
-      adapter.notify("Use /pw:stop", "info");
+      adapter.notify("Use /pw-stop", "info");
     }
   });
 }

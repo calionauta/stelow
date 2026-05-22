@@ -75,8 +75,8 @@ export default function (pi: ExtensionAPI) {
   // Keep this for backward compatibility and direct pi.on() usage
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   pi.on("input", async (event: any, ctx: any) => {
-    if (!event.text.startsWith("/product-workflow-start") &&
-        !event.text.startsWith("/pw:start")) return;
+    if (!event.text.startsWith("/pw-start") &&
+        !event.text.startsWith("/pw-start")) return;
 
     const sessionId = ctx.sessionId || "default";
     const parsed = parseInputForWorkflow(event.text);
@@ -164,7 +164,7 @@ export default function (pi: ExtensionAPI) {
     if (!ctx.ui) return;
     const wd = resolveProjectDir(ctx.cwd);
 
-    // Clear bypass flag if agent advanced phase via /pw:next
+    // Clear bypass flag if agent advanced phase via /pw-next
     if (isBypassed()) {
       const wf = getActiveWorkflow(wd);
       if (wf && wf.currentPhase >= 9) setBypassed(false);
