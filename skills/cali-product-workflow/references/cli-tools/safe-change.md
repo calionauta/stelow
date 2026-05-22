@@ -4,6 +4,21 @@
 
 ---
 
+## Install
+
+**Pi:**
+```bash
+pi install git:github.com/PriNova/pi-agent-codebase-workflows
+```
+
+**Other CLIs (OpenCode, Claude Code, Codex):**
+```bash
+npx skills add Prinova/pi-agent-codebase-workflows -a <cli> -g
+# Example: npx skills add Prinova/pi-agent-codebase-workflows -a opencode -g
+```
+
+---
+
 ## Specific Command (PI)
 
 ```bash
@@ -21,7 +36,7 @@ safe-change
 
 | Phase | Purpose |
 |-------|---------|
-| Phase 1b (Setup) | Validate impact before planning |
+| Phase 2 (Setup) | Validate impact before planning |
 
 ---
 
@@ -34,7 +49,7 @@ Returns analysis of:
 
 ---
 
-## Fallback (Other Harnesses)
+## Fallback (Not Installed)
 
 If `safe-change` is not available:
 - Manually check relevant files with `git diff`

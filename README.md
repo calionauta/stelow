@@ -396,6 +396,18 @@ When working on software projects, trigger the product workflow:
 | `vitest` | Unit testing |
 | `@stryker-mutator/core` | Mutation testing |
 
+### Third-Party Skills (Optional)
+
+| Skill | Required for | Install (Pi) | Install (Other CLIs) |
+|-------|-------------|--------------|----------------------|
+| `pi-agent-codebase-workflows` | Phase 2 (safe-change regression check) | `pi install git:github.com/PriNova/pi-agent-codebase-workflows` | `npx skills add Prinova/pi-agent-codebase-workflows -a <cli> -g` |
+| `thermo-nuclear` (codequality-review) | Phase 11 (final gate before commit) | `pi install git:github.com/cursor/plugins` | `npx skills add cursor/plugins -a <cli> -g` |
+
+Replace `<cli>` with: `opencode`, `claude-code`, or `codex`.
+
+Without these skills, the workflow falls back to manual alternatives documented in each tool's reference file (see `references/cli-tools/`).
+
+See [docs/INSTALLATION.md](docs/INSTALLATION.md) for full details.
 ---
 
 ## 📁 Artifact Directory

@@ -114,6 +114,8 @@ When CLI not detected or tool unavailable:
 | `safe-change.md` | Git-safe changes |
 | `phase-status.md` | Workflow status commands |
 | `context-mode.md` | Context Mode integration |
+edc|| `context-mode.md` | Context Mode integration |
+cc7|| `codequality-review.md` | Ultra-strict code quality review (thermo-nuclear) |
 
 ---
 

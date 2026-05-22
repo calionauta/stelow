@@ -232,6 +232,18 @@ Use `references/cli-tools/plannotator.md` for Plannotator gate rules.
 ### Worktree
 - Optional in Phase 11. Ask the user only if modifying code in shared repo AND parallel workflows exist.
 - Single-scope workflows can skip worktree.
+d05|
+### Workflow Interruption
+d05|
+- If user introduces new work mid-workflow, use **Pattern 6** from `phases/ask-patterns.md`
+d05|
+- **Never auto-abandon** an active workflow without confirmation
+d05|
+- If workflow is near completion (Execution phase), recommend "Continue current"
+d05|
+---
+d05|
+## 🌐 Environment Adaptation
 
 ---
 

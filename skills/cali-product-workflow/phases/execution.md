@@ -182,3 +182,41 @@ After Tech Planning approval, **DO NOT** ask:
 ### Worktree (optional)
 
 Only ask about worktree if modifying code in shared repository AND multiple workflows run in parallel.
+
+### Code Quality Gate (Optional)
+
+**Trigger `codequality-review` before final commit:**
+
+Use `/skill:thermo-nuclear-code-quality-review` as final quality gate after executing scopes.
+
+#### When to Run
+
+| Moment | Recommendation |
+|--------|---------------|
+| Gate final (before commit) | ✅ Always — validates all executed scopes |
+| Per-scope (optional) | ✅ Ask user if scope meets criteria |
+
+#### Scope Complexity Assessment
+
+After completing a scope, assess if codequality-review should run:
+
+```markdown
+Did this scope:
+- Add >200 LOC total?
+- Modify >2 files?
+- Introduce new abstractions/helpers?
+- Cross any file past 1000 lines?
+
+If YES to any → run codequality-review
+If NO to all → proceed (review at final gate)
+```
+
+#### Fallback (Not Installed)
+
+If `codequality-review` is not available:
+- Manually review for files >1000 lines
+- Check functions for complexity >5
+- Look for leaky abstractions and dead code
+- Run `eslint --max-warnings=0` and `tsc --noEmit`
+
+See `references/cli-tools/codequality-review.md` for full documentation.

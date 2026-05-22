@@ -1,4 +1,4 @@
-import { rmSync } from "node:fs";
+import { rmSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
 // @ts-ignore - Optional peer dependency for Pi environment
@@ -664,13 +664,13 @@ function cmdMenu(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
   // Overlay is interactive; no notify needed — user sees TUI.
 }
 
-// ── CLEAN ────────────────────────────────────────────────────────────
+// ── ARCHIVE ──────────────────────────────────────────────────────────
 
-function cmdClean(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
+function cmdArchive(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
   const wd = resolveProjectDir(ctx.cwd);
   const parsed = parseArgs(args);
 
-  // ── /pw:clean purge — delete archived workflow dirs from disk ──
+  // ── /pw:archive purge — delete archived workflow dirs from disk ──
   if (parsed._.includes("purge") || parsed.purge !== undefined) {
     const diskWfs = scanWorkflowDirs(wd).filter(dw => dw.status === "archived");
     if (diskWfs.length === 0) {
@@ -690,43 +690,120 @@ function cmdClean(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
     return;
   }
 
-  const hours = parseInt(parsed.hours || "4", 10);
-  const cutoff = Date.now() - hours * 60 * 60 * 1000;
-
-  const t = readTracking(wd);
-  if (!t) { replyWarn(ctx, "No tracking data."); return; }
-
-  const orphans = t.workflows.filter(w => {
-    if (w.status === "completed" || w.status === "in-progress") return false;
-    return new Date(w.updated).getTime() < cutoff;
-  });
-
-  if (orphans.length === 0) {
-    reply(ctx, `✅ No orphans (>${hours}h stale).`);
+  // ── /pw:archive name=X — archive specific workflow ─────────────
+  const name = parsed.name || parsed._[0];
+  if (name) {
+    const t = readTracking(wd);
+    const gt = readGlobalTracking();
+    const wf = t?.workflows.find(w => w.name === name) ||
+               gt?.workflows.find(w => w.name === name);
+    if (!wf) {
+      replyWarn(ctx, `Workflow '${name}' not found. /pw:ls`);
+      return;
+    }
+    // Mark archived on disk
+    archiveWorkflowOnDisk(wd, name);
+    // Update tracking
+    if (t) {
+      const idx = t.workflows.findIndex(w => w.name === name);
+      if (idx !== -1) {
+        t.workflows[idx].status = "archived";
+        t.workflows[idx].updated = new Date().toISOString();
+        writeTracking(wd, t);
+      }
+    }
+    if (gt) {
+      const idx = gt.workflows.findIndex(w => w.name === name);
+      if (idx !== -1) {
+        gt.workflows[idx].status = "archived";
+        writeGlobalTracking(gt);
+      }
+    }
+    reply(ctx, `📦 Workflow '${name}' archived.`);
+    if (name === getActiveWorkflow(wd)?.name) {
+      ctx.ui?.setStatus("workflow", undefined);
+    }
     return;
   }
 
-  for (const o of orphans) {
-    const idx = t.workflows.findIndex(w => w.name === o.name);
-    if (idx !== -1) t.workflows[idx].status = "archived";
-  }
-  writeTracking(wd, t);
+  // ── /pw:archive — archive active workflow ─────────────────────
+  const wf = getActiveWorkflow(wd);
+  if (!wf) { noActive(ctx); return; }
 
+  const t = readTracking(wd);
+  if (t) {
+    const idx = t.workflows.findIndex(w => w.name === wf.name);
+    if (idx !== -1) {
+      t.workflows[idx].status = "archived";
+      t.workflows[idx].updated = new Date().toISOString();
+      writeTracking(wd, t);
+    }
+  }
   const gt = readGlobalTracking();
   if (gt) {
-    for (const o of orphans) {
-      const idx = gt.workflows.findIndex(w => w.name === o.name);
-      if (idx !== -1) gt.workflows[idx].status = "archived";
-    }
+    const idx = gt.workflows.findIndex(w => w.name === wf.name);
+    if (idx !== -1) gt.workflows[idx].status = "archived";
     writeGlobalTracking(gt);
   }
+  archiveWorkflowOnDisk(wd, wf.name);
 
-  reply(ctx, [
-    `🧹 Archived ${orphans.length} orphan(s) (>${hours}h):`,
-    ...orphans.map(o => `  ○ ${o.name} — ${PHASE_NAMES[o.currentPhase]}`),
-    "",
-    "/pw:start"
-  ].join("\n"));
+  ctx.ui?.setStatus("workflow", undefined);
+  reply(ctx, `📦 Workflow '${wf.name}' archived.`);
+}
+
+// ── UNARCHIVE ────────────────────────────────────────────────────────
+
+function cmdUnarchive(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
+  const wd = resolveProjectDir(ctx.cwd);
+  const parsed = parseArgs(args);
+  const name = parsed.name || parsed._[0];
+
+  if (!name) {
+    replyWarn(ctx, "Usage: /pw:unarchive name=<workflow>");
+    return;
+  }
+
+  // Find archived workflow
+  const diskWfs = scanWorkflowDirs(wd);
+  const archived = diskWfs.find(dw => dw.name === name && dw.status === "archived");
+
+  if (!archived) {
+    replyWarn(ctx, `Archived workflow '${name}' not found. /pw:ls archived`);
+    return;
+  }
+
+  // Update on disk
+  const indexPath = join(wd, WORKFLOW_DIR, archived.dateStamp, archived.dirHash, "index.json");
+  try {
+    const raw = JSON.parse(readFileSync(indexPath, "utf-8"));
+    raw.workflow_status = "paused";
+    raw.updated_at = new Date().toISOString();
+    writeFileSync(indexPath, JSON.stringify(raw, null, 2));
+  } catch {
+    replyWarn(ctx, `Failed to update disk state for '${name}'.`);
+    return;
+  }
+
+  // Update tracking
+  const t = readTracking(wd);
+  if (t) {
+    const idx = t.workflows.findIndex(w => w.name === name);
+    if (idx !== -1) {
+      t.workflows[idx].status = "paused";
+      t.workflows[idx].updated = new Date().toISOString();
+      writeTracking(wd, t);
+    }
+  }
+  const gt = readGlobalTracking();
+  if (gt) {
+    const idx = gt.workflows.findIndex(w => w.name === name);
+    if (idx !== -1) {
+      gt.workflows[idx].status = "paused";
+      writeGlobalTracking(gt);
+    }
+  }
+
+  reply(ctx, `📦 Workflow '${name}' unarchived. Use /pw:resume name=${name} to continue.`);
 }
 
 // =============================================================================
@@ -750,7 +827,8 @@ const COMMAND_DESCRIPTIONS: Record<string, string> = {
   "product-workflow-goto":  "Go to a workflow: /pw:goto [name=name]",
   "product-workflow-rename":"Rename active workflow: /pw:rename novo-nome | name=novo-nome",
   "product-workflow-menu":  "Open workflow overview overlay: /pw:menu",
-  "product-workflow-clean": "Archive stale or purge archived: /pw:clean [hours=4] | purge",
+  "product-workflow-archive": "Archive workflows: /pw:archive | /pw:archive name=X | /pw:archive purge",
+  "product-workflow-unarchive": "Unarchive a workflow: /pw:unarchive name=<workflow>",
 };
 
 // Helper to get description from canonical name
@@ -764,19 +842,20 @@ function getCommandDescription(canonicalName: string): string {
 
 // Canonical + alias map: handler → list of command names
 const CMD_MAP: [CmdHandler, string, string][] = [
-  [cmdStart,   "product-workflow-start", "pw:start"],
-  [cmdStop,    "product-workflow-stop",  "pw:stop"],
-  [cmdPause,   "product-workflow-pause", "pw:pause"],
-  [cmdResume,  "product-workflow-resume","pw:resume"],
-  [cmdStatus,  "product-workflow-status","pw:status"],
-  [cmdList,    "product-workflow-list",  "pw:ls"],
-  [cmdSetPhase,"product-workflow-setphase","pw:setphase"],
-  [cmdNext,    "product-workflow-next",  "pw:next"],
-  [cmdComplete,"product-workflow-complete","pw:complete"],
-  [cmdGoto,    "product-workflow-goto",  "pw:goto"],
-  [cmdRename,  "product-workflow-rename","pw:rename"],
-  [cmdMenu,    "product-workflow-menu",  "pw:menu"],
-  [cmdClean,   "product-workflow-clean", "pw:clean"],
+  [cmdStart,     "product-workflow-start",     "pw:start"],
+  [cmdStop,      "product-workflow-stop",      "pw:stop"],
+  [cmdPause,     "product-workflow-pause",     "pw:pause"],
+  [cmdResume,    "product-workflow-resume",     "pw:resume"],
+  [cmdStatus,    "product-workflow-status",    "pw:status"],
+  [cmdList,      "product-workflow-list",      "pw:ls"],
+  [cmdSetPhase,  "product-workflow-setphase",   "pw:setphase"],
+  [cmdNext,      "product-workflow-next",      "pw:next"],
+  [cmdComplete,  "product-workflow-complete",  "pw:complete"],
+  [cmdGoto,      "product-workflow-goto",      "pw:goto"],
+  [cmdRename,    "product-workflow-rename",    "pw:rename"],
+  [cmdMenu,      "product-workflow-menu",      "pw:menu"],
+  [cmdArchive,   "product-workflow-archive",   "pw:archive"],
+  [cmdUnarchive, "product-workflow-unarchive", "pw:unarchive"],
 ];
 
 /**
@@ -879,6 +958,7 @@ description: ${description}
 
 // Usage: ${usage}
 
+@agent
 /skill:cali-product-workflow
 
 ${name} {args}
