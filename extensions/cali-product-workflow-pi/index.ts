@@ -7,6 +7,6 @@
  * 
  * Pattern: Dual-Install
  * - npm install @renatocaliari/cali-product-workflow → skills, adapters, CLI
- * - pi install npm:@renatocaliari/cali-product-workflow-pi → Pi extension
+ * - pi install npm:@renatocaliari/cali-pw-pi → Pi extension
  */
 export { default } from "./index.js";

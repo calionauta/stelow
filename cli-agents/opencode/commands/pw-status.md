@@ -3,14 +3,14 @@ name: pw-status
 description: Show the current cali-product-workflow status
 ---
 
-# /pw:status
+# /pw-status
 
 Display the current workflow status.
 
 ## Usage
 
 ```
-/pw:status
+/pw-status
 ```
 
 ## Output
@@ -35,10 +35,10 @@ Shows:
 
 ## Requirements
 
-An active workflow must be running. Start one with `/pw:start`.
+An active workflow must be running. Start one with `/pw-start`.
 
 ## Related commands
 
-- `/pw:start` - Start a new workflow
-- `/pw:menu` - Show workflow menu
-- `/pw:ls` - List all workflows
+- `/pw-start` - Start a new workflow
+- `/pw-menu` - Show workflow menu
+- `/pw-ls` - List all workflows

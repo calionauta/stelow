@@ -15,7 +15,7 @@ Then add to your `opencode.json`:
 ```json
 {
   "plugin": [
-    "@cali/cali-product-workflow-opencode"
+    "@cali/cali-pw-opencode"
   ]
 }
 ```
@@ -24,10 +24,10 @@ Then add to your `opencode.json`:
 
 | Command | Description |
 |---------|-------------|
-| `/pw:start` | Start a new workflow |
-| `/pw:menu` | Show workflow menu |
-| `/pw:status` | Show current status |
-| `/pw:help` | Get help |
+| `/pw-start` | Start a new workflow |
+| `/pw-menu` | Show workflow menu |
+| `/pw-status` | Show current status |
+| `/pw-help` | Get help |
 
 ## TUI Features
 

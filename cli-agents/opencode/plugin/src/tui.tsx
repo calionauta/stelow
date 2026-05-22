@@ -62,9 +62,9 @@ export const tui: TuiPluginModule["tui"] = async (api, options, meta) => {
 
   // Register keyboard shortcut for workflow menu
   api.keymap.registerLayer({
-    commands: ["pw:menu", "pw:status"],
+    commands: ["pw-menu", "pw-status"],
     bindings: [
-      { key: "ctrl+w", command: "pw:menu" },
+      { key: "ctrl+w", command: "pw-menu" },
     ],
   });
 

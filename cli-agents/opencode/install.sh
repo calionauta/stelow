@@ -23,4 +23,4 @@ fi
 echo "Installation complete!"
 echo ""
 echo "Add to your opencode.json:"
-echo '{"plugin": ["@cali/cali-product-workflow-opencode"]}'
+echo '{"plugin": ["@cali/cali-pw-opencode"]}'

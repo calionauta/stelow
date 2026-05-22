@@ -1,4 +1,4 @@
-# cali-product-workflow-pi
+# cali-pw-pi
 
 Pi extension stub for [cali-product-workflow](https://github.com/cali/cali-product-workflow).
 
@@ -9,7 +9,7 @@ This is a lightweight stub package that allows `cali-product-workflow` to be ins
 ## Installation
 
 ```bash
-pi install npm:cali-product-workflow-pi
+pi install npm:cali-pw-pi
 ```
 
 Or via the main package:
@@ -25,13 +25,13 @@ This package follows the dual-install pattern (same as [context-mode](https://gi
 | Install Method | Target | Purpose |
 |---------------|--------|---------|
 | `npm install -g @renatocaliari/cali-product-workflow` | CLI + Skills | CLI tools and 16 product skills |
-| `pi install npm:cali-product-workflow-pi` | Extension | Pi extension hooks and UI |
+| `pi install npm:cali-pw-pi` | Extension | Pi extension hooks and UI |
 
 ## Usage
 
 Once installed, the extension automatically:
 
-- Registers `/product-workflow-start` and `/pw:start` commands
+- Registers `/pw-start` and `/pw-start` commands
 - Tracks workflow phases in `.product-workflow/tracking.json`
 - Shows workflow progress in the UI footer
 - Notifies on phase transitions

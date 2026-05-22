@@ -3,23 +3,23 @@ name: pw-start
 description: Start a new cali-product-workflow planning session
 ---
 
-# /pw:start
+# /pw-start
 
 Start the cali-product-workflow planning process.
 
 ## Usage
 
 ```
-/pw:start [name=<workflow-name>] [description=<description>] [@source-file]
+/pw-start [name=<workflow-name>] [description=<description>] [@source-file]
 ```
 
 ## Examples
 
 ```
-/pw:start
-/pw:start name=api-redesign
-/pw:start name=dashboard description="Redesign the user dashboard"
-/pw:start @brief.md
+/pw-start
+/pw-start name=api-redesign
+/pw-start name=dashboard description="Redesign the user dashboard"
+/pw-start @brief.md
 ```
 
 ## What it does
@@ -36,6 +36,6 @@ The cali-product-workflow skill must be installed. See [docs/INSTALLATION.md](..
 
 ## Related commands
 
-- `/pw:status` - Check current workflow status
-- `/pw:menu` - Show workflow menu
-- `/pw:help` - Get help about the workflow
+- `/pw-status` - Check current workflow status
+- `/pw-menu` - Show workflow menu
+- `/pw-help` - Get help about the workflow

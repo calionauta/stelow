@@ -3,14 +3,14 @@ name: pw-menu
 description: Show the cali-product-workflow interactive menu
 ---
 
-# /pw:menu
+# /pw-menu
 
 Show an interactive menu with workflow actions.
 
 ## Usage
 
 ```
-/pw:menu
+/pw-menu
 ```
 
 ## Options
@@ -25,10 +25,10 @@ Displays an interactive picker with available workflow actions based on the curr
 
 ## Requirements
 
-An active workflow must be running. Start one with `/pw:start`.
+An active workflow must be running. Start one with `/pw-start`.
 
 ## Related commands
 
-- `/pw:start` - Start a new workflow
-- `/pw:status` - Check current workflow status
-- `/pw:next` - Advance to next phase
+- `/pw-start` - Start a new workflow
+- `/pw-status` - Check current workflow status
+- `/pw-next` - Advance to next phase

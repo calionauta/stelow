@@ -10,10 +10,10 @@ All cali-product-workflow commands are documented in `../../COMMANDS.md` (single
 
 | Command | Description |
 |---------|-------------|
-| `/pw:start` | Start a new workflow |
-| `/pw:menu` | Show workflow menu |
-| `/pw:status` | Show current status |
-| `/pw:help` | Get help |
+| `/pw-start` | Start a new workflow |
+| `/pw-menu` | Show workflow menu |
+| `/pw-status` | Show current status |
+| `/pw-help` | Get help |
 
 ## Plugin Installation
 

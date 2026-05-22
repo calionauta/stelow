@@ -3,14 +3,14 @@ name: pw-help
 description: Get help about cali-product-workflow
 ---
 
-# /pw:help
+# /pw-help
 
 Display help information about cali-product-workflow.
 
 ## Usage
 
 ```
-/pw:help
+/pw-help
 ```
 
 ## What it shows
@@ -23,15 +23,15 @@ Display help information about cali-product-workflow.
 
 | Command | Description |
 |---------|-------------|
-| `/pw:start` | Start a new workflow |
-| `/pw:menu` | Show interactive workflow menu |
-| `/pw:status` | Show current workflow status |
-| `/pw:next` | Advance to next phase |
-| `/pw:pause` | Pause the current workflow |
-| `/pw:resume` | Resume a paused workflow |
-| `/pw:stop` | Stop the current workflow |
-| `/pw:ls` | List all workflows |
-| `/pw:goto` | Switch to a different workflow |
+| `/pw-start` | Start a new workflow |
+| `/pw-menu` | Show interactive workflow menu |
+| `/pw-status` | Show current workflow status |
+| `/pw-next` | Advance to next phase |
+| `/pw-pause` | Pause the current workflow |
+| `/pw-resume` | Resume a paused workflow |
+| `/pw-stop` | Stop the current workflow |
+| `/pw-ls` | List all workflows |
+| `/pw-goto` | Switch to a different workflow |
 
 ## Workflow Phases
 

@@ -2,7 +2,7 @@
  * cali-product-workflow OpenCode Plugin
  * 
  * Provides:
- * - /pw:start, /pw:menu, /pw:status, /pw:help commands
+ * - /pw-start, /pw-menu, /pw-status, /pw-help commands
  * - Workflow lifecycle hooks
  * - TUI status overlay
  */
@@ -73,7 +73,7 @@ const pwStart = tool({
 
     return {
       title: "Workflow Started",
-      output: `Started "${workflowName}" at Phase 1 (Setup)\n\nThe workflow will guide you through:\nSetup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Execution\n\nUse /pw:status to check progress, /pw:menu for actions.`,
+      output: `Started "${workflowName}" at Phase 1 (Setup)\n\nThe workflow will guide you through:\nSetup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Execution\n\nUse /pw-status to check progress, /pw-menu for actions.`,
       metadata: {
         workflowName,
         phase: 1,
@@ -96,7 +96,7 @@ const pwStatus = tool({
     if (!workflow) {
       return {
         title: "No Active Workflow",
-        output: "No workflow is active. Use /pw:start to begin.",
+        output: "No workflow is active. Use /pw-start to begin.",
         metadata: {},
       };
     }
@@ -126,7 +126,7 @@ const pwNext = tool({
     if (!workflow) {
       return {
         title: "No Active Workflow",
-        output: "No workflow is active. Use /pw:start to begin.",
+        output: "No workflow is active. Use /pw-start to begin.",
         metadata: {},
       };
     }
@@ -170,14 +170,14 @@ const pwHelp = tool({
 
 | Command | Description |
 |---------|-------------|
-| /pw:start | Start a new workflow |
-| /pw:menu | Show workflow menu |
-| /pw:status | Show current status |
-| /pw:help | Show this help |
-| /pw:next | Advance to next phase |
-| /pw:pause | Pause the workflow |
-| /pw:resume | Resume paused workflow |
-| /pw:stop | Stop the workflow |
+| /pw-start | Start a new workflow |
+| /pw-menu | Show workflow menu |
+| /pw-status | Show current status |
+| /pw-help | Show this help |
+| /pw-next | Advance to next phase |
+| /pw-pause | Pause the workflow |
+| /pw-resume | Resume paused workflow |
+| /pw-stop | Stop the workflow |
 
 ## Workflow Phases
 
@@ -203,10 +203,10 @@ const pwHelp = tool({
 export default async (input: Parameters<Plugin>[0]) => {
   return {
     tool: {
-      "pw:start": pwStart,
-      "pw:status": pwStatus,
-      "pw:next": pwNext,
-      "pw:help": pwHelp,
+      "pw-start": pwStart,
+      "pw-status": pwStatus,
+      "pw-next": pwNext,
+      "pw-help": pwHelp,
     },
     hooks: {
       // Track session start
