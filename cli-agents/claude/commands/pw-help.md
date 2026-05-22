@@ -1,21 +1,21 @@
-# /pw:help
+# /pw-help
 
 Display help information about cali-product-workflow.
 
 ## Usage
 
 ```
-/pw:help
+/pw-help
 ```
 
 ## Available Commands
 
 | Command | Description |
 |---------|-------------|
-| `/pw:start` | Start a new workflow |
-| `/pw:menu` | Show workflow menu |
-| `/pw:status` | Show workflow status |
-| `/pw:help` | Show this help |
+| `/pw-start` | Start a new workflow |
+| `/pw-menu` | Show workflow menu |
+| `/pw-status` | Show workflow status |
+| `/pw-help` | Show this help |
 
 ## Workflow Phases
 

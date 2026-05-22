@@ -1,11 +1,11 @@
-# /pw:menu
+# /pw-menu
 
 Show an interactive menu with workflow actions.
 
 ## Usage
 
 ```
-/pw:menu
+/pw-menu
 ```
 
 ## What it does
@@ -14,4 +14,4 @@ Displays an interactive picker with available workflow actions based on the curr
 
 ## Requirements
 
-An active workflow must be running. Start one with `/pw:start`.
+An active workflow must be running. Start one with `/pw-start`.
