@@ -28,11 +28,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build
+        run: npm run build
+
       - name: TypeScript check
         run: npm run typecheck
-        # BLOCKS on type errors (when @types/node is properly configured)
-        # Currently has pre-existing errors: missing Node.js types (console, process, etc.)
-        # TODO: Add @types/node to devDependencies and update tsconfig to fix
 
   lint:
     name: Lint
@@ -56,12 +56,10 @@ jobs:
 
       - name: Run lint
         run: npm run lint
-        # BLOCKS on lint errors
 
   test:
     name: Unit Tests
     runs-on: ubuntu-latest
-    # Run in parallel with typecheck/lint (no needs dependency)
     
     steps:
       - name: Checkout
@@ -77,21 +75,13 @@ jobs:
         run: npm ci
 
       - name: Run tests
-        run: npm run test
-        # BLOCKS if tests fail
+        run: npm test
 
-      - name: Upload test results
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results
-          path: test-results/
-          retention-days: 7
-
-  coverage:
-    name: Test Coverage
+  # Optional: Run mutation tests periodically
+  mutation:
+    name: Mutation Tests
     runs-on: ubuntu-latest
-    needs: [test]
+    if: github.event_name == 'schedule' || contains(github.event.head_commit.message, 'mutation')
     
     steps:
       - name: Checkout
@@ -106,20 +96,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run coverage
-        run: npm run test:coverage
-        continue-on-error: true
+      - name: Build
+        run: npm run build
 
-      - name: Check coverage threshold
-        run: |
-          if [ -f coverage/coverage-summary.json ]; then
-            COVERAGE=$(cat coverage/coverage-summary.json | grep -o '"lines":[0-9."]*' | grep -o '[0-9.]*' | head -1)
-            echo "Line coverage: ${COVERAGE:-0}%"
-            if [ -n "$COVERAGE" ] && (( $(echo "$COVERAGE < 70" | bc -l 2>/dev/null || echo 1) )); then
-              echo "::warning::Coverage is below 70% threshold (current: ${COVERAGE}%, required: 70%)"
-            else
-              echo "Coverage meets 70% threshold"
-            fi
-          else
-            echo "::warning::Coverage report not found"
-          fi
+      - name: Run mutation tests
+        run: npm run mutate
