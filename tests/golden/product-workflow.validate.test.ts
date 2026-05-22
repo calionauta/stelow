@@ -98,7 +98,7 @@ describe("SKILL.md Golden Validation", () => {
 
     it("should reference structured question tool", () => {
       // SKILL.md uses "structured question" (descriptive) - not ask_user_question (technical)
-      // This follows DRY: technical name is in references/cli-tools/ask.md, not in SKILL.md
+      // This follows DRY: technical name is in references/cli-tools/structured-question.md, not in SKILL.md
       expect(SKILL_CONTENT).toMatch(/structured question|references\/cli-tools\/ask\.md/);
     });
 

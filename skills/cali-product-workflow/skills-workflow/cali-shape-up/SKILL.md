@@ -58,7 +58,7 @@ Read the `references/` files to guide the process:
 | `references/proposal-structure.md` | Output structure for the shaped proposal |
 | `references/output-expectations.md` | Strong vs weak output criteria |
 
-Use the ask tool (see `references/cli-tools/ask.md`) for strategic questions when needed.
+Use the ask tool (see `references/cli-tools/structured-question.md`) for strategic questions when needed.
 
 After shaping:
 - Save to `.cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md`

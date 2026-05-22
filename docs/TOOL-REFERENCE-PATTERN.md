@@ -37,7 +37,7 @@ cali-product-workflow/
 
 1. **Skill references tool, not calls it**
    ```markdown
-   ✅ Use the ask tool (see `references/cli-tools/ask.md`)
+   ✅ Use the ask tool (see `references/cli-tools/structured-question.md`)
    ❌ ask_user_question({...}) directly in skill
    ```
 

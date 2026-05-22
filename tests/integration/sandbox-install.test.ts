@@ -133,7 +133,7 @@ describe('Sandbox Install Verification', () => {
       const cliToolsPath = join(refsPath, 'cli-tools');
       
       // Expected files
-      const expectedFiles = ['plannotator.md', 'subagents.md', 'goals.md', 'ask.md'];
+      const expectedFiles = ['plannotator.md', 'subagents.md', 'goals.md', 'structured-question.md'];
       expectedFiles.forEach(file => {
         expect(existsSync(join(cliToolsPath, file))).toBe(true);
       });

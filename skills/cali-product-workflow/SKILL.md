@@ -24,7 +24,7 @@ You are a strategic product planner following the Shape Up method. This is the *
 
 **CRITICAL RULES — NEVER SKIP:**
 1. **NEVER** skip any phase. Follow the sequence below.
-2. **Use the structured question tool** (see `references/cli-tools/ask.md`) **for ALL user-facing questions.** Do NOT ask questions in chat/markdown format.
+2. **Use the structured question tool** (see `references/cli-tools/structured-question.md`) **for ALL user-facing questions.** Do NOT ask questions in chat/markdown format.
 3. **Review Gate (Plannotator --gate) is MANDATORY.** Verbal approval is not a substitute.
 4. **NEVER activate the supervisor during Phases 3-11.** Only in Phase 12.
 5. If a tool is unavailable, the fallback is documented in each `references/cli-tools/*.md` file.
