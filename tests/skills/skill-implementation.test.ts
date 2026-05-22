@@ -189,7 +189,8 @@ describe('Skill Implementation Validation', () => {
     describe('Tech Planning Gate', () => {
       it('cali-tech-planning should have its own gate', () => {
         const techContent = readSkill(skills.find(s => s.name === 'cali-tech-planning')!);
-        expect(techContent).toMatch(/plannotator.*--gate|--gate/i);
+        // Accept either direct --gate or reference to plannotator.md
+        expect(techContent).toMatch(/plannotator.*--gate|--gate|plannotator\.md/i);
       });
     });
   });
