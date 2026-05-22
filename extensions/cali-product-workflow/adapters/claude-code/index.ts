@@ -178,8 +178,8 @@ export class ClaudeCodeAdapter extends BaseAdapter {
       : String(message.content);
     
     // Parse @refs and command input
-    if (text.startsWith("/product-workflow-start") ||
-        text.startsWith("/pw:start")) {
+    if (text.startsWith("/pw-start") ||
+        text.startsWith("/pw-start")) {
       const parsed = parseInputForWorkflow(text);
       if (parsed.sources.length > 0 || parsed.draftText) {
         parsedInputStore.set(sessionId, parsed);
@@ -220,10 +220,10 @@ export class ClaudeCodeAdapter extends BaseAdapter {
     // Claude Code uses skills in skills/ directory
     // Skills are markdown files with frontmatter:
     // ---
-    // name: pw:start
+    // name: pw-start
     // description: Start product workflow
     // ---
-    // /pw:start {args}
+    // /pw-start {args}
     return [
       // Commands registered via skills/ directory
     ];

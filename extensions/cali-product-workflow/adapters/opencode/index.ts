@@ -178,8 +178,8 @@ export class OpenCodeAdapter extends BaseAdapter {
    */
   handleUserMessage(text: string, sessionId: string): void {
     // Parse @refs and command input
-    if (text.startsWith("/product-workflow-start") ||
-        text.startsWith("/pw:start")) {
+    if (text.startsWith("/pw-start") ||
+        text.startsWith("/pw-start")) {
       const parsed = parseInputForWorkflow(text);
       if (parsed.sources.length > 0 || parsed.draftText) {
         parsedInputStore.set(sessionId, parsed);

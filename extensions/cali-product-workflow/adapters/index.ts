@@ -118,7 +118,6 @@ export {
   WORKFLOW_COMMANDS,
   getCommandSystem,
   installCommandFiles,
-  getAliasCommands,
 } from "./commands";
 
 // ── Codex Adapter ───────────────────────────────────────────────────

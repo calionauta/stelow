@@ -179,8 +179,8 @@ export class CodexAdapter extends BaseAdapter {
       : String(message.content);
     
     // Parse @refs and command input
-    if (text.startsWith("/product-workflow-start") ||
-        text.startsWith("/pw:start")) {
+    if (text.startsWith("/pw-start") ||
+        text.startsWith("/pw-start")) {
       const parsed = parseInputForWorkflow(text);
       if (parsed.sources.length > 0 || parsed.draftText) {
         parsedInputStore.set(sessionId, parsed);
@@ -221,11 +221,11 @@ export class CodexAdapter extends BaseAdapter {
     // Codex uses commands/ directory for slash commands
     // Commands are markdown files with format:
     // ---
-    // name: pw:start
+    // name: pw-start
     // description: Start product workflow
     // ---
     // @agent
-    // /pw:start {args}
+    // /pw-start {args}
     return [
       // Commands registered via commands/ directory
     ];

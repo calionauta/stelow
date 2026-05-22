@@ -11,5 +11,4 @@ export {
   WORKFLOW_COMMANDS,
   getCommandSystem,
   installCommandFiles,
-  getAliasCommands,
 } from "./dispatcher";

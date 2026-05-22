@@ -9,10 +9,8 @@ import type { CLI, CLICapabilities } from "../../types";
 import { detectCLI } from "../../state";
 
 export interface CommandDescriptor {
-  /** Full command name (e.g., "pw:start") */
+  /** Command name with kebab-case prefix (e.g., "pw-start") */
   name: string;
-  /** Canonical name for storage (e.g., "product-workflow-start") */
-  canonicalName: string;
   /** Command description for help */
   description: string;
   /** Usage example */
@@ -24,91 +22,81 @@ export interface CommandDescriptor {
  */
 export const WORKFLOW_COMMANDS: CommandDescriptor[] = [
   {
-    name: "pw:start",
-    canonicalName: "product-workflow-start",
+    name: "pw-start",
     description: "Start a new product workflow",
-    usage: "/pw:start [name=...] [description=...] [@file]",
+    usage: "/pw-start [name=...] [description=...] [@file]",
   },
   {
-    name: "pw:stop",
-    canonicalName: "product-workflow-stop",
+    name: "pw-stop",
     description: "Stop workflow(s)",
-    usage: "/pw:stop | all | name1 name2",
+    usage: "/pw-stop | all | name1 name2",
   },
   {
-    name: "pw:pause",
-    canonicalName: "product-workflow-pause",
+    name: "pw-pause",
     description: "Pause active workflow",
-    usage: "/pw:pause",
+    usage: "/pw-pause",
   },
   {
-    name: "pw:resume",
-    canonicalName: "product-workflow-resume",
+    name: "pw-resume",
     description: "Resume paused workflow",
-    usage: "/pw:resume [name=name]",
+    usage: "/pw-resume [name=name]",
   },
   {
-    name: "pw:status",
-    canonicalName: "product-workflow-status",
+    name: "pw-status",
     description: "Show active workflow status",
-    usage: "/pw:status",
+    usage: "/pw-status",
   },
   {
-    name: "pw:ls",
-    canonicalName: "product-workflow-list",
+    name: "pw-ls",
     description: "List workflows",
-    usage: "/pw:ls | all | archived | path=DIR",
+    usage: "/pw-ls | all | archived | path=DIR",
   },
   {
-    name: "pw:setphase",
-    canonicalName: "product-workflow-setphase",
+    name: "pw-setphase",
     description: "Jump to phase",
-    usage: "/pw:setphase phase=N | phasename=Name",
+    usage: "/pw-setphase phase=N | phasename=Name",
   },
   {
-    name: "pw:next",
-    canonicalName: "product-workflow-next",
+    name: "pw-next",
     description: "Advance to next phase",
-    usage: "/pw:next",
+    usage: "/pw-next",
   },
   {
-    name: "pw:complete",
-    canonicalName: "product-workflow-complete",
+    name: "pw-complete",
     description: "Mark active workflow complete",
-    usage: "/pw:complete",
+    usage: "/pw-complete",
   },
   {
-    name: "pw:goto",
-    canonicalName: "product-workflow-goto",
+    name: "pw-goto",
     description: "Go to a workflow",
-    usage: "/pw:goto [name=name]",
+    usage: "/pw-goto [name=name]",
   },
   {
-    name: "pw:rename",
-    canonicalName: "product-workflow-rename",
+    name: "pw-rename",
     description: "Rename active workflow",
-    usage: "/pw:rename novo-nome | name=novo-nome",
+    usage: "/pw-rename novo-nome | name=novo-nome",
   },
   {
-    name: "pw:menu",
-    canonicalName: "product-workflow-menu",
+    name: "pw-menu",
     description: "Open workflow overview overlay",
-    usage: "/pw:menu",
+    usage: "/pw-menu",
   },
   {
-    name: "pw:clean",
-    canonicalName: "product-workflow-clean",
+    name: "pw-clean",
     description: "Archive stale or purge archived",
-    usage: "/pw:clean [hours=4] | purge",
+    usage: "/pw-clean [hours=4] | purge",
+  },
+  {
+    name: "pw-archive",
+    description: "Archive workflows",
+    usage: "/pw-archive | /pw-archive name=X | /pw-archive purge",
+  },
+  {
+    name: "pw-unarchive",
+    description: "Unarchive a workflow",
+    usage: "/pw-unarchive name=<workflow>",
   },
 ];
-
-/**
- * Get commands that are aliases.
- */
-export function getAliasCommands(): CommandDescriptor[] {
-  return WORKFLOW_COMMANDS;
-}
 
 /**
  * Command registration system interface.
@@ -223,7 +211,7 @@ function getOpenCodeCommandSystem(): CommandRegistrationSystem {
     
     generateCommandFiles(): Array<{ path: string; content: string }> {
       return WORKFLOW_COMMANDS.map(cmd => ({
-        path: `skills/${cmd.name.replace(":", "-")}.md`,
+        path: `skills/${cmd.name}.md`,
         content: generateOpenCodeSkillFile(cmd),
       }));
     },
@@ -236,7 +224,7 @@ name: ${cmd.name}
 description: ${cmd.description}
 ---
 
-${cmd.usage ? `// Usage: ${cmd.usage}` : ""}
+// Usage: ${cmd.usage || cmd.description}
 
 /skill:cali-product-workflow
 
@@ -270,7 +258,7 @@ function getClaudeCodeCommandSystem(): CommandRegistrationSystem {
     
     generateCommandFiles(): Array<{ path: string; content: string }> {
       return WORKFLOW_COMMANDS.map(cmd => ({
-        path: `skills/${cmd.name.replace(":", "-")}.md`,
+        path: `skills/${cmd.name}.md`,
         content: generateClaudeCodeSkillFile(cmd),
       }));
     },
@@ -312,7 +300,7 @@ function getCodexCommandSystem(): CommandRegistrationSystem {
     
     generateCommandFiles(): Array<{ path: string; content: string }> {
       return WORKFLOW_COMMANDS.map(cmd => ({
-        path: `commands/${cmd.name.replace(":", "-")}.md`,
+        path: `commands/${cmd.name}.md`,
         content: generateCodexCommandFile(cmd),
       }));
     },
