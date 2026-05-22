@@ -85,15 +85,21 @@ function buildCompactStatus(workflow: Workflow, capabilityLevel: string): string
   // Use colors based on capability level
   let prefix, name, icon;
   
+  // Truncate workflow name at 60 chars to prevent footer overflow
+  const MAX_NAME_LEN = 60;
+  const displayName = workflow.name.length > MAX_NAME_LEN 
+    ? workflow.name.substring(0, MAX_NAME_LEN - 3) + "..." 
+    : workflow.name;
+
   if (capabilityLevel === "ansi" || capabilityLevel === "native") {
     prefix = AnsiColors.dim + "[pw]" + AnsiColors.reset;
-    name = AnsiColors.green + workflow.name + AnsiColors.reset;
+    name = AnsiColors.green + displayName + AnsiColors.reset;
     icon = isActive 
       ? AnsiColors.cyan + "◆" + AnsiColors.reset 
       : AnsiColors.green + "●" + AnsiColors.reset;
   } else {
     prefix = "[pw]";
-    name = workflow.name;
+    name = displayName;
     icon = isActive ? "◆" : "●";
   }
   
