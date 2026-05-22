@@ -1,85 +1,286 @@
 ---
 name: cali-product-promotions
-description: Launch promotion strategies using the MAGIC framework. Covers Loss Leader, Gift Card Sale, Limited High-Value Package, and Irresistible Freebie strategies with tactical examples.
+version: 1.0.0
+description: >
+  [Cali] Promotional strategies and tactics for products. Covers promotional vehicles,
+  mechanics, sequencing, and psychology to drive awareness, consideration,
+  and conversion at strategic moments.
+
+  Trigger keywords: promotions strategy, promotional campaigns, discounts, deals,
+  seasonal promotions, launch promotions, conversion tactics
 ---
 
-# Promotions for Launch
+# Product Promotions
 
-A simple offer, but communicated unequivocally, tends to work better than a brilliant offer that nobody understands.
+## Goal
 
-## MAGIC Structure
+Drive awareness, consideration, and conversion through strategically timed and sequenced promotional interventions.
 
-**M (Magnet → Reason)**: what is the magnetic reason for this offer to exist now? (discount, special launch condition, seasonal offer) Creates the context.
+## Domain Context
 
-**A (Avatar → Avatar)**: who is this offer for? Naming the audience helps the person immediately identify. (small business owners? writers? those seeking a healthy lifestyle?)
+Promotions are temporary interventions that accelerate behavior change. Key themes:
+- **Promotional Vehicles** — What type of promotion to use
+- **Promotional Mechanics** — How the promotion works
+- **Sequencing** — When and how often to promote
+- **Psychology** — Why promotions work (and when they backfire)
 
-**G (Goal → Purpose)**: what is the desired outcome the person can achieve? It's not a guarantee, but the direction, the purpose. (clarity in business? launching a product?)
+## Promotional Vehicles
 
-**I (Interval → Timeframe)**: in how much time or for how long? Defines a temporal horizon that makes the promise more concrete. (30 days? 6 weeks? a single meeting?)
+### Discount-Based
 
-**C (Container → Packaging)**: what is the "packaging" of the offer? A word that gives shape to the experience and helps make it tangible. (a program, a blueprint, a workshop, a mentoring, a consulting)
+**Percentage Off:**
+- Simple and clear
+- "20% off" is easily understood
+- Margin impact depends on current margin
 
----
+**Fixed Amount Off:**
+- Works well for lower-priced items
+- "Save $50" creates clear value anchor
+- Impact depends on perceived value
 
-## 4 Promotion Strategies for Launch
+**BOGO (Buy One Get One):**
+- Perceived high value ("get one free")
+- Effective for inventory clearance
+- Can be gamed by bulk purchase
 
-### Strategy 1: The Loss Leader
-Drastically reduce the entry barrier so a new customer can experience your work. You offer an initial product or service with a calculated loss, knowing that a portion of these customers will purchase higher-value solutions in the future.
+**Bundle Discount:**
+- Group related products together
+- Increases average order value
+- Makes per-item value harder to calculate
 
-- **Reason (M)**: give an accessible first step to experience a high-impact solution
-- **Avatar (A)**: small business owners who need an initial boost and have a limited budget
-- **Purpose (G)**: unlock a specific area of the business and know the potential of deeper work
-- **Interval (I)**: visible results in the first session or within a few days
-- **Container (C)**: initial consulting with 80% discount to unlock the business
+### Value-Add Based
 
-*Tactical Examples*:
-- **Unbundle**: offer a part of your main service (a diagnostic session) with a real and significant discount.
-- **Next step (upsell)**: at the end of the session, present a clear path to continue the work (full package), perhaps with a small discount for those who decide on the spot.
+**Free Shipping:**
+- Removes a common friction point
+- Works best when shipping is a barrier
+- Can be threshold-based ("free shipping over $50")
 
----
+**Bonus Content:**
+- "Buy X, get Y free" with digital content
+- Increases perceived value
+- Low cost if content is digital
 
-### Strategy 2: Gift Card Sale
-Allows generating upfront revenue and turning current customers into an acquisition channel. The person buys a service (for themselves or to gift) with perceived value much higher than the amount paid.
+**Extended Warranty:**
+- Adds security to purchase
+- High margin product for seller
+- Valuable signal for big purchases
 
-- **Reason (M)**: advance purchase of a future service with a big discount
-- **Avatar (A)**: current customers, their friends and family
-- **Purpose (G)**: gift someone (or themselves) with a transformation experience
-- **Interval (I)**: the service can be redeemed within a defined period (e.g., 6 months)
-- **Container (C)**: R$ 200 gift card for only R$ 50 — a gift worth four times
+**Loyalty Points:**
+- Encourages repeat purchase
+- Psychological "sunk cost" effect
+- Requires program infrastructure
 
-*Tactical Examples*:
-- **Card value**: define a credit value (e.g., R$ 200) and a much lower selling price (e.g., R$ 50)
-- **Limit**: to avoid cannibalizing future sales, limit the quantity per person (e.g., 3 cards per CPF)
-- **Validity**: establish a deadline for redemption (e.g., 6 months) — creates slight urgency
+### Urgency-Based
 
----
+**Limited Time:**
+- "Sale ends Sunday"
+- Creates urgency to act now
+- Works best for established products
 
-### Strategy 3: The Limited High-Value Package
-Instead of offering a discount to everyone, create an exclusive and premium offer for the most engaged audience. Scarcity is not in the price, but in **access**.
+**Limited Quantity:**
+- "Only 10 left"
+- Creates scarcity signal
+- Must be credible to work
 
-- **Reason (M)**: access to a unique and exclusive opportunity
-- **Avatar (A)**: customers who already trust your work and are ready for a larger investment in exchange for accelerated results
-- **Purpose (G)**: achieve a level of result that wouldn't be possible with standard solutions
-- **Interval (I)**: limited to the first 10% of the base who respond, or a fixed number of slots
-- **Container (C)**: VIP gold package — a 6-month immersion for maximum results
+**Flash Sales:**
+- Very short duration
+- High urgency
+- Requires strong communication channel
 
-*Tactical Examples*:
-- **Premium product**: offer something you don't normally sell (individual mentoring program, close accompaniment for 6 months)
-- **Proposed value**: the price must reflect the high value and exclusivity (e.g., R$ 10,000)
-- **Scarcity and urgency**: limit the offer to a small number of slots (e.g., 5 people) or short time period (e.g., 48 hours)
+### Access-Based
 
----
+**Free Trial:**
+- Reduces risk for new customers
+- Trial-to-paid conversion is key metric
+- Works best for sticky products
 
-### Strategy 4: The Irresistible Freebie
-Instead of giving a price discount, you **add more value to the original offer**. The perception of getting something valuable for free can be psychologically more attractive than a simple discount.
+**Freemium Upgrade:**
+- Premium features as promotion
+- Showcases value of paid tier
+- No margin impact during trial
 
-- **Reason (M)**: a "buy 1, get 2" offer for a limited time
-- **Avatar (A)**: customers seeking to maximize the value of their investment and appreciate a good deal
-- **Purpose (G)**: get more results for the same price, accelerating the process
-- **Interval (I)**: the freebie is enjoyed together with the main purchase
-- **Container (C)**: buy 1 consulting package and get 2 extra sessions as a gift
+**Early Access:**
+- Rewards loyal customers
+- Creates exclusivity feeling
+- Works for launch campaigns
 
-*Tactical Examples*:
-- **Valuable freebie**: the freebie must have real perceived value. If you sell a package of 4 consultations, offer 2 extra sessions.
-- **Differential in the freebie**: the extra sessions can include a premium service that's not in the normal package
-- **Limit**: to create urgency, the offer can be limited to the first 5 customers
+## Promotional Mechanics
+
+### Threshold Mechanics
+
+**Minimum Purchase Threshold:**
+- "Spend $100, get 10% off"
+- Increases average order value
+- Threshold should be above typical purchase
+
+**Quantity Thresholds:**
+- "Buy 3, get 1 free"
+- Effective for consumable products
+- Encourages stockpiling behavior
+
+### Conditional Mechanics
+
+**First-Time Customer:**
+- Converts new customers
+- Typically one-time use
+- Requires new account/customer detection
+
+**Referral Bonus:**
+- Both referrer and referee get benefit
+- Viral loop potential
+- Requires fraud detection
+
+**Loyalty Rewards:**
+- Based on purchase history
+- Encourages repeat business
+- Tiered benefits increase engagement
+
+### Stacking Rules
+
+Most programs have rules about combining promotions:
+- Can stack or exclusive
+- Priority rules ("biggest discount wins")
+- Category restrictions
+
+## Sequencing
+
+### Launch Sequencing
+
+For new product launches:
+
+1. **Pre-Launch (2-4 weeks before):**
+   - Early access for waitlist
+   - Teaser content
+   - Waitlist incentive
+
+2. **Launch Day:**
+   - Maximum discount
+   - Maximum visibility
+   - Clear CTA
+
+3. **Post-Launch (1-4 weeks after):**
+   - Fade to sustainable discount
+   - Social proof accumulation
+   - Transition to loyalty offers
+
+### Seasonal Sequencing
+
+For recurring seasonal events:
+
+**Black Friday / Cyber Monday:**
+- Biggest discount of the year
+- Extended window (week vs. day)
+- Cross-sell and upsell focus
+
+**New Year:**
+- Resolution alignment
+- Annual planning cycle
+- Subscription annual plans
+
+**Summer / End of Year:**
+- Clearance periods
+- Planning for next year
+- Often lower activity = lower prices
+
+### Lifecycle Sequencing
+
+**Acquisition → Activation → Retention → Referral:**
+
+- **Acquisition**: First-time offers, trials
+- **Activation**: Onboarding incentives
+- **Retention**: Loyalty rewards, exclusive offers
+- **Referral**: Mutual benefit programs
+
+## Psychology
+
+### Anchoring
+
+Price anchors change perception:
+- Show original price before discounted price
+- Comparison to competitors
+- "Worth $X, now $Y"
+
+### Loss Aversion
+
+People prefer avoiding losses to gaining equivalent gains:
+- "Don't miss out" vs. "Save money"
+- Limited time creates fear of loss
+- Membership cancellation = losing benefits
+
+### Social Proof
+
+Others' behavior influences our own:
+- "Most popular" badges
+- Purchase notifications
+- User reviews and ratings
+
+### Decoy Effect
+
+Adding a middle option makes others more attractive:
+- 3-tier pricing with middle as target
+- Good/Better/Best framing
+- Decoy makes premium look reasonable
+
+## Anti-Patterns
+
+### Over-Discounting
+
+- Erodes perceived value
+- Attracts deal-hunters, not loyal customers
+- Creates discount expectations that are hard to undo
+
+### Fake Urgency
+
+- "Only 2 left!" when stock is high
+- Countdown timers that reset
+- Destroys trust when exposed
+
+### Discount Stacking
+
+- Multiple simultaneous discounts
+- Creates margin erosion
+- Confuses pricing signals
+
+### Inconsistent Application
+
+- Some customers get better deals
+- Hidden discounts for "insiders"
+- Creates resentment
+
+## Workflow
+
+Use this domain skill within cali-product-workflow:
+
+| Phase | Domain Skill Contribution |
+|-------|---------------------------|
+| Phase 1 (Setup) | Promotional research |
+| Phase 2 (Context) | Seasonal/timing analysis |
+| Phase 3 (Shape) | Promotional strategy in scope |
+| Phase 6 (Interface) | Promotion UI and mechanics |
+| Phase 10 (Planning) | Promotion feature scopes |
+
+## Output Format
+
+This domain skill contributes to:
+- **spec-product.md** — Promotional strategy section
+- **spec-tech.md** — Promotion feature scopes
+- **interface proposals** — Promotion UI designs
+
+## Gotchas
+
+1. **Value erosion** — Over-promotion erodes perceived value
+2. **Urgency authenticity** — Fake urgency destroys trust
+3. **Margin awareness** — Discounts cost money — ensure healthy margins
+4. **Stack management** — Control discount stacking
+
+## Related Skills
+
+- **cali-product-workflow**: Orchestrates product planning
+- **cali-product-pricing**: Pricing strategies
+- **cali-product-trust-building**: Trust considerations
+- **cali-product-ads**: Advertising vs. promotion
+
+## Environment Adaptation
+
+If a tool is unavailable, check:
+`../../../../cali-product-workflow/references/cli-tools/`

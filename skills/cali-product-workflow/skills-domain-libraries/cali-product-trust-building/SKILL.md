@@ -1,61 +1,200 @@
 ---
 name: cali-product-trust-building
-description: Building trust through perception and guarantee mechanisms. Covers ten pillars to materialize trust, guarantee types from unconditional to anti-guarantees, and strategic approaches for different contexts.
+version: 1.0.0
+description: >
+  [Cali] Trust-building strategies for products. Covers signal design, transparency,
+  reliability, and competence signals that reduce perceived risk and increase
+  user confidence in your product.
+
+  Trigger keywords: trust signals, building trust, credibility, social proof,
+  transparency, reliability, user confidence
 ---
 
-# Building Trust: Perception and Guarantee
+# Product Trust Building
 
-## Increasing Success Perception
+## Goal
 
-When someone seeks us out, they carry the weight of past experiences, skepticism, and the fear of making the wrong decision once again. The person is not just asking themselves "does this work?", but rather "**will this work for me?**".
+Build trust systematically by reducing perceived risk and increasing user confidence through well-designed signals across all touchpoints.
 
-### Ten Pillars to Materialize Trust
+## Domain Context
 
-1. **Your own story**: showing that you've already walked the path the person wants to travel.
-2. **Others' stories**: showing that other people succeeded in accomplishing (testimonials and depositions).
-3. **Proof volume**: presenting the number of positive reviews or the quantity of people you've already helped.
-4. **Formal validation**: displaying certifications and training that legitimize your knowledge on the subject.
-5. **Data and research**: using statistics to anchor the promise of results in evidence.
-6. **Expert endorsement**: showing that other reference figures in the field attest to your credibility.
-7. **Public figure endorsement**: celebrities and influencers that the person trusts and who recommend you.
-8. **Contextual empathy**: describing the person's situation or challenge with such a level of detail that they feel deeply understood.
-9. **A new mechanism**: presenting a unique approach or feature that the person hasn't tried yet, opening the possibility that "this time, it might work".
-10. **Practical demonstration**: showing the result happening, either live or in a recording, to make success tangible.
+Trust is the foundation of any product relationship. Key themes:
+- **Signal Design** — What communicates trustworthiness
+- **Transparency** — Openness about processes and limitations
+- **Reliability** — Consistent, predictable performance
+- **Competence Signals** — Proof of capability and expertise
 
----
+## Signal Types
 
-## Guarantee Commitment
+### Social Proof
 
-Trust manifests here in a deeper way: not in more gain promises, but in the **removal of loss risk**. Subtracting fear becomes more powerful than adding one more benefit.
+Leverages the principle that people follow the actions of others, especially in uncertain situations.
 
-### Unconditional Guarantee
-The most radical form of removing friction. The message: *"I'm not asking you to say yes or no today, but to make an informed decision. Both choices are risk-free, but only one of them can help you reach your purpose."* The responsibility for risk is fully absorbed by whoever offers the help.
+**1. User Testimonials:**
+- Genuine quotes from real users with specific details
+- Include name, role, company (with permission)
+- Focus on specific outcomes, not generic praise
 
-### Super Conditional Guarantees
-Co-responsibility approach. Must be **"better than money back"** — because the person's time and energy are also valuable. Aligns commitment: *"If you do your part, I guarantee mine."*
+**2. Usage Statistics:**
+- "Join 10,000+ users" — herd behavior
+- "Processed $5M in payments" — competence signal
+- Must be verifiable or at least plausible
 
-Explicitly state the minimum requirements that the person must fulfill to access the guarantee (e.g., having used the product with a minimum of Y people for so long; having participated for at least X days of training; etc.)
+**3. Social Login and Sharing:**
+- "Sign in with Google" reduces friction AND signals trust (Google vouched for you)
+- Share counts and engagement metrics
 
-**Examples of super guarantee after passing minimum requirements**:
-1. Excess refund (e.g., 2–3x the cost of the product/program/service)
-2. Service guarantee (e.g., continue working with them for free)
-3. Modified service guarantee (e.g., continue working for twice the time, for free)
-4. Credit-based guarantee (e.g., give credit for other programs)
-5. Personal service guarantee (e.g., you'll help them 1:1 until they achieve the result)
-6. Hotel and airfare (e.g., you'll refund the program and the cost of hotel and airfare)
-7. Salary payment (e.g., you'll pay their hourly rate for each hour spent with you, plus the program cost)
-8. Commitment release (e.g., they don't need to remain in your contract)
-9. Second deferred payment (e.g., you won't charge them again until after they make or get their first result)
-10. First result guarantee (e.g., you'll continue paying their accessory expenses until they achieve their first result)
+**4. Case Studies and Portfolios:**
+- Detailed stories of how real customers achieved results
+- Before/after metrics when possible
+- Multiple industry perspectives
 
-### Anti-Guarantees
-In contexts of high demand or rare opportunities, the absence of a guarantee can, paradoxically, signal value. The "all sales are final" policy works best for high-value services or explosive situations, where the opportunity itself is the great attraction.
+**5. Expert Recommendations:**
+- Industry expert endorsements
+- Certifications and badges
+- Press mentions and reviews
 
-### Implicit Guarantees (Performance / Revenue Sharing)
-- *Performance*: "Pay me only $X per sale you make, per kilo lost, per scheduled appointment"
-- *Result sharing*: "Pay me only X% of revenue generated with the product, X% profit share, X% revenue growth relative to baseline"
+### Consistency and Frequency
 
-### Guarantee Stacking
-- **Option A**: choose one conditional and one unconditional guarantee and combine them.
-- **Option B**: choose two conditional guarantees around small and large results with different terms.
-- **Option C**: choose two conditional guarantees with the same terms, but short and long deadlines to show what they could achieve.
+Repetition increases believability through the "truth illusion" — things that are repeated are perceived as true.
+
+**1. Consistent Brand Elements:**
+- Same color palette, typography, voice
+- Cohesive design language across all touchpoints
+- Predictable patterns reduce cognitive load
+
+**2. Consistent Tone of Voice:**
+- Same level of formality across channels
+- Professional but approachable
+- Acknowledge limitations honestly
+
+**3. Consistent Messaging:**
+- Core value proposition repeated consistently
+- Don't contradict yourself across channels
+- Back up claims with evidence
+
+### Transparency
+
+Being open about how you operate, what you know, and what you don't know builds trust.
+
+**1. Pricing Transparency:**
+- Clear, upfront pricing (no hidden fees)
+- Pricing page with all plans visible
+- Cost calculators when applicable
+
+**2. Process Transparency:**
+- Explain how the product works
+- Show what happens to user data
+- Document known limitations
+
+**3. Error Transparency:**
+- Honest error messages that help users
+- Admit when things go wrong
+- Show your recovery process
+
+**4. Policy Transparency:**
+- Easy-to-find privacy policy
+- Clear terms of service
+- Visible data handling practices
+
+### Accountability Mechanisms
+
+Proof that you're responsible for your actions and will make things right.
+
+**1. Guarantees:**
+- Money-back guarantees
+- Service level agreements (SLAs)
+- Clear refund policies
+
+**2. Support Channels:**
+- Visible support contact options
+- Response time commitments
+- Multiple ways to reach you
+
+**3. Recourse Processes:**
+- Clear escalation paths
+- Complaint handling procedures
+- Redress mechanisms
+
+### Competence Signals
+
+Proof that you can do what you claim to do.
+
+**1. Observable Results:**
+- Performance metrics
+- Success rates
+- User outcomes data
+
+**2. Process Documentation:**
+- Methodology explanations
+- Technical documentation
+- Quality certifications
+
+**3. Team Credibility:**
+- Team member bios with credentials
+- Founder/leader backgrounds
+- Industry experience
+
+**4. Platform Indicators:**
+- Security certifications (SOC2, ISO 27001)
+- Industry compliance badges
+- Partnership logos
+
+## Trust Anti-Patterns
+
+### Dishonest Signals
+
+- **Fake urgency** ("Only 2 spots left!") creates short-term sales but destroys long-term trust
+- **Inflated statistics** that can be easily disproven
+- **Fabricated testimonials** or testimonials that don't exist in real life
+- **Deceptive CTAs** that mislead about what clicking will do
+
+### Inconsistency
+
+- **Design inconsistency** signals disorganization
+- **Tone inconsistency** (corporate on website, casual on support) signals inauthenticity
+- **Promise inconsistency** across channels destroys credibility
+
+### Over-Promise
+
+- **Guarantees you can't keep** erode trust when they fail
+- ** unrealistic timelines** that you always miss
+- **Overstated capabilities** lead to disappointment
+
+## Workflow
+
+Use this domain skill within cali-product-workflow:
+
+| Phase | Domain Skill Contribution |
+|-------|---------------------------|
+| Phase 1 (Setup) | Trust signals research |
+| Phase 2 (Context) | Trust gap analysis |
+| Phase 3 (Shape) | Trust-building in scope |
+| Phase 6 (Interface) | Trust signals in UI |
+| Phase 10 (Planning) | Trust feature scopes |
+
+## Output Format
+
+This domain skill contributes to:
+- **spec-product.md** — Trust-building strategy section
+- **spec-tech.md** — Trust feature scopes
+- **interface proposals** — Trust signal designs
+
+## Gotchas
+
+1. **Authenticity** — Fake signals do more harm than no signals
+2. **Consistency** — Trust is built through repetition, not one-off actions
+3. **Transparency paradox** — Admitting limitations increases trust more than hiding them
+4. **Competence proof** — Claims without evidence are noise
+
+## Related Skills
+
+- **cali-product-workflow**: Orchestrates product planning
+- **cali-product-ads**: Ad monetization trust considerations
+- **cali-product-pricing**: Pricing transparency
+- **cali-product-promotions**: Promotional trust signals
+
+## Environment Adaptation
+
+If a tool is unavailable, check:
+`../../../../cali-product-workflow/references/cli-tools/`
