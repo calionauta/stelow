@@ -163,63 +163,33 @@ See [docs/INSTALLATION.md](docs/INSTALLATION.md) for detailed options.
 
 ## 📦 Installation
 
-### Quick Setup (Recommended)
+For full installation instructions, see [docs/INSTALLATION.md](docs/INSTALLATION.md).
 
+Quick setup:
 ```bash
+git clone https://github.com/renatocaliari/cali-product-workflow.git
+cd cali-product-workflow
 ./install.sh
 ```
 
-Auto-detects ALL your CLIs and installs for each one. One command, zero npm.
+This auto-detects all your CLIs (Pi, OpenCode, Claude Code, Codex) and installs the workflow for each one.
 
-### What's Installed per CLI
+---
 
-| CLI | Method | How It Works |
-|-----|--------|-------------|
-| **Pi** | `git:` + `npx skills` | Clona do GitHub, carrega extensões JS + skills |
-| **OpenCode** | `npx skills` + config | Skills via npx skills, registra path no opencode.json |
-| **Claude Code** | marketplace + `npx skills` | Adiciona repo GitHub como marketplace, skills via npx |
-| **Codex** | marketplace + `npx skills` | Adiciona repo GitHub como marketplace, skills via npx |
+For manual setup, per-CLI commands, updates, and detailed installation options, see [docs/INSTALLATION.md](docs/INSTALLATION.md).
 
-### Commands
+---
 
+## 🔧 Dependencies
+
+Quick setup:
 ```bash
-./install.sh              # Install for all detected CLIs
-./install.sh update       # Update skills
-./install.sh remove       # Uninstall from all detected CLIs
-
-# Limit to one CLI
-PRODUCT_WORKFLOW_CLI=opencode ./install.sh
+git clone https://github.com/renatocaliari/cali-product-workflow.git
+cd cali-product-workflow
+./install.sh
 ```
 
-### Skills Only
-
-```bash
-npx skills add renatocaliari/cali-product-workflow -g
-```
-
-Installs skills to `~/.agents/skills/` — works on any CLI. No plugins, no JS extensions, no config.
-
-### Manual Setup by CLI
-
-<details>
-<summary>Pi</summary>
-
-```bash
-# Full install
-pi install git:github.com/renatocaliari/cali-product-workflow
-pi install ./extensions/cali-product-workflow-pi
-pi install npm:pi-subagents npm:@capyup/pi-goal npm:pi-intercom npm:pi-supervisor npm:pi-autoresearch npm:@juicesharp/rpiv-ask-user-question npm:@plannotator/pi-extension
-
-# Update
-pi update
-
-# Remove
-pi remove git:github.com/renatocaliari/cali-product-workflow
-```
-</details>
-
-<details>
-<summary>OpenCode</summary>
+This auto-detects all your CLIs (Pi, OpenCode, Claude Code, Codex) and installs the workflow for each one.
 
 ```bash
 # Skills
