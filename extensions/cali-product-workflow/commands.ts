@@ -924,7 +924,7 @@ export function getCommandFilesForCLI(cli: string): Array<{ path: string; conten
   const commandFiles: Array<{ path: string; content: string }> = [];
   
   for (const cmd of WORKFLOW_COMMANDS) {
-    const description = getCommandDescription(cmd.canonicalName);
+    const description = getCommandDescription(cmd.name);
     const usage = description.replace(/^[^:]+: /, "");
     
     switch (cli) {
