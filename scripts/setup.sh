@@ -59,8 +59,8 @@ pi install "git:github.com/renatocaliari/cali-product-workflow" 2>/dev/null || {
 }
 
 # 2. Stub extension (lightweight Pi integration)
-echo "   → cali-product-workflow-pi (stub extension)"
-pi install "$PACKAGE_DIR/extensions/cali-product-workflow-pi" 2>/dev/null || true
+echo "   → cali-pw-pi (stub extension)"
+pi install "$PACKAGE_DIR/extensions/cali-pw-pi" 2>/dev/null || true
 echo ""
 
 echo "╔════════════════════════════════════════════════════════════╗"
@@ -69,7 +69,7 @@ echo "╚═══════════════════════�
 echo ""
 echo "Installed packages:"
 echo "  • @renatocaliari/cali-product-workflow (core - skills, adapters)"
-echo "  • @renatocaliari/cali-product-workflow-pi (stub extension)"
+echo "  • @renatocaliari/cali-pw-pi (stub extension)"
 echo ""
 echo "Next steps:"
 echo "  1. Run: pi"

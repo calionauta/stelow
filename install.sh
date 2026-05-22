@@ -92,7 +92,7 @@ install_pi() {
   }
 
   log_info "    Installing Pi extension..."
-  pi install "$SCRIPT_DIR/extensions/cali-product-workflow-pi" 2>/dev/null || true
+  pi install "$SCRIPT_DIR/extensions/cali-pw-pi" 2>/dev/null || true
 
   if [[ -z "${INSTALL_SKILLS_ONLY:-}" ]]; then
     log_info "    Installing supporting packages..."

@@ -29,8 +29,8 @@ if command -v pi &> /dev/null; then
   }
   
   # Remove stub extension
-  echo "   → @renatocaliari/cali-product-workflow-pi (stub extension)"
-  pi remove npm:@renatocaliari/cali-product-workflow-pi 2>/dev/null || {
+  echo "   → @renatocaliari/cali-pw-pi (stub extension)"
+  pi remove npm:@renatocaliari/cali-pw-pi 2>/dev/null || {
     echo "   Note: Stub extension may not be installed"
   }
 fi
@@ -57,7 +57,7 @@ echo "╚═══════════════════════�
 echo ""
 echo "What was removed:"
 echo "  • @renatocaliari/cali-product-workflow (core)"
-echo "  • @renatocaliari/cali-product-workflow-pi (stub extension)"
+echo "  • @renatocaliari/cali-pw-pi (stub extension)"
 echo "  • ~/.pi/agent/AGENTS.md (if it was ours)"
 echo ""
 echo "What remains:"

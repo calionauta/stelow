@@ -4,7 +4,7 @@
  * 
  * Keeps version numbers in sync between:
  * - Main package.json
- * - extensions/cali-product-workflow-pi/package.json
+ * - extensions/cali-pw-pi/package.json
  * 
  * Run automatically via `npm version` lifecycle hook.
  */
@@ -25,7 +25,7 @@ const FILES_TO_SYNC = [
   {
     source: join(ROOT, "package.json"),
     targets: [
-      join(ROOT, "extensions/cali-product-workflow-pi/package.json"),
+      join(ROOT, "extensions/cali-pw-pi/package.json"),
       join(ROOT, ".claude-plugin/plugin.json"),
       join(ROOT, ".claude-plugin/marketplace.json"),
       join(ROOT, ".codex-plugin/plugin.json"),
