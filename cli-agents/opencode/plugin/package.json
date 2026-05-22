@@ -1,0 +1,32 @@
+{
+  "name": "@cali/cali-product-workflow-opencode",
+  "version": "1.0.0-alpha",
+  "type": "module",
+  "description": "cali-product-workflow plugin for OpenCode",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./tui": {
+      "import": "./dist/tui.js",
+      "types": "./dist/tui.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@opencode-ai/plugin": "^1.15.7"
+  },
+  "peerDependencies": {
+    "@opentui/core": ">=0.2.15",
+    "@opentui/solid": ">=0.2.15"
+  },
+  "devDependencies": {
+    "@tsconfig/node22": "^1.0.0",
+    "typescript": "^5.4.0"
+  }
+}
