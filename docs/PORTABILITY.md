@@ -104,7 +104,7 @@ Defaulting to `generic` is safer than assuming a specific harness. When we don't
 
 Full support including:
 - TUI status display
-- Commands (`/pw:start`, `/pw:menu`, etc.)
+- Commands (`/pw-start`, `/pw-menu`, etc.)
 - Plannotator integration
 - Context Mode support
 

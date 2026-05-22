@@ -41,16 +41,16 @@ All notable changes to `@renatocaliari/cali-product-workflow` will be documented
   - Growth: ads, business-models, health, marketplace-playbook, open-source, pricing, promotions, trust-building
 
 - **Extension** with workflow commands:
-  - `/product-workflow-start` - Start workflow (auto-parses @filename and text)
-  - `/product-workflow-stop` - Stop immediately and clear UI
-  - `/product-workflow-pause` - Pause (keeps state)
-  - `/product-workflow-resume` - Resume paused workflow
-  - `/product-workflow-status` - Show current status
-  - `/product-workflow-list` - List all workflows
-  - `/product-workflow-setphase` - Set current phase
-  - `/product-workflow-next` - Advance to next phase
-  - `/product-workflow-complete` - Mark as completed
-  - `/product-workflow-goto` - Navigate to workflow in another project
+  - `/pw-start` - Start workflow (auto-parses @filename and text)
+  - `/pw-stop` - Stop immediately and clear UI
+  - `/pw-pause` - Pause (keeps state)
+  - `/pw-resume` - Resume paused workflow
+  - `/pw-status` - Show current status
+  - `/pw-list` - List all workflows
+  - `/pw-setphase` - Set current phase
+  - `/pw-next` - Advance to next phase
+  - `/pw-complete` - Mark as completed
+  - `/pw-goto` - Navigate to workflow in another project
 
 - **TUI integration**:
   - Footer status shows current workflow + stage
@@ -80,7 +80,7 @@ All notable changes to `@renatocaliari/cali-product-workflow` will be documented
 
 ### Changed
 
-- Commands renamed from `/workflow-*` to `/product-workflow-*`
+- Commands renamed from `/workflow-*` to `/pw-*`
 - Phase names updated to match skill exactly
 - TUI elements now use clear user-facing labels
 

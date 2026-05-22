@@ -24,7 +24,7 @@ cali-product-workflow/
 │       ├── subagents.md     # Tool: subagent
 │       ├── goals.md         # Tool: /sisyphus, /goal
 │       ├── plannotator.md   # Tool: plannotator
-│       ├── phase-status.md  # Tool: /pw:*
+│       ├── phase-status.md  # Tool: /pw-*
 │       ├── safe-change.md   # Tool: safe-change
 │       ├── intercom.md      # Tool: intercom
 │       ├── supervise.md     # Tool: start_supervision
