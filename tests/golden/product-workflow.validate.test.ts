@@ -83,7 +83,7 @@ describe("SKILL.md Golden Validation", () => {
       // Check key phases are documented
       expect(SKILL_CONTENT).toMatch(/Setup|Phase 1/i);
       expect(SKILL_CONTENT).toMatch(/Shape|Phase 3/i);
-      expect(SKILL_CONTENT).toMatch(/Execution|Phase 11/i);
+      expect(SKILL_CONTENT).toMatch(/Execution|Phase 12|Phase 13/i);
     });
   });
 

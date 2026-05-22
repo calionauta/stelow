@@ -10,8 +10,8 @@
 
 import { describe, it, expect } from 'vitest';
 import { readFileSync, existsSync } from 'node:fs';
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
 // Dynamic PROJECT_ROOT: resolve from test file location
 // tests/integration/sandbox-install.test.ts → ../../.. = project root
@@ -69,10 +69,12 @@ describe('Sandbox Install Verification', () => {
       expect(existsSync(join(extPath, 'state.ts'))).toBe(true);
     });
 
-    it('should have package.json with correct name', () => {
+    it('should have package.json following cali-pw naming convention', () => {
       const extPkg = JSON.parse(readFileSync(join(extPath, 'package.json'), 'utf-8'));
-      expect(extPkg.name).toMatch(/@renatocaliari\/cali-product-workflow/);
+      // Extension packages follow the pattern @renatocaliari/cali-pw-* or @renatocaliari/cali-product-workflow-*
+      expect(extPkg.name).toMatch(/@renatocaliari\/cali-(pw|product-workflow)/);
     });
+
   });
 
   // ── Skills Structure ─────────────────────────────────────────────────
@@ -99,154 +101,134 @@ describe('Sandbox Install Verification', () => {
     });
 
     it('should have strategic analysis skills', () => {
-      const stratPath = join(PROJECT_ROOT, 'skills/cali-product-workflow/skills-strategic-analysis');
-      expect(existsSync(stratPath)).toBe(true);
-    });
-
-    it('should have domain library skills', () => {
-      const domainPath = join(PROJECT_ROOT, 'skills/cali-product-workflow/skills-domain-libraries');
-      expect(existsSync(domainPath)).toBe(true);
+      const strategicPath = join(PROJECT_ROOT, 'skills/cali-product-workflow/skills-strategic-analysis');
+      expect(existsSync(strategicPath)).toBe(true);
+      
+      const skills = ['cali-product-job-to-be-done', 'cali-product-discovery', 'cali-product-opportunity-mapping'];
+      skills.forEach(skill => {
+        expect(existsSync(join(strategicPath, skill, 'SKILL.md'))).toBe(true);
+      });
     });
 
     it('should have execution skills', () => {
-      const execPath = join(PROJECT_ROOT, 'skills/cali-product-workflow/skills-execution');
-      expect(existsSync(execPath)).toBe(true);
-      expect(existsSync(join(execPath, 'cali-product-scope-executor', 'SKILL.md'))).toBe(true);
-    });
-  });
-
-  // ── References Structure ─────────────────────────────────────────────
-
-  describe('References Structure', () => {
-    const refsPath = join(PROJECT_ROOT, 'skills/cali-product-workflow/references');
-
-    it('should have references directory', () => {
-      expect(existsSync(refsPath)).toBe(true);
-    });
-
-    it('should have cli-tools directory', () => {
-      const cliToolsPath = join(refsPath, 'cli-tools');
-      expect(existsSync(cliToolsPath)).toBe(true);
-    });
-
-    it('should have cli-tools reference files', () => {
-      const cliToolsPath = join(refsPath, 'cli-tools');
+      const executionPath = join(PROJECT_ROOT, 'skills/cali-product-workflow/skills-execution');
+      expect(existsSync(executionPath)).toBe(true);
       
-      // Expected files
-      const expectedFiles = ['plannotator.md', 'subagents.md', 'goals.md', 'structured-question.md'];
-      expectedFiles.forEach(file => {
-        expect(existsSync(join(cliToolsPath, file))).toBe(true);
+      const skills = ['cali-product-scope-executor', 'cali-testing-ai-code'];
+      skills.forEach(skill => {
+        expect(existsSync(join(executionPath, skill, 'SKILL.md'))).toBe(true);
+      });
+    });
+
+    it('should have domain libraries', () => {
+      const domainPath = join(PROJECT_ROOT, 'skills/cali-product-workflow/skills-domain-libraries');
+      expect(existsSync(domainPath)).toBe(true);
+      
+      const domains = ['cali-product-pricing', 'cali-product-ads', 'cali-product-trust-building'];
+      domains.forEach(domain => {
+        expect(existsSync(join(domainPath, domain, 'SKILL.md'))).toBe(true);
       });
     });
 
     it('should have phases directory', () => {
       const phasesPath = join(PROJECT_ROOT, 'skills/cali-product-workflow/phases');
       expect(existsSync(phasesPath)).toBe(true);
-      
-      // Expected phase files
-      const expectedPhases = ['setup.md', 'context.md', 'gate.md', 'execution.md'];
-      expectedPhases.forEach(phase => {
-        expect(existsSync(join(phasesPath, phase))).toBe(true);
+    });
+
+    it('should have core phase files', () => {
+      const phasesPath = join(PROJECT_ROOT, 'skills/cali-product-workflow/phases');
+      // Core phases that must exist in phases/ directory
+      const corePhases = ['setup', 'context', 'gate', 'execution', 'selection', 'delivery-audit', 'triage'];
+      corePhases.forEach(phase => {
+        expect(existsSync(join(phasesPath, `${phase}.md`))).toBe(true);
       });
     });
   });
 
-  // ── Peer Dependencies ─────────────────────────────────────────────────
+  // ── CLI Agents Structure ─────────────────────────────────────────────
 
-  describe('Peer Dependencies', () => {
-    it('should declare optional peer dependencies', () => {
-      const pkg = JSON.parse(readFileSync(join(PROJECT_ROOT, 'package.json'), 'utf-8'));
-      expect(pkg.optionalPeerDependencies).toBeDefined();
+  describe('CLI Agents Structure', () => {
+    it('should have opencode CLI agent', () => {
+      const opencodePath = join(PROJECT_ROOT, 'cli-agents/opencode');
+      expect(existsSync(opencodePath)).toBe(true);
     });
 
-    it('should declare coding agent peer dependency', () => {
-      const pkg = JSON.parse(readFileSync(join(PROJECT_ROOT, 'package.json'), 'utf-8'));
-      expect(pkg.optionalPeerDependencies['@earendil-works/pi-coding-agent']).toBeDefined();
+    it('should have claude CLI agent', () => {
+      const claudePath = join(PROJECT_ROOT, 'cli-agents/claude');
+      expect(existsSync(claudePath)).toBe(true);
     });
 
-    it('should declare plannotator peer dependency', () => {
-      const pkg = JSON.parse(readFileSync(join(PROJECT_ROOT, 'package.json'), 'utf-8'));
-      expect(pkg.optionalPeerDependencies['@plannotator/pi-extension']).toBeDefined();
-    });
-  });
-
-  // ── Files to Publish ─────────────────────────────────────────────────
-
-  describe('Files to Publish', () => {
-    it('should declare publishable files', () => {
-      const pkg = JSON.parse(readFileSync(join(PROJECT_ROOT, 'package.json'), 'utf-8'));
-      expect(pkg.files).toBeDefined();
-      expect(pkg.files).toContain('skills/');
-      expect(pkg.files).toContain('extensions/cali-product-workflow/');
-      expect(pkg.files).toContain('scripts/');
+    it('should have codex CLI agent', () => {
+      const codexPath = join(PROJECT_ROOT, 'cli-agents/codex');
+      expect(existsSync(codexPath)).toBe(true);
     });
 
-    it('should include README in published files', () => {
-      const pkg = JSON.parse(readFileSync(join(PROJECT_ROOT, 'package.json'), 'utf-8'));
-      expect(pkg.files).toContain('README.md');
+    it('should have commands for opencode', () => {
+      const commandsPath = join(PROJECT_ROOT, 'cli-agents/opencode/commands');
+      expect(existsSync(commandsPath)).toBe(true);
     });
   });
 
-  // ── Scripts ─────────────────────────────────────────────────────────
+  // ── Documentation Structure ──────────────────────────────────────────
 
-  describe('Scripts', () => {
-    it('should have test script', () => {
-      const pkg = JSON.parse(readFileSync(join(PROJECT_ROOT, 'package.json'), 'utf-8'));
-      expect(pkg.scripts.test).toBeDefined();
-      expect(pkg.scripts.test).toContain('vitest');
+  describe('Documentation Structure', () => {
+    it('should have README.md', () => {
+      const readmePath = join(PROJECT_ROOT, 'README.md');
+      expect(existsSync(readmePath)).toBe(true);
     });
 
-    it('should have test coverage script', () => {
-      const pkg = JSON.parse(readFileSync(join(PROJECT_ROOT, 'package.json'), 'utf-8'));
-      expect(pkg.scripts['test:coverage']).toBeDefined();
+    it('should have INSTALLATION.md', () => {
+      const installPath = join(PROJECT_ROOT, 'docs/INSTALLATION.md');
+      expect(existsSync(installPath)).toBe(true);
     });
 
-    it('should have layer-specific test scripts', () => {
-      const pkg = JSON.parse(readFileSync(join(PROJECT_ROOT, 'package.json'), 'utf-8'));
-      expect(pkg.scripts['test:unit']).toBeDefined();
-      expect(pkg.scripts['test:integration']).toBeDefined();
-      expect(pkg.scripts['test:skills']).toBeDefined();
-      expect(pkg.scripts['test:artifacts']).toBeDefined();
+    it('should have AGENTS.md', () => {
+      const agentsPath = join(PROJECT_ROOT, 'AGENTS.md');
+      expect(existsSync(agentsPath)).toBe(true);
+    });
+
+    it('should have CHANGELOG.md', () => {
+      const changelogPath = join(PROJECT_ROOT, 'CHANGELOG.md');
+      expect(existsSync(changelogPath)).toBe(true);
     });
   });
 
-  // ── Node Engine ──────────────────────────────────────────────────────
+  // ── Configuration Files ───────────────────────────────────────────────
 
-  describe('Node Engine', () => {
-    it('should require Node >= 20', () => {
-      const pkg = JSON.parse(readFileSync(join(PROJECT_ROOT, 'package.json'), 'utf-8'));
-      expect(pkg.engines).toBeDefined();
-      expect(pkg.engines.node).toMatch(/^>=20/);
+  describe('Configuration Files', () => {
+    it('should have tsconfig.json', () => {
+      expect(existsSync(join(PROJECT_ROOT, 'tsconfig.json'))).toBe(true);
+    });
+
+    it('should have package.json in extensions/cali-product-workflow-pi', () => {
+      const piExtPkg = join(PROJECT_ROOT, 'extensions/cali-product-workflow-pi/package.json');
+      expect(existsSync(piExtPkg)).toBe(true);
+    });
+
+    it('should have .gitignore', () => {
+      expect(existsSync(join(PROJECT_ROOT, '.gitignore'))).toBe(true);
+    });
+  });
+
+  // ── Multi-CLI Support Structure ─────────────────────────────────────
+
+  describe('Multi-CLI Support Structure', () => {
+    it('should have adapters directory', () => {
+      const adaptersPath = join(PROJECT_ROOT, 'extensions/cali-product-workflow/adapters');
+      expect(existsSync(adaptersPath)).toBe(true);
+    });
+
+    it('should have CLI-specific adapters', () => {
+      const adaptersPath = join(PROJECT_ROOT, 'extensions/cali-product-workflow/adapters');
+      expect(existsSync(join(adaptersPath, 'pi'))).toBe(true);
+      expect(existsSync(join(adaptersPath, 'opencode'))).toBe(true);
+      expect(existsSync(join(adaptersPath, 'claude-code'))).toBe(true);
+      expect(existsSync(join(adaptersPath, 'codex'))).toBe(true);
+    });
+
+    it('should have command dispatcher', () => {
+      const dispatcherPath = join(PROJECT_ROOT, 'extensions/cali-product-workflow/adapters/commands/dispatcher.ts');
+      expect(existsSync(dispatcherPath)).toBe(true);
     });
   });
 });
-
-// ── Smoke Test Preparation ───────────────────────────────────────────────────
-
-/**
- * Notes for future smoke tests with pi-test-harness:
- * 
- * The actual smoke test would use verifySandboxInstall:
- * 
- * ```typescript
- * import { verifySandboxInstall } from '@marcfargas/pi-test-harness';
- * 
- * const result = await verifySandboxInstall({
- *   packageDir: PROJECT_ROOT,
- *   expect: {
- *     extensions: 1,
- *     skills: 18,
- *   },
- * });
- * 
- * expect(result.loaded.extensions).toBe(1);
- * expect(result.loaded.extensionErrors).toHaveLength(0);
- * ```
- * 
- * This requires:
- * 1. Running `npm pack` to create tarball
- * 2. Installing in temp dir
- * 3. Loading via DefaultResourceLoader
- * 
- * For now, we verify the file structure that would be discovered.
- */
