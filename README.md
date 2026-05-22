@@ -376,38 +376,17 @@ When working on software projects, trigger the product workflow:
 
 ## 🔧 Dependencies
 
-### Required
+### Required (Pi Only)
 
-| Package | Purpose |
-|---------|---------|
-| `pi-subagents` | Parallel subagent orchestration |
-| `@capyup/pi-goal` | Goal management and tracking |
-| `pi-intercom` | Session-to-session coordination |
-| `pi-supervisor` | Conversation supervision and steering |
-| `pi-autoresearch` | Autonomous experiment loops |
-| `@juicesharp/rpiv-ask-user-question` | Question UI component |
-| `@plannotator/pi-extension` | Visual plan annotation |
+See [docs/INSTALLATION.md#required-npm-packages](docs/INSTALLATION.md#required-npm-packages).
 
 ### Development
 
-| Package | Purpose |
-|---------|---------|
-| `typescript` | Type safety |
-| `vitest` | Unit testing |
-| `@stryker-mutator/core` | Mutation testing |
+See [package.json](package.json) for toolchain dependencies (TypeScript, Vitest, Stryker).
 
 ### Third-Party Skills (Optional)
 
-| Skill | Required for | Install (Pi) | Install (Other CLIs) |
-|-------|-------------|--------------|----------------------|
-| `pi-agent-codebase-workflows` | Phase 2 (safe-change regression check) | `pi install git:github.com/PriNova/pi-agent-codebase-workflows` | `npx skills add Prinova/pi-agent-codebase-workflows -a <cli> -g` |
-| `thermo-nuclear` (codequality-review) | Phase 11 (final gate before commit) | `pi install git:github.com/cursor/plugins` | `npx skills add cursor/plugins -a <cli> -g` |
-
-Replace `<cli>` with: `opencode`, `claude-code`, or `codex`.
-
-Without these skills, the workflow falls back to manual alternatives documented in each tool's reference file (see `references/cli-tools/`).
-
-See [docs/INSTALLATION.md](docs/INSTALLATION.md) for full details.
+See [docs/INSTALLATION.md#third-party-skills](docs/INSTALLATION.md#third-party-skills).
 ---
 
 ## 📁 Artifact Directory
