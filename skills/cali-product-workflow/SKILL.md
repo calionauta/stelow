@@ -1,24 +1,6 @@
 ---
 name: cali-product-workflow
-description: >
-  [Cali] Complete product strategic planning orchestrator. Executes Shape Up Planning,
-  Interface Brainstorming (conditional), Tech Planning Sequencing, Solution Critique,
-  and Plannotator Gate. Use to transform an idea into an approved plan ready for execution.
-  
-  Sub-skills (4 workflow phases):
-These are internal skills bundled with this package. Read the SKILL.md directly — do NOT use `/skill:` for internal subskills:
-
-  - Shape Up planning: see `skills-workflow/cali-shape-up/SKILL.md` for instructions
-  - Interface brainstorming: see `skills-workflow/cali-interface-brainstorm/SKILL.md` for instructions
-  - Plan critique: see `skills-workflow/cali-plan-critique/SKILL.md` for instructions
-  - Tech planning: see `skills-workflow/cali-tech-planning/SKILL.md` for instructions
-
-  Execution skills (read directly):
-  - AI-aware testing: see `skills-execution/cali-testing-ai-code/SKILL.md` for instructions
-  - Scope executor: see `skills-execution/cali-product-scope-executor/SKILL.md` for instructions
-  
-  External skills: JTBD, Evolutionary, Opportunity Mapping, Product Discovery, Ads, Business Models,
-  Health, Marketplace, Open Source, Pricing, Promotions, Trust Building
+description: "[Cali] Complete product planning workflow: Shape Up -> Interface -> Tech Planning -> Plan Critique -> Plannotator Gate. Includes 8 domain playbooks (Pricing, Trust, Ads, Health, etc)"
 ---
 
 # Product Planner (Orchestrator)
