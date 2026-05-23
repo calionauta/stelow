@@ -6,13 +6,16 @@ description: >
   and Plannotator Gate. Use to transform an idea into an approved plan ready for execution.
   
   Sub-skills (4 workflow phases):
-  - /skill:cali-shape-up — Shape Up planning
-  - /skill:cali-interface-brainstorm — Interface brainstorming
-  - /skill:cali-plan-critique — Plan critique
-  - /skill:cali-tech-planning — Tech planning
-  - /skill:cali-testing-ai-code — AI-aware testing strategy (software products only)
-  
-  Standalone loading: skills-workflow/cali-{name}/SKILL.md
+These are internal skills bundled with this package. Read the SKILL.md directly — do NOT use `/skill:` for internal subskills:
+
+  - Shape Up planning: see `skills-workflow/cali-shape-up/SKILL.md` for instructions
+  - Interface brainstorming: see `skills-workflow/cali-interface-brainstorm/SKILL.md` for instructions
+  - Plan critique: see `skills-workflow/cali-plan-critique/SKILL.md` for instructions
+  - Tech planning: see `skills-workflow/cali-tech-planning/SKILL.md` for instructions
+
+  Execution skills (read directly):
+  - AI-aware testing: see `skills-execution/cali-testing-ai-code/SKILL.md` for instructions
+  - Scope executor: see `skills-execution/cali-product-scope-executor/SKILL.md` for instructions
   
   External skills: JTBD, Evolutionary, Opportunity Mapping, Product Discovery, Ads, Business Models,
   Health, Marketplace, Open Source, Pricing, Promotions, Trust Building
@@ -40,7 +43,7 @@ You are a strategic product planner following the Shape Up method. This is the *
 | `subagent` | `references/cli-tools/subagents.md` |
 | `structured question` | `references/cli-tools/ask.md` |
 | `plannotator annotate --gate` | `references/cli-tools/plannotator.md` |
-| `/sisyphus`, `/goal` | `references/cli-tools/goals.md` |
+| `goal-system` (ordered + flexible) | `references/cli-tools/goals.md` |
 | `safe-change` | `references/cli-tools/safe-change.md` |
 | `intercom` | `references/cli-tools/intercom.md` |
 | `supervise` | `references/cli-tools/supervise.md` |
@@ -106,9 +109,16 @@ Domain playbooks available for tactical reference during planning/execution:
 
 ## 📋 Phase Index
 
-> **Phase Status:** Read `references/cli-tools/phase-status.md` for ASCII status display and CLI commands.
+> **Phase Status:** see `references/cli-tools/phase-status.md` for instructions for ASCII status display and CLI commands.
 
-Follow the sequence below. For phases 3-5 and 7, delegate to subskills via `/skill:`. Each subskill has its own **Reference Index** — load the skill to see it.
+Follow the sequence below. For phases 3-5 and 7, read the subskill SKILL.md directly. Each subskill has its own **Reference Index** — read the file to see it:
+
+1. Phase 3 (Shape): see `skills-workflow/cali-shape-up/SKILL.md` for instructions
+2. Phase 4 (Critique): see `skills-workflow/cali-plan-critique/SKILL.md` for instructions
+3. Phase 6 (Interface): see `skills-workflow/cali-interface-brainstorm/SKILL.md` for instructions
+4. Phase 7 (Int. Gate): see `skills-workflow/cali-tech-planning/SKILL.md` for instructions
+
+Do NOT use `/skill:` for internal subskills.
 
 > ⚠️ **Bypass awareness:** If the user asks you to implement code before Phase 12 (Execution), the workflow has been bypassed. The footer will show `⚠️ bypassed`. Guide the user back: remind them of the current phase and suggest `/pw-next` to advance properly. Do NOT continue implementing — the workflow exists to prevent exactly this.
 
@@ -215,7 +225,7 @@ Use `references/cli-tools/plannotator.md` for Plannotator gate rules.
 - Before generating scopes: verify `approved: true` in spec-product.md
 - **Deterministic** — do not rely on memory, read the YAML frontmatter
 - **AI-Aware Testing**: If `product_type: software` or `product_type: hybrid` in frontmatter:
-  - Activate `/skill:cali-testing-ai-code` to generate testing-strategy.md
+  - Activate `see `skills-execution/cali-testing-ai-code/SKILL.md` for instructions` to generate testing-strategy.md
   - Add `test-*` scope types to spec-tech.md
   - See `skills-execution/cali-testing-ai-code/SKILL.md`
 
@@ -224,13 +234,13 @@ Use `references/cli-tools/plannotator.md` for Plannotator gate rules.
 - Activate only during execution, WHEN STARTING each scope.
 
 ### Execution (Phase 12)
-- **DO NOT ask** "Would you like to execute?", "Create /sisyphus?", "Review plan first?"
+- **DO NOT ask** "Would you like to execute?", "Create ordered-execution-goal?", "Review plan first?"
 - **Execution is automatic** after Tech Planning approval. Proceed directly.
-- Run `/skill:cali-product-scope-executor` for scope routing.
+- see `skills-execution/cali-product-scope-executor/SKILL.md` for instructions for scope routing.
 - See `phases/execution.md` for details.
-- **DO NOT ask** "Would you like to execute?", "Create /sisyphus?", "Review plan first?"
+- **DO NOT ask** "Would you like to execute?", "Create ordered-execution-goal?", "Review plan first?"
 - **Execution is automatic** after Tech Planning approval. Proceed directly.
-- Run `/skill:cali-product-scope-executor` for scope routing.
+- see `skills-execution/cali-product-scope-executor/SKILL.md` for instructions for scope routing.
 - See `phases/execution.md` for details.
 
 ### Worktree

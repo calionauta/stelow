@@ -12,9 +12,17 @@ description: >
 
 ## Overview
 
-This skill executes the Interface Brainstorming phase. It can be run:
-1. **Standalone:** `/skill:cali-interface-brainstorm` — for quick interface exploration
-2. **Via Orchestrator:** Called by `/skill:cali-product-workflow`
+This skill executes the Interface Brainstorming phase.
+
+## How to Load
+
+This skill is **bundled with cali-product-workflow** — there is no standalone `/skill:` command.
+
+### Via Orchestrator (recommended)
+The orchestrator reads this file directly when needed.
+
+### Standalone
+To run standalone, see `skills-workflow/cali-interface-brainstorm/SKILL.md` for instructions and follow the instructions inline.
 
 ## Process
 
@@ -50,7 +58,7 @@ subagent({
 - Combined output: `.cali-product-workflow/{YYYY-MM-DD}/{_dir}/interfaces/interfaces_{v}.md`
 
 
-**Step 2:** Read `references/output-format.md` to format and concatenate all proposals.
+**Step 2:** see `references/output-format.md` for instructions to format and concatenate all proposals.
 
 
 ## Generate Hybrid (Step 3 — AFTER proposals complete)

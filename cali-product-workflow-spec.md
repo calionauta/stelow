@@ -68,7 +68,7 @@ Phase 8:  Interface Brainstorm → 5 ASCII proposals + hybrid
 Phase 9:  Interface Gate    → Plannotator visual approval
 Phase 10: Interface Selection → User picks via ask_user_question
 Phase 11: Tech Planning     → Typed scopes (feature/spike/optimize)
-Phase 12: Execution         → Automatic via /sisyphus or autoresearch
+Phase 12: Execution         → Automatic via ordered-execution-goal or autoresearch
 Phase 13: Delivery Audit    → Post-execution verification
 ```
 
@@ -167,10 +167,10 @@ Phase 13: Delivery Audit    → Post-execution verification
 
 | Type | Executor | Use Case |
 |------|----------|----------|
-| `feature` | `/sisyphus` + `/supervise` | Standard features |
+| `feature` | **ordered-execution-goal** (see goals.md) + `/supervise` | Standard features |
 | `optimization` | `autoresearch-create` | Performance tuning |
-| `spike` | `/sisyphus` + `/supervise` | Research/uncertainty |
-| `test-*` | `/sisyphus` + testing gates | Test coverage |
+| `spike` | **ordered-execution-goal** (see goals.md) + `/supervise` | Research/uncertainty |
+| `test-*` | **ordered-execution-goal** (see goals.md) + testing gates | Test coverage |
 
 **Rules:**
 - Sequencing: Riskiest-first or UI-first principle
@@ -290,10 +290,10 @@ Worktree Check ───► [Create git worktree if needed]
     ▼
 For each scope (in sequence):
     │
-    ├── TYPE=feature ──► /sisyphus + /supervise
+    ├── TYPE=feature ──► ordered-execution-goal + /supervise
     ├── TYPE=optimization ──► /autoresearch-create
-    ├── TYPE=spike ──► /sisyphus + /supervise
-    └── TYPE=test-* ──► /sisyphus + testing gates
+    ├── TYPE=spike ──► ordered-execution-goal + /supervise
+    └── TYPE=test-* ──► ordered-execution-goal + testing gates
     │
     ▼
 Code Quality Gate (optional)
@@ -469,7 +469,7 @@ Code Quality Gate (optional)
 | hasCommands | boolean | Supports slash commands |
 | hasSubagent | boolean | Subagent delegation |
 | hasAskUserQuestion | boolean | ask_user_question tool |
-| hasGoals | boolean | /goals integration |
+| hasGoals | boolean | Goal system (ordered/flexible modes) |
 | hasIntercom | boolean | Cross-session messaging |
 | hasSupervise | boolean | Supervisor tracking |
 | hasTUI | boolean | UI overlay |

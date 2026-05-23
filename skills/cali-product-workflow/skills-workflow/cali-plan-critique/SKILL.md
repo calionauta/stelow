@@ -10,9 +10,17 @@ description: >
 
 > **Tools:** See `references/cli-tools/subagents.md` for subagent patterns.
 
-This skill executes the Plan Critique phase. It can be run:
-1. **Standalone:** `/skill:cali-plan-critique` — after a Shape Up session
-2. **Via Orchestrator:** Called by `/skill:cali-product-workflow`
+This skill executes the Plan Critique phase.
+
+## How to Load
+
+This skill is **bundled with cali-product-workflow** — there is no standalone `/skill:` command.
+
+### Via Orchestrator (recommended)
+The orchestrator reads this file directly when needed.
+
+### Standalone
+To run standalone, read `skills-workflow/cali-plan-critique/SKILL.md` and follow the instructions inline.
 
 ## Process
 

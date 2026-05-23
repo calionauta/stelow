@@ -13,9 +13,17 @@ description: >
 
 ## Overview
 
-This skill executes the Shape Up planning phase. It can be run:
-1. **Standalone:** `/skill:cali-shape-up` — for quick shaping sessions
-2. **Via Orchestrator:** Called by `/skill:cali-product-workflow`
+This skill executes the Shape Up planning phase.
+
+## How to Load
+
+This skill is **bundled with cali-product-workflow** — there is no standalone `/skill:` command.
+
+### Via Orchestrator (recommended)
+The orchestrator reads this file directly when needed.
+
+### Standalone
+To run standalone, read `skills-workflow/cali-shape-up/SKILL.md` and follow the instructions inline.
 
 ## 1a. Parallel Recon (optional — recommended for complex features)
 
