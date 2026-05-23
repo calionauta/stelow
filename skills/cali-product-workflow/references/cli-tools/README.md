@@ -109,6 +109,7 @@ When CLI not detected or tool unavailable:
 | `ask.md` | Structured user questions |
 | `plannotator.md` | Visual review gate |
 | `goals.md` | Autonomous goal execution |
+| `autoresearch.md` | Experiment loops for metrics |
 | `intercom.md` | Cross-session messaging |
 | `supervise.md` | Outcome steering |
 | `safe-change.md` | Git-safe changes |

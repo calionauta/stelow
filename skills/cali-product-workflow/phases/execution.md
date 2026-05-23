@@ -66,24 +66,26 @@ Proceed directly to scope execution in the current directory.
 
 ### 6b. Scope Executor Routing
 
-| Scope Type | Metric? | Executor | Supervision |
-|---|---|---|---|
-| `[TYPE] optimization` | Yes | `/skill:autoresearch-create` | Metric loop (auto) |
-| `[EXECUTOR] autoresearch` | Yes | `/skill:autoresearch-create` | Metric loop (auto) |
-| Spike with metric | Yes | `/skill:autoresearch-create` | Metric loop (auto) |
-| Feature | No | `/sisyphus` (ordered steps) | `/supervise` with outcome = DoD |
-| Refactoring without metric | No | `/sisyphus` | `/supervise` with outcome = DoD |
-| Investigative spike | No | `/sisyphus` | `/supervise` with outcome = DoD |
-| Interface brainstorming | No | `/sisyphus` (5 proposals) | `/supervise` with outcome = DoD |
-| `test-unit` | No | `/sisyphus` | Testing gates (see below) |
-| `test-integration` | No | `/sisyphus` | Testing gates (see below) |
-| `test-security` | No | `/sisyphus` | Testing gates (see below) |
-| `test-behavior` | No | `/sisyphus` | Testing gates (see below) |
+> **Goal system:** See `references/cli-tools/goals.md` for command variants (ordered-execution-goal = /sisyphus-set)
+
+| Scope Type | Executor | Supervision |
+|---|---|---|
+| `[TYPE] optimization` | `/skill:autoresearch-create` | Metric loop (auto) |
+| `[EXECUTOR] autoresearch` | `/skill:autoresearch-create` | Metric loop (auto) |
+| Spike with metric | `/skill:autoresearch-create` | Metric loop (auto) |
+| `feature` | **ordered-execution-goal** (see goals.md) | `/supervise` with outcome = DoD |
+| Refactoring without metric | **ordered-execution-goal** (see goals.md) | `/supervise` with outcome = DoD |
+| Investigative spike | **ordered-execution-goal** (see goals.md) | `/supervise` with outcome = DoD |
+| Interface brainstorming | **ordered-execution-goal** (see goals.md) | `/supervise` with outcome = DoD |
+| `test-unit` | **ordered-execution-goal** (see goals.md) | Testing gates (see below) |
+| `test-integration` | **ordered-execution-goal** (see goals.md) | Testing gates (see below) |
+| `test-security` | **ordered-execution-goal** (see goals.md) | Testing gates (see below) |
+| `test-behavior` | **ordered-execution-goal** (see goals.md) | Testing gates (see below) |
 
 ### When starting execution of each scope:
 
-1. **Feature/refactor/spike without metric → `/sisyphus` + `/supervise`**
-   - Create goal with `/sisyphus` (ordered steps, DoD as completion criteria)
+1. **Feature/refactor/spike without metric → ordered-execution-goal + `/supervise`** (see goals.md)
+   - Create goal with **ordered-execution-goal** (no discussion, starts immediately)
    - Activate `/supervise` with:
      ```
      /supervise outcome="Execute scope '{scope_name}' per spec-tech.md.
@@ -145,18 +147,18 @@ After Plannotator approval on spec-tech_v{N}.md:
 
 | Scope Type | Executor | Command |
 |------------|----------|--------|
-| `feature` | `/sisyphus` + `/supervise` | `/skill:cali-product-scope-executor` |
+| `feature` | **ordered-execution-goal** (see goals.md) + `/supervise` | see `skills-execution/cali-product-scope-executor/SKILL.md` for instructions |
 | `optimization` | `/skill:autoresearch-create` | `/skill:autoresearch-create` |
-| `spike` | `/sisyphus` + `/supervise` | `/skill:cali-product-scope-executor` |
-| `test-*` | `/sisyphus` + testing gates | `/skill:cali-product-scope-executor` |
+| `spike` | **ordered-execution-goal** (see goals.md) + `/supervise` | see `skills-execution/cali-product-scope-executor/SKILL.md` for instructions |
+| `test-*` | **ordered-execution-goal** (see goals.md) + testing gates | see `skills-execution/cali-product-scope-executor/SKILL.md` for instructions |
 
 ### Executing Scopes
 
-Run `/skill:cali-product-scope-executor` — this routes each scope to its correct executor.
+Run see `skills-execution/cali-product-scope-executor/SKILL.md` for instructions — this routes each scope to its correct executor.
 
 **For feature scopes:**
 ```bash
-/sisyphus Scope: [scope-name]
+/sisyphus-set Scope: [scope-name]
   Objective: {from scope description}
   Done when:
   - [ ] Criterion 1
@@ -173,7 +175,7 @@ Run `/skill:cali-product-scope-executor` — this routes each scope to its corre
 
 After Tech Planning approval, **DO NOT** ask:
 - "Would you like to execute now?"
-- "Create /sisyphus goal?"
+- "Create ordered-execution-goal?"
 - "Review plan first?"
 - Any variation of "what would you like to do next"
 
@@ -199,18 +201,18 @@ After Plannotator approval on spec-tech_v{N}.md:
 
 | Scope Type | Executor | Command |
 |------------|----------|--------|
-| `feature` | `/sisyphus` + `/supervise` | `/skill:cali-product-scope-executor` |
+| `feature` | **ordered-execution-goal** (see goals.md) + `/supervise` | see `skills-execution/cali-product-scope-executor/SKILL.md` for instructions |
 | `optimization` | `/skill:autoresearch-create` | `/skill:autoresearch-create` |
-| `spike` | `/sisyphus` + `/supervise` | `/skill:cali-product-scope-executor` |
-| `test-*` | `/sisyphus` + testing gates | `/skill:cali-product-scope-executor` |
+| `spike` | **ordered-execution-goal** (see goals.md) + `/supervise` | see `skills-execution/cali-product-scope-executor/SKILL.md` for instructions |
+| `test-*` | **ordered-execution-goal** (see goals.md) + testing gates | see `skills-execution/cali-product-scope-executor/SKILL.md` for instructions |
 
 ### Executing Scopes
 
-**Run `/skill:cali-product-scope-executor`** — this routes each scope to its correct executor.
+**Run see `skills-execution/cali-product-scope-executor/SKILL.md` for instructions** — this routes each scope to its correct executor.
 
 **For feature scopes:**
 ```bash
-/sisyphus Scope: [scope-name]
+/sisyphus-set Scope: [scope-name]
   Objective: {from scope description}
   Done when:
   - [ ] Criterion 1
@@ -227,7 +229,7 @@ After Plannotator approval on spec-tech_v{N}.md:
 
 After Tech Planning approval, **DO NOT** ask:
 - "Would you like to execute now?"
-- "Create /sisyphus goal?"
+- "Create ordered-execution-goal?"
 - "Review plan first?"
 - Any variation of "what would you like to do next"
 

@@ -22,7 +22,7 @@ cali-product-workflow/
 │   └── cli-tools/
 │       ├── ask.md           # Tool: ask_user_question
 │       ├── subagents.md     # Tool: subagent
-│       ├── goals.md         # Tool: /sisyphus, /goal
+│       ├── goals.md         # Tool: Goal System (ordered/flexible modes)
 │       ├── plannotator.md   # Tool: plannotator
 │       ├── phase-status.md  # Tool: /pw-*
 │       ├── safe-change.md   # Tool: safe-change

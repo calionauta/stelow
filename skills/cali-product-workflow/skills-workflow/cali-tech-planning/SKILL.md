@@ -11,9 +11,17 @@ description: >
 
 > **Tools:** See `references/cli-tools/subagents.md` for subagent patterns, `references/cli-tools/goals.md` for goal commands.
 
-This skill executes the Tech Planning phase. It can be run:
-1. **Standalone:** `/skill:cali-tech-planning` — after Shape Up and Critique
-2. **Via Orchestrator:** Called by `/skill:cali-product-workflow`
+This skill executes the Tech Planning phase.
+
+## How to Load
+
+This skill is **bundled with cali-product-workflow** — there is no standalone `/skill:` command.
+
+### Via Orchestrator (recommended)
+The orchestrator reads this file directly when needed.
+
+### Standalone
+To run standalone, read `skills-workflow/cali-tech-planning/SKILL.md` and follow the instructions inline.
 
 ## Prerequisites
 
@@ -158,7 +166,7 @@ AC: {acceptance criteria}
 Deps: {scope dependencies}
 ```
 
-**Optimization/spike scopes with metrics → `/skill:autoresearch-create`**
+**Optimization/spike scopes with metrics → `**experiment-loop** (see `references/cli-tools/autoresearch.md`)`**
 (they become experiment loops, not goals)
 
 **Rules:**
@@ -178,10 +186,10 @@ Tech plan is saved to:
 **DO NOT ask user what to do next. Execution is automatic.**
 
 After Plannotator approval on spec-tech_v{N}.md:
-1. Run `/skill:cali-product-scope-executor` for scope routing
+1. Run `read `skills-execution/cali-product-scope-executor/SKILL.md`` for scope routing
 2. Execute scopes based on type:
    - `feature` → goal (see `references/cli-tools/goals.md`) + supervise (see `references/cli-tools/supervise.md`)
-   - `optimization` → `/skill:autoresearch-create`
+   - `optimization` → `**experiment-loop** (see `references/cli-tools/autoresearch.md`)`
    - `test-unit`, `test-integration`, `test-security`, `test-behavior` → goal (see `references/cli-tools/goals.md`) with testing gates
 
 See `phases/execution.md` for full execution flow.

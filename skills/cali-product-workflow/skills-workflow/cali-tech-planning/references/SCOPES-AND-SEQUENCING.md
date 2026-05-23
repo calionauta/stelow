@@ -110,10 +110,10 @@ Add when ALL conditions are true:
 The `autoresearch` executor NEVER runs in the main agent. The routing is:
 
 ```
-optimization scope → cali-scope-executor → subagent (delegate/worker) → /skill:autoresearch-create
+optimization scope → cali-scope-executor → subagent (delegate/worker) → **experiment-loop** (see `references/cli-tools/autoresearch.md`)
 ```
 
-The cali-scope-executor delegates to a subagent that executes `/skill:autoresearch-create`.
+The cali-scope-executor delegates to a subagent that executes **experiment-loop** (see `references/cli-tools/autoresearch.md`).
 Never invoke autoresearch directly in the main agent — this creates infinite loops in the planner's context.
 
 **Keep default routing (no `[EXECUTOR]`) when:**

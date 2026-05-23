@@ -111,7 +111,7 @@ Before executing, present a clear execution plan to the user with the resolved e
 Phase 1 (parallel):
   ⏩ [SCOPE-1] Login — feature → worker
   ⏩ [SCOPE-3] Vector DB eval — spike → scout + researcher
-  ⏩ [SCOPE-4] Refactor payments — feature → autoresearch (override)
+  ⏩ [SCOPE-4] Refactor payments — feature → **experiment-loop** (see `references/cli-tools/autoresearch.md`) (override)
 
 Phase 2 (after SCOPE-1):
   ⏩ [SCOPE-2] Search optimization — optimization → autoresearch
@@ -268,7 +268,7 @@ Next steps:
 ## Error Handling
 
 - **If a worker fails** (crash, stuck, timeout): note it, log the error, and move to the next scope. Do not block the entire execution on one failure.
-- **If autoresearch crashes:** check the log, fix if trivial, otherwise skip and note it.
+- **If experiment-loop crashes:** check the log, fix if trivial, otherwise skip and note it.
 - **If a reviewer finds blocking issues:** flag them but continue execution. Report them in the final summary. Do not halt the pipeline for review findings — the user will address them.
 - **If a spike is inconclusive:** document what was learned and recommend next steps.
 
@@ -324,7 +324,7 @@ routing scopes correctly. Save report to execution-report.md.
 After the supervisor confirms (response "Supervision started"), proceed:
 
 ```bash
-/skill:cali-scope-executor
+read `cali-product-scope-executor/SKILL.md` and follow instructions
 ```
 
 The supervisor watches each turn and, if the agent deviates from the plan,
@@ -333,7 +333,7 @@ injects a steering message to correct course.
 ### Without supervisor
 
 ```bash
-/skill:cali-scope-executor
+read `cali-product-scope-executor/SKILL.md` and follow instructions
 ```
 
 ### From a parent agent (programmatic):
@@ -342,7 +342,7 @@ injects a steering message to correct course.
 subagent({
   agent: "worker",
   task: "Execute the approved plan at docs/2026-05-12/login-system/plans/spec-tech_1.md using the cali-scope-executor skill. Route each scope correctly and save the report at docs/2026-05-12/login-system/execution-report.md.",
-  skills: ["cali-scope-executor", "autoresearch-create"],
+  skills: ["cali-scope-executor", "experiment-loop"],
   context: "fork"
 })
 ```
@@ -381,7 +381,7 @@ subagent({
 
 Strong execution runs:
 - **Respect dependency order** — no scope starts before its dependencies
-- **Use the right tool for each type** — worker for features, autoresearch for optimization, scout for spikes
+- **Use the right tool for each type** — worker for features, **experiment-loop** for optimization, scout for spikes
 - **Handle failures gracefully** — one failed scope doesn't block the rest
 - **Produce a clear final report** — what was done, what changed, what failed
 

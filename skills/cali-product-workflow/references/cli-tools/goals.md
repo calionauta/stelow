@@ -1,21 +1,37 @@
-# Tool: /sisyphus, /goal
+# Tool: Goal System (pi-goal)
 
-> Goal tracking with typed scopes and step-by-step execution for PI.
+> Package: @capyup/pi-goal (capyup)
+> Provides: ordered-execution-goal, ordered-discussion-goal, flexible-goal
 
 ---
 
-## Specific Command (PI)
+## Command Variants
 
-```bash
-/sisyphus [scope-name]
-/goal [description]
-pause_goal
+The goal system offers four modes based on two dimensions:
+
+| Semantic name | Command | Discussion | Preserves order | Best for |
+|---------------|---------|-------------|-----------------|----------|
+| **ordered-execution-goal** | `/sisyphus-set` | No | ✅ | Post-approval execution, automatic workflow |
+| **ordered-discussion-goal** | `/sisyphus` | Yes | ✅ | Discuss before executing, blocked needs clarification |
+| **flexible-execution-goal** | `/goals-set` | No | ❌ | Open-ended work without fixed sequence |
+| **flexible-discussion-goal** | `/goals` | Yes | ❌ | Vague objectives needing research/grill |
+
+### When to use each
+
+```
+After Tech Planning approval:
+  → ordered-execution-goal (/sisyphus-set) — no discussion, starts immediately
+
+During execution, blocked:
+  → ordered-discussion-goal (/sisyphus) — stop and ask
+
+Exploratory work:
+  → flexible-discussion-goal (/goals) or flexible-execution-goal (/goals-set)
 ```
 
-| Info | Value |
-|------|-------|
-| Package | @capyup/pi-goal (capyup) |
-| Commands | /sisyphus, /goal, pause_goal |
+### How to discover the command
+
+Read this file (`goals.md`) to find the command for each mode.
 
 ---
 
@@ -33,69 +49,55 @@ pause_goal
 
 | Type | Description | Executor |
 |------|-------------|----------|
-| `feature` | New functionality | worker |
+| `feature` | New functionality | ordered-execution-goal |
 | `optimization` | Measurable metric improvement | autoresearch |
-| `spike` | Research/prototype | scout + researcher |
-| `test-unit` | Unit tests with mutation validation | worker |
-| `test-integration` | Integration tests with real dependencies | worker |
-| `test-security` | SAST and security gates | worker |
-| `test-behavior` | Behavioral testing for agent workflows | worker |
+| `spike` | Research/prototype | ordered-execution-goal |
+| `test-unit` | Unit tests with mutation validation | ordered-execution-goal + testing gates |
+| `test-integration` | Integration tests with real dependencies | ordered-execution-goal + testing gates |
+| `test-security` | SAST and security gates | ordered-execution-goal + testing gates |
+| `test-behavior` | Behavioral testing for agent workflows | ordered-execution-goal + testing gates |
 
 ---
 
-## Pattern for Scope Execution
+## Pattern for ordered-execution-goal
+
+After Tech Planning approval, use **ordered-execution-goal** (`/sisyphus-set`):
 
 ```bash
-/sisyphus Scope: [scope-name]
-  Step 1: [description with DoD]
-    - Criterion A
-    - Criterion B
-  Step 2: [description]
-  ...
-```
-
-### DoD Format
-```markdown
-Done when:
-- [ ] Acceptance criterion 1
-- [ ] Acceptance criterion 2
-```
-
----
-
-## Goal Generation (After Tech Planning)
-
-For each scope in approved spec-tech:
-
-```bash
-/sisyphus Scope: [scope-name]
+/sisyphus-set Scope: [scope-name]
   Objective: {from scope description}
   DoD: {from scope}
   Files in scope: {from plan}
   Constraints: tests must pass
 ```
 
+### DoD Format
+
+```markdown
+Done when:
+- [ ] Acceptance criterion 1
+- [ ] Acceptance criterion 2
+```
+
 ### Test Scope Goals (test-* scopes)
 
 ```bash
-/sisyphus Scope: test-unit-[feature-name]
+/sisyphus-set Scope: test-unit-[feature-name]
   Objective: Generate unit tests with mutation validation
   DoD: mutation_score >= 70% (critical) or 50% (standard)
-  
-/sisyphus Scope: test-integration-[feature-name]
+
+/sisyphus-set Scope: test-integration-[feature-name]
   Objective: Integration tests with real dependencies
   DoD: All DB/API boundaries tested, no over-mocking
-  
-/sisyphus Scope: test-security-[feature-name]
+
+/sisyphus-set Scope: test-security-[feature-name]
   Objective: Security scanning for critical paths
   DoD: security_findings == 0, CVSS < 7.0
-  
-/sisyphus Scope: test-mutation-[feature-name]
-  Objective: Mutation testing validation
-  DoD: Mutation score meets target threshold
 ```
 
-### Testing Gates
+---
+
+## Testing Gates
 
 | Gate | Condition | Action |
 |------|-----------|--------|
@@ -118,5 +120,6 @@ If goal system is not available:
 
 ## Related
 
-- Phase 11: Execution
+- Phase 12: Execution (see `phases/execution.md`)
 - spec-tech scopes
+- Testing strategy (see `skills-execution/cali-testing-ai-code/SKILL.md`)
