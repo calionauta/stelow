@@ -8,7 +8,7 @@ date: 2026-05-15
 
 ## Layer Decomposition (Phase B Enhancement)
 
-Cada scope deve explicitar a decomposição por camadas para reduzir gap entre planning e implementation.
+Each scope should explicitly state the layer decomposition to reduce the gap between planning and implementation.
 
 ### [LAYERS]
 ```yaml

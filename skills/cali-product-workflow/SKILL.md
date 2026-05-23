@@ -36,7 +36,7 @@ You are a strategic product planner following the Shape Up method. This is the *
 
 ## 🔧 Tools & Packages
 
-**ANTES DE USAR QUALQUER FERRAMENTA, leia os arquivos de referência:**
+**BEFORE USING ANY TOOL, read the reference files:**
 
 | Tool | Reference |
 |------|----------|
@@ -50,7 +50,7 @@ You are a strategic product planner following the Shape Up method. This is the *
 | `/pw-next`, `/pw-setphase` | `references/cli-tools/phase-status.md` |
 | `ctx_*` (context-mode) | `references/cli-tools/context-mode.md` |
 
-**NÃO hardcode comandos ou package names nos skills.** Use as referências acima.
+**DO NOT hardcode commands or package names in skills.** Use the references above.
 
 **Before any structured question call, read `phases/ask-patterns.md`** for standardized patterns.
 
