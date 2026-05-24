@@ -10,7 +10,7 @@ import {
   readTracking, writeTracking, readGlobalTracking, writeGlobalTracking,
   getActiveWorkflow, renameWorkflow, toSafeName, reconcileTracking, scanWorkflowDirs,
   archiveWorkflowOnDisk, resolveProjectDir,
-  writePhaseTodos, getPhaseTodos, type PhaseTodoType,
+  writePhaseTodos, getPhaseTodos, type PhaseTodo,
   readInbox, addToInbox, removeFromInbox, clearInbox,
   TASK_ICONS,
 } from "./state";
@@ -729,7 +729,7 @@ function cmdTodo(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
     }
     const phasePrefix = PHASE_NAMES[wf.currentPhase].toUpperCase().slice(0, 4);
     const newId = `${phasePrefix}-${todos.length + 1}`;
-    const newTodo: PhaseTodoType = {
+    const newTodo: PhaseTodo = {
       id: newId,
       content: task,
       status: "pending",

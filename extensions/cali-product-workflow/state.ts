@@ -770,3 +770,4 @@ export function clearInbox(cwd: string): void {
 
 // Re-export for convenience (used by commands.ts)
 export { TASK_ICONS };
+export type { PhaseTodo };
