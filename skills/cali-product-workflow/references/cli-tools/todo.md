@@ -29,6 +29,40 @@ Examples:
 
 ---
 
+## Lifecycle
+
+### Phase Todos
+
+1. **Create** — When entering a phase, LLM creates todos from phase template
+2. **Update** — User marks tasks complete; LLM updates status
+3. **Sync** — Every turn end, todos sync from memory cache to `phase-todos.json`
+4. **Resume** — On session start, todos loaded from `phase-todos.json` to memory cache
+5. **Clear** — When phase completes, todos reset for next phase
+
+### Inbox Items
+
+1. **Add** — User says "defer this"; item added to end of `inbox/items.md`
+2. **Read** — LLM reads inbox when user asks to review deferred items
+3. **Dedupe** — If item is already in workflow, remove from inbox
+4. **Execute** — When user picks item from inbox, it enters workflow
+
+### File Sync Strategy
+
+```
+Memory Cache ←→ phase-todos.json
+     ↑                  ↑
+     └── onTurnEnd ─────┘
+     ↑                  ↑
+     └── onResume ──────┘
+```
+
+- **Memory cache** = source of truth during session
+- **File** = persistence across sessions/CLIs
+- **Write policy** = every turn end
+- **Read policy** = session start (workflow detected)
+
+---
+
 ## Source of Truth
 
 All CLIs MUST write phase todos to file for cross-CLI persistence:
@@ -145,16 +179,29 @@ The inbox (`.cali-product-workflow/inbox/items.md`) stores items deferred by the
 
 
 ```markdown
-[feature] Implement dark mode — lower priority, 2026-05-21
-[bug] Fix login race condition — needs investigation, 2026-05-20
-[debt] Refactor auth module — tech debt, 2026-05-15
-[idea] Add AI summarization — exploratory, 2026-05-10
+# Inbox
+
+Implement dark mode
+Fix login race condition
+Refactor auth module
+Add AI summarization
 ```
 
-**Format:** `[type] title — metadata, YYYY-MM-DD`
-- **type**: feature, bug, debt, idea
-- Metadata: comma-separated, human-readable notes
-- Date: ISO format (YYYY-MM-DD)
+**Format:** One item per line. No type, no date, no metadata needed.
+- Type is deduced by LLM when reading
+- Date can be obtained from git blame if needed
+- If more context is needed, the LLM asks the user
+
+**Empty inbox:**
+```markdown
+# Inbox
+
+```
+
+**Rules:**
+- Skip empty lines
+- Skip the `# Inbox` header line
+- Everything else is an item title
 
 ---
 ○ [SHAPE-5] Write solution approach

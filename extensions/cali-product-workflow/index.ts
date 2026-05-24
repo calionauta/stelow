@@ -13,6 +13,7 @@ import {
   resolveProjectDir,
   parseInputForWorkflow,
   writeIndexJson, writePhaseTodos, getPhaseTodos,
+  setPhaseTodos, getPhaseTodosFromCache, clearPhaseTodosCache,
 } from "./state";
 import { updateFooter, notifyPhase, setBypassed, isBypassed } from "./ui";
 import { registerCommands } from "./commands";
@@ -114,6 +115,12 @@ export default function (pi: ExtensionAPI) {
     const wf = getActiveWorkflow(wd);
     if (wf) {
       ctx.ui.notify(`◆ ${wf.name} (${wf.currentPhase + 1}/${wf.phases.length})`, "info");
+      // Restore phase todos from file on resume
+      const todos = getPhaseTodos(wd, wf);
+      if (todos.length > 0) {
+        setPhaseTodos(todos);
+        console.log(`[cali-product-workflow] Loaded ${todos.length} todos from file`);
+      }
       return;
     }
 
@@ -226,7 +233,7 @@ export default function (pi: ExtensionAPI) {
       }
     }
     // Sync phase todos to file
-    const todos = getPhaseTodos(cwd, wf);
+    const todos = getPhaseTodosFromCache(cwd, wf);
     writePhaseTodos(cwd, wf, todos);
   });
 }

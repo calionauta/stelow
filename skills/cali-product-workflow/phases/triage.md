@@ -20,6 +20,17 @@ Triggered when the user's initial request contains multiple items (bullets, numb
 
 4. **Persist deferred** — Items marked as "defer" are saved to `.cali-product-workflow/inbox/items.md`.
 
+   **Format (one item per line, no extra metadata):**
+
+   ```markdown
+   Implement dark mode
+   Fix login race condition
+   Refactor auth module
+   ```
+
+   - Type and date are deduced by LLM when reading
+   - Simpler = easier to maintain
+
    **Format (one item per line):**
 
    ```markdown

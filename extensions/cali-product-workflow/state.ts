@@ -739,3 +739,31 @@ export function getPhaseTodos(cwd: string, wf: Workflow): PhaseTodo[] {
   const data = readPhaseTodos(cwd, wf);
   return data?.todos || [];
 }
+
+// ── Phase Todos Memory Cache ────────────────────────────────────────
+
+let _phaseTodosCache: PhaseTodo[] = [];
+
+/**
+ * Set the current phase todos (in memory).
+ * Call this when todos are created or updated.
+ */
+export function setPhaseTodos(todos: PhaseTodo[]): void {
+  _phaseTodosCache = todos;
+}
+
+/**
+ * Get the current phase todos from memory cache.
+ * Falls back to file if cache is empty.
+ */
+export function getPhaseTodosFromCache(cwd: string, wf: Workflow): PhaseTodo[] {
+  if (_phaseTodosCache.length > 0) return _phaseTodosCache;
+  return getPhaseTodos(cwd, wf);
+}
+
+/**
+ * Clear the phase todos cache (e.g., on session end).
+ */
+export function clearPhaseTodosCache(): void {
+  _phaseTodosCache = [];
+}
