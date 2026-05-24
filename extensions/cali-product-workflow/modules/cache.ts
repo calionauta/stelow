@@ -1,14 +1,15 @@
 /**
  * CacheManager - Generic in-memory cache with file persistence
- * 
- * Provides a simple cache interface with optional file backup.
- * Falls back to file read when cache is empty.
- * 
- * Usage:
- *   const cache = new CacheManager<PhaseTodo[]>('phase-todos');
- *   cache.set([...todos]);
- *   cache.get();                    // from memory or file
- *   cache.clear();
+ *
+ * @example
+ * ```typescript
+ * const cache = new CacheManager<PhaseTodo[]>(
+ *   () => readFromFile(),      // optional load
+ *   (data) => writeToFile(data) // optional save
+ * );
+ * cache.set([...]);  // saves to file if save callback provided
+ * const todos = cache.get();  // from memory or falls back to file
+ * ```
  */
 
 export interface ICacheManager<T> {

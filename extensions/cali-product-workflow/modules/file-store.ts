@@ -65,6 +65,13 @@ export class TextFileStore implements IFileStore<string> {
 
 /**
  * JsonFileStore - Read/write JSON files
+ *
+ * @example
+ * ```typescript
+ * const store = new JsonFileStore<PhaseTodosData>('/path/to/data.json');
+ * const data = store.read();  // null if not exists
+ * store.write({ workflowName: 'test', phase: 'SHAPE', todos: [] });
+ * ```
  */
 export class JsonFileStore<T extends object = object> implements IFileStore<T> {
   constructor(
@@ -105,6 +112,15 @@ export class JsonFileStore<T extends object = object> implements IFileStore<T> {
 }
 
 /**
+ * MarkdownFileStore - Read/write markdown files with header support
+ *
+ * @example
+ * ```typescript
+ * const inbox = new MarkdownFileStore('.cali-product-workflow/inbox/items.md', '# Inbox');
+ * const items = inbox.read();  // ['item1', 'item2'] - skips header and empty lines
+ * inbox.write(['item3', 'item4']);  // writes with header
+ * ```
+ */
  * MarkdownFileStore - Read/write markdown files with header support
  */
 export class MarkdownFileStore implements IFileStore<string[]> {

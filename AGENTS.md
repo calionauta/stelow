@@ -38,6 +38,12 @@ Phase 10 (Planning) generates typed scopes with dependency mapping.
 - **Domain-driven** — Auto-detects product domain from your language
 - **Technical scope mapping** — Breaks down into typed scopes, maps dependencies
 
+## See Also
+
+- **[architecture.md](architecture.md)** — System architecture, modules, data flow, how to extend
+- `skills/.../references/cli-tools/todo.md` — Todo system docs
+- `extensions/.../modules/` — Reusable code (file-store, cache, task)
+
 ## Development
 
 Requires Node >=20 and npm.
