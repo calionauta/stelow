@@ -2,7 +2,7 @@ import { existsSync, readFileSync, writeFileSync, statSync, readdirSync } from "
 import { join, basename, dirname, extname } from "node:path";
 import { homedir } from "node:os";
 import type { Workflow, TrackingData, ParsedInput, CLI } from "./types";
-import { existsSync, readFileSync, writeFileSync } from "fs";
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from "fs";
 import { WORKFLOW_DIR, TRACKING_FILE, GLOBAL_TRACKING_FILE, SCHEMA_URL, PHASE_NAMES, getCLICapabilities } from "./types";
 
 // ── CLI Detection ────────────────────────────────────────────────────
@@ -766,4 +766,93 @@ export function getPhaseTodosFromCache(cwd: string, wf: Workflow): PhaseTodo[] {
  */
 export function clearPhaseTodosCache(): void {
   _phaseTodosCache = [];
+}
+
+// ── Inbox ──────────────────────────────────────────────────────────────
+
+const INBOX_DIR = ".cali-product-workflow/inbox";
+const INBOX_FILE = "items.md";
+
+/**
+ * Get path to inbox directory.
+ */
+export function getInboxDir(cwd: string): string {
+  return join(cwd, INBOX_DIR);
+}
+
+/**
+ * Get path to inbox items file.
+ */
+export function getInboxPath(cwd: string): string {
+  return join(cwd, INBOX_DIR, INBOX_FILE);
+}
+
+/**
+ * Ensure inbox directory exists.
+ */
+export function ensureInboxDir(cwd: string): void {
+  const dir = getInboxDir(cwd);
+  if (!existsSync(dir)) {
+    mkdirSync(dir, { recursive: true });
+  }
+}
+
+/**
+ * Read inbox items from items.md.
+ * Returns array of items (excludes header line and empty lines).
+ */
+export function readInbox(cwd: string): string[] {
+  const path = getInboxPath(cwd);
+  if (!existsSync(path)) {
+    return [];
+  }
+  try {
+    const content = readFileSync(path, "utf-8");
+    return content
+      .split("\n")
+      .map(line => line.trim())
+      .filter(line => line.length > 0)
+      .filter(line => !line.startsWith("#"));
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Write inbox items to items.md.
+ * Creates header and items.
+ */
+export function writeInbox(cwd: string, items: string[]): void {
+  ensureInboxDir(cwd);
+  const path = getInboxPath(cwd);
+  const header = "# Inbox\n\n";
+  const content = items.length > 0 ? items.join("\n") + "\n" : "\n";
+  writeFileSync(path, header + content);
+}
+
+/**
+ * Add an item to the inbox.
+ */
+export function addToInbox(cwd: string, item: string): void {
+  const items = readInbox(cwd);
+  if (!items.includes(item)) {
+    items.push(item);
+    writeInbox(cwd, items);
+  }
+}
+
+/**
+ * Remove an item from the inbox.
+ */
+export function removeFromInbox(cwd: string, item: string): void {
+  const items = readInbox(cwd);
+  const filtered = items.filter(i => i !== item);
+  writeInbox(cwd, filtered);
+}
+
+/**
+ * Clear all items from the inbox.
+ */
+export function clearInbox(cwd: string): void {
+  writeInbox(cwd, []);
 }

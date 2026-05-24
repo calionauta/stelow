@@ -9,7 +9,7 @@ import {
   readGlobalTracking, writeGlobalTracking,
   getAllActiveWorkflows, resolveProjectDir,
   toSafeName, generateDirHash, hashToWorkflowId, getDateStamp,
-  readSourceFile, truncateText, detectCLI
+  readSourceFile, truncateText, detectCLI, ensureInboxDir,
 } from "./state";
 import { updateFooter, showOrphanOverlay } from "./ui";
 
@@ -140,6 +140,8 @@ export default async function cmdStart(
   for (const sub of ["specs", "interfaces", "plans/scopes", "critiques", "approvals", "sessions"]) {
     mkdirSync(join(wfDir, sub), { recursive: true });
   }
+  // 6b. inbox directory
+  ensureInboxDir(wd);
 
   // 7. index.json
   writeFileSync(join(wfDir, "index.json"), JSON.stringify({
