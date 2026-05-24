@@ -44,7 +44,8 @@ export class TextFileStore implements IFileStore<string> {
   read(): string | null {
     if (!this.exists()) return null;
     try {
-      return readFileSync(this.basePath, "utf-8");
+      const raw = readFileSync(this.basePath, "utf-8");
+      return this.decoder(raw);
     } catch {
       return null;
     }
@@ -85,7 +86,7 @@ export class JsonFileStore<T extends object = object> implements IFileStore<T> {
     if (!this.exists()) return null;
     try {
       const content = readFileSync(this.basePath, "utf-8");
-      return JSON.parse(content, reviver) as T;
+      return JSON.parse(content, this.reviver) as T;
     } catch {
       return null;
     }
@@ -96,7 +97,7 @@ export class JsonFileStore<T extends object = object> implements IFileStore<T> {
     if (!existsSync(dir)) {
       mkdirSync(dir, { recursive: true });
     }
-    writeFileSync(this.basePath, JSON.stringify(data, replacer, 2), "utf-8");
+    writeFileSync(this.basePath, JSON.stringify(data, this.replacer, 2), "utf-8");
   }
 
   delete(): void {
