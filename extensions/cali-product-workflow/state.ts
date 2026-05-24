@@ -1,14 +1,10 @@
-import { existsSync, readFileSync, writeFileSync, statSync, readdirSync, mkdirSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync, statSync, readdirSync } from "node:fs";
 import { join, basename, dirname, extname } from "node:path";
 import { homedir } from "node:os";
 import type { Workflow, TrackingData, ParsedInput, CLI } from "./types";
 import { WORKFLOW_DIR, TRACKING_FILE, GLOBAL_TRACKING_FILE, SCHEMA_URL, PHASE_NAMES, getCLICapabilities } from "./types";
-import { JsonFileStore, MarkdownFileStore, ensureDir as ensureDirUtil } from "./modules/file-store";
-import { CacheManager } from "./modules/cache";
-import { PhaseTodo, PhaseTodosData, type TaskStatus } from "./modules/task";
 
 // ── CLI Detection ────────────────────────────────────────────────────
-
 
 /**
  * Detection signals for each CLI.
@@ -651,64 +647,3 @@ export function worktreeDirName(name: string, date?: string): string {
 export function worktreeBranchName(name: string, date?: string): string {
   return `pw/${name}/${date}`;
 }
-
-// ── Index.json Write ──────────────────────────────────────────────────
-
-/**
- * Update index.json with current workflow phase state.
- * Called after phase transitions to keep the on-disk metadata in sync.
- */
-export function writeIndexJson(cwd: string, wf: Workflow): void {
-  if (!wf.dirHash) return;
-  const ds = getDateStamp(new Date(wf.created));
-  const idxPath = join(cwd, WORKFLOW_DIR, ds, wf.dirHash, "index.json");
-  if (!existsSync(idxPath)) return;
-  try {
-    const raw = JSON.parse(readFileSync(idxPath, "utf-8"));
-    raw.current_phase = PHASE_NAMES[wf.currentPhase]?.toLowerCase() || "unknown";
-    raw.current_phase_index = wf.currentPhase;
-    raw.updated_at = new Date().toISOString();
-    raw.workflow_status = wf.status;
-    writeFileSync(idxPath, JSON.stringify(raw, null, 2));
-  } catch { /* skip */ }
-}
-
-// ── Phase Todos (using modules) ──────────────────────────────────────
-
-const PHASE_TODOS_FILE = "phase-todos.json";
-
-/**
- * Get path to phase-todos.json for a workflow.
- */
-function getPhaseTodosPath(cwd: string, wf: Workflow): string {
-  if (!wf.dirHash) return "";
-  const ds = getDateStamp(new Date(wf.created));
-  return join(cwd, WORKFLOW_DIR, ds, wf.dirHash, PHASE_TODOS_FILE);
-}
-  return join(cwd, WORKFLOW_DIR, ds, wf.dirHash, PHASE_TODOS_FILE);
-}
-
-/**
- * Read phase-todos.json for a workflow.
- * Returns null if not found or invalid.
- */
-export function readPhaseTodos(cwd: string, wf: Workflow): PhaseTodosData | null {
-  const path = getPhaseTodosPath(cwd, wf);
-  if (!path) return null;
-  const store = new JsonFileStore<PhaseTodosData>(path);
-  return store.read();
-}
-  const path = getPhaseTodosPath(cwd, wf);
-  if (!path || !existsSync(path)) return null;
-  try {
-    return JSON.parse(readFileSync(path, "utf-8")) as PhaseTodosData;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Write phase-todos.json for a workflow.
- */
- * Write phase-todos.json for a workflow.
- */

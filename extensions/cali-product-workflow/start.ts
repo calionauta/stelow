@@ -9,9 +9,9 @@ import {
   readGlobalTracking, writeGlobalTracking,
   getAllActiveWorkflows, resolveProjectDir,
   toSafeName, generateDirHash, hashToWorkflowId, getDateStamp,
-  readSourceFile, truncateText, detectCLI, ensureInboxDir,
+  readSourceFile, truncateText, detectCLI
 } from "./state";
-import { getStatusString, getOrphanString } from "./ui";
+import { updateFooter, showOrphanOverlay } from "./ui";
 
 // Quick key=value parser for the args string
 function parseArgs(raw: string): Record<string, string> & { _: string[] } {
@@ -63,13 +63,14 @@ export default async function cmdStart(
   const sources = parsed.source ? [parsed.source] : storeParsed.sources;
   const userGivenName = parsed.name || null;
 
-  // 1. Check for orphans - text-based decision
+  // 1. Check for orphans
   const active = getAllActiveWorkflows(wd);
   if (active.length > 0) {
-    const orphanMsg = getOrphanString(active);
-    ctx.ui?.notify(orphanMsg, "warning");
-    // Note: orphan handling requires user decision - simplified for now
-    // User must manually archive or continue
+    const decision = await showOrphanOverlay(ctx, wd, active);
+    if (decision === "cancelled") {
+      ctx.ui?.notify("Start cancelled", "info");
+      return;
+    }
   }
 
   // 2. Generate dirHash FIRST (used for untitled ID and directory)
@@ -139,8 +140,6 @@ export default async function cmdStart(
   for (const sub of ["specs", "interfaces", "plans/scopes", "critiques", "approvals", "sessions"]) {
     mkdirSync(join(wfDir, sub), { recursive: true });
   }
-  // 6b. inbox directory
-  ensureInboxDir(wd);
 
   // 7. index.json
   writeFileSync(join(wfDir, "index.json"), JSON.stringify({
@@ -153,12 +152,6 @@ export default async function cmdStart(
     draft: fullDraft ? truncateText(fullDraft, 10000) : undefined,
     sources,
     detected_cli: detectCLI(),
-  }, null, 2));
-  // 7b. phase-todos.json (empty initially)
-  writeFileSync(join(wfDir, "phase-todos.json"), JSON.stringify({
-    version: "1.0", workflowName: finalName,
-    phase: "setup", phaseIndex: 0, todos: [],
-    updatedAt: new Date().toISOString(),
   }, null, 2));
 
   // 8. Global tracking

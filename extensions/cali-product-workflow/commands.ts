@@ -3,16 +3,15 @@ import { join } from "node:path";
 import { homedir } from "node:os";
 // @ts-ignore - Optional peer dependency for Pi environment
 import type { ExtensionAPI, ExtensionCommandContext } from "@earendil-works/pi-coding-agent";
-// @ts-ignore - Optional peer dependency
+// @ts-ignore - Optional peer dependency for Pi environment
+import { Container, Text, Spacer, SelectList, type SelectItem } from "@earendil-works/pi-tui";
 import { WORKFLOW_DIR, PHASE_NAMES } from "./types";
 import {
   readTracking, writeTracking, readGlobalTracking, writeGlobalTracking,
   getActiveWorkflow, renameWorkflow, toSafeName, reconcileTracking, scanWorkflowDirs,
-  archiveWorkflowOnDisk, resolveProjectDir, writeIndexJson,
-  writePhaseTodos, getPhaseTodos, type PhaseTodo,
-  readInbox, addToInbox, removeFromInbox, clearInbox,
+  archiveWorkflowOnDisk, resolveProjectDir
 } from "./state";
-import { notifyPhase, getStatusString, showMenu, formatWorkflow } from "./ui";
+import { updateFooter, notifyPhase, showOverlay } from "./ui";
 import cmdStart from "./start";
 
 // ── Import Command Dispatcher for Multi-CLI Support ─────────────────
@@ -246,7 +245,6 @@ function cmdPause(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
       t.workflows[idx].status = "paused";
       t.workflows[idx].updated = new Date().toISOString();
       writeTracking(wd, t);
-      writeIndexJson(wd, wf);
     }
   }
   const gt = readGlobalTracking();
@@ -254,7 +252,6 @@ function cmdPause(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
     const idx = gt.workflows.findIndex(w => w.name === wf.name);
     if (idx !== -1) gt.workflows[idx].status = "paused";
     writeGlobalTracking(gt);
-    writeIndexJson(wd, wf);
   }
 
   ctx.ui?.setStatus("workflow", ctx.ui?.theme?.fg("warning", `⏸ ${wf.name}`));
@@ -299,13 +296,11 @@ function cmdResume(pi: ExtensionAPI, args: string, ctx: CmdCtx) {
     const idx = t.workflows.findIndex(w => w.name === paused.name);
     if (idx !== -1) t.workflows[idx].status = "in-progress";
     writeTracking(wd, t);
-    writeIndexJson(wd, paused);
   }
   if (gt) {
     const idx = gt.workflows.findIndex(w => w.name === paused.name);
     if (idx !== -1) gt.workflows[idx].status = "in-progress";
     writeGlobalTracking(gt);
-    writeIndexJson(wd, paused);
   }
 
   updateFooter(ctx, wd);
@@ -529,7 +524,6 @@ function cmdSetPhase(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
       });
       t.workflows[idx].updated = new Date().toISOString();
       writeTracking(wd, t);
-      writeIndexJson(wd, wf);
     }
   }
   const gt = readGlobalTracking();
@@ -537,7 +531,6 @@ function cmdSetPhase(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
     const idx = gt.workflows.findIndex(w => w.name === wf.name);
     if (idx !== -1) gt.workflows[idx].currentPhase = phase;
     writeGlobalTracking(gt);
-    writeIndexJson(wd, wf);
   }
 
   // Sync wf in-memory so notifyPhase compares correctly
@@ -571,7 +564,6 @@ function cmdNext(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
       });
       t.workflows[idx].updated = new Date().toISOString();
       writeTracking(wd, t);
-      writeIndexJson(wd, wf);
     }
   }
   const gt = readGlobalTracking();
@@ -579,7 +571,6 @@ function cmdNext(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
     const idx = gt.workflows.findIndex(w => w.name === wf.name);
     if (idx !== -1) gt.workflows[idx].currentPhase = next;
     writeGlobalTracking(gt);
-    writeIndexJson(wd, wf);
   }
 
   // Sync wf in-memory so notifyPhase compares correctly
@@ -605,7 +596,6 @@ function cmdComplete(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
       t.workflows[idx].status = "completed";
       t.workflows[idx].updated = new Date().toISOString();
       writeTracking(wd, t);
-      writeIndexJson(wd, wf);
     }
   }
   const gt = readGlobalTracking();
@@ -613,7 +603,6 @@ function cmdComplete(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
     const idx = gt.workflows.findIndex(w => w.name === wf.name);
     if (idx !== -1) gt.workflows[idx].status = "completed";
     writeGlobalTracking(gt);
-    writeIndexJson(wd, wf);
   }
 
   ctx.ui?.notify(`🎉 ${wf.name} completed!`, "info");
@@ -671,123 +660,8 @@ function cmdRename(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
 
 function cmdMenu(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
   const wd = resolveProjectDir(ctx.cwd);
-  const menu = showMenu(wd);
-  reply(ctx, menu);
-}
-
-function cmdStatus(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
-  const wd = resolveProjectDir(ctx.cwd);
-  const status = getStatusString(wd);
-  if (!status) {
-    reply(ctx, "No active workflow.");
-    return;
-  }
-  reply(ctx, status);
-}
-
-// ── INBOX ─────────────────────────────────────────────────────────────
-
-function cmdInbox(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
-  const wd = resolveProjectDir(ctx.cwd);
-  const parsed = parseArgs(args);
-  const items = readInbox(wd);
-
-  // /pw-inbox add <item>
-  if (parsed.add) {
-    const item = parsed.add === true ? parsed._.join(" ") : parsed.add;
-    if (!item) {
-      replyWarn(ctx, "Usage: /pw-inbox add <item text>");
-      return;
-    }
-    addToInbox(wd, item);
-    ctx.ui?.notify(`📥 Added to inbox: ${item.slice(0, 50)}`, "info");
-    return;
-  }
-
-  // /pw-inbox remove <item>
-  if (parsed.remove || parsed.rm) {
-    const item = parsed.remove || parsed.rm;
-    removeFromInbox(wd, item);
-    ctx.ui?.notify(`🗑️ Removed from inbox`, "info");
-    return;
-  }
-
-  // /pw-inbox clear
-  if (parsed.clear) {
-    clearInbox(wd);
-    ctx.ui?.notify(`🗑️ Inbox cleared`, "info");
-    return;
-  }
-
-  // /pw-inbox (show)
-  if (items.length === 0) {
-    reply(ctx, "📥 Inbox is empty.");
-  } else {
-    const lines = ["📥 Inbox:", "", ...items.map((item, i) => `${i + 1}. ${item}`)];
-    reply(ctx, lines.join("\n"));
-  }
-}
-
-// ── TODO ──────────────────────────────────────────────────────────────
-
-function cmdTodo(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
-  const wd = resolveProjectDir(ctx.cwd);
-  const wf = getActiveWorkflow(wd);
-  if (!wf) { noActive(ctx); return; }
-
-  const parsed = parseArgs(args);
-  const todos = getPhaseTodosFromCache(wd, wf);
-
-  // /pw-todo add <task>
-  if (parsed.add) {
-    const task = parsed.add === true ? parsed._.join(" ") : parsed.add;
-    if (!task) {
-      replyWarn(ctx, "Usage: /pw-todo add <task text>");
-      return;
-    }
-    const phasePrefix = PHASE_NAMES[wf.currentPhase].toUpperCase().slice(0, 4);
-    const newId = `${phasePrefix}-${todos.length + 1}`;
-    const newTodo: PhaseTodo = {
-      id: newId,
-      content: task,
-      status: "pending",
-      createdAt: new Date().toISOString(),
-    };
-    todos.push(newTodo);
-    setPhaseTodos(todos);
-    writePhaseTodos(wd, wf, todos);
-    ctx.ui?.notify(`✓ Added ${newId}: ${task.slice(0, 40)}`, "info");
-    return;
-  }
-
-  // /pw-todo complete <id>
-  if (parsed.complete || parsed.done) {
-    const id = parsed.complete || parsed.done;
-    const todo = todos.find(t => t.id === id);
-    if (!todo) {
-      replyWarn(ctx, `Todo not found: ${id}`);
-      return;
-    }
-    todo.status = "completed";
-    todo.completedAt = new Date().toISOString();
-    setPhaseTodos(todos);
-    writePhaseTodos(wd, wf, todos);
-    ctx.ui?.notify(`✓ Completed ${id}`, "info");
-    return;
-  }
-
-  // /pw-todo (show)
-  if (todos.length === 0) {
-    const phaseName = PHASE_NAMES[wf.currentPhase];
-    reply(ctx, `${phaseName} phase — no todos yet. Use /pw-todo add <task>`);
-  } else {
-    const lines = [`${PHASE_NAMES[wf.currentPhase]} todos:`, ""];
-    for (const todo of todos) {
-      const icon = todo.status === "completed" ? "✓" : todo.status === "in_progress" ? "◐" : "○";
-      lines.push(`${icon} [${todo.id}] ${todo.content}`);
-    }
-    reply(ctx, lines.join("\n"));
-  }
+  showOverlay(ctx, wd);
+  // Overlay is interactive; no notify needed — user sees TUI.
 }
 
 // ── ARCHIVE ──────────────────────────────────────────────────────────
@@ -836,7 +710,6 @@ function cmdArchive(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
         t.workflows[idx].status = "archived";
         t.workflows[idx].updated = new Date().toISOString();
         writeTracking(wd, t);
-        writeIndexJson(wd, wf);
       }
     }
     if (gt) {
@@ -844,7 +717,6 @@ function cmdArchive(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
       if (idx !== -1) {
         gt.workflows[idx].status = "archived";
         writeGlobalTracking(gt);
-        writeIndexJson(wd, wf);
       }
     }
     reply(ctx, `📦 Workflow '${name}' archived.`);
@@ -865,7 +737,6 @@ function cmdArchive(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
       t.workflows[idx].status = "archived";
       t.workflows[idx].updated = new Date().toISOString();
       writeTracking(wd, t);
-      writeIndexJson(wd, wf);
     }
   }
   const gt = readGlobalTracking();
@@ -873,7 +744,6 @@ function cmdArchive(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
     const idx = gt.workflows.findIndex(w => w.name === wf.name);
     if (idx !== -1) gt.workflows[idx].status = "archived";
     writeGlobalTracking(gt);
-    writeIndexJson(wd, wf);
   }
   archiveWorkflowOnDisk(wd, wf.name);
 
@@ -956,10 +826,7 @@ const COMMAND_DESCRIPTIONS: Record<string, string> = {
   "pw-complete":"Mark active workflow complete: /pw-complete",
   "pw-goto":  "Go to a workflow: /pw-goto [name=name]",
   "pw-rename":"Rename active workflow: /pw-rename novo-nome | name=novo-nome",
-  "pw-menu":   "Show workflow overview: /pw-menu",
-  "pw-status":  "Show current workflow status: /pw-status",
-  "pw-inbox": "Manage inbox: /pw-inbox | /pw-inbox add <item> | /pw-inbox remove <item> | /pw-inbox clear",
-  "pw-todo":  "Manage phase todos: /pw-todo | /pw-todo add <task> | /pw-todo complete <id>",
+  "pw-menu":  "Open workflow overview overlay: /pw-menu",
   "pw-archive": "Archive workflows: /pw-archive | /pw-archive name=X | /pw-archive purge",
   "pw-unarchive": "Unarchive a workflow: /pw-unarchive name=<workflow>",
 };
@@ -987,9 +854,6 @@ const CMD_MAP: [CmdHandler, string, string][] = [
   [cmdGoto, "pw-goto",      "pw-goto"],
   [cmdRename, "pw-rename",    "pw-rename"],
   [cmdMenu, "pw-menu",      "pw-menu"],
-  [cmdStatus, "pw-status",   "pw-status"],
-  [cmdInbox, "pw-inbox",    "pw-inbox"],
-  [cmdTodo, "pw-todo",     "pw-todo"],
   [cmdArchive, "pw-archive",   "pw-archive"],
   [cmdUnarchive, "pw-unarchive", "pw-unarchive"],
 ];
