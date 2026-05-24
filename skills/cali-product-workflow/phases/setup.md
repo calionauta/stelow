@@ -4,15 +4,15 @@
 
 > **Phase Status:** Read `references/cli-tools/phase-status.md` for ASCII status display and CLI commands.
 
-### 0a. Backlog Check (always)
+### 0a. Inbox Check (always)
 
 **Before anything else**, check if there are deferred items from previous sessions:
 
 ```bash
-BACKLOG=".cali-product-workflow/backlog/items.yaml"
-if [ -f "$BACKLOG" ]; then
+INBOX=".cali-product-workflow/inbox/items.md"
+if [ -f "$INBOX" ]; then
   echo "DEFERRED_ITEMS_FOUND"
-  cat "$BACKLOG"
+  cat "$INBOX"
 fi
 ```
 

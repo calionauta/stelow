@@ -226,3 +226,21 @@ export interface TrackingData {
   updated: string;
   workflows: Workflow[];
 }
+
+// ── Phase Todos ───────────────────────────────────────────────────────
+
+export interface PhaseTodo {
+  id: string;       // e.g., "SHAPE-1", "CONTEXT-2"
+  content: string; // e.g., "Gather project context"
+  status: "pending" | "in_progress" | "completed";
+  createdAt?: string;
+  completedAt?: string;
+}
+
+export interface PhaseTodosData {
+  workflowName: string;
+  phase: string;
+  phaseIndex: number;
+  todos: PhaseTodo[];
+  updatedAt: string;
+}

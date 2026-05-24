@@ -50,6 +50,16 @@ export function getUIAdapter(): UIAdapter {
     const cli = detectCLI();
     _uiAdapter = createUIAdapter(cli);
   }
+  // Return adapter or create fallback if none created
+  if (!_uiAdapter) {
+    _uiAdapter = createUIAdapter("generic");
+  }
+  return _uiAdapter;
+}
+  if (!_uiAdapter) {
+    const cli = detectCLI();
+    _uiAdapter = createUIAdapter(cli);
+  }
   return _uiAdapter;
 }
 
@@ -77,6 +87,36 @@ export function initUIAdapter(ctx: ExtensionContext): void {
  * Format: "[pw] workflow-name  │  ◆ Phase N/M"
  */
 function buildCompactStatus(workflow: Workflow, capabilityLevel: string): string {
+  const phaseName = PHASE_NAMES[workflow.currentPhase] || "unknown";
+  const phaseNum = `${workflow.currentPhase + 1}/${PHASE_NAMES.length}`;
+  
+  const isActive = workflow.phases[workflow.currentPhase]?.status === "in-progress";
+  
+  // Use colors based on capability level (default to plain text if unknown)
+  let prefix, name, icon;
+  
+  // Truncate workflow name at 60 chars to prevent footer overflow
+  const MAX_NAME_LEN = 60;
+  const displayName = workflow.name.length > MAX_NAME_LEN 
+    ? workflow.name.substring(0, MAX_NAME_LEN - 3) + "..." 
+    : workflow.name;
+
+  if (capabilityLevel === "ansi" || capabilityLevel === "native") {
+    prefix = AnsiColors.dim + "[pw]" + AnsiColors.reset;
+    name = AnsiColors.green + displayName + AnsiColors.reset;
+    icon = isActive 
+      ? AnsiColors.cyan + "◆" + AnsiColors.reset 
+      : AnsiColors.green + "●" + AnsiColors.reset;
+  } else {
+    // Default to plain text for unknown/other capability levels
+    prefix = "[pw]";
+    name = displayName;
+    icon = isActive ? "◆" : "●";
+  }
+  
+  const bypassText = _bypassed ? `  ⚠️ bypassed (${phaseName} ${phaseNum} — /pw-next resume)` : "";
+  return `${prefix} ${name}  │  ${icon} ${phaseName} ${phaseNum}${bypassText}`;
+}
   const phaseName = PHASE_NAMES[workflow.currentPhase] || "?";
   const phaseNum = `${workflow.currentPhase + 1}/${PHASE_NAMES.length}`;
   
@@ -108,6 +148,12 @@ function buildCompactStatus(workflow: Workflow, capabilityLevel: string): string
 }
 
 export function updateFooter(ctx: ExtensionContext, cwd: string): void {
+  // Make footer optional - no-op if ctx.ui not available
+  if (!ctx.ui) return;
+  // Ensure Pi context is set for status updates
+  initUIAdapter(ctx);
+  const adapter = getUIAdapter();
+  const wf = getActiveWorkflow(cwd);
   // Ensure Pi context is set for status updates
   initUIAdapter(ctx);
   const adapter = getUIAdapter();

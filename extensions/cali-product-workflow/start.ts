@@ -153,6 +153,12 @@ export default async function cmdStart(
     sources,
     detected_cli: detectCLI(),
   }, null, 2));
+  // 7b. phase-todos.json (empty initially)
+  writeFileSync(join(wfDir, "phase-todos.json"), JSON.stringify({
+    version: "1.0", workflowName: finalName,
+    phase: "setup", phaseIndex: 0, todos: [],
+    updatedAt: new Date().toISOString(),
+  }, null, 2));
 
   // 8. Global tracking
   const gt = readGlobalTracking() || {

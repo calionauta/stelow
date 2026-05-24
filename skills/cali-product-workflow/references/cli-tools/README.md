@@ -117,6 +117,8 @@ When CLI not detected or tool unavailable:
 | `context-mode.md` | Context Mode integration |
 edc|| `context-mode.md` | Context Mode integration |
 cc7|| `codequality-review.md` | Ultra-strict code quality review (thermo-nuclear) |
+| `todo.md` | Phase task management with CLI-specific commands |
+|| `todo.md` | Phase task management with CLI-specific commands |
 
 ---
 

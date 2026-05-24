@@ -55,7 +55,7 @@ Installs skills to `~/.agents/skills/` — works on any CLI. No plugins, no conf
 # Full install
 pi install git:github.com/renatocaliari/cali-product-workflow
 pi install ./extensions/cali-pw-pi
-pi install npm:pi-subagents npm:@capyup/pi-goal npm:pi-intercom npm:pi-supervisor npm:pi-autoresearch npm:@juicesharp/rpiv-ask-user-question npm:@plannotator/pi-extension
+pi install npm:pi-subagents npm:@capyup/pi-goal npm:pi-intercom npm:pi-supervisor npm:pi-autoresearch npm:@juicesharp/rpiv-ask-user-question npm:@juicesharp/rpiv-todo npm:@plannotator/pi-extension
 
 # Update
 pi update

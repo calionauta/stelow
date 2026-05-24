@@ -24,7 +24,7 @@ After Triage (Phase 0) completes with one or more accepted items. If the user ha
 
 3. **User picks one** — Let the user choose which item to model in Shape Up. Do NOT proceed with multiple items.
 
-4. **Route remainder** — Unselected items return to `.cali-product-workflow/backlog/items.yaml` as deferred.
+4. **Route remainder** — Unselected items return to `.cali-product-workflow/inbox/items.md` as deferred.
 
 ### Do NOT
 - Start implementing any item

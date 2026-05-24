@@ -15,20 +15,24 @@ Triggered when the user's initial request contains multiple items (bullets, numb
 3. **For each item, offer:** 
    - **Accept** — enters the candidate pool for Selection phase
    - **Group** — merge with similar items (same domain/component/theme)
-   - **Defer** — saved to `.cali-product-workflow/backlog/items.yaml` for later review via `/pw-backlog`
+   - **Defer** — saved to `.cali-product-workflow/inbox/items.md` for later review via `/pw-inbox`
    - **Reject** — discarded with reason recorded
 
-4. **Persist deferred** — Items marked as "defer" are saved to `.cali-product-workflow/backlog/items.yaml`. Format:
+4. **Persist deferred** — Items marked as "defer" are saved to `.cali-product-workflow/inbox/items.md`.
 
-```yaml
-deferred:
-  - title: "Item description"
-    type: feature|bug|debt
-    date: 2026-05-21
-    reason: "deferred by user"
-```
+   **Format (one item per line):**
 
-5. **Do NOT** show a backlog — show one decision at a time. Keep the UX focused.
+   ```markdown
+   [feature] Implement dark mode — lower priority, 2026-05-21
+   [bug] Fix login race condition — needs investigation, 2026-05-20
+   ```
+
+   **Format:** `[type] title — metadata, YYYY-MM-DD`
+   - **type**: feature, bug, debt, idea
+   - Metadata: comma-separated, human-readable notes
+   - Data: ISO date (YYYY-MM-DD)
+
+5. **Do NOT** show the inbox — show one decision at a time. Keep the UX focused.
 
 ### Completion
 

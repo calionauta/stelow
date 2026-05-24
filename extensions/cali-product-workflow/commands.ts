@@ -9,7 +9,8 @@ import { WORKFLOW_DIR, PHASE_NAMES } from "./types";
 import {
   readTracking, writeTracking, readGlobalTracking, writeGlobalTracking,
   getActiveWorkflow, renameWorkflow, toSafeName, reconcileTracking, scanWorkflowDirs,
-  archiveWorkflowOnDisk, resolveProjectDir
+  archiveWorkflowOnDisk, resolveProjectDir, writeIndexJson,
+  writePhaseTodos, getPhaseTodos, type PhaseTodo
 } from "./state";
 import { updateFooter, notifyPhase, showOverlay } from "./ui";
 import cmdStart from "./start";
@@ -245,6 +246,7 @@ function cmdPause(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
       t.workflows[idx].status = "paused";
       t.workflows[idx].updated = new Date().toISOString();
       writeTracking(wd, t);
+      writeIndexJson(wd, wf);
     }
   }
   const gt = readGlobalTracking();
@@ -252,6 +254,7 @@ function cmdPause(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
     const idx = gt.workflows.findIndex(w => w.name === wf.name);
     if (idx !== -1) gt.workflows[idx].status = "paused";
     writeGlobalTracking(gt);
+    writeIndexJson(wd, wf);
   }
 
   ctx.ui?.setStatus("workflow", ctx.ui?.theme?.fg("warning", `⏸ ${wf.name}`));
@@ -296,11 +299,13 @@ function cmdResume(pi: ExtensionAPI, args: string, ctx: CmdCtx) {
     const idx = t.workflows.findIndex(w => w.name === paused.name);
     if (idx !== -1) t.workflows[idx].status = "in-progress";
     writeTracking(wd, t);
+    writeIndexJson(wd, paused);
   }
   if (gt) {
     const idx = gt.workflows.findIndex(w => w.name === paused.name);
     if (idx !== -1) gt.workflows[idx].status = "in-progress";
     writeGlobalTracking(gt);
+    writeIndexJson(wd, paused);
   }
 
   updateFooter(ctx, wd);
@@ -524,6 +529,7 @@ function cmdSetPhase(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
       });
       t.workflows[idx].updated = new Date().toISOString();
       writeTracking(wd, t);
+      writeIndexJson(wd, wf);
     }
   }
   const gt = readGlobalTracking();
@@ -531,6 +537,7 @@ function cmdSetPhase(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
     const idx = gt.workflows.findIndex(w => w.name === wf.name);
     if (idx !== -1) gt.workflows[idx].currentPhase = phase;
     writeGlobalTracking(gt);
+    writeIndexJson(wd, wf);
   }
 
   // Sync wf in-memory so notifyPhase compares correctly
@@ -564,6 +571,7 @@ function cmdNext(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
       });
       t.workflows[idx].updated = new Date().toISOString();
       writeTracking(wd, t);
+      writeIndexJson(wd, wf);
     }
   }
   const gt = readGlobalTracking();
@@ -571,6 +579,7 @@ function cmdNext(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
     const idx = gt.workflows.findIndex(w => w.name === wf.name);
     if (idx !== -1) gt.workflows[idx].currentPhase = next;
     writeGlobalTracking(gt);
+    writeIndexJson(wd, wf);
   }
 
   // Sync wf in-memory so notifyPhase compares correctly
@@ -596,6 +605,7 @@ function cmdComplete(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
       t.workflows[idx].status = "completed";
       t.workflows[idx].updated = new Date().toISOString();
       writeTracking(wd, t);
+      writeIndexJson(wd, wf);
     }
   }
   const gt = readGlobalTracking();
@@ -603,6 +613,7 @@ function cmdComplete(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
     const idx = gt.workflows.findIndex(w => w.name === wf.name);
     if (idx !== -1) gt.workflows[idx].status = "completed";
     writeGlobalTracking(gt);
+    writeIndexJson(wd, wf);
   }
 
   ctx.ui?.notify(`🎉 ${wf.name} completed!`, "info");
@@ -710,6 +721,7 @@ function cmdArchive(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
         t.workflows[idx].status = "archived";
         t.workflows[idx].updated = new Date().toISOString();
         writeTracking(wd, t);
+        writeIndexJson(wd, wf);
       }
     }
     if (gt) {
@@ -717,6 +729,7 @@ function cmdArchive(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
       if (idx !== -1) {
         gt.workflows[idx].status = "archived";
         writeGlobalTracking(gt);
+        writeIndexJson(wd, wf);
       }
     }
     reply(ctx, `📦 Workflow '${name}' archived.`);
@@ -737,6 +750,7 @@ function cmdArchive(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
       t.workflows[idx].status = "archived";
       t.workflows[idx].updated = new Date().toISOString();
       writeTracking(wd, t);
+      writeIndexJson(wd, wf);
     }
   }
   const gt = readGlobalTracking();
@@ -744,6 +758,7 @@ function cmdArchive(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
     const idx = gt.workflows.findIndex(w => w.name === wf.name);
     if (idx !== -1) gt.workflows[idx].status = "archived";
     writeGlobalTracking(gt);
+    writeIndexJson(wd, wf);
   }
   archiveWorkflowOnDisk(wd, wf.name);
 

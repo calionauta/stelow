@@ -12,6 +12,7 @@ import {
   getActiveWorkflow,
   resolveProjectDir,
   parseInputForWorkflow,
+  writeIndexJson, writePhaseTodos, getPhaseTodos,
 } from "./state";
 import { updateFooter, notifyPhase, setBypassed, isBypassed } from "./ui";
 import { registerCommands } from "./commands";
@@ -181,6 +182,7 @@ export default function (pi: ExtensionAPI) {
     if (current && current.currentPhase !== wf.currentPhase) {
       const oldPhase = wf.currentPhase;
       wf.currentPhase = current.currentPhase;
+      writeIndexJson(wd, wf);
       notifyPhase(ctx, wf, oldPhase);
     }
   });
@@ -211,15 +213,20 @@ export default function (pi: ExtensionAPI) {
   
   // Register a handler for turn end events via the adapter
   adapter.onTurnEnd(({ cwd }: { cwd: string }) => {
-    // Phase change detection can be done here
     const wd = resolveProjectDir(cwd);
-    const tracking = readTracking(wd);
     const wf = getActiveWorkflow(wd);
-    if (!wf || !tracking) return;
-    const current = tracking.workflows.find(w => w.name === wf.name);
-    if (current && current.currentPhase !== wf.currentPhase) {
-      // Phase changed - could dispatch notification
-      console.log(`[cali-product-workflow] Phase change: ${wf.currentPhase} -> ${current.currentPhase}`);
+    if (!wf) return;
+    // Check for phase changes
+    const tracking = readTracking(wd);
+    if (tracking) {
+      const current = tracking.workflows.find(w => w.name === wf.name);
+      if (current && current.currentPhase !== wf.currentPhase) {
+        writeIndexJson(wd, wf);
+        console.log(`[cali-product-workflow] Phase change: ${wf.currentPhase} -> ${current.currentPhase}`);
+      }
     }
+    // Sync phase todos to file
+    const todos = getPhaseTodos(cwd, wf);
+    writePhaseTodos(cwd, wf, todos);
   });
 }
