@@ -2,6 +2,8 @@ import { existsSync, readFileSync, writeFileSync, statSync, readdirSync } from "
 import { join, basename, dirname, extname } from "node:path";
 import { homedir } from "node:os";
 import type { Workflow, TrackingData, ParsedInput, CLI } from "./types";
+import type { PhaseTodo, PhaseTodosData } from "./modules/task";
+import { TASK_ICONS } from "./modules/task";
 import { WORKFLOW_DIR, TRACKING_FILE, GLOBAL_TRACKING_FILE, SCHEMA_URL, PHASE_NAMES, getCLICapabilities } from "./types";
 
 // ── CLI Detection ────────────────────────────────────────────────────
@@ -649,23 +651,6 @@ export function worktreeBranchName(name: string, date?: string): string {
 }
 
 
-// ── Phase Todos ───────────────────────────────────────────────────────
-
-export interface PhaseTodo {
-  id: string;
-  content: string;
-  status: "pending" | "in_progress" | "completed";
-  createdAt?: string;
-  completedAt?: string;
-}
-
-export interface PhaseTodosData {
-  workflowName: string;
-  phase: string;
-  phaseIndex: number;
-  todos: PhaseTodo[];
-  updatedAt: string;
-}
 
 const PHASE_TODOS_FILE = "phase-todos.json";
 
