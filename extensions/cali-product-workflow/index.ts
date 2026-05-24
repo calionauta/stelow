@@ -15,7 +15,7 @@ import {
   writeIndexJson, writePhaseTodos, getPhaseTodos,
   setPhaseTodos, getPhaseTodosFromCache, clearPhaseTodosCache,
 } from "./state";
-import { updateFooter, notifyPhase, setBypassed, isBypassed } from "./ui";
+import { notifyPhase, setBypassed, isBypassed, getStatusString } from "./ui";
 import { registerCommands } from "./commands";
 import {
   createAdapter,
@@ -110,11 +110,10 @@ export default function (pi: ExtensionAPI) {
 
     if (!ctx.ui) return;
 
-    // Restore active workflow UI
-    updateFooter(ctx, wd);
+    // Restore active workflow notification
     const wf = getActiveWorkflow(wd);
     if (wf) {
-      ctx.ui.notify(`◆ ${wf.name} (${wf.currentPhase + 1}/${wf.phases.length})`, "info");
+      ctx.ui?.notify(`◆ ${wf.name} (${wf.currentPhase + 1}/${wf.phases.length})`, "info");
       // Restore phase todos from file on resume
       const todos = getPhaseTodos(wd, wf);
       if (todos.length > 0) {

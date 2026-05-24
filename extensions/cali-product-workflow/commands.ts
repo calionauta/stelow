@@ -3,8 +3,7 @@ import { join } from "node:path";
 import { homedir } from "node:os";
 // @ts-ignore - Optional peer dependency for Pi environment
 import type { ExtensionAPI, ExtensionCommandContext } from "@earendil-works/pi-coding-agent";
-// @ts-ignore - Optional peer dependency for Pi environment
-import { Container, Text, Spacer, SelectList, type SelectItem } from "@earendil-works/pi-tui";
+// @ts-ignore - Optional peer dependency
 import { WORKFLOW_DIR, PHASE_NAMES } from "./types";
 import {
   readTracking, writeTracking, readGlobalTracking, writeGlobalTracking,
@@ -13,7 +12,7 @@ import {
   writePhaseTodos, getPhaseTodos, type PhaseTodo,
   readInbox, addToInbox, removeFromInbox, clearInbox,
 } from "./state";
-import { updateFooter, notifyPhase, showOverlay } from "./ui";
+import { notifyPhase, getStatusString, showMenu, formatWorkflow } from "./ui";
 import cmdStart from "./start";
 
 // ── Import Command Dispatcher for Multi-CLI Support ─────────────────
@@ -672,8 +671,18 @@ function cmdRename(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
 
 function cmdMenu(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
   const wd = resolveProjectDir(ctx.cwd);
-  showOverlay(ctx, wd);
-  // Overlay is interactive; no notify needed — user sees TUI.
+  const menu = showMenu(wd);
+  reply(ctx, menu);
+}
+
+function cmdStatus(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
+  const wd = resolveProjectDir(ctx.cwd);
+  const status = getStatusString(wd);
+  if (!status) {
+    reply(ctx, "No active workflow.");
+    return;
+  }
+  reply(ctx, status);
 }
 
 // ── INBOX ─────────────────────────────────────────────────────────────
@@ -947,7 +956,8 @@ const COMMAND_DESCRIPTIONS: Record<string, string> = {
   "pw-complete":"Mark active workflow complete: /pw-complete",
   "pw-goto":  "Go to a workflow: /pw-goto [name=name]",
   "pw-rename":"Rename active workflow: /pw-rename novo-nome | name=novo-nome",
-  "pw-menu":  "Open workflow overview overlay: /pw-menu",
+  "pw-menu":   "Show workflow overview: /pw-menu",
+  "pw-status":  "Show current workflow status: /pw-status",
   "pw-inbox": "Manage inbox: /pw-inbox | /pw-inbox add <item> | /pw-inbox remove <item> | /pw-inbox clear",
   "pw-todo":  "Manage phase todos: /pw-todo | /pw-todo add <task> | /pw-todo complete <id>",
   "pw-archive": "Archive workflows: /pw-archive | /pw-archive name=X | /pw-archive purge",
@@ -977,6 +987,7 @@ const CMD_MAP: [CmdHandler, string, string][] = [
   [cmdGoto, "pw-goto",      "pw-goto"],
   [cmdRename, "pw-rename",    "pw-rename"],
   [cmdMenu, "pw-menu",      "pw-menu"],
+  [cmdStatus, "pw-status",   "pw-status"],
   [cmdInbox, "pw-inbox",    "pw-inbox"],
   [cmdTodo, "pw-todo",     "pw-todo"],
   [cmdArchive, "pw-archive",   "pw-archive"],

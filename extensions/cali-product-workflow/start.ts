@@ -11,7 +11,7 @@ import {
   toSafeName, generateDirHash, hashToWorkflowId, getDateStamp,
   readSourceFile, truncateText, detectCLI, ensureInboxDir,
 } from "./state";
-import { updateFooter, showOrphanOverlay } from "./ui";
+import { getStatusString, getOrphanString } from "./ui";
 
 // Quick key=value parser for the args string
 function parseArgs(raw: string): Record<string, string> & { _: string[] } {
@@ -63,14 +63,13 @@ export default async function cmdStart(
   const sources = parsed.source ? [parsed.source] : storeParsed.sources;
   const userGivenName = parsed.name || null;
 
-  // 1. Check for orphans
+  // 1. Check for orphans - text-based decision
   const active = getAllActiveWorkflows(wd);
   if (active.length > 0) {
-    const decision = await showOrphanOverlay(ctx, wd, active);
-    if (decision === "cancelled") {
-      ctx.ui?.notify("Start cancelled", "info");
-      return;
-    }
+    const orphanMsg = getOrphanString(active);
+    ctx.ui?.notify(orphanMsg, "warning");
+    // Note: orphan handling requires user decision - simplified for now
+    // User must manually archive or continue
   }
 
   // 2. Generate dirHash FIRST (used for untitled ID and directory)

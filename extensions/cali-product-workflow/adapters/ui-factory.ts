@@ -73,6 +73,17 @@ function createGenericUIAdapter(): UIAdapter {
   return new GenericUIAdapter();
 }
 
+// ── Cached Adapter Access ─────────────────────────────────────────────
+
+let _cachedAdapter: UIAdapter | null = null;
+
+export function getUIAdapter(): UIAdapter {
+  if (!_cachedAdapter) {
+    _cachedAdapter = createUIAdapter();
+  }
+  return _cachedAdapter;
+}
+
 // Re-export UIAdapter interface
 export type { UIAdapter } from "./ui-adapter";
 export {
