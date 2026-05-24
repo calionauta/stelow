@@ -1,9 +1,9 @@
-import { existsSync, readFileSync, writeFileSync, statSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync, statSync, readdirSync, mkdirSync } from "node:fs";
 import { join, basename, dirname, extname } from "node:path";
 import { homedir } from "node:os";
 import type { Workflow, TrackingData, ParsedInput, CLI } from "./types";
-import type { PhaseTodo, PhaseTodosData } from "./modules/task";
 import { TASK_ICONS } from "./modules/task";
+import type { PhaseTodo, PhaseTodosData } from "./modules/task";
 import { WORKFLOW_DIR, TRACKING_FILE, GLOBAL_TRACKING_FILE, SCHEMA_URL, PHASE_NAMES, getCLICapabilities } from "./types";
 
 // ── CLI Detection ────────────────────────────────────────────────────
@@ -766,3 +766,7 @@ export function clearInbox(cwd: string): void {
   writeInbox(cwd, []);
 }
 
+
+
+// Re-export for convenience (used by commands.ts)
+export { TASK_ICONS };

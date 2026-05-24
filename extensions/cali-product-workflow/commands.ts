@@ -9,9 +9,10 @@ import { WORKFLOW_DIR, PHASE_NAMES } from "./types";
 import {
   readTracking, writeTracking, readGlobalTracking, writeGlobalTracking,
   getActiveWorkflow, renameWorkflow, toSafeName, reconcileTracking, scanWorkflowDirs,
-  archiveWorkflowOnDisk, resolveProjectDir, writeIndexJson,
-  writePhaseTodos, getPhaseTodos, type PhaseTodo,
+  archiveWorkflowOnDisk, resolveProjectDir,
+  writePhaseTodos, getPhaseTodos, type PhaseTodoType,
   readInbox, addToInbox, removeFromInbox, clearInbox,
+  TASK_ICONS,
 } from "./state";
 import { updateFooter, notifyPhase, showOverlay } from "./ui";
 import cmdStart from "./start";
@@ -728,7 +729,7 @@ function cmdTodo(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
     }
     const phasePrefix = PHASE_NAMES[wf.currentPhase].toUpperCase().slice(0, 4);
     const newId = `${phasePrefix}-${todos.length + 1}`;
-    const newTodo: PhaseTodo = {
+    const newTodo: PhaseTodoType = {
       id: newId,
       content: task,
       status: "pending",
@@ -764,7 +765,7 @@ function cmdTodo(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
   } else {
     const lines = [`${PHASE_NAMES[wf.currentPhase]} todos:`, ""];
     for (const todo of todos) {
-      const icon = todo.status === "completed" ? "✓" : todo.status === "in_progress" ? "◐" : "○";
+      const icon = TASK_ICONS[todo.status];
       lines.push(`${icon} [${todo.id}] ${todo.content}`);
     }
     reply(ctx, lines.join("\n"));

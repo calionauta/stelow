@@ -22,13 +22,16 @@ export {
   MapCache 
 } from './cache';
 
-// Tasks
-export { 
+// Tasks - types use 'export type' for isolatedModules compatibility
+export type { 
   TaskStatus, 
   TaskItem, 
   PhaseTodo, 
   PhaseTodosData, 
-  InboxItem,
+  InboxItem
+} from './task';
+
+export { 
   TASK_ICONS,
   formatTask,
   formatTaskList 

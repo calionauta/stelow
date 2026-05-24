@@ -283,3 +283,57 @@ No config files needed. Structure IS the configuration.
 - `AGENTS.md` — Agent instructions
 - `skills/cali-product-workflow/references/cli-tools/todo.md` — Todo system docs
 - `skills/cali-product-workflow/SKILL.md` — Workflow instructions
+---
+
+## Future Refactor Path
+
+### Phase 1: Use TASK_ICONS Consistently ✅ (Done)
+
+`cmdTodo` now uses `TASK_ICONS` from modules:
+
+```typescript
+import { TASK_ICONS } from "./state"; // re-exported from modules
+
+const icon = TASK_ICONS[todo.status];
+```
+
+### Phase 2: Use FileStore Classes (Optional)
+
+Currently, `state.ts` uses raw `readFileSync`/`writeFileSync`. For cleaner code:
+
+```typescript
+// Current (state.ts)
+export function writePhaseTodos(cwd: string, wf: Workflow, todos: PhaseTodo[]): void {
+  const path = getPhaseTodosPath(cwd, wf);
+  // ... raw fs operations
+}
+
+// Future (state.ts with FileStore)
+const _phaseTodosStore = (cwd: string, wf: Workflow) => 
+  new JsonFileStore<PhaseTodosData>(getPhaseTodosPath(cwd, wf));
+
+export function writePhaseTodos(cwd: string, wf: Workflow, todos: PhaseTodo[]): void {
+  _phaseTodosStore(cwd, wf).write({ workflowName: wf.name, ... });
+}
+```
+
+### Phase 3: Use CacheManager (Optional)
+
+Currently, `state.ts` uses inline cache:
+
+```typescript
+// Current (state.ts)
+let _phaseTodosCache: PhaseTodo[] = [];
+export function setPhaseTodos(todos: PhaseTodo[]): void { _phaseTodosCache = todos; }
+
+// Future (state.ts with CacheManager)
+import { CacheManager } from './modules/cache';
+
+const _phaseTodosCache = new CacheManager<PhaseTodo[]>(
+  () => readPhaseTodosFromFile(),
+  (todos) => writePhaseTodosToFile(todos)
+);
+```
+
+**Note:** These are optional optimizations. The current implementation is readable and works well.
+
