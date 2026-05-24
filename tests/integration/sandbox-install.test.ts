@@ -71,8 +71,8 @@ describe('Sandbox Install Verification', () => {
 
     it('should have package.json following cali-pw naming convention', () => {
       const extPkg = JSON.parse(readFileSync(join(extPath, 'package.json'), 'utf-8'));
-      // Extension packages follow the pattern @renatocaliari/cali-pw-* or @renatocaliari/cali-product-workflow-*
-      expect(extPkg.name).toMatch(/@renatocaliari\/cali-(pw|product-workflow)/);
+      // Extension packages follow the pattern @renatocaliari/cali-pw-*, @renatocaliari/cali-product-workflow-*, or @renatocaliari/pi-product-workflow-*
+      expect(extPkg.name).toMatch(/@renatocaliari\/(cali-(pw|product-workflow)|pi-product-workflow)/);
     });
 
   });
