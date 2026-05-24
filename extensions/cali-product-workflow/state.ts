@@ -647,3 +647,137 @@ export function worktreeDirName(name: string, date?: string): string {
 export function worktreeBranchName(name: string, date?: string): string {
   return `pw/${name}/${date}`;
 }
+
+
+// ── Phase Todos ───────────────────────────────────────────────────────
+
+export interface PhaseTodo {
+  id: string;
+  content: string;
+  status: "pending" | "in_progress" | "completed";
+  createdAt?: string;
+  completedAt?: string;
+}
+
+export interface PhaseTodosData {
+  workflowName: string;
+  phase: string;
+  phaseIndex: number;
+  todos: PhaseTodo[];
+  updatedAt: string;
+}
+
+const PHASE_TODOS_FILE = "phase-todos.json";
+
+function getPhaseTodosPath(cwd: string, wf: Workflow): string {
+  if (!wf.dirHash) return "";
+  const ds = getDateStamp(new Date(wf.created));
+  return join(cwd, WORKFLOW_DIR, ds, wf.dirHash, PHASE_TODOS_FILE);
+}
+
+export function readPhaseTodos(cwd: string, wf: Workflow): PhaseTodosData | null {
+  const path = getPhaseTodosPath(cwd, wf);
+  if (!path || !existsSync(path)) return null;
+  try {
+    return JSON.parse(readFileSync(path, "utf-8")) as PhaseTodosData;
+  } catch {
+    return null;
+  }
+}
+
+export function writePhaseTodos(cwd: string, wf: Workflow, todos: PhaseTodo[]): void {
+  const path = getPhaseTodosPath(cwd, wf);
+  if (!path) return;
+  const data: PhaseTodosData = {
+    workflowName: wf.name,
+    phase: PHASE_NAMES[wf.currentPhase] || "unknown",
+    phaseIndex: wf.currentPhase,
+    todos,
+    updatedAt: new Date().toISOString(),
+  };
+  try {
+    writeFileSync(path, JSON.stringify(data, null, 2));
+  } catch { /* skip */ }
+}
+
+export function getPhaseTodos(cwd: string, wf: Workflow): PhaseTodo[] {
+  const data = readPhaseTodos(cwd, wf);
+  return data?.todos || [];
+}
+
+let _phaseTodosCache: PhaseTodo[] = [];
+
+export function setPhaseTodos(todos: PhaseTodo[]): void {
+  _phaseTodosCache = todos;
+}
+
+export function getPhaseTodosFromCache(cwd: string, wf: Workflow): PhaseTodo[] {
+  if (_phaseTodosCache.length > 0) return _phaseTodosCache;
+  return getPhaseTodos(cwd, wf);
+}
+
+export function clearPhaseTodosCache(): void {
+  _phaseTodosCache = [];
+}
+
+// ── Inbox ──────────────────────────────────────────────────────────────
+
+const INBOX_DIR = ".cali-product-workflow/inbox";
+const INBOX_FILE = "items.md";
+
+export function getInboxDir(cwd: string): string {
+  return join(cwd, INBOX_DIR);
+}
+
+export function getInboxPath(cwd: string): string {
+  return join(cwd, INBOX_DIR, INBOX_FILE);
+}
+
+export function ensureInboxDir(cwd: string): void {
+  const dir = getInboxDir(cwd);
+  if (!existsSync(dir)) {
+    mkdirSync(dir, { recursive: true });
+  }
+}
+
+export function readInbox(cwd: string): string[] {
+  const path = getInboxPath(cwd);
+  if (!existsSync(path)) return [];
+  try {
+    const content = readFileSync(path, "utf-8");
+    return content
+      .split("\n")
+      .map(line => line.trim())
+      .filter(line => line.length > 0)
+      .filter(line => !line.startsWith("#"));
+  } catch {
+    return [];
+  }
+}
+
+export function writeInbox(cwd: string, items: string[]): void {
+  ensureInboxDir(cwd);
+  const path = getInboxPath(cwd);
+  const header = "# Inbox\n\n";
+  const content = items.length > 0 ? items.join("\n") + "\n" : "\n";
+  writeFileSync(path, header + content);
+}
+
+export function addToInbox(cwd: string, item: string): void {
+  const items = readInbox(cwd);
+  if (!items.includes(item)) {
+    items.push(item);
+    writeInbox(cwd, items);
+  }
+}
+
+export function removeFromInbox(cwd: string, item: string): void {
+  const items = readInbox(cwd);
+  const filtered = items.filter(i => i !== item);
+  writeInbox(cwd, filtered);
+}
+
+export function clearInbox(cwd: string): void {
+  writeInbox(cwd, []);
+}
+
