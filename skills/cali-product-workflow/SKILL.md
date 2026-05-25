@@ -98,10 +98,10 @@ Domain playbooks available for tactical reference during planning/execution:
 
 Follow the sequence below. For phases 3-5 and 7, read the subskill SKILL.md directly. Each subskill has its own **Reference Index** — read the file to see it:
 
-1. Phase 3 (Shape): see `skills-workflow/cali-shape-up/SKILL.md` for instructions
-2. Phase 4 (Critique): see `skills-workflow/cali-plan-critique/SKILL.md` for instructions
-3. Phase 6 (Interface): see `skills-workflow/cali-interface-brainstorm/SKILL.md` for instructions
-4. Phase 7 (Int. Gate): see `skills-workflow/cali-tech-planning/SKILL.md` for instructions
+1. Phase 3 (Shape): see `cali-product-shape-up/SKILL.md` for instructions
+2. Phase 4 (Critique): see `cali-product-plan-critique/SKILL.md` for instructions
+3. Phase 6 (Interface): see `cali-product-interface-brainstorm/SKILL.md` for instructions
+4. Phase 7 (Int. Gate): see `cali-product-tech-planning/SKILL.md` for instructions
 
 Do NOT use `/skill:` for internal subskills.
 
@@ -133,12 +133,12 @@ Tech Planning
     ↓
 [product_type check]
     ↓ software/hybrid
-cali-testing-ai-code → testing-strategy.md + test-* scopes
+cali-product-testing-ai-code → testing-strategy.md + test-* scopes
     ↓
 Execution
 ```
 
-See `skills-execution/cali-testing-ai-code/SKILL.md`
+See `skills/cali-product-testing-ai-code/SKILL.md`
 
 ### Flow Diagram
 
@@ -210,9 +210,9 @@ Use `references/cli-tools/plannotator.md` for Plannotator gate rules.
 - Before generating scopes: verify `approved: true` in spec-product.md
 - **Deterministic** — do not rely on memory, read the YAML frontmatter
 - **AI-Aware Testing**: If `product_type: software` or `product_type: hybrid` in frontmatter:
-  - Activate `see `skills-execution/cali-testing-ai-code/SKILL.md` for instructions` to generate testing-strategy.md
+  - Activate `see `skills/cali-product-testing-ai-code/SKILL.md` for instructions` to generate testing-strategy.md
   - Add `test-*` scope types to spec-tech.md
-  - See `skills-execution/cali-testing-ai-code/SKILL.md`
+  - See `skills/cali-product-testing-ai-code/SKILL.md`
 
 ### Supervisor (Phase 12)
 - **Never activate during Phases 3-10.** The supervisor would re-submit Plannotator.
@@ -221,11 +221,11 @@ Use `references/cli-tools/plannotator.md` for Plannotator gate rules.
 ### Execution (Phase 12)
 - **DO NOT ask** "Would you like to execute?", "Create ordered-execution-goal?", "Review plan first?"
 - **Execution is automatic** after Tech Planning approval. Proceed directly.
-- see `skills-execution/cali-product-scope-executor/SKILL.md` for instructions for scope routing.
+- see `skills/cali-product-scope-executor/SKILL.md` for instructions for scope routing.
 - See `phases/execution.md` for details.
 - **DO NOT ask** "Would you like to execute?", "Create ordered-execution-goal?", "Review plan first?"
 - **Execution is automatic** after Tech Planning approval. Proceed directly.
-- see `skills-execution/cali-product-scope-executor/SKILL.md` for instructions for scope routing.
+- see `skills/cali-product-scope-executor/SKILL.md` for instructions for scope routing.
 - See `phases/execution.md` for details.
 
 ### Worktree

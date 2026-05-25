@@ -1,7 +1,7 @@
 /**
  * Layer C: Skill Implementation Validation
  * 
- * Tests that each skill (cali-shape-up, cali-tech-planning, etc.)
+ * Tests that each skill (cali-product-shape-up, cali-product-tech-planning, etc.)
  * is correctly implemented with:
  * - Tool reference header
  * - Process section
@@ -32,26 +32,26 @@ interface SkillDefinition {
 
 const skills: SkillDefinition[] = [
   {
-    name: 'cali-shape-up',
-    path: 'skills-workflow/cali-shape-up/SKILL.md',
+    name: 'cali-product-shape-up',
+    path: 'cali-product-shape-up/SKILL.md',
     requiresGate: false, // Gate is in main SKILL.md
     requiresToolRef: true,
   },
   {
-    name: 'cali-tech-planning',
-    path: 'skills-workflow/cali-tech-planning/SKILL.md',
+    name: 'cali-product-tech-planning',
+    path: 'cali-product-tech-planning/SKILL.md',
     requiresGate: true,
     requiresToolRef: true,
   },
   {
-    name: 'cali-interface-brainstorm',
-    path: 'skills-workflow/cali-interface-brainstorm/SKILL.md',
+    name: 'cali-product-interface-brainstorm',
+    path: 'cali-product-interface-brainstorm/SKILL.md',
     requiresGate: true,
     requiresToolRef: true,
   },
   {
-    name: 'cali-plan-critique',
-    path: 'skills-workflow/cali-plan-critique/SKILL.md',
+    name: 'cali-product-plan-critique',
+    path: 'cali-product-plan-critique/SKILL.md',
     requiresGate: false,
     requiresToolRef: true,
   },
@@ -187,8 +187,8 @@ describe('Skill Implementation Validation', () => {
     });
 
     describe('Tech Planning Gate', () => {
-      it('cali-tech-planning should have its own gate', () => {
-        const techContent = readSkill(skills.find(s => s.name === 'cali-tech-planning')!);
+      it('cali-product-tech-planning should have its own gate', () => {
+        const techContent = readSkill(skills.find(s => s.name === 'cali-product-tech-planning')!);
         // Accept either direct --gate or reference to plannotator.md
         expect(techContent).toMatch(/plannotator.*--gate|--gate|plannotator\.md/i);
       });

@@ -39,7 +39,9 @@ Every CLI's AGENTS.md and commands reference this file.
 ## Per-CLI Implementation
 
 ### Pi (15 commands - Full support)
-- Extension: `cli-agents/pi/extensions/`
+- Extension: `extensions/cali-pw-pi/` (installed via install.sh)
+- Skills: `~/.agents/skills/` (20 flat skills)
+- Commands: Via extension with TUI overlay
 - Native registerCommand() for all commands
 - Hooks: session-start, pre/post-tool-use, etc.
 

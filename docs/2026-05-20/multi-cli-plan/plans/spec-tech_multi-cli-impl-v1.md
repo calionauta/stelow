@@ -1,5 +1,5 @@
 ---
-source: cali-tech-planning
+source: cali-product-tech-planning
 original_files: spec-tech_multi-cli-v1.md (approved plan)
 date: 2026-05-20
 ---

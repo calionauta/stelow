@@ -158,6 +158,7 @@ cd cali-product-workflow
 The installer auto-detects all your CLIs (pi, opencode, claude-code, codex) and installs for each one. One command, all CLIs.
 
 See [docs/INSTALLATION.md](docs/INSTALLATION.md) for detailed options.
+Per-agent configuration files (commands, install scripts) are in [`cli-agents/`](cli-agents/).
 
 ---
 
@@ -331,7 +332,6 @@ After installation, manually add this to your agent's instructions file:
 When working on software projects, trigger the product workflow:
 
 1. **Trigger:** Use `/skill cali-product-workflow`
-2. **Process:** Follow the 6-phase workflow
 3. **Execute:** Only after visual review gate (Plannotator approval)
 ````
 
@@ -440,40 +440,75 @@ Toggle with `/pw-menu`.
 
 ---
 
-## 📋 Skills (16)
+## 📋 Skills (21)
 
-### Strategic Skills (5)
+All 21 skills are flat in `skills/` directory, ready for `~/.agents/skills/`.
+
+### Orchestrator (1)
 
 | Skill | Purpose |
 |-------|---------|
-| `cali-jtbd` | Job To Be Done — understand what job users hire the product to do |
-| `cali-opportunity-mapping` | Map opportunities to see where to focus |
-| `cali-evolutionary` | Evolutionary principles for sustainable development |
-| `cali-short-cycle` | Rapid feedback loops |
+| `cali-product-workflow` | Coordinates the 11-phase workflow |
+
+### Workflow Skills (4)
+
+| Skill | Purpose |
+|-------|---------|
+784|| `cali-product-shape-up` | Shape Up planning — appetite, hill charts, rabbit holes, IN/OUT boundaries |
+| `cali-product-interface-brainstorm` | Interface exploration in ASCII art |
+| `cali-product-plan-critique` | Adversarial plan review with Plannotator gate |
+| `cali-product-tech-planning` | Technical scope generation with dependency mapping |
+
+### Strategic Analysis (5)
+
+| Skill | Purpose |
+|-------|---------|
+| `cali-product-job-to-be-done` | Job To Be Done — understand what job users hire the product to do |
 | `cali-product-discovery` | Customer discovery and validation |
+| `cali-product-opportunity-mapping` | Map opportunities to see where to focus |
+| `cali-product-multi-method-market-analysis` | Multi-method market analysis |
+| `cali-product-evolutionary-principles` | Evolutionary principles for sustainable development |
 
-### Domain Skills (8)
-
-| Skill | Purpose |
-|-------|---------|
-| `cali-pricing` | Pricing strategy and tactics |
-| `cali-ads` | Advertising and growth channels |
-| `cali-trust` | Trust-building mechanisms |
-| `cali-promotions` | Promotions and campaigns |
-| `cali-business-models` | Business model canvas and options |
-| `cali-health` | Product health metrics |
-| `cali-marketplace` | Marketplace dynamics |
-| `cali-open-source` | Open source strategy |
-
-### Workflow Skills (3)
+### Domain Libraries (8)
 
 | Skill | Purpose |
 |-------|---------|
-| `cali-shape-up` | Shape Up planning methodology |
-| `cali-interface-brainstorm` | Interface exploration and ASCII art |
-| `cali-plan-critique` | Adversarial plan review |
-| `cali-tech-planning` | Technical scope generation |
+| `cali-product-pricing` | Pricing strategy and tactics |
+| `cali-product-ads` | Advertising and growth channels |
+| `cali-product-trust-building` | Trust-building mechanisms |
+| `cali-product-promotions` | Promotions and campaigns |
+| `cali-product-business-models` | Business model canvas and options |
+| `cali-product-health` | Product health metrics |
+| `cali-product-marketplace-playbook` | Marketplace dynamics |
+| `cali-product-open-source` | Open source strategy |
 
+d05|
+490|### Orchestrator (1)
+491|d05|
+492|6bf|| Skill | Purpose |
+493|7fa||-------|-------|
+494|9a6|| `cali-product-workflow` | Main orchestrator — coordinates all phases
+495|d05|
+### Execution (2)
+
+| Skill | Purpose |
+|-------|---------|
+| `cali-product-scope-executor` | Typed execution scopes with dependency mapping |
+| `cali-product-testing-ai-code` | AI-aware mutation testing strategy |
+
+### Installation
+
+```bash
+# Via installer (recommended)
+./install.sh
+
+# Via npx (any CLI)
+npx skills add renatocaliari/cali-product-workflow -g
+
+# Via agent-sync (distribution to multiple CLIs)
+pipx install agent-sync
+agent-sync skills centralize
+```
 ---
 
 ## 📊 Version

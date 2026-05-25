@@ -63,10 +63,10 @@ METRIC compile_µs=15200
 **⚠️ IMPORTANT: experiment-loop NEVER runs in the main agent.**
 
 ```
-main agent → cali-scope-executor → subagent (delegate/worker) → /skill:autoresearch-create
+main agent → cali-product-scope-executor → subagent (delegate/worker) → /skill:autoresearch-create
 ```
 
-The cali-scope-executor delegates to a subagent that executes the experiment loop.
+The cali-product-scope-executor delegates to a subagent that executes the experiment loop.
 Never invoke autoresearch directly in the main agent — this creates infinite loops.
 
 ---
@@ -85,5 +85,5 @@ If experiment-loop is not available:
 
 ## Related
 
-- Scope executor (see `skills-execution/cali-product-scope-executor/SKILL.md`)
-- Testing strategy (see `skills-execution/cali-testing-ai-code/SKILL.md`)
+- Scope executor (see `skills/cali-product-scope-executor/SKILL.md`)
+- Testing strategy (see `skills/cali-product-testing-ai-code/SKILL.md`)

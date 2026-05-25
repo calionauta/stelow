@@ -131,7 +131,7 @@ Proceed directly to scope execution in the current directory.
 - ❌ Single-run validation — agents are non-deterministic
 - ❌ Snapshot tests for non-UI components
 
-See `skills-execution/cali-testing-ai-code/SKILL.md`
+See `skills/cali-product-testing-ai-code/SKILL.md`
 
 ## Phase 12: Execution — AUTOMATIC
 
@@ -147,14 +147,14 @@ After Plannotator approval on spec-tech_v{N}.md:
 
 | Scope Type | Executor | Command |
 |------------|----------|--------|
-| `feature` | **ordered-execution-goal** (see goals.md) + `/supervise` | see `skills-execution/cali-product-scope-executor/SKILL.md` for instructions |
+| `feature` | **ordered-execution-goal** (see goals.md) + `/supervise` | see `skills/cali-product-scope-executor/SKILL.md` for instructions |
 | `optimization` | `/skill:autoresearch-create` | `/skill:autoresearch-create` |
-| `spike` | **ordered-execution-goal** (see goals.md) + `/supervise` | see `skills-execution/cali-product-scope-executor/SKILL.md` for instructions |
-| `test-*` | **ordered-execution-goal** (see goals.md) + testing gates | see `skills-execution/cali-product-scope-executor/SKILL.md` for instructions |
+| `spike` | **ordered-execution-goal** (see goals.md) + `/supervise` | see `skills/cali-product-scope-executor/SKILL.md` for instructions |
+| `test-*` | **ordered-execution-goal** (see goals.md) + testing gates | see `skills/cali-product-scope-executor/SKILL.md` for instructions |
 
 ### Executing Scopes
 
-Run see `skills-execution/cali-product-scope-executor/SKILL.md` for instructions — this routes each scope to its correct executor.
+Run see `skills/cali-product-scope-executor/SKILL.md` for instructions — this routes each scope to its correct executor.
 
 **For feature scopes:**
 ```bash
@@ -201,14 +201,14 @@ After Plannotator approval on spec-tech_v{N}.md:
 
 | Scope Type | Executor | Command |
 |------------|----------|--------|
-| `feature` | **ordered-execution-goal** (see goals.md) + `/supervise` | see `skills-execution/cali-product-scope-executor/SKILL.md` for instructions |
+| `feature` | **ordered-execution-goal** (see goals.md) + `/supervise` | see `skills/cali-product-scope-executor/SKILL.md` for instructions |
 | `optimization` | `/skill:autoresearch-create` | `/skill:autoresearch-create` |
-| `spike` | **ordered-execution-goal** (see goals.md) + `/supervise` | see `skills-execution/cali-product-scope-executor/SKILL.md` for instructions |
-| `test-*` | **ordered-execution-goal** (see goals.md) + testing gates | see `skills-execution/cali-product-scope-executor/SKILL.md` for instructions |
+| `spike` | **ordered-execution-goal** (see goals.md) + `/supervise` | see `skills/cali-product-scope-executor/SKILL.md` for instructions |
+| `test-*` | **ordered-execution-goal** (see goals.md) + testing gates | see `skills/cali-product-scope-executor/SKILL.md` for instructions |
 
 ### Executing Scopes
 
-**Run see `skills-execution/cali-product-scope-executor/SKILL.md` for instructions** — this routes each scope to its correct executor.
+**Run see `skills/cali-product-scope-executor/SKILL.md` for instructions** — this routes each scope to its correct executor.
 
 **For feature scopes:**
 ```bash

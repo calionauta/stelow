@@ -1,9 +1,16 @@
 # ==== cali-product-workflow cleanup ====
 
-# Session checkpoints (local only)
+# Session checkpoints and research (local only)
+research/
 progress.md
 context.md
 research.md
+context-opencode-api.md
+
+# Investigation and migration docs
+docs/investigacao-*.md
+docs/plano-migracao-*.md
+docs/2026-05-20/next-steps/
 
 # Test results (CI output)
 test-results/
@@ -60,8 +67,10 @@ npm-debug.log*
 pnpm-lock.yaml
 # yarn.lock (uncomment if needed)
 # package-lock.json (uncomment if needed)
+
 # Local skills (pi installs here)
 .agents/
+
 # Plugin configs (Claude Code, Codex, OpenCode)
 .claude-plugin/
 .codex-plugin/

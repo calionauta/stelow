@@ -1,14 +1,17 @@
 #!/usr/bin/env bash
 #
 # cali-product-workflow Installer
-# Auto-detects ALL installed CLIs and installs for each one.
-# Uses Git-based distribution — no npm dependency.
+# Flattens 20 skills to ~/.agents/skills/ (DotAgents Protocol).
+# Distribution to each harness via agent-sync (or manual config).
+#
+# Skills: 1 orchestrator + 19 subskills = 20 total flat
 #
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 GITHUB_REPO="https://github.com/renatocaliari/cali-product-workflow"
+SKILLS_DIR="$HOME/.agents/skills"
 
 # Colors
 if [[ -t 1 ]] && command -v tput &>/dev/null && [[ $(tput colors 2>/dev/null || echo 0) -ge 8 ]]; then
@@ -22,6 +25,30 @@ log_info()    { echo "${BLUE}[info]${RESET} $*"; }
 log_success() { echo "${GREEN}[ok]${RESET} $*"; }
 log_warn()    { echo "${YELLOW}[warn]${RESET} $*"; }
 log_error()   { echo "${RED}[error]${RESET} $*" >&2; }
+
+# List of all 21 skills (orchestrator + 20 subskills)
+ALL_SKILLS=(
+  "cali-product-workflow"
+  "cali-product-shape-up"
+  "cali-product-interface-brainstorm"
+  "cali-product-plan-critique"
+  "cali-product-tech-planning"
+  "cali-product-job-to-be-done"
+  "cali-product-discovery"
+  "cali-product-opportunity-mapping"
+  "cali-product-multi-method-market-analysis"
+  "cali-product-evolutionary-principles"
+  "cali-product-pricing"
+  "cali-product-ads"
+  "cali-product-trust-building"
+  "cali-product-promotions"
+  "cali-product-business-models"
+  "cali-product-health"
+  "cali-product-marketplace-playbook"
+  "cali-product-open-source"
+  "cali-product-scope-executor"
+  "cali-product-testing-ai-code"
+)
 
 # CLI Detection
 has_cli() {
@@ -61,11 +88,21 @@ print_agents_setup() {
 
 When working on software projects, trigger the product workflow:
 
-1. **Trigger:** Use \`/skill cali-product-workflow\`
-2. **Process:** Follow the 6-phase workflow
+1. **Trigger:** Use `/skill cali-product-workflow`
+2. **Process:** Follow the 11-phase workflow
 3. **Execute:** Only after visual review gate (Plannotator approval)
 \`\`\`
 EOF
+  echo ""
+  log_info "${BOLD}━━ agent-sync (optional) ━━${RESET}"
+  log_info "To distribute skills to each harness, install agent-sync:"
+  echo ""
+  log_info "  pipx install agent-sync"
+  log_info "  agent-sync setup"
+  log_info "  agent-sync push"
+  echo ""
+  log_warn "Without agent-sync, skills are available at ~/.agents/skills/"
+  log_warn "and must be configured manually in each harness."
   echo ""
 }
 
@@ -80,20 +117,41 @@ install_for_cli() {
   esac
 }
 
+# Install skills to ~/.agents/skills/ (flat)
+install_skills_flat() {
+  log_info "Installing 20 skills to ~/.agents/skills/..."
+  mkdir -p "$SKILLS_DIR"
+
+  local installed=0
+  local skipped=0
+  for skill in "${ALL_SKILLS[@]}"; do
+    local src="$SCRIPT_DIR/skills/$skill"
+    if [[ -d "$src" ]]; then
+      cp -r "$src" "$SKILLS_DIR/"
+      ((installed++)) || true
+    else
+      log_warn "  Skill not found: $skill"
+      ((skipped++)) || true
+    fi
+  done
+
+  log_success "  Installed $installed skills"
+  [[ $skipped -gt 0 ]] && log_warn "  Skipped $skipped skills (not found)"
+}
+
 # Pi
 install_pi() {
   log_info "  -> Installing for Pi..."
   if ! command -v pi &>/dev/null; then log_warn "    pi not found. Skipping."; return; fi
 
-  log_info "    Installing core package..."
-  pi install "git:github.com/renatocaliari/cali-product-workflow" 2>/dev/null || {
-    log_info "    (using local path)"
-    pi install "$SCRIPT_DIR" 2>/dev/null || true
-  }
+  # Install skills (flat to ~/.agents/skills/)
+  install_skills_flat
 
+  # Install Pi extension
   log_info "    Installing Pi extension..."
   pi install "$SCRIPT_DIR/extensions/cali-pw-pi" 2>/dev/null || true
 
+  # Install supporting packages
   if [[ -z "${INSTALL_SKILLS_ONLY:-}" ]]; then
     log_info "    Installing supporting packages..."
     for pkg in \
@@ -109,7 +167,6 @@ install_pi() {
 
   # Clean up project-level duplicates
   rm -rf "$SCRIPT_DIR/.pi/skills/cali-product-workflow" 2>/dev/null || true
-  rm -rf "$SCRIPT_DIR/.agents/skills/cali-product-workflow" 2>/dev/null || true
 
   log_success "  v Pi done"
 }
@@ -119,12 +176,18 @@ install_opencode() {
   log_info "  -> Installing for OpenCode..."
   if ! command -v opencode &>/dev/null; then log_warn "    opencode not found. Skipping."; return; fi
 
-  log_info "    Installing skills..."
-  npx skills add renatocaliari/cali-product-workflow -a opencode -g -y 2>/dev/null || {
-    local skdir="$HOME/.agents/skills"
-    mkdir -p "$skdir"
-    [[ ! -d "$skdir/cali-product-workflow" ]] && cp -r "$SCRIPT_DIR/skills/cali-product-workflow" "$skdir/"
-  }
+  # Install skills (flat to ~/.agents/skills/)
+  install_skills_flat
+
+  # Configure OpenCode to use ~/.agents/skills/
+  local cfg="$HOME/.config/opencode/opencode.json"
+  if [[ -f "$cfg" ]] && command -v jq &>/dev/null; then
+    if jq -e '.skills.paths // [] | index("~/.agents/skills") == -1' "$cfg" &>/dev/null; then
+      log_info "    Adding ~/.agents/skills to OpenCode config..."
+      local tmp=$(mktemp)
+      jq '.skills.paths = (.skills.paths // []) + ["~/.agents/skills"]' "$cfg" > "$tmp" && mv "$tmp" "$cfg"
+    fi
+  fi
 
   log_success "  v OpenCode done"
 }
@@ -134,8 +197,18 @@ install_claude_code() {
   log_info "  -> Installing for Claude Code..."
   if ! command -v claude &>/dev/null; then log_warn "    claude not found. Skipping."; return; fi
 
-  log_info "    Installing skills..."
-  npx skills add renatocaliari/cali-product-workflow -a claude-code -g -y 2>/dev/null || true
+  # Install skills (flat to ~/.agents/skills/)
+  install_skills_flat
+
+  # Configure Claude Code to use ~/.agents/skills/
+  local cfg="$HOME/.claude/settings.json"
+  if [[ -f "$cfg" ]] && command -v jq &>/dev/null; then
+    if jq -e '.skills.paths // [] | index("~/.agents/skills") == -1' "$cfg" &>/dev/null; then
+      log_info "    Adding ~/.agents/skills to Claude Code config..."
+      local tmp=$(mktemp)
+      jq '.skills.paths = (.skills.paths // []) + ["~/.agents/skills"]' "$cfg" > "$tmp" && mv "$tmp" "$cfg"
+    fi
+  fi
 
   log_info "    Adding plugin marketplace..."
   if claude plugin marketplace add "$SCRIPT_DIR" 2>/dev/null; then
@@ -158,8 +231,18 @@ install_codex() {
   log_info "  -> Installing for Codex..."
   if ! command -v codex &>/dev/null; then log_warn "    codex not found. Skipping."; return; fi
 
-  log_info "    Installing skills..."
-  npx skills add renatocaliari/cali-product-workflow -a codex -g -y 2>/dev/null || true
+  # Install skills (flat to ~/.agents/skills/)
+  install_skills_flat
+
+  # Configure Codex to use ~/.agents/skills/
+  local cfg="$HOME/.codex/settings.json"
+  if [[ -f "$cfg" ]] && command -v jq &>/dev/null; then
+    if jq -e '.skills.paths // [] | index("~/.agents/skills") == -1' "$cfg" &>/dev/null; then
+      log_info "    Adding ~/.agents/skills to Codex config..."
+      local tmp=$(mktemp)
+      jq '.skills.paths = (.skills.paths // []) + ["~/.agents/skills"]' "$cfg" > "$tmp" && mv "$tmp" "$cfg"
+    fi
+  fi
 
   log_info "    Adding plugin marketplace..."
   if codex plugin marketplace add "$SCRIPT_DIR" 2>/dev/null; then
@@ -177,29 +260,26 @@ install_codex() {
   log_success "  v Codex done"
 }
 
-# Generic
+# Generic (no CLI detected)
 install_generic() {
   log_info "  -> Installing skills for all agents..."
-  npx skills add renatocaliari/cali-product-workflow -a pi -a opencode -a claude-code -a codex -g -y 2>/dev/null || {
-    log_error "    npx skills failed."
-    return 1
-  }
+  install_skills_flat
   log_success "  v Generic done"
 }
 
 # Update
 update_all() {
   log_info "Updating..."
-  npx skills update -y 2>/dev/null || true
-  for cli in $(detect_all_clis); do
-    case "$cli" in
-      pi)          d="$HOME/.pi/agent/skills/cali-product-workflow" ;;
-      opencode)    d="$HOME/.config/opencode/skills/cali-product-workflow" ;;
-      claude-code) d="$HOME/.claude/skills/cali-product-workflow" ;;
-      codex)       d="$HOME/.codex/skills/cali-product-workflow" ;;
-    esac
-    if [[ -d "${d:-}" ]]; then log_success "  - ${cli}: skills present"
-    else log_warn "  - ${cli}: skills missing -- re-run install"; fi
+  for skill in "${ALL_SKILLS[@]}"; do
+    local src="$SCRIPT_DIR/skills/$skill"
+    local dst="$SKILLS_DIR/$skill"
+    if [[ -d "$src" ]]; then
+      rm -rf "$dst"
+      cp -r "$src" "$SKILLS_DIR/"
+      log_success "  - $skill"
+    else
+      log_warn "  - $skill: not in source, keeping existing"
+    fi
   done
   log_success "Update complete!"
 }
@@ -208,35 +288,33 @@ update_all() {
 uninstall_all() {
   local clis=$(detect_all_clis)
   log_info "Uninstalling for: $clis"
+  log_info "Removing skills from $SKILLS_DIR..."
+  
+  for skill in "${ALL_SKILLS[@]}"; do
+    rm -rf "$SKILLS_DIR/$skill"
+  done
+  
   for cli in $clis; do
     case "$cli" in
       pi)
         pi remove "git:github.com/renatocaliari/cali-product-workflow" 2>/dev/null || true
-        npx skills remove cali-product-workflow -a pi -g -y 2>/dev/null || true
         rm -rf "$HOME/.pi/agent/skills/cali-product-workflow" 2>/dev/null || true
         log_success "  v Pi" ;;
       opencode)
-        npx skills remove cali-product-workflow -a opencode -g -y 2>/dev/null || true
         local cfg="$HOME/.config/opencode/opencode.json"
-        local skdir="$HOME/.config/opencode/skills"
         if [[ -f "$cfg" ]] && command -v jq &>/dev/null; then
-          jq '.skills.paths -= ["'"$skdir"'"]' "$cfg" > "${cfg}.tmp" && mv "${cfg}.tmp" "$cfg" 2>/dev/null || true
+          jq 'delpaths([["skills","paths"]])' "$cfg" > "${cfg}.tmp" && mv "${cfg}.tmp" "$cfg" 2>/dev/null || true
         fi
-        rm -rf "$skdir/cali-product-workflow" 2>/dev/null || true
         log_success "  v OpenCode" ;;
       claude-code)
-        npx skills remove cali-product-workflow -a claude-code -g -y 2>/dev/null || true
         claude plugin uninstall "cali-product-workflow" 2>/dev/null || true
-        rm -rf "$HOME/.claude/skills/cali-product-workflow" 2>/dev/null || true
         log_success "  v Claude Code" ;;
       codex)
-        npx skills remove cali-product-workflow -a codex -g -y 2>/dev/null || true
         codex plugin remove "cali-product-workflow" 2>/dev/null || true
-        rm -rf "$HOME/.codex/skills/cali-product-workflow" 2>/dev/null || true
         log_success "  v Codex" ;;
     esac
   done
-  npx skills remove cali-product-workflow -y 2>/dev/null || true
+
   echo ""
   log_success "Uninstallation complete!"
   log_info "Manual AGENTS.md/CLAUDE.md entries were not removed."
@@ -247,8 +325,8 @@ show_help() {
   cat << 'EOF'
 cali-product-workflow Installer
 
-Auto-detects ALL your installed AI coding agents and installs for each one.
-Uses Git-based distribution -- no npm dependency.
+Flattens 21 skills to ~/.agents/skills/ (DotAgents Protocol).
+Distribution to each harness via agent-sync or manual config.
 
 Usage: install.sh [command]
 
@@ -262,11 +340,23 @@ Environment:
   INSTALL_SKILLS_ONLY  Skip npm packages (Pi only, skills-only)
   PRODUCT_WORKFLOW_CLI  Limit to one CLI (pi|opencode|claude-code|codex)
 
+Skills installed (21 total):
+  - cali-product-workflow (orchestrator)
+  - 4 workflow skills (shape-up, interface-brainstorm, plan-critique, tech-planning)
+  - 5 strategic analysis skills
+  - 8 domain library skills
+  - 2 execution skills
+
 Examples:
   ./install.sh                                    # All detected CLIs
   PRODUCT_WORKFLOW_CLI=opencode ./install.sh      # Only OpenCode
   ./install.sh update                              # Update skills
   ./install.sh remove                              # Uninstall from all
+
+Optional (for automatic distribution):
+  pipx install agent-sync
+  agent-sync setup
+  agent-sync push
 EOF
 }
 

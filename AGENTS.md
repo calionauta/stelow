@@ -16,7 +16,7 @@ Setup → Context → Shape → Critique → Gate → Scope → Interface → In
   0       1         2        3         4      5       6           7           8           9          10
 ```
 
-Phases 2-3 and 7 run as skills (`cali-shape-up`, `cali-plan-critique`, `cali-interface-brainstorm`).
+Phases 2-3 and 7 run as skills (`cali-product-shape-up`, `cali-product-plan-critique`, `cali-product-interface-brainstorm`).
 Gates (4, 7) require Plannotator visual approval — never skip.
 Phase 10 (Planning) generates typed scopes with dependency mapping.
 
@@ -29,7 +29,6 @@ Phase 10 (Planning) generates typed scopes with dependency mapping.
 - **Visual review gate** — Plannotator opens the full plan for point-by-point comments
 - **Interface exploration** — 5 approaches in ASCII art, then LLM creates hybrid
 - **Typed technical scopes** — feature, spike, optimize, test-* with dependency mapping
-- **External skill references** — third-party skills documented in `references/cli-tools/` with install instructions and fallbacks
 
 ## Key Principles
 
@@ -72,91 +71,72 @@ Keep PRs focused. Squash merge to main.
 ## File Naming
 
 All project files must use `lowercase-kebab-case`:
-## External Skill Dependencies
-
-Any skill referenced by this workflow that is NOT part of cali-product-workflow must:
-1. Have a reference file in `references/cli-tools/{descriptive-name}.md`
-2. Include:
-   - Install instructions for CLIs or generic
-   - Quick summary of what it does
-   - Fallback instructions when not installed
-
-Example: `codequality-review.md` for the thermo-nuclear review.
-
 - ✅ `spec-product.md`, `tech-planning.md`
 - ❌ `SpecProduct.md`, `TECH-PLANNING.md`
 
 ## Skills
 
-19 specialized skills in `skills/` directory:
+20 specialized skills flat in `skills/` directory:
 
 ```
-skills/cali-product-workflow/
-├── skills-workflow/              # Shape Up, Interface, Critique, Tech Planning
-│   ├── cali-shape-up/
-│   ├── cali-interface-brainstorm/
-│   ├── cali-plan-critique/
-│   └── cali-tech-planning/
-├── skills-strategic-analysis/    # JTBD, Discovery, Opportunity Mapping, Market Analysis, Evolution
-│   ├── cali-product-job-to-be-done/
-│   ├── cali-product-discovery/
-│   ├── cali-product-opportunity-mapping/
-│   ├── cali-product-multi-method-market-analysis/
-│   └── cali-product-evolutionary-principles/
-├── skills-domain-libraries/      # 8 domain playbooks
-│   ├── cali-product-pricing/
-│   ├── cali-product-ads/
-│   ├── cali-product-trust-building/
-│   ├── cali-product-promotions/
-│   ├── cali-product-business-models/
-│   ├── cali-product-health/
-│   ├── cali-product-marketplace-playbook/
-│   └── cali-product-open-source/
-└── skills-execution/             # Scope routing, AI testing strategy
-    ├── cali-product-scope-executor/
-    └── cali-testing-ai-code/
+skills/
+├── cali-product-workflow/             # Orchestrator
+├── cali-product-shape-up/             # Shape Up planning
+├── cali-product-interface-brainstorm/  # Interface brainstorming
+├── cali-product-plan-critique/        # Plan critique
+├── cali-product-tech-planning/        # Tech planning sequencing
+├── cali-product-job-to-be-done/       # JTBD methodology
+├── cali-product-discovery/            # Experiment planning
+├── cali-product-opportunity-mapping/  # Opportunity mapping
+├── cali-product-multi-method-market-analysis/  # PESTLE, Wardley Maps
+├── cali-product-evolutionary-principles/  # Evolutionary principles
+├── cali-product-pricing/              # Pricing domain
+├── cali-product-ads/                  # Ads domain
+├── cali-product-trust-building/       # Trust domain
+├── cali-product-promotions/           # Promotions domain
+├── cali-product-business-models/     # Business models domain
+├── cali-product-health/               # Health domain
+├── cali-product-marketplace-playbook/  # Marketplace domain
+├── cali-product-open-source/          # Open source domain
+├── cali-product-scope-executor/       # Typed scope execution
+└── cali-product-testing-ai-code/      # AI-aware testing strategy
 ```
 
-## Extensions
+## Extensions (Pi CLI)
 
-- `extensions/cali-product-workflow/` — Pi extension (13 slash commands, event hooks, TUI)
+- `extensions/cali-product-workflow/` — Pi extension (slash commands, event hooks, TUI)
 - `extensions/cali-pw-pi/` — Pi stub (re-exports from build)
-- `.claude-plugin/` — Claude Code marketplace plugin definition (gitignored, local only)
-- `.codex-plugin/` — Codex marketplace plugin definition (gitignored, local only)
-- `.opencode-plugin/` — OpenCode plugin definition, skills only (gitignored, local only)
+- `cli-agents/` — Per-agent configs (claude, codex, opencode, pi)
 
 ## CLI Support
 
-| CLI | How it loads skills | Deeper integration |
-|-----|-------------------|-------------------|
-| **Pi** | `pi install git:...` + `npx skills` | ✅ JS extension (hooks, TUI, commands) |
-| **OpenCode** | `npx skills` + `skills.paths` | ❌ Skills only |
-| **Claude Code** | `npx skills` + marketplace | ⚠️ Via GitHub marketplace |
-| **Codex** | `npx skills` + marketplace | ⚠️ Via GitHub marketplace |
+| CLI | Skill path | Installation |
+|-----|-----------|-------------|
+| **Pi** | `~/.agents/skills/` | Extension + npm packages via install.sh |
+| **OpenCode** | `~/.agents/skills/` | Plugin + skills.paths config |
+| **Claude Code** | `~/.agents/skills/` | `~/.claude/commands/` (markdown) |
+| **Codex** | `~/.agents/skills/` | n/a |
 
 ## Distribution
 
 Git-based primary distribution (npm publish configured but not actively used — see [docs/SECURITY.md](docs/SECURITY.md) for rationale).
-d05|
+
 ## Tool Reference Pattern
-d05|
+
 For skills development, see [docs/TOOL-REFERENCE-PATTERN.md](docs/TOOL-REFERENCE-PATTERN.md) for the pattern that ensures portability across CLIs.
-d05|
+
 Rules:
 - Skills reference tools via `references/cli-tools/{tool}.md`, not direct calls
 - Question templates come from `phases/ask-patterns.md`
 - When adding a new tool, create the reference doc first following the pattern
-d05|
+
 ## Workflow Integration
-d05|
+
 When working on software projects, trigger the product workflow:
-d05|
+
 1. **Trigger:** Use `/skill cali-product-workflow` or `/pw-start`
-d05|
 2. **Process:** Follow the 11-phase structured workflow (Setup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Execution)
 3. **Execute:** Only after visual review gate (Plannotator approval)
-d05|
-- **Repo:** https://github.com/renatocaliari/cali-product-workflow
 
 - **Repo:** https://github.com/renatocaliari/cali-product-workflow
 - **License:** MIT

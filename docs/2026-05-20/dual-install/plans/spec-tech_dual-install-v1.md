@@ -1,5 +1,5 @@
 ---
-source: cali-tech-planning
+source: cali-product-tech-planning
 original_files: research from context-mode + current implementation
 date: 2026-05-20
 ---

@@ -8,73 +8,122 @@ cd cali-product-workflow
 ./install.sh
 ```
 
-Auto-detects ALL your CLIs and installs for each one. One command, zero npm.
+Auto-detects ALL your CLIs and installs 21 skills to `~/.agents/skills/`.
 
 ---
 
-## What's Installed per CLI
+## Architecture
 
-| CLI | Method | How It Works |
-|-----|--------|-------------|
-| **Pi** | `git:` + `npx skills` | Clones from GitHub, loads JS extensions + skills |
-| **OpenCode** | `npx skills` + config | Skills via npx skills, registers path in opencode.json |
-| **Claude Code** | marketplace + `npx skills` | Adds GitHub repo as marketplace, skills via npx |
-| **Codex** | marketplace + `npx skills` | Adds GitHub repo as marketplace, skills via npx |
+```
+cali-product-workflow/          ← Source (versionado)
+└── skills/                     ← 20 skills flat
+    ├── cali-product-workflow/   ← Orchestrator
+    ├── cali-product-shape-up/
+    └── ... (19 more)
+
+~/.agents/skills/               ← Install target (home do usuário)
+├── cali-product-workflow/       ← Copied
+├── cali-product-shape-up/               ← Copied
+└── ... (21 total)
+```
+
+**Skills installed (21 total):**
+- `cali-product-workflow` — orchestrator (11 fases)
+- 4 workflow skills (shape-up, interface-brainstorm, plan-critique, tech-planning)
+- 5 strategic analysis skills
+- 8 domain library skills
+- 2 execution skills
 
 ---
 
 ## Commands
 
 ```bash
-./install.sh              # Install for all detected CLIs
-./install.sh update       # Update skills
-./install.sh remove       # Uninstall from all detected CLIs
+./install.sh              # Install para todos os CLIs detectados
+./install.sh update       # Atualiza skills
+./install.sh remove       # Desinstala de todos os CLIs
+./install.sh help         # Mostra ajuda
 
-# Limit to one CLI
+# Limitar a um CLI
 PRODUCT_WORKFLOW_CLI=opencode ./install.sh
+
+# Apenas skills, sem npm packages (Pi only)
+INSTALL_SKILLS_ONLY=1 ./install.sh
 ```
 
 ---
 
-## Skills Only
+## Distribution para Harnesess
+
+O install.sh coloca skills em `~/.agents/skills/`. Para distribuir para cada harness, use **agent-sync**:
+
+```bash
+# Instala agent-sync
+pipx install agent-sync
+
+# Configura distribuição
+agent-sync setup
+
+# Distribui para cada CLI
+agent-sync push
+```
+
+**Alternativa manual:** Configure cada harness para ler de `~/.agents/skills/`:
+
+| CLI | Configuração |
+|-----|-------------|
+| **Pi** | `~/.pi/agent/settings.json` → `"skills": ["~/.agents/skills"]` |
+| **OpenCode** | `~/.config/opencode/opencode.json` → skills paths |
+| **Claude Code** | `~/.claude/settings.json` → skills paths |
+| **Codex** | `~/.codex/settings.json` → skills paths |
+
+---
+
+## Skills Only (Sem CLI)
+
+Para instalar skills sem o installer:
 
 ```bash
 npx skills add renatocaliari/cali-product-workflow -g
 ```
 
-Installs skills to `~/.agents/skills/` — works on any CLI. No plugins, no config, no JS.
+Instala skills para `~/.agents/skills/` — funciona em qualquer CLI.
 
 ---
 
-## Manual Setup by CLI
+## Manual Setup por CLI
 
 <details>
 <summary><strong>Pi</strong></summary>
 
 ```bash
-# Full install
-pi install git:github.com/renatocaliari/cali-product-workflow
-pi install ./extensions/cali-pw-pi
-pi install npm:pi-subagents npm:@capyup/pi-goal npm:pi-intercom npm:pi-supervisor npm:pi-autoresearch npm:@juicesharp/rpiv-ask-user-question npm:@juicesharp/rpiv-todo npm:@plannotator/pi-extension
+# Install (skills + extension)
+./install.sh
 
 # Update
-pi update
+./install.sh update
 
 # Remove
-pi remove git:github.com/renatocaliari/cali-product-workflow
+./install.sh remove
+
+# Apenas skills (sem extension/slash commands)
+INSTALL_SKILLS_ONLY=1 ./install.sh
 ```
+
 </details>
 
 <details>
 <summary><strong>OpenCode</strong></summary>
 
 ```bash
-# Skills
+# Instala skills
 npx skills add renatocaliari/cali-product-workflow -a opencode -g
 
-# Config: add to ~/.config/opencode/opencode.json
-# "skills": { "paths": ["~/.config/opencode/skills"] }
+# Configura ~/.agents/skills/
+# Adicionar em ~/.config/opencode/opencode.json:
+# "skills": { "paths": ["~/.agents/skills"] }
 ```
+
 </details>
 
 <details>
@@ -85,12 +134,10 @@ npx skills add renatocaliari/cali-product-workflow -a opencode -g
 claude plugin marketplace add https://github.com/renatocaliari/cali-product-workflow
 claude plugin install cali-product-workflow@marketplace-name
 
-# Skills
+# Ou apenas skills
 npx skills add renatocaliari/cali-product-workflow -a claude-code -g
-
-# Remove
-claude plugin uninstall cali-product-workflow
 ```
+
 </details>
 
 <details>
@@ -101,36 +148,17 @@ claude plugin uninstall cali-product-workflow
 codex plugin marketplace add https://github.com/renatocaliari/cali-product-workflow
 codex plugin add cali-product-workflow@marketplace-name
 
-# Skills
+# Ou apenas skills
 npx skills add renatocaliari/cali-product-workflow -a codex -g
-
-# Remove
-codex plugin remove cali-product-workflow
 ```
+
 </details>
-
----
-
-## Updates
-
-How each CLI stays current:
-
-| CLI | Update command | What updates |
-|-----|----------------|--------------|
-| **Pi** | `pi update` | Core package (git clone), supporting npm packages |
-| **OpenCode** | `npx skills update` | Skills only |
-| **Claude Code** | `claude plugin update cali-product-workflow` | Plugin + skills |
-| **Codex** | `codex plugin marketplace upgrade` | Plugin + skills |
-
-**Pi note:** Since the core package is installed via `git:` without a ref pin, `pi update` pulls the latest commit from the default branch.
-
-**Pro tip:** Run `./install.sh update` — it runs `npx skills update` and verifies all skill directories are present.
 
 ---
 
 ## Agent Instructions Setup
 
-The installer does **not** modify your AGENTS.md/CLAUDE.md automatically. Add this manually:
+O installer **não modifica** seu AGENTS.md/CLAUDE.md automaticamente. Adicione manualmente:
 
 ```markdown
 ## cali-product-workflow Integration
@@ -138,7 +166,7 @@ The installer does **not** modify your AGENTS.md/CLAUDE.md automatically. Add th
 When working on software projects, trigger the product workflow:
 
 1. **Trigger:** Use `/skill cali-product-workflow`
-2. **Process:** Follow the 6-phase workflow
+2. **Process:** Follow the 11-phase workflow
 3. **Execute:** Only after visual review gate (Plannotator approval)
 ```
 
@@ -153,7 +181,7 @@ When working on software projects, trigger the product workflow:
 
 ## Required npm Packages (Pi Only)
 
-Pi requires these npm packages for deep integration (slash commands, TUI, event hooks):
+Pi requer npm packages para deep integration (slash commands, TUI, event hooks):
 
 | Package | Purpose | Can use `git:`? |
 |---------|---------|-----------------|
@@ -165,44 +193,42 @@ Pi requires these npm packages for deep integration (slash commands, TUI, event 
 | `@juicesharp/rpiv-ask-user-question` | Question UI component | ✅ `git:github.com/juicesharp/rpiv-mono` |
 | `@plannotator/pi-extension` | Visual plan annotation | ✅ `git:github.com/backnotprop/plannotator` |
 
-Other CLIs (OpenCode, Claude Code, Codex) use only skills — no npm required.
+Other CLIs (OpenCode, Claude Code, Codex) usam apenas skills — zero npm.
 
 ---
 
 ## Third-Party Dependency Management
 
-Third-party npm dependencies exist **only for Pi**. For protection against supply chain risks, see [docs/SECURITY.md](docs/SECURITY.md).
+Third-party npm dependencies existem **apenas para Pi**. Para proteção contra supply chain risks, veja [docs/SECURITY.md](docs/SECURITY.md).
 
-**On pinning:** Not recommended for actively maintained packages. A 2026 study ([Pinning Is Futile, arXiv 2502.06662](https://arxiv.org/abs/2502.06662)) found that pinning *increases* vulnerability exposure. For packages with weekly releases, staying current via `pi update` is safer than pinning.
+**On pinning:** Not recommended for actively maintained packages. A 2026 study ([Pinning Is Futile, arXiv 2502.06662](https://arxiv.org/abs/2502.06662)) found that pinning *increases* vulnerability exposure.
 
-**Skill-only mode (avoid npm entirely):**
+**Skill-only mode (evita npm entirely):**
 
 ```bash
 INSTALL_SKILLS_ONLY=1 ./install.sh
 ```
 
-This applies only to **Pi** — other CLIs already have zero npm dependencies. In this mode, Pi loses slash commands and TUI overlay, but the `cali-product-workflow` skill still works.
+Isso se aplica apenas ao **Pi** — outros CLIs já tem zero npm dependencies.
 
 ---
 
 ## Third-Party Skills
 
-Some workflow phases reference external skills. Install them for full functionality:
+ Algumas fases do workflow referenciam skills externas:
 
 | Skill | Required for | Install (Pi) | Install (Other CLIs) |
 |-------|-------------|--------------|----------------------|
-| `pi-agent-codebase-workflows` | Phase 2 (safe-change) | `pi install git:github.com/PriNova/pi-agent-codebase-workflows` | `npx skills add Prinova/pi-agent-codebase-workflows -a <cli> -g` |
-| `thermo-nuclear` (codequality-review) | Phase 11 (final gate) | `pi install git:github.com/cursor/plugins` | `npx skills add cursor/plugins -a <cli> -g` |
+| `pi-agent-codebase-workflows` | safe-change (Phase 2) | `pi install git:github.com/PriNova/pi-agent-codebase-workflows` | `npx skills add Prinova/pi-agent-codebase-workflows -a <cli> -g` |
+| `thermo-nuclear` (codequality-review) | final gate (Phase 11) | `pi install git:github.com/cursor/plugins` | `npx skills add cursor/plugins -a <cli> -g` |
 
 Replace `<cli>` with: `opencode`, `claude-code`, or `codex`.
-
-Without these skills, the workflow falls back to manual alternatives documented in each tool's reference file.
 
 ---
 
 ## Why Git-Based (No npm)
 
-Distributing exclusively via GitHub is a deliberate security choice:
+Git-based distribution is a deliberate security choice:
 
 | Risk | npm packages | Git-based (this project) |
 |------|--------------|--------------------------|
@@ -221,6 +247,4 @@ Distributing exclusively via GitHub is a deliberate security choice:
 **Primary remaining risk:**
 - **Maintainer account compromise** — malicious commits to default branch. Mitigate with: signed commits, branch protection, required PR reviews, and Trivy scanning in CI.
 
-**Tradeoff:** Without npm, CLIs that rely on npm for JS plugins (e.g., OpenCode) are limited to skills. Deep integrations (hooks, TUI, slash commands) work only on Pi, which supports native Git install via `pi install git:...`.
-
-**Bottom line:** Git-based distribution solves the risks we *control* (how we ship our code). Risks we *inherit* (maintainer compromise, third-party deps) are shared with all software — managed through defense in depth, not eliminated.
+**Bottom line:** Git-based distribution solves the risks we *control* (how we ship our code). Risks we *inherit* (maintainer compromise, third-party deps) are shared with all software.

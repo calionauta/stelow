@@ -2,9 +2,9 @@
  * Integration tests: Skill Orchestration
  * 
  * Tests skill invocations and artifact creation:
- * - cali-shape-up → spec-product.md created
- * - cali-tech-planning → spec-tech.md created with scopes
- * - cali-interface-brainstorm → interfaces.md created
+ * - cali-product-shape-up → spec-product.md created
+ * - cali-product-tech-planning → spec-tech.md created with scopes
+ * - cali-product-interface-brainstorm → interfaces.md created
  * - Gate flow (Plannotator approval)
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -76,7 +76,7 @@ describe('Skill Orchestration', () => {
     }
   });
 
-  describe('Shape Up Skill (cali-shape-up)', () => {
+  describe('Shape Up Skill (cali-product-shape-up)', () => {
     it('should create spec-product.md', () => {
       const specContent = `# Spec Product v1
 
@@ -164,7 +164,7 @@ approved: false
     });
   });
 
-  describe('Interface Brainstorming (cali-interface-brainstorm)', () => {
+  describe('Interface Brainstorming (cali-product-interface-brainstorm)', () => {
     it('should create interfaces.md with 5 proposals', () => {
       const interfacesContent = `# Interface Proposals v1
 
@@ -235,7 +235,7 @@ approved: false
     });
   });
 
-  describe('Tech Planning (cali-tech-planning)', () => {
+  describe('Tech Planning (cali-product-tech-planning)', () => {
     it('should create spec-tech.md with typed scopes', () => {
       const techPlanContent = `# Technical Plan v1
 

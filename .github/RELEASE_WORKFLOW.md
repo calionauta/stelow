@@ -47,7 +47,7 @@ gh release create v0.2.0-alpha \
   --notes "## What's Changed
 
 ## New Features
-- Add cali-testing-ai-code skill with 8 test scope types
+- Add cali-product-testing-ai-code skill with 8 test scope types
 
 ## Bug Fixes
 - Fix phase reference inconsistencies

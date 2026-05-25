@@ -76,7 +76,7 @@ Recommendation: [justification based on project context].`,
 
 ## Pattern 2: Interface Proposal Selection (Phase 9)
 
-Used in `cali-interface-brainstorm` for visual proposal comparison.
+Used in `cali-product-interface-brainstorm` for visual proposal comparison.
 
 > **Preview format:** Extract the first ASCII wireframe from each proposal's output.
 > Markdown rendering supports ASCII art, headers, lists, and code blocks.

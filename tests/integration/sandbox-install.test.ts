@@ -94,7 +94,7 @@ describe('Sandbox Install Verification', () => {
       const workflowPath = join(PROJECT_ROOT, 'skills/cali-product-workflow/skills-workflow');
       expect(existsSync(workflowPath)).toBe(true);
       
-      const skills = ['cali-shape-up', 'cali-interface-brainstorm', 'cali-plan-critique', 'cali-tech-planning'];
+      const skills = ['cali-product-shape-up', 'cali-product-interface-brainstorm', 'cali-product-plan-critique', 'cali-product-tech-planning'];
       skills.forEach(skill => {
         expect(existsSync(join(workflowPath, skill, 'SKILL.md'))).toBe(true);
       });
@@ -114,7 +114,7 @@ describe('Sandbox Install Verification', () => {
       const executionPath = join(PROJECT_ROOT, 'skills/cali-product-workflow/skills-execution');
       expect(existsSync(executionPath)).toBe(true);
       
-      const skills = ['cali-product-scope-executor', 'cali-testing-ai-code'];
+      const skills = ['cali-product-scope-executor', 'cali-product-testing-ai-code'];
       skills.forEach(skill => {
         expect(existsSync(join(executionPath, skill, 'SKILL.md'))).toBe(true);
       });

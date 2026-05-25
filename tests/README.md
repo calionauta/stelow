@@ -38,7 +38,7 @@ Tests are organized in layers, from most concrete to most abstract:
 │  Layer C: Skill Implementation (Markdown)                    │
 │  WHAT: Each skill has required gates, references, process    │
 │  TESTS: 47 tests in tests/skills/skill-implementation.test.ts │
-│  VALIDATES: cali-shape-up, cali-tech-planning, etc           │
+│  VALIDATES: cali-product-shape-up, cali-product-tech-planning, etc           │
 └─────────────────────────────────────────────────────────────┘
                         ↓
 ┌─────────────────────────────────────────────────────────────┐

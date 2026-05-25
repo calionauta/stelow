@@ -25,10 +25,10 @@ cali-product-workflow is designed to work across different AI coding agents. The
 ```
 skills/
 ├── cali-product-workflow/       # Main orchestrator
-├── skills-workflow/            # Planning skills (agnostic)
-├── skills-execution/           # Execution skills (agnostic)
-├── skills-strategic-analysis/  # Analysis skills (agnostic)
-└── skills-domain-libraries/    # Domain libraries (agnostic)
+├── skills/            # Planning skills (agnostic)
+├── skills/           # Execution skills (agnostic)
+├── skills/  # Analysis skills (agnostic)
+└── skills/    # Domain libraries (agnostic)
 ```
 
 All skills are **markdown-based** and use tool abstractions in `references/cli-tools/`.
