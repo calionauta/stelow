@@ -119,7 +119,11 @@ Based on testing-strategy.md, add scopes for:
 
 ### 5b. Tech Planning Review Gate
 
-**⚠️ MANDATORY — NEVER SKIP unless spec-tech was already approved.**
+**⚠️ MANDATORY — ALWAYS run gate. Never skip.**
+
+Spec-tech is a distinct artifact: scopes, sequencing, dependencies, DoDs, and testing strategy
+were never reviewed visually in earlier phases. Prior gates (spec-product, interfaces) do NOT
+cover spec-tech content.
 
 **Run Plannotator gate for the tech plan BEFORE generating goals:**
 
@@ -131,12 +135,11 @@ See `references/cli-tools/plannotator.md` for command format, after-approval wor
 
 | Scenario | Action |
 |---------|--------|
-| **Standalone Tech Planning** | **ALWAYS run gate** — visual review of all scopes |
-| **Post Shape-Up + Interface** | Gate already ran → **SKIP this step** |
-| **Post Shape-Up, no Interface** | Gate already ran → **SKIP this step** |
+| **Always** | Run Plannotator gate for spec-tech |
+| Plannotator unavailable | Fallback: use `ask_user_question` to present scopes, sequencing, DoDs, and ask for explicit approval |
 
 **If approved:**
-1. Stamp `approved: true, approved_at: ...` in spec-tech.yaml frontmatter
+1. Stamp `approved: true, approved_at: ...` in spec-tech frontmatter
 2. Create receipt in `approvals/` directory
 3. Proceed to Goal Generation
 
