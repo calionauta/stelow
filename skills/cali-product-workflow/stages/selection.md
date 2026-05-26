@@ -1,10 +1,11 @@
-## Phase 1: Item Selection
+## Stage 1: Item Selection
 
-> **Part of cali-product-workflow** — See [`SKILL.md`](../SKILL.md) for phase sequence, safety rules, and capability reference.
+> **Part of cali-product-workflow** — See [`SKILL.md`](../SKILL.md) for stage sequence, safety rules, and capability reference.
+> **Tool Restrictions:** See `stages.yaml` for blocked/allowed tools in this stage.
+> **Stage Status:** Read `references/cli-tools/stage-status.md` for ASCII status display and CLI commands.
+### When This Stage Activates
 
-### When This Phase Activates
-
-After Triage (Phase 0) completes with one or more accepted items. If the user had a single idea (no Triage), this phase is skipped — proceed directly to Phase 2 (Setup).
+After Triage (Stage 0) completes with one or more accepted items. If the user had a single idea (no Triage), this stage is skipped — proceed directly to Stage 2 (Setup).
 
 ### Process
 

@@ -88,7 +88,7 @@ Wait for the `--gate` result. If approved, **automatically advance to Phase 9 (I
 ## User Selection (Phase 9)
 
 
-After visual review and approval, use **Pattern 2** from `../cali-product-workflow/phases/ask-patterns.md` to ask the user which proposal to follow.
+After visual review and approval, use **Pattern 2** from `../cali-product-workflow/stages/ask-patterns.md` to ask the user which proposal to follow.
 
 ## Output
 

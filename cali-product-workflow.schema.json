@@ -101,7 +101,7 @@
         "status": {
           "type": "string",
           "enum": ["pending", "in-progress", "completed", "skipped"],
-          "description": "Phase status"
+          "description": "Stage status"
         },
         "started": {
           "type": "string",

@@ -1,8 +1,8 @@
-## Phase 1: Project Setup
+## Stage 1: Project Setup
 
-> **Part of cali-product-workflow** — See [`SKILL.md`](./SKILL.md) for phase sequence, safety rules, and capability reference.
-
-> **Phase Status:** Read `references/cli-tools/phase-status.md` for ASCII status display and CLI commands.
+> **Part of cali-product-workflow** — See [`SKILL.md`](./SKILL.md) for stage sequence, safety rules, and capability reference.
+> **Tool Restrictions:** See `stages.yaml` for blocked/allowed tools in this stage.
+> **Stage Status:** Read `references/cli-tools/stage-status.md` for ASCII status display and CLI commands.
 
 ### 0a. Inbox Check (always)
 
@@ -189,7 +189,7 @@ After identifying the workflow:
 
 ### 1b. Stage Selection
 
-Use **Pattern 5** from `phases/ask-patterns.md`.
+Use **Pattern 5** from `stages/ask-patterns.md`.
 
 **If user chooses "Yes" for safe-change:**
 Run `safe-change` from **pi-agent-codebase-workflows** (PriNova) BEFORE proceeding.

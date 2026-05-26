@@ -4,7 +4,7 @@
 
 ## Quick Summary
 
-Create, update, and track phase-specific tasks with consistent naming. Phase prefix ensures user always knows which stage they're in.
+Create, update, and track stage-specific tasks with consistent naming. Stage prefix ensures user always knows which stage they're in.
 
 ## Todo Naming Convention
 

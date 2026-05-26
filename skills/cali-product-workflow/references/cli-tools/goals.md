@@ -120,6 +120,6 @@ If goal system is not available:
 
 ## Related
 
-- Phase 12: Execution (see `phases/execution.md`)
+- Stage 12: Execution (see `stages/execution.md`)
 - spec-tech scopes
 - Testing strategy (see `skills/cali-product-testing-ai-code/SKILL.md`)

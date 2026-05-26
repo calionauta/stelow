@@ -34,7 +34,7 @@ Preview limits:
 
 ## Pattern 1: Strategic Exploration (Phase 2a)
 
-Used in `phases/context.md` for strategic approach selection.
+Used in `stages/context.md` for strategic approach selection.
 
 ```typescript
 ask_user_question({
@@ -233,7 +233,7 @@ ask_user_question({
 
 ## Pattern 5: Stage Selection (Phase 1b)
 
-Used in `phases/setup.md` for workflow stage selection and safe-change.
+Used in `stages/setup.md` for workflow stage selection and safe-change.
 
 > **Note:** This is the ONLY place with multiple questions in parallel.
 

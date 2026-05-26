@@ -192,7 +192,7 @@ After Plannotator approval on spec-tech_v{N}.md:
    - `optimization` → `**experiment-loop** (see `references/cli-tools/autoresearch.md`)`
    - `test-unit`, `test-integration`, `test-security`, `test-behavior` → goal (see `references/cli-tools/goals.md`) with testing gates
 
-See `phases/execution.md` for full execution flow.
+See `stages/execution.md` for full execution flow.
 
 ### Testing Gates (test-* scopes)
 

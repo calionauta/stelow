@@ -4,7 +4,7 @@
 
 Skills must NOT call tools directly with implementation details. Instead, they reference:
 - `references/cli-tools/` — Tool documentation with command, schema, fallback
-- `phases/ask-patterns.md` — Question templates (patterns)
+- `stages/ask-patterns.md` — Question templates (patterns)
 
 ## Why This Pattern
 
@@ -29,7 +29,7 @@ cali-product-workflow/
 │       ├── intercom.md      # Tool: intercom
 │       ├── supervise.md     # Tool: start_supervision
 │       └── context-mode.md  # Tool: ctx_* tools
-└── phases/
+└── stages/
     └── ask-patterns.md      # Pattern templates (Pattern 1-6)
 ```
 
@@ -43,7 +43,7 @@ cali-product-workflow/
 
 2. **Use patterns from ask-patterns.md**
    ```markdown
-   ✅ Use Pattern 3 from `phases/ask-patterns.md`
+   ✅ Use Pattern 3 from `stages/ask-patterns.md`
    ❌ ask_user_question({...}) with hardcoded template
    ```
 
@@ -70,7 +70,7 @@ If a tool is needed but no reference exists:
 
    ## Patterns Reference
    ```
-3. **Update** `phases/ask-patterns.md` if creating new patterns
+3. **Update** `stages/ask-patterns.md` if creating new patterns
 4. **Add** to tool reference table in SKILL.md
 
 ## Example
@@ -83,10 +83,10 @@ Use `ask_user_question` with 3 options...
 **Correct (in SKILL.md):**
 ```markdown
 Use the ask tool (see `references/cli-tools/ask.md`).
-For question templates, use Pattern 4 from `phases/ask-patterns.md`.
+For question templates, use Pattern 4 from `stages/ask-patterns.md`.
 ```
 
 **Correct (in sub-skill):**
 ```markdown
-Use Pattern 2 from `phases/ask-patterns.md` for interface selection.
+Use Pattern 2 from `stages/ask-patterns.md` for interface selection.
 ```

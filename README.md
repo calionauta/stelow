@@ -370,7 +370,7 @@ All workflow artifacts are stored in:
 | Subdirectory | Contents |
 |--------------|----------|
 | `input/` | User's original idea |
-| `phases/` | Phase outputs (JTBD, Shape Up, Interface, etc.) |
+| `stages/` | Stage outputs (JTBD, Shape Up, Interface, etc.) |
 | `plans/` | Technical plans and specs |
 | `reviews/` | Plannotator feedback |
 | `scopes/` | Typed execution scopes |

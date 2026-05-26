@@ -1,13 +1,14 @@
-## Phase 2: Strategic Context (optional)
+## Stage 2: Strategic Context (optional)
 
-> **Part of cali-product-workflow** — See [`SKILL.md`](./SKILL.md) for phase sequence, safety rules, and capability reference.
+> **Part of cali-product-workflow** — See [`SKILL.md`](./SKILL.md) for stage sequence, safety rules, and capability reference.
+> **Tool Restrictions:** See `stages.yaml` for blocked/allowed tools in this stage.
 
-**After Phase 1 (Setup)**, the flow enters Phase 2 to enrich planning with optional context.
+**After Stage 1 (Setup)**, the flow enters Stage 2 to enrich planning with optional context.
 The LLM checks if the user should be offered strategic analysis and/or domain libraries.
 
 ### 2a. Strategic Exploration (always ask)
 
-**ALWAYS ask** — use **Pattern 1** from `phases/ask-patterns.md` for the question format.
+**ALWAYS ask** — use **Pattern 1** from `stages/ask-patterns.md` for the question format.
 **ALSO read** the "Strategic Approaches" table in the main `SKILL.md` for the full approach list with skill names and outputs.
 
 > **⚠️ Multi-Select Rule:** When using `multiSelect: true`, DO NOT include "None", "Skip", or similar meta-options. User can select nothing to skip.

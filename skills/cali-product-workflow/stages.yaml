@@ -1,0 +1,114 @@
+# stages.yaml — Metadados de stage
+# Complementa stages/*.md (comportamento), NÃO substitui
+# Source of truth para: tools por stage, transições, supervisor, gates
+
+stages:
+  - name: triage
+    order: 10
+    description: Initial assessment. Determine if this is a valid request.
+
+    # Policy (runtime enforcement via stages-guard.ts no Pi)
+    blocked_tools: [edit, write, bash, subagent, agent_browser]
+    allowed_tools: [ask, read, grep, ls]
+
+    # Cognition (LLM guidance via SKILL.md)
+    preferred_tools: [ask]
+    primary_actions: [ask]
+
+    # Transitions (graph, not linear)
+    transitions:
+      next: [setup]
+      accept: [setup]
+      reject: []
+
+  - name: setup
+    order: 20
+    description: Setup context. Explore codebase, gather requirements.
+
+    blocked_tools: [bash, write, agent_browser]
+    allowed_tools: [ask, read, grep, ls, subagent]
+    preferred_tools: [read, grep]
+    primary_actions: [read, grep]
+
+    transitions:
+      next: [selection]
+      accept: [selection]
+      reject: [triage]
+
+  - name: selection
+    order: 30
+    description: Select approach. Choose workflow variant and sub-skills.
+
+    blocked_tools: [bash, write, agent_browser]
+    allowed_tools: [ask, read, grep, ls, subagent]
+    preferred_tools: [ask, read]
+
+    transitions:
+      next: [shape]
+      accept: [shape]
+      reject: [triage]
+
+  - name: shape
+    order: 40
+    description: |
+      Shape stage. Define appetite, hill chart, rabbit holes.
+      Load /skill:cali-product-shape-up.
+
+    blocked_tools: [bash, agent_browser]
+    allowed_tools: [ask, read, grep, ls, write, subagent]
+    preferred_tools: [read, write]
+    primary_actions: [read, write]
+
+    transitions:
+      next: [gate]
+      rework: [shape]
+      accept: [gate]
+      reject: [selection]
+
+  - name: gate
+    order: 60
+    description: |
+      Gate review. Visual approval via Plannotator required.
+      This is a BLOCKING gate — no execution until approved.
+
+    blocked_tools: [edit, write, bash, subagent, agent_browser]
+    allowed_tools: [read, ls, grep, ask]
+    preferred_tools: [read]
+    primary_actions: [read]
+
+    requires_approval: true
+    approval_tool: plannotator
+
+    transitions:
+      next: [execution]
+      accept: [execution]
+      reject: [shape]
+
+  - name: execution
+    order: 120
+    description: Implementation. Execute planned scopes.
+
+    blocked_tools: []
+    allowed_tools: [edit, write, bash, read, grep, ls, subagent, ask, agent_browser]
+    preferred_tools: [edit, write, bash]
+    primary_actions: [edit, write, bash]
+
+    supervisor: true
+
+    transitions:
+      next: [audit]
+      accept: [audit]
+      rework: [shape]
+
+  - name: audit
+    order: 200
+    description: Final audit. Verify all requirements met.
+
+    blocked_tools: [bash]
+    allowed_tools: [ask, read, grep, ls, write]
+    preferred_tools: [read, grep]
+
+    transitions:
+      next: []
+      accept: []
+      reject: [execution]

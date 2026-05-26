@@ -198,7 +198,7 @@ describe('Skill Implementation Validation', () => {
   // ── Phase Gate Files ────────────────────────────────────────
 
   describe('Phase Gate Files', () => {
-    const gatePath = join(PROJECT_ROOT, 'skills/cali-product-workflow/phases/gate.md');
+    const gatePath = join(PROJECT_ROOT, 'skills/cali-product-workflow/stages/gate.md');
 
     it('gate.md should exist', () => {
       expect(existsSync(gatePath)).toBe(true);
@@ -218,7 +218,7 @@ describe('Skill Implementation Validation', () => {
   // ── Ask Patterns Reference ─────────────────────────────────
 
   describe('Ask Patterns', () => {
-    const askPatternsPath = join(PROJECT_ROOT, 'skills/cali-product-workflow/phases/ask-patterns.md');
+    const askPatternsPath = join(PROJECT_ROOT, 'skills/cali-product-workflow/stages/ask-patterns.md');
 
     it('ask-patterns.md should exist', () => {
       expect(existsSync(askPatternsPath)).toBe(true);
@@ -258,7 +258,7 @@ describe('Skill Implementation Validation', () => {
   // ── Execution Phase ──────────────────────────────────────
 
   describe('Execution Phase', () => {
-    const execPath = join(PROJECT_ROOT, 'skills/cali-product-workflow/phases/execution.md');
+    const execPath = join(PROJECT_ROOT, 'skills/cali-product-workflow/stages/execution.md');
 
     it('execution.md should exist', () => {
       expect(existsSync(execPath)).toBe(true);

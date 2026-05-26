@@ -1,7 +1,7 @@
-## Phase 12: Supervisor + Execution
+## Stage 12: Supervisor + Execution
 
-> **Part of cali-product-workflow** — See [`SKILL.md`](./SKILL.md) for phase sequence, safety rules, and capability reference.
-
+> **Part of cali-product-workflow** — See [`SKILL.md`](./SKILL.md) for stage sequence, safety rules, and capability reference.
+> **Tool Restrictions:** See `stages.yaml` for blocked/allowed tools in this stage.
 ### ⚠️ Activate the supervisor ONLY during execution
 **Never activate during Phases 3-10.** The supervisor would re-submit Plannotator.
 **Activate in Phase 12 only** — when starting scope execution.
@@ -133,7 +133,7 @@ Proceed directly to scope execution in the current directory.
 
 See `skills/cali-product-testing-ai-code/SKILL.md`
 
-## Phase 12: Execution — AUTOMATIC
+## Stage 12: Execution — AUTOMATIC
 
 > **CRITICAL: After Tech Planning approval, execution is MANDATORY.**
 > Do NOT ask the user "what to do next". The workflow proceeds automatically.

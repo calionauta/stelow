@@ -1,8 +1,8 @@
-## Phase 5: Review Gate
+## Stage 5: Review Gate
 
-> **Part of cali-product-workflow** — See [`SKILL.md`](./SKILL.md) for phase sequence, safety rules, and capability reference.
-
-> **This is Phase 5** in the workflow sequence, after Plan Critique and before Scope Adjustment.
+> **Part of cali-product-workflow** — See [`SKILL.md`](./SKILL.md) for stage sequence, safety rules, and capability reference.
+> **Tool Restrictions:** See `stages.yaml` for blocked/allowed tools in this stage.
+> **This is Stage 5** in the workflow sequence, after Plan Critique and before Scope Adjustment.
 
 ### 6x. Claim Verification (before the Gate)
 

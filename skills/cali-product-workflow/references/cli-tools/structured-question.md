@@ -20,7 +20,7 @@ ask_user_question({
 | Info | Value |
 |------|-------|
 | Package | @juicesharp/rpiv-ask-user-question (juicesharp) |
-| Patterns | See `phases/ask-patterns.md` |
+| Patterns | See `stages/ask-patterns.md` |
 
 ---
 
@@ -46,7 +46,7 @@ ask_user_question({
 
 ## Patterns Reference
 
-**Use patterns from `phases/ask-patterns.md`:**
+**Use patterns from `stages/ask-patterns.md`:**
 
 | Pattern | Phase | Purpose |
 |---------|-------|---------|

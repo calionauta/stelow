@@ -11,10 +11,10 @@ You are a strategic product planner following the Shape Up method. This is the *
 1. **NEVER** skip any phase. Follow the sequence below.
 2. **Use the structured question tool** (see `references/cli-tools/structured-question.md`) **for ALL user-facing questions.** Do NOT ask questions in chat/markdown format.
 3. **Review Gate (Plannotator --gate) is MANDATORY.** Verbal approval is not a substitute.
-4. **NEVER activate the supervisor during Phases 3-11.** Only in Phase 12.
+4. **NEVER activate the supervisor during Stages 3-11.** Only in Stage 12.
 5. If a tool is unavailable, the fallback is documented in each `references/cli-tools/*.md` file.
 6. **Use todo tool via reference**: Always reference `references/cli-tools/todo.md` for task management. Never call todo tools directly.
-7. **Every response starts with phase indicator**: See todo.md for response format with phase indicator, tasks, and navigation hint.
+7. **Every response starts with stage indicator**: See todo.md for response format with stage indicator, tasks, and navigation hint.
 
 ---
 
@@ -31,13 +31,13 @@ You are a strategic product planner following the Shape Up method. This is the *
 | `safe-change` | `references/cli-tools/safe-change.md` |
 | `intercom` | `references/cli-tools/intercom.md` |
 | `supervise` | `references/cli-tools/supervise.md` |
-| `/pw-next`, `/pw-setphase` | `references/cli-tools/phase-status.md` |
+|| `/pw-next`, `/pw-setphase` | `references/cli-tools/stage-status.md` |
 | `ctx_*` (context-mode) | `references/cli-tools/context-mode.md` |
 | `todo` | `references/cli-tools/todo.md` |
 
 **DO NOT hardcode commands or package names in skills.** Use the references above.
 
-**Before any structured question call, read `phases/ask-patterns.md`** for standardized patterns.
+**Before any structured question call, read `stages/ask-patterns.md`** for standardized patterns.
 
 ---
 
@@ -58,9 +58,9 @@ Artifacts are stored in `.cali-product-workflow/{YYYY-MM-DD}/{_dir}/`:
 
 ---
 
-## 🧭 Strategic Approaches (Phase 2a)
+## 🧭 Strategic Approaches (Stage 2a)
 
-In Phase 2 (Strategic Context), the user can choose strategic analyses **in parallel**:
+In Stage 2 (Strategic Context), the user can choose strategic analyses **in parallel**:
 
 | Approach | Skill | What It Produces |
 |---|---|---|
@@ -71,11 +71,11 @@ In Phase 2 (Strategic Context), the user can choose strategic analyses **in para
 | **Product Discovery** | `cali-product-discovery` | Experiment plan, metrics, pricing |
 
 All execute **concurrently** via `subagent({tasks: [...], concurrency: N})`.
-See `phases/context.md` for the full flow.
+See `stages/context.md` for the full flow.
 
 ---
 
-## 📚 Complementary Domain Libraries (Phase 2b)
+## 📚 Complementary Domain Libraries (Stage 2b)
 
 Domain playbooks available for tactical reference during planning/execution:
 
@@ -92,22 +92,22 @@ Domain playbooks available for tactical reference during planning/execution:
 
 ---
 
-## 📋 Phase Index
+## 📋 Stage Index
 
-> **Phase Status:** see `references/cli-tools/phase-status.md` for instructions for ASCII status display and CLI commands.
+> **Stage Status:** see `references/cli-tools/stage-status.md` for instructions for ASCII status display and CLI commands.
 
 Follow the sequence below. For phases 3-5 and 7, read the subskill SKILL.md directly. Each subskill has its own **Reference Index** — read the file to see it:
 
-1. Phase 3 (Shape): see `cali-product-shape-up/SKILL.md` for instructions
-2. Phase 4 (Critique): see `cali-product-plan-critique/SKILL.md` for instructions
-3. Phase 6 (Interface): see `cali-product-interface-brainstorm/SKILL.md` for instructions
-4. Phase 7 (Int. Gate): see `cali-product-tech-planning/SKILL.md` for instructions
+1. Stage 3 (Shape): see `cali-product-shape-up/SKILL.md` for instructions
+2. Stage 4 (Critique): see `cali-product-plan-critique/SKILL.md` for instructions
+3. Stage 6 (Interface): see `cali-product-interface-brainstorm/SKILL.md` for instructions
+4. Stage 7 (Int. Gate): see `cali-product-tech-planning/SKILL.md` for instructions
 
 Do NOT use `/skill:` for internal subskills.
 
-> ⚠️ **Bypass awareness:** If the user asks you to implement code before Phase 12 (Execution), the workflow has been bypassed. The footer will show `⚠️ bypassed`. Guide the user back: remind them of the current phase and suggest `/pw-next` to advance properly. Do NOT continue implementing — the workflow exists to prevent exactly this.
+> ⚠️ **Bypass awareness:** If the user asks you to implement code before Stage 12 (Execution), the workflow has been bypassed. The footer will show `⚠️ bypassed`. Guide the user back: remind them of the current stage and suggest `/pw-next` to advance properly. Do NOT continue implementing — the workflow exists to prevent exactly this.
 
-| # | Phase | Description | Trigger |
+| # | Stage | Description | Trigger |
 |---|-------|-------------|---------|
 | 0 | **Inbox Triage** | Extract items from list, accept/group/defer/reject | Auto (list detected) |
 | 1 | **Item Selection** | Rank accepted items, user picks one | After Triage |
@@ -126,7 +126,7 @@ Do NOT use `/skill:` for internal subskills.
 
 ### AI-Aware Testing (Conditional)
 
-**Phase 10 triggered:** When `product_type: software` or `product_type: hybrid`:
+**Stage 10 triggered:** When `product_type: software` or `product_type: hybrid`:
 
 ```
 Tech Planning
@@ -143,37 +143,37 @@ See `skills/cali-product-testing-ai-code/SKILL.md`
 ### Flow Diagram
 
 ```
-Phase 0: Inbox Triage (auto — if list detected)
-Phase 1: Item Selection (auto — if triage ran)
+Stage 0: Inbox Triage (auto — if list detected)
+Stage 1: Item Selection (auto — if triage ran)
     ↓
-Phase 2: Setup
+Stage 2: Setup
     ↓
-Phase 3: Strategic Context (optional)
+Stage 3: Strategic Context (optional)
     ↓
-Phase 4: Shape Up
+Stage 4: Shape Up
     ↓
-Phase 5: Plan Critique (pre-flight)
+Stage 5: Plan Critique (pre-flight)
     ↓
-Phase 6: Plannotator Gate ← visual pause
+Stage 6: Plannotator Gate ← visual pause
     ↓
-Phase 7: Scope Adjustment (ask)
+Stage 7: Scope Adjustment (ask)
     ↓
-Phase 8: Interface Brainstorming (if selected)
+Stage 8: Interface Brainstorming (if selected)
     ↓
-Phase 9: Plannotator Gate (interfaces) ← visual pause
+Stage 9: Plannotator Gate (interfaces) ← visual pause
     ↓
-Phase 10: Interface Selection (ask with preview)
+Stage 10: Interface Selection (ask with preview)
     ↓
-Phase 11: Tech Planning
+Stage 11: Tech Planning
     ↓
-Phase 12: Execution
+Stage 12: Execution
     ↓
-Phase 13: Delivery Audit
+Stage 13: Delivery Audit
 ```
 
 ### Auto-chaining rules
 
-| User selection | Phases that run automatically |
+| User selection | Stages that run automatically |
 |---|---|
 | Shape Up only | Shape Up → Plan Critique → **Gate** → **Scope** → Tech Planning → **Execution** → **Audit** |
 | Shape Up + Interface | Shape Up → Plan Critique → **Gate** → **Scope** → Interface → **Interface Gate** → Selection → Tech Planning → **Execution** → **Audit** |
@@ -189,24 +189,24 @@ Phase 13: Delivery Audit
 
 ## ⚠️ Safety Rules
 
-### Review Gate (Phase 5)
+### Review Gate (Stage 5)
 Use `references/cli-tools/plannotator.md` for Plannotator gate rules.
 
-### Scope Adjustment (Phase 6)
-- Use **Pattern 3** from `phases/ask-patterns.md`
+### Scope Adjustment (Stage 6)
+- Use **Pattern 3** from `stages/ask-patterns.md`
 - No Plannotator re-run after scope changes — ask tool confirms selections
 - If adding items to IN, create new spec version (user is aware)
 - If removing items, update spec in-place
 
-### Interface Gate (Phase 8)
+### Interface Gate (Stage 8)
 - **Proceed automatically** — do NOT ask the user for permission
 - Use `references/cli-tools/plannotator.md` for Plannotator command
 
-### Interface Selection (Phase 9)
+### Interface Selection (Stage 9)
 - **Proceed automatically** after Gate approval — do NOT describe the next step, execute it
-- Use **Pattern 2** from `phases/ask-patterns.md` immediately
+- Use **Pattern 2** from `stages/ask-patterns.md` immediately
 
-### Tech Planning (Phase 10)
+### Tech Planning (Stage 10)
 - Before generating scopes: verify `approved: true` in spec-product.md
 - **Deterministic** — do not rely on memory, read the YAML frontmatter
 - **AI-Aware Testing**: If `product_type: software` or `product_type: hybrid` in frontmatter:
@@ -214,34 +214,33 @@ Use `references/cli-tools/plannotator.md` for Plannotator gate rules.
   - Add `test-*` scope types to spec-tech.md
   - See `skills/cali-product-testing-ai-code/SKILL.md`
 
-### Supervisor (Phase 12)
-- **Never activate during Phases 3-10.** The supervisor would re-submit Plannotator.
+### Supervisor (Stage 12)
+- **Never activate during Stages 3-10.** The supervisor would re-submit Plannotator.
 - Activate only during execution, WHEN STARTING each scope.
 
-### Execution (Phase 12)
+### Execution (Stage 12)
 - **DO NOT ask** "Would you like to execute?", "Create ordered-execution-goal?", "Review plan first?"
 - **Execution is automatic** after Tech Planning approval. Proceed directly.
 - see `skills/cali-product-scope-executor/SKILL.md` for instructions for scope routing.
-- See `phases/execution.md` for details.
+- See `stages/execution.md` for details.
 - **DO NOT ask** "Would you like to execute?", "Create ordered-execution-goal?", "Review plan first?"
 - **Execution is automatic** after Tech Planning approval. Proceed directly.
 - see `skills/cali-product-scope-executor/SKILL.md` for instructions for scope routing.
-- See `phases/execution.md` for details.
+- See `stages/execution.md` for details.
 
 ### Worktree
-- Optional in Phase 12. Ask the user only if modifying code in shared repo AND parallel workflows exist.
+- Optional in Stage 12. Ask the user only if modifying code in shared repo AND parallel workflows exist.
 - Single-scope workflows can skip worktree.
 d05|
 ### Workflow Interruption
 d05|
-- If user introduces new work mid-workflow, use **Pattern 6** from `phases/ask-patterns.md`
+- If user introduces new work mid-workflow, use **Pattern 6** from `stages/ask-patterns.md`
 d05|
 - **Never auto-abandon** an active workflow without confirmation
 d05|
 - If workflow is near completion (Execution phase), recommend "Continue current"
 d05|
 ---
-d05|
 ## 🌐 Environment Adaptation
 
 ---
@@ -249,3 +248,27 @@ d05|
 ## 🌐 Environment Adaptation
 
 Each tool in `references/cli-tools/` documents its own fallback.
+
+## Stage State Management
+
+The current workflow stage is tracked in `.cali-product-workflow/state/current-stage.json`.
+
+When transitioning to a new stage:
+1. Read `.cali-product-workflow/state/current-stage.json` to know current stage
+2. Read `stages.yaml` to validate tools allowed in new stage
+3. Update `.cali-product-workflow/state/current-stage.json` with `transition()` from state-manager
+4. If the new stage has `supervisor: true`, activate supervisor
+5. If the new stage has `requires_approval: true`, gate before proceeding
+
+## Tool Restrictions
+
+Before calling any tool, check:
+1. `RULES.md` for hard constraints
+2. `stages.yaml` for stage-specific `blocked_tools`
+3. If using Pi: stages-guard enforces automatically
+4. If using other CLI: you are responsible for self-enforcement
+
+## Cross-CLI Notes
+
+- **Pi:** stages-guard.ts enforces tool restrictions via PreToolUse hooks
+- **Claude/Codex/OpenCode:** Read RULES.md + stages.yaml and self-enforce

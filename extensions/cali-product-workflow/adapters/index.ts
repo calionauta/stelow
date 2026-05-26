@@ -126,3 +126,28 @@ export {
   CodexAdapter,
   createCodexAdapter,
 } from "./codex";
+
+// ── Stages Guard ────────────────────────────────────────────────────
+
+export {
+  createStagesGuard,
+  createStagesGuardFromPaths,
+  loadStages,
+  loadState,
+} from "./stages-guard";
+
+// ── Stages Loader ───────────────────────────────────────────────────
+
+export {
+  type Stage,
+  type StagesConfig,
+  type StageTransitions,
+} from "./stages-loader";
+
+// ── State Manager ───────────────────────────────────────────────────
+
+export {
+  transition,
+  saveState,
+  getCurrentStage,
+} from "./state-manager";

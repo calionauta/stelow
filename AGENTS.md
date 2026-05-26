@@ -9,16 +9,16 @@
 | `/pw-start` | Begin planning |
 | `/pw-menu` | Show workflow status |
 
-## Workflow Phases
+## Workflow Stages
 
 ```
 Setup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Execution
   0       1         2        3         4      5       6           7           8           9          10
 ```
 
-Phases 2-3 and 7 run as skills (`cali-product-shape-up`, `cali-product-plan-critique`, `cali-product-interface-brainstorm`).
-Gates (4, 7) require Plannotator visual approval — never skip.
-Phase 10 (Planning) generates typed scopes with dependency mapping.
+Stages 2-3 and 7 run as skills (`cali-product-shape-up`, `cali-product-plan-critique`, `cali-product-interface-brainstorm`).
+Gates (4, 7) require Plannotator visual approval - never skip.
+Stage 10 (Planning) generates typed scopes with dependency mapping.
 
 ## Key Differentiators
 
@@ -127,7 +127,7 @@ For skills development, see [docs/TOOL-REFERENCE-PATTERN.md](docs/TOOL-REFERENCE
 
 Rules:
 - Skills reference tools via `references/cli-tools/{tool}.md`, not direct calls
-- Question templates come from `phases/ask-patterns.md`
+- Question templates come from `stages/ask-patterns.md`
 - When adding a new tool, create the reference doc first following the pattern
 
 ## Workflow Integration
@@ -135,7 +135,7 @@ Rules:
 When working on software projects, trigger the product workflow:
 
 1. **Trigger:** Use `/skill cali-product-workflow` or `/pw-start`
-2. **Process:** Follow the 11-phase structured workflow (Setup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Execution)
+2. **Process:** Follow the 11-stage structured workflow (Setup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Execution)
 3. **Execute:** Only after visual review gate (Plannotator approval)
 
 - **Repo:** https://github.com/renatocaliari/cali-product-workflow

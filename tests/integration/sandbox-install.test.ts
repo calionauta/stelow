@@ -137,7 +137,7 @@ describe('Sandbox Install Verification', () => {
 
     it('should have core phase files', () => {
       const phasesPath = join(PROJECT_ROOT, 'skills/cali-product-workflow/phases');
-      // Core phases that must exist in phases/ directory
+      // Core stages that must exist in stages/ directory
       const corePhases = ['setup', 'context', 'gate', 'execution', 'selection', 'delivery-audit', 'triage'];
       corePhases.forEach(phase => {
         expect(existsSync(join(phasesPath, `${phase}.md`))).toBe(true);

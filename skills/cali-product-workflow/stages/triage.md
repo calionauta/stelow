@@ -1,8 +1,8 @@
-## Phase 0: Inbox Triage
+## Stage 0: Inbox Triage
 
-> **Part of cali-product-workflow** — See [`SKILL.md`](../SKILL.md) for phase sequence, safety rules, and capability reference.
-
-### When This Phase Activates
+> **Part of cali-product-workflow** — See [`SKILL.md`](../SKILL.md) for stage sequence, safety rules, and capability reference.
+> **Tool Restrictions:** See `stages.yaml` for blocked/allowed tools in this stage.
+### When This Stage Activates
 
 Triggered when the user's initial request contains multiple items (bullets, numbered list, enumerations) or when explicitly invoked.
 
