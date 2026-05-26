@@ -1,4 +1,4 @@
-import { rmSync, readFileSync, writeFileSync } from "node:fs";
+import { rmSync, readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
 // @ts-ignore - Optional peer dependency for Pi environment
@@ -10,7 +10,7 @@ import {
   readTracking, writeTracking, readGlobalTracking, writeGlobalTracking,
   getActiveWorkflow, renameWorkflow, toSafeName, reconcileTracking, scanWorkflowDirs,
   archiveWorkflowOnDisk, resolveProjectDir,
-  writePhaseTodos, getPhaseTodos, type PhaseTodo,
+  writePhaseTodos, getPhaseTodos, getPhaseTodosFromCache, setPhaseTodos, type PhaseTodo,
   readInbox, addToInbox, removeFromInbox, clearInbox,
   TASK_ICONS,
 } from "./state";
@@ -491,6 +491,37 @@ function cmdList(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
   }
 }
 
+// ── Stages guard sync helper ───────────────────────────────────────
+// Maps PHASE_NAMES index to stages.yaml stage name and updates
+// current-stage.json so the stages guard picks up phase changes.
+const PHASE_TO_STAGE: Record<number, string> = {
+  0: "triage", 1: "select", 2: "setup", 3: "context",
+  4: "shape", 5: "critique", 6: "gate", 7: "scope",
+  8: "interface", 9: "int-gate", 10: "selection",
+  11: "planning", 12: "execution", 13: "audit",
+};
+
+function syncStagesGuardState(cwd: string, phaseIndex: number): void {
+  const stageName = PHASE_TO_STAGE[phaseIndex];
+  if (!stageName) return;
+  const stateDir = join(cwd, WORKFLOW_DIR, "state");
+  if (!existsSync(stateDir)) mkdirSync(stateDir, { recursive: true });
+  const statePath = join(stateDir, "current-stage.json");
+  const now = new Date().toISOString();
+  const prev = existsSync(statePath)
+    ? JSON.parse(readFileSync(statePath, "utf-8"))
+    : { current_stage: "triage", previous_stage: null, transitioned_at: now, history: [], gates_passed: [], supervisor_active: false };
+  const newState = {
+    current_stage: stageName,
+    previous_stage: prev.current_stage,
+    transitioned_at: now,
+    history: [...(prev.history || []), { stage: prev.current_stage, entered_at: prev.transitioned_at, exited_at: now }],
+    gates_passed: prev.gates_passed || [],
+    supervisor_active: prev.supervisor_active || false,
+  };
+  writeFileSync(statePath, JSON.stringify(newState, null, 2));
+}
+
 // ── SETPHASE ─────────────────────────────────────────────────────────
 
 function cmdSetPhase(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
@@ -539,6 +570,7 @@ function cmdSetPhase(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
   // Sync wf in-memory so notifyPhase compares correctly
   wf.currentPhase = phase;
   updateFooter(ctx, wd);
+  syncStagesGuardState(wd, phase);
   if (oldPhase !== phase) notifyPhase(ctx, wf, oldPhase);
   reply(ctx, `▶️ Phase: ${PHASE_NAMES[phase]} (${phase + 1}/${PHASE_NAMES.length})`);
 }
@@ -579,6 +611,7 @@ function cmdNext(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
   // Sync wf in-memory so notifyPhase compares correctly
   wf.currentPhase = next;
   updateFooter(ctx, wd);
+  syncStagesGuardState(wd, next);
   notifyPhase(ctx, wf, oldPhase);
   reply(ctx, `✅ ${PHASE_NAMES[next]} (${next + 1}/${PHASE_NAMES.length})`);
 }
@@ -675,8 +708,8 @@ function cmdInbox(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
   const items = readInbox(wd);
 
   // /pw-inbox add <item>
-  if (parsed.add) {
-    const item = parsed.add === true ? parsed._.join(" ") : parsed.add;
+  if (parsed.add !== undefined) {
+    const item = parsed.add || parsed._.join(" ");
     if (!item) {
       replyWarn(ctx, "Usage: /pw-inbox add <item text>");
       return;
@@ -721,8 +754,8 @@ function cmdTodo(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
   const todos = getPhaseTodosFromCache(wd, wf);
 
   // /pw-todo add <task>
-  if (parsed.add) {
-    const task = parsed.add === true ? parsed._.join(" ") : parsed.add;
+  if (parsed.add !== undefined) {
+    const task = parsed.add || parsed._.join(" ");
     if (!task) {
       replyWarn(ctx, "Usage: /pw-todo add <task text>");
       return;
@@ -919,81 +952,57 @@ function cmdUnarchive(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
 // =============================================================================
 
 // Re-export WORKFLOW_COMMANDS for other modules that need command definitions
+// Re-export for external consumers
 export { WORKFLOW_COMMANDS } from "./adapters/commands/dispatcher";
 export type { CommandDescriptor } from "./adapters/commands/dispatcher";
 
-const COMMAND_DESCRIPTIONS: Record<string, string> = {
-  "pw-start": "Start a new workflow. Usage: /pw-start [name=...] [description=...] [@file]",
-  "pw-stop":  "Stop workflow(s): /pw-stop | all | name1 name2",
-  "pw-pause": "Pause active workflow: /pw-pause",
-  "pw-resume":"Resume paused workflow: /pw-resume [name=name]",
-  "pw-status":"Show active workflow status: /pw-status",
-  "pw-ls":  "List workflows: /pw-ls | all | archived | path=DIR",
-  "pw-setphase":"Jump to phase: /pw-setphase phase=N | phasename=Name",
-  "pw-next":  "Advance to next phase: /pw-next",
-  "pw-complete":"Mark active workflow complete: /pw-complete",
-  "pw-goto":  "Go to a workflow: /pw-goto [name=name]",
-  "pw-rename":"Rename active workflow: /pw-rename novo-nome | name=novo-nome",
-  "pw-menu":  "Open workflow overview overlay: /pw-menu",
-  "pw-archive": "Archive workflows: /pw-archive | /pw-archive name=X | /pw-archive purge",
-  "pw-unarchive": "Unarchive a workflow: /pw-unarchive name=<workflow>",
+// ── Single source of truth: handler lookups ──────────────────────────
+// Handlers are keyed by command name (derived from WORKFLOW_COMMANDS).
+// When you add a command to dispatcher.ts, add its handler here.
+
+const HANDLER_BY_NAME: Record<string, CmdHandler> = {
+  "pw-start":      cmdStart,
+  "pw-stop":       cmdStop,
+  "pw-pause":      cmdPause,
+  "pw-resume":     cmdResume,
+  "pw-status":     cmdStatus,
+  "pw-ls":         cmdList,
+  "pw-setphase":   cmdSetPhase,
+  "pw-next":       cmdNext,
+  "pw-complete":   cmdComplete,
+  "pw-goto":       cmdGoto,
+  "pw-rename":     cmdRename,
+  "pw-menu":       cmdMenu,
+  "pw-archive":    cmdArchive,
+  "pw-unarchive":  cmdUnarchive,
+  "pw-todo":       cmdTodo,
+  "pw-inbox":      cmdInbox,
 };
 
-// Helper to get description from canonical name
-function getCommandDescription(canonicalName: string): string {
-  return COMMAND_DESCRIPTIONS[canonicalName] || "";
+function getDescription(cmdName: string): string {
+  const c = WORKFLOW_COMMANDS.find(e => e.name === cmdName);
+  return c ? `${c.description}. Usage: ${c.usage || c.name}` : "";
 }
 
 // =============================================================================
 // REGISTRATION
 // =============================================================================
 
-// Canonical + alias map: handler → list of command names
-const CMD_MAP: [CmdHandler, string, string][] = [
-  [cmdStart, "pw-start",     "pw-start"],
-  [cmdStop, "pw-stop",      "pw-stop"],
-  [cmdPause, "pw-pause",     "pw-pause"],
-  [cmdResume, "pw-resume",     "pw-resume"],
-  [cmdStatus, "pw-status",    "pw-status"],
-  [cmdList, "pw-ls",      "pw-ls"],
-  [cmdSetPhase, "pw-setphase",   "pw-setphase"],
-  [cmdNext, "pw-next",      "pw-next"],
-  [cmdComplete, "pw-complete",  "pw-complete"],
-  [cmdGoto, "pw-goto",      "pw-goto"],
-  [cmdRename, "pw-rename",    "pw-rename"],
-  [cmdMenu, "pw-menu",      "pw-menu"],
-  [cmdArchive, "pw-archive",   "pw-archive"],
-  [cmdUnarchive, "pw-unarchive", "pw-unarchive"],
-];
-
-/**
- * Get command handler by command name.
- * Used by adapters to route commands to their handlers.
- */
-export function getCommandHandler(commandName: string): CmdHandler | null {
-  for (const [handler, canonical, alias] of CMD_MAP) {
-    if (canonical === commandName || alias === commandName) {
-      return handler;
-    }
-  }
-  return null;
+/** Get command handler by name. */
+export function getCommandHandler(name: string): CmdHandler | null {
+  return HANDLER_BY_NAME[name] ?? null;
 }
 
-/**
- * Get all command names (canonical + aliases) for the given CLI.
- */
+/** Get all command names with descriptions. */
 export function getCommandNames(): Array<{ canonical: string; alias: string; description: string }> {
-  return CMD_MAP.map(([, canonical, alias]) => ({
-    canonical,
-    alias,
-    description: getCommandDescription(canonical),
+  return WORKFLOW_COMMANDS.map(c => ({
+    canonical: c.name,
+    alias: c.name,
+    description: `${c.description}. Usage: ${c.usage || c.name}`,
   }));
 }
 
-/**
- * Execute a command by name.
- * Used by adapters when handling CLI-specific command triggers.
- */
+/** Execute a command by name (used by adapters). */
 export function executeCommand(
   pi: ExtensionAPI,
   commandName: string,
@@ -1001,24 +1010,23 @@ export function executeCommand(
   ctx: CmdCtx
 ): void | Promise<void> {
   const handler = getCommandHandler(commandName);
-  if (handler) {
-    handler(pi, args, ctx);
-  }
+  if (handler) handler(pi, args, ctx);
 }
 
 /**
  * Register commands with the Pi extension.
- * This is the main entry point for command registration.
- * 
- * For multi-CLI support, adapters use the WORKFLOW_COMMANDS array
- * and generate appropriate command files for their CLI.
+ * Derives from WORKFLOW_COMMANDS (single source of truth).
  */
 export function registerCommands(pi: ExtensionAPI): void {
-  for (const [handler, canonical, alias] of CMD_MAP) {
+  for (const c of WORKFLOW_COMMANDS) {
+    const handler = HANDLER_BY_NAME[c.name];
+    if (!handler) {
+      console.warn(`[cali-product-workflow] No handler for command: ${c.name}`);
+      continue;
+    }
     const wrapper = async (args: string, ctx: any) => handler(pi, args ?? "", ctx as CmdCtx);
-    const desc = getCommandDescription(canonical);
-    pi.registerCommand(canonical, { description: desc, handler: wrapper });
-    pi.registerCommand(alias, { description: `Alias: ${desc}`, handler: wrapper });
+    const desc = `${c.description}. Usage: ${c.usage || c.name}`;
+    pi.registerCommand(c.name, { description: desc, handler: wrapper });
   }
 }
 
@@ -1032,55 +1040,70 @@ export function getCommandFilesForCLI(cli: string): Array<{ path: string; conten
   const commandFiles: Array<{ path: string; content: string }> = [];
   
   for (const cmd of WORKFLOW_COMMANDS) {
-    const description = getCommandDescription(cmd.name);
-    const usage = description.replace(/^[^:]+: /, "");
+    const desc = `${cmd.description}. Usage: ${cmd.usage || cmd.name}`;
     
     switch (cli) {
       case "opencode":
       case "claude-code":
-        // Skills-based command files
         commandFiles.push({
-          path: `skills/${cmd.name.replace(":", "-")}.md`,
-          content: generateSkillFile(cmd.name, description, usage),
+          path: `skills/${cmd.name}.md`,
+          content: generateSkillFile(cmd.name, desc, cmd.piOnly || false),
         });
         break;
       case "codex":
-        // Command files for Codex
         commandFiles.push({
-          path: `commands/${cmd.name.replace(":", "-")}.md`,
-          content: generateCommandFile(cmd.name, description, usage),
+          path: `commands/${cmd.name}.md`,
+          content: generateCommandFile(cmd.name, desc, cmd.piOnly || false),
         });
         break;
-      // Pi and generic don't need file-based commands
     }
   }
   
   return commandFiles;
 }
 
-function generateSkillFile(name: string, description: string, usage: string): string {
-  return `---
+function generateSkillFile(name: string, description: string, piOnly: boolean): string {
+  const banner = piOnly
+    ? `---
+name: ${name}
+description: [Pi only] ${description}
+---
+
+> ⚠️ This command requires the Pi extension for full functionality.
+> Use /skill:cali-product-workflow and ask to ${name}.
+
+/skill:cali-product-workflow
+`
+    : `---
 name: ${name}
 description: ${description}
 ---
 
-// Usage: ${usage}
-
-@agent
 /skill:cali-product-workflow
 
 ${name} {args}
 `;
+  return banner;
 }
 
-function generateCommandFile(name: string, description: string, usage: string): string {
-  return `---
+function generateCommandFile(name: string, description: string, piOnly: boolean): string {
+  const banner = piOnly
+    ? `---
+name: ${name}
+description: [Pi only] ${description}
+---
+
+@agent
+> ⚠️ This command requires the Pi extension. Use the skill instead.
+/skill:cali-product-workflow
+`
+    : `---
 name: ${name}
 description: ${description}
 ---
 
 @agent
-// Usage: ${usage}
 ${name} {args}
 `;
+  return banner;
 }

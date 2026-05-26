@@ -1,100 +1,167 @@
 # stages.yaml — Metadados de stage
 # Complementa stages/*.md (comportamento), NÃO substitui
 # Source of truth para: tools por stage, transições, supervisor, gates
+#
+# Sincronizado com PHASE_NAMES em extensions/cali-product-workflow/types.ts
 
 stages:
   - name: triage
     order: 10
     description: Initial assessment. Determine if this is a valid request.
-
-    # Policy (runtime enforcement via stages-guard.ts no Pi)
     blocked_tools: [edit, write, bash, subagent, agent_browser]
     allowed_tools: [ask, read, grep, ls]
-
-    # Cognition (LLM guidance via SKILL.md)
     preferred_tools: [ask]
     primary_actions: [ask]
+    transitions:
+      next: [select]
+      accept: [select]
+      reject: []
 
-    # Transitions (graph, not linear)
+  - name: select
+    order: 15
+    description: Item selection. Rank accepted items, user picks one.
+    blocked_tools: [edit, write, bash, subagent, agent_browser]
+    allowed_tools: [ask, read, grep, ls]
+    preferred_tools: [ask, read]
+    primary_actions: [ask]
     transitions:
       next: [setup]
       accept: [setup]
-      reject: []
+      reject: [triage]
 
   - name: setup
     order: 20
     description: Setup context. Explore codebase, gather requirements.
-
     blocked_tools: [bash, write, agent_browser]
     allowed_tools: [ask, read, grep, ls, subagent]
     preferred_tools: [read, grep]
     primary_actions: [read, grep]
-
     transitions:
-      next: [selection]
-      accept: [selection]
+      next: [context]
+      accept: [context]
       reject: [triage]
 
-  - name: selection
-    order: 30
-    description: Select approach. Choose workflow variant and sub-skills.
-
-    blocked_tools: [bash, write, agent_browser]
-    allowed_tools: [ask, read, grep, ls, subagent]
-    preferred_tools: [ask, read]
-
-    transitions:
-      next: [shape]
-      accept: [shape]
-      reject: [triage]
-
-  - name: shape
-    order: 40
-    description: |
-      Shape stage. Define appetite, hill chart, rabbit holes.
-      Load /skill:cali-product-shape-up.
-
+  - name: context
+    order: 25
+    description: Strategic context. Market analysis, JTBD, domain detection.
     blocked_tools: [bash, agent_browser]
     allowed_tools: [ask, read, grep, ls, write, subagent]
     preferred_tools: [read, write]
     primary_actions: [read, write]
+    transitions:
+      next: [shape]
+      accept: [shape]
+      reject: [setup]
 
+  - name: shape
+    order: 40
+    description: Shape stage. Define appetite, hill chart, rabbit holes.
+    blocked_tools: [bash, agent_browser]
+    allowed_tools: [ask, read, grep, ls, write, subagent]
+    preferred_tools: [read, write]
+    primary_actions: [read, write]
+    transitions:
+      next: [critique]
+      rework: [shape]
+      accept: [critique]
+      reject: [context]
+
+  - name: critique
+    order: 45
+    description: Plan critique. Pre-flight check before gate.
+    blocked_tools: [bash, agent_browser]
+    allowed_tools: [ask, read, grep, ls, write, subagent]
+    preferred_tools: [read, write]
+    primary_actions: [read, write]
     transitions:
       next: [gate]
-      rework: [shape]
       accept: [gate]
-      reject: [selection]
+      reject: [shape]
 
   - name: gate
     order: 60
-    description: |
-      Gate review. Visual approval via Plannotator required.
-      This is a BLOCKING gate — no execution until approved.
-
+    description: Gate review. Visual approval via Plannotator required.
     blocked_tools: [edit, write, bash, subagent, agent_browser]
     allowed_tools: [read, ls, grep, ask]
     preferred_tools: [read]
     primary_actions: [read]
-
     requires_approval: true
     approval_tool: plannotator
+    transitions:
+      next: [scope]
+      accept: [scope]
+      reject: [shape]
 
+  - name: scope
+    order: 70
+    description: Scope adjustment. Add/remove from IN/OUT after gate approval.
+    blocked_tools: [bash, agent_browser]
+    allowed_tools: [ask, read, grep, ls, write, subagent]
+    preferred_tools: [read, write]
+    primary_actions: [read, write]
+    transitions:
+      next: [interface]
+      accept: [interface]
+      reject: [gate]
+
+  - name: interface
+    order: 80
+    description: Interface brainstorming. 5 proposals + hybrid.
+    blocked_tools: [bash, agent_browser]
+    allowed_tools: [ask, read, grep, ls, write, subagent]
+    preferred_tools: [read, write]
+    primary_actions: [read, write]
+    transitions:
+      next: [int-gate]
+      accept: [int-gate]
+      reject: [scope]
+
+  - name: int-gate
+    order: 90
+    description: Interface gate. Visual review of all interface proposals.
+    blocked_tools: [edit, write, bash, subagent, agent_browser]
+    allowed_tools: [read, ls, grep, ask]
+    preferred_tools: [read]
+    primary_actions: [read]
+    requires_approval: true
+    approval_tool: plannotator
+    transitions:
+      next: [selection]
+      accept: [selection]
+      reject: [interface]
+
+  - name: selection
+    order: 100
+    description: Interface selection. User picks via structured question.
+    blocked_tools: [bash, write, agent_browser]
+    allowed_tools: [ask, read, grep, ls, subagent]
+    preferred_tools: [ask, read]
+    primary_actions: [ask]
+    transitions:
+      next: [planning]
+      accept: [planning]
+      reject: [interface]
+
+  - name: planning
+    order: 110
+    description: Tech planning. Typed scopes + sequencing.
+    blocked_tools: [bash, agent_browser]
+    allowed_tools: [ask, read, grep, ls, write, subagent]
+    preferred_tools: [read, write]
+    primary_actions: [read, write]
     transitions:
       next: [execution]
       accept: [execution]
-      reject: [shape]
+      reject: [scope]
 
   - name: execution
     order: 120
     description: Implementation. Execute planned scopes.
-
     blocked_tools: []
     allowed_tools: [edit, write, bash, read, grep, ls, subagent, ask, agent_browser]
     preferred_tools: [edit, write, bash]
     primary_actions: [edit, write, bash]
-
     supervisor: true
-
     transitions:
       next: [audit]
       accept: [audit]
@@ -103,11 +170,10 @@ stages:
   - name: audit
     order: 200
     description: Final audit. Verify all requirements met.
-
     blocked_tools: [bash]
     allowed_tools: [ask, read, grep, ls, write]
     preferred_tools: [read, grep]
-
+    primary_actions: [read, grep]
     transitions:
       next: []
       accept: []

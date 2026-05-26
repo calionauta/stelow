@@ -15,6 +15,8 @@ export interface CommandDescriptor {
   description: string;
   /** Usage example */
   usage?: string;
+  /** True if this command requires the Pi extension (TUI, state hooks, etc.) */
+  piOnly?: boolean;
 }
 
 /**
@@ -82,11 +84,6 @@ export const WORKFLOW_COMMANDS: CommandDescriptor[] = [
     usage: "/pw-menu",
   },
   {
-    name: "pw-clean",
-    description: "Archive stale or purge archived",
-    usage: "/pw-clean [hours=4] | purge",
-  },
-  {
     name: "pw-archive",
     description: "Archive workflows",
     usage: "/pw-archive | /pw-archive name=X | /pw-archive purge",
@@ -95,6 +92,18 @@ export const WORKFLOW_COMMANDS: CommandDescriptor[] = [
     name: "pw-unarchive",
     description: "Unarchive a workflow",
     usage: "/pw-unarchive name=<workflow>",
+  },
+  {
+    name: "pw-todo",
+    description: "Manage phase todos",
+    usage: "/pw-todo | add <task> | complete <id>",
+    piOnly: true,
+  },
+  {
+    name: "pw-inbox",
+    description: "Manage workflow inbox",
+    usage: "/pw-inbox | add <text> | remove <text> | clear",
+    piOnly: true,
   },
 ];
 

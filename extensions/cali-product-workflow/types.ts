@@ -8,7 +8,7 @@ export const SCHEMA_URL =
 
 export const PHASE_NAMES = [
   "Triage",    // 0 — Phase 0: Inbox Triage
-  "Select",    // 1 — Phase 1: Item Selection
+  "ItemSelect", // 1 — Phase 1: Item Selection
   "Setup",     // 2 — Phase 2: Project Setup
   "Context",   // 3 — Phase 3: Strategic Context
   "Shape",     // 4 — Phase 4: Shape Up Planning
@@ -17,7 +17,7 @@ export const PHASE_NAMES = [
   "Scope",     // 7 — Phase 7: Scope Adjustment
   "Interface", // 8 — Phase 8: Interface Brainstorming
   "Int.Gate", // 9 — Phase 9: Interface Gate
-  "Select",   // 10 — Phase 10: Interface Selection
+  "Selection", // 10 — Phase 10: Interface Selection
   "Planning",  // 11 — Phase 11: Tech Planning
   "Execution",  // 12 — Phase 12: Execution
   "Audit"       // 13 — Phase 13: Delivery Audit

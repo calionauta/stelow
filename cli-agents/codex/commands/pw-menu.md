@@ -1,9 +1,7 @@
-# /pw-menu
+---
+name: pw-menu
+description: Open workflow overview overlay
+---
 
-Show the cali-product-workflow interactive menu.
-
-```
-/pw-menu
-```
-
-Displays available workflow actions based on current phase.
+@agent
+pw-menu {args}

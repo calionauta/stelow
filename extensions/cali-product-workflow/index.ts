@@ -53,21 +53,21 @@ export type {
 
 const registered = new Set<string>();
 
-// ── Lazy singleton: stages guard ─────────────────────────────────────
-let guardInitialized = false;
+// ── Stages guard — re-reads current-stage.json on every tool call ──
+// Bug fix: the guard previously cached state at session start and never
+// re-read, so /pw-next and /pw-setphase had no effect within a session.
+// Now it always re-reads the state file. The stages.yaml is imported once.
+
 let guardCheckTool: ((tool: string) => import("./adapters/stages-guard").StagesGuardResult) | null = null;
 
 function getStageGuard(projectDir: string) {
-  if (!guardInitialized) {
-    try {
-      const stagesPath = join(projectDir, "skills", "cali-product-workflow", "stages.yaml");
-      const statePath = join(projectDir, ".cali-product-workflow", "state", "current-stage.json");
-      const guard = createStagesGuardFromPaths(stagesPath, statePath);
-      guardCheckTool = guard;
-    } catch {
-      guardCheckTool = null;
-    }
-    guardInitialized = true;
+  try {
+    const stagesPath = join(projectDir, "skills", "cali-product-workflow", "stages.yaml");
+    const statePath = join(projectDir, ".cali-product-workflow", "state", "current-stage.json");
+    // Always re-create to pick up phase changes from /pw-next /pw-setphase
+    guardCheckTool = createStagesGuardFromPaths(stagesPath, statePath);
+  } catch {
+    guardCheckTool = null;
   }
   return guardCheckTool;
 }

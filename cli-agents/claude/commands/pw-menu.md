@@ -1,17 +1,8 @@
-# /pw-menu
+---
+name: pw-menu
+description: Open workflow overview overlay
+---
 
-Show an interactive menu with workflow actions.
+/skill:cali-product-workflow
 
-## Usage
-
-```
-/pw-menu
-```
-
-## What it does
-
-Displays an interactive picker with available workflow actions based on the current phase.
-
-## Requirements
-
-An active workflow must be running. Start one with `/pw-start`.
+pw-menu {args}

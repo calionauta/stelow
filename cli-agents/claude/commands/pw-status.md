@@ -1,17 +1,8 @@
-# /pw-status
+---
+name: pw-status
+description: Show active workflow status
+---
 
-Display the current workflow status.
+/skill:cali-product-workflow
 
-## Usage
-
-```
-/pw-status
-```
-
-## Output
-
-Shows workflow name, current phase (1-11), and bypass status.
-
-## Requirements
-
-An active workflow must be running. Start one with `/pw-start`.
+pw-status {args}

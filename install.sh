@@ -26,7 +26,7 @@ log_success() { echo "${GREEN}[ok]${RESET} $*"; }
 log_warn()    { echo "${YELLOW}[warn]${RESET} $*"; }
 log_error()   { echo "${RED}[error]${RESET} $*" >&2; }
 
-# List of all 21 skills (orchestrator + 20 subskills)
+# List of all 20 skills (1 orchestrator + 19 subskills)
 ALL_SKILLS=(
   "cali-product-workflow"
   "cali-product-shape-up"
@@ -126,17 +126,26 @@ install_skills_flat() {
   local skipped=0
   for skill in "${ALL_SKILLS[@]}"; do
     local src="$SCRIPT_DIR/skills/$skill"
+    local dst="$SKILLS_DIR/$skill"
     if [[ -d "$src" ]]; then
+      # Clean remove + fresh copy to avoid orphaned files
+      rm -rf "$dst"
       cp -r "$src" "$SKILLS_DIR/"
-      ((installed++)) || true
+      if [[ -f "$dst/SKILL.md" ]]; then
+        log_success "    $skill"
+        ((installed++)) || true
+      else
+        log_error "    $skill: copied but SKILL.md missing"
+        ((installed++)) || true
+      fi
     else
-      log_warn "  Skill not found: $skill"
+      log_warn "    Skill not found: $skill (expected at $src)"
       ((skipped++)) || true
     fi
   done
 
   log_success "  Installed $installed skills"
-  [[ $skipped -gt 0 ]] && log_warn "  Skipped $skipped skills (not found)"
+  if [[ $skipped -gt 0 ]]; then log_warn "  Skipped $skipped skills (not found)"; fi
 }
 
 # Pi
@@ -149,7 +158,7 @@ install_pi() {
 
   # Install Pi extension
   log_info "    Installing Pi extension..."
-  pi install "$SCRIPT_DIR/extensions/cali-pw-pi" 2>/dev/null || true
+  pi install "$SCRIPT_DIR/extensions/cali-product-workflow" 2>/dev/null || true
 
   # Install supporting packages
   if [[ -z "${INSTALL_SKILLS_ONLY:-}" ]]; then
@@ -179,6 +188,15 @@ install_opencode() {
   # Install skills (flat to ~/.agents/skills/)
   install_skills_flat
 
+  # Copy command files to OpenCode commands directory
+  local cmd_src="$SCRIPT_DIR/cli-agents/opencode/commands"
+  local cmd_dst="$HOME/.config/opencode/commands"
+  if [[ -d "$cmd_src" ]]; then
+    mkdir -p "$cmd_dst"
+    cp "$cmd_src"/pw-*.md "$cmd_dst/" 2>/dev/null || true
+    log_success "    Installed $(ls "$cmd_dst"/pw-*.md 2>/dev/null | wc -l | tr -d ' ') command files"
+  fi
+
   # Configure OpenCode to use ~/.agents/skills/
   local cfg="$HOME/.config/opencode/opencode.json"
   if [[ -f "$cfg" ]] && command -v jq &>/dev/null; then
@@ -199,6 +217,15 @@ install_claude_code() {
 
   # Install skills (flat to ~/.agents/skills/)
   install_skills_flat
+
+  # Copy command files to Claude Code commands directory
+  local cmd_src="$SCRIPT_DIR/cli-agents/claude/commands"
+  local cmd_dst="$HOME/.claude/commands"
+  if [[ -d "$cmd_src" ]]; then
+    mkdir -p "$cmd_dst"
+    cp "$cmd_src"/pw-*.md "$cmd_dst/" 2>/dev/null || true
+    log_success "    Installed $(ls "$cmd_dst"/pw-*.md 2>/dev/null | wc -l | tr -d ' ') command files"
+  fi
 
   # Configure Claude Code to use ~/.agents/skills/
   local cfg="$HOME/.claude/settings.json"
@@ -233,6 +260,15 @@ install_codex() {
 
   # Install skills (flat to ~/.agents/skills/)
   install_skills_flat
+
+  # Copy command files to Codex commands directory
+  local cmd_src="$SCRIPT_DIR/cli-agents/codex/commands"
+  local cmd_dst="$HOME/.codex/commands"
+  if [[ -d "$cmd_src" ]]; then
+    mkdir -p "$cmd_dst"
+    cp "$cmd_src"/pw-*.md "$cmd_dst/" 2>/dev/null || true
+    log_success "    Installed $(ls "$cmd_dst"/pw-*.md 2>/dev/null | wc -l | tr -d ' ') command files"
+  fi
 
   # Configure Codex to use ~/.agents/skills/
   local cfg="$HOME/.codex/settings.json"
@@ -269,7 +305,7 @@ install_generic() {
 
 # Update
 update_all() {
-  log_info "Updating..."
+  log_info "Updating skills in $SKILLS_DIR..."
   for skill in "${ALL_SKILLS[@]}"; do
     local src="$SCRIPT_DIR/skills/$skill"
     local dst="$SKILLS_DIR/$skill"
@@ -281,6 +317,38 @@ update_all() {
       log_warn "  - $skill: not in source, keeping existing"
     fi
   done
+
+  # Reinstall command files + Pi extension per CLI
+  local clis=$(detect_all_clis)
+  for cli in $clis; do
+    case "$cli" in
+      opencode|claude-code|codex)
+        local cmd_dir
+        case "$cli" in
+          opencode) cmd_dir="$HOME/.config/opencode/commands" ;;
+          claude-code) cmd_dir="$HOME/.claude/commands" ;;
+          codex) cmd_dir="$HOME/.codex/commands" ;;
+        esac
+        local cmd_src="$SCRIPT_DIR/cli-agents/$cli/commands"
+        if [[ -d "$cmd_src" ]]; then
+          mkdir -p "$cmd_dir"
+          cp "$cmd_src"/pw-*.md "$cmd_dir/" 2>/dev/null || true
+          log_success "  - $cli: $(ls "$cmd_dir"/pw-*.md 2>/dev/null | wc -l | tr -d ' ') command files"
+        fi
+        ;;
+      pi)
+        if command -v pi &>/dev/null; then
+          log_info "  Reinstalling Pi extension..."
+          pi install "$SCRIPT_DIR/extensions/cali-product-workflow" 2>/dev/null || true
+        fi
+        ;;
+    esac
+  done
+
+  echo ""
+  log_info "To get the latest from GitHub before next update:"
+  log_info "  cd $SCRIPT_DIR && git pull origin main && ./install.sh update"
+  echo ""
   log_success "Update complete!"
 }
 
@@ -325,7 +393,7 @@ show_help() {
   cat << 'EOF'
 cali-product-workflow Installer
 
-Flattens 21 skills to ~/.agents/skills/ (DotAgents Protocol).
+Flattens 20 skills to ~/.agents/skills/ (DotAgents Protocol).
 Distribution to each harness via agent-sync or manual config.
 
 Usage: install.sh [command]
@@ -340,7 +408,7 @@ Environment:
   INSTALL_SKILLS_ONLY  Skip npm packages (Pi only, skills-only)
   PRODUCT_WORKFLOW_CLI  Limit to one CLI (pi|opencode|claude-code|codex)
 
-Skills installed (21 total):
+Skills installed (20 total):
   - cali-product-workflow (orchestrator)
   - 4 workflow skills (shape-up, interface-brainstorm, plan-critique, tech-planning)
   - 5 strategic analysis skills

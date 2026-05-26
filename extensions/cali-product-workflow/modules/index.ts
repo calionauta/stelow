@@ -7,8 +7,8 @@
  */
 
 // File stores
-export { 
-  IFileStore, 
+export type { IFileStore } from './file-store';
+export {
   TextFileStore, 
   JsonFileStore, 
   MarkdownFileStore,
@@ -16,8 +16,8 @@ export {
 } from './file-store';
 
 // Cache
-export { 
-  ICacheManager, 
+export type { ICacheManager } from './cache';
+export {
   CacheManager, 
   MapCache 
 } from './cache';
