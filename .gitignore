@@ -19,7 +19,12 @@ stryker-reports/
 # Local workflow artifacts (auto-generated at runtime)
 .pi/
 .pi-*
-.cali-product-workflow/
+# .cali-product-workflow/ — version state/ (templates), ignore runtime artifacts
+.cali-product-workflow/2026-0*
+.cali-product-workflow/2025-*
+.cali-product-workflow/.gitkeep
+!.cali-product-workflow/state/
+!.cali-product-workflow/state/current-stage.json
 .cali-pw-global.json
 
 # OpenCode session plans

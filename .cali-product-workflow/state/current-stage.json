@@ -1,0 +1,14 @@
+{
+  "current_stage": "triage",
+  "previous_stage": null,
+  "transitioned_at": "2026-05-26T10:00:00Z",
+  "history": [
+    {
+      "stage": "triage",
+      "entered_at": "2026-05-26T10:00:00Z",
+      "exited_at": null
+    }
+  ],
+  "gates_passed": [],
+  "supervisor_active": false
+}
