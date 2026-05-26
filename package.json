@@ -97,5 +97,8 @@
     "skills": [
       "./skills"
     ]
+  },
+  "dependencies": {
+    "yaml": "2.9.0"
   }
 }

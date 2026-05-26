@@ -171,23 +171,6 @@ export default function (pi: ExtensionAPI) {
         return { block: true, reason: result.reason || `Tool '${tool}' blocked in current stage` };
       }
     }
-    const tool = event.toolName || "";
-    const input = event.input as any;
-    
-    // Stage guard check (blocked tools per stages.yaml)
-    const checker = getStageGuard(resolveProjectDir(ctx.cwd));
-    if (checker) {
-      const result = checker(tool);
-      if (!result.allowed) {
-        if (ctx.ui) {
-          ctx.ui.notify(result.reason || `Tool '${tool}' blocked in current stage`, "error");
-        }
-        console.warn(`[StagesGuard] ${result.reason}`);
-        // Return early — the hook cannot abort mid-stream but the
-        // warning + notify gives the LLM feedback.
-      }
-    }
-    
     // Detect implementation tools during early phases (0-8)
     const isImplTool = ["write", "edit", "bash"].includes(tool);
     if (isImplTool && ctx.ui) {
