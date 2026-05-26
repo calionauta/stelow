@@ -1,5 +1,7 @@
 # Ask Patterns — Standardized Question Templates
 
+> **Tool Restrictions:** See `stages.yaml` for blocked/allowed tools based on current stage.
+
 > **Part of cali-product-workflow** — Centralized patterns for structured user questions using `ask_user_question`.
 
 ---
@@ -32,7 +34,7 @@ Preview limits:
 
 ---
 
-## Pattern 1: Strategic Exploration (Phase 2a)
+## Pattern 1: Strategic Exploration (Stage 2: Context)
 
 Used in `stages/context.md` for strategic approach selection.
 
@@ -74,7 +76,7 @@ Recommendation: [justification based on project context].`,
 
 ---
 
-## Pattern 2: Interface Proposal Selection (Phase 9)
+## Pattern 2: Interface Proposal Selection (Stage 9: Interface Selection)
 
 Used in `cali-product-interface-brainstorm` for visual proposal comparison.
 
@@ -169,7 +171,7 @@ Keep previews concise. If content exceeds limits, prioritize:
 
 ---
 
-## Pattern 3: Scope Adjustment (Phase 6)
+## Pattern 3: Scope Adjustment (Stage 7: Post-Gate)
 
 Used after Gate approval to let user add/remove from IN/OUT.
 
@@ -231,7 +233,7 @@ ask_user_question({
 
 ---
 
-## Pattern 5: Stage Selection (Phase 1b)
+## Pattern 5: Stage Selection (Stage 1/2: Setup)
 
 Used in `stages/setup.md` for workflow stage selection and safe-change.
 
@@ -297,7 +299,7 @@ d05|
 d6d|```typescript
 b33|ask_user_question({
 6ef|  questions: [{
-44f|    question: `You have an active workflow: "{workflow-name}" ({phase}).
+44f|    question: `You have an active workflow: "{workflow-name}" ({stage}).
 7e9|What would you like to do?`,
 d1c|    header: "Workflow",
 de4|    options: [
@@ -324,7 +326,7 @@ d05|
 38f|- **Switch to new**: archive current workflow, start fresh with new request
 2b9|- **Merge into current**: adjust scope/plan to incorporate new request
 d05|
-2c1|> **Note:** If workflow is near completion (Execution phase), recommend "Continue current" as default.
+2c1|> **Note:** If workflow is near completion (Execution stage), recommend "Continue current" as default.
 ce8|
 605|/// END PATTERN 6
 d05|

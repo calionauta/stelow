@@ -3,6 +3,9 @@ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { WORKFLOW_DIR, TRACKING_FILE, SCHEMA_URL } from "./types";
+
+// Stage guard imports
+import { createStagesGuardFromPaths } from "./adapters/stages-guard";
 import type { TrackingData } from "./types";
 import {
   parsedInputStore,
@@ -49,6 +52,25 @@ export type {
 } from "./adapters";
 
 const registered = new Set<string>();
+
+// ── Lazy singleton: stages guard ─────────────────────────────────────
+let guardInitialized = false;
+let guardCheckTool: ((tool: string) => import("./adapters/stages-guard").StagesGuardResult) | null = null;
+
+function getStageGuard(projectDir: string) {
+  if (!guardInitialized) {
+    try {
+      const stagesPath = join(projectDir, "skills", "cali-product-workflow", "stages.yaml");
+      const statePath = join(projectDir, ".cali-product-workflow", "state", "current-stage.json");
+      const guard = createStagesGuardFromPaths(stagesPath, statePath);
+      guardCheckTool = guard;
+    } catch {
+      guardCheckTool = null;
+    }
+    guardInitialized = true;
+  }
+  return guardCheckTool;
+}
 
 export default function (pi: ExtensionAPI) {
 
@@ -133,11 +155,38 @@ export default function (pi: ExtensionAPI) {
     ctx.ui.notify(`◆ ${projectWf.name} (${projectWf.currentPhase + 1}/${projectWf.phases.length})`, "info");
   });
 
-  // ── Tool call: detect bypass + tracking file writes ✓ ──────────
+  // ── Tool call: stages guard + detection ───────────────────────
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   pi.on("tool_call", async (event: any, ctx: any) => {
     const tool = event.toolName || "";
     const input = event.input as any;
+    
+    // Stage guard check (blocked tools per stages.yaml)
+    const checker = getStageGuard(resolveProjectDir(ctx.cwd));
+    if (checker) {
+      const result = checker(tool);
+      if (!result.allowed) {
+        console.warn(`[StagesGuard] ${result.reason}`);
+        // Block the tool call — Pi hooks support { block: true, reason }
+        return { block: true, reason: result.reason || `Tool '${tool}' blocked in current stage` };
+      }
+    }
+    const tool = event.toolName || "";
+    const input = event.input as any;
+    
+    // Stage guard check (blocked tools per stages.yaml)
+    const checker = getStageGuard(resolveProjectDir(ctx.cwd));
+    if (checker) {
+      const result = checker(tool);
+      if (!result.allowed) {
+        if (ctx.ui) {
+          ctx.ui.notify(result.reason || `Tool '${tool}' blocked in current stage`, "error");
+        }
+        console.warn(`[StagesGuard] ${result.reason}`);
+        // Return early — the hook cannot abort mid-stream but the
+        // warning + notify gives the LLM feedback.
+      }
+    }
     
     // Detect implementation tools during early phases (0-8)
     const isImplTool = ["write", "edit", "bash"].includes(tool);

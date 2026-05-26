@@ -3,8 +3,8 @@
 > **Part of cali-product-workflow** — See [`SKILL.md`](./SKILL.md) for stage sequence, safety rules, and capability reference.
 > **Tool Restrictions:** See `stages.yaml` for blocked/allowed tools in this stage.
 ### ⚠️ Activate the supervisor ONLY during execution
-**Never activate during Phases 3-10.** The supervisor would re-submit Plannotator.
-**Activate in Phase 12 only** — when starting scope execution.
+**Never activate during Stages 3-10.** The supervisor would re-submit Plannotator.
+**Activate in Stage 11 only** — when starting scope execution.
 
 ### 6a. Git Worktree Check (before executing scopes)
 
@@ -185,7 +185,7 @@ After Tech Planning approval, **DO NOT** ask:
 
 After completing all scopes:
 1. **Do not ask user** what to do next
-2. **Automatically proceed** to Phase 13 (Delivery Audit)
+2. **Automatically proceed** to Stage 12 (Delivery Audit)
 3. Run the audit process per [`delivery-audit.md`](./delivery-audit.md)
 4. Generate `delivery-audit.md` in the plan directory
 

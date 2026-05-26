@@ -2,6 +2,7 @@
 
 **Purpose:** Verify that all planned scopes were correctly implemented and identify any gaps between plan and execution.
 
+> **Tool Restrictions:** See `stages.yaml` for blocked/allowed tools in this stage.
 > A post-implementation audit is an evaluation of the project's goals and activity achievement as measured against the project plan, budget, time deadlines, quality of deliverables, specifications, and client satisfaction.
 > — *Effective Project Management, 6th Edition*
 
@@ -23,9 +24,9 @@ The Delivery Audit closes the loop between planning and execution. It answers:
 ## When It Runs
 
 ```
-Phase 12: Execution (all scopes completed)
+Stage 11: Execution (all scopes completed)
     ↓
-Phase 13: Delivery Audit
+Stage 12: Delivery Audit
     ↓
     [If gaps found → Scope Remediation or Gap Document]
     [If clean → Workflow Complete]
@@ -150,13 +151,13 @@ Based on audit results:
 
 ## Integration with Workflow
 
-### Update Phase Status
+### Update Stage Status
 
-After audit completes, call `/pw-setphase phase=13` to mark complete.
+After audit completes, call `/pw-setphase stage=11` to mark complete.
 
 ### Auto-chain
 
-Delivery Audit runs **automatically after Phase 12** when execution completes all scopes.
+Delivery Audit runs **automatically after Stage 11** when execution completes all scopes.
 
 ### Bypass Awareness
 

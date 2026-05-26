@@ -32,11 +32,11 @@ Save results to .cali-product-workflow/{YYYY-MM-DD}/{_dir}/strategic/${approach.
 3. Consolidate into `strategic-insights.md`
 4. Incorporate outputs as Shape Up input
 
-**If nothing selected (No strategic analysis):** proceed directly to Phase 2b.
+**If nothing selected (No strategic analysis):** proceed directly to Stage 2b.
 
 ### 2b. Domain Context Detection (conditional — LLM-driven)
 
-**After Phase 2a**, the LLM analyzes the user's original request for **domain signals**:
+**After Stage 2a**, the LLM analyzes the user's original request for **domain signals**:
 
 | User Input Signal | Domain | Skill |
 |---|---|---|
@@ -85,6 +85,6 @@ Each playbook provides frameworks and references about the domain.`,
 
 **If user selects libraries:**
 1. Load the selected skill(s) content as additional context
-2. Proceed to Phase 3 (Shape Up) with domain context enriched
+2. Proceed to Stage 3 (Shape Up) with domain context enriched
 
-**If nothing detected or user declines:** proceed directly to Phase 3 (Shape Up) or end.
+**If nothing detected or user declines:** proceed directly to Stage 3 (Shape Up) or end.

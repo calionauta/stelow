@@ -34,4 +34,4 @@ After Triage (Stage 0) completes with one or more accepted items. If the user ha
 
 ### Completion
 
-When the user has selected one item, call `/pw-next` to advance to Phase 2 (Setup/Project Setup).
+When the user has selected one item, call `/pw-next` to advance to Stage 2 (Setup/Project Setup).

@@ -16,7 +16,7 @@ if [ -f "$INBOX" ]; then
 fi
 ```
 
-If deferred items exist, offer the user to review them: "You have N deferred items from a previous session. Review them now?" If yes, proceed to Phase 0 (Triage). If no, continue to setup.
+If deferred items exist, offer the user to review them: "You have N deferred items from a previous session. Review them now?" If yes, proceed to Stage 0 (Triage). If no, continue to setup.
 
 ### 1a. Auto-Discovery Check (before anything else)
 
@@ -52,20 +52,20 @@ fi
 
 **If 1 or more in-progress workflows exist**:
 1. Read the found `index.json` files
-2. If **only 1**: show "Active workflow: {name} ({current_phase})" and ask:
+2. If **only 1**: show "Active workflow: {name} ({current_stage})" and ask:
 ```typescript
 ask_user_question({
   questions: [{
-    question: `Workflow "{name}" is in progress at phase {current_phase}. Continue?`,
+    question: `Workflow "{name}" is in progress at stage {current_stage}. Continue?`,
     header: "Resume",
     options: [
       {
         label: "Continue from where you left off (Recommended)",
-        description: `Resume from phase {current_phase}. Existing artifacts preserved.`
+        description: `Resume from stage {current_phase}. Existing artifacts preserved.`
       },
       {
         label: "View detailed status",
-        description: `Show artifacts and phases without proceeding.`
+        description: `Show artifacts and stages without proceeding.`
       },
       {
         label: "Cancel workflow",
@@ -168,24 +168,24 @@ After identifying the workflow:
    ls .plannotator/approvals/$_dir/*.approved.md 2>/dev/null && echo "GATE_PASSED"
    ```
 
-4. **Map artifacts to completed phases**:
-   - Approval in `.plannotator/approvals/` → that phase's gate has passed
-   - `spec-product.md` exists → Phase 3 (Shape Up) completed
-   - `interfaces.md` exists → Phase 7-9 (Interface Brainstorming + Gate + Selection) completed
-   - `critique-report.md` exists → Phase 4 (Plan Critique) completed
-   - `spec-tech.md` exists and approved → Phase 10 (Tech Planning) completed
+4. **Map artifacts to completed stages**:
+   - Approval in `.plannotator/approvals/` → that stage's gate has passed
+   - `spec-product.md` exists → Stage 3 (Shape Up) completed
+   - `interfaces.md` exists → Stage 7-9 (Interface Brainstorming + Gate + Selection) completed
+   - `critique-report.md` exists → Stage 4 (Plan Critique) completed
+   - `spec-tech.md` exists and approved → Stage 10 (Tech Planning) completed
 
 5. **Determine resume point**:
-   - If `current_phase_index` is 0 → start from Phase 1a (Setup)
-   - If `current_phase_index` is 1 → start from Phase 2a (Strategic Context)
+   - If `current_phase_index` is 0 → start from Stage 1a (Setup)
+   - If `current_phase_index` is 1 → start from Stage 2a (Strategic Context)
    - If checkpoint has `phase == current_phase_index` → jump to `checkpoint.step`
    - If checkpoint has `phase < current_phase_index` → previous phase is done; start current phase
    - If no checkpoint → start current phase from beginning
-   - If `current_phase_index >= 10` and spec-tech approved → skip to Phase 12 (Execution)
+   - If `current_phase_index >= 10` and spec-tech approved → skip to Stage 11 (Execution)
 
 6. **DO NOT re-ask answered questions.** Use `user_choices` from checkpoint.
 
-7. **Jump to the determined phase** and execute normally. Do not recreate existing artifacts.
+7. **Jump to the determined stage** and execute normally. Do not recreate existing artifacts.
 
 ### 1b. Stage Selection
 
@@ -194,11 +194,11 @@ Use **Pattern 5** from `stages/ask-patterns.md`.
 **If user chooses "Yes" for safe-change:**
 Run `safe-change` from **pi-agent-codebase-workflows** (PriNova) BEFORE proceeding.
 
-**If user selects no workflow option:** proceed to Phase 2 (Strategic Context).
+**If user selects no workflow option:** proceed to Stage 2 (Strategic Context).
 
 ### Auto-chaining rules
 
-| User selection | Phases that run automatically |
+| User selection | Stages that run automatically |
 |---|---|
 | Shape Up only | Shape Up → **Plan Critique** → **Review Gate** → Tech Planning (no gate) → Execution |
 | Interface only | Interface Brain. → **Plan Critique** → **Review Gate** → Tech Planning (no gate) → Execution |
