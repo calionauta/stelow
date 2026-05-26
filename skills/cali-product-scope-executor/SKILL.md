@@ -1,9 +1,9 @@
 ---
-name: cali-product-scope-executor
+name: cali-scope-executor
 description: >
   [Cali] Reads an approved product plan with typed scopes (feature, optimization, spike, test-*)
   and routes each scope to its correct executor. Acts as the autonomous overnight
-  "set and forget" orchestrator — the equivalent of the goal command (see `references/cli-tools/goals.md`) for approved plans.
+  "set and forget" orchestrator — the pi equivalent of /goal for approved plans.
   For test-* scopes, enforces hard blocks (mutation score, security gates).
 ---
 
@@ -111,7 +111,7 @@ Before executing, present a clear execution plan to the user with the resolved e
 Phase 1 (parallel):
   ⏩ [SCOPE-1] Login — feature → worker
   ⏩ [SCOPE-3] Vector DB eval — spike → scout + researcher
-  ⏩ [SCOPE-4] Refactor payments — feature → **experiment-loop** (see `references/cli-tools/autoresearch.md`) (override)
+  ⏩ [SCOPE-4] Refactor payments — feature → autoresearch (override)
 
 Phase 2 (after SCOPE-1):
   ⏩ [SCOPE-2] Search optimization — optimization → autoresearch
@@ -125,92 +125,52 @@ Shall I proceed with autonomous execution? I'll report back when all scopes are 
 
 If the user says yes, proceed autonomously. If no, ask what they'd like to adjust.
 
-### Step 3: Execute feature scopes (feature → worker)
+### Step 3: Execute feature scopes (feature → ordered-execution-goal)
 
-For each scope with resolved executor = `worker` (whether by default for feature type or by [EXECUTOR] worker override):
+For each scope with `[TYPE] feature`:
 
-1. **Spawn worker** with the scope's DoD and ACs as the task:
-   ```typescript
-   subagent({
-     agent: "worker",
-     task: `Implement [SCOPE-X]: {objective}
-   DoD: {DoD}
-   ACs: {acceptance criteria}
-   Files in scope: {from plan or inferred}
-   Constraints: tests must pass, no regressions`,
-     context: "fork"
-   })
-   ```
-2. **After worker completes, run parallel-review:**
-   ```typescript
-   subagent({
-     tasks: [
-       { agent: "reviewer", task: "Review diff for correctness and regressions", output: false },
-       { agent: "reviewer", task: "Review diff for simplicity and code quality:
-   - KISS: is this the simplest possible solution?
-   - DRY: is there duplication that should be extracted?
-   - No function > 50 lines
-   - No file > 400 lines
-   - Low cyclomatic complexity (max 3 indentation levels)
-   - If Go + Datastar: Locality of Behavior followed? (data-* attributes on component, zero loose JS)
-   - If React/Vue/Svelte: Separation of Concerns followed? (logic extracted from template)
+1. **Create ordered-execution-goal** (see `references/cli-tools/goals.md`, `sisyphus-set` variant) with the scope's DoD and ACs as the objective steps.
 
-   Report violations as suggestions — the worker should fix them.", output: false }
-     ],
-     concurrency: 2,
-     context: "fresh"
-   })
-   ```
-3. **Apply feedback:** synthesize reviewer findings and apply fixes worth doing now
-4. **If the scope involves UI/visual changes**, run quality checks:
+2. **Activate supervision** (see `references/cli-tools/supervise.md`) for the feature scope before starting implementation.
+   ⚠️ Supervise ONLY during execution (Phase 12+), never during earlier phases — it can loop on Plannotator.
+
+3. **After scope implementation completes**, run parallel code review via subagents (see `references/cli-tools/subagents.md`):
+   - One reviewer for correctness and regressions
+   - One reviewer for simplicity and code quality (KISS, DRY, function/file size limits)
+
+4. **Apply feedback:** synthesize reviewer findings and apply fixes worth doing now
+
+5. **If the scope involves UI/visual changes**, run quality checks:
    - Load audit skill — accessibility (WCAG POUR), performance, theming, anti-patterns.
    - Load critique skill — design review (heuristics, cognitive load, AI slop detection).
-   
-   Use them directly — they don't depend on other design skills.
-5. **Mark scope as complete** and move to the next
 
-### Step 4: Execute optimization scopes (optimization → research loop)
+6. **DoD verification** (see Step 7) — scope is NOT complete until all DoD items pass.
 
-For each scope with resolved executor = `research loop` (whether by default for optimization type or by [EXECUTOR] research override):
+### Step 4: Execute optimization scopes (optimization → experiment-loop)
 
-1. **Check if research loop is already set up** for this scope (look for existing research config with matching metric)
-2. **If not set up, launch research loop setup:**
-   ```typescript
-   subagent({
-     agent: "delegate",
-     task: `Setup research loop for optimization scope [SCOPE-X]:
-   Objective: {objective}
-   Command: {infer from metric or use plan's suggested command}
-   Metric: {metric name} ({unit}, {direction} is better)
-   Files in scope: {from plan}
-   Constraints: {from plan, e.g. tests must pass}`,
-     context: "fork"
-   })
-   ```
-3. **Set a stopping condition.** Research loops forever by default. Set max iterations or define a target:
+For each scope with `[TYPE] optimization`:
+
+1. **Check if experiment-loop is already set up** for this metric (see `references/cli-tools/autoresearch.md`)
+2. **If not set up**, delegate experiment-loop setup to a subagent (see `references/cli-tools/subagents.md`):
+   - Agent: `delegate` or equivalent
+   - Task: setup with scope objective, metric, command, and constraints
+3. **Set a stopping condition.** Experiment loops run forever by default:
    - If metric target is defined in the plan: stop when target is met
    - If no target: run for a reasonable number of iterations (10-20) or until improvements plateau
-4. **When research completes** (target met or iterations exhausted), run parallel review on the changes
-5. **Mark scope as complete**
+4. **When experiment completes**, run parallel code review (see `references/cli-tools/subagents.md`)
+5. **DoD verification** (see Step 7)
 
 ### Step 5: Execute spike scopes (spike → scout + researcher)
 
-For each scope with resolved executor = `scout` (whether by default for spike type or by [EXECUTOR] scout override):
+For each scope with `[TYPE] spike`:
 
-1. **Run parallel investigation:**
-   ```typescript
-   subagent({
-     tasks: [
-       { agent: "scout", task: `Investigate existing codebase for: {objective}. Find relevant files, patterns, and constraints.` },
-       { agent: "researcher", task: `Research best practices and solutions for: {objective}. Provide concrete options with pros/cons.` }
-     ],
-     concurrency: 2,
-     context: "fresh"
-   })
-   ```
-2. **Consolidate findings** into a recommendation document at `docs/{YYYY-MM-DD}/{slug}/plans/spikes/{scope-name}-decision.md` (create the `spikes/` subdirectory if needed)
-3. **If the spike reveals a code change is needed,** optionally run `parallel-review`
-4. **Mark scope as complete**
+1. **Run parallel investigation via subagents** (see `references/cli-tools/subagents.md`):
+   - **scout**: investigate existing codebase for the objective — find relevant files, patterns, constraints
+   - **researcher**: research best practices and solutions for the objective — concrete options with pros/cons
+   Concurrency: 2, context: fresh
+2. **Consolidate findings** into a recommendation document at the spikes subdirectory
+3. **If the spike reveals a code change is needed**, optionally run parallel review
+4. **DoD verification** (see Step 7)
 
 ### Step 6: Handle dependencies between scopes
 
@@ -228,7 +188,7 @@ Before generating the final report, cross-reference the original plan (spec-tech
    - If extra scopes were created: document the justification
 2. **DoD:** did each executed scope meet its Definition of Done?
    - If not: document the gap
-3. **Principles:** read `../cali-product-tech-planning/references/generation-principles.md`
+3. **Principles:** read `references/tech-planning/generation-principles.md`
    and check if principles were followed in the generated code
    - If violations were detected by parallel-review: were they fixed?
 4. **Verification result:** APPROVED | CAVEATS | REJECTED
@@ -268,7 +228,7 @@ Next steps:
 ## Error Handling
 
 - **If a worker fails** (crash, stuck, timeout): note it, log the error, and move to the next scope. Do not block the entire execution on one failure.
-- **If experiment-loop crashes:** check the log, fix if trivial, otherwise skip and note it.
+- **If autoresearch crashes:** check the log, fix if trivial, otherwise skip and note it.
 - **If a reviewer finds blocking issues:** flag them but continue execution. Report them in the final summary. Do not halt the pipeline for review findings — the user will address them.
 - **If a spike is inconclusive:** document what was learned and recommend next steps.
 
@@ -310,70 +270,35 @@ This skill runs **after** the Plannotator gate approves the plan, replacing manu
 
 ## How to invoke
 
-### With pi-supervisor (recommended)
+### With supervision (recommended for autonomous execution)
 
-**pi-supervisor** is an extension that observes the conversation with a separate LLM
-(can be a cheaper model) and steers the agent back if it deviates
-from the objective. Use the supervision command before starting:
-
-```bash
-[Use the supervise command — see `references/cli-tools/supervise.md`] Execute the approved plan in docs/{YYYY-MM-DD}/{slug}/plans/spec-tech_{v}.md
-routing scopes correctly. Save report to execution-report.md.
+Activate execution steering (see `references/cli-tools/supervise.md`) before starting:
+```text
+Outcome: Execute the approved plan routing scopes correctly. Save report to execution-report.md.
 ```
 
-After the supervisor confirms (response "Supervision started"), proceed:
+After supervision confirms, load this skill.
 
-```bash
-read `cali-product-scope-executor/SKILL.md` and follow instructions
-```
+### Without supervision
 
-The supervisor watches each turn and, if the agent deviates from the plan,
-injects a steering message to correct course.
+Read this SKILL.md and follow the steps directly.
 
-### Without supervisor
+### From a parent agent (programmatic)
 
-```bash
-read `cali-product-scope-executor/SKILL.md` and follow instructions
-```
+Delegate to a subagent (see `references/cli-tools/subagents.md`):
+- Agent: `delegate` or `worker`
+- Skills: `cali-scope-executor` + `autoresearch-create`
+- Context: fork
 
-### From a parent agent (programmatic):
+## Interaction with Tools
 
-```typescript
-subagent({
-  agent: "worker",
-  task: "Execute the approved plan at docs/2026-05-12/login-system/plans/spec-tech_1.md using the cali-product-scope-executor skill. Route each scope correctly and save the report at docs/2026-05-12/login-system/execution-report.md.",
-  skills: ["cali-product-scope-executor", "experiment-loop"],
-  context: "fork"
-})
-```
-
-**As a follow-up to cali-product-workflow:**
-
-After the cali-product-workflow produces an approved plan, the same agent (or a new one) can continue:
-
-```typescript
-subagent({
-  agent: "delegate",
-  task: `The plan at docs/{YYYY-MM-DD}/{slug}/plans/spec-tech_{v}.md is approved. Execute it using cali-product-scope-executor skill and save the report.`,
-  skills: ["cali-product-scope-executor"],
-  context: "fork"
-})
-```
-
----
-
-## Interaction with Other Tools
-
-| Tool/Skill | How this skill uses it |
-|------------|----------------------|
-| **worker** (pi-subagents) | Implements feature scopes |
-| **reviewer** (pi-subagents) | Reviews implementation diffs |
-| **scout** (pi-subagents) | Investigates codebase for spike scopes |
-| **researcher** (pi-subagents) | External research for spike scopes |
-| **autoresearch-create** | Sets up optimization experiment loops |
-| **autoresearch.config.json** | Controls max iterations for optimization scopes |
-| **parallel-review** (pi-subagents) | Runs adversarial review after implementation |
-| **worktree** (pi-subagents) | Isolates parallel feature work |
+| Concern | Reference |
+|---------|-----------|
+| Goal creation and tracking | `references/cli-tools/goals.md` |
+| Subagent delegation (worker, reviewer, scout, researcher) | `references/cli-tools/subagents.md` |
+| Execution steering | `references/cli-tools/supervise.md` |
+| Automated experimentation | `references/cli-tools/autoresearch.md` |
+| Visual review gate | `references/cli-tools/plannotator.md` |
 
 ---
 
@@ -381,7 +306,7 @@ subagent({
 
 Strong execution runs:
 - **Respect dependency order** — no scope starts before its dependencies
-- **Use the right tool for each type** — worker for features, **experiment-loop** for optimization, scout for spikes
+- **Use the right tool for each type** — worker for features, autoresearch for optimization, scout for spikes
 - **Handle failures gracefully** — one failed scope doesn't block the rest
 - **Produce a clear final report** — what was done, what changed, what failed
 

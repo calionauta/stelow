@@ -58,51 +58,36 @@ Read the `references/` files to guide the process:
 
 ### 7a. Scope Generation
 
-Use the references above to generate technical scopes:
+Use the references above to generate technical scopes.
 
-```typescript
-subagent({
-  agent: "planner",
-  task: `Generate tech scopes for the approved spec-product.md using references/.
+Delegate to a planner subagent (see `references/cli-tools/subagents.md`):
+- Agent: `planner`
+- Task: generate typed scopes (feature/optimization/spike) from the approved spec-product.md
+- Follow steps: strategic stability check → codebase awareness → risk analysis → spike identification → scope definition → sequencing → DoD + ACs → formatting
+- Output: `.cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_{v}.md`
+- Input: `.cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md`
 
-1. Check strategic stability (Step 0)
-2. Codebase awareness check (Step 1)
-3. Technical risk analysis (Step 2)
-4. Identify spikes (Step 3)
-5. Define typed scopes: feature | optimization | spike (Step 4)
-6. Sequence (riskiest-first or ui-first) (Step 5)
-7. Detail each scope with DoD + acceptance criteria (Step 6)
-8. Format per output-format.md (Step 7)
-
-Output: .cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_{v}.md
-Input: .cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md`,
-  output: ".cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_{v}.md"
-})
-```
-
-Output: `.cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_{v}.md`
-Input: `.cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md`
+**⚠️ FALLBACK — if subagent fails or is unavailable:**
+Generate spec-tech.md INLINE using the same process. Read the references files
+(`tech-context.md`, `scopes-and-sequencing.md`, `generation-principles.md`, `tech-output.md`)
+and produce the spec-tech artifact directly in the current context.
 
 ### 7b. AI-Aware Testing Strategy (Software Products Only)
 
 **If `product_type: software` or `product_type: hybrid`**:
 
-1. **Generate testing-strategy.md:**
-```typescript
-subagent({
-  agent: "cali-product-testing-ai-code",
-  task: `Generate testing strategy for software product.
-Input: spec-product.md (frontmatter with product_type: software)
-Output: .cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/testing-strategy.md
+1. **Generate testing-strategy.md via subagent:**
 
-Include:
-- Mutation score targets (70/50/30%)
-- Tech stack detection
-- CI/CD gates (hard blocks)
-- Anti-patterns (over-mocking, 100% coverage)`,
-  output: ".cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/testing-strategy.md"
-})
-```
+   Delegate to a testing-strategy subagent (see `references/cli-tools/subagents.md`):
+   - Agent: `cali-product-testing-ai-code` or equivalent
+   - Input: spec-product.md frontmatter with `product_type: software`
+   - Output: `.cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/testing-strategy.md`
+   - Content: mutation score targets (70/50/30%), tech stack detection, CI/CD gates, anti-patterns
+
+   **⚠️ FALLBACK — if subagent fails or is unavailable (API key missing, agent not found):**
+   Generate testing-strategy.md INLINE. Read `skills/cali-product-testing-ai-code/SKILL.md`
+   and produce the testing-strategy.md artifact directly in the current context.
+   Do NOT skip — the testing strategy gates are required for execution.
 
 2. **Add test-* scopes to spec-tech.md:**
 
@@ -150,13 +135,17 @@ See `references/cli-tools/plannotator.md` for command format, after-approval wor
 
 ### 5c. Goal Generation (Step 9)
 
-After tech plan approval, convert each scope into a goal (see `references/cli-tools/goals.md`) with DoD as completion criteria:
+After tech plan approval, convert each scope into an **ordered-execution-goal**
+(see `references/cli-tools/goals.md`, `sisyphus-set` variant). Goals are mandatory —
+never use simple todo lists as a substitute; goals carry DoD, ACs, and dependencies
+that todo items cannot express.
 
-**For each scope in the approved spec-tech.md:**
+**For each feature/test scope in the approved spec-tech.md:**
 
-```typescript
-[goal command — see `references/cli-tools/goals.md`]
+Create an ordered-execution-goal (see `references/cli-tools/goals.md`):
 
+```text
+Objective: {scope name}
 Steps:
 1. {step 1}
    Done: {criterion}
@@ -169,13 +158,14 @@ AC: {acceptance criteria}
 Deps: {scope dependencies}
 ```
 
-**Optimization/spike scopes with metrics → `**experiment-loop** (see `references/cli-tools/autoresearch.md`)`**
-(they become experiment loops, not goals)
+**Optimization scopes with metrics:**
+These become experiment-loops (see `references/cli-tools/autoresearch.md`), not goals.
 
 **Rules:**
 - Scopes with dependencies: create goal AFTER the dependency is complete
 - Use the goal pause command (see `references/cli-tools/goals.md`) if a scope gets blocked
 - Use the goal tweak command (see `references/cli-tools/goals.md`) for scope adjustments during execution
+- ⚠️ **Never substitute todo items for goals** — goals carry structured DoDs, ACs, and dependency tracking
 
 ## Output
 
@@ -188,14 +178,40 @@ Tech plan is saved to:
 
 **DO NOT ask user what to do next. Execution is automatic.**
 
-After Plannotator approval on spec-tech_v{N}.md:
-1. Run `read `skills/cali-product-scope-executor/SKILL.md`` for scope routing
-2. Execute scopes based on type:
-   - `feature` → goal (see `references/cli-tools/goals.md`) + supervise (see `references/cli-tools/supervise.md`)
-   - `optimization` → `**experiment-loop** (see `references/cli-tools/autoresearch.md`)`
-   - `test-unit`, `test-integration`, `test-security`, `test-behavior` → goal (see `references/cli-tools/goals.md`) with testing gates
+### ⛔ STOP — Mandatory Scope Executor Routing
+
+**Before implementing ANY scope, route through the scope executor.**
+The scope executor determines the correct tool and execution mode for each scope type.
+Do NOT start implementing scopes directly — always go through scope executor first.
+
+**Step 1: Load the scope executor skill**
+```text
+Read skills/cali-product-scope-executor/SKILL.md for routing rules.
+```
+
+**Step 2: Route each scope by type:**
+
+| Scope type | Route to |
+|------------|----------|
+| `feature` | ordered-execution-goal (see `references/cli-tools/goals.md`) + supervision (see `references/cli-tools/supervise.md`) |
+| `optimization` | experiment-loop (see `references/cli-tools/autoresearch.md`) |
+| `spike` | scout + researcher (see `references/cli-tools/subagents.md`) |
+| `test-*` | ordered-execution-goal (see `references/cli-tools/goals.md`) with testing gates |
 
 See `stages/execution.md` for full execution flow.
+
+### ⚠️ DoD Verification — Mandatory Before Completion
+
+After executing a scope, **before marking it complete**, verify EVERY item in the DoD
+and acceptance criteria:
+
+1. Read the DoD and ACs from spec-tech.md for this scope
+2. Verify each item with concrete evidence (build output, test results, file existence)
+3. **Only mark complete if ALL DoD items and ACs pass**
+4. If any DoD item fails → scope is NOT complete, fix the gap
+5. If a scope has manual test steps in its DoD → EXECUTE them, do not skip
+
+Failure to verify DoD = scope is still in_progress. The goal system enforces this.
 
 ### Testing Gates (test-* scopes)
 
