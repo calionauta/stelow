@@ -157,7 +157,10 @@ install_pi() {
   install_skills_flat
 
   # Install Pi extension
+  # Remove any existing cali-product-workflow entry first to avoid
+  # duplicate command registration (git: + local path → /pw-start1, /pw-start2)
   log_info "    Installing Pi extension..."
+  pi remove "git:github.com/renatocaliari/cali-product-workflow" 2>/dev/null || true
   pi install "$SCRIPT_DIR/extensions/cali-product-workflow" 2>/dev/null || true
 
   # Install supporting packages
@@ -339,6 +342,7 @@ update_all() {
       pi)
         if command -v pi &>/dev/null; then
           log_info "  Reinstalling Pi extension..."
+          pi remove "git:github.com/renatocaliari/cali-product-workflow" 2>/dev/null || true
           pi install "$SCRIPT_DIR/extensions/cali-product-workflow" 2>/dev/null || true
         fi
         ;;
