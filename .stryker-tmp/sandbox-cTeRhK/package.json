@@ -1,0 +1,105 @@
+{
+  "name": "@renatocaliari/cali-product-workflow",
+  "version": "0.2.21-alpha",
+  "description": "Product workflow for AI coding agents: Shape Up + Interface + Tech Planning + Critique + Gate. Includes 16 product skills.",
+  "keywords": [
+    "pi-skill",
+    "pi-extension",
+    "ai-coding-agent",
+    "workflow",
+    "shape-up",
+    "product-planning",
+    "product-management"
+  ],
+  "license": "MIT",
+  "author": "Cali",
+  "type": "module",
+  "main": "./build/index.js",
+  "exports": {
+    ".": {
+      "import": "./build/index.js",
+      "types": "./build/index.d.ts"
+    },
+    "./skills": "./skills/",
+    "./extensions": "./extensions",
+    "./adapters": "./build/adapters/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/renatocaliari/cali-product-workflow.git"
+  },
+  "homepage": "https://github.com/renatocaliari/cali-product-workflow#readme",
+  "bugs": {
+    "url": "https://github.com/renatocaliari/cali-product-workflow/issues"
+  },
+  "peerDependencies": {
+    "typebox": "*"
+  },
+  "optionalPeerDependencies": {
+    "@earendil-works/pi-coding-agent": ">=0.74.0",
+    "@earendil-works/pi-tui": "*",
+    "@juicesharp/rpiv-ask-user-question": ">=1.6.0",
+    "@plannotator/pi-extension": ">=0.19.0",
+    "pi-intercom": ">=0.6.0",
+    "pi-subagents": ">=0.24.0",
+    "pi-supervisor": ">=0.4.0",
+    "pi-agent-codebase-workflows": "git:github.com/PriNova/pi-agent-codebase-workflows",
+    "context-mode": ">=1.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "files": [
+    "build/",
+    "skills/",
+    "extensions/cali-product-workflow/",
+    "extensions/cali-pw-pi/",
+    "scripts/",
+    "install.sh",
+    "cali-product-workflow.schema.json",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "npm run build && npm run generate-cli-commands",
+    "generate-cli-commands": "node --import tsx scripts/generate-cli-commands.ts",
+    "test": "vitest run",
+    "test:unit": "vitest run tests/unit",
+    "test:integration": "vitest run tests/integration",
+    "test:skills": "vitest run tests/skills",
+    "test:artifacts": "vitest run tests/artifacts",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:ci": "./scripts/test-ci.sh",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit",
+    "mutate": "stryker run",
+    "test:mutation": "stryker run",
+    "version:sync": "node scripts/version-sync.mjs",
+    "version": "npm run version:sync && git add extensions/cali-pw-pi/package.json"
+  },
+  "devDependencies": {
+    "@marcfargas/pi-test-harness": "^0.5.0",
+    "@stryker-mutator/core": "^9.6.1",
+    "@stryker-mutator/vitest-runner": "^9.6.1",
+    "@vitest/coverage-v8": "^4.1.6",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.6"
+  },
+  "pi": {
+    "extensions": [
+      "./extensions/cali-product-workflow/index.ts"
+    ],
+    "skills": [
+      "./skills"
+    ]
+  },
+  "dependencies": {
+    "yaml": "2.9.0"
+  }
+}

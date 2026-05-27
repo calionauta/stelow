@@ -1,0 +1,82 @@
+# ==== cali-product-workflow cleanup ====
+
+# Session checkpoints and research (local only)
+research/
+progress.md
+context.md
+research.md
+context-opencode-api.md
+
+# Investigation and migration docs
+docs/investigacao-*.md
+docs/plano-migracao-*.md
+docs/2026-05-20/next-steps/
+
+# Test results (CI output)
+test-results/
+stryker-reports/
+
+# Local workflow artifacts (auto-generated at runtime)
+.pi/
+.pi-*
+# .cali-product-workflow/ — version state/ (templates), ignore runtime artifacts
+.cali-product-workflow/2026-0*
+.cali-product-workflow/2025-*
+.cali-product-workflow/.gitkeep
+!.cali-product-workflow/state/
+!.cali-product-workflow/state/current-stage.json
+.cali-pw-global.json
+
+# OpenCode session plans
+.opencode/plans/
+
+# Coverage
+coverage/
+
+# Temporary files
+*.tmp
+*.temp
+.tmp/
+temp/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Build outputs
+dist/
+build/
+
+# Dependencies
+node_modules/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Git worktrees for parallel execution
+.worktrees/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Lock files
+pnpm-lock.yaml
+# yarn.lock (uncomment if needed)
+# package-lock.json (uncomment if needed)
+
+# Local skills (pi installs here)
+.agents/
+
+# Plugin configs (Claude Code, Codex, OpenCode)
+.claude-plugin/
+.codex-plugin/
+.opencode-plugin/

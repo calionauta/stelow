@@ -1,0 +1,10 @@
+{
+  "name": "@renatocaliari/pi-product-workflow-extension",
+  "version": "1.0.0",
+  "description": "Product workflow extension for pi.dev",
+  "main": "index.ts",
+  "type": "module",
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  }
+}

@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/cali/cali-product-workflow/main/cali-product-workflow.schema.json",
+  "title": "Cali Product Workflow Tracking",
+  "description": "Schema for tracking product workflow execution and status",
+  "type": "object",
+  "required": ["$schema", "version", "workflows"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "URL to the JSON schema"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$",
+      "description": "Schema version"
+    },
+    "created": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 creation timestamp"
+    },
+    "updated": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 last update timestamp"
+    },
+    "workflows": {
+      "type": "array",
+      "description": "Array of workflow entries",
+      "items": {
+        "$ref": "#/definitions/workflow"
+      }
+    }
+  },
+  "definitions": {
+    "workflow": {
+      "type": "object",
+      "required": ["name", "status", "phases"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Human-readable workflow identifier (e.g., 'feature-login')"
+        },
+        "slug": {
+          "type": "string",
+          "description": "[Deprecated] Legacy field, use name instead"
+        },
+        "description": {
+          "type": "string",
+          "description": "Brief description of the workflow"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["draft", "planning", "approved", "in-progress", "completed", "archived"],
+          "description": "Current workflow status"
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 creation timestamp"
+        },
+        "updated": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 last update timestamp"
+        },
+        "phases": {
+          "type": "array",
+          "description": "Workflow phases (Shape Up stages)",
+          "items": {
+            "$ref": "#/definitions/phase"
+          }
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Optional tags for categorization"
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Additional workflow metadata"
+        }
+      }
+    },
+    "phase": {
+      "type": "object",
+      "required": ["id", "name", "status"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "enum": ["0-clarify", "1-shape", "2-bet", "3-build", "4-critique", "5-gate"],
+          "description": "Phase identifier"
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable phase name"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "in-progress", "completed", "skipped"],
+          "description": "Stage status"
+        },
+        "started": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 start timestamp"
+        },
+        "completed": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 completion timestamp"
+        },
+        "output": {
+          "type": "string",
+          "description": "Path or reference to phase output artifact"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional notes for the phase"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,285 @@
+{
+  "$schema": "https://raw.githubusercontent.com/renatocaliari/cali-product-workflow/main/cali-product-workflow.schema.json",
+  "version": "1.0",
+  "created": "2026-05-20T13:54:20.104Z",
+  "updated": "2026-05-20T13:54:20.104Z",
+  "workflows": [
+    {
+      "name": "wf-enz84q",
+      "description": "",
+      "status": "archived",
+      "currentPhase": 0,
+      "phases": [
+        {
+          "id": "0-setup",
+          "name": "Setup",
+          "status": "in-progress"
+        },
+        {
+          "id": "1-context",
+          "name": "Context",
+          "status": "pending"
+        },
+        {
+          "id": "2-shape",
+          "name": "Shape",
+          "status": "pending"
+        },
+        {
+          "id": "3-critique",
+          "name": "Critique",
+          "status": "pending"
+        },
+        {
+          "id": "4-gate",
+          "name": "Gate",
+          "status": "pending"
+        },
+        {
+          "id": "5-scope",
+          "name": "Scope",
+          "status": "pending"
+        },
+        {
+          "id": "6-interface",
+          "name": "Interface",
+          "status": "pending"
+        },
+        {
+          "id": "7-int.gate",
+          "name": "Int.Gate",
+          "status": "pending"
+        },
+        {
+          "id": "8-selection",
+          "name": "Selection",
+          "status": "pending"
+        },
+        {
+          "id": "9-planning",
+          "name": "Planning",
+          "status": "pending"
+        },
+        {
+          "id": "10-execution",
+          "name": "Execution",
+          "status": "pending"
+        }
+      ],
+      "created": "2026-05-21T16:33:39.358Z",
+      "updated": "2026-05-21T16:33:39.358Z",
+      "cwd": "/Users/cali/Development/cali-product-workflow",
+      "dirHash": "pw-mvxa-enz84q",
+      "detectedCLI": "pi",
+      "slug": "wf-enz84q"
+    },
+    {
+      "name": "wf-eoq7r9",
+      "description": "",
+      "status": "archived",
+      "currentPhase": 0,
+      "phases": [
+        {
+          "id": "0-setup",
+          "name": "Setup",
+          "status": "in-progress"
+        },
+        {
+          "id": "1-context",
+          "name": "Context",
+          "status": "pending"
+        },
+        {
+          "id": "2-shape",
+          "name": "Shape",
+          "status": "pending"
+        },
+        {
+          "id": "3-critique",
+          "name": "Critique",
+          "status": "pending"
+        },
+        {
+          "id": "4-gate",
+          "name": "Gate",
+          "status": "pending"
+        },
+        {
+          "id": "5-scope",
+          "name": "Scope",
+          "status": "pending"
+        },
+        {
+          "id": "6-interface",
+          "name": "Interface",
+          "status": "pending"
+        },
+        {
+          "id": "7-int.gate",
+          "name": "Int.Gate",
+          "status": "pending"
+        },
+        {
+          "id": "8-selection",
+          "name": "Selection",
+          "status": "pending"
+        },
+        {
+          "id": "9-planning",
+          "name": "Planning",
+          "status": "pending"
+        },
+        {
+          "id": "10-execution",
+          "name": "Execution",
+          "status": "pending"
+        }
+      ],
+      "created": "2026-05-21T16:41:14.506Z",
+      "updated": "2026-05-21T16:41:14.506Z",
+      "cwd": "/Users/cali/Development/cali-product-workflow",
+      "dirHash": "pw-wn4a-eoq7r9",
+      "detectedCLI": "pi",
+      "slug": "wf-eoq7r9"
+    },
+    {
+      "name": "wf-31fl47",
+      "description": "",
+      "status": "archived",
+      "currentPhase": 0,
+      "phases": [
+        {
+          "id": "0-setup",
+          "name": "Setup",
+          "status": "in-progress"
+        },
+        {
+          "id": "1-context",
+          "name": "Context",
+          "status": "pending"
+        },
+        {
+          "id": "2-shape",
+          "name": "Shape",
+          "status": "pending"
+        },
+        {
+          "id": "3-critique",
+          "name": "Critique",
+          "status": "pending"
+        },
+        {
+          "id": "4-gate",
+          "name": "Gate",
+          "status": "pending"
+        },
+        {
+          "id": "5-scope",
+          "name": "Scope",
+          "status": "pending"
+        },
+        {
+          "id": "6-interface",
+          "name": "Interface",
+          "status": "pending"
+        },
+        {
+          "id": "7-int.gate",
+          "name": "Int.Gate",
+          "status": "pending"
+        },
+        {
+          "id": "8-selection",
+          "name": "Selection",
+          "status": "pending"
+        },
+        {
+          "id": "9-planning",
+          "name": "Planning",
+          "status": "pending"
+        },
+        {
+          "id": "10-execution",
+          "name": "Execution",
+          "status": "pending"
+        }
+      ],
+      "created": "2026-05-21T16:44:04.984Z",
+      "updated": "2026-05-21T16:44:04.984Z",
+      "cwd": "/Users/cali/Development/cali-product-workflow",
+      "dirHash": "pw-0anr-31fl47",
+      "detectedCLI": "pi",
+      "slug": "wf-31fl47"
+    },
+    {
+      "name": "vamos-planejar-detalhado-os-passos-1-e-2",
+      "description": "vamos planejar detalhado os passos 1 e 2 acima q vc recomendou.",
+      "draftContent": "### Initial Draft\n\nvamos planejar detalhado os passos 1 e 2 acima q vc recomendou.\n\n",
+      "status": "in-progress",
+      "currentPhase": 10,
+      "phases": [
+        {
+          "id": "0-setup",
+          "name": "Setup",
+          "status": "completed"
+        },
+        {
+          "id": "1-context",
+          "name": "Context",
+          "status": "completed"
+        },
+        {
+          "id": "2-shape",
+          "name": "Shape",
+          "status": "completed"
+        },
+        {
+          "id": "3-critique",
+          "name": "Critique",
+          "status": "completed"
+        },
+        {
+          "id": "4-gate",
+          "name": "Gate",
+          "status": "completed"
+        },
+        {
+          "id": "5-scope",
+          "name": "Scope",
+          "status": "completed"
+        },
+        {
+          "id": "6-interface",
+          "name": "Interface",
+          "status": "completed"
+        },
+        {
+          "id": "7-int.gate",
+          "name": "Int.Gate",
+          "status": "completed"
+        },
+        {
+          "id": "8-selection",
+          "name": "Selection",
+          "status": "completed"
+        },
+        {
+          "id": "9-planning",
+          "name": "Planning",
+          "status": "completed"
+        },
+        {
+          "id": "10-execution",
+          "name": "Execution",
+          "status": "in-progress"
+        }
+      ],
+      "created": "2026-05-22T13:38:27.337Z",
+      "updated": "2026-05-26T22:21:42.014Z",
+      "cwd": "/Users/cali/Development/cali-product-workflow",
+      "dirHash": "pw-tfgp-8wssb5",
+      "detectedCLI": "pi",
+      "slug": "vamos-planejar-detalhado-os-passos-1-e-2"
+    }
+  ]
+}

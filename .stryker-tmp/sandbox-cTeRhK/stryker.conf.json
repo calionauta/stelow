@@ -16,17 +16,10 @@
     "extensions/cali-product-workflow/adapters/{base,cli-adapter,event-dispatcher,generic,index,ui-adapter,ui-factory}.ts",
     "extensions/cali-product-workflow/adapters/commands/*.ts"
   ],
-  "ignorePatterns": [
-    ".opencode",
-    ".pi",
-    ".stryker-tmp",
-    "stryker-reports",
-    "cli-agents",
-    "docs",
-    "scripts",
-    "*.md"
+  "reporters": [
+    "clear-text",
+    "html"
   ],
-  "reporters": ["clear-text", "html"],
   "htmlReporter": {
     "fileName": "stryker-reports/index.html"
   }

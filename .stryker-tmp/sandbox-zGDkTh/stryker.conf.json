@@ -21,6 +21,8 @@
     ".pi",
     ".stryker-tmp",
     "stryker-reports",
+    "tests",
+    "skills",
     "cli-agents",
     "docs",
     "scripts",

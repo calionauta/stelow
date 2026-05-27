@@ -1,0 +1,18 @@
+{
+  "name": "@renatocaliari/cali-pw-pi",
+  "version": "0.2.3-alpha",
+  "description": "Pi extension stub for cali-product-workflow - re-exports from main package",
+  "main": "index.js",
+  "type": "module",
+  "peerDependencies": {
+    "@renatocaliari/cali-product-workflow": "workspace:*"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "files": [
+    "index.ts",
+    "tsconfig.json",
+    "README.md"
+  ]
+}
