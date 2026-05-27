@@ -153,15 +153,25 @@ install_pi() {
   log_info "  -> Installing for Pi..."
   if ! command -v pi &>/dev/null; then log_warn "    pi not found. Skipping."; return; fi
 
-  # Install skills (flat to ~/.agents/skills/)
-  install_skills_flat
+  # Install extension via git package (Pi discovers it from the clone)
+  # This also clones the repo to ~/.pi/agent/git/github.com/.../ which
+  # includes skills/ — we remove those to avoid conflicts with
+  # ~/.agents/skills/ (installed below for all CLIs).
 
-  # Install Pi extension
-  # Remove any existing cali-product-workflow entry first to avoid
-  # duplicate command registration (git: + local path → /pw-start1, /pw-start2)
-  log_info "    Installing Pi extension..."
-  pi remove "git:github.com/renatocaliari/cali-product-workflow" 2>/dev/null || true
-  pi install "$SCRIPT_DIR/extensions/cali-product-workflow" 2>/dev/null || true
+  log_info "    Installing Pi extension (git package)..."
+  pi remove "$SCRIPT_DIR/extensions/cali-product-workflow" 2>/dev/null || true
+  pi install "git:github.com/renatocaliari/cali-product-workflow" 2>/dev/null || true
+
+  # Remove skills from git clone so Pi only discovers them from
+  # ~/.agents/skills/ — prevents "conflicting skill" warnings.
+  local pi_git_skills="$HOME/.pi/agent/git/github.com/renatocaliari/cali-product-workflow/skills"
+  if [[ -d "$pi_git_skills" ]]; then
+    rm -rf "$pi_git_skills"
+    log_success "    Removed duplicate skills from git clone"
+  fi
+
+  # Install skills flat (shared by all CLIs, single source of truth)
+  install_skills_flat
 
   # Install supporting packages
   if [[ -z "${INSTALL_SKILLS_ONLY:-}" ]]; then
@@ -341,9 +351,13 @@ update_all() {
         ;;
       pi)
         if command -v pi &>/dev/null; then
-          log_info "  Reinstalling Pi extension..."
-          pi remove "git:github.com/renatocaliari/cali-product-workflow" 2>/dev/null || true
-          pi install "$SCRIPT_DIR/extensions/cali-product-workflow" 2>/dev/null || true
+          log_info "  Reinstalling Pi extension (git package)..."
+          pi remove "$SCRIPT_DIR/extensions/cali-product-workflow" 2>/dev/null || true
+          pi install "git:github.com/renatocaliari/cali-product-workflow" 2>/dev/null || true
+          # Remove skills from git clone to avoid conflict with ~/.agents/skills/
+          local pi_git_skills="$HOME/.pi/agent/git/github.com/renatocaliari/cali-product-workflow/skills"
+          if [[ -d "$pi_git_skills" ]]; then rm -rf "$pi_git_skills"; fi
+          # Skills are updated via install_skills_flat below
         fi
         ;;
     esac
