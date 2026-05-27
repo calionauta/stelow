@@ -148,27 +148,62 @@ install_skills_flat() {
   if [[ $skipped -gt 0 ]]; then log_warn "  Skipped $skipped skills (not found)"; fi
 }
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Pi Package Filter — prevents skill conflicts
+# ─────────────────────────────────────────────────────────────────────────────
+# Uses Pi's native package filtering to exclude skills/ from the git clone.
+# Skills are served exclusively via ~/.agents/skills/ (DotAgents Protocol)
+# for multi-CLI compatibility. Without this filter, Pi discovers skills from
+# BOTH ~/.agents/skills/ and the git clone, producing "Skill conflicts" warnings.
+#
+# Sets {"source": "git:github.com/renatocaliari/cali-product-workflow", "skills": []}
+# in ~/.pi/agent/settings.json.
+# ─────────────────────────────────────────────────────────────────────────────
+_configure_pi_skills_filter() {
+  local pi_settings="$HOME/.pi/agent/settings.json"
+  if [[ ! -f "$pi_settings" ]]; then
+    log_warn "    Pi settings not found at $pi_settings"
+    return
+  fi
+  if ! command -v jq &>/dev/null; then
+    log_warn "    jq not found — cannot configure package filter. Run: brew install jq"
+    return
+  fi
+
+  log_info "    Configuring Pi package filter (skills: [] via settings.json)..."
+  local tmp=$(mktemp)
+  jq '
+    (.packages // []) |= map(
+      if type == "object" and .source == "git:github.com/renatocaliari/cali-product-workflow" then
+        .skills = []
+      else
+        .
+      end
+    )
+  ' "$pi_settings" > "$tmp" && mv "$tmp" "$pi_settings"
+  log_success "    Pi package filter configured — skills excluded from git clone"
+}
+
 # Pi
 install_pi() {
   log_info "  -> Installing for Pi..."
   if ! command -v pi &>/dev/null; then log_warn "    pi not found. Skipping."; return; fi
 
-  # Install extension via git package (Pi discovers it from the clone)
-  # This also clones the repo to ~/.pi/agent/git/github.com/.../ which
-  # includes skills/ — we remove those to avoid conflicts with
-  # ~/.agents/skills/ (installed below for all CLIs).
+  # Install extension via git package (Pi discovers it from the clone).
+  # Pi's native package filter (configured below) excludes skills/ from
+  # the git clone, avoiding "Skill conflicts" warnings. Skills are served
+  # exclusively from ~/.agents/skills/ for multi-CLI compatibility.
 
   log_info "    Installing Pi extension (git package)..."
   pi remove "$SCRIPT_DIR/extensions/cali-product-workflow" 2>/dev/null || true
   pi install "git:github.com/renatocaliari/cali-product-workflow" 2>/dev/null || true
 
-  # Remove skills from git clone so Pi only discovers them from
-  # ~/.agents/skills/ — prevents "conflicting skill" warnings.
-  local pi_git_skills="$HOME/.pi/agent/git/github.com/renatocaliari/cali-product-workflow/skills"
-  if [[ -d "$pi_git_skills" ]]; then
-    rm -rf "$pi_git_skills"
-    log_success "    Removed duplicate skills from git clone"
-  fi
+  # Configure Pi to ignore skills/ from the git clone via native package filter.
+  # Skills are served exclusively from ~/.agents/skills/ (DotAgents Protocol)
+  # so all CLIs (Pi, OpenCode, Claude Code, Codex) share the same source.
+  # Without this filter, pi update re-clones the repo with skills/ intact,
+  # causing "Skill conflicts" warnings on next startup.
+  _configure_pi_skills_filter
 
   # Install skills flat (shared by all CLIs, single source of truth)
   install_skills_flat
@@ -354,9 +389,8 @@ update_all() {
           log_info "  Reinstalling Pi extension (git package)..."
           pi remove "$SCRIPT_DIR/extensions/cali-product-workflow" 2>/dev/null || true
           pi install "git:github.com/renatocaliari/cali-product-workflow" 2>/dev/null || true
-          # Remove skills from git clone to avoid conflict with ~/.agents/skills/
-          local pi_git_skills="$HOME/.pi/agent/git/github.com/renatocaliari/cali-product-workflow/skills"
-          if [[ -d "$pi_git_skills" ]]; then rm -rf "$pi_git_skills"; fi
+          # Re-apply package filter (pi update re-clones repo with skills/)
+          _configure_pi_skills_filter
           # Skills are updated via install_skills_flat below
         fi
         ;;
@@ -385,6 +419,22 @@ uninstall_all() {
       pi)
         pi remove "git:github.com/renatocaliari/cali-product-workflow" 2>/dev/null || true
         rm -rf "$HOME/.pi/agent/skills/cali-product-workflow" 2>/dev/null || true
+        # Clean package filter from settings.json
+        if command -v jq &>/dev/null; then
+          local pi_settings="$HOME/.pi/agent/settings.json"
+          if [[ -f "$pi_settings" ]]; then
+            local tmp=$(mktemp)
+            jq '
+              (.packages // []) |= map(
+                if type == "object" and .source == "git:github.com/renatocaliari/cali-product-workflow" then
+                  del(.skills)
+                else
+                  .
+                end
+              )
+            ' "$pi_settings" > "$tmp" && mv "$tmp" "$pi_settings"
+          fi
+        fi
         log_success "  v Pi" ;;
       opencode)
         local cfg="$HOME/.config/opencode/opencode.json"
