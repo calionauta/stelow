@@ -33,8 +33,6 @@ import {
   suggestNameFromDraft,
   readSourceFile,
   truncateText,
-  isInsideWorktree,
-  getDefaultBranch,
 } from '../../extensions/cali-product-workflow/state';
 import type { Workflow, TrackingData } from '../../extensions/cali-product-workflow/types';
 
@@ -480,20 +478,6 @@ describe('Utility Functions', () => {
     it('leaves room for truncation marker', () => {
       const result = truncateText('Hello World', 5);
       expect(result).toMatch(/\.\.\. truncated \.\.\./);
-    });
-  });
-
-  describe('isInsideWorktree', () => {
-    it('returns boolean (not throws) for invalid git dir', () => {
-      // Non-git directory should return false, not throw
-      expect(() => isInsideWorktree(tempDir)).not.toThrow();
-    });
-  });
-
-  describe('getDefaultBranch', () => {
-    it('returns string (main fallback for non-git)', () => {
-      // Non-git directory should return 'main' fallback, not throw
-      expect(() => getDefaultBranch(tempDir)).not.toThrow();
     });
   });
 });

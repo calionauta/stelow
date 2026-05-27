@@ -103,34 +103,6 @@ export function detectCLI(): CLI {
 /**
  * Get detection info for diagnostics.
  */
-export function getCLIDetectionInfo(): { cli: CLI; confidence: "high" | "medium" | "low"; reason: string } {
-  const envCli = process.env.PRODUCT_WORKFLOW_CLI;
-  if (envCli && envCli.trim()) {
-    const cli = envCli.trim().toLowerCase() as CLI;
-    if (["pi", "opencode", "claude-code", "codex", "generic"].includes(cli)) {
-      return { cli, confidence: "medium", reason: "PRODUCT_WORKFLOW_CLI set" };
-    }
-    return { cli: "generic", confidence: "low", reason: `Unknown PRODUCT_WORKFLOW_CLI: ${cli}` };
-  }
-  
-  const home = homedir();
-  
-  if (existsSync(join(home, ".pi"))) {
-    return { cli: "pi", confidence: "high", reason: "~/.pi directory exists" };
-  }
-  if (existsSync(join(home, ".config", "opencode"))) {
-    return { cli: "opencode", confidence: "high", reason: "~/.config/opencode directory exists" };
-  }
-  if (existsSync(join(home, ".claude"))) {
-    return { cli: "claude-code", confidence: "high", reason: "~/.claude directory exists" };
-  }
-  if (existsSync(join(home, ".codex"))) {
-    return { cli: "codex", confidence: "high", reason: "~/.codex directory exists" };
-  }
-  
-  return { cli: "generic", confidence: "low", reason: "No CLI detected, using generic fallback" };
-}
-
 /**
  * Get CLI capabilities for the current or specified CLI.
  */
@@ -139,59 +111,6 @@ export function getCLICapabilites(cli?: CLI): ReturnType<typeof getCLICapabiliti
   return getCLICapabilities(detected);
 }
 
-/**
- * Get CLI-specific tool configuration.
- * Maps abstract tool names to CLI-specific implementations.
- */
-export function getCLITools(cli: string = detectCLI()): Record<string, string> {
-  const baseTools: Record<string, string> = {
-    read: "read",
-    write: "write",
-    bash: "bash",
-    edit: "edit",
-  };
-
-  const cliTools: Record<string, Record<string, string>> = {
-    pi: {
-      subagent: "subagent",
-      ask: "ask_user_question",
-      plannotator: "plannotator annotate --gate",
-      goals: "goal/sisyphus",
-      intercom: "intercom",
-      supervise: "supervise",
-    },
-    "opencode": {
-      subagent: "subagent",
-      ask: "Prompt",
-      plannotator: "@plannotator/opencode",
-      goals: "N/A",
-      intercom: "N/A",
-      supervise: "N/A",
-    },
-    "claude-code": {
-      subagent: "subagent",
-      ask: "Prompt",
-      plannotator: "plannotator annotate --gate",
-      goals: "N/A",
-      intercom: "N/A",
-      supervise: "N/A",
-    },
-    codex: {
-      subagent: "subagent",
-      ask: "Prompt",
-      plannotator: "!plannotator review",
-      goals: "N/A",
-      intercom: "N/A",
-      supervise: "N/A",
-    },
-  };
-
-  // Merge base tools with CLI-specific overrides
-  return {
-    ...baseTools,
-    ...(cliTools[cli] || {}),
-  };
-}
 
 // ── Shared State ─────────────────────────────────────────────────────
 
@@ -356,10 +275,6 @@ export function generateDirHash(): string {
 }
 
 /** Legacy: placeholder name generator (kept for compatibility) */
-export function generatePlaceholderName(): string {
-  return `wf-${Date.now().toString(36).slice(-6)}`;
-}
-
 /** Readable date-stamped directory, e.g. "2026-05-16" */
 export function getDateStamp(date?: Date): string {
   return (date || new Date()).toISOString().slice(0, 10);
@@ -607,49 +522,6 @@ export function truncateText(text: string, maxLen: number): string {
   return text.slice(0, maxLen - 100) + "\n\n[... truncated ...]";
 }
 
-/**
- * Detect if the current working directory is inside a git worktree.
- * Returns true if .git is a file (pointing to worktree metadata)
- * or if `git rev-parse --git-dir` returns a path under .git/worktrees/.
- */
-export function isInsideWorktree(cwd: string): boolean {
-  try {
-    const { execSync } = require("child_process");
-    const gitDir = execSync("git rev-parse --git-dir", { cwd, encoding: "utf-8" }).trim();
-    return gitDir.includes(".git/worktrees/");
-  } catch {
-    return false;
-  }
-}
-
-/**
- * Get the default branch name (main/master) from remote origin, or fallback to "main".
- */
-export function getDefaultBranch(cwd: string): string {
-  try {
-    const { execSync } = require("child_process");
-    const remote = execSync("git remote show origin 2>/dev/null || true", { cwd, encoding: "utf-8" });
-    const match = remote.match(/HEAD branch:\s*(\S+)/);
-    return match ? match[1] : "main";
-  } catch {
-    return "main";
-  }
-}
-
-/**
- * Generate a worktree directory name from a workflow name and date.
- */
-export function worktreeDirName(name: string, date?: string): string {
-  return `pw-${name}-${date}`;
-}
-
-/**
- * Generate a branch name for a workflow worktree.
- */
-export function worktreeBranchName(name: string, date?: string): string {
-  return `pw/${name}/${date}`;
-}
-
 
 
 const PHASE_TODOS_FILE = "phase-todos.json";
@@ -699,10 +571,6 @@ export function setPhaseTodos(todos: PhaseTodo[]): void {
 export function getPhaseTodosFromCache(cwd: string, wf: Workflow): PhaseTodo[] {
   if (_phaseTodosCache.length > 0) return _phaseTodosCache;
   return getPhaseTodos(cwd, wf);
-}
-
-export function clearPhaseTodosCache(): void {
-  _phaseTodosCache = [];
 }
 
 // ── Inbox ──────────────────────────────────────────────────────────────

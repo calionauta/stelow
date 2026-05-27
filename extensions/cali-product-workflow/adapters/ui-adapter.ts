@@ -132,7 +132,7 @@ export const AnsiColors = {
 /**
  * Map notification type to ANSI color.
  */
-export function getNotificationColor(type: NotificationType): string {
+function getNotificationColor(type: NotificationType): string {
   return AnsiColors[type] || AnsiColors.info;
 }
 
@@ -148,18 +148,9 @@ export function formatAnsiNotification(
 }
 
 /**
- * Get ANSI prefix for a foreground color.
- */
-export function fg(color: string, text: string): string {
-  const ansiCode = AnsiColors[color as keyof typeof AnsiColors] || "";
-  if (!ansiCode) return text;
-  return `${ansiCode}${text}${AnsiColors.reset}`;
-}
-
-/**
  * Truncate text to fit in a width with ellipsis.
  */
-export function truncate(text: string, maxWidth: number): string {
+function truncate(text: string, maxWidth: number): string {
   if (text.length <= maxWidth) return text;
   return text.slice(0, Math.max(0, maxWidth - 3)) + "...";
 }

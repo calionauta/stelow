@@ -23,23 +23,6 @@ export const PHASE_NAMES = [
   "Audit"       // 13 — Phase 13: Delivery Audit
 ];
 
-/** Display hints shown in compact TUI per phase */
-export const PHASE_HINTS: Record<number, string> = {
-  0: "triage",
-  1: "select",
-  2: "setup",
-  3: "context",
-  4: "shape",
-  5: "critique",
-  6: "gate",
-  7: "scope",
-  8: "interface",
-  9: "int.gate",
-  10: "selection",
-  11: "planning",
-  12: "execution"
-};
-
 // ── CLI Types ─────────────────────────────────────────────────────
 
 export type CLI = "pi" | "opencode" | "claude-code" | "codex" | "generic";

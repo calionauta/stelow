@@ -14,7 +14,8 @@
   },
   "mutate": [
     "extensions/cali-product-workflow/adapters/{base,cli-adapter,event-dispatcher,generic,index,ui-adapter,ui-factory}.ts",
-    "extensions/cali-product-workflow/adapters/commands/*.ts"
+    "extensions/cali-product-workflow/adapters/commands/*.ts",
+    "extensions/cali-product-workflow/modules/{cache,file-store,task}.ts"
   ],
   "ignorePatterns": [
     ".opencode",

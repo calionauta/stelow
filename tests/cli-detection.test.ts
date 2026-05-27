@@ -3,7 +3,6 @@
  * 
  * Tests for:
  * - detectCLI() for all 5 CLIs (pi, opencode, claude-code, codex, generic)
- * - getCLIDetectionInfo() returns correct confidence and reason
  * - getCLICapabilities() returns correct capabilities per CLI
  * - PRODUCT_WORKFLOW_CLI env var override
  * - Fallback to generic when no CLI detected
@@ -19,7 +18,6 @@ import { homedir } from 'node:os';
 // Import the module to test
 import { 
   detectCLI, 
-  getCLIDetectionInfo, 
   getCLICapabilites 
 } from '../extensions/cali-product-workflow/state';
 import { getCLICapabilities, CLI, CLICapabilities } from '../extensions/cali-product-workflow/types';
@@ -95,42 +93,6 @@ describe('CLI Detection', () => {
       process.env.PRODUCT_WORKFLOW_CLI = '   ';
       // Whitespace-only should trigger fallback
       expect(detectCLI()).toBeDefined();
-    });
-  });
-
-  // ── getCLIDetectionInfo() Tests ───────────────────────────────────────
-
-  describe('getCLIDetectionInfo()', () => {
-    it('returns high confidence for PRODUCT_WORKFLOW_CLI set', () => {
-      process.env.PRODUCT_WORKFLOW_CLI = 'pi';
-      const info = getCLIDetectionInfo();
-      expect(info.cli).toBe('pi');
-      expect(info.confidence).toBe('medium'); // Env var is medium confidence
-      expect(info.reason).toBe('PRODUCT_WORKFLOW_CLI set');
-    });
-
-    it('returns cli matching PRODUCT_WORKFLOW_CLI when set', () => {
-      process.env.PRODUCT_WORKFLOW_CLI = 'opencode';
-      const info = getCLIDetectionInfo();
-      expect(info.cli).toBe('opencode');
-    });
-
-    it('returns object with cli, confidence, and reason properties', () => {
-      const info = getCLIDetectionInfo();
-      expect(info).toHaveProperty('cli');
-      expect(info).toHaveProperty('confidence');
-      expect(info).toHaveProperty('reason');
-      expect(typeof info.reason).toBe('string');
-    });
-
-    it('confidence is one of the valid values', () => {
-      const info = getCLIDetectionInfo();
-      expect(['high', 'medium', 'low']).toContain(info.confidence);
-    });
-
-    it('cli is one of the valid CLI values', () => {
-      const info = getCLIDetectionInfo();
-      expect(['pi', 'opencode', 'claude-code', 'codex', 'generic']).toContain(info.cli);
     });
   });
 
