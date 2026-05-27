@@ -7,21 +7,62 @@ export const SCHEMA_URL =
   "https://raw.githubusercontent.com/renatocaliari/cali-product-workflow/main/cali-product-workflow.schema.json";
 
 export const PHASE_NAMES = [
-  "Triage",    // 0 — Phase 0: Inbox Triage
-  "ItemSelect", // 1 — Phase 1: Item Selection
-  "Setup",     // 2 — Phase 2: Project Setup
-  "Context",   // 3 — Phase 3: Strategic Context
-  "Shape",     // 4 — Phase 4: Shape Up Planning
-  "Critique",  // 5 — Phase 5: Plan Critique
-  "Gate",      // 6 — Phase 6: Review Gate
-  "Scope",     // 7 — Phase 7: Scope Adjustment
-  "Interface", // 8 — Phase 8: Interface Brainstorming
-  "Int.Gate", // 9 — Phase 9: Interface Gate
-  "Selection", // 10 — Phase 10: Interface Selection
-  "Planning",  // 11 — Phase 11: Tech Planning
-  "Execution",  // 12 — Phase 12: Execution
-  "Audit"       // 13 — Phase 13: Delivery Audit
+  "Triage",      // 0 — Phase 0: Inbox Triage
+  "ItemSelect",  // 1 — Phase 1: Item Selection
+  "Setup",       // 2 — Phase 2: Project Setup
+  "Context",     // 3 — Phase 3: Strategic Context
+  "Shape",       // 4 — Phase 4: Shape Up Planning
+  "Critique",    // 5 — Phase 5: Plan Critique
+  "Gate",        // 6 — Phase 6: Review Gate
+  "Scope",       // 7 — Phase 7: Scope Adjustment
+  "Interface",   // 8 — Phase 8: Interface Brainstorming
+  "Int.Gate",    // 9 — Phase 9: Interface Gate
+  "Selection",   // 10 — Phase 10: Interface Selection
+  "Planning",    // 11 — Phase 11: Tech Planning
+  "Execution",   // 12 — Phase 12: Execution
+  "Verification",// 13 — Phase 13: Verification (test suite, review, UI audit)
+  "Audit"        // 14 — Phase 14: Delivery Audit
 ];
+
+// ── Stage Aliasing ────────────────────────────────────────────────────
+
+/**
+ * Resolve stage index by name. Throws if unknown.
+ * All code should reference stages by name, not hardcoded number.
+ */
+export function getStageIndex(name: string): number {
+  const idx = PHASE_NAMES.indexOf(name);
+  if (idx === -1) throw new Error(`Unknown stage name: "${name}"`);
+  return idx;
+}
+
+/** Safely resolve stage name by index. Returns "unknown" if out of range. */
+export function getStageName(index: number): string {
+  return PHASE_NAMES[index] || "unknown";
+}
+
+/**
+ * STAGE enum — always resolves via PHASE_NAMES lookup.
+ * Insert/reorder stages in PHASE_NAMES and STAGE auto-adjusts.
+ * Use: wf.currentPhase < STAGE.EXECUTION()
+ */
+export const STAGE = {
+  TRIAGE:      () => PHASE_NAMES.indexOf("Triage"),
+  ITEM_SELECT: () => PHASE_NAMES.indexOf("ItemSelect"),
+  SETUP:       () => PHASE_NAMES.indexOf("Setup"),
+  CONTEXT:     () => PHASE_NAMES.indexOf("Context"),
+  SHAPE:       () => PHASE_NAMES.indexOf("Shape"),
+  CRITIQUE:    () => PHASE_NAMES.indexOf("Critique"),
+  GATE:        () => PHASE_NAMES.indexOf("Gate"),
+  SCOPE:       () => PHASE_NAMES.indexOf("Scope"),
+  INTERFACE:   () => PHASE_NAMES.indexOf("Interface"),
+  INT_GATE:    () => PHASE_NAMES.indexOf("Int.Gate"),
+  SELECTION:   () => PHASE_NAMES.indexOf("Selection"),
+  PLANNING:    () => PHASE_NAMES.indexOf("Planning"),
+  EXECUTION:   () => PHASE_NAMES.indexOf("Execution"),
+  VERIFICATION:() => PHASE_NAMES.indexOf("Verification"),
+  AUDIT:       () => PHASE_NAMES.indexOf("Audit"),
+} as const;
 
 // ── CLI Types ─────────────────────────────────────────────────────
 

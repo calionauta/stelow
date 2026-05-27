@@ -163,9 +163,21 @@ stages:
     primary_actions: [edit, write, bash]
     supervisor: true
     transitions:
+      next: [verification]
+      accept: [verification]
+      rework: [shape]
+
+  - name: verification
+    order: 150
+    description: "Verification. Run full test suite, code review, UI audit, browser testing."
+    blocked_tools: []
+    allowed_tools: [edit, write, bash, read, grep, ls, subagent, ask, agent_browser]
+    preferred_tools: [bash, write]
+    primary_actions: [bash, write]
+    transitions:
       next: [audit]
       accept: [audit]
-      rework: [shape]
+      reject: [execution]
 
   - name: audit
     order: 200

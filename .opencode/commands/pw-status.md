@@ -23,7 +23,7 @@ Check the current status of an active product workflow.
 
 ## What it shows
 
-- Current phase (e.g., "Phase 3/11: Shape")
+- Current phase (e.g., "Phase 3: Shape")
 - Workflow name and description
 - Appetite level
 - Active scope items

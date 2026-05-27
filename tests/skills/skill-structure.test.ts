@@ -73,8 +73,8 @@ describe('SKILL.md Structure Validation', () => {
       expect(content).toMatch(/mandatory|never skip|obligatory/i);
     });
 
-    it('supervisor should NOT activate during stages 3-11', () => {
-      expect(content).toMatch(/never activate during Stages (3-11|3-10)/i);
+    it('supervisor should NOT activate before Execution', () => {
+      expect(content).toMatch(/never activate during stages before Execution/i);
     });
 
     it('should warn about re-submitting Plannotator', () => {

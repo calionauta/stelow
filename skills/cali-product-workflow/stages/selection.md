@@ -1,11 +1,11 @@
-## Stage 1: Item Selection
+## Item Selection
 
 > **Part of cali-product-workflow** — See [`SKILL.md`](../SKILL.md) for stage sequence, safety rules, and capability reference.
 > **Tool Restrictions:** See `stages.yaml` for blocked/allowed tools in this stage.
 > **Stage Status:** Read `references/cli-tools/stage-status.md` for ASCII status display and CLI commands.
 ### When This Stage Activates
 
-After Triage (Stage 0) completes with one or more accepted items. If the user had a single idea (no Triage), this stage is skipped — proceed directly to Stage 2 (Setup).
+After Triage completes with one or more accepted items. If the user had a single idea (no Triage), this stage is skipped — proceed directly to Setup.
 
 ### Process
 
@@ -34,4 +34,4 @@ After Triage (Stage 0) completes with one or more accepted items. If the user ha
 
 ### Completion
 
-When the user has selected one item, call `/pw-next` to advance to Stage 2 (Setup/Project Setup).
+When the user has selected one item, call `/pw-next` to advance to Setup.

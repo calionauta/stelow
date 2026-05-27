@@ -258,7 +258,7 @@ Add AI summarization
 ○ [SHAPE-6] Identify rabbit holes (risks to avoid)
 ```
 
-### Phase 5: Critique
+### Critique stage
 
 ```
 ○ [CRITIQUE-1] Run claim verification on spec references
@@ -268,7 +268,7 @@ Add AI summarization
 ○ [CRITIQUE-5] Generate critique report
 ```
 
-### Phase 6: Gate
+### Gate stage
 
 ```
 ○ [GATE-1] Submit to Plannotator for visual review
@@ -276,7 +276,7 @@ Add AI summarization
 ○ [GATE-3] Mark spec as frozen after approval
 ```
 
-### Phase 7: Scope Adjustment
+### Scope Adjustment stage
 
 ```
 ○ [SCOPE-1] Review current IN/OUT boundaries
@@ -285,7 +285,7 @@ Add AI summarization
 ○ [SCOPE-4] Update spec if changes made
 ```
 
-### Phase 8: Interface (if selected)
+### Interface stage (if selected)
 
 ```
 ○ [INTERFACE-1] Generate 5 interface proposals (parallel)
@@ -295,7 +295,7 @@ Add AI summarization
 ○ [INTERFACE-5] Select 2-3 finalists for Gate review
 ```
 
-### Phase 9: Interface Gate
+### Interface Gate stage
 
 ```
 ○ [INTGATE-1] Submit finalists to Plannotator
@@ -303,7 +303,7 @@ Add AI summarization
 ○ [INTGATE-3] Note approved interfaces
 ```
 
-### Phase 10: Interface Selection
+### Interface Selection stage
 
 ```
 ○ [INTSELECT-1] Present final options with previews

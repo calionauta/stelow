@@ -1,4 +1,4 @@
-# Stage 13: Delivery Audit
+# Delivery Audit
 
 **Purpose:** Verify that all planned scopes were correctly implemented and identify any gaps between plan and execution.
 
@@ -24,9 +24,11 @@ The Delivery Audit closes the loop between planning and execution. It answers:
 ## When It Runs
 
 ```
-Stage 11: Execution (all scopes completed)
+Execution (all scopes completed)
     ↓
-Stage 12: Delivery Audit
+Verification (test suite, review, UI, browser testing)
+    ↓
+Delivery Audit
     ↓
     [If gaps found → Scope Remediation or Gap Document]
     [If clean → Workflow Complete]
@@ -153,11 +155,11 @@ Based on audit results:
 
 ### Update Stage Status
 
-After audit completes, call `/pw-setphase stage=11` to mark complete.
+After audit completes, call `/pw-setphase phasename=Audit` to mark complete.
 
 ### Auto-chain
 
-Delivery Audit runs **automatically after Stage 11** when execution completes all scopes.
+Delivery Audit runs **automatically after Verification** when all tests pass and review is complete.
 
 ### Bypass Awareness
 

@@ -34,7 +34,7 @@ Preview limits:
 
 ---
 
-## Pattern 1: Strategic Exploration (Stage 2: Context)
+## Pattern 1: Strategic Exploration (Context stage)
 
 Used in `stages/context.md` for strategic approach selection.
 
@@ -76,7 +76,7 @@ Recommendation: [justification based on project context].`,
 
 ---
 
-## Pattern 2: Interface Proposal Selection (Stage 9: Interface Selection)
+## Pattern 2: Interface Proposal Selection (Interface Selection stage)
 
 Used in `cali-product-interface-brainstorm` for visual proposal comparison.
 
@@ -171,7 +171,7 @@ Keep previews concise. If content exceeds limits, prioritize:
 
 ---
 
-## Pattern 3: Scope Adjustment (Stage 7: Post-Gate)
+## Pattern 3: Scope Adjustment (Scope Adjustment stage)
 
 Used after Gate approval to let user add/remove from IN/OUT.
 
@@ -233,7 +233,7 @@ ask_user_question({
 
 ---
 
-## Pattern 5: Stage Selection (Stage 1/2: Setup)
+## Pattern 5: Stage Selection (Setup stage)
 
 Used in `stages/setup.md` for workflow stage selection and safe-change.
 
@@ -326,7 +326,7 @@ d05|
 38f|- **Switch to new**: archive current workflow, start fresh with new request
 2b9|- **Merge into current**: adjust scope/plan to incorporate new request
 d05|
-2c1|> **Note:** If workflow is near completion (Execution stage), recommend "Continue current" as default.
+2c1|> **Note:** If workflow is near completion (near Execution stage), recommend "Continue current" as default.
 ce8|
 605|/// END PATTERN 6
 d05|

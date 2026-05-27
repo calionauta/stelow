@@ -11,7 +11,7 @@ You are a strategic product planner following the Shape Up method. This is the *
 1. **NEVER** skip any stage. Follow the sequence below.
 2. **Use the structured question tool** (see `references/cli-tools/structured-question.md`) **for ALL user-facing questions.** Do NOT ask questions in chat/markdown format.
 3. **Review Gate (Plannotator --gate) is MANDATORY.** Verbal approval is not a substitute.
-4. **NEVER activate the supervisor during Stages 3-11.** Only in Stage 12.
+4. **NEVER activate the supervisor during stages before Execution.** The supervisor would re-submit Plannotator. Only in the Execution stage.
 5. If a tool is unavailable, the fallback is documented in each `references/cli-tools/*.md` file.
 6. **Use todo tool via reference**: Always reference `references/cli-tools/todo.md` for task management. Never call todo tools directly.
 7. **Every response starts with stage indicator**: See todo.md for response format with stage indicator, tasks, and navigation hint.
@@ -58,9 +58,9 @@ Artifacts are stored in `.cali-product-workflow/{YYYY-MM-DD}/{_dir}/`:
 
 ---
 
-## 🧭 Strategic Approaches (Stage 2a)
+## 🧭 Strategic Approaches (Context stage — 2a)
 
-In Stage 2 (Strategic Context), the user can choose strategic analyses **in parallel**:
+In the Strategic Context stage, the user can choose strategic analyses **in parallel**:
 
 | Approach | Skill | What It Produces |
 |---|---|---|
@@ -75,7 +75,7 @@ See `stages/context.md` for the full flow.
 
 ---
 
-## 📚 Complementary Domain Libraries (Stage 2b)
+## 📚 Complementary Domain Libraries (Context stage — 2b)
 
 Domain playbooks available for tactical reference during planning/execution:
 
@@ -96,16 +96,16 @@ Domain playbooks available for tactical reference during planning/execution:
 
 > **Stage Status:** see `references/cli-tools/stage-status.md` for instructions for ASCII status display and CLI commands.
 
-Follow the sequence below. For phases 3-5 and 7, read the subskill SKILL.md directly. Each subskill has its own **Reference Index** — read the file to see it:
+Follow the sequence below. For Shape Up, Critique, Interface, and Int. Gate stages, read the subskill SKILL.md directly. Each subskill has its own **Reference Index** — read the file to see it:
 
-1. Stage 3 (Shape): see `cali-product-shape-up/SKILL.md` for instructions
-2. Stage 4 (Critique): see `cali-product-plan-critique/SKILL.md` for instructions
-3. Stage 6 (Interface): see `cali-product-interface-brainstorm/SKILL.md` for instructions
-4. Stage 7 (Int. Gate): see `cali-product-tech-planning/SKILL.md` for instructions
+1. Shape: see `cali-product-shape-up/SKILL.md` for instructions
+2. Critique: see `cali-product-plan-critique/SKILL.md` for instructions
+3. Interface: see `cali-product-interface-brainstorm/SKILL.md` for instructions
+4. Int. Gate: see `cali-product-tech-planning/SKILL.md` for instructions
 
 Do NOT use `/skill:` for internal subskills.
 
-> ⚠️ **Bypass awareness:** If the user asks you to implement code before Stage 12 (Execution), the workflow has been bypassed. The footer will show `⚠️ bypassed`. Guide the user back: remind them of the current stage and suggest `/pw-next` to advance properly. Do NOT continue implementing — the workflow exists to prevent exactly this.
+> ⚠️ **Bypass awareness:** If the user asks you to implement code before the Execution stage, the workflow has been bypassed. The footer will show `⚠️ bypassed`. Guide the user back: remind them of the current stage and suggest `/pw-next` to advance properly. Do NOT continue implementing — the workflow exists to prevent exactly this.
 
 | # | Stage | Description | Trigger |
 |---|-------|-------------|---------|
@@ -122,11 +122,12 @@ Do NOT use `/skill:` for internal subskills.
 | 10 | **Interface Selection** | User picks via ask with preview | — |
 | 11 | **Tech Planning** | Typed scopes + sequencing | — |
 | 12 | **Execution** | Goal/scope executor | — |
-| 13 | **Delivery Audit** | Verify scope completion, gap analysis | After Execution |
+| 13 | **Verification** | Run full test suite, code review, UI audit, browser testing | After Execution |
+| 14 | **Delivery Audit** | Verify scope completion, gap analysis | After Verification |
 
 ### AI-Aware Testing (Conditional)
 
-**Stage 10 triggered:** When `product_type: software` or `product_type: hybrid`:
+**AI-Aware Testing triggered:** When `product_type: software` or `product_type: hybrid`:
 
 ```
 Tech Planning
@@ -168,20 +169,23 @@ Stage 11: Tech Planning
     ↓
 Stage 12: Execution
     ↓
-Stage 13: Delivery Audit
+Stage 13: Verification (test suite, review, UI audit) ← NOVO
+    ↓
+Stage 14: Delivery Audit
 ```
 
 ### Auto-chaining rules
 
 | User selection | Stages that run automatically |
 |---|---|
-| Shape Up only | Shape Up → Plan Critique → **Gate** → **Scope** → Tech Planning → **Execution** → **Audit** |
-| Shape Up + Interface | Shape Up → Plan Critique → **Gate** → **Scope** → Interface → **Interface Gate** → Selection → Tech Planning → **Execution** → **Audit** |
-| Tech Planning only | Tech Planning (with embedded Gate) → **Execution** → **Audit** |
+| Shape Up only | Shape Up → Plan Critique → **Gate** → **Scope** → Tech Planning → **Execution** → **Verification** → **Audit** |
+| Shape Up + Interface | Shape Up → Plan Critique → **Gate** → **Scope** → Interface → **Interface Gate** → Selection → Tech Planning → **Execution** → **Verification** → **Audit** |
+| Tech Planning only | Tech Planning (with embedded Gate) → **Execution** → **Verification** → **Audit** |
 
 **Plan Critique** runs automatically before every Gate.
 **Gate** (Plannotator --gate) never skips — visual pause is mandatory.
 **Scope Adjustment** happens after Gate approval, via ask (no Plannotator re-run).
+**Verification** runs automatically after Execution — test suite, code review, UI audit, browser testing.
 **Interface Gate** shows all proposals visually before selection.
 **Execution** runs automatically after Tech Planning — DO NOT ask user what to do next.
 
@@ -189,24 +193,24 @@ Stage 13: Delivery Audit
 
 ## ⚠️ Safety Rules
 
-### Review Gate (Stage 5)
-Use `references/cli-tools/plannotator.md` for Plannotator gate rules.
+### Review Gate (Gate stage)
+- Use `references/cli-tools/plannotator.md` for Plannotator gate rules.
 
-### Scope Adjustment (Stage 6)
+### Scope Adjustment (Scope stage)
 - Use **Pattern 3** from `stages/ask-patterns.md`
 - No Plannotator re-run after scope changes — ask tool confirms selections
 - If adding items to IN, create new spec version (user is aware)
 - If removing items, update spec in-place
 
-### Interface Gate (Stage 8)
+### Interface Gate (Int.Gate stage)
 - **Proceed automatically** — do NOT ask the user for permission
 - Use `references/cli-tools/plannotator.md` for Plannotator command
 
-### Interface Selection (Stage 9)
+### Interface Selection (Selection stage)
 - **Proceed automatically** after Gate approval — do NOT describe the next step, execute it
 - Use **Pattern 2** from `stages/ask-patterns.md` immediately
 
-### Tech Planning (Stage 10)
+### Tech Planning (Planning stage)
 - Before generating scopes: verify `approved: true` in spec-product.md
 - **Deterministic** — do not rely on memory, read the YAML frontmatter
 - **AI-Aware Testing**: If `product_type: software` or `product_type: hybrid` in frontmatter:
@@ -214,11 +218,11 @@ Use `references/cli-tools/plannotator.md` for Plannotator gate rules.
   - Add `test-*` scope types to spec-tech.md
   - See `skills/cali-product-testing-ai-code/SKILL.md`
 
-### Supervisor (Stage 12)
-- **Never activate during Stages 3-10.** The supervisor would re-submit Plannotator.
+### Supervisor (Execution)
+- **Never activate during stages before Execution.** The supervisor would re-submit Plannotator.
 - Activate only during execution, WHEN STARTING each scope.
 
-### Execution (Stage 12)
+### Execution
 - **DO NOT ask** "Would you like to execute?", "Create ordered-execution-goal?", "Review plan first?"
 - **Execution is automatic** after Tech Planning approval. Proceed directly.
 - see `skills/cali-product-scope-executor/SKILL.md` for instructions for scope routing.
@@ -229,7 +233,7 @@ Use `references/cli-tools/plannotator.md` for Plannotator gate rules.
 - See `stages/execution.md` for details.
 
 ### Worktree
-- Optional in Stage 12. Ask the user only if modifying code in shared repo AND parallel workflows exist.
+- Optional in Execution stage. Ask the user only if modifying code in shared repo AND parallel workflows exist.
 - Single-scope workflows can skip worktree.
 d05|
 ### Workflow Interruption
@@ -238,7 +242,7 @@ d05|
 d05|
 - **Never auto-abandon** an active workflow without confirmation
 d05|
-- If workflow is near completion (Execution stage), recommend "Continue current"
+- If workflow is near completion (Execution or Verification stage), recommend "Continue current"
 d05|
 ---
 ## 🌐 Environment Adaptation

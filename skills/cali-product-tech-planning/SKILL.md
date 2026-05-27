@@ -30,7 +30,7 @@ To run standalone, read `cali-product-tech-planning/SKILL.md` and follow the ins
 head -10 spec-product_{v}.md | grep "approved:"
 ```
 - ✅ `approved: true` → proceed
-- ❌ No `approved: true` → **GO BACK to Phase 6. Do not proceed.**
+- ❌ No `approved: true` → **GO BACK to Gate stage (Plannotator visual review). Do not proceed.**
 
 This check is **deterministic** — does not depend on memory.
 

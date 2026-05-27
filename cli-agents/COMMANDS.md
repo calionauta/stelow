@@ -70,11 +70,10 @@ The project has two independent phase systems:
 
 | System | File | Entries | Used by |
 |--------|------|---------|---------|
-| Workflow phases | `types.ts` → `PHASE_NAMES` | 14 (Triage, Select, Setup, Context, Shape, Critique, Gate, Scope, Interface, Int.Gate, Select, Planning, Execution, Audit) | `/pw-next`, `/pw-setphase`, footer display |
+| Workflow phases | `types.ts` → `PHASE_NAMES` | 15 (Triage, ItemSelect, Setup, Context, Shape, Critique, Gate, Scope, Interface, Int.Gate, Selection, Planning, Execution, Verification, Audit) | `/pw-next`, `/pw-setphase`, footer display |
 | Stages guard | `stages.yaml` | 7 (triage, setup, selection, shape, gate, execution, audit) | `PreToolUse` hook — blocks `edit`/`write`/`bash` in early stages |
 
-**Bugs:**
-- `PHASE_NAMES[1]` and `PHASE_NAMES[10]` are both `"Select"` (duplicate name)
+**Known issues:**
 - `stages-guard` caches the stage at session start and never re-reads `current-stage.json`
 - No code synchronizes `current-stage.json` with the workflow phase
 - To unblock tools manually: edit `.cali-product-workflow/state/current-stage.json` to `"execution"` and restart Pi

@@ -1,10 +1,10 @@
-## Stage 12: Supervisor + Execution
+## Execution: Supervisor + Scope Execution
 
 > **Part of cali-product-workflow** — See [`SKILL.md`](./SKILL.md) for stage sequence, safety rules, and capability reference.
 > **Tool Restrictions:** See `stages.yaml` for blocked/allowed tools in this stage.
 ### ⚠️ Activate the supervisor ONLY during execution
-**Never activate during Stages 3-10.** The supervisor would re-submit Plannotator.
-**Activate in Stage 11 only** — when starting scope execution.
+**Never activate during stages before Execution.** The supervisor would re-submit Plannotator.
+**Activate in Execution stage only** — when starting scope execution.
 
 ### 6a. Git Worktree Check (before executing scopes)
 
@@ -133,7 +133,7 @@ Proceed directly to scope execution in the current directory.
 
 See `skills/cali-product-testing-ai-code/SKILL.md`
 
-## Stage 12: Execution — AUTOMATIC
+## Execution — AUTOMATIC
 
 > **CRITICAL: After Tech Planning approval, execution is MANDATORY.**
 > Do NOT ask the user "what to do next". The workflow proceeds automatically.
@@ -179,15 +179,15 @@ After Tech Planning approval, **DO NOT** ask:
 - "Review plan first?"
 - Any variation of "what would you like to do next"
 
-**The workflow proceeds automatically to execution, then to Delivery Audit.**
+**The workflow proceeds automatically: Execution → Verification → Delivery Audit.**
 
 ### After Execution
 
 After completing all scopes:
 1. **Do not ask user** what to do next
-2. **Automatically proceed** to Stage 12 (Delivery Audit)
-3. Run the audit process per [`delivery-audit.md`](./delivery-audit.md)
-4. Generate `delivery-audit.md` in the plan directory
+2. **Automatically proceed** to Verification stage
+3. Run the testing protocol per [`verification.md`](./verification.md)
+4. After Verification passes, **automatically proceed** to Delivery Audit per [`delivery-audit.md`](./delivery-audit.md)
 
 > **CRITICAL: After Tech Planning approval, execution is MANDATORY.**
 > Do NOT ask the user "what to do next". The workflow proceeds automatically.
@@ -233,7 +233,7 @@ After Tech Planning approval, **DO NOT** ask:
 - "Review plan first?"
 - Any variation of "what would you like to do next"
 
-**The workflow proceeds automatically to execution.**
+**The workflow proceeds automatically: Execution → Verification → Delivery Audit.**
 
 ### Worktree (optional)
 

@@ -1,9 +1,9 @@
-## Stage 2: Strategic Context (optional)
+## Strategic Context (optional)
 
 > **Part of cali-product-workflow** — See [`SKILL.md`](./SKILL.md) for stage sequence, safety rules, and capability reference.
 > **Tool Restrictions:** See `stages.yaml` for blocked/allowed tools in this stage.
 
-**After Stage 1 (Setup)**, the flow enters Stage 2 to enrich planning with optional context.
+**After Setup**, the flow enters Strategic Context to enrich planning with optional context.
 The LLM checks if the user should be offered strategic analysis and/or domain libraries.
 
 ### 2a. Strategic Exploration (always ask)
@@ -32,11 +32,11 @@ Save results to .cali-product-workflow/{YYYY-MM-DD}/{_dir}/strategic/${approach.
 3. Consolidate into `strategic-insights.md`
 4. Incorporate outputs as Shape Up input
 
-**If nothing selected (No strategic analysis):** proceed directly to Stage 2b.
+**If nothing selected (No strategic analysis):** proceed directly to Domain Context Detection (2b).
 
 ### 2b. Domain Context Detection (conditional — LLM-driven)
 
-**After Stage 2a**, the LLM analyzes the user's original request for **domain signals**:
+**After Strategic Exploration (2a)**, the LLM analyzes the user's original request for **domain signals**:
 
 | User Input Signal | Domain | Skill |
 |---|---|---|
@@ -85,6 +85,6 @@ Each playbook provides frameworks and references about the domain.`,
 
 **If user selects libraries:**
 1. Load the selected skill(s) content as additional context
-2. Proceed to Stage 3 (Shape Up) with domain context enriched
+2. Proceed to Shape Up with domain context enriched
 
-**If nothing detected or user declines:** proceed directly to Stage 3 (Shape Up) or end.
+**If nothing detected or user declines:** proceed directly to Shape Up or end.

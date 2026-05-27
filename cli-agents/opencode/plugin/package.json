@@ -14,8 +14,8 @@
     }
   },
   "scripts": {
-    "build": "bun run build.ts",
-    "dev": "bun run build.ts --watch",
+    "build": "bun run sync-phase-names.ts && bun run bundle.ts",
+    "dev": "bun run bundle.ts --watch",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

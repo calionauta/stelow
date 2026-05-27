@@ -1,4 +1,4 @@
-## Stage 1: Project Setup
+## Project Setup
 
 > **Part of cali-product-workflow** — See [`SKILL.md`](./SKILL.md) for stage sequence, safety rules, and capability reference.
 > **Tool Restrictions:** See `stages.yaml` for blocked/allowed tools in this stage.
@@ -16,7 +16,7 @@ if [ -f "$INBOX" ]; then
 fi
 ```
 
-If deferred items exist, offer the user to review them: "You have N deferred items from a previous session. Review them now?" If yes, proceed to Stage 0 (Triage). If no, continue to setup.
+If deferred items exist, offer the user to review them: "You have N deferred items from a previous session. Review them now?" If yes, proceed to Triage. If no, continue to setup.
 
 ### 1a. Auto-Discovery Check (before anything else)
 
@@ -170,18 +170,18 @@ After identifying the workflow:
 
 4. **Map artifacts to completed stages**:
    - Approval in `.plannotator/approvals/` → that stage's gate has passed
-   - `spec-product.md` exists → Stage 3 (Shape Up) completed
-   - `interfaces.md` exists → Stage 7-9 (Interface Brainstorming + Gate + Selection) completed
-   - `critique-report.md` exists → Stage 4 (Plan Critique) completed
-   - `spec-tech.md` exists and approved → Stage 10 (Tech Planning) completed
+   - `spec-product.md` exists → Shape Up stage completed
+   - `interfaces.md` exists → Interface stages completed
+   - `critique-report.md` exists → Plan Critique stage completed
+   - `spec-tech.md` exists and approved → Tech Planning stage completed
 
 5. **Determine resume point**:
-   - If `current_phase_index` is 0 → start from Stage 1a (Setup)
-   - If `current_phase_index` is 1 → start from Stage 2a (Strategic Context)
+   - If `current_phase_index` is 0 → start from Setup stage
+   - If `current_phase_index` is 1 → start from Context (Strategic Context)
    - If checkpoint has `phase == current_phase_index` → jump to `checkpoint.step`
    - If checkpoint has `phase < current_phase_index` → previous phase is done; start current phase
    - If no checkpoint → start current phase from beginning
-   - If `current_phase_index >= 10` and spec-tech approved → skip to Stage 11 (Execution)
+   - If `current_phase_index >= Planning stage index` and spec-tech approved → skip to Execution
 
 6. **DO NOT re-ask answered questions.** Use `user_choices` from checkpoint.
 
@@ -194,7 +194,7 @@ Use **Pattern 5** from `stages/ask-patterns.md`.
 **If user chooses "Yes" for safe-change:**
 Run `safe-change` from **pi-agent-codebase-workflows** (PriNova) BEFORE proceeding.
 
-**If user selects no workflow option:** proceed to Stage 2 (Strategic Context).
+**If user selects no workflow option:** proceed to Strategic Context.
 
 ### Auto-chaining rules
 

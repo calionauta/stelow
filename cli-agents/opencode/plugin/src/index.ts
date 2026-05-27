@@ -20,20 +20,7 @@ interface WorkflowState {
 // Track active workflows per session
 const sessionWorkflows = new Map<string, WorkflowState>();
 
-// Phase names for the 11-phase workflow
-const PHASE_NAMES: Record<number, string> = {
-  1: "Setup",
-  2: "Context",
-  3: "Shape",
-  4: "Critique",
-  5: "Gate",
-  6: "Scope",
-  7: "Interface",
-  8: "Int.Gate",
-  9: "Selection",
-  10: "Planning",
-  11: "Execution",
-};
+import { PHASE_NAMES, MAX_PHASE } from "./phase-names.generated";
 
 /**
  * Start a new product workflow
@@ -73,7 +60,7 @@ const pwStart = tool({
 
     return {
       title: "Workflow Started",
-      output: `Started "${workflowName}" at Phase 1 (Setup)\n\nThe workflow will guide you through:\nSetup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Execution\n\nUse /pw-status to check progress, /pw-menu for actions.`,
+      output: `Started "${workflowName}" at Phase 1 (Setup)\n\nThe workflow will guide you through:\nSetup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Execution → Verification → Audit\n\nUse /pw-status to check progress, /pw-menu for actions.`,
       metadata: {
         workflowName,
         phase: 1,
@@ -131,10 +118,10 @@ const pwNext = tool({
       };
     }
 
-    if (workflow.phase >= 11) {
+    if (workflow.phase >= MAX_PHASE) {
       return {
         title: "Workflow Complete",
-        output: `${workflow.name} has completed all 11 phases!`,
+        output: `${workflow.name} has completed all phases!`,
         metadata: {
           workflowName: workflow.name,
           phase: workflow.phase,
@@ -191,7 +178,9 @@ const pwHelp = tool({
 8. **Int.Gate** - Interface review
 9. **Selection** - Select approach
 10. **Planning** - Create plan
-11. **Execution** - Implement`,
+11. **Execution** - Implement features
+12. **Verification** - Test suite, code review, UI audit, browser testing
+13. **Audit** - Delivery audit and sign-off`,
       metadata: {},
     };
   },

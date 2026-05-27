@@ -79,13 +79,13 @@ Append to the interfaces file.`,
 ```
 
 
-## Visual Review (Phase 8 Gate — Automatic)
+## Visual Review (Interface Gate — Automatic)
 
 **After all proposals + Hybrid, use the Plannotator gate command** (see `references/cli-tools/plannotator.md` for the correct CLI command). Execute it directly — do NOT describe it to the user.
 
-Wait for the `--gate` result. If approved, **automatically advance to Phase 9 (Interface Selection)** — use **Pattern 2** from `references/cli-tools/structured-question.md` to let the user pick one proposal. Do NOT just describe what comes next — execute it.
+Wait for the `--gate` result. If approved, **automatically advance to Interface Selection** — use **Pattern 2** from `references/cli-tools/structured-question.md` to let the user pick one proposal. Do NOT just describe what comes next — execute it.
 
-## User Selection (Phase 9)
+## User Selection (Interface Selection)
 
 
 After visual review and approval, use **Pattern 2** from `../cali-product-workflow/stages/ask-patterns.md` to ask the user which proposal to follow.

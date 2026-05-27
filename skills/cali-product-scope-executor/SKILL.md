@@ -132,7 +132,7 @@ For each scope with `[TYPE] feature`:
 1. **Create ordered-execution-goal** (see `references/cli-tools/goals.md`, `sisyphus-set` variant) with the scope's DoD and ACs as the objective steps.
 
 2. **Activate supervision** (see `references/cli-tools/supervise.md`) for the feature scope before starting implementation.
-   ⚠️ Supervise ONLY during execution (Phase 12+), never during earlier phases — it can loop on Plannotator.
+   ⚠️ Supervise ONLY during execution (Execution stage and later), never during earlier stages — it can loop on Plannotator.
 
 3. **After scope implementation completes**, run parallel code review via subagents (see `references/cli-tools/subagents.md`):
    - One reviewer for correctness and regressions
@@ -211,7 +211,7 @@ Commits: {commit hashes for each scope}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Next steps:
 - Review and merge branches
-- Run full test suite
+- Handoff to Verification: run test suite, code review, UI/browser testing
 ```
 
 ---
@@ -257,13 +257,15 @@ This skill runs **after** the Plannotator gate approves the plan, replacing manu
 3. Plan Critique → gap analysis on product spec + revision
 4. Plannotator Gate → approves spec-product.md ← PRODUCT APPROVED
 5. Tech Planning Sequencing → spec-tech.md (product context + tech scopes)
-6. Execution Executor ← YOU ARE HERE
+6. Execution Executor
    ├── Read spec-tech.md (has product context + typed scopes)
    ├── Report execution plan → user confirms
    ├── Execute features → worker + parallel-review
    ├── Execute optimizations → autoresearch
    ├── Execute spikes → scout + researcher
    └── Report consolidated results to execution-report.md
+7. [HANDOFF] → Verification stage (full test suite, code review, UI/browser testing)
+   See `skills/cali-product-testing-execution/SKILL.md` for the testing protocol.
 ```
 
 ---

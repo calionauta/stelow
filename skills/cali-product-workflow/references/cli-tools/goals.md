@@ -37,10 +37,11 @@ Read this file (`goals.md`) to find the command for each mode.
 
 ## When to Use
 
-| Phase | Purpose |
+| Stage | Purpose |
 |-------|---------|
-| Phase 12 (Execution) | Scoped implementation per scope |
-| Phase 13 (Delivery Audit) | Verify implementation, gap analysis |
+| Execution stage | Scoped implementation per scope |
+| Verification stage | Run full test suite, code review, UI/browser testing |
+| Delivery Audit stage | Verify implementation, gap analysis |
 | After Tech Planning | Each scope becomes a goal |
 
 ---
@@ -120,6 +121,8 @@ If goal system is not available:
 
 ## Related
 
-- Stage 12: Execution (see `stages/execution.md`)
+- Execution stage (see `stages/execution.md`)
+- Verification stage (see `stages/verification.md`)
 - spec-tech scopes
 - Testing strategy (see `skills/cali-product-testing-ai-code/SKILL.md`)
+- Testing protocol (see `skills/cali-product-testing-execution/SKILL.md`)

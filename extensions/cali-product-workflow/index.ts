@@ -2,7 +2,7 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { WORKFLOW_DIR, TRACKING_FILE, SCHEMA_URL } from "./types";
+import { WORKFLOW_DIR, TRACKING_FILE, SCHEMA_URL, STAGE } from "./types";
 
 // Stage guard imports
 import { createStagesGuardFromPaths } from "./adapters/stages-guard";
@@ -171,12 +171,12 @@ export default function (pi: ExtensionAPI) {
         return { block: true, reason: result.reason || `Tool '${tool}' blocked in current stage` };
       }
     }
-    // Detect implementation tools during early phases (0-8)
+    // Detect implementation tools during early phases (before Selection)
     const isImplTool = ["write", "edit", "bash"].includes(tool);
     if (isImplTool && ctx.ui) {
       const wd = resolveProjectDir(ctx.cwd);
       const wf = getActiveWorkflow(wd);
-      if (wf && wf.currentPhase < 9) {
+      if (wf && wf.currentPhase < STAGE.SELECTION()) {
         setBypassed(true);
         updateFooter(ctx, wd);
       }
@@ -199,7 +199,7 @@ export default function (pi: ExtensionAPI) {
     // Clear bypass flag if agent advanced phase via /pw-next
     if (isBypassed()) {
       const wf = getActiveWorkflow(wd);
-      if (wf && wf.currentPhase >= 9) setBypassed(false);
+      if (wf && wf.currentPhase >= STAGE.SELECTION()) setBypassed(false);
     }
 
     // Always refresh footer so tracking updates from commands are picked up

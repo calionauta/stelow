@@ -1,6 +1,6 @@
 {
   "name": "@renatocaliari/cali-product-workflow",
-  "version": "0.2.24-alpha",
+  "version": "0.4.0-alpha",
   "description": "Product workflow for AI coding agents: Shape Up + Interface + Tech Planning + Critique + Gate. Includes 16 product skills.",
   "keywords": [
     "pi-skill",
@@ -81,7 +81,7 @@
     "mutate": "stryker run",
     "test:mutation": "stryker run",
     "version:sync": "node scripts/version-sync.mjs",
-    "version": "npm run version:sync && git add extensions/cali-pw-pi/package.json"
+    "version": "npm run version:sync && git add .claude-plugin/plugin.json .claude-plugin/marketplace.json .codex-plugin/plugin.json .codex-plugin/marketplace.json .opencode-plugin/plugin.json"
   },
   "devDependencies": {
     "@marcfargas/pi-test-harness": "^0.5.0",

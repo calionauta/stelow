@@ -448,7 +448,7 @@ All 21 skills are flat in `skills/` directory, ready for `~/.agents/skills/`.
 
 | Skill | Purpose |
 |-------|---------|
-| `cali-product-workflow` | Coordinates the 11-phase workflow |
+| `cali-product-workflow` | Coordinates the multi-stage workflow (Setup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Execution → Verification → Audit) |
 
 ### Workflow Skills (4)
 

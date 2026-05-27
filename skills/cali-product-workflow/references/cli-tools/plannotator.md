@@ -73,11 +73,11 @@ EOF
 
 ## When to Use
 
-| Phase | Purpose | File |
+| Stage | Purpose | File |
 |-------|---------|------|
-| Phase 5 | Shape Up spec approval | `specs/spec-product_v{N}.md` |
-| Phase 8 | Interface proposals approval | `interfaces/interfaces_v{N}.md` |
-| Standalone Tech Planning | Plan approval | `plans/spec-tech_v{N}.md` |
+| Shape Up | Shape Up spec approval | `specs/spec-product_v{N}.md` |
+| Interface | Interface proposals approval | `interfaces/interfaces_v{N}.md` |
+| Tech Planning | Plan approval | `plans/spec-tech_v{N}.md` |
 
 ---
 

@@ -1,4 +1,4 @@
-## Stage 0: Inbox Triage
+## Inbox Triage
 
 > **Part of cali-product-workflow** — See [`SKILL.md`](../SKILL.md) for stage sequence, safety rules, and capability reference.
 > **Tool Restrictions:** See `stages.yaml` for blocked/allowed tools in this stage.
@@ -47,4 +47,4 @@ Triggered when the user's initial request contains multiple items (bullets, numb
 
 ### Completion
 
-When all items have been triaged, call `/pw-next` to advance to Stage 1 (Selection). If all items were rejected/deferred, end the workflow.
+When all items have been triaged, call `/pw-next` to advance to Item Selection. If all items were rejected/deferred, end the workflow.

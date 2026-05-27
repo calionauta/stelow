@@ -18,7 +18,7 @@ Setup → Context → Shape → Critique → Gate → Scope → Interface → In
 
 Stages 2-3 and 7 run as skills (`cali-product-shape-up`, `cali-product-plan-critique`, `cali-product-interface-brainstorm`).
 Gates (4, 7) require Plannotator visual approval - never skip.
-Stage 10 (Planning) generates typed scopes with dependency mapping.
+The Planning stage generates typed scopes with dependency mapping.
 
 ## Key Differentiators
 
@@ -135,7 +135,7 @@ Rules:
 When working on software projects, trigger the product workflow:
 
 1. **Trigger:** Use `/skill cali-product-workflow` or `/pw-start`
-2. **Process:** Follow the 11-stage structured workflow (Setup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Execution)
+2. **Process:** Follow the structured workflow (Setup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Execution → Verification → Audit)
 3. **Execute:** Only after visual review gate (Plannotator approval)
 
 - **Repo:** https://github.com/renatocaliari/cali-product-workflow

@@ -5,7 +5,7 @@
 
 ## 1. Product Overview
 
-**cali-product-workflow** is a multi-CLI product strategy orchestrator that transforms raw product ideas into approved, testable technical plans. It guides teams through a structured 13-phase workflow combining Shape Up methodology, adversarial critique, interface brainstorming with visual review gates, and AI-aware technical scoping with automatic execution routing.
+**cali-product-workflow** is a multi-CLI product strategy orchestrator that transforms raw product ideas into approved, testable technical plans. It guides teams through a structured multi-stage workflow (Setup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Execution → Verification → Audit) combining Shape Up methodology, adversarial critique, interface brainstorming with visual review gates, and AI-aware technical scoping with automatic execution routing.
 
 **Who uses it:** AI coding agent users (Pi, OpenCode, Claude Code, Codex) who need systematic product planning before implementation.
 
@@ -52,7 +52,7 @@ This is a single-user tool per coding agent session. No multi-user roles exist.
 
 ---
 
-### Feature: 13-Phase Workflow Orchestration
+### Feature: Workflow Orchestration (15 phases)
 **Description:** Structured workflow from idea → plan → execution with safety gates.
 
 ```
@@ -61,7 +61,7 @@ Phase 1:  Item Selection    → User picks what to work on
 Phase 2:  Project Setup     → Auto-discovery, stage selection
 Phase 3:  Strategic Context → Optional: JTBD, domain libraries
 Phase 4:  Shape Up          → Shape the solution (IN/OUT scope)
-Phase 5:  Plan Critique      → Adversarial review via subagent
+Phase 5:  Plan Critique     → Adversarial review via subagent
 Phase 6:  Review Gate       → Plannotator visual approval (REQUIRED)
 Phase 7:  Scope Adjustment   → Fine-tune after gate approval
 Phase 8:  Interface Brainstorm → 5 ASCII proposals + hybrid
@@ -69,7 +69,8 @@ Phase 9:  Interface Gate    → Plannotator visual approval
 Phase 10: Interface Selection → User picks via ask_user_question
 Phase 11: Tech Planning     → Typed scopes (feature/spike/optimize)
 Phase 12: Execution         → Automatic via ordered-execution-goal or autoresearch
-Phase 13: Delivery Audit    → Post-execution verification
+Phase 13: Verification      → Full test suite, code review, UI/browser testing
+Phase 14: Delivery Audit    → Post-execution verification
 ```
 
 **Rules:**
@@ -77,6 +78,8 @@ Phase 13: Delivery Audit    → Post-execution verification
 - Phase 6 Gate: **MUST** use Plannotator before proceeding
 - Phase 9 Interface Gate: **MUST** use Plannotator before selection
 - Execution (Phase 12): **AUTOMATIC** after Plannotator approval — no confirmation prompt
+- Verification (Phase 13): **AUTOMATIC** after Execution — runs test suite, code review, UI audit, browser testing
+- Delivery Audit (Phase 14): **AUTOMATIC** after Verification passes
 
 ---
 
@@ -248,7 +251,10 @@ Stage Selection (new vs resume)
 [Phase 12] Execution (automatic)
     │
     ▼
-[Phase 13] Delivery Audit
+[Phase 13] Verification (test suite, review, UI audit)
+    │
+    ▼
+[Phase 14] Delivery Audit
 ```
 
 ### Interface Brainstorming Flow
@@ -299,7 +305,10 @@ For each scope (in sequence):
 Code Quality Gate (optional)
     │
     ▼
-[Phase 13] Delivery Audit
+[Phase 13] Verification (test suite, review, UI audit)
+    │
+    ▼
+[Phase 14] Delivery Audit
 ```
 
 ---
@@ -309,7 +318,7 @@ Code Quality Gate (optional)
 ### TUI Footer (All CLIs)
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
-│ Workflow: "feature-auth" | Phase 4/13 [Shape] | ●●○○○○○○○○○ | ⚠BYPASS │
+│ Workflow: "feature-auth" | Phase 4/14 [Shape] | ●●●●○○○○○○○○○○○ | ⚠BYPASS │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 - **Purpose:** Show current workflow state at a glance
@@ -414,8 +423,8 @@ Code Quality Gate (optional)
 │  │  ●        │    ○     │    ●     │    ○     │    ○     │    │
 │  └─────────────────────────────────────────────────────────────┘    │
 │                                                                      │
-│  Current: Phase 2 — Setup                                           │
-│  └─ Next: Phase 3 — Strategic Context                               │
+│  Current: Setup (phase 2)                                          │
+│  └─ Next: Strategic Context (phase 3)                               │
 │                                                                      │
 │  Bypass Status: ⚠️ Implementation tools used before Gate           │
 │                                                                      │
@@ -435,7 +444,7 @@ Code Quality Gate (optional)
 | draftContent | string | Original user input text |
 | source | string | File paths referenced |
 | status | enum | draft/planning/approved/in-progress/completed/archived |
-| currentPhase | number | 0-13 |
+| currentPhase | number | 0-14 |
 | phases | Phase[] | Array of phase status objects |
 | created | timestamp | ISO 8601 |
 | updated | timestamp | ISO 8601 |
@@ -508,7 +517,7 @@ This is a local agent tool — no external API. Commands are processed via CLI e
 ### `/pw-goto`
 **Purpose:** Jump to specific phase
 **Auth:** Any authenticated agent session
-**Args:** `phase=<0-13>`
+**Args:** `phase=<0-14>`
 **Returns:** Workflow updated to target phase
 **Rules:**
 - Used for recovery/skipping
@@ -666,7 +675,7 @@ BR-017: Resume token `[RESUME]` restores state and skips Phase 0 triage.
 
 BR-018: Multi-select questions suppress "Type something." row automatically.
 
-BR-019: Bypass flag cleared when agent advances to Phase 9 or beyond via /pw-next.
+BR-019: Bypass flag cleared when agent advances to Phase 10 (Selection) or beyond via /pw-next.
 
 BR-020: Orphan overlay options: Continue Current, Archive & Start New, Cancel.
 
@@ -682,7 +691,7 @@ BR-023: Supply chain scanning via Trivy (recommended), Socket.dev (behavioral), 
 
 ⚠️ **INFERRED:** The `worktreePath` field exists but worktree creation/cleanup logic appears incomplete in the source — unclear if worktrees are automatically removed after execution.
 
-⚠️ **INCOMPLETE:** The delivery audit (Phase 13) references an audit checklist but the actual audit automation implementation was not fully traced.
+⚠️ **INCOMPLETE:** The delivery audit (Phase 14) references an audit checklist but the actual audit automation implementation was not fully traced.
 
 ⚠️ **INFERRED:** The `hasGoals` capability is tracked but no direct integration with `/goals` was found in the workflow phases — may be reserved for future use.
 

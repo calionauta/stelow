@@ -18,7 +18,7 @@ Display help information about the cali-product-workflow system.
 
 | Topic | Description |
 |-------|-------------|
-| `phases` | List all 11 workflow phases |
+| `phases` | List all workflow phases |
 | `commands` | Show all available commands |
 | `setup` | How to install and configure |
 | `concepts` | Shape Up concepts and terminology |
@@ -43,7 +43,7 @@ Display help information about the cali-product-workflow system.
 | `/pw-archive` | Archive workflow |
 | `/pw-unarchive` | Unarchive workflow |
 
-## The 11 Phases
+## The Workflow Phases
 
 1. **Setup** - Initialize workflow, load context
 2. **Context** - Gather existing context
@@ -55,7 +55,9 @@ Display help information about the cali-product-workflow system.
 8. **Int.Gate** - Interface review gate
 9. **Selection** - Prioritize and sequence
 10. **Planning** - Generate typed execution plan
-11. **Execution** - Execute and validate
+11. **Execution** - Execute scopes
+12. **Verification** - Test suite, code review, UI audit
+13. **Audit** - Delivery audit and sign-off
 
 ## Related commands
 
