@@ -3,8 +3,6 @@ import { join } from "node:path";
 import { homedir } from "node:os";
 // @ts-ignore - Optional peer dependency for Pi environment
 import type { ExtensionAPI, ExtensionCommandContext } from "@earendil-works/pi-coding-agent";
-// @ts-ignore - Optional peer dependency for Pi environment
-import { Container, Text, Spacer, SelectList, type SelectItem } from "@earendil-works/pi-tui";
 import { WORKFLOW_DIR, PHASE_NAMES } from "./types";
 import {
   readTracking, writeTracking, readGlobalTracking, writeGlobalTracking,
@@ -14,7 +12,7 @@ import {
   readInbox, addToInbox, removeFromInbox, clearInbox,
   TASK_ICONS,
 } from "./state";
-import { updateFooter, notifyPhase, showOverlay } from "./ui";
+import { updateFooter, notifyPhase, showOverlay, getUIAdapter } from "./ui";
 import cmdStart from "./start";
 
 // ── Import Command Dispatcher for Multi-CLI Support ─────────────────
@@ -158,80 +156,50 @@ function cmdStop(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
   showStopPicker(ctx, wd, stoppable);
 }
 
-function showStopPicker(
+async function showStopPicker(
   ctx: CmdCtx, cwd: string, workflows: { name: string; currentPhase: number }[]
-): void {
-  if (!ctx.ui) return;
-  ctx.ui.custom<string | null>(
-    (_tui: any, theme: any, _kb: any, done: (result: any) => void) => {
-      const items = [
-        {
-          value: "__all__",
-          label: theme.fg("warning", "🛑 Stop All"),
-          description: `Stop all ${workflows.length} workflow(s)`
-        },
-        ...workflows.map(w => ({
-          value: w.name,
-          label: `☐ ${w.name}`,
-          description: `${PHASE_NAMES[w.currentPhase]} — /pw-stop ${w.name}`
-        })),
-        {
-          value: "__cancel__",
-          label: theme.fg("dim", "Cancel"),
-          description: ""
-        }
-      ];
-
-      const c = new Container();
-      c.addChild(new Text(theme.fg("accent", theme.bold("Select workflow to stop:")), 1, 0));
-      c.addChild(new Spacer(1));
-
-      const sl = new SelectList(items, Math.min(items.length + 2, 14), {
-        selectedPrefix: (t: string) => theme.fg("accent", t),
-        selectedText: (t: string) => theme.fg("accent", t),
-        description: (t: string) => theme.fg("muted", t),
-        scrollInfo: (t: string) => theme.fg("dim", t),
-        noMatch: (t: string) => theme.fg("warning", t),
-      });
-      sl.onSelect = (item: SelectItem) => done(item.value);
-      sl.onCancel = () => done(null);
-      c.addChild(sl);
-      c.addChild(new Spacer(1));
-      c.addChild(new Text(
-        theme.fg("dim", "↑↓ navigate  enter:stop  esc:cancel"), 1, 0
-      ));
-
-      return {
-        render: (w: number) => c.render(w),
-        invalidate: () => c.invalidate(),
-        handleInput: (data: string) => { sl.handleInput(data); },
-      };
-    },
+): Promise<void> {
+  const adapter = getUIAdapter();
+  
+  const options = [
     {
-      overlay: true,
-      overlayOptions: { width: "50%", minWidth: 46, maxHeight: "70%", anchor: "center" },
+      value: "__all__",
+      label: "🛑 Stop All",
+      description: `Stop all ${workflows.length} workflow(s)`
+    },
+    ...workflows.map(w => ({
+      value: w.name,
+      label: `☐ ${w.name}`,
+      description: `${PHASE_NAMES[w.currentPhase]} — /pw-stop ${w.name}`
+    })),
+    {
+      value: "__cancel__",
+      label: "Cancel",
+      description: ""
     }
-  ).then((selection: any) => {
-    if (selection === "__all__") {
-      const diskWfs = reconcileTracking(cwd);
-      const globalWfs = (readGlobalTracking()?.workflows ?? [])
-        .filter(w => !diskWfs.some(dw => dw.name === w.name));
-      const allWfs = [...diskWfs, ...globalWfs].filter(w =>
-        w.status === "in-progress" || w.status === "paused"
-      );
-      for (const w of allWfs) {
-        removeWorkflowFromTracking(cwd, w.name);
-      }
-      ctx.ui?.notify(`❌ Stopped ${allWfs.length} workflow(s).`, "info");
-      ctx.ui?.setStatus("workflow", undefined);
-    } else if (selection && selection !== "__cancel__") {
-      removeWorkflowFromTracking(cwd, selection);
-      ctx.ui?.notify(`❌ Workflow '${selection}' stopped.`, "info");
-      if (!getActiveWorkflow(cwd)) {
-        ctx.ui?.setStatus("workflow", undefined);
-      }
+  ];
+  
+  const selection = await adapter.select(options, "Select workflow to stop:");
+  
+  if (selection === "__all__") {
+    const diskWfs = reconcileTracking(cwd);
+    const globalWfs = (readGlobalTracking()?.workflows ?? [])
+      .filter(w => !diskWfs.some(dw => dw.name === w.name));
+    const allWfs = [...diskWfs, ...globalWfs].filter(w =>
+      w.status === "in-progress" || w.status === "paused"
+    );
+    for (const w of allWfs) {
+      removeWorkflowFromTracking(cwd, w.name);
     }
-  });
+    adapter.notify(`❌ Stopped ${allWfs.length} workflow(s).`, "info");
+    adapter.clearStatus();
+  } else if (selection && selection !== "__cancel__") {
+    removeWorkflowFromTracking(cwd, selection);
+    adapter.notify(`❌ Workflow '${selection}' stopped.`, "info");
+    if (!getActiveWorkflow(cwd)) {
+      adapter.clearStatus();
+    }
+  }
 }
 
 // ── PAUSE / RESUME ───────────────────────────────────────────────────

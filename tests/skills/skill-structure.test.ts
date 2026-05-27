@@ -22,8 +22,8 @@ function readSkill(name: string): string {
   return readFileSync(path, 'utf8');
 }
 
-function readPhase(name: string): string {
-  const path = join(PROJECT_ROOT, 'skills/cali-product-workflow/phases', name);
+function readStage(name: string): string {
+  const path = join(PROJECT_ROOT, 'skills/cali-product-workflow/stages', name);
   return readFileSync(path, 'utf8');
 }
 
@@ -33,27 +33,27 @@ describe('SKILL.md Structure Validation', () => {
   const skillPath = join(PROJECT_ROOT, 'skills/cali-product-workflow/SKILL.md');
   const content = readFileSync(skillPath, 'utf8');
 
-  // ── Phase Index ──────────────────────────────────────────────
+  // ── Stage Index ──────────────────────────────────────────────
 
-  describe('Phase Index', () => {
-    it('should have Phase Index section', () => {
-      expect(content).toContain('## 📋 Phase Index');
+  describe('Stage Index', () => {
+    it('should have Stage Index section', () => {
+      expect(content).toContain('## 📋 Stage Index');
     });
 
-    it('should have phases in table (minimum 10)', () => {
-      const phaseMatches = content.match(/\|\s*\d+\s*\|/g);
-      expect(phaseMatches?.length || 0).toBeGreaterThanOrEqual(10);
+    it('should have stages in table (minimum 10)', () => {
+      const stageMatches = content.match(/\|\s*\d+\s*\|/g);
+      expect(stageMatches?.length || 0).toBeGreaterThanOrEqual(10);
     });
 
-    it('should list Execution as a phase', () => {
+    it('should list Execution as a stage', () => {
       expect(content).toMatch(/\*\*Execution\*\*/);
     });
 
-    it('should list Setup or Project Setup as first phase', () => {
+    it('should list Setup or Project Setup as first stage', () => {
       expect(content).toMatch(/\*\*Project Setup\*\*|\*\*Setup\*\*/);
     });
 
-    it('should list Tech Planning as a phase', () => {
+    it('should list Tech Planning as a stage', () => {
       expect(content).toMatch(/\*\*Tech Planning\*\*/);
     });
   });
@@ -73,8 +73,8 @@ describe('SKILL.md Structure Validation', () => {
       expect(content).toMatch(/mandatory|never skip|obligatory/i);
     });
 
-    it('supervisor should NOT activate during phases 3-7', () => {
-      expect(content).toMatch(/never activate during Phases (3-7|3-10)/i);
+    it('supervisor should NOT activate during stages 3-11', () => {
+      expect(content).toMatch(/never activate during Stages (3-11|3-10)/i);
     });
 
     it('should warn about re-submitting Plannotator', () => {
@@ -169,14 +169,14 @@ describe('SKILL.md Structure Validation', () => {
   });
 });
 
-// ── Phase Files Structure Tests ───────────────────────────────────────
+// ── Stage Files Structure Tests ───────────────────────────────────────
 
-describe('Phase Files Structure', () => {
-  const phases = ['setup.md', 'context.md', 'gate.md', 'execution.md'];
+describe('Stage Files Structure', () => {
+  const stages = ['setup.md', 'context.md', 'gate.md', 'execution.md'];
 
-  phases.forEach(phase => {
-    describe(phase, () => {
-      const path = join(PROJECT_ROOT, 'skills/cali-product-workflow/phases', phase);
+  stages.forEach(stage => {
+    describe(stage, () => {
+      const path = join(PROJECT_ROOT, 'skills/cali-product-workflow/stages', stage);
 
       it('should exist', () => {
         expect(existsSync(path)).toBe(true);
@@ -189,14 +189,14 @@ describe('Phase Files Structure', () => {
     });
   });
 
-  describe('Critical Phases', () => {
+  describe('Critical Stages', () => {
     it('gate.md should mention plannotator', () => {
-      const content = readPhase('gate.md');
+      const content = readStage('gate.md');
       expect(content).toMatch(/plannotator/i);
     });
 
     it('execution.md should document execution', () => {
-      const content = readPhase('execution.md');
+      const content = readStage('execution.md');
       expect(content).toMatch(/Execution|Sisyphus|autoresearch/i);
     });
   });

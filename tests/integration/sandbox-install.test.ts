@@ -90,57 +90,49 @@ describe('Sandbox Install Verification', () => {
       expect(existsSync(skillPath)).toBe(true);
     });
 
-    it('should have workflow skills', () => {
-      const workflowPath = join(PROJECT_ROOT, 'skills/cali-product-workflow/skills-workflow');
-      expect(existsSync(workflowPath)).toBe(true);
-      
+    it('should have workflow skills in flat structure', () => {
+      const skillsDir = join(PROJECT_ROOT, 'skills');
       const skills = ['cali-product-shape-up', 'cali-product-interface-brainstorm', 'cali-product-plan-critique', 'cali-product-tech-planning'];
       skills.forEach(skill => {
-        expect(existsSync(join(workflowPath, skill, 'SKILL.md'))).toBe(true);
+        expect(existsSync(join(skillsDir, skill, 'SKILL.md'))).toBe(true);
       });
     });
 
-    it('should have strategic analysis skills', () => {
-      const strategicPath = join(PROJECT_ROOT, 'skills/cali-product-workflow/skills-strategic-analysis');
-      expect(existsSync(strategicPath)).toBe(true);
-      
+    it('should have strategic analysis skills in flat structure', () => {
+      const skillsDir = join(PROJECT_ROOT, 'skills');
       const skills = ['cali-product-job-to-be-done', 'cali-product-discovery', 'cali-product-opportunity-mapping'];
       skills.forEach(skill => {
-        expect(existsSync(join(strategicPath, skill, 'SKILL.md'))).toBe(true);
+        expect(existsSync(join(skillsDir, skill, 'SKILL.md'))).toBe(true);
       });
     });
 
-    it('should have execution skills', () => {
-      const executionPath = join(PROJECT_ROOT, 'skills/cali-product-workflow/skills-execution');
-      expect(existsSync(executionPath)).toBe(true);
-      
+    it('should have execution skills in flat structure', () => {
+      const skillsDir = join(PROJECT_ROOT, 'skills');
       const skills = ['cali-product-scope-executor', 'cali-product-testing-ai-code'];
       skills.forEach(skill => {
-        expect(existsSync(join(executionPath, skill, 'SKILL.md'))).toBe(true);
+        expect(existsSync(join(skillsDir, skill, 'SKILL.md'))).toBe(true);
       });
     });
 
-    it('should have domain libraries', () => {
-      const domainPath = join(PROJECT_ROOT, 'skills/cali-product-workflow/skills-domain-libraries');
-      expect(existsSync(domainPath)).toBe(true);
-      
+    it('should have domain libraries in flat structure', () => {
+      const skillsDir = join(PROJECT_ROOT, 'skills');
       const domains = ['cali-product-pricing', 'cali-product-ads', 'cali-product-trust-building'];
       domains.forEach(domain => {
-        expect(existsSync(join(domainPath, domain, 'SKILL.md'))).toBe(true);
+        expect(existsSync(join(skillsDir, domain, 'SKILL.md'))).toBe(true);
       });
     });
 
-    it('should have phases directory', () => {
-      const phasesPath = join(PROJECT_ROOT, 'skills/cali-product-workflow/phases');
-      expect(existsSync(phasesPath)).toBe(true);
+    it('should have stages directory', () => {
+      const stagesPath = join(PROJECT_ROOT, 'skills/cali-product-workflow/stages');
+      expect(existsSync(stagesPath)).toBe(true);
     });
 
-    it('should have core phase files', () => {
-      const phasesPath = join(PROJECT_ROOT, 'skills/cali-product-workflow/phases');
+    it('should have core stage files', () => {
+      const stagesPath = join(PROJECT_ROOT, 'skills/cali-product-workflow/stages');
       // Core stages that must exist in stages/ directory
-      const corePhases = ['setup', 'context', 'gate', 'execution', 'selection', 'delivery-audit', 'triage'];
-      corePhases.forEach(phase => {
-        expect(existsSync(join(phasesPath, `${phase}.md`))).toBe(true);
+      const coreStages = ['setup', 'context', 'gate', 'execution', 'selection', 'delivery-audit', 'triage'];
+      coreStages.forEach(stage => {
+        expect(existsSync(join(stagesPath, `${stage}.md`))).toBe(true);
       });
     });
   });

@@ -60,7 +60,8 @@ const skills: SkillDefinition[] = [
 // ── Read Skill Helper ────────────────────────────────────────────────
 
 function readSkill(skill: SkillDefinition): string {
-  const path = join(PROJECT_ROOT, 'skills/cali-product-workflow', skill.path);
+  // Skills are in flat structure: skills/<skill-name>/SKILL.md
+  const path = join(PROJECT_ROOT, 'skills', skill.path);
   return readFileSync(path, 'utf8');
 }
 
@@ -157,7 +158,8 @@ describe('Skill Implementation Validation', () => {
 
       describe('File Existence', () => {
         it('skill file should exist at expected path', () => {
-          const fullPath = join(PROJECT_ROOT, 'skills/cali-product-workflow', skill.path);
+          // Skills are in flat structure: skills/<skill-name>/SKILL.md
+          const fullPath = join(PROJECT_ROOT, 'skills', skill.path);
           expect(existsSync(fullPath)).toBe(true);
         });
       });

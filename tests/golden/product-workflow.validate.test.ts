@@ -51,10 +51,10 @@ const goldenDataset = [
   },
 ];
 
-// Helper: extract phases from content
-function extractPhases(content: string): string[] {
-  const phaseMatches = content.match(/Phase \d+[^\n]*/g) || [];
-  return phaseMatches;
+// Helper: extract stages from content
+function extractStages(content: string): string[] {
+  const stageMatches = content.match(/Stage \d+[^\n]*/g) || [];
+  return stageMatches;
 }
 
 // Helper: count gates
@@ -72,18 +72,18 @@ describe("SKILL.md Golden Validation", () => {
   describe("Overall Validation", () => {
     it("should have required sections", () => {
       expect(SKILL_CONTENT).toMatch(/CRITICAL RULES|NEVER skip/i);
-      expect(SKILL_CONTENT).toMatch(/phases?/i);
+      expect(SKILL_CONTENT).toMatch(/stages?/i);
     });
 
-    it("should reference the phases directory", () => {
-      expect(SKILL_CONTENT).toMatch(/phases\//);
+    it("should reference the stages directory", () => {
+      expect(SKILL_CONTENT).toMatch(/stages\//);
     });
 
-    it("should have correct phase documentation", () => {
-      // Check key phases are documented
-      expect(SKILL_CONTENT).toMatch(/Setup|Phase 1/i);
-      expect(SKILL_CONTENT).toMatch(/Shape|Phase 3/i);
-      expect(SKILL_CONTENT).toMatch(/Execution|Phase 12|Phase 13/i);
+    it("should have correct stage documentation", () => {
+      // Check key stages are documented
+      expect(SKILL_CONTENT).toMatch(/Setup|Stage 1/i);
+      expect(SKILL_CONTENT).toMatch(/Shape|Stage 3/i);
+      expect(SKILL_CONTENT).toMatch(/Execution|Stage 12|Stage 13/i);
     });
   });
 
@@ -167,15 +167,12 @@ describe("SKILL.md Golden Validation", () => {
   describe("Per-Case Basic Validation", () => {
     goldenDataset.forEach(testCase => {
       describe(`Case: ${testCase.name}`, () => {
-        it("should have expected phases in SKILL.md", () => {
-          const phases = extractPhases(SKILL_CONTENT);
-          const phaseCount = phases.length;
+        it("should have expected stages in SKILL.md", () => {
+          const stages = extractStages(SKILL_CONTENT);
+          const stageCount = stages.length;
           
-          if (testCase.expected.phaseCount >= 8) {
-            expect(phaseCount).toBeGreaterThanOrEqual(8);
-          } else {
-            expect(phaseCount).toBeGreaterThanOrEqual(testCase.expected.phaseCount);
-          }
+          // SKILL.md documents 14 stages (0-13), so we expect at least 10
+          expect(stageCount).toBeGreaterThanOrEqual(10);
         });
 
         it("should reference expected tools", () => {
