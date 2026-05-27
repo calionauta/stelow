@@ -79,4 +79,4 @@ pnpm-lock.yaml
 # Plugin configs (Claude Code, Codex, OpenCode)
 .claude-plugin/
 .codex-plugin/
-.opencode-plugin/
+.opencode-plugin/.stryker-tmp/

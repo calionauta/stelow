@@ -1,0 +1,17 @@
+{
+  "name": "@renatocaliari/cali-product-workflow",
+  "version": "0.2.21-alpha",
+  "description": "Product workflow for AI coding agents: Shape Up + Interface + Tech Planning + Critique + Gate.",
+  "author": {
+    "name": "Cali",
+    "url": "https://github.com/renatocaliari"
+  },
+  "license": "MIT",
+  "keywords": [
+    "product-workflow",
+    "shape-up",
+    "ai-coding-agent",
+    "planning"
+  ],
+  "skills": "./skills/"
+}
