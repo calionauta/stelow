@@ -154,13 +154,19 @@ Both frameworks enforce structure for general software engineering. Here's what 
 
 ## 🚀 Quick Start
 
+**New to pi.dev?** Install everything from scratch:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/renatocaliari/cali-product-workflow/main/setup.sh | sh
+```
+
+**Already have pi.dev?** Install skills only:
+
 ```bash
 git clone https://github.com/renatocaliari/cali-product-workflow.git
 cd cali-product-workflow
 ./install.sh
 ```
-
-The installer auto-detects all your CLIs (pi, opencode, claude-code, codex) and installs for each one. One command, all CLIs.
 
 See [docs/INSTALLATION.md](docs/INSTALLATION.md) for detailed options.
 Per-agent configuration files (commands, install scripts) are in [`cli-agents/`](cli-agents/).
@@ -169,9 +175,30 @@ Per-agent configuration files (commands, install scripts) are in [`cli-agents/`]
 
 ## 📦 Installation
 
-For full installation instructions, see [docs/INSTALLATION.md](docs/INSTALLATION.md).
+### 🚀 Complete Setup (From Zero) — Recommended for New Users
 
-Quick setup:
+**One command installs EVERYTHING** — Node.js, pi.dev, all extensions, skills, and configuration. No prior setup needed.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/renatocaliari/cali-product-workflow/main/setup.sh | sh
+```
+
+**What gets installed:**
+
+| Component | Details |
+|-----------|---------|
+| **Node.js** | v20+ (if not installed) |
+| **pi.dev** | Latest version |
+| **Extensions (22)** | subagents, browser, intercom, supervisor, autoresearch, fff, wayfinder, plannotator, context-mode, goal, skillful, powerline-footer, and more |
+| **Skills (20)** | Shape Up, Interface, Critique, Tech Planning, JTBD, Discovery, Pricing, Ads, Trust, Promotions, and more |
+| **Settings** | Optimized config with theme, model defaults, skill shortcuts |
+
+> **For non-technical users:** This script is interactive and will ask for confirmation before installing anything. It works on macOS and Linux.
+
+### 📋 Existing Pi Users
+
+If you already have pi.dev installed, use the standard installer:
+
 ```bash
 git clone https://github.com/renatocaliari/cali-product-workflow.git
 cd cali-product-workflow

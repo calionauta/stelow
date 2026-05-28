@@ -5,6 +5,10 @@ description: >
   and routes each scope to its correct executor. Acts as the autonomous overnight
   "set and forget" orchestrator — the pi equivalent of /goal for approved plans.
   For test-* scopes, enforces hard blocks (mutation score, security gates).
+metadata:
+  frequency: weekly
+  category: product
+  context-cost: low
 ---
 
 # Execution Executor

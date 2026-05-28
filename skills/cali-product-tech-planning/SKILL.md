@@ -5,6 +5,10 @@ description: >
   (feature/optimization/spike + test-*), sequences them, and creates goals (see references/cli-tools/goals.md).
   For software products, also generates testing-strategy.md via cali-product-testing-ai-code.
   Part of cali-product-workflow but can be used standalone.
+metadata:
+  frequency: weekly
+  category: product
+  context-cost: low
 ---
 
 # Tech Planning Sequencing

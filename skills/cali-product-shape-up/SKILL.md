@@ -5,6 +5,10 @@ description: >
   a product proposal using the Shape Up method. Produces a shaped proposal
   with problem, solution, scope (IN/OUT), and risks. Part of the
   cali-product-workflow but can be used standalone.
+metadata:
+  frequency: weekly
+  category: product
+  context-cost: low
 ---
 
 # Shape Up Planning

@@ -1,6 +1,11 @@
 ---
 name: cali-product-open-source
 description: The Open Source Paradox — delivering value by giving up control. Explores business models, organizational structures, and strategies for competing in an open-source world.
+metadata:
+  frequency: rare
+  category: research
+  context-cost: low
+disable-model-invocation: true
 ---
 
 # The Open Source Paradox: Delivering Value by Giving Up Control

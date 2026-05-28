@@ -1,6 +1,11 @@
 ---
 name: cali-product-trust-building
 description: Building trust through perception and guarantee mechanisms. Covers ten pillars to materialize trust, guarantee types from unconditional to anti-guarantees, and strategic approaches for different contexts.
+metadata:
+  frequency: rare
+  category: research
+  context-cost: low
+disable-model-invocation: true
 ---
 
 # Building Trust: Perception and Guarantee

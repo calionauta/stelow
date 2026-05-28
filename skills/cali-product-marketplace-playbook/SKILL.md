@@ -1,6 +1,11 @@
 ---
 name: cali-product-marketplace-playbook
 description: Strategies and tactics for stimulating marketplaces by balancing supply and demand. Covers 19 proven tactics from getting the harder side first to creating urgency through constraints.
+metadata:
+  frequency: rare
+  category: research
+  context-cost: low
+disable-model-invocation: true
 ---
 
 # Stimulating Marketplace: Supply and Demand

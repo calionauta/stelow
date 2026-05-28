@@ -15,6 +15,11 @@ description: >
   - discussing ecosystems, platforms, adaptability, or emergent behavior
   - exploring feature prioritization through connections and optionality
   - discussing product resilience, flexibility, or future evolution
+metadata:
+  frequency: rare
+  category: research
+  context-cost: medium
+disable-model-invocation: true
 ---
 
 # Evolutionary Product Thinking

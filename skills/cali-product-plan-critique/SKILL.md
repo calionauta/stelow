@@ -4,6 +4,10 @@ description: >
   [Cali] Plan critique skill using audit checklists and frameworks. Reviews
   spec-product.md for gaps, risks, and improvements. Part of cali-product-workflow
   but can be used standalone after Shape Up.
+metadata:
+  frequency: weekly
+  category: product
+  context-cost: low
 ---
 
 # Plan Critique

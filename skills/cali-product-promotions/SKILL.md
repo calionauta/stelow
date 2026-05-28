@@ -1,6 +1,11 @@
 ---
 name: cali-product-promotions
 description: Launch promotion strategies using the MAGIC framework. Covers Loss Leader, Gift Card Sale, Limited High-Value Package, and Irresistible Freebie strategies with tactical examples.
+metadata:
+  frequency: rare
+  category: research
+  context-cost: low
+disable-model-invocation: true
 ---
 
 # Promotions for Launch

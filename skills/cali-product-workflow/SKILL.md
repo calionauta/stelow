@@ -1,6 +1,10 @@
 ---
 name: cali-product-workflow
 description: "[Cali] Complete product planning workflow: Shape Up -> Interface -> Tech Planning -> Plan Critique -> Plannotator Gate. Includes 8 domain playbooks (Pricing, Trust, Ads, Health, etc)"
+metadata:
+  frequency: daily
+  category: product
+  context-cost: medium
 ---
 
 # Product Planner (Orchestrator)

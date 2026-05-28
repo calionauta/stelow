@@ -1,6 +1,11 @@
 ---
 name: cali-product-pricing
 description: Pricing strategies and models for product offerings. Covers exchange bases, consumption control, interest alignment, and perception techniques to formalize value exchange agreements.
+metadata:
+  frequency: rare
+  category: research
+  context-cost: low
+disable-model-invocation: true
 ---
 
 # Product Pricing

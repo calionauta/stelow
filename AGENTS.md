@@ -2,7 +2,7 @@
 
 **Transform product ideas into approved, testable plans — systematically.**
 
-## Quick Commands
+## Commands
 
 | Command | Description |
 |---------|-------------|
@@ -43,25 +43,25 @@ The Planning stage generates typed scopes with dependency mapping.
 - `skills/.../references/cli-tools/todo.md` — Todo system docs
 - `extensions/.../modules/` — Reusable code (file-store, cache, task)
 
+## Stack
+
+- **Runtime:** Node 20.0+, npm
+- **Language:** TypeScript 5.0 strict
+- **Build:** tsc, vitest, stryker
+
 ## Development
 
-Requires Node >=20 and npm.
-
 ```bash
-npm run build            # Compile TypeScript (tsc -p tsconfig.build.json)
-npm test                 # Run all tests (vitest)
+npm run build            # Compile TypeScript
+npm test                 # Run all tests
 npm run test:unit        # Unit tests only
 npm run test:integration # Integration tests only
 npm run test:skills      # Skill structure tests
-npm run test:ci          # CI test suite (scripts/test-ci.sh)
-npm run typecheck        # Type check (tsc --noEmit)
-npm run mutate           # Mutation testing (stryker)
-npm run version:sync     # Sync version across plugin configs
+npm run test:ci          # CI test suite
+npm run typecheck        # Type check
+npm run mutate           # Mutation testing
+npm run version:sync     # Sync versions
 ```
-
-- Do NOT use `npm install` in CI — use `npm ci` with committed `package-lock.json`
-- Do NOT edit generated files in `build/`
-- Do NOT use `require()` — this is ESM (`"type": "module"`)
 
 ## Commits
 
@@ -76,46 +76,20 @@ All project files must use `lowercase-kebab-case`:
 
 ## Skills
 
-20 specialized skills flat in `skills/` directory:
+20 specialized skills in `skills/` — see directory structure for full list.
 
-```
-skills/
-├── cali-product-workflow/             # Orchestrator
-├── cali-product-shape-up/             # Shape Up planning
-├── cali-product-interface-brainstorm/  # Interface brainstorming
-├── cali-product-plan-critique/        # Plan critique
-├── cali-product-tech-planning/        # Tech planning sequencing
-├── cali-product-job-to-be-done/       # JTBD methodology
-├── cali-product-discovery/            # Experiment planning
-├── cali-product-opportunity-mapping/  # Opportunity mapping
-├── cali-product-multi-method-market-analysis/  # PESTLE, Wardley Maps
-├── cali-product-evolutionary-principles/  # Evolutionary principles
-├── cali-product-pricing/              # Pricing domain
-├── cali-product-ads/                  # Ads domain
-├── cali-product-trust-building/       # Trust domain
-├── cali-product-promotions/           # Promotions domain
-├── cali-product-business-models/     # Business models domain
-├── cali-product-health/               # Health domain
-├── cali-product-marketplace-playbook/  # Marketplace domain
-├── cali-product-open-source/          # Open source domain
-├── cali-product-scope-executor/       # Typed scope execution
-└── cali-product-testing-ai-code/      # AI-aware testing strategy
-```
+## Extensions
 
-## Extensions (Pi CLI)
+- Pi extension, Pi stub, CLI agents configs in `extensions/` and `cli-agents/`
+- Skills install to `~/.agents/skills/` across Pi, OpenCode, Claude Code
 
-- `extensions/cali-product-workflow/` — Pi extension (slash commands, event hooks, TUI)
-- `extensions/cali-pw-pi/` — Pi stub (re-exports from build)
-- `cli-agents/` — Per-agent configs (claude, codex, opencode, pi)
+## Don'ts
 
-## CLI Support
-
-| CLI | Skill path | Installation |
-|-----|-----------|-------------|
-| **Pi** | `~/.agents/skills/` | Extension + npm packages via install.sh |
-| **OpenCode** | `~/.agents/skills/` | Plugin + skills.paths config |
-| **Claude Code** | `~/.agents/skills/` | `~/.claude/commands/` (markdown) |
-| **Codex** | `~/.agents/skills/` | n/a |
+- Do NOT use `npm install` in CI — use `npm ci` with committed `package-lock.json`
+- Do NOT edit generated files in `build/`
+- Do NOT use `require()` — this is ESM (`"type": "module"`)
+- Do NOT add dependencies without asking
+- Do NOT put secrets in AGENTS.md
 
 ## Distribution
 

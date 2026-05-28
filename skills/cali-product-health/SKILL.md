@@ -1,6 +1,11 @@
 ---
 name: cali-product-health
 description: Product health monitoring through signals in tension. Monitor both effectiveness and user well-being by observing tension between success signals and counterbalance signals, focusing on removing unwanted side effects.
+metadata:
+  frequency: rare
+  category: research
+  context-cost: low
+disable-model-invocation: true
 ---
 
 # Product Health: Signals in Tension

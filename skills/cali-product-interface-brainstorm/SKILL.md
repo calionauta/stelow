@@ -4,6 +4,10 @@ description: >
   [Cali] Interface brainstorming skill. Use when generating interface proposals
   using the 5 archetypes method. Produces 5 independent proposals + hybrid recommendation.
   Part of cali-product-workflow but can be used standalone.
+metadata:
+  frequency: monthly
+  category: product
+  context-cost: low
 ---
 
 # Interface Brainstorming

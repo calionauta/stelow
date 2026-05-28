@@ -6,6 +6,10 @@ description: >
   Activated automatically when product_type is "software" or "hybrid".
   Based on empirical research: AgentAssay (2026), MSR 2026, Veracode 2025, CodeRabbit 2025,
   LLM4TDD (2023), TDD-with-AI-Agents (2026).
+metadata:
+  frequency: monthly
+  category: code
+  context-cost: medium
 ---
 
 # AI-Aware Testing Strategy

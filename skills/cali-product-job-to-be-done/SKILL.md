@@ -10,6 +10,10 @@ description: >
   user mentions: jobs to be done, JTBD, contextual segmentation, thinking styles, Indi Young,
   job map, job steps, desired outcomes, user needs, JTBD competitors, job actors, situational
   variables, emotional jobs, social jobs, or any combination of these terms.
+metadata:
+  frequency: monthly
+  category: research
+  context-cost: low
 ---
 
 # Jobs To Be Done — Complete Skill

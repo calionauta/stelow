@@ -9,6 +9,10 @@ description: >
   product lifecycle, building customer trust, marketplace, open source as strategy,
   or any concept related to creating and validating digital products with low risk and fast learning.
   This skill contains ALL the method details — do not skip any detail.
+metadata:
+  frequency: monthly
+  category: product
+  context-cost: low
 ---
 
 # Product with Short Learning Cycles

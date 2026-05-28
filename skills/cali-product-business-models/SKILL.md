@@ -1,6 +1,11 @@
 ---
 name: cali-product-business-models
 description: Business model creativity triggers for reducing costs and generating revenue. Based on Jobs to Be Done frameworks from Strategyn to adapt and experiment with new models.
+metadata:
+  frequency: rare
+  category: research
+  context-cost: low
+disable-model-invocation: true
 ---
 
 # Business Models
