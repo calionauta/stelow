@@ -154,19 +154,14 @@ Both frameworks enforce structure for general software engineering. Here's what 
 
 ## 🚀 Quick Start
 
-**New to pi.dev?** Install everything from scratch:
+This package works across **multiple coding agents** — not just pi.dev. See the compatibility table in [Installation](#-installation) to pick your path.
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/renatocaliari/cali-product-workflow/main/setup.sh | sh
-```
-
-**Already have pi.dev?** Install skills only:
-
-```bash
-git clone https://github.com/renatocaliari/cali-product-workflow.git
-cd cali-product-workflow
-./install.sh
-```
+| Your situation | Recommended command | What you get |
+|----------------|--------------------|-------------|
+| **New to CLIs** (no Node, no agent) | `curl -fsSL https://raw.githubusercontent.com/.../setup.sh \| sh` | Node.js + pi.dev + all extensions + 20 skills |
+| **Already use pi.dev** | `git clone ... && ./install.sh` | 20 skills + TUI overlay + slash commands |
+| **Use OpenCode / Claude Code / Codex** | `git clone ... && ./install.sh` | 20 skills + command files (no TUI) |
+| **Any CLI (skills only)** | `npx skills add renatocaliari/cali-product-workflow -g` | 20 skills via DotAgents Protocol |
 
 See [docs/INSTALLATION.md](docs/INSTALLATION.md) for detailed options.
 Per-agent configuration files (commands, install scripts) are in [`cli-agents/`](cli-agents/).
@@ -175,9 +170,25 @@ Per-agent configuration files (commands, install scripts) are in [`cli-agents/`]
 
 ## 📦 Installation
 
-### 🚀 Complete Setup (From Zero) — Recommended for New Users
+### CLI Compatibility
 
-**One command installs EVERYTHING** — Node.js, pi.dev, all extensions, skills, and configuration. No prior setup needed.
+Not every feature works on every CLI. Here's what to expect:
+
+| Feature | pi.dev | OpenCode | Claude Code | Codex |
+|---------|--------|----------|-------------|-------|
+| **Skills (all 20)** | ✅ | ✅ | ✅ | ✅ |
+| **`/pw-start`, `/pw-menu` commands** | ✅ Slash commands | ✅ Via `pw-*.md` files | ✅ Via command files | ✅ Via command files |
+| **TUI overlay (real-time status)** | ✅ Native | ❌ | ❌ | ❌ |
+| **Plannotator visual gate** | ✅ Extension | ⚠️ Manual | ⚠️ Manual | ⚠️ Manual |
+| **Deep hooks (events, gates)** | ✅ Extension | ❌ | ❌ | ❌ |
+
+> **Bottom line:** The **20 skills work identically on every CLI** — they run the full Shape Up workflow, generate plans, critique, scopes, everything. The TUI overlay and deep integration features are Pi-only because only Pi exposes an extension system. All CLIs can still complete the workflow; it just happens in chat rather than a visual panel.
+
+---
+
+### 🚀 Path A: From Zero (pi.dev + Everything)
+
+**One command, everything included.** Pick this if you don't have pi.dev yet.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/renatocaliari/cali-product-workflow/main/setup.sh | sh
@@ -185,19 +196,17 @@ curl -fsSL https://raw.githubusercontent.com/renatocaliari/cali-product-workflow
 
 **What gets installed:**
 
-| Component | Details |
-|-----------|---------|
-| **Node.js** | v20+ (if not installed) |
-| **pi.dev** | Latest version |
-| **Extensions (22)** | subagents, browser, intercom, supervisor, autoresearch, fff, wayfinder, plannotator, context-mode, goal, skillful, powerline-footer, and more |
-| **Skills (20)** | Shape Up, Interface, Critique, Tech Planning, JTBD, Discovery, Pricing, Ads, Trust, Promotions, and more |
-| **Settings** | Optimized config with theme, model defaults, skill shortcuts |
+| Component | Details | Works on |
+|-----------|---------|----------|
+| **Node.js** | v20+ (if not installed) | — |
+| **pi.dev** | Latest version | pi.dev |
+| **Extensions (22)** | subagents, browser, intercom, supervisor, plannotator, etc. | pi.dev only |
+| **Skills (20)** | Shape Up, JTBD, Pricing, Ads, Discovery, and more | **All CLIs** ✅ |
+| **Settings** | Theme, model defaults, skill shortcuts | pi.dev |
 
-> **For non-technical users:** This script is interactive and will ask for confirmation before installing anything. It works on macOS and Linux.
+> **Not using pi.dev?** The skills are still installed to `~/.agents/skills/` — they work on OpenCode, Claude Code, and Codex too. You just won't get the Pi-only extensions or TUI. The workflow itself runs fine.
 
-### 📋 Existing Pi Users
-
-If you already have pi.dev installed, use the standard installer:
+### 📋 Path B: Existing pi.dev User
 
 ```bash
 git clone https://github.com/renatocaliari/cali-product-workflow.git
@@ -205,24 +214,47 @@ cd cali-product-workflow
 ./install.sh
 ```
 
-This auto-detects all your CLIs (Pi, OpenCode, Claude Code, Codex) and installs the workflow for each one.
+The installer auto-detects your CLIs and installs skills + extensions + slash commands. Skills go to `~/.agents/skills/`.
 
----
+### 📋 Path C: Other CLI (OpenCode / Claude Code / Codex)
 
-For manual setup, per-CLI commands, updates, and detailed installation options, see [docs/INSTALLATION.md](docs/INSTALLATION.md).
+The **skills** are the core of this project — they work on **any** agent that supports the [DotAgents Protocol](https://dotagents.org).
+
+```bash
+git clone https://github.com/renatocaliari/cali-product-workflow.git
+cd cali-product-workflow
+./install.sh
+```
+
+The installer detects your CLI and installs **skills + command files**. No extensions, no TUI — just the 20 skills that run the workflow.
+
+**Or, with npx (no clone needed):**
+
+```bash
+npx skills add renatocaliari/cali-product-workflow -g
+```
+
+This installs all 20 skills to `~/.agents/skills/` — works on any CLI.
+
+> For CLI-specific setup (OpenCode config, Claude Code plugin, Codex plugin), see [docs/INSTALLATION.md](docs/INSTALLATION.md).
 
 ---
 
 ## 🔧 Dependencies
 
-Quick setup:
-```bash
-git clone https://github.com/renatocaliari/cali-product-workflow.git
-cd cali-product-workflow
-./install.sh
-```
+For manual setup, per-CLI commands, updates, and detailed installation options, see [docs/INSTALLATION.md](docs/INSTALLATION.md).
 
-This auto-detects all your CLIs (Pi, OpenCode, Claude Code, Codex) and installs the workflow for each one.
+### Required (Pi Only)
+
+See [docs/INSTALLATION.md#required-npm-packages](docs/INSTALLATION.md#required-npm-packages).
+
+### Development
+
+See [package.json](package.json) for toolchain dependencies (TypeScript, Vitest, Stryker).
+
+### Third-Party Skills (Optional)
+
+See [docs/INSTALLATION.md#third-party-skills](docs/INSTALLATION.md#third-party-skills).
 
 ```bash
 # Skills
@@ -376,19 +408,6 @@ When working on software projects, trigger the product workflow:
 
 ---
 
-## 🔧 Dependencies
-
-### Required (Pi Only)
-
-See [docs/INSTALLATION.md#required-npm-packages](docs/INSTALLATION.md#required-npm-packages).
-
-### Development
-
-See [package.json](package.json) for toolchain dependencies (TypeScript, Vitest, Stryker).
-
-### Third-Party Skills (Optional)
-
-See [docs/INSTALLATION.md#third-party-skills](docs/INSTALLATION.md#third-party-skills).
 ---
 
 ## 📁 Artifact Directory
