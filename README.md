@@ -35,7 +35,7 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 - [🔄 Process](#-process)
 - [🎮 Commands](#-commands)
 - [🖥️ TUI Visual](#️-tui-visual)
-- [📋 Skills (16)](#-skills-16)
+- [📋 Skills (21)](#-skills-21)
 - [📊 Version](#-version)
 - [License](#license)
 
@@ -57,7 +57,9 @@ And the workflow begins asking questions, exploring scope, shaping the proposal,
 
 ## About the Author
 
-**[Cali (Renato Caliari)](https://www.linkedin.com/in/calirenato82/)** — Product specialist with hands-on experience:
+**[Cali (Renato Caliari)](https://www.linkedin.com/in/calirenato82/)**
+
+This workflow wasn't designed in a vacuum. It comes from years inside real teams — as a product manager, consultant, and leader across different organizations. The skills, patterns, and disciplines here were tested, broken, and rebuilt in live product environments, not conference rooms.
 
 ### 📚 Published Work
 
@@ -68,6 +70,8 @@ And the workflow begins asking questions, exploring scope, shaping the proposal,
 
 - Former **Product Manager** at tech companies
 - **Product Consultant** helping leaders with strategy and teams with processes
+- Creator of **Triple Track Agile** — adds an opportunity mapping track to product cycles
+- Developed **Contornos** — a social technology for decentralized decisions
 
 ### 🌐 Resources
 
@@ -100,7 +104,8 @@ And the workflow begins asking questions, exploring scope, shaping the proposal,
 
 **Key Features:**
 
-- 16 specialized product skills (Job To Be Done, Opportunity Mapping, Product Discovery, Pricing, Promotions, Trust Building, and more)
+- **21 sub-skills** organized into 4 layers — orchestrator + strategies + workflow stages + tactics
+- Part of a broader ecosystem of **54+ skills** for coding, ops, research, and facilitation
 - Real-time TUI tracking with visual overlay (`/pw-menu`)
 - Gate approval via Plannotator — review, comment, approve or reject before implementation
 - Typed scopes for autonomous execution (feature, spike, test-*, optimize)
@@ -442,24 +447,15 @@ Toggle with `/pw-menu`.
 
 ## 📋 Skills (21)
 
-All 21 skills are flat in `skills/` directory, ready for `~/.agents/skills/`.
+All 21 skills are flat in `skills/` directory, ready for `~/.agents/skills/`. They're organized into 4 layers:
 
-### Orchestrator (1)
+### 🎛️ Orchestrator (1)
 
 | Skill | Purpose |
 |-------|---------|
 | `cali-product-workflow` | Coordinates the multi-stage workflow (Setup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Execution → Verification → Audit) |
 
-### Workflow Skills (4)
-
-| Skill | Purpose |
-|-------|---------|
-784|| `cali-product-shape-up` | Shape Up planning — appetite, hill charts, rabbit holes, IN/OUT boundaries |
-| `cali-product-interface-brainstorm` | Interface exploration in ASCII art |
-| `cali-product-plan-critique` | Adversarial plan review with Plannotator gate |
-| `cali-product-tech-planning` | Technical scope generation with dependency mapping |
-
-### Strategic Analysis (5)
+### 🧠 Product Strategies (5)
 
 | Skill | Purpose |
 |-------|---------|
@@ -469,32 +465,30 @@ All 21 skills are flat in `skills/` directory, ready for `~/.agents/skills/`.
 | `cali-product-multi-method-market-analysis` | Multi-method market analysis |
 | `cali-product-evolutionary-principles` | Evolutionary principles for sustainable development |
 
-### Domain Libraries (8)
+### ⚙️ Workflow Stages (7)
 
 | Skill | Purpose |
 |-------|---------|
-| `cali-product-pricing` | Pricing strategy and tactics |
+| `cali-product-shape-up` | Shape Up planning — appetite, hill charts, rabbit holes, IN/OUT boundaries |
+| `cali-product-interface-brainstorm` | Interface exploration in ASCII art |
+| `cali-product-plan-critique` | Adversarial plan review with Plannotator gate |
+| `cali-product-tech-planning` | Technical scope generation with dependency mapping |
+| `cali-product-testing-ai-code` | AI-aware mutation testing strategy |
+| `cali-product-testing-execution` | Post-implementation testing protocol |
+| `cali-product-scope-executor` | Autonomous scope execution with dependency mapping |
+
+### 📘 Product Tactics (8)
+
+| Skill | Purpose |
+|-------|---------|
 | `cali-product-ads` | Advertising and growth channels |
-| `cali-product-trust-building` | Trust-building mechanisms |
-| `cali-product-promotions` | Promotions and campaigns |
 | `cali-product-business-models` | Business model canvas and options |
 | `cali-product-health` | Product health metrics |
 | `cali-product-marketplace-playbook` | Marketplace dynamics |
 | `cali-product-open-source` | Open source strategy |
-
-d05|
-490|### Orchestrator (1)
-491|d05|
-492|6bf|| Skill | Purpose |
-493|7fa||-------|-------|
-494|9a6|| `cali-product-workflow` | Main orchestrator — coordinates all phases
-495|d05|
-### Execution (2)
-
-| Skill | Purpose |
-|-------|---------|
-| `cali-product-scope-executor` | Typed execution scopes with dependency mapping |
-| `cali-product-testing-ai-code` | AI-aware mutation testing strategy |
+| `cali-product-pricing` | Pricing strategy and tactics |
+| `cali-product-promotions` | Promotions and campaigns |
+| `cali-product-trust-building` | Trust-building mechanisms |
 
 ### Installation
 
