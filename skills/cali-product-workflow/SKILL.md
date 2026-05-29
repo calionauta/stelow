@@ -102,10 +102,10 @@ Domain playbooks available for tactical reference during planning/execution:
 
 Follow the sequence below. For Shape Up, Critique, Interface, and Int. Gate stages, read the subskill SKILL.md directly. Each subskill has its own **Reference Index** — read the file to see it:
 
-1. Shape: see `cali-product-shape-up/SKILL.md` for instructions
-2. Critique: see `cali-product-critique/SKILL.md` for instructions
-3. Interface: see `cali-product-interface-brainstorm/SKILL.md` for instructions
-4. Int. Gate: see `cali-product-tech-planning/SKILL.md` for instructions
+1. Shape: see `skills/cali-product-shape-up/SKILL.md` for instructions
+2. Critique: see `skills/cali-product-critique/SKILL.md` for instructions
+3. Interface: see `skills/cali-product-interface-brainstorm/SKILL.md` for instructions
+4. Int. Gate: see `skills/cali-product-tech-planning/SKILL.md` for instructions
 
 Do NOT use `/skill:` for internal subskills.
 

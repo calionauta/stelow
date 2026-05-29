@@ -25,7 +25,7 @@ This skill is **bundled with cali-product-workflow** — there is no standalone 
 The orchestrator reads this file directly when needed.
 
 ### Standalone
-To run standalone, read `cali-product-tech-planning/SKILL.md` and follow the instructions inline.
+Follow the instructions inline below.
 
 ## Prerequisites
 

@@ -27,7 +27,7 @@ This skill is **bundled with cali-product-workflow** — there is no standalone 
 The orchestrator reads this file directly when needed.
 
 ### Standalone
-To run standalone, read `cali-product-shape-up/SKILL.md` and follow the instructions inline.
+Follow the instructions inline below.
 
 ## 1a. Parallel Recon (optional — recommended for complex features)
 

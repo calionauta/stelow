@@ -34,7 +34,7 @@ This skill is **bundled with cali-product-workflow** — there is no standalone 
 The orchestrator reads this file directly when needed.
 
 ### Standalone (Plan)
-To run standalone on a plan, read `cali-product-critique/SKILL.md` and follow the instructions inline.
+Follow the instructions inline below.
 
 ### Standalone (Codebase or Site)
 Read this file, then jump to the relevant mode section below.

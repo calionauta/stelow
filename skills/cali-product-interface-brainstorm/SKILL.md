@@ -26,7 +26,7 @@ This skill is **bundled with cali-product-workflow** — there is no standalone 
 The orchestrator reads this file directly when needed.
 
 ### Standalone
-To run standalone, see `cali-product-interface-brainstorm/SKILL.md` for instructions and follow the instructions inline.
+Follow the instructions inline below.
 
 ## Process
 
