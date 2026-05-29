@@ -471,7 +471,7 @@ metadata:
 | cali-package-audit | weekly | infra | low | ❌ |
 | cali-product-testing-execution | weekly | code | medium | ❌ |
 | cali-product-shape-up | weekly | product | low | ❌ |
-| cali-product-critique (was plan-critique) | weekly | product | low | ❌ |
+| cali-product-critique | weekly | product | low | ❌ |
 | cali-product-tech-planning | weekly | product | low | ❌ |
 | cali-product-scope-executor | weekly | product | low | ❌ |
 | dogfood | weekly | code | medium | ❌ |
