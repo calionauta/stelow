@@ -1,7 +1,7 @@
 ---
 source: critique-skill (impeccable ecosystem)
 author: impeccable team
-copied_by: cali-product-planner
+copied_by: cali-product-workflow
 date: 2026-05-15
 credits: https://github.com/impeccablehq/impeccable
 applies_to: [plan, site]

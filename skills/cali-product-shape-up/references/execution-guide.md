@@ -1,5 +1,5 @@
 ---
-source: cali-product-planner (consolidated)
+source: cali-product-workflow (consolidated)
 original_files: sequencing-and-persistence.md, cross-domain-adaptation.md, evolutionary-exploration.md
 date: 2026-05-15
 ---
