@@ -258,7 +258,7 @@ This skill runs **after** the Plannotator gate approves the plan, replacing manu
 ```
 1. Shape Up Planning → spec-product.md (business rules, scope, risks)
 2. [Optional] Interface Brainstorming → interfaces.md (wireframes, proposals)
-3. Plan Critique → gap analysis on product spec + revision
+3. Product Critique → gap analysis on product spec + revision
 4. Plannotator Gate → approves spec-product.md ← PRODUCT APPROVED
 5. Tech Planning Sequencing → spec-tech.md (product context + tech scopes)
 6. Execution Executor

@@ -1,6 +1,6 @@
 ---
 name: cali-product-workflow
-description: "[Cali] Complete product planning workflow: Shape Up -> Interface -> Tech Planning -> Plan Critique -> Plannotator Gate. Includes 8 domain playbooks (Pricing, Trust, Ads, Health, etc)"
+description: "[Cali] Complete product planning workflow: Shape Up -> Interface -> Tech Planning -> Product Critique -> Plannotator Gate. Includes 8 domain playbooks (Pricing, Trust, Ads, Health, etc)"
 metadata:
   frequency: daily
   category: product
@@ -103,7 +103,7 @@ Domain playbooks available for tactical reference during planning/execution:
 Follow the sequence below. For Shape Up, Critique, Interface, and Int. Gate stages, read the subskill SKILL.md directly. Each subskill has its own **Reference Index** — read the file to see it:
 
 1. Shape: see `cali-product-shape-up/SKILL.md` for instructions
-2. Critique: see `cali-product-plan-critique/SKILL.md` for instructions
+2. Critique: see `cali-product-critique/SKILL.md` for instructions
 3. Interface: see `cali-product-interface-brainstorm/SKILL.md` for instructions
 4. Int. Gate: see `cali-product-tech-planning/SKILL.md` for instructions
 
@@ -118,7 +118,7 @@ Do NOT use `/skill:` for internal subskills.
 | 2 | **Project Setup** | Stages selection, safe-change | — |
 | 3 | **Strategic Context** (optional) | Strategic exploration + domain detection | — |
 | 4 | **Shape Up** | Create spec with problem/solution/scope | — |
-| 5 | **Plan Critique** | Pre-flight check (LLM automatic) | — |
+| 5 | **Product Critique** | Multi-dimensional critique (plan/codebase/site) | — |
 | 6 | **Review Gate (Plannotator)** | Visual approval — **never skip** | — |
 | 7 | **Scope Adjustment** | Add/remove from IN/OUT (ask) | — |
 | 8 | **Interface Brainstorming** | 5 proposals + hybrid (if selected) | — |
@@ -157,7 +157,7 @@ Stage 3: Strategic Context (optional)
     ↓
 Stage 4: Shape Up
     ↓
-Stage 5: Plan Critique (pre-flight)
+Stage 5: Product Critique (pre-flight)
     ↓
 Stage 6: Plannotator Gate ← visual pause
     ↓
@@ -182,11 +182,11 @@ Stage 14: Delivery Audit
 
 | User selection | Stages that run automatically |
 |---|---|
-| Shape Up only | Shape Up → Plan Critique → **Gate** → **Scope** → Tech Planning → **Execution** → **Verification** → **Audit** |
-| Shape Up + Interface | Shape Up → Plan Critique → **Gate** → **Scope** → Interface → **Interface Gate** → Selection → Tech Planning → **Execution** → **Verification** → **Audit** |
+| Shape Up only | Shape Up → **Product Critique** → **Gate** → **Scope** → Tech Planning → **Execution** → **Verification** → **Audit** |
+| Shape Up + Interface | Shape Up → **Product Critique** → **Gate** → **Scope** → Interface → **Interface Gate** → Selection → Tech Planning → **Execution** → **Verification** → **Audit** |
 | Tech Planning only | Tech Planning (with embedded Gate) → **Execution** → **Verification** → **Audit** |
 
-**Plan Critique** runs automatically before every Gate.
+**Product Critique** runs automatically before every Gate.
 **Gate** (Plannotator --gate) never skips — visual pause is mandatory.
 **Scope Adjustment** happens after Gate approval, via ask (no Plannotator re-run).
 **Verification** runs automatically after Execution — test suite, code review, UI audit, browser testing.

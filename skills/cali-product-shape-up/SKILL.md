@@ -75,7 +75,7 @@ Use the ask tool (see `references/cli-tools/structured-question.md`) for strateg
 After shaping:
 - Save to `.cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md`
 - Do not ask about Interface Brainstorming — already decided in Phase 1 (Setup)
-- **Do NOT ask scope adjustment yet** — this happens after Plan Critique and Gate approval (see workflow sequence below)
+- **Do NOT ask scope adjustment yet** — this happens after Product Critique and Gate approval (see workflow sequence below)
 
 ## Workflow Sequence
 
@@ -84,7 +84,7 @@ After Shape Up, the workflow proceeds:
 ```
 Shape Up
     ↓
-Plan Critique (pre-flight check)
+Product Critique (pre-flight check)
     ↓
 Plannotator (Gate — visual approval)
     ↓
@@ -127,7 +127,7 @@ See `references/proposal-structure.md` for the expected output format.
 
 - **cali-product-workflow**: Coordinates this skill with other phases
 - **cali-product-interface-brainstorm**: Interface exploration after shaping
-- **cali-product-plan-critique**: Plan review after shaping
+- **cali-product-critique**: Plan review after shaping
 
 ## Environment Adaptation
 

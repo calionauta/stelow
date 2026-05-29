@@ -31,7 +31,7 @@ ALL_SKILLS=(
   "cali-product-workflow"
   "cali-product-shape-up"
   "cali-product-interface-brainstorm"
-  "cali-product-plan-critique"
+  "cali-product-critique"
   "cali-product-tech-planning"
   "cali-product-job-to-be-done"
   "cali-product-discovery"
@@ -478,7 +478,7 @@ Environment:
 
 Skills installed (20 total):
   - cali-product-workflow (orchestrator)
-  - 4 workflow skills (shape-up, interface-brainstorm, plan-critique, tech-planning)
+  - 4 workflow skills (shape-up, interface-brainstorm, product-critique, tech-planning)
   - 5 strategic analysis skills
   - 8 domain library skills
   - 2 execution skills

@@ -460,4 +460,4 @@ If tech stack detection fails:
 
 - **cali-product-tech-planning**: Produces scopes to test
 - **cali-product-scope-executor**: Executes test scopes
-- **cali-product-plan-critique**: Can review testing strategy
+- **cali-product-critique**: Can review testing strategy

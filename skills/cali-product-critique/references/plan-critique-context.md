@@ -2,9 +2,10 @@
 source: cali-product-planner (consolidated)
 original_files: role.md, when-to-use.md, workflow-position.md, cross-domain.md, output-expectations.md
 date: 2026-05-15
+applies_to: [plan]
 ---
 
-# Plan Critique — Role, Usage & Context
+# Product Critique — Role, Usage & Context
 
 ## Role
 
@@ -43,12 +44,13 @@ This critique should be invoked **after the complete plan exists** and **before 
 1. Shape Up Planning → spec artifact
 2. [Optional] Interface Brainstorming → proposals artifact
 3. Tech Planning Sequencing → complete plan
-4. Plan Critique ← HERE
+4. Product Critique ← HERE
    ├── Systematic gap analysis (all categories)
-   ├── Choose mode: Auto-resolve vs Ask per gap
-   │   ├── Auto: resolves all → updates plan
-   │   └── Manual: perguntar sobre cada gap 🚨+🤔
-   └── Revise and persist plan
+   ├── Choose input mode: Plan / Codebase / Site
+   ├── Choose resolve mode: Auto vs Ask per gap
+   │   ├── Auto: resolves all → updates artifact
+   │   └── Manual: pergunta sobre cada gap 🚨+🤔
+   └── Revise and persist artifact
 5. Review Gate → submit for approval
 6. Execution
 ```

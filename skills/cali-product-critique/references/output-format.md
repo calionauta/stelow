@@ -1,5 +1,9 @@
 # Output Structure
 
+> Applies to all modes (plan, codebase, site). Field notes: plan mode uses `[flow]`, `[state]` topics;
+> codebase mode uses `[data]`, `[system]`, `[feasibility]`; site mode uses `[interaction]`.
+> Nature tags `(product/business)`, `(ux/ui)`, `(technical)` apply to all modes.
+
 Generate the following sections in order, using the exact format described.
 
 ## 1. 🎯 Executive Summary

@@ -2,9 +2,10 @@
 source: cali-product-planner (consolidated)
 original_files: checklist-flows.md, checklist-states.md, checklist-affordances.md, checklist-data.md, checklist-system.md, checklist-feasibility.md
 date: 2026-05-15
+applies_to: [plan, codebase]
 ---
 
-# Plan Critique — All Checklists
+# Product Critique — All Checklists
 
 ## 1. Checklist: Flows
 

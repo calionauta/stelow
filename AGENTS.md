@@ -16,7 +16,7 @@ Setup → Context → Shape → Critique → Gate → Scope → Interface → In
   0       1         2        3         4      5       6           7           8           9          10
 ```
 
-Stages 2-3 and 7 run as skills (`cali-product-shape-up`, `cali-product-plan-critique`, `cali-product-interface-brainstorm`).
+Stages 2-3 and 7 run as skills (`cali-product-shape-up`, `cali-product-critique`, `cali-product-interface-brainstorm`).
 Gates (4, 7) require Plannotator visual approval - never skip.
 The Planning stage generates typed scopes with dependency mapping.
 

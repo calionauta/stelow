@@ -172,7 +172,7 @@ After identifying the workflow:
    - Approval in `.plannotator/approvals/` → that stage's gate has passed
    - `spec-product.md` exists → Shape Up stage completed
    - `interfaces.md` exists → Interface stages completed
-   - `critique-report.md` exists → Plan Critique stage completed
+   - `critique-report.md` exists → Product Critique stage completed
    - `spec-tech.md` exists and approved → Tech Planning stage completed
 
 5. **Determine resume point**:
@@ -200,13 +200,13 @@ Run `safe-change` from **pi-agent-codebase-workflows** (PriNova) BEFORE proceedi
 
 | User selection | Stages that run automatically |
 |---|---|
-| Shape Up only | Shape Up → **Plan Critique** → **Review Gate** → Tech Planning (no gate) → Execution |
-| Interface only | Interface Brain. → **Plan Critique** → **Review Gate** → Tech Planning (no gate) → Execution |
-| Shape Up + Interface | Shape Up → Interface Brain. → **Plan Critique** → **Review Gate** → Tech Planning (no gate) → Execution |
+| Shape Up only | Shape Up → **Product Critique** → **Review Gate** → Tech Planning (no gate) → Execution |
+| Interface only | Interface Brain. → **Product Critique** → **Review Gate** → Tech Planning (no gate) → Execution |
+| Shape Up + Interface | Shape Up → Interface Brain. → **Product Critique** → **Review Gate** → Tech Planning (no gate) → Execution |
 | Tech Planning only | Tech Planning (with its own **Review Gate**) → Execution |
-| Shape Up + Tech Planning | Shape Up → **Plan Critique** → **Review Gate** → Tech Planning (no gate) → Execution |
-| All | Shape Up → Interface Brain. → **Plan Critique** → **Review Gate** → Tech Planning (no gate) → Execution |
+| Shape Up + Tech Planning | Shape Up → **Product Critique** → **Review Gate** → Tech Planning (no gate) → Execution |
+| All | Shape Up → Interface Brain. → **Product Critique** → **Review Gate** → Tech Planning (no gate) → Execution |
 
-**Plan Critique** and **Review Gate** never appear as options — they are automatic.
+**Product Critique** and **Review Gate** never appear as options — they are automatic.
 
-**Review Gate** never duplicates: comes from Plan Critique or embedded in Tech Planning (standalone).
+**Review Gate** never duplicates: comes from Product Critique or embedded in Tech Planning (standalone).

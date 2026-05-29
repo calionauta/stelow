@@ -29,7 +29,7 @@ cali-product-workflow/          ← Source (versionado)
 
 **Skills installed (21 total):**
 - `cali-product-workflow` — orchestrator (11 fases)
-- 4 workflow skills (shape-up, interface-brainstorm, plan-critique, tech-planning)
+- 4 workflow skills (shape-up, interface-brainstorm, product-critique, tech-planning)
 - 5 strategic analysis skills
 - 8 domain library skills
 - 2 execution skills

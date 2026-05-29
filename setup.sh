@@ -68,7 +68,7 @@ ALL_SKILLS=(
   "cali-product-workflow"
   "cali-product-shape-up"
   "cali-product-interface-brainstorm"
-  "cali-product-plan-critique"
+  "cali-product-critique"
   "cali-product-tech-planning"
   "cali-product-job-to-be-done"
   "cali-product-discovery"

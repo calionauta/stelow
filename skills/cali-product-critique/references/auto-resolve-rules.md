@@ -1,3 +1,7 @@
+---
+applies_to: [plan]
+---
+
 # Auto-Resolve Rules
 
 When resolving gaps automatically (without asking the user):
@@ -7,7 +11,7 @@ When resolving gaps automatically (without asking the user):
    resolve the ambiguity with the most reasonable default.
 2. For 🔎 Minor items, resolve automatically (same as always).
 3. Update the plan document with all resolutions in place.
-4. Add a section at the bottom titled **"Resolved Gaps (Plan Critique)"**
+4. Add a section at the bottom titled **"Resolved Gaps (Product Critique)"**
    listing each gap found and how it was resolved.
 
 > **Important:** Auto-resolve does NOT mean making up requirements. It means

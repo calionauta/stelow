@@ -90,7 +90,7 @@ ctx_batch_execute({
 | Setup | `ctx_batch_execute` | 80-95% |
 | Strategic Context | `ctx_fetch_and_index` | 90%+ |
 | Shape Up | `ctx_execute` (count lines, analyze) | 95% |
-| Plan Critique | `ctx_search` (search codebase) | 85% |
+| Product Critique | `ctx_search` (search codebase) | 85% |
 | Tech Planning | `ctx_execute_file` (read specs) | 90% |
 | Scope Executor | `ctx_batch_execute` | 80-90% |
 

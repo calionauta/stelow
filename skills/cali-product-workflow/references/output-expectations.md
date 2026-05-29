@@ -8,7 +8,7 @@
 - Risks mapped with probability and impact
 - Strategic alternatives considered and dismissed with rationale
 - Interface proposal (if applicable) with wireframes, breadboarding, trade-offs
-- Plan Critique with gaps classified by severity
+- Product Critique with gaps classified by severity
 - Formal approval registered (approved: true + receipt)
 - Typed scopes with DoD, acceptance criteria, dependencies
 - Execution routing: each scope mapped to executor

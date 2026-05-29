@@ -61,7 +61,7 @@ For detailed ASCII status in chat, the skill outputs:
 │   1. Setup        ● Done                │
 │   2. Context      ○ Pending (skip)      │
 │   3. Shape        ◆ Current             │
-│   4. Plan Critique ○ Pending            │
+│   4. Product Critique ○ Pending         │
 │   5. Review Gate  ○ Pending             │
 │   ...                                    │
 └─────────────────────────────────────────┘

@@ -517,7 +517,7 @@ All 21 skills are flat in `skills/` directory, ready for `~/.agents/skills/`. Th
 |-------|---------|
 | `cali-product-shape-up` | Shape Up planning — appetite, hill charts, rabbit holes, IN/OUT boundaries |
 | `cali-product-interface-brainstorm` | Interface exploration in ASCII art |
-| `cali-product-plan-critique` | Adversarial plan review with Plannotator gate |
+| `cali-product-critique` | Multi-dimensional critique (plan / codebase / site) |
 | `cali-product-tech-planning` | Technical scope generation with dependency mapping |
 | `cali-product-testing-ai-code` | AI-aware mutation testing strategy |
 | `cali-product-testing-execution` | Post-implementation testing protocol |

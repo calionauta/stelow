@@ -253,11 +253,11 @@ Select the desired stages:`,
       options: [
         {
           label: "Shape Up Planning (Recommended)",
-          description: "Understand problem, expose assumptions, map risks, define IN/OUT scope. Generates spec-product.md. → Automatically activates Plan Critique + Review Gate."
+          description: "Understand problem, expose assumptions, map risks, define IN/OUT scope. Generates spec-product.md. → Automatically activates Product Critique + Review Gate."
         },
         {
           label: "Interface Brainstorming",
-          description: "Explore 5 interface directions with ASCII wireframes, breadboarding and trade-offs. → Automatically activates Plan Critique + Review Gate."
+          description: "Explore 5 interface directions with ASCII wireframes, breadboarding and trade-offs. → Automatically activates Product Critique + Review Gate."
         },
         {
           label: "Tech Planning Sequencing",

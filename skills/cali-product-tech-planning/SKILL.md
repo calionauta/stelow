@@ -229,7 +229,7 @@ See `skills/cali-product-testing-ai-code/SKILL.md`
 ## Related Skills
 
 - **cali-product-shape-up**: Produces the shaped proposal
-- **cali-product-plan-critique**: Reviews the proposal before tech planning
+- **cali-product-critique**: Reviews the proposal before tech planning
 - **cali-product-workflow** (orchestrator): Coordinates this skill with execution
 
 ## Environment Adaptation
