@@ -150,11 +150,7 @@ Only if the scope involves a visual interface.
 
 ### Accessibility Audit
 
-Load the `audit` skill for WCAG compliance:
-
-```
-/audit
-```
+Use `cali-product-critique` in Site mode for WCAG compliance.
 
 Checks:
 - Color contrast ratios
@@ -165,11 +161,7 @@ Checks:
 
 ### Design Review
 
-Load the `critique` skill for design quality:
-
-```
-/critique
-```
+Use `cali-product-critique` in Site mode for design quality.
 
 Checks:
 - Cognitive load
@@ -279,8 +271,8 @@ Final checklist → All green? Mark complete
 **Steps:**
 1. Run: `npm test`
 2. Launch subagent review (3+ files)
-3. Run: `/audit` → found contrast issue on chart labels
-4. Run: `/critique` → suggested reducing cognitive load
+3. Run: `cali-product-critique` in Site mode → found contrast issue on chart labels
+4. Run: `cali-product-critique` in Site mode → suggested reducing cognitive load
 5. Run: `/dogfood` → all interactive elements work
 6. Complete checklist
 

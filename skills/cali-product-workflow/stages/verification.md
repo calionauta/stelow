@@ -54,14 +54,14 @@ subagent({
 
 If the scope involves a visual interface:
 
-**Accessibility Audit** — load the `audit` skill for WCAG compliance:
+**Accessibility Audit** — use `cali-product-critique` in Site mode:
 - Color contrast ratios
 - Keyboard navigation
 - Screen reader compatibility
 - ARIA attributes
 - Focus management
 
-**Design Review** — load the `critique` skill:
+**Design Review** — use `cali-product-critique` in Site mode:
 - Cognitive load
 - Visual hierarchy
 - AI slop detection

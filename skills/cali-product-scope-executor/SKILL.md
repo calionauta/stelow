@@ -145,8 +145,8 @@ For each scope with `[TYPE] feature`:
 4. **Apply feedback:** synthesize reviewer findings and apply fixes worth doing now
 
 5. **If the scope involves UI/visual changes**, run quality checks:
-   - Load audit skill — accessibility (WCAG POUR), performance, theming, anti-patterns.
-   - Load critique skill — design review (heuristics, cognitive load, AI slop detection).
+   - Use `cali-product-critique` in Site mode — accessibility (WCAG POUR), performance, theming, anti-patterns.
+   - Use `cali-product-critique` in Site mode — design review (heuristics, cognitive load, AI slop detection).
 
 6. **DoD verification** (see Step 7) — scope is NOT complete until all DoD items pass.
 
