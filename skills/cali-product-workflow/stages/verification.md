@@ -32,20 +32,11 @@ pytest
 If the diff touches 3+ files, launch fresh-context reviewers in parallel.
 See `references/cli-tools/subagents.md` for the `subagent()` pattern — this works
 on pi.dev, OpenCode, Claude Code, and Codex (all have native subagent support).
-
-**Actively offer** cross-model review after the parallel review.
-Use the [`structured-question`](references/cli-tools/structured-question.md)
-pattern — offer `"Yes — run cross-model review"` vs `"No — skip this time"`.
-
-**If Yes:** Follow [`cross-model-review.md`](references/cli-tools/cross-model-review.md)
-for CLI-specific commands to invoke an independent review process from a
-different agent. Use the concurrent `subagent()` pattern from
-[`subagents.md`](references/cli-tools/subagents.md) to delegate execution
-with `context: "fresh"` and review-focused instructions. Save the external
-review output, compare against the in-session code review, and flag any
-issues the external reviewer found that the internal review missed.
-
-**If No:** Skip. Only parallel subagent review runs (fine for low-risk changes).
+Run **automatically** with `context: "fresh"` — the fresh session provides
+independent review without the degraded context of the original session.
+This mitigates the shallow review trap (Ox Security 2025) even with the
+same model, because the issue isn't identical models but contaminated context
+(Gamage 2026 "Omission Constraints Decay").
 
 ### ui-quality (if visual)
 
