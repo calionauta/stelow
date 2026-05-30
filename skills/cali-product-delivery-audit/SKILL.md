@@ -14,6 +14,8 @@ metadata:
 
 # Delivery Audit
 
+## Overview
+
 Run a structured audit after any implementation — whether it followed the full
 `cali-product-workflow` or was done ad-hoc. Every evaluation criterion runs in
 every mode; only the **source of truth** differs based on what input is available.

@@ -16,6 +16,8 @@ metadata:
 
 > **Tools:** See `references/cli-tools/subagents.md` for subagent patterns.
 
+## Overview
+
 This skill executes the Product Critique phase. It accepts **3 input types**:
 
 | Input | Detects | Example |

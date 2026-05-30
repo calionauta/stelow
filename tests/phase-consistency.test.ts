@@ -123,7 +123,7 @@ const DISPLAY_NAMES: Record<string, string> = {
   "Setup": "Setup",
   "Context": "Strategic Context",
   "Shape": "Shape Up",
-  "Critique": "Plan Critique",
+  "Critique": "Product Critique",
   "Gate": "Plannotator Gate",
   "Scope": "Scope Adjustment",
   "Interface": "Interface Brainstorming",
