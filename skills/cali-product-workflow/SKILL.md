@@ -197,7 +197,7 @@ Stage 11: Tech Planning
     ↓
 Stage 12: Execution
     ↓
-Stage 13: Verification (test suite, review, UI audit) ← NOVO
+Stage 13: Verification (test suite, review, UI audit)
     ↓
 Stage 14: Execution Critique (see `skills/cali-product-execution-critique/SKILL.md`)
 ```

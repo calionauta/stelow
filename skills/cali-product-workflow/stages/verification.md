@@ -33,55 +33,19 @@ If the diff touches 3+ files, launch fresh-context reviewers in parallel.
 See `references/cli-tools/subagents.md` for the `subagent()` pattern — this works
 on pi.dev, OpenCode, Claude Code, and Codex (all have native subagent support).
 
-**Actively offer** cross-model review after the parallel review using the
-[`structured-question`](references/cli-tools/structured-question.md) pattern:
+**Actively offer** cross-model review after the parallel review.
+Use the [`structured-question`](references/cli-tools/structured-question.md)
+pattern — offer `"Yes — run cross-model review"` vs `"No — skip this time"`.
 
-```typescript
-ask_user_question({
-  questions: [{
-    question: `The code review is done. Want to run a cross-model review?
+**If Yes:** Follow [`cross-model-review.md`](references/cli-tools/cross-model-review.md)
+for CLI-specific commands to invoke an independent review process from a
+different agent. Use the concurrent `subagent()` pattern from
+[`subagents.md`](references/cli-tools/subagents.md) to delegate execution
+with `context: "fresh"` and review-focused instructions. Save the external
+review output, compare against the in-session code review, and flag any
+issues the external reviewer found that the internal review missed.
 
-Mitigates the shallow review trap — a different CLI/agent reviews the same
-code, catching what this model missed. Requires another CLI installed
-(opencode, claude, codex).
-
-See references/cli-tools/cross-model-review.md for commands.`,
-    header: "Cross-review",
-    options: [
-      {
-        label: "Yes — run cross-model review (Recommended)",
-        description: "Invokes another CLI agent for an independent pass. Catches blind spots."
-      },
-      {
-        label: "No — skip this time",
-        description: "Only parallel subagent review. OK for low-risk changes."
-      }
-    ]
-  }]
-})
-```
-
-See `references/cli-tools/cross-model-review.md` for details on invoking a different
-CLI/agent (pi.dev, opencode, claude-code, codex) for an independent pass.
-
-```typescript
-subagent({
-  tasks: [
-    {
-      agent: "reviewer",
-      task: "Review this diff for correctness, regressions, and edge cases. Focus on: logic errors, missing error handling, security issues, performance regressions.",
-      output: false
-    },
-    {
-      agent: "reviewer",
-      task: "Review this diff for simplicity and code quality. Focus on: unnecessary complexity, dead code, naming clarity, adherence to project conventions.",
-      output: false
-    }
-  ],
-  concurrency: 2,
-  context: "fresh"
-})
-```
+**If No:** Skip. Only parallel subagent review runs (fine for low-risk changes).
 
 ### ui-quality (if visual)
 
@@ -95,32 +59,17 @@ See `references/cli-tools/agent_browser.md` for browser automation details.
 #### Quick Tier — Source Code Analysis (browserless, ~80% coverage)
 
 Analyze the component source code and styles directly. This catches most
-accessibility and design issues without the cost of a live browser:
+accessibility and design issues without the cost of a live browser.
 
-```typescript
-subagent({
-  agent: "reviewer",
-  task: `Review these components for UI quality from source code:
-
-**Accessibility (from source):**
-- ARIA attributes on interactive elements
-- Semantic HTML (nav, main, button vs div)
-- alt text on images
-- Form labels and error associations
-- Keyboard event handlers (onKeyDown, onKeyPress)
-- Focus management (tabIndex, focus() calls)
-- Color contrast via CSS variables / design tokens (compute from source)
-- Heading hierarchy (h1→h6 structure)
-
-**Design (from source):**
-- Cognitive load: too many choices, unclear labels?
-- Visual hierarchy: clear primary/secondary/tertiary?
-- AI slop detection: generic text, icon-only buttons without labels?
-
-Report what you CAN verify from source, and flag what needs a live browser.`,
-  context: "fresh"
-})
-```
+Use the `subagent()` pattern from
+[`subagents.md`](references/cli-tools/subagents.md) with `context: "fresh"`
+and a reviewer task covering:
+- Accessibility from source: ARIA attributes, semantic HTML, alt text,
+  form labels, keyboard event handlers, focus management, color contrast
+  via CSS tokens, heading hierarchy
+- Design from source: cognitive load, visual hierarchy, AI slop detection
+  (generic text, icon-only buttons without labels)
+- Report what CAN be verified from source and flag what needs a live browser
 
 **Research basis:** AccessGuru (arXiv 2025) shows LLMs achieve ~84%
 violation score decrease analyzing HTML source — no browser needed for

@@ -479,7 +479,7 @@ All workflow artifacts are stored in:
 
 ## 🔄 Process
 
-The workflow has **3 conceptual phases** that contain **15 sequential stages**, from idea triage to post-execution audit. See the [`🥙 Stage Index`](#-skills-22) in the orchestrator skill for the complete stage map with auto-chain rules and flow diagram.
+The workflow has **3 conceptual phases** (15 stages total), from idea triage to post-execution audit. See the [`🥙 Stage Index`](#-skills-22) in the orchestrator skill for the complete stage map with auto-chain rules and flow diagram.
 
 ### 1. 🎨 Shaping
 

@@ -13,6 +13,13 @@
 > `skills/cali-product-workflow/SKILL.md` (Stage Index) and `ls skills/*/SKILL.md | wc -l`
 > (skill count). This AGENTS.md is a summary; never update counts here without
 > verifying against those sources.
+>
+> **Tool Reference Pattern:** Stage files must NEVER call technical tools directly
+> (e.g. `ask_user_question({...})`, `subagent({...})`, `start_supervision({...})`).
+> Instead, reference the CLI-agnostic `.md` file in `references/cli-tools/` that
+> documents the tool (see `docs/TOOL-REFERENCE-PATTERN.md`). The exception is
+> the `.md` files inside `references/cli-tools/` themselves, which may document
+> per-CLI syntax.
 
 ## Workflow Stages
 
