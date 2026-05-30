@@ -1,7 +1,8 @@
 // @ts-ignore - Optional peer dependency for Pi environment
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync, readdirSync, cpSync, rmSync } from "node:fs";
 import { join } from "node:path";
+import { homedir } from "node:os";
 import { WORKFLOW_DIR, TRACKING_FILE, SCHEMA_URL, STAGE } from "./types";
 
 // Stage guard imports
@@ -107,11 +108,69 @@ export default function (pi: ExtensionAPI) {
     }
   });
 
+  // ── Auto-sync skills from git clone → ~/.agents/skills/ ──────────
+  // Each Pi startup mirrors all skills to ~/.agents/skills/ so that
+  // skills added, modified, or removed via git pull are reflected
+  // without running install.sh. Works for ALL CLIs that read from
+  // the DotAgents directory (~/.agents/skills/).
+  function syncSkillsFromClone() {
+    try {
+      const HOME = homedir();
+      const cloneSkillsDir = join(HOME, ".pi/agent/git/github.com/renatocaliari/cali-product-workflow/skills");
+      if (!existsSync(cloneSkillsDir)) return 0;
+
+      const agentsDir = join(HOME, ".agents/skills");
+      mkdirSync(agentsDir, { recursive: true });
+
+      const knownPrefixes = ["cali-product-", "cali-ops-", "cali-coding-", "cali-questions-"];
+
+      // 1. Collect project skills (directories with SKILL.md)
+      const projectSkills = new Set<string>();
+      for (const entry of readdirSync(cloneSkillsDir, { withFileTypes: true })) {
+        if (!entry.isDirectory()) continue;
+        const skillDir = join(cloneSkillsDir, entry.name);
+        if (existsSync(join(skillDir, "SKILL.md"))) {
+          projectSkills.add(entry.name);
+        }
+      }
+
+      if (projectSkills.size === 0) return 0;
+
+      // 2. Sync each project skill (rm -rf + cp -r = exact mirror)
+      let synced = 0;
+      for (const skill of projectSkills) {
+        rmSync(join(agentsDir, skill), { recursive: true, force: true });
+        cpSync(join(cloneSkillsDir, skill), join(agentsDir, skill), { recursive: true });
+        synced++;
+      }
+
+      // 3. Remove skills from ~/.agents/skills/ that no longer exist in the project
+      if (existsSync(agentsDir)) {
+        for (const entry of readdirSync(agentsDir, { withFileTypes: true })) {
+          if (!entry.isDirectory()) continue;
+          const isOurs = knownPrefixes.some(p => entry.name.startsWith(p));
+          if (isOurs && !projectSkills.has(entry.name)) {
+            rmSync(join(agentsDir, entry.name), { recursive: true, force: true });
+          }
+        }
+      }
+
+      return synced;
+    } catch {
+      return 0;
+    }
+  }
+
   // ── Session start ✓ ──────────────────────────────────────────────
   // Now uses adapter pattern for abstraction
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   pi.on("session_start", async (_event: any, ctx: any) => {
     const wd = resolveProjectDir(ctx.cwd);
+    // Skill sync from git clone (silent, best-effort)
+    const synced = syncSkillsFromClone();
+    if (synced > 0 && ctx.ui) {
+      ctx.ui.notify(`🔄 ${synced} skill(s) synced from git`, "info");
+    }
     // Scaffold
     mkdirSync(join(wd, WORKFLOW_DIR), { recursive: true });
     const trackingPath = join(wd, TRACKING_FILE);

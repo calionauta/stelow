@@ -6,13 +6,13 @@
 
 ## Available Commands by CLI
 
-| CLI | Command | Package | Available |
-|-----|---------|---------|-----------|
-| pi | `subagent({ agent, task, context })` | pi-subagents | ✅ |
-| opencode | `subagent({ agent, task, context })` | Built-in | ✅ |
-| claude-code | `subagent({ agent, task, context })` | Built-in | ✅ |
-| codex | `subagent({ agent, task, context })` | Built-in | ✅ |
-| generic | Execute directly with file-based handoff | — | ✅ |
+| CLI | Command | Package | Available | Context behavior |
+|-----|---------|---------|-----------|-----------------|
+| pi | `subagent({ agent, task, context })` | pi-subagents | ✅ | Default `fork` (inherits filtered history); pass `context: "fresh"` for independent review |
+| opencode | `subagent({ agent, task })` | Built-in | ✅ | Always runs in its own context — no `fork`/`fresh` distinction |
+| claude-code | `subagent({ agent, task })` | Built-in | ✅ | Always runs in its own context window — no `fork`/`fresh` distinction |
+| codex | `subagent({ agent, task })` | Built-in | ✅ | Always runs in its own thread — no `fork`/`fresh` distinction |
+| generic | Execute directly with file-based handoff | — | ✅ | — |
 
 ## Command Details
 
@@ -23,7 +23,7 @@ subagent({
   agent: "[type]",
   task: "...",
   output: "...",
-  context: "fork"
+  context: "fork"  // or "fresh" for independent review
 })
 ```
 
@@ -31,18 +31,20 @@ subagent({
 |---------|--------|
 | pi-subagents | nicobailon |
 
+**Default:** `fork` (inherits filtered session history). Pass `context: "fresh"` for adversarial review (zero parent history).
+
 ### opencode, claude-code, codex
 
 ```typescript
 subagent({
   agent: "[type]",
   task: "...",
-  output: "...",
-  context: "fork"
+  output: "..."
+  // No context parameter — subagents always run in their own context
 })
 ```
 
-Built-in delegate/subagent functionality.
+Built-in delegate/subagent functionality. **Subagents always run in their own independent session** — they do not inherit parent session context, so there is no `fork`/`fresh` distinction to configure.
 
 ### generic (Fallback)
 
@@ -78,6 +80,8 @@ read({ path: "output.md" })
 
 ## Common Patterns
 
+> **Note:** `context` parameter is **pi-only**. OpenCode/Claude Code/Codex examples omit it — their subagents are always independent.
+
 ### Parallel (Step 1 - 5 proposals)
 
 ```typescript
@@ -104,7 +108,7 @@ subagent({
 })
 ```
 
-### Parallel with Review
+### Parallel with Review (adversarial)
 
 ```typescript
 subagent({
@@ -113,7 +117,7 @@ subagent({
     { agent: "reviewer", task: "Review diff for simplicity", output: false }
   ],
   concurrency: 2,
-  context: "fork"
+  context: "fresh"  // pi only; other CLIs are always fresh
 })
 ```
 
@@ -129,14 +133,22 @@ subagent({
 
 ---
 
-## Context Mode
+## Context Mode (pi only — `fork` vs `fresh`)
 
-| Mode | When to use |
-|------|-------------|
-| `fork` | Independent task, fresh context |
-| `fresh` | Start new without parent context |
+> **Important:** The `fork` vs `fresh` distinction **only exists on pi** (via pi-subagents extension). OpenCode, Claude Code, and Codex subagents always run in their own independent context — there is no `context` parameter and no distinction to configure.
 
-**Default:** `fork` for parallel tasks.
+| Mode | Behavior | When to use |
+|------|----------|-------------|
+| `fork` | Branches from the parent session — child inherits filtered history | Advisory threads (`oracle`); tasks that benefit from parent context |
+| `fresh` | Truly new session — zero parent history, clean context | **Adversarial code review** (recommended); any task where parent contamination would bias results |
+
+**Key insight (pi only):** `fork` copies the parent's potentially degraded session (context rot ~73% → ~33% over 16 turns, Gamage 2026). `fresh` gives the reviewer full rule awareness, untainted by the executor's degraded context.
+
+**Default (pi):** `planner`, `worker`, `oracle` default to `fork`. For code review, always use `context: "fresh"`.
+
+**Other CLIs:** No action needed — subagents are already independent by default.
+
+**Fallback:** If the CLI lacks subagent support entirely, execute directly and hand off via files.
 
 ---
 
