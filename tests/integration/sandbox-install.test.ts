@@ -130,7 +130,7 @@ describe('Sandbox Install Verification', () => {
     it('should have core stage files', () => {
       const stagesPath = join(PROJECT_ROOT, 'skills/cali-product-workflow/stages');
       // Core stages that must exist in stages/ directory
-      const coreStages = ['setup', 'context', 'gate', 'execution', 'selection', 'delivery-audit', 'triage'];
+      const coreStages = ['setup', 'context', 'gate', 'execution', 'selection', 'execution-critique', 'triage'];
       coreStages.forEach(stage => {
         expect(existsSync(join(stagesPath, `${stage}.md`))).toBe(true);
       });

@@ -105,7 +105,7 @@ const PHASE_TO_MD_FILE: Record<string, string | null> = {
   "Planning": null,                       // Delegated to cali-product-tech-planning skill
   "Execution": "execution.md",
   "Verification": "verification.md",
-  "Audit": "delivery-audit.md",
+  "Audit": "execution-critique.md",
 };
 
 /** PHASE_NAMES name → STAGE enum member (UPPER_SNAKE_CASE) */
@@ -132,7 +132,7 @@ const DISPLAY_NAMES: Record<string, string> = {
   "Planning": "Tech Planning",
   "Execution": "Execution",
   "Verification": "Verification",
-  "Audit": "Delivery Audit",
+  "Audit": "Execution Critique",
 };
 
 // ── Tests ────────────────────────────────────────────────────────────

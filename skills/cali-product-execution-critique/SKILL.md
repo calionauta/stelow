@@ -1,7 +1,7 @@
 ---
-name: cali-product-delivery-audit
+name: cali-product-execution-critique
 description: >
-  [Cali] Post-implementation delivery audit: verify scope completion, implementation quality,
+  [Cali] Post-implementation execution critique: verify scope completion, implementation quality,
   NFR coverage, edge cases, doc/tests, and produce a gap registry with decision matrix.
   Supports 4 modes: workflow (spec-tech.md), plan (spec-product.md), context (dir/URL),
   and standalone (auto-detects via sem diff + git). Merges and replaces
@@ -12,7 +12,7 @@ metadata:
   context-cost: medium
 ---
 
-# Delivery Audit
+# Execution Critique
 
 ## Overview
 
@@ -252,7 +252,7 @@ Same evaluation as Workflow mode. Inferred scopes replace planned scopes.
 Always save or display in this format:
 
 ```markdown
-# Delivery Audit Report
+# Execution Critique Report
 
 **Date:** {timestamp}
 **Mode:** [workflow | plan | context | standalone]

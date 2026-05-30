@@ -85,7 +85,7 @@ ALL_SKILLS=(
   "cali-product-open-source"
   "cali-product-scope-executor"
   "cali-product-testing-ai-code"
-  "cali-product-delivery-audit"
+  "cali-product-execution-critique"
 )
 
 # ─── Colors & Output ─────────────────────────────────────────────────────────

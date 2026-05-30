@@ -41,7 +41,7 @@ Read this file (`goals.md`) to find the command for each mode.
 |-------|---------|
 | Execution stage | Scoped implementation per scope |
 | Verification stage | Run full test suite, code review, UI/browser testing |
-| Delivery Audit stage | Verify implementation, gap analysis |
+| Execution Critique stage | Verify implementation, gap analysis |
 | After Tech Planning | Each scope becomes a goal |
 
 ---

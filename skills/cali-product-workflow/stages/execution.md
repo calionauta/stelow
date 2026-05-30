@@ -195,7 +195,7 @@ After Tech Planning approval, **DO NOT** ask:
 - "Review plan first?"
 - Any variation of "what would you like to do next"
 
-**The workflow proceeds automatically: Execution → Verification → Delivery Audit.**
+**The workflow proceeds automatically: Execution → Verification → Execution Critique.**
 
 ### After Execution
 
@@ -203,7 +203,7 @@ After completing all scopes:
 1. **Do not ask user** what to do next
 2. **Automatically proceed** to Verification stage
 3. Run the testing protocol per [`verification.md`](./verification.md)
-4. After Verification passes, **automatically proceed** to Delivery Audit per `skills/cali-product-delivery-audit/SKILL.md`
+4. After Verification passes, **automatically proceed** to Execution Critique per `skills/cali-product-execution-critique/SKILL.md`
 
 > **CRITICAL: After Tech Planning approval, execution is MANDATORY.**
 > Do NOT ask the user "what to do next". The workflow proceeds automatically.
@@ -249,7 +249,7 @@ After Tech Planning approval, **DO NOT** ask:
 - "Review plan first?"
 - Any variation of "what would you like to do next"
 
-**The workflow proceeds automatically: Execution → Verification → Delivery Audit.**
+**The workflow proceeds automatically: Execution → Verification → Execution Critique.**
 
 ### Worktree (optional)
 

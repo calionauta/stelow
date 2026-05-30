@@ -70,7 +70,7 @@ Phase 10: Interface Selection → User picks via ask_user_question
 Phase 11: Tech Planning     → Typed scopes (feature/spike/optimize)
 Phase 12: Execution         → Automatic via ordered-execution-goal or autoresearch
 Phase 13: Verification      → Full test suite, code review, UI/browser testing
-Phase 14: Delivery Audit    → Post-execution verification
+Phase 14: Execution Critique    → Post-execution verification
 ```
 
 **Rules:**
@@ -79,7 +79,7 @@ Phase 14: Delivery Audit    → Post-execution verification
 - Phase 9 Interface Gate: **MUST** use Plannotator before selection
 - Execution (Phase 12): **AUTOMATIC** after Plannotator approval — no confirmation prompt
 - Verification (Phase 13): **AUTOMATIC** after Execution — runs test suite, code review, UI audit, browser testing
-- Delivery Audit (Phase 14): **AUTOMATIC** after Verification passes
+- Execution Critique (Phase 14): **AUTOMATIC** after Verification passes
 
 ---
 
@@ -254,7 +254,7 @@ Stage Selection (new vs resume)
 [Phase 13] Verification (test suite, review, UI audit)
     │
     ▼
-[Phase 14] Delivery Audit
+[Phase 14] Execution Critique
 ```
 
 ### Interface Brainstorming Flow
@@ -308,7 +308,7 @@ Code Quality Gate (optional)
 [Phase 13] Verification (test suite, review, UI audit)
     │
     ▼
-[Phase 14] Delivery Audit
+[Phase 14] Execution Critique
 ```
 
 ---

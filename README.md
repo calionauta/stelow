@@ -163,8 +163,8 @@ need to know about.
 
 | Problem | Reality | What the workflow tries to do |
 |---------|---------|------------------------------|
-| **Context rot** — in long sessions, the LLM forgets its own rules (73% → 33% compliance, Gamage 2026) | Artifacts are saved to disk at every stage. The Delivery Audit reads from disk, not memory. Fresh sessions between long stages are recommended. |
-| **80% Problem** — LLMs ship CRUD but omit error handling, observability, security, retry, rollback (Osmani 2026, GitClear 2025) | Tech Planning requires NFRs per scope. Verification has an explicit "invisible 20%" checklist. The Delivery Audit detects NFR gaps. |
+| **Context rot** — in long sessions, the LLM forgets its own rules (73% → 33% compliance, Gamage 2026) | Artifacts are saved to disk at every stage. The Execution Critique reads from disk, not memory. Fresh sessions between long stages are recommended. |
+| **80% Problem** — LLMs ship CRUD but omit error handling, observability, security, retry, rollback (Osmani 2026, GitClear 2025) | Tech Planning requires NFRs per scope. Verification has an explicit "invisible 20%" checklist. The Execution Critique detects NFR gaps. |
 | **Model dependency** — Claude Opus, Gemini Flash, and GPT-4o produce different quality results (Veracode 2025: 45% of AI code contains flaws) | Model provenance is tracked in every artifact's frontmatter. You know what to expect and can calibrate your review. |
 | **Partial implementation** — LLMs often implement only what fits in context, leaving plan details behind | Failed or partial execution is documented in the gap registry rather than patched in degraded context. A new goal with fresh context is created instead. |
 | **Shallow review trap** — the same LLM writes code AND tests; green tests ≠ correct code (Ox Security 2025) | The Plannotator Gate is independent from execution. Verification warns that self-written tests are not evidence of correctness. Mutation testing is recommended. |

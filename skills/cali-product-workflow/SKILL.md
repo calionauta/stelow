@@ -113,7 +113,7 @@ LLMs suffer from **context rot**: compliance with their own rules drops from
    with fresh context pointing to the existing spec-tech.md.
 
 3. **Read from disk, not memory.** Each critical stage (Execution, Verification,
-   Delivery Audit) must re-read artifacts from disk, not trust conversation memory.
+   Execution Critique) must re-read artifacts from disk, not trust conversation memory.
 
 4. **Model provenance tracking.** Record which model generated each artifact in
    the YAML frontmatter. Artifacts from smaller models deserve extra review.
@@ -151,7 +151,7 @@ Do NOT use `/skill:` for internal subskills.
 | 11 | **Tech Planning** | Typed scopes + sequencing | — |
 | 12 | **Execution** | Goal/scope executor | — |
 | 13 | **Verification** | Run full test suite, code review, UI audit, browser testing | After Execution |
-| 14 | **Delivery Audit** | Full delivery audit (scope, quality, NFRs, edges, docs) | After Verification |
+| 14 | **Execution Critique** | Full execution critique (scope, quality, NFRs, edge cases, docs) | After Verification |
 
 ### AI-Aware Testing (Conditional)
 
@@ -199,16 +199,16 @@ Stage 12: Execution
     ↓
 Stage 13: Verification (test suite, review, UI audit) ← NOVO
     ↓
-Stage 14: Delivery Audit (see `skills/cali-product-delivery-audit/SKILL.md`)
+Stage 14: Execution Critique (see `skills/cali-product-execution-critique/SKILL.md`)
 ```
 
 ### Auto-chaining rules
 
 | User selection | Stages that run automatically |
 |---|---|
-| Shape Up only | Shape Up → **Product Critique** → **Gate** → **Scope** → Tech Planning → **Execution** → **Verification** → **Audit** |
-| Shape Up + Interface | Shape Up → **Product Critique** → **Gate** → **Scope** → Interface → **Interface Gate** → Selection → Tech Planning → **Execution** → **Verification** → **Audit** |
-| Tech Planning only | Tech Planning (with embedded Gate) → **Execution** → **Verification** → **Audit** |
+| Shape Up only | Shape Up → **Product Critique** → **Gate** → **Scope** → Tech Planning → **Execution** → **Verification** → **Execution Critique** |
+| Shape Up + Interface | Shape Up → **Product Critique** → **Gate** → **Scope** → Interface → **Interface Gate** → Selection → Tech Planning → **Execution** → **Verification** → **Execution Critique** |
+| Tech Planning only | Tech Planning (with embedded Gate) → **Execution** → **Verification** → **Execution Critique** |
 
 **Product Critique** runs automatically before every Gate.
 **Gate** (Plannotator --gate) never skips — visual pause is mandatory.
@@ -216,7 +216,7 @@ Stage 14: Delivery Audit (see `skills/cali-product-delivery-audit/SKILL.md`)
 **Verification** runs automatically after Execution — test suite, code review, UI audit, browser testing.
 **Interface Gate** shows all proposals visually before selection.
 **Execution** runs automatically after Tech Planning — DO NOT ask user what to do next.
-**Delivery Audit** runs after Verification. Uses `skills/cali-product-delivery-audit/SKILL.md` for all 8 evaluation criteria.
+**Execution Critique** runs after Verification. Uses `skills/cali-product-execution-critique/SKILL.md` for all 8 evaluation criteria.
 
 ---
 

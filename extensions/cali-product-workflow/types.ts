@@ -21,7 +21,7 @@ export const PHASE_NAMES = [
   "Planning",    // 11 — Phase 11: Tech Planning
   "Execution",   // 12 — Phase 12: Execution
   "Verification",// 13 — Phase 13: Verification (test suite, review, UI audit)
-  "Audit"        // 14 — Phase 14: Delivery Audit
+  "Audit"        // 14 — Phase 14: Execution Critique
 ];
 
 // ── Stage Aliasing ────────────────────────────────────────────────────

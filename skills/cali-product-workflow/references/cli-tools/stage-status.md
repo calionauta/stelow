@@ -29,7 +29,7 @@
 | 9 | Tech Planning | Stage 10 |
 | 10 | Execution | Stage 11 |
 | 11 | Verification | Stage 12 |
-| 12 | Delivery Audit | Stage 13 |
+| 12 | Execution Critique | Stage 13 |
 | 13 | Complete | Workflow Done |
 
 ---
@@ -98,13 +98,13 @@ After all scopes are executed, the Verification stage runs:
 
 See `stages/verification.md` for the full protocol.
 
-## Delivery Audit (after Verification)
+## Execution Critique (after Verification)
 
-After Verification passes, the Delivery Audit stage verifies:
+After Verification passes, the Execution Critique stage verifies:
 
 1. **Scope completeness** — all planned scopes implemented
 2. **Gap analysis** — identify missing or extra features
 3. **Quality gates** — tests passing, lint clean, build succeeds
 4. **Lessons learned** — document what went well/what could improve
 
-Delegates to `skills/cali-product-delivery-audit/SKILL.md` — outputs `delivery-audit.md` with findings and decision matrix.
+Delegates to `skills/cali-product-execution-critique/SKILL.md` — outputs `execution-critique.md` with findings and decision matrix.

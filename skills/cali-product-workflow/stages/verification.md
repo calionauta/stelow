@@ -8,7 +8,7 @@ After all scopes are executed, run the full testing protocol before delivery aud
 ### Auto-chain
 
 Verification runs **automatically after Execution** once all scopes complete.
-After Verification passes, automatically proceed to Delivery Audit.
+After Verification passes, automatically proceed to Execution Critique.
 
 ### 1. Run Test Suite (Phase 1)
 
@@ -103,6 +103,6 @@ the "invisible 20%" (Osmani 2026, GitClear 2025).
 
 ### 6. Auto-proceed
 
-After all verification phases pass, **automatically proceed to Delivery Audit**.
+After all verification phases pass, **automatically proceed to Execution Critique**.
 
 See `skills/cali-product-testing-execution/SKILL.md` for the full testing protocol reference.
