@@ -24,7 +24,7 @@ Start the cali-product-workflow planning process.
 
 ## What it does
 
-1. Creates a new workflow tracking file in `.product-workflow/`
+1. Creates a new workflow tracking file in `.cali-product-workflow/`
 2. Loads the cali-product-workflow skill
 3. Guides you through the workflow:
    - Setup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection

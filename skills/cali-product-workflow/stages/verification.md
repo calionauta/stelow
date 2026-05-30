@@ -30,6 +30,8 @@ pytest
 ### 2. Parallel Code Review (Phase 2, if 3+ files)
 
 If the diff touches 3+ files, launch fresh-context reviewers in parallel.
+See `references/cli-tools/subagents.md` for the `subagent()` pattern — this works
+on pi.dev, OpenCode, Claude Code, and Codex (all have native subagent support).
 
 **Optionally**, add a cross-model review step after the parallel review:
 See `references/cli-tools/cross-model-review.md` for details on invoking a different
@@ -58,25 +60,88 @@ subagent({
 
 ### 3. UI Quality (Phase 3, if visual)
 
-If the scope involves a visual interface:
+If the scope involves a visual interface, use a **two-tier approach**.
+The Quick Tier (browserless) catches ~80% of issues from source code alone.
+The Full Tier (agent-browser) catches the remaining ~20% that require a
+live browser.
 
-**Accessibility Audit** — use `cali-product-critique` in Site mode:
-- Color contrast ratios
-- Keyboard navigation
-- Screen reader compatibility
-- ARIA attributes
-- Focus management
+See `references/cli-tools/agent_browser.md` for browser automation details.
 
-**Design Review** — use `cali-product-critique` in Site mode:
-- Cognitive load
-- Visual hierarchy
-- AI slop detection
+#### Quick Tier — Source Code Analysis (browserless, ~80% coverage)
 
-### 4. Browser Testing (Phase 4, if interactive)
+Analyze the component source code and styles directly. This catches most
+accessibility and design issues without the cost of a live browser:
+
+```typescript
+subagent({
+  agent: "reviewer",
+  task: `Review these components for UI quality from source code:
+
+**Accessibility (from source):**
+- ARIA attributes on interactive elements
+- Semantic HTML (nav, main, button vs div)
+- alt text on images
+- Form labels and error associations
+- Keyboard event handlers (onKeyDown, onKeyPress)
+- Focus management (tabIndex, focus() calls)
+- Color contrast via CSS variables / design tokens (compute from source)
+- Heading hierarchy (h1→h6 structure)
+
+**Design (from source):**
+- Cognitive load: too many choices, unclear labels?
+- Visual hierarchy: clear primary/secondary/tertiary?
+- AI slop detection: generic text, icon-only buttons without labels?
+
+Report what you CAN verify from source, and flag what needs a live browser.`,
+  context: "fresh"
+})
+```
+
+**Research basis:** AccessGuru (arXiv 2025) shows LLMs achieve ~84%
+violation score decrease analyzing HTML source — no browser needed for
+syntactic accessibility violations. Deque (2026) confirms ~40% of WCAG
+issues are auto-detectable; LLMs push this further by evaluating semantic
+correctness (e.g., "is this alt text meaningful?") that rule-based tools
+cannot assess.
+
+#### Full Tier — Browser Verification (agent-browser, remaining ~20%)
+
+**Only run if:**
+1. Quick Tier flagged issues that need a live browser to confirm
+2. The feature has complex CSS (animations, transitions, responsive)
+3. Screen reader behavior needs verification
+4. Visual regression is a concern
+
+Use `agent_browser` per `references/cli-tools/agent_browser.md`:
+- Open the component/feature in the browser
+- Snapshot interactive elements
+- Verify color contrast (rendered, not computed)
+- Check hover/focus/active states
+- Test keyboard navigation end-to-end
+- Test with viewport resizing
+
+Take screenshots for evidence. Compare against the Quick Tier findings.
+
+### 4. Interactive Testing (Phase 4, if interactive)
 
 If the feature has interactive elements (forms, clicks, inputs):
 
-Use `agent-browser` and `dogfood` skills:
+#### Quick Tier — Logic Audit (browserless)
+
+Review the interaction logic from source code:
+- Form validation: required fields, input types, error messages
+- Loading/error/empty states: are all states rendered?
+- Event handlers: correct targets, proper cleanup (useEffect return)
+- State management: optimistic updates, rollback on error
+- API call patterns: correct endpoints, error handling, retry?
+
+#### Full Tier — Browser Testing (agent-browser)
+
+**Run if:** the interaction involves complex UI state (modals, drag-and-drop,
+multi-step forms) or the Quick Tier found issues that need live verification.
+
+See `references/cli-tools/agent_browser.md` for browser automation details.
+Use `dogfood` skill for structured exploratory testing:
 1. Open the feature in browser
 2. Test happy path
 3. Test error states
@@ -136,5 +201,10 @@ the "invisible 20%" (Osmani 2026, GitClear 2025).
 ### 6. Auto-proceed
 
 After all verification phases pass, **automatically proceed to Execution Critique**.
+
+> **Note on browser dependency:** The Quick Tier (browserless) in Phases 3 and 4
+> works on ALL CLIs. The Full Tier (agent-browser) is pi.dev only per
+> [agent_browser.md](references/cli-tools/agent_browser.md). Other CLIs should
+> rely on the Quick Tier and note what couldn't be verified for human review.
 
 See `skills/cali-product-testing-execution/SKILL.md` for the full testing protocol reference.
