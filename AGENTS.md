@@ -9,15 +9,20 @@
 | `/pw-start` | Begin planning |
 | `/pw-menu` | Show workflow status |
 
+> **Source of Truth:** All stage/skill counts derive from the master list in
+> `skills/cali-product-workflow/SKILL.md` (Stage Index) and `ls skills/*/SKILL.md | wc -l`
+> (skill count). This AGENTS.md is a summary; never update counts here without
+> verifying against those sources.
+
 ## Workflow Stages
 
 ```
-Setup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Execution
-  0       1         2        3         4      5       6           7           8           9          10
+Triage → Setup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Execution → Verification → Execution Critique
+  0       1       2         3        4         5      6       7           8           9          10         11          12             13
 ```
 
-Stages 2-3 and 7 run as skills (`cali-product-shape-up`, `cali-product-critique`, `cali-product-interface-brainstorm`).
-Gates (4, 7) require Plannotator visual approval - never skip.
+Stages 4-5 and 8 run as skills (`cali-product-shape-up`, `cali-product-critique`, `cali-product-interface-brainstorm`).
+Gates (5, 8) require Plannotator visual approval — never skip.
 The Planning stage generates typed scopes with dependency mapping.
 
 ## Key Differentiators
@@ -76,7 +81,7 @@ All project files must use `lowercase-kebab-case`:
 
 ## Skills
 
-20 specialized skills in `skills/` — see directory structure for full list.
+22 specialized skills in `skills/` — see directory structure for full list.
 
 ## Extensions
 
@@ -109,7 +114,7 @@ Rules:
 When working on software projects, trigger the product workflow:
 
 1. **Trigger:** Use `/skill cali-product-workflow` or `/pw-start`
-2. **Process:** Follow the structured workflow (Setup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Execution → Verification → Audit)
+2. **Process:** Follow the 15-stage structured workflow in `skills/cali-product-workflow/SKILL.md` (Stage Index).
 3. **Execute:** Only after visual review gate (Plannotator approval)
 
 - **Repo:** https://github.com/renatocaliari/cali-product-workflow

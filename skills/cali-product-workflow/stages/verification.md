@@ -10,7 +10,7 @@ After all scopes are executed, run the full testing protocol before delivery aud
 Verification runs **automatically after Execution** once all scopes complete.
 After Verification passes, automatically proceed to Execution Critique.
 
-### 1. Run Test Suite (Phase 1)
+### test-suite
 
 Run the project's test suite:
 
@@ -27,17 +27,42 @@ pytest
 
 **Block until tests pass.** Do not proceed with failing tests.
 
-### 2. Parallel Code Review (Phase 2, if 3+ files)
+### code-review (if 3+ files)
 
 If the diff touches 3+ files, launch fresh-context reviewers in parallel.
 See `references/cli-tools/subagents.md` for the `subagent()` pattern — this works
 on pi.dev, OpenCode, Claude Code, and Codex (all have native subagent support).
 
-**Optionally**, add a cross-model review step after the parallel review:
+**Actively offer** cross-model review after the parallel review using the
+[`structured-question`](references/cli-tools/structured-question.md) pattern:
+
+```typescript
+ask_user_question({
+  questions: [{
+    question: `The code review is done. Want to run a cross-model review?
+
+Mitigates the shallow review trap — a different CLI/agent reviews the same
+code, catching what this model missed. Requires another CLI installed
+(opencode, claude, codex).
+
+See references/cli-tools/cross-model-review.md for commands.`,
+    header: "Cross-review",
+    options: [
+      {
+        label: "Yes — run cross-model review (Recommended)",
+        description: "Invokes another CLI agent for an independent pass. Catches blind spots."
+      },
+      {
+        label: "No — skip this time",
+        description: "Only parallel subagent review. OK for low-risk changes."
+      }
+    ]
+  }]
+})
+```
+
 See `references/cli-tools/cross-model-review.md` for details on invoking a different
-CLI/agent (pi.dev, opencode, claude-code, codex) for an independent pass. This
-mitigates the "shallow review trap" where the same model that wrote the code
-also reviews it.
+CLI/agent (pi.dev, opencode, claude-code, codex) for an independent pass.
 
 ```typescript
 subagent({
@@ -58,7 +83,7 @@ subagent({
 })
 ```
 
-### 3. UI Quality (Phase 3, if visual)
+### ui-quality (if visual)
 
 If the scope involves a visual interface, use a **two-tier approach**.
 The Quick Tier (browserless) catches ~80% of issues from source code alone.
@@ -122,7 +147,7 @@ Use `agent_browser` per `references/cli-tools/agent_browser.md`:
 
 Take screenshots for evidence. Compare against the Quick Tier findings.
 
-### 4. Interactive Testing (Phase 4, if interactive)
+### interactive-testing (if interactive)
 
 If the feature has interactive elements (forms, clicks, inputs):
 
@@ -148,7 +173,7 @@ Use `dogfood` skill for structured exploratory testing:
 4. Test edge cases (empty states, loading, errors)
 5. Capture screenshots for evidence
 
-### 5. Final Checklist
+### final-checklist
 
 - [ ] Unit tests pass
 - [ ] Code review done (subagent or human)
@@ -157,7 +182,7 @@ Use `dogfood` skill for structured exploratory testing:
 - [ ] Documentation updated (if applicable)
 - [ ] AGENTS.md updated (if architecture changed)
 
-### 5.2 Code Quality Gate (language-agnostic static analysis)
+### code-quality-gate
 
 Run static analysis appropriate to the project's language. This is language-
 agnostic — adapt to your tech stack (not just eslint/tsc):
@@ -183,7 +208,7 @@ cargo clippy -- -D warnings 2>&1 | head -20
 **Block on errors** (not warnings) — warnings are informational and should be
 reviewed but are not blockers. Address all errors before proceeding.
 
-### 5.5 Invisible 20% Verification
+### invisible-20-percent
 
 For each file changed in the diff, check:
 
@@ -198,12 +223,13 @@ For each file changed in the diff, check:
 This exists because LLMs tend to implement the happy path (80%) and omit
 the "invisible 20%" (Osmani 2026, GitClear 2025).
 
-### 6. Auto-proceed
+### auto-proceed
 
-After all verification phases pass, **automatically proceed to Execution Critique**.
+After all verification steps pass, **automatically proceed to Execution Critique**.
 
-> **Note on browser dependency:** The Quick Tier (browserless) in Phases 3 and 4
-> works on ALL CLIs. The Full Tier (agent-browser) is pi.dev only per
+> **Note on browser dependency:** The Quick Tier (browserless) in
+> `ui-quality` and `interactive-testing` works on ALL CLIs. The Full Tier
+> (agent-browser) is pi.dev only per
 > [agent_browser.md](references/cli-tools/agent_browser.md). Other CLIs should
 > rely on the Quick Tier and note what couldn't be verified for human review.
 

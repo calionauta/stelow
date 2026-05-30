@@ -35,7 +35,7 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 - [🔄 Process](#-process)
 - [🎮 Commands](#-commands)
 - [🖥️ TUI Visual](#️-tui-visual)
-- [📋 Skills (21)](#-skills-21)
+- [📋 Skills (22)](#-skills-22)
 - [📊 Version](#-version)
 - [License](#license)
 
@@ -104,7 +104,7 @@ This workflow wasn't designed in a vacuum. It comes from years inside real teams
 
 **Key Features:**
 
-- **21 sub-skills** organized into 4 layers — orchestrator + strategies + workflow stages + tactics
+- **22 sub-skills** organized into 4 layers — orchestrator + strategies + workflow stages + tactics
 - Part of a broader ecosystem of **54+ skills** for coding, ops, research, and facilitation
 - Real-time TUI tracking with visual overlay (`/pw-menu`)
 - Gate approval via Plannotator — review, comment, approve or reject before implementation
@@ -142,9 +142,9 @@ Both frameworks enforce structure for general software engineering. Here's what 
 |--------|--------|---------|-----------|
 | **Stars** | ~47K | ~199K | — |
 | **Focus** | Enterprise team simulation (12+ workflows) | TDD-first engineering methodology | Product planning + domain knowledge + execution |
-| **Phases** | 4 (Analysis → Planning → Solutioning → Implementation) | Skills system (14 skills) | 6 (Setup → Strategic → Shape Up → Interface → Critique → Tech) |
+| **Phases** | 4 (Analysis → Planning → Solutioning → Implementation) | Skills system (14 skills) | 15 stages (Triage → Setup → Strategy → Shape Up → Critique → Gate → Scope → Interface → Int.Gate → Selection → Tech Planning → Execution → Verification → Execution Critique) |
 | **Scope Definition** | User stories, epics | Implementation plans | Shape Up with IN/OUT boundaries |
-| **Domain Knowledge** | Generic product workflows | Code patterns, best practices | Job To Be Done, Pricing, Trust, Ads, Open Source, Health, Marketplace |
+| **Domain Knowledge** | Generic product workflows | Code patterns, best practices | 8 domain libraries (Pricing, Trust, Ads, Promotions, Open Source, Health, Marketplace, Business Models) + 5 strategic approaches (JTBD, Discovery, Opportunity Mapping, Market Analysis, Evolutionary Principles) |
 | **Review** | Manual or configured checklists | Subagent quality check | Plannotator visual gate with point-by-point comments |
 | **Interface** | 1 UX design workflow (ux-spec.md) | 2-3 text approaches + optional browser | 5 ASCII archetypes + LLM hybrid creation |
 | **Testing** | Sprint-based (dev-story + code-review) | TDD-first with subagents | Context-aware: TDD critical paths, mutation targets (70/50/30%), greenfield/brownfield |
@@ -206,10 +206,10 @@ This package works across **multiple coding agents** — not just pi.dev. See th
 
 | Your situation | Recommended command | What you get |
 |----------------|--------------------|-------------|
-| **New to CLIs** (no Node, no agent) | `curl -fsSL https://raw.githubusercontent.com/.../setup.sh \| sh` | Node.js + pi.dev + all extensions + 20 skills |
-| **Already use pi.dev** | `git clone ... && ./install.sh` | 20 skills + TUI overlay + slash commands |
-| **Use OpenCode / Claude Code / Codex** | `git clone ... && ./install.sh` | 20 skills + command files (no TUI) |
-| **Any CLI (skills only)** | `npx skills add renatocaliari/cali-product-workflow -g` | 20 skills via DotAgents Protocol |
+| **New to CLIs** (no Node, no agent) | `curl -fsSL https://raw.githubusercontent.com/.../setup.sh \| sh` | Node.js + pi.dev + all extensions + 22 skills |
+| **Already use pi.dev** | `git clone ... && ./install.sh` | 22 skills + TUI overlay + slash commands |
+| **Use OpenCode / Claude Code / Codex** | `git clone ... && ./install.sh` | 22 skills + command files (no TUI) |
+| **Any CLI (skills only)** | `npx skills add renatocaliari/cali-product-workflow -g` | 22 skills via DotAgents Protocol |
 
 See [docs/INSTALLATION.md](docs/INSTALLATION.md) for detailed options.
 Per-agent configuration files (commands, install scripts) are in [`cli-agents/`](cli-agents/).
@@ -224,13 +224,13 @@ Not every feature works on every CLI. Here's what to expect:
 
 | Feature | pi.dev | OpenCode | Claude Code | Codex |
 |---------|--------|----------|-------------|-------|
-| **Skills (all 20)** | ✅ | ✅ | ✅ | ✅ |
+| **Skills (all 22)** | ✅ | ✅ | ✅ | ✅ |
 | **`/pw-start`, `/pw-menu` commands** | ✅ Slash commands | ✅ Via `pw-*.md` files | ✅ Via command files | ✅ Via command files |
 | **TUI overlay (real-time status)** | ✅ Native | ❌ | ❌ | ❌ |
 | **Plannotator visual gate** | ✅ Extension | ⚠️ Manual | ⚠️ Manual | ⚠️ Manual |
 | **Deep hooks (events, gates)** | ✅ Extension | ❌ | ❌ | ❌ |
 
-> **Bottom line:** The **20 skills work identically on every CLI** — they run the full Shape Up workflow, generate plans, critique, scopes, everything. The TUI overlay and deep integration features are Pi-only because only Pi exposes an extension system. All CLIs can still complete the workflow; it just happens in chat rather than a visual panel.
+> **Bottom line:** The **22 skills work identically on every CLI** — they run the full Shape Up workflow, generate plans, critique, scopes, everything. The TUI overlay and deep integration features are Pi-only because only Pi exposes an extension system. All CLIs can still complete the workflow; it just happens in chat rather than a visual panel.
 
 ---
 
@@ -274,7 +274,7 @@ cd cali-product-workflow
 ./install.sh
 ```
 
-The installer detects your CLI and installs **skills + command files**. No extensions, no TUI — just the 20 skills that run the workflow.
+The installer detects your CLI and installs **skills + command files**. No extensions, no TUI — just the 22 skills that run the workflow.
 
 **Or, with npx (no clone needed):**
 
@@ -282,7 +282,7 @@ The installer detects your CLI and installs **skills + command files**. No exten
 npx skills add renatocaliari/cali-product-workflow -g
 ```
 
-This installs all 20 skills to `~/.agents/skills/` — works on any CLI.
+This installs all 22 skills to `~/.agents/skills/` — works on any CLI.
 
 > For CLI-specific setup (OpenCode config, Claude Code plugin, Codex plugin), see [docs/INSTALLATION.md](docs/INSTALLATION.md).
 
@@ -479,14 +479,19 @@ All workflow artifacts are stored in:
 
 ## 🔄 Process
 
-The workflow runs through six phases:
+The workflow has **3 conceptual phases** that contain **15 sequential stages**, from idea triage to post-execution audit. See the [`🥙 Stage Index`](#-skills-22) in the orchestrator skill for the complete stage map with auto-chain rules and flow diagram.
 
-1. **Setup** — User provides initial idea, AI asks clarifying questions
-2. **Strategic** — Job To Be Done, Opportunity Mapping, Evolutionary Principles, Market Analysis, Product Discovery
-3. **Shape Up** — Problem/solution definition, scope boundaries (IN/OUT), rabbit holes, risks
-4. **Interface** — ASCII art exploration, trade-offs, LLM hybrid creation
-5. **Critique** — Adversarial review, gaps, risks, assumptions
-6. **Tech Planning** — Typed scopes (feature, spike, optimize, test-*), dependency mapping, sequencing
+### 1. 🎨 Shaping
+
+**Stages 0–11** — From raw idea through shaped proposal, adversarial critique, visual gate approval, interface exploration, to typed technical scopes ready for execution.
+
+### 2. ⚡ Execution
+
+**Stages 12–13** — Autonomous scope execution via ordered-execution-goal, supervised, with context-rot and plan-staleness checks before each scope.
+
+### 3. ✅ Verification & Audit
+
+**Stage 14** — Full test suite, parallel code review, UI quality audit, and execution critique (scope fidelity, NFR coverage, edge cases, docs, test quality).
 
 ---
 
@@ -559,7 +564,7 @@ All 22 skills are flat in `skills/` directory, ready for `~/.agents/skills/`. Th
 | `cali-product-multi-method-market-analysis` | Multi-method market analysis |
 | `cali-product-evolutionary-principles` | Evolutionary principles for sustainable development |
 
-### ⚙️ Workflow Stages (7)
+### ⚙️ Workflow Stages (8)
 
 | Skill | Purpose |
 |-------|---------|
@@ -570,6 +575,7 @@ All 22 skills are flat in `skills/` directory, ready for `~/.agents/skills/`. Th
 | `cali-product-testing-ai-code` | AI-aware mutation testing strategy |
 | `cali-product-testing-execution` | Post-implementation testing protocol |
 | `cali-product-scope-executor` | Autonomous scope execution with dependency mapping |
+| `cali-product-execution-critique` | Post-execution audit (scope fidelity, NFRs, edge cases, docs, test quality) |
 
 ### 📘 Product Tactics (8)
 

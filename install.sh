@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #
 # cali-product-workflow Installer
-# Flattens 20 skills to ~/.agents/skills/ (DotAgents Protocol).
+# Flattens 22 skills to ~/.agents/skills/ (DotAgents Protocol).
 # Distribution to each harness via agent-sync (or manual config).
 #
-# Skills: 1 orchestrator + 19 subskills = 20 total flat
+# Skills: 1 orchestrator + 21 subskills = 22 total flat
 #
 
 set -euo pipefail
@@ -26,7 +26,7 @@ log_success() { echo "${GREEN}[ok]${RESET} $*"; }
 log_warn()    { echo "${YELLOW}[warn]${RESET} $*"; }
 log_error()   { echo "${RED}[error]${RESET} $*" >&2; }
 
-# List of all 20 skills (1 orchestrator + 19 subskills)
+# List of all 22 skills (1 orchestrator + 21 subskills)
 ALL_SKILLS=(
   "cali-product-workflow"
   "cali-product-shape-up"
@@ -48,6 +48,7 @@ ALL_SKILLS=(
   "cali-product-open-source"
   "cali-product-scope-executor"
   "cali-product-testing-ai-code"
+  "cali-product-testing-execution"
   "cali-product-execution-critique"
 )
 
@@ -90,7 +91,7 @@ print_agents_setup() {
 When working on software projects, trigger the product workflow:
 
 1. **Trigger:** Use `/skill cali-product-workflow`
-2. **Process:** Follow the 11-phase workflow
+2. **Process:** Follow the 15-stage workflow (see Stage Index in `skills/cali-product-workflow/SKILL.md`)
 3. **Execute:** Only after visual review gate (Plannotator approval)
 \`\`\`
 EOF
@@ -120,7 +121,7 @@ install_for_cli() {
 
 # Install skills to ~/.agents/skills/ (flat)
 install_skills_flat() {
-  log_info "Installing 21 skills to ~/.agents/skills/..."
+  log_info "Installing 22 skills to ~/.agents/skills/..."
   mkdir -p "$SKILLS_DIR"
 
   local installed=0
@@ -462,7 +463,7 @@ show_help() {
   cat << 'EOF'
 cali-product-workflow Installer
 
-Flattens 20 skills to ~/.agents/skills/ (DotAgents Protocol).
+Flattens 22 skills to ~/.agents/skills/ (DotAgents Protocol).
 Distribution to each harness via agent-sync or manual config.
 
 Usage: install.sh [command]

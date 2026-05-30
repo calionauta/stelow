@@ -6,7 +6,7 @@
 #   1. Node.js (if needed)
 #   2. pi.dev coding agent
 #   3. All extensions (22 packages)
-#   4. cali-product-workflow (20 skills)
+#   4. cali-product-workflow (22 skills)
 #   5. Configures settings.json with optimized defaults
 #
 # Usage:
@@ -309,7 +309,7 @@ install_extensions() {
 # ─── Skills ──────────────────────────────────────────────────────────────────
 
 install_skills() {
-  log_step "Step 5/5: Installing cali-product-workflow Skills (21 skills)"
+  log_step "Step 5/5: Installing cali-product-workflow Skills (22 skills)"
 
   local skills_dir="$HOME/.agents/skills"
   if [[ "$DRY_RUN" == "false" ]]; then

@@ -266,17 +266,29 @@ No config files needed. Structure IS the configuration.
 
 ## Phases
 
-1. **Setup** — Initialize workflow
-2. **Triage** — Parse idea, check inbox
-3. **Selection** — Choose items to work on
-4. **Context** — Gather project context
-5. **Shape** — Define scope, rabbit holes
-6. **Gate** — Plannotator review
-7. **Interface** — Explore UI approaches
-8. **Int.Gate** — Internal review gate
-9. **Selection** — Choose implementation approach
-10. **Planning** — Create technical plan
-11. **Execution** — Implement
+> **Source of truth:** `extensions/cali-product-workflow/types.ts` — the `PHASE_NAMES` array.
+> All other files reference this; never hardcode phase lists elsewhere.
+
+| Index | Phase Name | Description |
+|-------|------------|-------------|
+| 0 | `Triage` | Inbox parsing, item extraction |
+| 1 | `ItemSelect` | User picks item from ranked list |
+| 2 | `Setup` | Project setup, stage selection, lessons injection |
+| 3 | `Context` | Strategic exploration (optional) + domain detection |
+| 4 | `Shape` | Shape Up proposal with IN/OUT |
+| 5 | `Critique` | Multi-dimensional adversarial critique |
+| 6 | `Gate` | Plannotator visual review — never skip |
+| 7 | `Scope` | Scope adjustment after gate approval |
+| 8 | `Interface` | 5 archetypes + hybrid creation |
+| 9 | `Int.Gate` | Interface Plannotator gate |
+| 10 | `Selection` | User selects interface approach |
+| 11 | `Planning` | Tech planning, typed scopes, dependency mapping |
+| 12 | `Execution` | Autonomous scope execution via goals + supervise |
+| 13 | `Verification` | Test suite, code review, UI audit, static analysis |
+| 14 | `Audit` | Execution critique (scope, quality, NFRs, docs) |
+
+For code, use `PHASE_NAMES` from `types.ts` and the `STAGE` enum — no hardcoded indices.
+For the orchestrator skill, the complete Stage Index is in `skills/cali-product-workflow/SKILL.md`.
 
 ## See Also
 

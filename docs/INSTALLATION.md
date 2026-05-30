@@ -8,7 +8,7 @@ cd cali-product-workflow
 ./install.sh
 ```
 
-Auto-detects ALL your CLIs and installs 21 skills to `~/.agents/skills/`.
+Auto-detects ALL your CLIs and installs 22 skills to `~/.agents/skills/`.
 
 ---
 
@@ -16,23 +16,23 @@ Auto-detects ALL your CLIs and installs 21 skills to `~/.agents/skills/`.
 
 ```
 cali-product-workflow/          ← Source (versionado)
-└── skills/                     ← 20 skills flat
+└── skills/                     ← 22 skills flat
     ├── cali-product-workflow/   ← Orchestrator
     ├── cali-product-shape-up/
-    └── ... (19 more)
+    └── ... (21 more)
 
 ~/.agents/skills/               ← Install target (home do usuário)
 ├── cali-product-workflow/       ← Copied
 ├── cali-product-shape-up/               ← Copied
-└── ... (21 total)
+└── ... (22 total)
 ```
 
-**Skills installed (21 total):**
-- `cali-product-workflow` — orchestrator (11 fases)
-- 4 workflow skills (shape-up, interface-brainstorm, product-critique, tech-planning)
+**Skills installed (22 total):**
+- `cali-product-workflow` — orchestrator (15 stages)
+- 7 workflow stage skills (shape-up, interface-brainstorm, product-critique, tech-planning, testing-ai-code, testing-execution, scope-executor)
+- 1 execution-critique skill
 - 5 strategic analysis skills
 - 8 domain library skills
-- 2 execution skills
 
 ---
 
