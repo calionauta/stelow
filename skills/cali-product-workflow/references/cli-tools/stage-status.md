@@ -107,4 +107,4 @@ After Verification passes, the Delivery Audit stage verifies:
 3. **Quality gates** — tests passing, lint clean, build succeeds
 4. **Lessons learned** — document what went well/what could improve
 
-Outputs `delivery-audit.md` with findings and decision matrix.
+Delegates to `skills/cali-product-delivery-audit/SKILL.md` — outputs `delivery-audit.md` with findings and decision matrix.

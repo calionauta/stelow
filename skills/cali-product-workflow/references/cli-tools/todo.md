@@ -341,7 +341,7 @@ Overall:
 ○ [AUDIT-2] Identify scope gaps (missing or extra)
 ○ [AUDIT-3] Run quality gates (tests, lint, build)
 ○ [AUDIT-4] Document lessons learned
-○ [AUDIT-5] Generate delivery-audit.md
+○ [AUDIT-5] Generate delivery-audit.md via skills/cali-product-delivery-audit/SKILL.md
 ○ [AUDIT-6] Archive workflow
 ```
 

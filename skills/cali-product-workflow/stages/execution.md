@@ -203,7 +203,7 @@ After completing all scopes:
 1. **Do not ask user** what to do next
 2. **Automatically proceed** to Verification stage
 3. Run the testing protocol per [`verification.md`](./verification.md)
-4. After Verification passes, **automatically proceed** to Delivery Audit per [`delivery-audit.md`](./delivery-audit.md)
+4. After Verification passes, **automatically proceed** to Delivery Audit per `skills/cali-product-delivery-audit/SKILL.md`
 
 > **CRITICAL: After Tech Planning approval, execution is MANDATORY.**
 > Do NOT ask the user "what to do next". The workflow proceeds automatically.

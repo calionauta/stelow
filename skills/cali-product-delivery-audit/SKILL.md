@@ -3,8 +3,9 @@ name: cali-product-delivery-audit
 description: >
   [Cali] Post-implementation delivery audit: verify scope completion, implementation quality,
   NFR coverage, edge cases, doc/tests, and produce a gap registry with decision matrix.
-  Supports 2 modes: workflow (reads spec-tech.md for scoped audit) and standalone
-  (auto-detects changes via sem diff + git + session context). Replaces cali-post-execution-check.
+  Supports 4 modes: workflow (spec-tech.md), plan (spec-product.md), context (dir/URL),
+  and standalone (auto-detects via sem diff + git). Merges and replaces
+  cali-post-execution-check (deprecated).
 metadata:
   frequency: weekly
   category: meta
@@ -42,18 +43,32 @@ Input received:
 
 ---
 
+## 🔄 When to Use
+
+This skill activates automatically as Stage 14 in `cali-product-workflow`,
+but can also be used standalone when you say:
+
+- "done", "finished", "completed"
+- "check my work", "verify implementation"
+- "gap analysis", "what did I miss"
+- After any multi-step task, plan execution, or feature implementation
+
+---
+
 ## 📋 Fixed Evaluation Criteria (always runs all)
 
-| # | Criteria | Workflow Mode | Standalone Mode |
-|---|----------|---------------|-----------------|
-| 1 | **Scope/Plan Completeness** | Check each plan scope against implementation | Infer scopes from sem diff entities + git diff |
-| 2 | **Implementation Quality** | Syntax, imports, broken refs, anti-patterns | Same — check all changed files |
-| 3 | **Invisible 20% Check** | Error handling, observability, security, validation | Same — check all changed files |
-| 4 | **Edge Cases** | Null/empty, network, permission, concurrency, boundaries | Same — check all changed files |
-| 5 | **Doc & Test Update Check** | README, AGENTS.md, CHANGELOG, test coverage | Same — check all changed files |
-| 6 | **Gap Registry** | Missing, partial, new scope, quality, debt | Same — inferred from analysis |
-| 7 | **Lessons Learned** | What went well, what could improve | Same |
-| 8 | **Decision Matrix** | Close, document, follow-up, human review | Same |
+| # | Criteria | Description |
+|---|----------|-------------|
+| 1 | **Scope/Plan Completeness** | Check each scope/item against implementation |
+| 2 | **Implementation Quality** | Syntax, imports, broken refs, anti-patterns |
+| 3 | **Invisible 20% Check** | Error handling, observability, security, validation |
+| 4 | **Edge Cases** | Null/empty, network, permission, concurrency, boundaries |
+| 5 | **Doc & Test Update Check** | README, AGENTS.md, CHANGELOG, test coverage |
+| 6 | **Gap Registry** | Missing, partial, new scope, quality, debt |
+| 7 | **Lessons Learned** | What went well, what could improve |
+| 8 | **Decision Matrix** | Close, document, follow-up, human review |
+
+> All 8 criteria run in every mode. Only the **source of truth** differs.
 
 ---
 
@@ -292,6 +307,18 @@ Always save or display in this format:
 |-----------|-------------|
 | [All OK | Minor gaps | Significant gaps | Critical] | [✅ Close | 📝 Document | ⚠️ Follow-up | 🚨 Human Review] |
 ```
+
+---
+
+## ⚠️ Audit Warnings
+
+- **Don't skip criteria** — Each of the 8 criteria catches different issues.
+- **Don't assume** — Verify against the source of truth, don't guess.
+- **Don't rush** — A thorough audit saves hours of debugging later.
+- **Don't ignore warnings** — Even minor gaps compound over multiple cycles.
+- **Don't trust the same model** — If the implementation was done by model X,
+  a different model (or a human) should do the audit for genuine blind-spot
+  detection.
 
 ---
 
