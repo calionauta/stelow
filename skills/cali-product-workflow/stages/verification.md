@@ -86,6 +86,21 @@ Use `agent-browser` and `dogfood` skills:
 - [ ] Documentation updated (if applicable)
 - [ ] AGENTS.md updated (if architecture changed)
 
+### 5.5 Invisible 20% Verification
+
+For each file changed in the diff, check:
+
+| Dimension | Check |
+|-----------|-------|
+| **Error handling** | Retry/backoff implemented? Fallback defined? |
+| **Observability** | Structured logging? Correlation IDs? |
+| **Security** | Auth consistent across all endpoints? Input sanitization? Rate limiting? |
+| **Validation** | Null/empty/boundary handling? |
+| **Rollback** | Rollback strategy documented? Migration has reversal? |
+
+This exists because LLMs tend to implement the happy path (80%) and omit
+the "invisible 20%" (Osmani 2026, GitClear 2025).
+
 ### 6. Auto-proceed
 
 After all verification phases pass, **automatically proceed to Delivery Audit**.

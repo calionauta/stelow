@@ -96,6 +96,30 @@ Domain playbooks available for tactical reference during planning/execution:
 
 ---
 
+## ⚠️ Context Rot Awareness
+
+LLMs suffer from **context rot**: compliance with their own rules drops from
+~73% (turn 5) to ~33% (turn 16) in long sessions (Gamage 2026).
+
+**Rules to mitigate:**
+
+1. **Fresh context between stages.** If this session has >15 turns or the LLM
+   seems to be forgetting earlier decisions, start a NEW chat and pass the most
+   recent artifact (`spec-product_v{N}.md` or `spec-tech_v{N}.md`) as initial
+   context. The workflow continues from artifacts saved on disk.
+
+2. **No patching in degraded context.** If execution failed or produced partial
+   results, do NOT ask to "fix the rest" in the same turn. Create a new goal
+   with fresh context pointing to the existing spec-tech.md.
+
+3. **Read from disk, not memory.** Each critical stage (Execution, Verification,
+   Delivery Audit) must re-read artifacts from disk, not trust conversation memory.
+
+4. **Model provenance tracking.** Record which model generated each artifact in
+   the YAML frontmatter. Artifacts from smaller models deserve extra review.
+
+---
+
 ## 📋 Stage Index
 
 > **Stage Status:** see `references/cli-tools/stage-status.md` for instructions for ASCII status display and CLI commands.
@@ -127,7 +151,7 @@ Do NOT use `/skill:` for internal subskills.
 | 11 | **Tech Planning** | Typed scopes + sequencing | — |
 | 12 | **Execution** | Goal/scope executor | — |
 | 13 | **Verification** | Run full test suite, code review, UI audit, browser testing | After Execution |
-| 14 | **Delivery Audit** | Verify scope completion, gap analysis | After Verification |
+| 14 | **Delivery Audit** | Full delivery audit (scope, quality, NFRs, edges, docs) | After Verification |
 
 ### AI-Aware Testing (Conditional)
 
@@ -175,7 +199,7 @@ Stage 12: Execution
     ↓
 Stage 13: Verification (test suite, review, UI audit) ← NOVO
     ↓
-Stage 14: Delivery Audit
+Stage 14: Delivery Audit (see `skills/cali-product-delivery-audit/SKILL.md`)
 ```
 
 ### Auto-chaining rules
@@ -192,6 +216,7 @@ Stage 14: Delivery Audit
 **Verification** runs automatically after Execution — test suite, code review, UI audit, browser testing.
 **Interface Gate** shows all proposals visually before selection.
 **Execution** runs automatically after Tech Planning — DO NOT ask user what to do next.
+**Delivery Audit** runs after Verification. Uses `skills/cali-product-delivery-audit/SKILL.md` for all 8 evaluation criteria.
 
 ---
 

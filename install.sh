@@ -48,6 +48,7 @@ ALL_SKILLS=(
   "cali-product-open-source"
   "cali-product-scope-executor"
   "cali-product-testing-ai-code"
+  "cali-product-delivery-audit"
 )
 
 # CLI Detection
@@ -119,7 +120,7 @@ install_for_cli() {
 
 # Install skills to ~/.agents/skills/ (flat)
 install_skills_flat() {
-  log_info "Installing 20 skills to ~/.agents/skills/..."
+  log_info "Installing 21 skills to ~/.agents/skills/..."
   mkdir -p "$SKILLS_DIR"
 
   local installed=0

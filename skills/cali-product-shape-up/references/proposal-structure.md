@@ -128,6 +128,7 @@ product_type: {software|service|hybrid}
 interface: {none|standard|full}
 created_at: {YYYY-MM-DD}
 approved: false
+generated_by: "{model_name}"
 ---
 ```
 

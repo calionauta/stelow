@@ -6,6 +6,22 @@
 **Never activate during stages before Execution.** The supervisor would re-submit Plannotator.
 **Activate in Execution stage only** — when starting scope execution.
 
+### ⚠️ Context Rot Check (before executing)
+
+**Reading spec-tech.md from disk.** The plan was generated in a previous session
+or a potentially degraded context. Re-read `spec-tech.md` from the directory
+to ensure you're working with the correct version, not conversation memory.
+
+```bash
+# Always read from disk
+cat .cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_v{N}.md
+```
+
+If the plan seems inconsistent with what you remember, **trust the file**,
+not your memory.
+
+---
+
 ### 6a. Git Worktree Check (before executing scopes)
 
 **Check if the workflow is in an isolated directory.** If multiple workflows

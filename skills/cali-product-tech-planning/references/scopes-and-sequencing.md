@@ -84,6 +84,26 @@ Based on empirical research (AgentAssay 2026, MSR 2026, CodeRabbit 2025):
 
 If a scope has both feature and optimization aspects, split it into two scopes or mark it as the dominant type and note the secondary concern in the description.
 
+### Non-Functional Requirements per Scope
+
+Each scope in spec-tech.md MUST include an `nfr:` section listing non-functional
+requirements. This is required because LLMs tend to implement the happy path (80%)
+and omit error handling, observability, security, and rollback unless explicitly
+specified (Osmani 2026, GitClear 2025).
+
+The Verification stage checks each NFR listed here.
+
+```yaml
+scopes:
+  - name: "add-payment-endpoint"
+    type: feature
+    nfr:
+      error_handling: "retry with exponential backoff (3 attempts)"
+      observability: "structured logs with correlation ID"
+      security: "auth middleware, rate limiting (100/min), input sanitization"
+      rollback: "git revert + migration reversal script"
+```
+
 ---
 
 ## Executor Override (`[EXECUTOR]`)

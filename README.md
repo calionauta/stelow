@@ -152,6 +152,43 @@ Both frameworks enforce structure for general software engineering. Here's what 
 
 ---
 
+## ❤️ Radical Transparency
+
+This workflow is a tool for **amplifying human judgment**, not a substitute for it.
+It forces structure that teams often skip: multi-angle critique, IN/OUT boundaries,
+tech sequencing, gap analysis. But the underlying AI still has real limitations you
+need to know about.
+
+### What the AI still gets wrong (even with this workflow)
+
+| Problem | Reality | What the workflow tries to do |
+|---------|---------|------------------------------|
+| **Context rot** — in long sessions, the LLM forgets its own rules (73% → 33% compliance, Gamage 2026) | Artifacts are saved to disk at every stage. The Delivery Audit reads from disk, not memory. Fresh sessions between long stages are recommended. |
+| **80% Problem** — LLMs ship CRUD but omit error handling, observability, security, retry, rollback (Osmani 2026, GitClear 2025) | Tech Planning requires NFRs per scope. Verification has an explicit "invisible 20%" checklist. The Delivery Audit detects NFR gaps. |
+| **Model dependency** — Claude Opus, Gemini Flash, and GPT-4o produce different quality results (Veracode 2025: 45% of AI code contains flaws) | Model provenance is tracked in every artifact's frontmatter. You know what to expect and can calibrate your review. |
+| **Partial implementation** — LLMs often implement only what fits in context, leaving plan details behind | Failed or partial execution is documented in the gap registry rather than patched in degraded context. A new goal with fresh context is created instead. |
+| **Shallow review trap** — the same LLM writes code AND tests; green tests ≠ correct code (Ox Security 2025) | The Plannotator Gate is independent from execution. Verification warns that self-written tests are not evidence of correctness. Mutation testing is recommended. |
+| **Plan staleness** — code changes between planning and execution invalidate the plan | Each stage re-reads artifacts from disk. Before execution, target files are verified against the plan. |
+
+### What this means for you
+
+- **Every artifact is a draft.** Treat spec-product.md, spec-tech.md, critique reports,
+  and interface proposals as first drafts that need human eyes.
+- **Results vary by model.** If you use Gemini Flash for planning and Claude Opus for
+  execution, expect quality differences. We track provenance so you know the difference.
+- **Human review is required.** The workflow catches structural gaps (missing scopes,
+  contradictory requirements, untested edge cases). It does NOT catch logic errors
+  in individual lines, security flaws in business logic, or nuanced architectural
+  trade-offs — those need you.
+- **No framework eliminates these problems.** Not BMAD (47K⭐), not Superpowers
+  (199K⭐), not SpecKit, not GSD. We're transparent about it because the limitation
+  is not in any framework — it's in the technology itself.
+
+> We don't claim to solve product planning. We claim to **structure the thinking**
+> so you catch more before you code. The rest is still up to you.
+
+---
+
 ## 🚀 Quick Start
 
 This package works across **multiple coding agents** — not just pi.dev. See the compatibility table in [Installation](#-installation) to pick your path.
@@ -491,9 +528,9 @@ Toggle with `/pw-menu`.
 
 ---
 
-## 📋 Skills (21)
+## 📋 Skills (22)
 
-All 21 skills are flat in `skills/` directory, ready for `~/.agents/skills/`. They're organized into 4 layers:
+All 22 skills are flat in `skills/` directory, ready for `~/.agents/skills/`. They're organized into 4 layers:
 
 ### 🎛️ Orchestrator (1)
 

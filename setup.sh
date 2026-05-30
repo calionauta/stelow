@@ -85,6 +85,7 @@ ALL_SKILLS=(
   "cali-product-open-source"
   "cali-product-scope-executor"
   "cali-product-testing-ai-code"
+  "cali-product-delivery-audit"
 )
 
 # ─── Colors & Output ─────────────────────────────────────────────────────────
@@ -308,7 +309,7 @@ install_extensions() {
 # ─── Skills ──────────────────────────────────────────────────────────────────
 
 install_skills() {
-  log_step "Step 5/5: Installing cali-product-workflow Skills (20 skills)"
+  log_step "Step 5/5: Installing cali-product-workflow Skills (21 skills)"
 
   local skills_dir="$HOME/.agents/skills"
   if [[ "$DRY_RUN" == "false" ]]; then

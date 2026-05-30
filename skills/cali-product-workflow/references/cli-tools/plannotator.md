@@ -2,7 +2,11 @@
 
 ## Quick Summary
 
-> Open plans or code diffs in a visual browser UI for point-by-point annotation and blocking approval. Alternative: manual review with approval tracking.
+> **Plannotator --gate** opens plans/code in a visual browser UI with point-by-point
+> annotation support. Every annotation is returned as structured feedback to the LLM
+> for revision. It is an interactive review gate, not just a passive display.
+> See `stages/gate.md` for what the gate DOES and DOES NOT catch.
+> Alternative: manual review with approval tracking.
 
 ## Available Commands by CLI
 
