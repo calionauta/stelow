@@ -50,8 +50,8 @@ const skills: SkillDefinition[] = [
     requiresToolRef: true,
   },
   {
-    name: 'cali-product-plan-critique',
-    path: 'cali-product-plan-critique/SKILL.md',
+    name: 'cali-product-critique',
+    path: 'cali-product-critique/SKILL.md',
     requiresGate: false,
     requiresToolRef: true,
   },

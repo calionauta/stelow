@@ -96,7 +96,7 @@ const PHASE_TO_MD_FILE: Record<string, string | null> = {
   "Setup": "setup.md",
   "Context": "context.md",
   "Shape": null,                          // Delegated to cali-product-shape-up skill
-  "Critique": null,                       // Delegated to cali-product-plan-critique skill
+  "Critique": null,                       // Delegated to cali-product-critique skill
   "Gate": "gate.md",                      // Shared: Gate + Int.Gate → gate.md
   "Scope": null,                          // Scope adjustment handled inline
   "Interface": null,                      // Delegated to cali-product-interface-brainstorm skill
