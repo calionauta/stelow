@@ -6,7 +6,7 @@
 **Never activate during stages before Execution.** The supervisor would re-submit Plannotator.
 **Activate in Execution stage only** — when starting scope execution.
 
-### ⚠️ Context Rot Check (before executing)
+### ⚠️ Context Rot + Plan Staleness Check (before executing)
 
 **Reading spec-tech.md from disk.** The plan was generated in a previous session
 or a potentially degraded context. Re-read `spec-tech.md` from the directory
@@ -19,6 +19,33 @@ cat .cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_v{N}.md
 
 If the plan seems inconsistent with what you remember, **trust the file**,
 not your memory.
+
+### ⚠️ Plan Staleness Detection (before scope execution)
+
+**Check if target files changed since the plan was created.** The plan was
+written against a codebase snapshot. If files referenced in the plan have
+changed, the plan may be stale.
+
+```bash
+# Extract referenced file paths from spec-tech.md and diff against HEAD
+PATHS=$(grep -oP 'src/[a-zA-Z0-9_/.-]+\.(go|ts|js|py|rs)' \
+  .cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_v{N}.md 2>/dev/null | sort -u)
+if [ -n "$PATHS" ]; then
+  STALE=$(git diff HEAD -- $PATHS 2>/dev/null | head -20)
+  if [ -n "$STALE" ]; then
+    echo "PLAN_STALE_DETECTED"
+    echo "Target files changed since plan was created:"
+    git diff --stat HEAD -- $PATHS 2>/dev/null
+  else
+    echo "PLAN_CURRENT"
+  fi
+fi
+```
+
+**If staleness detected:** Alert the user: "Target files have changed since the
+plan was created. Verify the plan is still valid before proceeding."
+Ask if they want to (1) proceed anyway, (2) review the diff and adjust,
+or (3) stop and re-plan.
 
 ---
 

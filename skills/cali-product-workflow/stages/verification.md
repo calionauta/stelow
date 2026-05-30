@@ -92,6 +92,32 @@ Use `agent-browser` and `dogfood` skills:
 - [ ] Documentation updated (if applicable)
 - [ ] AGENTS.md updated (if architecture changed)
 
+### 5.2 Code Quality Gate (language-agnostic static analysis)
+
+Run static analysis appropriate to the project's language. This is language-
+agnostic — adapt to your tech stack (not just eslint/tsc):
+
+```bash
+# Go
+go vet ./... 2>&1 | head -20
+
+# Node/TypeScript (if package.json exists)
+npm run lint 2>&1 | head -20
+# or
+npx tsc --noEmit 2>&1 | head -20
+
+# Python (if requirements.txt or pyproject.toml exists)
+ruff check . 2>&1 | head -20
+# or
+pylint src/ 2>&1 | head -20
+
+# Rust (if Cargo.toml exists)
+cargo clippy -- -D warnings 2>&1 | head -20
+```
+
+**Block on errors** (not warnings) — warnings are informational and should be
+reviewed but are not blockers. Address all errors before proceeding.
+
 ### 5.5 Invisible 20% Verification
 
 For each file changed in the diff, check:
