@@ -147,6 +147,31 @@ Check all changed files for:
 - What could improve
 - Issues to watch in future cycles
 
+**Save lessons to disk for future cycles:**
+```bash
+mkdir -p .cali-product-workflow/lessons-learned/
+cat >> .cali-product-workflow/lessons-learned/{date}-{workflow-name}.md << 'EOF'
+---
+date: {timestamp}
+workflow: {workflow-name}
+model: {model_name}
+---
+
+## What went well
+- 
+
+## What could improve
+- 
+
+## Issues to watch
+- 
+EOF
+```
+
+Lessons are saved to `.cali-product-workflow/lessons-learned/` so future workflow
+sessions can read them during setup. The `setup.md` stage will automatically
+check for and inject prior lessons at workflow start.
+
 **Decision Matrix (criteria 8):**
 | Situation | Action |
 |-----------|--------|
@@ -249,7 +274,8 @@ Same evaluation as Workflow mode. Inferred scopes replace planned scopes.
 
 ## 📤 Output
 
-Always save or display in this format:
+Always save or display in this format. The Lessons Learned section also writes to
+`.cali-product-workflow/lessons-learned/{date}-{name}.md` for cross-session injection.
 
 ```markdown
 # Execution Critique Report

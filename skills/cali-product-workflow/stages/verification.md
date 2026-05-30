@@ -29,7 +29,13 @@ pytest
 
 ### 2. Parallel Code Review (Phase 2, if 3+ files)
 
-If the diff touches 3+ files, launch fresh-context reviewers in parallel:
+If the diff touches 3+ files, launch fresh-context reviewers in parallel.
+
+**Optionally**, add a cross-model review step after the parallel review:
+See `references/cli-tools/cross-model-review.md` for details on invoking a different
+CLI/agent (pi.dev, opencode, claude-code, codex) for an independent pass. This
+mitigates the "shallow review trap" where the same model that wrote the code
+also reviews it.
 
 ```typescript
 subagent({

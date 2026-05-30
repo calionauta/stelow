@@ -112,7 +112,7 @@ Use OUT/IN order (convention from Shape Up):
 
 **Rules:**
 - If unclear, mark as OUT (conservative scoping)
-- IN items should be completable within the appetite
+- IN items should be scoped to fit a single cycle
 - OUT items can be revisited in future cycles
 
 ---
