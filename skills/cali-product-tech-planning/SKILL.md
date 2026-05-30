@@ -19,13 +19,11 @@ This skill executes the Tech Planning phase.
 
 ## How to Load
 
-This skill is **bundled with cali-product-workflow** — there is no standalone `/skill:` command.
-
 ### Via Orchestrator (recommended)
 The orchestrator reads this file directly when needed.
 
 ### Standalone
-Follow the instructions inline below.
+This skill works standalone. Use the Input Detection section below to tell the skill what technical context to plan from. Follow the instructions inline.
 
 ## Prerequisites
 
@@ -56,7 +54,7 @@ Read the `references/` files to guide the process:
 | `references/tech-context.md` | Tech planning context, prerequisites, workflow position | **Before starting** — sets planning context |
 | `references/scopes-and-sequencing.md` | Scope types (feature/optimization/spike + test-*), executor routing, sequencing principles | **During generation** — defines scope structure |
 | `references/tech-output.md` | Tech plan output format, frontmatter, receipts | **After generation** — formats output |
-| `references/generation-principles.md` | Generation principles, constraints, quality standards | **During generation** — guides implementation |
+| `cali-product-code-standards` (skill) | Coding standards + Datastar framework philosophy | **During generation** — guides implementation |
 
 ## Process
 
@@ -73,8 +71,9 @@ Delegate to a planner subagent (see `references/cli-tools/subagents.md`):
 
 **⚠️ FALLBACK — if subagent fails or is unavailable:**
 Generate spec-tech.md INLINE using the same process. Read the references files
-(`tech-context.md`, `scopes-and-sequencing.md`, `generation-principles.md`, `tech-output.md`)
-and produce the spec-tech artifact directly in the current context.
+(`tech-context.md`, `scopes-and-sequencing.md`, `tech-output.md`)
+and read `cali-product-code-standards` for Datastar framework philosophy,
+then produce the spec-tech artifact directly in the current context.
 
 ### 7b. AI-Aware Testing Strategy (Software Products Only)
 
@@ -232,7 +231,26 @@ See `skills/cali-product-testing-ai-code/SKILL.md`
 - **cali-product-critique**: Reviews the proposal before tech planning
 - **cali-product-workflow** (orchestrator): Coordinates this skill with execution
 
+## Input Detection (Standalone Mode)
+
+When called outside the workflow with no pre-approved spec-product.md:
+
+```
+Input:
+  ├── User provided a spec-product*.md path?
+  │   └→ Read it and extract scope, requirements, product_type
+  ├── User described the feature verbally?
+  │   └→ Extract: what needs to be built, tech stack, constraints
+  └── No structured input?
+      └→ Ask: "What software feature do you want to plan?
+         Describe the requirements, tech stack, and any non-functional
+         constraints (performance, security, scale)."
+```
+
+Note: Standalone mode **requires** the `product_type` check — ask the user if it's
+software, service, or hybrid so the AI-Aware Testing Strategy can activate correctly.
+
 ## Environment Adaptation
 
 If a tool is unavailable, check:
-`../cali-product-workflow/references/cli-tools/`
+`references/cli-tools/`

@@ -20,13 +20,11 @@ This skill executes the Interface Brainstorming phase.
 
 ## How to Load
 
-This skill is **bundled with cali-product-workflow** — there is no standalone `/skill:` command.
-
 ### Via Orchestrator (recommended)
 The orchestrator reads this file directly when needed.
 
 ### Standalone
-Follow the instructions inline below.
+This skill works standalone. Use the Input Detection section below to tell the skill what interface you want to brainstorm. Follow the instructions inline.
 
 ## Process
 
@@ -91,8 +89,7 @@ Wait for the `--gate` result. If approved, **automatically advance to Interface 
 
 ## User Selection (Interface Selection)
 
-
-After visual review and approval, use **Pattern 2** from `../cali-product-workflow/stages/ask-patterns.md` to ask the user which proposal to follow.
+After visual review and approval, use **Pattern 2** from `references/cli-tools/structured-question.md` to ask the user which proposal to follow.
 
 ## Output
 
@@ -106,7 +103,25 @@ Interface proposals are saved to:
 ff8|- **cali-product-shape-up**: Produces the shaped proposal that feeds this phase
 - **cali-product-workflow** (orchestrator): Coordinates this skill with other phases
 
+## Input Detection (Standalone Mode)
+
+When called outside the workflow with no pre-existing spec-product.md:
+
+```
+Input:
+  ├── User provided a spec-product*.md path?
+  │   └→ Read its IN/OUT scope and solution description
+  ├── User described the feature verbally?
+  │   └→ Extract: what does the user need to accomplish?
+  └── No structured input?
+      └→ Ask: "What interface do you want to explore? Describe
+         what the user needs to do, and any constraints (platform,
+         existing UI patterns, brand guidelines)."
+```
+
+Then follow the 5-archetype generation process below.
+
 ## Environment Adaptation
 
 If a tool is unavailable, check:
-`../cali-product-workflow/references/cli-tools/`
+`references/cli-tools/`

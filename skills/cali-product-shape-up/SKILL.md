@@ -21,13 +21,11 @@ This skill executes the Shape Up planning phase.
 
 ## How to Load
 
-This skill is **bundled with cali-product-workflow** — there is no standalone `/skill:` command.
-
 ### Via Orchestrator (recommended)
 The orchestrator reads this file directly when needed.
 
 ### Standalone
-Follow the instructions inline below.
+This skill works standalone. Use the Input Detection section below to tell the skill what you want to shape. Follow the instructions inline.
 
 ## 1a. Parallel Recon (optional — recommended for complex features)
 
@@ -129,7 +127,25 @@ See `references/proposal-structure.md` for the expected output format.
 - **cali-product-interface-brainstorm**: Interface exploration after shaping
 - **cali-product-critique**: Plan review after shaping
 
+## Input Detection (Standalone Mode)
+
+When called outside the workflow with no pre-approved spec-product.md context:
+
+```
+Input:
+  ├── User provided a problem statement?
+  │   └→ Use it directly as the shaping anchor
+  ├── User provided a spec-product*.md path?
+  │   └→ Read it and use its scope/risks as starting point
+  └── No structured input given?
+      └→ Ask the user:
+         "What product feature or problem do you want to shape?
+         Describe the desired outcome, target audience, and any constraints."
+```
+
+The skill will guide you through Parallel Recon → Shaping → Proposal output.
+
 ## Environment Adaptation
 
 If a tool is unavailable, check:
-`../cali-product-workflow/references/cli-tools/`
+`references/cli-tools/`

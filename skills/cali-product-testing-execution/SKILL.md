@@ -1,7 +1,6 @@
 ---
 name: cali-product-testing-execution
 description: "Run post-implementation testing protocol. Triggers when: user says 'test this', 'run tests', 'QA', 'dogfood', 'check quality', user finishes implementing a feature, or when a PR is ready for review. Also triggers on mentions of: test coverage, accessibility audit, WCAG, design review, code review, subagent review. Covers: parallel review via subagents, UI quality audit, accessibility check, and browser testing."
-extends: cali-product-workflow
 metadata:
   frequency: weekly
   category: code

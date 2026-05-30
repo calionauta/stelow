@@ -192,7 +192,7 @@ Before generating the final report, cross-reference the original plan (spec-tech
    - If extra scopes were created: document the justification
 2. **DoD:** did each executed scope meet its Definition of Done?
    - If not: document the gap
-3. **Principles:** read `references/tech-planning/generation-principles.md`
+3. **Principles:** read `cali-product-code-standards` (skill)
    and check if principles were followed in the generated code
    - If violations were detected by parallel-review: were they fixed?
 4. **Verification result:** APPROVED | CAVEATS | REJECTED
@@ -305,6 +305,29 @@ Delegate to a subagent (see `references/cli-tools/subagents.md`):
 | Execution steering | `references/cli-tools/supervise.md` |
 | Automated experimentation | `references/cli-tools/autoresearch.md` |
 | Visual review gate | `references/cli-tools/plannotator.md` |
+
+## Environment Adaptation
+
+If a tool is unavailable, check:
+`references/cli-tools/`
+
+## Input Detection (Standalone Mode)
+
+When called outside the workflow with no pre-approved spec-tech.md:
+
+```
+Input:
+  ├── User provided a spec-tech*.md path?
+  │   └→ Read it, parse scopes by [TYPE], build execution plan
+  ├── User described scopes verbally?
+  │   └→ Extract scope types, objectives, dependencies manually
+  └── No structured input?
+      └→ Ask: "What approved plan should I execute?
+         Provide the path to a spec-tech*.md file, or
+         describe the scopes you want me to execute."
+```
+
+Once input is resolved, proceed to Step 1: Read and parse the plan.
 
 ---
 

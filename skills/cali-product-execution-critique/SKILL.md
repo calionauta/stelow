@@ -20,8 +20,8 @@ Run a structured audit after any implementation — whether it followed the full
 `cali-product-workflow` or was done ad-hoc. Every evaluation criterion runs in
 every mode; only the **source of truth** differs based on what input is available.
 
-> **Tools:** See `../cali-product-workflow/references/cli-tools/subagents.md` for subagent patterns.
-> See `../cali-product-workflow/references/cli-tools/context-mode.md` for processing large outputs.
+> **Tools:** See `references/cli-tools/subagents.md` for subagent patterns.
+> See `references/cli-tools/context-mode.md` for processing large outputs.
 
 ---
 
@@ -360,4 +360,5 @@ Always save or display in this format. The Lessons Learned section also writes t
 ## Environment Adaptation
 
 If a tool is unavailable, check:
-`../cali-product-workflow/references/cli-tools/`
+`references/cli-tools/`
+

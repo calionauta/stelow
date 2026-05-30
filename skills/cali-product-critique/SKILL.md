@@ -233,4 +233,4 @@ should be actionable (e.g., "Add ARIA label to search input" rather than "Improv
 ## Environment Adaptation
 
 If a tool is unavailable, check:
-`../cali-product-workflow/references/cli-tools/`
+`references/cli-tools/`

@@ -577,8 +577,8 @@ Steps: 1) Check strategic stability, 2) Codebase awareness, 3) Technical risk an
 
 **User Prompt Template:**
 ```
-Using references/tech-context.md, references/scopes-and-sequencing.md, references/tech-output.md, references/generation-principles.md:
-
+Using references/tech-context.md, references/scopes-and-sequencing.md, references/tech-output.md:
+Also reference cali-product-code-standards for coding principles + Datastar framework philosophy.
 1. Check strategic stability (Step 0)
 2. Codebase awareness check (Step 1)
 3. Technical risk analysis (Step 2)
