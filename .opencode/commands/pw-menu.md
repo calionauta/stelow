@@ -17,7 +17,7 @@ Open an interactive overlay showing the full workflow state and available action
 
 The menu displays:
 - Current phase with progress indicator
-- Workflow metadata (name, description, appetite)
+- Workflow metadata (name, description, stage)
 - IN/OUT scope summary
 - Rabbit holes identified
 - Risks and assumptions

@@ -96,7 +96,7 @@ const todos = cache.get();  // from memory or file
 
 **Utilities:**
 - `TASK_ICONS` — { pending: "○", in_progress: "◐", completed: "✓" }
-- `formatTask(task)` — "✓ [SHAPE-1] Define appetite"
+- `formatTask(task)` — "✓ [SHAPE-1] Shape proposal"
 - `formatTaskList(tasks, header?)` — Multi-line formatted list
 
 ## Data Flow

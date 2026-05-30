@@ -235,7 +235,7 @@ stages:
   - name: shape
     order: 40
     description: |
-      Shape stage. Define appetite, hill chart, rabbit holes.
+      Shape stage. Define scope boundaries (IN/OUT), risks, rabbit holes.
       Load /skill:cali-product-shape-up.
     
     blocked_tools: [bash, agent_browser]
