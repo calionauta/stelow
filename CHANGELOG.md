@@ -7,6 +7,39 @@ All notable changes to `@renatocaliari/cali-product-workflow` will be documented
 ### Added
 
 - **Structured exports**: Added exports field for cleaner imports
+
+## [0.7.0-alpha] - 2026-05-30
+
+### Added
+
+- **cali-product-execution-critique skill**: Unified post-implementation audit with 8 fixed criteria across 4 input modes (workflow, plan, context, standalone) and `sem diff` integration for entity-level analysis
+- **Radical transparency section** in README: Documents 11 known LLM failure modes per 2026 research (Gamage, Osmani, GitClear, Veracode, Ox Security, METR, Faros AI)
+- **Context rot awareness rules** in orchestrator SKILL.md: fresh context between stages, no patching in degraded context, read from disk
+- **Fresh context check** in execution stage: re-read spec-tech from disk before starting
+- **Invisible 20% checklist** in verification stage: error handling, observability, security, validation, rollback
+- **NFR checklist** in tech planning scopes: per-scope non-functional requirements to combat the 80% Problem
+- **Model provenance tracking**: `generated_by` in spec-product.md frontmatter + Model Provenance Check in gate stage
+
+### Changed
+
+- Renamed `cali-product-delivery-audit` → `cali-product-execution-critique` (directory, frontmatter, all internal references)
+- Merged `cali-post-execution-check` content (triggers, warnings) into `cali-product-execution-critique` skill
+- All internal skill references normalized to `skills/*/SKILL.md` pattern
+- `setup.sh` and `install.sh` now list 22 skills (added `cali-product-execution-critique`)
+
+### Fixed
+
+- Plannotator description updated to reflect interactive annotation + feedback loop
+- 3 stale `cali-product-plan-critique` references in test files → `cali-product-critique`
+- DISPLAY_NAMES in phase-consistency test: `Plan Critique` → `Product Critique`
+- Stage file name `delivery-audit.md` → `execution-critique.md`
+- Core stage files list in sandbox-install test updated
+
+### Removed
+
+- Deprecated `~/.agents/skills/cali-post-execution-check/` (content merged into `cali-product-execution-critique`)
+
+---
   - `.` → main extension entry point
   - `./skills` → skills directory
   - `./extensions` → extensions directory
