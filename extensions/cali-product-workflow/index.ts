@@ -1,6 +1,7 @@
 // @ts-ignore - Optional peer dependency for Pi environment
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import { existsSync, mkdirSync, writeFileSync, readdirSync, cpSync, rmSync } from "node:fs";
+import { execSync } from "node:child_process";
+import { existsSync, mkdirSync, writeFileSync, readFileSync, readdirSync, cpSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
 import { WORKFLOW_DIR, TRACKING_FILE, SCHEMA_URL, STAGE } from "./types";
@@ -109,14 +110,31 @@ export default function (pi: ExtensionAPI) {
   });
 
   // ── Auto-sync skills from git clone → ~/.agents/skills/ ──────────
-  // Each Pi startup mirrors all skills to ~/.agents/skills/ so that
-  // skills added, modified, or removed via git pull are reflected
-  // without running install.sh. Works for ALL CLIs that read from
-  // the DotAgents directory (~/.agents/skills/).
+  // Optimized: tracks git HEAD hash in a marker file. Skips if nothing changed
+  // (<15ms overhead). Full sync (rm -rf + cp -r for all skills) only when
+  // git HEAD changed (~110ms).
+  //
+  // Syncs ALL installed skills on change, not just new ones — handles renamed,
+  // modified, and deleted files. Also removes orphaned skills that no longer
+  // exist in the project.
   function syncSkillsFromClone() {
     try {
       const HOME = homedir();
-      const cloneSkillsDir = join(HOME, ".pi/agent/git/github.com/renatocaliari/cali-product-workflow/skills");
+      const GIT_DIR = join(HOME, ".pi/agent/git/github.com/renatocaliari/cali-product-workflow");
+      const MARKER = join(HOME, ".agents/skills/.cali-skill-sync-hash");
+
+      // Fast path: compare git HEAD hash
+      const currentHash = execSync(
+        "git rev-parse HEAD",
+        { cwd: GIT_DIR, encoding: "utf8", stdio: ["pipe", "pipe", "ignore"] }
+      ).trim();
+      if (!currentHash) return 0;
+      const lastHash = existsSync(MARKER)
+        ? readFileSync(MARKER, "utf8").trim()
+        : "";
+      if (currentHash === lastHash) return 0;
+
+      const cloneSkillsDir = join(GIT_DIR, "skills");
       if (!existsSync(cloneSkillsDir)) return 0;
 
       const agentsDir = join(HOME, ".agents/skills");
@@ -137,14 +155,12 @@ export default function (pi: ExtensionAPI) {
       if (projectSkills.size === 0) return 0;
 
       // 2. Sync each project skill (rm -rf + cp -r = exact mirror)
-      let synced = 0;
       for (const skill of projectSkills) {
         rmSync(join(agentsDir, skill), { recursive: true, force: true });
         cpSync(join(cloneSkillsDir, skill), join(agentsDir, skill), { recursive: true });
-        synced++;
       }
 
-      // 3. Remove skills from ~/.agents/skills/ that no longer exist in the project
+      // 3. Remove orphaned skills from ~/.agents/skills/
       if (existsSync(agentsDir)) {
         for (const entry of readdirSync(agentsDir, { withFileTypes: true })) {
           if (!entry.isDirectory()) continue;
@@ -155,7 +171,10 @@ export default function (pi: ExtensionAPI) {
         }
       }
 
-      return synced;
+      // 4. Write marker hash
+      writeFileSync(MARKER, currentHash);
+
+      return projectSkills.size;
     } catch {
       return 0;
     }

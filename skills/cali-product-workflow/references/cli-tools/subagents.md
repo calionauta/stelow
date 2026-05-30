@@ -80,7 +80,7 @@ read({ path: "output.md" })
 
 ## Common Patterns
 
-> **Note:** `context` parameter is **pi-only**. OpenCode/Claude Code/Codex examples omit it — their subagents are always independent.
+> **Note:** Examples below express `context` intent for clarity. Only pi supports the `context` parameter; other CLIs ignore it (subagents are always independent). The intent still matters for documentation and future-proofing — see the [fork vs fresh section](#conceptual-intent-fork-vs-fresh).
 
 ### Parallel (Step 1 - 5 proposals)
 
@@ -133,20 +133,27 @@ subagent({
 
 ---
 
-## Context Mode (pi only — `fork` vs `fresh`)
+## Conceptual Intent: `fork` vs `fresh`
 
-> **Important:** The `fork` vs `fresh` distinction **only exists on pi** (via pi-subagents extension). OpenCode, Claude Code, and Codex subagents always run in their own independent context — there is no `context` parameter and no distinction to configure.
+This is the **mental model** — what the LLM should *desire* and *document*, regardless of whether the current CLI has a knob for it.
 
-| Mode | Behavior | When to use |
-|------|----------|-------------|
-| `fork` | Branches from the parent session — child inherits filtered history | Advisory threads (`oracle`); tasks that benefit from parent context |
-| `fresh` | Truly new session — zero parent history, clean context | **Adversarial code review** (recommended); any task where parent contamination would bias results |
+| Intent | What it means conceptually | When to express this intent |
+|--------|---------------------------|-----------------------------|
+| `fork` | Child inherits parent context — sees what the parent has been working on, decisions made, files read | Advisory threads (`oracle`); execution tasks where parent history provides useful signal; parallel proposals that should be consistent with the session's direction |
+| `fresh` | Clean slate — child sees only what you explicitly hand it. No biased history, no degraded context, no inherited assumptions | **Adversarial code review** (strongly recommended); any task where independence matters more than coherence with the parent session |
 
-**Key insight (pi only):** `fork` copies the parent's potentially degraded session (context rot ~73% → ~33% over 16 turns, Gamage 2026). `fresh` gives the reviewer full rule awareness, untainted by the executor's degraded context.
+**Key insight:** `fork` means the reviewer gets the parent's potentially contaminated context (context rot ~73% → ~33% rule adherence over 16 turns, Gamage 2026). `fresh` means the reviewer sees the code with full rule awareness, untainted by the executor's degraded context. This is why **adversarial review should always express `fresh` intent**.
 
-**Default (pi):** `planner`, `worker`, `oracle` default to `fork`. For code review, always use `context: "fresh"`.
+### Current implementation per CLI
 
-**Other CLIs:** No action needed — subagents are already independent by default.
+| CLI | Supports this config? | What happens |
+|-----|----------------------|--------------|
+| **pi** (pi-subagents) | ✅ `context: "fork"` or `context: "fresh"` | Exact mapping — default `fork`, pass `fresh` explicitly |
+| **OpenCode** | ❌ No `context` parameter | Subagents always run in their own context — equivalent to `fresh` in practice |
+| **Claude Code** | ❌ No `context` parameter | "Each subagent runs in its own context window" — always `fresh` |
+| **Codex** | ❌ No `context` parameter | Independent threads via `/agent` — always `fresh` |
+
+**Rule of thumb for skill authors:** Always express the *intent* (`fork` vs `fresh`) in the skill instructions. The LLM will translate it to the best available mechanism for the active CLI. If the CLI doesn't support the parameter, the intent still matters: for `fresh`, ensure the subagent task includes everything it needs in isolation; for `fork`, consider whether passing context files manually achieves the goal.
 
 **Fallback:** If the CLI lacks subagent support entirely, execute directly and hand off via files.
 
