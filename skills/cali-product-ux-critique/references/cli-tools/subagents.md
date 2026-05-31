@@ -170,6 +170,47 @@ For tasks that save output, use meaningful paths:
 
 ---
 
+### Multi-dimensional parallel critique (4 reviewers + consolidation)
+
+Launch 4 parallel reviewers with different critique dimensions,
+each independent (fresh context). After all complete, consolidate.
+
+```typescript
+// Step 1: 4 parallel reviewers
+subagent({
+  tasks: [
+    { agent: "reviewer", task: `Critique plan for FLOWS and STATES.\nInput: spec-product.md\nFocus: primary flows, alternative, error, rollback, sync; states: empty, loading, partial, error\nSave to critiques/critique-flows-states.md`, output: "critiques/critique-flows-states.md", context: "fresh" },
+    { agent: "reviewer", task: `Critique plan for DATA and SYSTEM.\nInput: spec-product.md\nFocus: validation, defaults, null handling; API contracts, timeouts, retry\nSave to critiques/critique-data-system.md`, output: "critiques/critique-data-system.md", context: "fresh" },
+    { agent: "reviewer", task: `Critique plan for AFFORDANCES and UX.\nInput: spec-product.md\nFocus: hover/focus/disabled states, touch targets, keyboard nav\nSave to critiques/critique-affordances-ux.md`, output: "critiques/critique-affordances-ux.md", context: "fresh" },
+    { agent: "reviewer", task: `Critique plan for FEASIBILITY.\nInput: spec-product.md\nFocus: architecture, stack, security, effort estimation\nSave to critiques/critique-feasibility.md`, output: "critiques/critique-feasibility.md", context: "fresh" }
+  ],
+  concurrency: 4
+})
+
+// Step 2: Consolidate all 4 reports
+subagent({
+  agent: "worker",
+  task: `Read 4 critique reports and consolidate:\n1. critiques/critique-flows-states.md\n2. critiques/critique-data-system.md\n3. critiques/critique-affordances-ux.md\n4. critiques/critique-feasibility.md\n\nRules: merge, deduplicate (keep specific), classify (BLOCKER/QUESTION/MINOR).\nSave to .cali-product-workflow/{date}/{slug}/critiques/critique-report.md`,
+  reads: ["critiques/critique-flows-states.md", "critiques/critique-data-system.md", "critiques/critique-affordances-ux.md", "critiques/critique-feasibility.md"]
+})
+```
+
+### Dynamic fanout (selected approaches)
+
+When the number of tasks is dynamic (user-selected approaches):
+
+```typescript
+subagent({
+  tasks: selectedApproaches.map(approach => ({
+    agent: "delegate",
+    task: `Execute analysis using cali-product-${approach.skill} for: [context].\nSave to ${approach.outputPath}`,
+    output: approach.outputPath,
+    context: "fork"
+  })),
+  concurrency: selectedApproaches.length
+})
+```
+
 ---
 
 ## Error Recovery

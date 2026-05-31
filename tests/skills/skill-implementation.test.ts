@@ -4,7 +4,7 @@
  * Merged from:
  * - skill-implementation.test.ts (Layer C: per-skill validation)
  * - skill-structure.test.ts (Layer B: main SKILL.md structure)
- * - product-workflow.validate.test.ts (golden dataset)
+ * - (removed in cleanup)
  *
  * WHY: If a skill is missing a gate or tool reference, LLM doesn't know
  * how to properly execute that skill. If the main SKILL.md drifts from

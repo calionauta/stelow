@@ -45,7 +45,29 @@ aspectos técnicos e estruturais (não visuais):
 Se você precisa de auditoria visual de UI (acessibilidade, design, UX), use
 `cali-product-ux-critique` em Codebase mode.
 
-## Como Ativar
+### Appetite Gate (auto-skip for small scopes)
+
+**Before running codebase critique**, check if appetite warrants it.
+Codebase critique is for structural analysis — if the scope is 1 file,
+the value is minimal.
+
+```bash
+# Read appetite from context (passed by orchestrator or inferred from scope count)
+# Default to Focused if unknown
+APPETITE="${APPETITE:-Focused}"
+DIFF_FILES=$(git diff --name-only HEAD~1 2>/dev/null | wc -l | tr -d ' ')
+```
+
+| Appetite | Files changed | Action |
+|----------|--------------|--------|
+| `PoC` | any | **Skip.** 1 file does not need structural critique. |
+| `Focused` | 1-2 | **Skip.** Review via subagent is sufficient. |
+| `Focused` | 3+ | **Quick critique.** Single reviewer, no parallel. |
+| `Comprehensive` | any | **Normal.** One reviewer analyzes all dimensions with detailed recommendations. |
+
+**Rationale:** Codebase critique analyzes architecture, coupling, and data flow.
+For 1 new file or 2 changed files, the cost of structural critique
+outweighs the benefit — code review already covers correctness.
 
 ### Standalone
 ```

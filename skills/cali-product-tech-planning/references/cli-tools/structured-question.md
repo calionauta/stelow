@@ -58,6 +58,101 @@ ask_user_question({
 57:ef6| Pattern 5 | setup | Stage selection |
 | Pattern 6 | Orchestrator | Workflow interruption (mid-workflow new request) |
 
+### Product type (single-select)
+
+```typescript
+ask_user_question({
+  questions: [{
+    question: "What type of product is this?",
+    header: "Product Type",
+    options: [
+      { label: "Software (codebase)", description: "Web app, mobile, CLI tool, library. Triggers AI-aware testing strategy." },
+      { label: "Service (managed)", description: "Consulting, managed service, operations. No testing strategy." }
+    ]
+  }]
+})
+```
+
+### Greenfield vs Brownfield (single-select)
+
+```typescript
+ask_user_question({
+  questions: [{
+    question: "Is this a new product or an evolution of an existing one?",
+    header: "Context",
+    options: [
+      { label: "Greenfield — New product", description: "No existing code. Full TDD + mutation testing. No legacy constraints." },
+      { label: "Brownfield — Existing product", description: "Adding features to existing codebase. Focus on regression + characterization tests." },
+      { label: "Hybrid — Feature addition", description: "New features in existing product. Protect invariants, test new carefully." }
+    ]
+  }]
+})
+```
+
+### External context loading (single-select)
+
+```typescript
+ask_user_question({
+  questions: [{
+    question: "Do you have external context to load before we start planning?\n\nExamples: competitive analysis, customer research, third-party audit, peer review, prior session output.",
+    header: "Context",
+    options: [
+      { label: "Yes, load files (Recommended)", description: "Provide file paths to load as planning context." },
+      { label: "No, proceed without", description: "External context optional — skip and continue." },
+      { label: "Tell me about it", description: "Describe it verbally, I'll capture the key points." }
+    ]
+  }]
+})
+```
+
+### Domain libraries (multi-select)
+
+```typescript
+ask_user_question({
+  questions: [{
+    question: "Your request mentions specific areas. Would you like to load reference playbooks?",
+    header: "Domain Libraries",
+    multiSelect: true,
+    options: [
+      // Only detected domains, e.g.:
+      // { label: "Pricing", description: "Exchange base, consumption control, perception techniques" },
+      // { label: "Promotions", description: "MAGIC framework, Loss Leader, Gift Card Sale" }
+    ]
+  }]
+})
+```
+
+### Strategic approach selection (multi-select)
+
+```typescript
+ask_user_question({
+  questions: [{
+    question: "Select extra strategic approaches before Shape Up.",
+    header: "Approaches",
+    multiSelect: true,
+    options: [
+      // Generated dynamically based on signal detection
+    ]
+  }]
+})
+```
+
+### Workflow resume (single-select)
+
+```typescript
+ask_user_question({
+  questions: [{
+    question: "Workflow already in progress. Resume last session?",
+    header: "Workflow",
+    options: [
+      { label: "Yes — resume (Recommended)", description: "Continue from last completed stage." },
+      { label: "View status only", description: "See what was done without resuming." },
+      { label: "No — cancel workflow", description: "Close the existing workflow and start fresh." }
+    ]
+  }]
+})
+```
+
 ---
 
 ## Multi-Select Rule

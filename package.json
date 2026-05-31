@@ -65,7 +65,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "prepublishOnly": "npm run build && npm run generate-cli-commands",
+    "prepublishOnly": "npm run build && npm run generate-cli-commands && ./scripts/sync-cli-tools.sh",
     "generate-cli-commands": "node --import tsx scripts/generate-cli-commands.ts",
     "test": "vitest run",
     "test:unit": "vitest run tests/unit",

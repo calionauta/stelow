@@ -234,6 +234,126 @@ After identifying the workflow:
 
 7. **Jump to the determined stage** and execute normally. Do not recreate existing artifacts.
 
+### setup:15 — Appetite & Mode Declaration
+
+**Before stage selection, the human declares appetite and mode.**
+
+Appetite defines the **depth of scope** (what the LLM prepares). Mode defines the **level of interaction** (how the workflow engages the human). They are orthogonal choices.
+
+#### Step 1: Ask Appetite
+
+Use **Pattern 7 (Appetite Declaration)** from `stages/ask-patterns.md`.
+
+Present three options with checkboxes for cross-cutting capabilities:
+
+```
+ask_user_question({
+  questions: [{
+    question: `How deep should the plan be?
+This sets the appetite — how much scope the LLM should prepare.
+Appetite is declared first, then the mode of interaction is chosen.`,
+    header: "Appetite",
+    options: [
+      { label: "PoC", description: "Quick validation — 1 minimal feature, ~1 page spec, 1-2 scopes. No edge cases." },
+      { label: "Focused (Recommended)", description: "One feature product, main Job To Be Done — ~3 page spec, 3-5 scopes, obvious edge cases." },
+      { label: "Comprehensive", description: "Multi-feature product — ~8+ page spec, 8-15 scopes, full edge case mapping, 3-5 alternatives compared." }
+    ]
+  }, {
+    question: `Which capabilities does this need?`,
+    header: "Capabilities",
+    multiSelect: true,
+    options: [
+      { label: "Authentication", description: "Login, session management, RBAC/permissions" },
+      { label: "Database", description: "Storage, schema design, migrations, queries" },
+      { label: "Payment", description: "Checkout flow, subscriptions, refunds, invoices" }
+    ]
+  }]
+})
+```
+
+**Validate the appetite value:**
+```bash
+VALID_APPETITES="PoC Focused Comprehensive"
+if ! echo "$VALID_APPETITES" | grep -qw "{chosen_appetite}"; then
+  echo "INVALID_APPETITE: '{chosen_appetite}' must be one of: PoC, Focused, Comprehensive"
+  exit 1
+fi
+```
+
+#### Step 2: Ask Mode
+
+Use **Pattern 8 (Interaction Mode)** from `stages/ask-patterns.md`.
+
+```
+ask_user_question({
+  questions: [{
+    question: `How much interaction do you want during the workflow?
+This sets the mode — which gates, questions, and approvals are active.
+Mode is orthogonal to appetite: appetite defines depth, mode defines feedback.`,
+    header: "Mode",
+    options: [
+      { label: "Auto", description: "No gates, no questions, no Plannotator. LLM makes the best guess." },
+      { label: "Light", description: "Product approval only: one Plannotator gate before tech planning. Interface = LLM recommendation. No IN/OUT confirmation." },
+      { label: "Moderate", description: "Product + UX approval: Light + user chooses between interface alternatives." },
+      { label: "Full Product", description: "Full flow: all gates, questions, and details. Except tech planning approval — those use Auto." },
+      { label: "Full Tech", description: "Everything including tech: all gates, all questions, plus tech planning approval and technical questions." }
+    ]
+  }]
+})
+```
+
+**Validate the mode value:**
+```bash
+VALID_MODES="Auto Light Moderate Full Product Full Tech"
+if ! echo "$VALID_MODES" | grep -qw "{chosen_mode}"; then
+  echo "INVALID_MODE: '{chosen_mode}' must be one of: Auto, Light, Moderate, Full Product, Full Tech"
+  exit 1
+fi
+```
+
+#### Step 3: Store in index.json
+
+Update the workflow's `index.json` with the config:
+
+```bash
+INDEX="$(find .cali-product-workflow/*/*/index.json -type f 2>/dev/null | head -1 | tr -d '\n')"
+if [ -n "$INDEX" ]; then
+  # Read existing, inject config block
+  CONFIG_JSON=$(cat <<EOF
+  "config": {
+    "appetite": "{chosen_appetite}",
+    "mode": "{chosen_mode}",
+    "auth": {auth_bool},
+    "database": {database_bool},
+    "payment": {payment_bool}
+  },
+EOF
+  )
+  # Inject config after "detected_cli" line in index.json
+  sed -i '' 's/"detected_cli"/'"$CONFIG_JSON"'"detected_cli"/' "$INDEX"
+  echo "Config saved to $INDEX"
+fi
+```
+
+#### Step 4: Inject into spec-product.md frontmatter
+
+When the LLM generates `spec-product.md` later in the Shape Up stage, it MUST include:
+```yaml
+appetite: {chosen_appetite}
+appetite_source: setup
+```
+The Shape Up validation guard will reject the file if `appetite:` is missing.
+The LLM then sets its own `complexity_estimate` after shaping — if it exceeds
+appetite, the scope must be split.
+
+> **Rules:**
+> 1. Appetite is FIXED for the cycle. The LLM cannot extend it.
+> 2. If scope doesn't fit appetite, the LLM splits scope — the human decides final.
+> 3. Mode is fixed for the cycle. The LLM cannot change which gates run.
+> 4. Sub-skills called standalone always run in Full mode.
+
+---
+
 ### setup:20 — Stage Selection
 
 Use **Pattern 5** from `stages/ask-patterns.md`.

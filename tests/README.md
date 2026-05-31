@@ -10,8 +10,7 @@ npm run test
 
 # Run by layer
 npm run test:unit      # Extension TypeScript functions
-npm run test:integration  # Workflow lifecycle
-npm run test:skills   # Skill documentation structure
+npm run test:skills   # Skill documentation + phase consistency
 npm run test:artifacts # Artifact schema definitions
 ```
 
@@ -23,33 +22,33 @@ Tests are organized in layers, from most concrete to most abstract:
 ┌─────────────────────────────────────────────────────────────┐
 │  Layer A: Extension (TypeScript)                              │
 │  WHAT: Real functions from state.ts                           │
-│  TESTS: 23 tests in tests/unit/state-real.test.ts             │
-│  VALIDATES: readTracking, writeTracking, renameWorkflow, etc │
+│  TESTS: unit/state-real.test.ts, cli-detection.test.ts, etc   │
+│  VALIDATES: readTracking, writeTracking, detectCLI, etc       │
 └─────────────────────────────────────────────────────────────┘
                         ↓
 ┌─────────────────────────────────────────────────────────────┐
-│  Layer B: SKILL.md Structure (Documentation)                  │
-│  WHAT: Main orchestrator has correct structure               │
-│  TESTS: 45 tests in tests/skills/skill-structure.test.ts     │
-│  VALIDATES: Phase Index, Safety Rules, Tool References       │
+│  Layer B: Phase & Appetite Consistency                       │
+│  WHAT: Cross-file invariants (types.ts, yaml, md, enum)     │
+│  TESTS: phase-consistency.test.ts, appetite-consistency.test.ts│
+│  VALIDATES: stages in sync, labels, globs, Portuguese-clean  │
 └─────────────────────────────────────────────────────────────┘
                         ↓
 ┌─────────────────────────────────────────────────────────────┐
 │  Layer C: Skill Implementation (Markdown)                    │
 │  WHAT: Each skill has required gates, references, process    │
-│  TESTS: 47 tests in tests/skills/skill-implementation.test.ts │
+│  TESTS: skill-implementation.test.ts                         │
 │  VALIDATES: cali-product-shape-up, cali-product-tech-planning, etc           │
 └─────────────────────────────────────────────────────────────┘
-                        ↓
+                        ↓                                       
 ┌─────────────────────────────────────────────────────────────┐
-│  Layer E: Artifact Schema (Output)                            │
+│  Layer D: Artifact Schema (Output)                           │
 │  WHAT: Workflow artifacts follow correct schema              │
-│  TESTS: 27 tests in tests/artifacts/artifact-schema.test.ts  │
+│  TESTS: artifact-schema.test.ts                              │
 │  VALIDATES: spec-product.md, spec-tech.md, interfaces.md     │
 └─────────────────────────────────────────────────────────────┘
                         ↓
 ┌─────────────────────────────────────────────────────────────┐
-│  Layer D: LLM Behavior (NOT TESTED)                          │
+│  Layer E: LLM Behavior (NOT TESTED)                          │
 │  WHY: Non-deterministic, impossible to test deterministically │
 │  ALTERNATIVE: Layer B + C catches broken instructions        │
 └─────────────────────────────────────────────────────────────┘
@@ -195,24 +194,6 @@ describe('functionName', () => {
   it('should fail when Z', () => { ... });
 });
 ```
-
-## Future: Golden Dataset
-
-For testing skill behavior with LLM, we plan to create a golden dataset:
-
-```typescript
-// tests/golden/product-workflow.ts
-export const goldenSet = [
-  {
-    input: 'Build a snake game',
-    expectedPhases: ['Setup', 'Shape', 'Critique', ...],
-    expectGate: true,
-    expectArtifact: 'spec-product.md',
-  },
-];
-```
-
-This would run after real workflow executions to validate output.
 
 ## Future: pi-test-harness
 

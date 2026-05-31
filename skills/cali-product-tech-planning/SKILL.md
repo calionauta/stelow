@@ -100,6 +100,18 @@ if [ "$VALID" = false ]; then
   echo "Required scope fields missing. Regenerating with validation errors flagged..."
   # Feed validation errors back to planner and regenerate once
 fi
+
+# Check appetite violation: scope count vs appetite
+APPETITE=$(grep -oP '^appetite:\s*\K\S+' .cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "Focused")
+SCOPE_COUNT=$(grep -c "^### " "$SPEC_TECH")
+
+# Appetite boundary check: scope count should stay within appetite
+# PoC ≤ 1, Focused ≤ 5, Comprehensive > 5
+case "$APPETITE" in
+  PoC) [ "$SCOPE_COUNT" -gt 1 ] && echo "APPETITE_VIOLATION: PoC appetite but $SCOPE_COUNT scopes. Consolidate or split into multiple cycles." ;;
+  Focused)  [ "$SCOPE_COUNT" -gt 5 ] && echo "APPETITE_VIOLATION: Focused appetite but $SCOPE_COUNT scopes. Consider reducing scope." ;;
+  Comprehensive)  ;;  # Comprehensive has no upper limit by scope count alone
+esac
 ```
 
 > **Rationale:** Scopes missing TYPE, DoD, or ACs will fail at Execution time.

@@ -73,6 +73,40 @@ cat > .workflow/approvals/{_dir}/{filename}_v{N}.approved.md << 'EOF'
 EOF
 ```
 
+### Tool Failure Path
+
+If the Plannotator CLI **command itself fails** (not just unavailable):
+
+```bash
+# Run the command
+plannotator annotate <file>.md --gate 2>&1 || {
+  echo "PLANNOTATOR_FAILED: command returned non-zero exit code"
+  
+  # Never skip the gate — degrade gracefully
+  mkdir -p .plannotator/manual-reviews/
+  cat > .plannotator/manual-reviews/{filename}_v{N}.manual-review-needed.md << 'EOF'
+  ---
+  date: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
+  file: {filename}_v{N}.md
+  reason: Plannotator CLI failed
+  ---
+  
+  ## Manual Review Required
+  
+  The automated gate tool failed. This file needs human review before proceeding.
+  - Open the file in your editor/browser
+  - Annotate issues, approve, or reject
+  - Create a .approved.md receipt when done
+EOF
+  
+  echo "Manual review file created at .plannotator/manual-reviews/{filename}_v{N}.manual-review-needed.md"
+  echo "The gate is NOT skipped — awaiting human review."
+}
+```
+
+> **Key rule:** The gate is NEVER skipped. If the tool fails, the workflow
+> degrades to manual review but still blocks until human approval.
+
 ---
 
 ## When to Use

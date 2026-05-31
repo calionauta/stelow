@@ -326,6 +326,136 @@ What would you like to do?`,
 
 /// END PATTERN 6
 
+---
+## Pattern 7: Appetite Declaration
+
+Used by `setup:15` when the human declares the depth of scope to prepare.
+
+> **Trigger:** Before stage selection, after inbox/lessons/context pre-load.
+
+```typescript
+ask_user_question({
+  questions: [{
+    question: `How deep should the plan be?
+This sets the appetite — how much scope the LLM should prepare.
+Appetite is declared first, then the mode of interaction is chosen.`,
+    header: "Appetite",
+    options: [
+      {
+        label: "PoC",
+        description: "Quick validation — 1 minimal feature, ~1 page spec, 1-2 scopes. No edge cases."
+      },
+      {
+        label: "Focused (Recommended)",
+        description: "One feature product, main Job To Be Done — ~3 page spec, 3-5 scopes, obvious edge cases."
+      },
+      {
+        label: "Comprehensive",
+        description: "Multi-feature product — ~8+ page spec, 8-15 scopes, full edge case mapping, 3-5 alternatives compared."
+      }
+    ]
+  }]
+})
+
+```
+
+**Checkboxes (cross-cutting concerns):**
+
+```typescript
+ask_user_question({
+  questions: [{
+    question: `Which capabilities does this need?`,
+    header: "Capabilities",
+    multiSelect: true,
+    options: [
+      {
+        label: "Authentication",
+        description: "Login, session management, RBAC/permissions"
+      },
+      {
+        label: "Database",
+        description: "Storage, schema design, migrations, queries"
+      },
+      {
+        label: "Payment",
+        description: "Checkout flow, subscriptions, refunds, invoices"
+      }
+    ]
+  }]
+})
+
+```
+
+**How appetite shapes the output:**
+
+| Level | Spec size | Scopes | Alternatives | Edge cases | Each checkbox adds |
+|-------|-----------|--------|-------------|------------|-------------------|
+| PoC | ~1 page | 1-2 | 1 direct | Not documented | +1 scope each |
+| Focused | ~3 pages | 3-5 | 1-2 | Only obvious ones | +2-3 scopes each |
+| Comprehensive | ~8+ pages | 8-15 | 3-5 compared | Fully mapped | +3-5 scopes each |
+
+**Storage:** Save to `index.json` as `config.appetite`, save checkboxes as `config.{auth,database,payment}`, and inject into `spec-product.md` frontmatter as `appetite: {chosen}`.
+
+> **Key rule:** Appetite is FIXED for the cycle. The LLM cannot extend it. If scope doesn't fit, the LLM splits — the human decides whether to accept the split or extend appetite in a NEW cycle.
+
+---
+
+## Pattern 8: Interaction Mode
+
+Used by `setup:15` after appetite is declared. Defines how much the workflow interacts with the human.
+
+> **Trigger:** After appetite + capabilities selection, before stage selection.
+
+```typescript
+ask_user_question({
+  questions: [{
+    question: `How much interaction do you want during the workflow?
+This sets the mode — which gates, questions, and approvals are active.
+Mode is orthogonal to appetite: appetite defines depth, mode defines feedback.`,
+    header: "Mode",
+    options: [
+      {
+        label: "Auto",
+        description: "No gates, no questions, no Plannotator. LLM makes the best guess and recommendation on its own."
+      },
+      {
+        label: "Light",
+        description: "Product approval only: one Plannotator gate before tech planning. Interface = LLM recommendation. No IN/OUT confirmation. User can annotate in the planning gate if wanted."
+      },
+      {
+        label: "Moderate",
+        description: "Product + UX approval: Light + user chooses between generated interface alternatives."
+      },
+      {
+        label: "Full Product",
+        description: "Full flow: all gates, questions, and details. Except tech planning approval and technical questions — those use Auto."
+      },
+      {
+        label: "Full Tech",
+        description: "Everything including tech: all gates, all questions, all details, plus tech planning approval and technical questions."
+      }
+    ]
+  }]
+})
+
+```
+
+**Mode effect matrix:**
+
+| Mode | Plannotator Gates | User Questions | Interface | IN/OUT Confirmation | Tech Approval |
+|------|------------------|---------------|-----------|---------------------|---------------|
+| Auto | None | None | LLM recommends | LLM decides | Auto |
+| Light | 1 (pre-tech) | None (final confirm only) | LLM recommends | LLM decides | Gate only |
+| Moderate | 1 (pre-tech) | Interface selection | User chooses | LLM decides | Gate only |
+| Full Product | Gate + Int-Gate | All except technical | User chooses | User confirms | Auto |
+| Full Tech | Gate + Int-Gate | All including technical | User chooses | User confirms | Gate + tech Qs |
+
+**Storage:** Save to `index.json` as `config.mode`.
+
+> **Note:** Mode does NOT affect supervisor, parallelization, or which skills run. All stages run for all modes — only gates and questions change.
+
+/// END PATTERN 8
+
 ## Usage Rules
 
 1. **Read this file** before any `ask_user_question` call

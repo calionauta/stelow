@@ -51,7 +51,29 @@ Aceita **3 tipos de input**, cada um ativando um subset diferente das dimensões
 | **Codebase** | Diretório com código-fonte | **~80%** sem browser (exceto contraste exato, keyboard real, screen reader) |
 | **Screenshot** | Arquivo `.png` `.jpg` `.webp` | **~60%** — visual hierarchy, AI slop, contraste estimado, cognitive load |
 
-## Como Ativar
+### Appetite Gate (auto-skip for scopes without UI changes)
+
+**Before running UX critique**, check if the scope involves visual UI changes
+and if appetite warrants a full audit.
+
+```bash
+# Read appetite from context; default M
+APPETITE="${APPETITE:-Focused}"
+# Check if any visual files changed
+UI_FILES=$(git diff --name-only HEAD~1 2>/dev/null | grep -cE '\.(templ|html|tsx|jsx|css)$' || echo "0")
+```
+
+| Appetite | UI files changed | Action |
+|----------|-----------------|--------|
+| `PoC` | any | **Skip.** No new UI or minimal scope — basic a11y covered by lint. |
+| `Focused` | 0 | **Skip.** |
+| `Focused` | 1+ | **Codebase mode (~80%).** No browser. Syntactic a11y + AI slop only. |
+| `Comprehensive` | 0 | **Skip** (no UI to audit) |
+| `Comprehensive` | 1+ | **Live Site mode.** Full audit with browser + real a11y. Human reviews report in Full Product/Full Tech mode. |
+
+**Rationale:** UX critique com browser é caro (abre URL, navega, tira screenshot).
+Para PoC/Focused, o custo operacional supera o valor — lint de a11y + revisão de código
+já cobre os issues mais críticos.
 
 ### Standalone (uso avulso)
 Leia este arquivo e pule para o modo relevante.
@@ -68,11 +90,11 @@ O stage `ui-quality` em `stages/verification.md` delega para esta skill.
 
 ```
 Input fornecido:
-  ├── É uma URL (http:// ou https://)?
-  │   └→ 🌐 Mode: Live Site Audit (todas as dimensões)
-  ├── É um diretório ou arquivo de código?
+  ├── Is it a URL (http:// or https://)?
+  │   └→ 🌐 Mode: Live Site Audit (all dimensions)
+  ├── Is it a source directory or code file?
   │   └→ 📁 Mode: Codebase Audit (~80% coverage)
-  └── É uma imagem (.png/.jpg/.webp)?
+  └── Is it an image (.png/.jpg/.webp)?
       └→ 🖼️ Mode: Screenshot Audit (~60% coverage)
 ```
 
@@ -224,11 +246,11 @@ keyboard, screen reader, focus, interactive states, animation.
 
 ### cali-product-testing-execution (Phase 3)
 
-Phase 3 delega para esta skill:
+Phase 3 delegates to this skill:
 
 ```
 Phase 3: UI/UX Quality
-  └── cali-product-ux-critique (URL ou codebase mode)
+  └── cali-product-ux-critique (URL or codebase mode)
        ├── Accessibility (WCAG AA)
        ├── Nielsen 10 Heuristics
        ├── Design Quality (hierarchy, consistency, mobile)
@@ -239,12 +261,12 @@ Phase 3: UI/UX Quality
 
 ### cali-product-workflow (Stage Verification)
 
-O stage `ui-quality` em `stages/verification.md` delega para esta skill nos tiers
+The `ui-quality` stage in `stages/verification.md` delegates to this skill on tiers
 Quick (codebase mode) e Full (live site mode).
 
 ### cali-product-scope-executor
 
-Quando um scope visual é executado, o executor delega a verificação de UX para
+When a visual scope is executed, the executor delegates UX verification to
 esta skill.
 
 ---

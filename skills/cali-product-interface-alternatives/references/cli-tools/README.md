@@ -106,19 +106,19 @@ When CLI not detected or tool unavailable:
 | File | Purpose |
 |------|---------|
 | `subagents.md` | Parallel task delegation |
-| `ask.md` | Structured user questions |
+| `structured-question.md` | Structured user questions (`ask_user_question`) |
 | `plannotator.md` | Visual review gate |
-| `goals.md` | Autonomous goal execution |
-| `autoresearch.md` | Optimization goals (DEPRECATED — merged into goals.md) |
+| `goals.md` | Autonomous goal execution (replaces deprecated autoresearch) |
 | `intercom.md` | Cross-session messaging |
 | `supervise.md` | Outcome steering |
 | `safe-change.md` | Git-safe changes |
-| `phase-status.md` | Workflow status commands |
+| `stage-status.md` | Workflow status commands (`/pw-setphase`, `/pw-next`, `/pw-status`) |
 | `context-mode.md` | Context Mode integration |
-| `context-mode.md` | Context Mode integration |
-| `codequality-review.md` | Ultra-strict code quality review (thermo-nuclear) |
+| `codequality-review.md` | Ultra-strict code quality review |
 | `todo.md` | Phase task management with CLI-specific commands |
-|| `todo.md` | Phase task management with CLI-specific commands |
+| `agent_browser.md` | Automated web browser for UI verification |
+
+> **See also:** `references/permissions.md` (stage permissions) and `references/capabilities.md` (allowed tools per stage)
 
 ---
 

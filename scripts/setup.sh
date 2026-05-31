@@ -61,6 +61,13 @@ echo "   → cali-pw-pi (stub extension)"
 pi install "$PACKAGE_DIR/extensions/cali-pw-pi" 2>/dev/null || true
 echo ""
 
+# Sync cli-tools to all sub-skills
+echo "🔧 Syncing cli-tools to all sub-skills..."
+"$SCRIPT_DIR/sync-cli-tools.sh" || {
+  echo "   Note: cli-tools sync skipped (non-fatal)"
+}
+echo ""
+
 echo "╔════════════════════════════════════════════════════════════╗"
 echo "║  Setup Complete!                                           ║"
 echo "╚════════════════════════════════════════════════════════════╝"

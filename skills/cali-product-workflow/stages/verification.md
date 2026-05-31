@@ -3,7 +3,27 @@
 > **Part of cali-product-workflow** — See [`SKILL.md`](./SKILL.md) for stage sequence, safety rules, and capability reference.
 > **Tool Restrictions:** See `stages.yaml` for blocked/allowed tools in this stage.
 
-After all scopes are executed, run the full testing protocol before delivery audit.
+After all scopes are executed, run the testing protocol before delivery audit.
+
+### Appetite Gate (verification depth)
+
+**Before running verification steps, read appetite:**
+
+```bash
+APPETITE=$(grep -oP '^appetite:\s*\K\S+' .cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "Focused")
+SCOPE_COUNT=$(ls .cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/scopes/*.md 2>/dev/null | wc -l | tr -d ' ')
+```
+
+| Appetite | test-suite | code-review | ui-quality | interactive-testing | code-quality-gate | invisible-20% |
+|----------|-----------|-------------|------------|-------------------|-------------------|---------------|
+| `PoC` | ✅ Run | **Skip** | **Skip** | **Skip** | ✅ Run | ✅ Run |
+| `Focused` | ✅ Run | **Skip (1-2 files)** | **Skip (no new UI)** | **Skip** | ✅ Run | ✅ Run |
+| `Comprehensive` | ✅ Run | ✅ (3+ files) | ✅ Live Site | ✅ Full browser | ✅ Run | ✅ Run |
+
+**Rationale:**
+- **PoC code-review skip:** Codebase critique is useless for 1 file. Correctness covered by test-suite + invisible-20%.
+- **PoC ui-quality skip:** No new UI, nothing to audit.
+- **PoC interactive-testing skip:** 1 component has no complex interaction.
 
 ### Auto-chain
 
@@ -27,9 +47,24 @@ pytest
 
 **Block until tests pass.** Do not proceed with failing tests.
 
-### code-review (if 3+ files)
+### code-review (appetite-aware)
 
-If the diff touches 3+ files, launch fresh-context reviewers in parallel.
+Check appetite first — for PoC/Focused with few files, code-review is unnecessary:
+
+```bash
+APPETITE=$(grep -oP '^appetite:\s*\K\S+' .cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "Focused")
+DIFF_FILES=$(git diff --name-only HEAD~1 2>/dev/null | wc -l | tr -d ' ')
+
+if [ "$APPETITE" = "PoC" ]; then
+  echo "CODE_REVIEW_SKIP: appetite PoC — minimal scope, test-suite + invisible-20% covers."
+elif [ "$APPETITE" = "Focused" ] && [ "$DIFF_FILES" -le 2 ]; then
+  echo "CODE_REVIEW_SKIP: appetite Focused with $DIFF_FILES file(s) — does not justify structural review."
+elif [ "$DIFF_FILES" -ge 3 ]; then
+  echo "CODE_REVIEW_RUNNING: $DIFF_FILES files changed — launching parallel reviewer."
+fi
+```
+
+If running, launch a fresh-context reviewer.
 See `references/cli-tools/subagents.md` for the `subagent()` pattern — this works
 on pi.dev, OpenCode, Claude Code, and Codex (all have native subagent support).
 Run **automatically** with `context: "fresh"` — the fresh session provides
@@ -38,9 +73,24 @@ This mitigates the shallow review trap (Ox Security 2025) even with the
 same model, because the issue isn't identical models but contaminated context
 (Gamage 2026 "Omission Constraints Decay").
 
-### ui-quality (if visual)
+### ui-quality (appetite-aware)
 
-If the scope involves a visual interface, delegate to `cali-product-ux-critique`.
+Check appetite and UI scope before running:
+
+```bash
+APPETITE=$(grep -oP '^appetite:\s*\K\S+' .cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "Focused")
+UI_FILES=$(git diff --name-only HEAD~1 2>/dev/null | grep -cE '\.(templ|html|tsx|jsx|css)$' || echo "0")
+```
+
+| Appetite | UI files | Action |
+|----------|---------|--------|
+| `PoC` | any | **Skip.** No new UI or minimal scope — lint covers basic a11y. |
+| `Focused` | 0 | **Skip.** No UI. |
+| `Focused` | 1+ | **Normal.** Delegate to `cali-product-ux-critique`. Codebase mode (browserless). |
+| `Comprehensive` | 0 | **Skip.** No UI. |
+| `Comprehensive` | 1+ | **Live Site mode.** Full browser audit. |
+
+If running, delegate to `cali-product-ux-critique`.
 
 See `skills/cali-product-ux-critique/SKILL.md` for full instructions.
 
@@ -55,15 +105,24 @@ syntactic accessibility violations. Deque (2026) confirms ~40% of WCAG
 issues are auto-detectable; LLMs push this further by evaluating semantic
 correctness that rule-based tools cannot assess.
 
-### interactive-testing (if interactive)
+### interactive-testing (appetite-aware)
+
+Check appetite before interactive testing:
+
+```bash
+APPETITE=$(grep -oP '^appetite:\s*\K\S+' .cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "Focused")
+```
+
+| Appetite | Action |
+|----------|--------|
+| `PoC` | **Skip.** 1 component does not justify interactive testing — test-suite covers. |
+| `Focused` | **Skip.** Small scope — test-suite + invisible-20% sufficient. |
+| `Comprehensive` | **Run.** Full browser if applicable. |
 
 If the feature has interactive elements (forms, clicks, inputs):
 
 #### Quick Tier — Logic Audit (browserless)
 
-Review the interaction logic from source code:
-- Form validation: required fields, input types, error messages
-- Loading/error/empty states: are all states rendered?
 - Event handlers: correct targets, proper cleanup (useEffect return)
 - State management: optimistic updates, rollback on error
 - API call patterns: correct endpoints, error handling, retry?

@@ -112,6 +112,8 @@ Before executing, present a clear execution plan to the user with the resolved e
 ```
 📋 Execution Plan for: {plan-name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Appetite: {PoC|Focused|Comprehensive} (human-set)
+Complexity Estimate: {XS|S|M|L|XL} (LLM-set)
 Phase 1 (parallel):
   ⏩ [SCOPE-1] Login — feature → worker
   ⏩ [SCOPE-3] Vector DB eval — spike → scout + researcher
@@ -122,12 +124,40 @@ Phase 2 (after SCOPE-1):
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
+**Human-in-loop check for Comprehensive appetite:**
+
+```bash
+# Try precise path first, then fallback to glob
+APPETITE=$(grep -oP '^appetite:\s*\K\S+' .cali-product-workflow/*/*/plans/spec-product_*.md 2>/dev/null || echo "Focused")
+if [ "$APPETITE" = "Comprehensive" ]; then
+  echo "⚠️ COMPREHENSIVE APPETITE: Human-in-loop mode may be needed for architectural changes."
+  echo "Check the workflow's 'mode' setting in index.json."
+  echo "In Full Tech mode, each PR/fork-point requires human approval before merge."
+```
+
 Ask the user:
 ```
 Shall I proceed with autonomous execution? I'll report back when all scopes are complete.
 ```
 
 If the user says yes, proceed autonomously. If no, ask what they'd like to adjust.
+
+### Step 2d: Comprehensive Human-in-loop execution mode
+
+If appetite is `Comprehensive`, **modify execution flow** for each scope:
+
+1. LLM implements changes in a working branch
+2. LLM **pauses** and presents the diff to the human
+3. Human reviews and approves (or requests changes)
+4. LLM applies feedback and merge
+5. LLM proceeds to next scope
+
+This is NOT a gate — it's a **per-scope review checkpoint**. The LLM does the work;
+the human just validates each architectural PR before it lands.
+
+Rationale: OWASP LLM06 (Excessive Agency) — architectural changes with high
+regression risk require human authorization. This is a security measure,
+not overhead.
 
 ### Step 3: Execute feature scopes (feature → goals tool)
 

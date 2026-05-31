@@ -97,6 +97,22 @@ Proceed directly to scope execution in the current directory.
 > **Goal system:** See `references/cli-tools/goals.md` for all scope types —
 > optimization scopes use the goals tool with benchmark verify commands.
 
+**Before routing, read appetite from spec-product.md.**
+```bash
+APPETITE=$(grep -oP '^appetite:\s*\K\S+' .cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "Focused")
+```
+
+**Supervisor decision by appetite** (see `references/cli-tools/supervise.md` for full reference):
+
+| Appetite | Supervisor | Sensitivity | Human-in-loop | Rationale |
+|----------|-----------|-------------|---------------|----------|
+| `PoC` | **Skip** | — | No | Scope is 1 component. Drift is impossible — no context to degrade. |
+| `Focused` | **Activate** | `low` | No | Short scope. Low sensitivity avoids false positives on minor detours. |
+| `Comprehensive` | **Activate** | `medium` | No | Multiple scopes increase drift surface area; standard supervision. |
+
+> **Human-in-loop is controlled by Mode** (from `index.json`), not by appetite.
+> Mode = Full Product or Full Tech may add human approval checkpoints per PR.
+
 | Scope Type | Executor | Supervision |
 |---|---|---|
 | `[TYPE] optimization` | goals tool (see `references/cli-tools/goals.md`, Optimization Goals) | Metric verify (auto) |
@@ -113,16 +129,22 @@ Proceed directly to scope execution in the current directory.
 
 ### When starting execution of each scope:
 
-1. **Feature/refactor/spike without metric → goals tool** (see `references/cli-tools/goals.md`)
+1. **Read appetite** from spec-product.md:
+   ```bash
+   APPETITE=$(grep -oP '^appetite:\s*\K\S+' .cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "Focused")
+   ```
+
+2. **Feature/refactor/spike without metric → goals tool** (see `references/cli-tools/goals.md`)
    - CLI fallback: **ordered-execution-goal** (`/sisyphus-set`, no discussion, starts immediately)
-   - Activate `/supervise` with:
+   - **Supervisor:** See the canonical appetite-based decision table in `execution:20` above. Activate with:
      ```
      /supervise outcome="Execute scope '{scope_name}' per spec-tech.md.
      DoD: {DoD}. AC: {acceptance criteria}. Do not deviate from approved scope."
      ```
+     Add `sensitivity: "low"` if appetite = Focused.
    - The supervisor detects deviation and re-centers if the LLM leaves scope
 
-2. **Optimization/spike with metric → goals tool** (see `references/cli-tools/goals.md`, Optimization Goals)
+3. **Optimization/spike with metric → goals tool** (see `references/cli-tools/goals.md`, Optimization Goals)
    - No supervisor needed (goals tool with benchmark verify is self-supervising via metric)
 
 3. **If blocked:** `pause_goal` with reason documenting the blockage

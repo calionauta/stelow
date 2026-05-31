@@ -13,10 +13,10 @@ metadata:
 
 # Plan Critique
 
-> **Foco:** Analisar criticamente um plano de produto (`spec-product.md`) para encontrar
-> ambiguidades, gaps, riscos e definições faltantes antes da implementação.
-> **Input:** `spec-product.md` (único).
-> **Saída:** Relatório classificado com gaps (🚨/🤔/🔎) + perguntas acionáveis.
+> **Focus:** Critically analyze a product plan (`spec-product.md`) to find
+> ambiguities, gaps, risks, and missing definitions before implementation.
+> **Input:** `spec-product.md` (single file).
+> **Output:** Classified gap report (🚨/🤔/🔎) with actionable questions.
 
 > **Tools:** See `references/cli-tools/subagents.md` for subagent patterns.
 
@@ -25,47 +25,46 @@ metadata:
 Systematic gap analysis for product plans — finds ambiguities, risks, and missing definitions
 before implementation. Every finding becomes a specific, actionable question.
 
-## Visão Geral
+## Checklists
 
-Esta skill executa uma **análise sistemática de gaps** em planos de produto usando 6 checklists
-especializadas:
+This skill runs 6 specialized checklists against product plans:
 
-| Checklist | O que avalia |
+| Checklist | What it evaluates |
 |-----------|-------------|
-| 🌀 **Flows** | Fluxo principal, alternativo, erro, rollback, sincronização |
+| 🌀 **Flows** | Main flow, alternative, error, rollback, synchronization |
 | 🎯 **States** | Empty, loading, partial, error, boundary, edge |
 | 👆 **Affordances** | Hover/focus/disabled states, touch targets, keyboard nav |
-| 📊 **Data** | Validação, defaults, null handling, persistência |
+| 📊 **Data** | Validation, defaults, null handling, persistence |
 | 🔧 **System** | API contracts, timeouts, retry, fallback, offline |
-| ⚖️ **Feasibility** | Arquitetura, stack, segurança, effort estimation |
+| ⚖️ **Feasibility** | Architecture, stack, security, effort estimation |
 
-**Regra fundamental:** Cada gap encontrado vira uma **pergunta específica e acionável** —
-nunca uma crítica vaga. O objetivo é destravar o time de implementação, não atrasá-lo.
+**Golden rule:** Every gap becomes a **specific, actionable question** —
+never a vague criticism. The goal is to unblock the implementation team, not delay them.
 
-## Como Ativar
+## Activation
 
 ### Standalone
 ```
-Recebi um spec-product.md e quero revisar antes de implementar.
+Received a spec-product.md and want to review before implementation.
 ```
 
 ### Via cali-product-workflow (`critique` stage)
-O workflow carrega esta skill automaticamente após o Tech Planning, antes do Plannotator.
+The workflow loads this skill automatically after Tech Planning, before Plannotator.
 
 ### Via cali-product-tech-planning
-Antes de gerar os scopes técnicos, o tech-planning chama esta skill para garantir
-que o plano está sólido.
+Before generating technical scopes, tech-planning calls this skill to ensure
+the plan is solid.
 
 ---
 
 ## 🔀 Input Detection
 
 ```
-Input recebido:
-  ├── É spec-product*.md?
+Input received:
+  ├── Is it spec-product*.md?
   │   └→ ✅ Mode: Plan Critique
-  └── É outro tipo de arquivo?
-      └→ ❌ Não é o input correto — use cali-product-codebase-critique ou cali-product-ux-critique
+  └── Is it another file type?
+      └→ ❌ Wrong input — use cali-product-codebase-critique or cali-product-ux-critique
 ```
 
 ---
@@ -84,7 +83,46 @@ and implementation constraints.
 | `references/plan-critique-context.md` | Role, when to use, workflow position, output expectations |
 | `references/checklists.md` | 6 checklists (flows, states, affordances, data, system, feasibility) |
 | `references/auto-resolve-rules.md` | Rules for auto-resolving gaps with defaults |
-| `references/output-format.md` | Formato do relatório |
+| `references/output-format.md` | Report format specification |
+
+### critique:20 — Appetite Violation Check
+
+**Before launching parallel reviewers**, check the appetite from spec-product.md frontmatter:
+
+```bash
+APPETITE=$(grep -oP '^appetite:\s*\K\S+' "$INPUT" 2>/dev/null || echo "Focused")
+COMPLEXITY=$(grep -oP '^complexity_estimate:\s*\K\S+' "$INPUT" 2>/dev/null || echo "$APPETITE")
+```
+
+**Note:** Auto-skip of critique is now controlled by **Mode** (from `index.json`), not by appetite. When the orchestrator calls plan-critique, mode has already decided whether critique runs. When standalone, plan-critique always runs in Full mode.
+
+**Check for appetite violation:**
+
+```bash
+# complexity_estimate uses XS/S/M/L/XL scale, appetite uses PoC/Focused/Comprehensive
+# They are different scales — cannot compare by ordinal.
+# Instead, check if the estimate suggests more effort than the appetite implies:
+#   - PoC: complexity must be XS or S (≤5 scopes)
+#   - Focused: complexity must be M or less (≤10 scopes)
+#   - Comprehensive: any complexity fits
+case "$APPETITE" in
+  PoC)
+    case "$COMPLEXITY" in
+      M|L|XL) echo "APPETITE_VIOLATION: PoC appetite but complexity=$COMPLEXITY — scope too large for declared review attention." ;;
+      *) echo "APPETITE_FITS: PoC + $COMPLEXITY — OK." ;;
+    esac
+    ;;
+  Focused)
+    case "$COMPLEXITY" in
+      L|XL) echo "APPETITE_VIOLATION: Focused appetite but complexity=$COMPLEXITY — consider splitting scope." ;;
+      *) echo "APPETITE_FITS: Focused + $COMPLEXITY — OK." ;;
+    esac
+    ;;
+  Comprehensive)
+    echo "APPETITE_FITS: Comprehensive + $COMPLEXITY — always OK (no upper bound on depth)."
+    ;;
+esac
+```
 
 ### critique:30 — Run parallel subagents (4 dimensions)
 
@@ -163,7 +201,7 @@ Only flag genuinely ambiguous gaps as unresolved.
 
 ---
 
-## Integração com outras skills
+## Integration with other skills
 
 ### cali-product-workflow (`critique` stage)
 
@@ -176,13 +214,13 @@ critique: Critique Gate
 
 ### cali-product-tech-planning
 
-Antes de gerar scopes, o tech-planning pode invocar esta skill para verificar
-se o plano está suficientemente sólido.
+Before generating scopes, tech-planning can invoke this skill to verify
+the plan is sufficiently solid.
 
 ### cali-product-shape-up
 
-Após o shape-up produzir o spec-product, esta skill faz a revisão crítica antes
-de seguir para tech planning.
+After shape-up produces the spec-product, this skill does a critical review before
+proceeding to tech planning.
 
 ---
 

@@ -70,6 +70,8 @@ VALID=true
 
 grep -q "IN scope" "$SPEC" || { echo "VALIDATION_FAILED: missing IN scope"; VALID=false; }
 grep -q "OUT scope" "$SPEC" || { echo "VALIDATION_FAILED: missing OUT scope"; VALID=false; }
+grep -q "appetite:" "$SPEC" || { echo "VALIDATION_FAILED: missing appetite field (human-set)"; VALID=false; }
+grep -q "complexity_estimate:" "$SPEC" || { echo "VALIDATION_FAILED: missing complexity_estimate field (LLM-set)"; VALID=false; }
 grep -q -E "## (Risks|Rabbit ?holes)" "$SPEC" || { echo "VALIDATION_FAILED: missing Risks section"; VALID=false; }
 
 if [ "$VALID" = false ]; then
@@ -80,10 +82,15 @@ if [ "$VALID" = false ]; then
 fi
 ```
 
-> **Rationale:** (No Appetite validation — Shape Up's appetite is implicit in
-> the proposal context, not a separate section.) Missing IN/OUT boundaries and
-> Risks are the most common LLM hallucination in shaping. Catching them at save
-> time prevents wasted Critique and Gate cycles.
+> **Rationale:** Appetite é o que torna o escopo verificável. Sem appetite declarado, a LLM pode gerar escopo arbitrariamente grande — e o gargalo não é gerar, é verificar. Appetite mede atenção humana, não velocidade da LLM.
+>
+> **Appetite é diferente de complexity_estimate:**
+> - `appetite` — definido pelo **humano** no setup stage. Quanto review esse problema merece?
+> - `complexity_estimate` — definido pela **LLM** pós-shaping. Quanto review o output proposto deve consumir?
+>
+> **Se `complexity_estimate > appetite`:** a LLM sugere splits ou reduções de escopo. O humano decide se aceita o split ou estende o appetite. A LLM **nunca** decide sozinha estender appetite — seria circular.
+>
+> **How to define appetite:** see `references/proposal-structure.md` — PoC / Focused / Comprehensive with depth of scope. Mode controls gates/questions independently (stored in `index.json`).
 
 - Do not ask about Interface Alternatives — already decided in the `setup` stage
 - **Do NOT ask scope adjustment yet** — this happens after Product Critique and Gate approval (see workflow sequence below)
