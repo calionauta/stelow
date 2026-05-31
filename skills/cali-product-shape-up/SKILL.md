@@ -27,7 +27,7 @@ The orchestrator reads this file directly when needed.
 ### Standalone
 This skill works standalone. Use the Input Detection section below to tell the skill what you want to shape. Follow the instructions inline.
 
-## 1a. Parallel Recon (optional — recommended for complex features)
+## shape:10 — Parallel Recon (optional)
 
 Before shaping, launch `subagent` to map context:
 
@@ -55,7 +55,7 @@ constraints for: [description].`,
 
 Read the outputs before proceeding.
 
-## 1b. Shaping
+## shape:20 — Shaping
 
 Read the `references/` files to guide the process:
 
@@ -72,7 +72,34 @@ Use the ask tool (see `references/cli-tools/structured-question.md`) for strateg
 
 After shaping:
 - Save to `.cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md`
-- Do not ask about Interface Brainstorming — already decided in Phase 1 (Setup)
+
+### Output Validation Guard
+
+After saving, validate the shaped proposal has all required sections:
+
+```bash
+SPEC=".cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md"
+VALID=true
+
+
+grep -q "IN scope" "$SPEC" || { echo "VALIDATION_FAILED: missing IN scope"; VALID=false; }
+grep -q "OUT scope" "$SPEC" || { echo "VALIDATION_FAILED: missing OUT scope"; VALID=false; }
+grep -q -E "## (Risks|Rabbit ?holes)" "$SPEC" || { echo "VALIDATION_FAILED: missing Risks section"; VALID=false; }
+
+if [ "$VALID" = false ]; then
+  echo "One or more required sections missing. Regenerating spec with missing sections flagged..."
+  # Feed validation errors back to the shaping process and regenerate once
+  # (subagent or inline, depending on how the spec was generated)
+  # After regeneration, re-run this validation. If still failing, flag for user review.
+fi
+```
+
+> **Rationale:** (No Appetite validation — Shape Up's appetite is implicit in
+> the proposal context, not a separate section.) Missing IN/OUT boundaries and
+> Risks are the most common LLM hallucination in shaping. Catching them at save
+> time prevents wasted Critique and Gate cycles.
+
+- Do not ask about Interface Alternatives — already decided in the `setup` stage
 - **Do NOT ask scope adjustment yet** — this happens after Product Critique and Gate approval (see workflow sequence below)
 
 ## Workflow Sequence
@@ -88,7 +115,7 @@ Plannotator (Gate — visual approval)
     ↓
 Scope Adjustment (ask) ← HERE scope happens
     ↓
-Interface Brainstorming (if selected)
+Interface Alternatives (if selected)
 ```
 
 **Note:** Scope Adjustment comes AFTER Gate approval, not before.
@@ -124,8 +151,8 @@ See `references/proposal-structure.md` for the expected output format.
 ## Related Skills
 
 - **cali-product-workflow**: Coordinates this skill with other phases
-- **cali-product-interface-brainstorm**: Interface exploration after shaping
-- **cali-product-critique**: Plan review after shaping
+- **cali-product-interface-alternatives**: Interface exploration after shaping
+- **cali-product-plan-critique**: Plan review after shaping
 
 ## Input Detection (Standalone Mode)
 

@@ -5,8 +5,8 @@
 # Installs EVERYTHING from scratch for non-technical users:
 #   1. Node.js (if needed)
 #   2. pi.dev coding agent
-#   3. All extensions (22 packages)
-#   4. cali-product-workflow (22 skills)
+#   3. All extensions
+#   4. cali-product-workflow (24 skills)
 #   5. Configures settings.json with optimized defaults
 #
 # Usage:
@@ -26,7 +26,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 GITHUB_REPO="https://github.com/renatocaliari/cali-product-workflow"
 MIN_NODE_VERSION=20
 
-# All Pi packages to install (22 total)
+# All Pi packages to install
 PI_PACKAGES=(
   # Core extensions
   "npm:pi-subagents"
@@ -38,10 +38,9 @@ PI_PACKAGES=(
   "npm:pi-rewind-hook"
   "npm:pi-skillful"
   "npm:pi-powerline-footer"
-  "npm:context-mode"
 
   # Productivity tools
-  "npm:@capyup/pi-goal"
+
   {"source":"npm:@juicesharp/rpiv-ask-user-question","extensions":["+index.ts"]}
   "npm:@juicesharp/rpiv-todo"
   "npm:@juicesharp/rpiv-i18n"
@@ -67,8 +66,10 @@ PI_PACKAGES=(
 ALL_SKILLS=(
   "cali-product-workflow"
   "cali-product-shape-up"
-  "cali-product-interface-brainstorm"
-  "cali-product-critique"
+  "cali-product-interface-alternatives"
+  "cali-product-plan-critique"
+  "cali-product-codebase-critique"
+  "cali-product-ux-critique"
   "cali-product-tech-planning"
   "cali-product-job-to-be-done"
   "cali-product-discovery"
@@ -85,6 +86,7 @@ ALL_SKILLS=(
   "cali-product-open-source"
   "cali-product-scope-executor"
   "cali-product-testing-ai-code"
+  "cali-product-testing-execution"
   "cali-product-execution-critique"
 )
 
@@ -123,8 +125,8 @@ for arg in "$@"; do
       echo "This script installs:"
       echo "  • Node.js >= 20 (if not installed)"
       echo "  • pi.dev coding agent"
-      echo "  • 22 Pi extensions and packages"
-      echo "  • 20 cali-product-workflow skills"
+      echo "  • Pi extensions and packages"
+      echo "  • 24 cali-product-workflow skills"
       echo "  • Optimized settings.json configuration"
       exit 0
       ;;
@@ -271,7 +273,7 @@ install_pi() {
 # ─── Pi Extensions ───────────────────────────────────────────────────────────
 
 install_extensions() {
-  log_step "Step 4/5: Installing Pi Extensions (22 packages)"
+  log_step "Step 4/5: Installing Pi Extensions"
 
   local installed=0
   local failed=0
@@ -309,7 +311,7 @@ install_extensions() {
 # ─── Skills ──────────────────────────────────────────────────────────────────
 
 install_skills() {
-  log_step "Step 5/5: Installing cali-product-workflow Skills (22 skills)"
+  log_step "Step 5/5: Installing cali-product-workflow Skills (24 skills)"
 
   local skills_dir="$HOME/.agents/skills"
   if [[ "$DRY_RUN" == "false" ]]; then
@@ -481,8 +483,8 @@ print_summary() {
   echo ""
   echo "  ${CYAN}Node.js${RESET}       $(node --version 2>/dev/null || echo 'not found')"
   echo "  ${CYAN}pi.dev${RESET}        $(pi --version 2>/dev/null || echo 'not found')"
-  echo "  ${CYAN}Extensions${RESET}    22 packages (subagents, browser, intercom, etc.)"
-  echo "  ${CYAN}Skills${RESET}        20 product workflow skills"
+  echo "  ${CYAN}Extensions${RESET}    (subagents, browser, intercom, etc.)"
+  echo "  ${CYAN}Skills${RESET}        23 product workflow skills"
   echo "  ${CYAN}Settings${RESET}      Optimized configuration"
   echo ""
   echo "  ${BOLD}What's next:${RESET}"
@@ -524,8 +526,8 @@ main() {
   echo "  This script will install:"
   echo "    • Node.js (if needed)"
   echo "    • pi.dev coding agent"
-  echo "    • 22 Pi extensions"
-  echo "    • 20 product workflow skills"
+  echo "    • Pi extensions"
+  echo "    • 23 product workflow skills"
   echo "    • Optimized settings"
   echo ""
 

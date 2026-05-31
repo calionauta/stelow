@@ -106,7 +106,7 @@ stages:
 
   - name: interface
     order: 80
-    description: Interface brainstorming. 5 proposals + hybrid.
+    description: Interface alternatives. 5 proposals + hybrid.
     blocked_tools: [bash, agent_browser]
     allowed_tools: [ask, read, grep, ls, write, subagent]
     preferred_tools: [read, write]

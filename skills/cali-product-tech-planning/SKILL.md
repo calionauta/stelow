@@ -58,7 +58,7 @@ Read the `references/` files to guide the process:
 
 ## Process
 
-### 7a. Scope Generation
+### planning:10 — Scope Generation
 
 Use the references above to generate technical scopes.
 
@@ -69,13 +69,49 @@ Delegate to a planner subagent (see `references/cli-tools/subagents.md`):
 - Output: `.cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_{v}.md`
 - Input: `.cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md`
 
+#### planning:10.10 — Output Validation Guard
+
+After the subagent writes spec-tech.md, validate every scope has required fields:
+
+```bash
+SPEC_TECH=".cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_{v}.md"
+VALID=true
+
+# Check each scope for required fields
+for SCOPE_LINE in $(grep -n "^### " "$SPEC_TECH" | sed 's/:.*//'); do
+  # Each scope must have TYPE, DoD, and AC
+  tail -n +$SCOPE_LINE "$SPEC_TECH" | head -50 | grep -q "TYPE:" || {
+    echo "VALIDATION_FAILED: scope at line $SCOPE_LINE missing TYPE"; VALID=false;
+  }
+  tail -n +$SCOPE_LINE "$SPEC_TECH" | head -50 | grep -q -E "(DoD|Definition of Done)" || {
+    echo "VALIDATION_FAILED: scope at line $SCOPE_LINE missing DoD"; VALID=false;
+  }
+  tail -n +$SCOPE_LINE "$SPEC_TECH" | head -50 | grep -q -E "(AC|Acceptance Criteria|Critério)" || {
+    echo "VALIDATION_FAILED: scope at line $SCOPE_LINE missing AC"; VALID=false;
+  }
+done
+
+# Check for circular dependencies (>5 levels of nesting = probable error)
+if grep -q "depends_on.*depends_on.*depends_on.*depends_on.*depends_on" "$SPEC_TECH" 2>/dev/null; then
+  echo "VALIDATION_WARN: possible circular or deeply nested dependencies"
+fi
+
+if [ "$VALID" = false ]; then
+  echo "Required scope fields missing. Regenerating with validation errors flagged..."
+  # Feed validation errors back to planner and regenerate once
+fi
+```
+
+> **Rationale:** Scopes missing TYPE, DoD, or ACs will fail at Execution time.
+> Catching this at planning time saves wasted executor cycles.
+
 **⚠️ FALLBACK — if subagent fails or is unavailable:**
 Generate spec-tech.md INLINE using the same process. Read the references files
 (`tech-context.md`, `scopes-and-sequencing.md`, `tech-output.md`)
 and read `cali-product-code-standards` for Datastar framework philosophy,
 then produce the spec-tech artifact directly in the current context.
 
-### 7b. AI-Aware Testing Strategy (Software Products Only)
+### planning:20 — AI-Aware Testing Strategy (Software Only)
 
 **If `product_type: software` or `product_type: hybrid`**:
 
@@ -105,7 +141,7 @@ Based on testing-strategy.md, add scopes for:
 - Use Test-After + Mutation for standard paths
 - Never use same AI for both code AND test generation
 
-### 5b. Tech Planning Review Gate
+### planning:30 — Tech Planning Review Gate
 
 **⚠️ MANDATORY — ALWAYS run gate. Never skip.**
 
@@ -136,7 +172,7 @@ See `references/cli-tools/plannotator.md` for command format, after-approval wor
 2. Re-submit via the Plannotator gate command (see `references/cli-tools/plannotator.md`)
 3. Repeat until approved
 
-### 5c. Goal Generation (Step 9)
+### planning:40 — Goal Generation
 
 After tech plan approval, convert each scope into an **ordered-execution-goal**
 (see `references/cli-tools/goals.md`, `sisyphus-set` variant). Goals are mandatory —
@@ -187,12 +223,12 @@ Tech plan is saved to:
 The scope executor determines the correct tool and execution mode for each scope type.
 Do NOT start implementing scopes directly — always go through scope executor first.
 
-**Step 1: Load the scope executor skill**
+**planning:50.10 — Load the scope executor skill**
 ```text
 Read skills/cali-product-scope-executor/SKILL.md for routing rules.
 ```
 
-**Step 2: Route each scope by type:**
+**planning:50.20 — Route each scope by type**
 
 | Scope type | Route to |
 |------------|----------|
@@ -228,7 +264,7 @@ See `skills/cali-product-testing-ai-code/SKILL.md`
 ## Related Skills
 
 - **cali-product-shape-up**: Produces the shaped proposal
-- **cali-product-critique**: Reviews the proposal before tech planning
+- **cali-product-plan-critique**: Reviews the proposal before tech planning
 - **cali-product-workflow** (orchestrator): Coordinates this skill with execution
 
 ## Input Detection (Standalone Mode)

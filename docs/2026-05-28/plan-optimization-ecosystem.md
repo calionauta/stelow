@@ -471,13 +471,15 @@ metadata:
 | cali-package-audit | weekly | infra | low | ❌ |
 | cali-product-testing-execution | weekly | code | medium | ❌ |
 | cali-product-shape-up | weekly | product | low | ❌ |
-| cali-product-critique | weekly | product | low | ❌ |
+| cali-product-ux-critique | weekly | product | medium | ❌ |
+| cali-product-plan-critique | weekly | product | medium | ❌ |
+| cali-product-codebase-critique | weekly | code | medium | ❌ |
 | cali-product-tech-planning | weekly | product | low | ❌ |
 | cali-product-scope-executor | weekly | product | low | ❌ |
 | dogfood | weekly | code | medium | ❌ |
 | cali-product-discovery | monthly | product | low | ❌ |
 | cali-product-job-to-be-done | monthly | research | low | ✅ |
-| cali-product-interface-brainstorm | monthly | product | low | ❌ |
+| cali-product-interface-alternatives | monthly | product | low | ❌ |
 | cali-agents-md-generator | monthly | meta | low | ❌ |
 | cali-agents-md-validator | monthly | meta | low | ❌ |
 | cali-product-testing-ai-code | monthly | code | medium | ❌ |

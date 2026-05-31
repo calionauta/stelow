@@ -49,7 +49,7 @@ or (3) stop and re-plan.
 
 ---
 
-### 6a. Git Worktree Check (before executing scopes)
+### execution:10 — Git Worktree Check
 
 **Check if the workflow is in an isolated directory.** If multiple workflows
 modify the same code in parallel, use a worktree to avoid conflicts:
@@ -107,7 +107,7 @@ Proceed directly to scope execution in the current directory.
 > ⚠️ The worktree **is not mandatory**. Workflows with 1 scope or no code
 > changes can skip this step. The question is always optional.
 
-### 6b. Scope Executor Routing
+### execution:20 — Scope Executor Routing
 
 > **Goal system:** See `references/cli-tools/goals.md` for command variants (ordered-execution-goal = /sisyphus-set)
 
@@ -119,7 +119,7 @@ Proceed directly to scope execution in the current directory.
 | `feature` | **ordered-execution-goal** (see goals.md) | `/supervise` with outcome = DoD |
 | Refactoring without metric | **ordered-execution-goal** (see goals.md) | `/supervise` with outcome = DoD |
 | Investigative spike | **ordered-execution-goal** (see goals.md) | `/supervise` with outcome = DoD |
-| Interface brainstorming | **ordered-execution-goal** (see goals.md) | `/supervise` with outcome = DoD |
+| Interface alternatives | **ordered-execution-goal** (see goals.md) | `/supervise` with outcome = DoD |
 | `test-unit` | **ordered-execution-goal** (see goals.md) | Testing gates (see below) |
 | `test-integration` | **ordered-execution-goal** (see goals.md) | Testing gates (see below) |
 | `test-security` | **ordered-execution-goal** (see goals.md) | Testing gates (see below) |
@@ -146,7 +146,7 @@ Proceed directly to scope execution in the current directory.
 > **Tip:** `/supervise` is especially useful for long scopes where the LLM
 > may forget the original objective. Activate WHEN STARTING the scope, not before.
 
-### 6c. Testing Gates (AI-Aware Testing for Software Products)
+### execution:30 — Testing Gates (AI-Aware Testing for Software Products)
 
 **For test-* scopes, hard blocks are enforced:**
 

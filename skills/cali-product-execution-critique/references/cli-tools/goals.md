@@ -1,7 +1,8 @@
-# Tool: Goal System (pi-goal)
+# Tool: Goal System
 
-> Package: @capyup/pi-goal (capyup)
-> Provides: ordered-execution-goal, ordered-discussion-goal, flexible-goal
+> **Built-in:** pi-subagents `subagent()` tool supports acceptance-based goals natively
+> (see `acceptance` parameter with `criteria`, `evidence`, `verify`, `review`, `stopRules`)
+> **Fallback:** `/sisyphus`, `/goals` commands when native is available
 
 ---
 

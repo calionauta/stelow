@@ -1,7 +1,7 @@
-# Strategic Exploration (Phase 2a)
+# Strategic Exploration (context)
 
 ⚠️ **Read this file only when the user shows interest in strategic exploration.**
-Otherwise, proceed to the next phase (2b or 3).
+Otherwise, proceed to the domain detection section of the context stage.
 
 ---
 
@@ -94,4 +94,4 @@ ask_user_question({
    - Inject as context
    - Add sections to spec-product.md (e.g. `## Considered Jobs`)
 
-If user selects nothing → proceed to Phase 2b (Domain Libraries).
+If user selects nothing → proceed to domain detection (context stage).

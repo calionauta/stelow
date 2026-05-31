@@ -4,7 +4,7 @@
 > **Tool Restrictions:** See `stages.yaml` for blocked/allowed tools in this stage.
 > This stage runs after Product Critique and before Scope Adjustment.
 
-### 6x. Claim Verification (before the Gate)
+### gate:5 — Claim Verification (before the Gate)
 
 **BEFORE submitting to Plannotator**, run claim verification:
 
@@ -72,5 +72,7 @@ business logic and security require additional human review.
 - Plannotator command format
 - After-approval workflow (stamp + receipt)
 - Frozen file rules
+- **Tool failure path** — if the Plannotator CLI command fails, follow the manual
+  review degradation documented there. The gate is NEVER skipped.
 
 > **If only Tech Planning was selected (standalone):** the Review Gate runs at the end of Tech Planning, not here.

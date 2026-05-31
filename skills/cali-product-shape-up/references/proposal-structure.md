@@ -82,7 +82,7 @@ Include:
 - technical risks
 
 Escalate major interaction complexity to:
-`interface-brainstorming`
+`interface-alternatives`
 
 ---
 

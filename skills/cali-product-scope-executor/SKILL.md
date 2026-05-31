@@ -1,5 +1,5 @@
 ---
-name: cali-scope-executor
+name: cali-product-scope-executor
 description: >
   [Cali] Reads an approved product plan with typed scopes (feature, optimization, spike, test-*)
   and routes each scope to its correct executor. Acts as the autonomous overnight
@@ -145,8 +145,10 @@ For each scope with `[TYPE] feature`:
 4. **Apply feedback:** synthesize reviewer findings and apply fixes worth doing now
 
 5. **If the scope involves UI/visual changes**, run quality checks:
-   - Use `cali-product-critique` in Site mode — accessibility (WCAG POUR), performance, theming, anti-patterns.
-   - Use `cali-product-critique` in Site mode — design review (heuristics, cognitive load, AI slop detection).
+   - Use `cali-product-ux-critique` in Live Site or Codebase mode — accessibility (WCAG POUR), Nielsen heuristics, visual hierarchy, cognitive load, emotional journey, design personas, consistency, mobile/responsive, AI slop detection.
+
+6. **If the scope is a codebase-only change** (no UI), run:
+   - Use `cali-product-codebase-critique` — architecture, data flow, API contracts, performance, theming, AI slop in code.
 
 6. **DoD verification** (see Step 7) — scope is NOT complete until all DoD items pass.
 
@@ -257,7 +259,7 @@ This skill runs **after** the Plannotator gate approves the plan, replacing manu
 
 ```
 1. Shape Up Planning → spec-product.md (business rules, scope, risks)
-2. [Optional] Interface Brainstorming → interfaces.md (wireframes, proposals)
+2. [Optional] Interface Alternatives → interfaces.md (wireframes, proposals)
 3. Product Critique → gap analysis on product spec + revision
 4. Plannotator Gate → approves spec-product.md ← PRODUCT APPROVED
 5. Tech Planning Sequencing → spec-tech.md (product context + tech scopes)
@@ -293,7 +295,7 @@ Read this SKILL.md and follow the steps directly.
 
 Delegate to a subagent (see `references/cli-tools/subagents.md`):
 - Agent: `delegate` or `worker`
-- Skills: `cali-scope-executor` + `autoresearch-create`
+- Skills: `cali-product-scope-executor` + `autoresearch-create`
 - Context: fork
 
 ## Interaction with Tools

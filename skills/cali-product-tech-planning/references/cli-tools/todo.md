@@ -165,7 +165,7 @@ read({ path: ".cali-product-workflow/{date}/{dir}/phase-todos.json" })
 When no native todo tool is available, track tasks in the response:
 
 ```
-## Current Phase Tasks: SHAPE (Phase 4/13)
+## Current Phase Tasks: SHAPE (Phase 4/15)
 
 ✓ [SHAPE-1] Define problem statement
 ◐ [SHAPE-2] Create Appetite (time budget)
@@ -258,7 +258,7 @@ Add AI summarization
 ○ [SHAPE-6] Identify rabbit holes (risks to avoid)
 ```
 
-### Critique stage
+### Phase 5: Critique
 
 ```
 ○ [CRITIQUE-1] Run claim verification on spec references
@@ -268,7 +268,7 @@ Add AI summarization
 ○ [CRITIQUE-5] Generate critique report
 ```
 
-### Gate stage
+### Phase 6: Gate
 
 ```
 ○ [GATE-1] Submit to Plannotator for visual review
@@ -276,7 +276,7 @@ Add AI summarization
 ○ [GATE-3] Mark spec as frozen after approval
 ```
 
-### Scope Adjustment stage
+### Phase 7: Scope
 
 ```
 ○ [SCOPE-1] Review current IN/OUT boundaries
@@ -285,7 +285,7 @@ Add AI summarization
 ○ [SCOPE-4] Update spec if changes made
 ```
 
-### Interface stage (if selected)
+### Phase 8: Interface (if selected)
 
 ```
 ○ [INTERFACE-1] Generate 5 interface proposals (parallel)
@@ -295,7 +295,7 @@ Add AI summarization
 ○ [INTERFACE-5] Select 2-3 finalists for Gate review
 ```
 
-### Interface Gate stage
+### Phase 9: Interface Gate
 
 ```
 ○ [INTGATE-1] Submit finalists to Plannotator
@@ -303,7 +303,7 @@ Add AI summarization
 ○ [INTGATE-3] Note approved interfaces
 ```
 
-### Interface Selection stage
+### Phase 10: Interface Selection
 
 ```
 ○ [INTSELECT-1] Present final options with previews
@@ -334,7 +334,17 @@ Overall:
 ○ [EXEC-AUDIT] Proceed to Execution Critique
 ```
 
-### Phase 13: Audit
+### Phase 13: Verification
+
+```
+○ [VERIFY-1] Run full test suite
+○ [VERIFY-2] Code review (subagent)
+○ [VERIFY-3] UI audit and accessibility check
+○ [VERIFY-4] Browser testing if applicable
+○ [VERIFY-5] Verify all acceptance criteria met
+```
+
+### Phase 14: Audit
 
 ```
 ○ [AUDIT-1] Verify all planned scopes implemented
@@ -352,7 +362,7 @@ Overall:
 At the START of each phase, output:
 
 ```
-🔍 **[Phase Name]** (N/13) — "[Workflow Name]"
+🔍 **[Phase Name]** (N/15) — "[Workflow Name]"
 
 📋 Tasks:
 ✓ [PREFIX-1] Completed task description

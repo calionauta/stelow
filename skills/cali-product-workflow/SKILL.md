@@ -36,7 +36,7 @@ You are a strategic product planner following the Shape Up method. This is the *
 | `intercom` | `references/cli-tools/intercom.md` |
 | `supervise` | `references/cli-tools/supervise.md` |
 || `/pw-next`, `/pw-setphase` | `references/cli-tools/stage-status.md` |
-| `ctx_*` (context-mode) | `references/cli-tools/context-mode.md` |
+| `ctx_*` (if available) | `references/cli-tools/context-mode.md` — not pre-installed |
 | `todo` | `references/cli-tools/todo.md` |
 
 **DO NOT hardcode commands or package names in skills.** Use the references above.
@@ -127,31 +127,31 @@ LLMs suffer from **context rot**: compliance with their own rules drops from
 Follow the sequence below. For Shape Up, Critique, Interface, and Int. Gate stages, read the subskill SKILL.md directly. Each subskill has its own **Reference Index** — read the file to see it:
 
 1. Shape: see `skills/cali-product-shape-up/SKILL.md` for instructions
-2. Critique: see `skills/cali-product-critique/SKILL.md` for instructions
-3. Interface: see `skills/cali-product-interface-brainstorm/SKILL.md` for instructions
+2. Critique: see `skills/cali-product-plan-critique/SKILL.md` for instructions
+3. Interface: see `skills/cali-product-interface-alternatives/SKILL.md` for instructions
 4. Int. Gate: see `skills/cali-product-tech-planning/SKILL.md` for instructions
 
 Do NOT use `/skill:` for internal subskills.
 
 > ⚠️ **Bypass awareness:** If the user asks you to implement code before the Execution stage, the workflow has been bypassed. The footer will show `⚠️ bypassed`. Guide the user back: remind them of the current stage and suggest `/pw-next` to advance properly. Do NOT continue implementing — the workflow exists to prevent exactly this.
 
-| # | Stage | Description | Trigger |
-|---|-------|-------------|---------|
-| 0 | **Inbox Triage** | Extract items from list, accept/group/defer/reject | Auto (list detected) |
-| 1 | **Item Selection** | Rank accepted items, user picks one | After Triage |
-| 2 | **Project Setup** | Stages selection, safe-change | — |
-| 3 | **Strategic Context** (optional) | Strategic exploration + domain detection | — |
-| 4 | **Shape Up** | Create spec with problem/solution/scope | — |
-| 5 | **Product Critique** | Multi-dimensional critique (plan/codebase/site) | — |
-| 6 | **Review Gate (Plannotator)** | Visual approval — **never skip** | — |
-| 7 | **Scope Adjustment** | Add/remove from IN/OUT (ask) | — |
-| 8 | **Interface Brainstorming** | 5 proposals + hybrid (if selected) | — |
-| 9 | **Interface Gate (Plannotator)** | Visual review of all interfaces | — |
-| 10 | **Interface Selection** | User picks via ask with preview | — |
-| 11 | **Tech Planning** | Typed scopes + sequencing | — |
-| 12 | **Execution** | Goal/scope executor | — |
-| 13 | **Verification** | Run full test suite, code review, UI audit, browser testing | After Execution |
-| 14 | **Execution Critique** | Full execution critique (scope, quality, NFRs, edge cases, docs) | After Verification |
+| Slug | Stage | Description | Trigger |
+|------|-------|-------------|---------|
+| `triage` | **Inbox Triage** | Extract items from list, accept/group/defer/reject | Auto (list detected) |
+| `select` | **Item Selection** | Rank accepted items, user picks one | After triage |
+| `setup` | **Project Setup** | Stages selection, safe-change | — |
+| `context` | **Strategic Context** (optional) | Strategic exploration + domain detection | — |
+| `shape` | **Shape Up** | Create spec with problem/solution/scope | — |
+| `critique` | **Product Critique** | Multi-dimensional critique (plan/codebase/site) | — |
+| `gate` | **Review Gate (Plannotator)** | Visual approval — **never skip** | — |
+| `scope` | **Scope Adjustment** | Add/remove from IN/OUT (ask) | — |
+| `interface` | **Interface Alternatives** | 5 proposals + hybrid (if selected) | — |
+| `int-gate` | **Interface Gate (Plannotator)** | Visual review of all interfaces | — |
+| `selection` | **Interface Selection** | User picks via ask with preview | — |
+| `planning` | **Tech Planning** | Typed scopes + sequencing | — |
+| `execution` | **Execution** | Goal/scope executor | — |
+| `verification` | **Verification** | Run full test suite, code review, UI audit, browser testing | After execution |
+| `audit` | **Execution Critique** | Full execution critique (scope, quality, NFRs, edge cases, docs) | After verification |
 
 ### AI-Aware Testing (Conditional)
 
@@ -172,34 +172,35 @@ See `skills/cali-product-testing-ai-code/SKILL.md`
 ### Flow Diagram
 
 ```
-Stage 0: Inbox Triage (auto — if list detected)
-Stage 1: Item Selection (auto — if triage ran)
-    ↓
-Stage 2: Setup
-    ↓
-Stage 3: Strategic Context (optional)
-    ↓
-Stage 4: Shape Up
-    ↓
-Stage 5: Product Critique (pre-flight)
-    ↓
-Stage 6: Plannotator Gate ← visual pause
-    ↓
-Stage 7: Scope Adjustment (ask)
-    ↓
-Stage 8: Interface Brainstorming (if selected)
-    ↓
-Stage 9: Plannotator Gate (interfaces) ← visual pause
-    ↓
-Stage 10: Interface Selection (ask with preview)
-    ↓
-Stage 11: Tech Planning
-    ↓
-Stage 12: Execution
-    ↓
-Stage 13: Verification (test suite, review, UI audit)
-    ↓
-Stage 14: Execution Critique (see `skills/cali-product-execution-critique/SKILL.md`)
+triage — Inbox Triage (auto — if list detected)
+  ↓
+select — Item Selection (auto — if triage ran)
+  ↓
+setup — Project Setup
+  ↓
+context — Strategic Context (optional)
+  ↓
+shape — Shape Up
+  ↓
+critique — Product Critique (pre-flight)
+  ↓
+gate — Plannotator Gate ← visual pause
+  ↓
+scope — Scope Adjustment (ask)
+  ↓
+interface — Interface Alternatives (if selected)
+  ↓
+int-gate — Plannotator Gate (interfaces) ← visual pause
+  ↓
+selection — Interface Selection (ask with preview)
+  ↓
+planning — Tech Planning
+  ↓
+execution — Execution
+  ↓
+verification — Verification (test suite, review, UI audit)
+  ↓
+audit — Execution Critique
 ```
 
 ### Auto-chaining rules
@@ -264,15 +265,11 @@ Stage 14: Execution Critique (see `skills/cali-product-execution-critique/SKILL.
 ### Worktree
 - Optional in Execution stage. Ask the user only if modifying code in shared repo AND parallel workflows exist.
 - Single-scope workflows can skip worktree.
-d05|
+
 ### Workflow Interruption
-d05|
 - If user introduces new work mid-workflow, use **Pattern 6** from `stages/ask-patterns.md`
-d05|
 - **Never auto-abandon** an active workflow without confirmation
-d05|
 - If workflow is near completion (Execution or Verification stage), recommend "Continue current"
-d05|
 ---
 ## 🌐 Environment Adaptation
 

@@ -4,7 +4,7 @@
  * Tests skill invocations and artifact creation:
  * - cali-product-shape-up → spec-product.md created
  * - cali-product-tech-planning → spec-tech.md created with scopes
- * - cali-product-interface-brainstorm → interfaces.md created
+ * - cali-product-interface-alternatives → interfaces.md created
  * - Gate flow (Plannotator approval)
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -164,7 +164,7 @@ approved: false
     });
   });
 
-  describe('Interface Brainstorming (cali-product-interface-brainstorm)', () => {
+  describe('Interface Alternatives (cali-product-interface-alternatives)', () => {
     it('should create interfaces.md with 5 proposals', () => {
       const interfacesContent = `# Interface Proposals v1
 

@@ -5,7 +5,7 @@
 
 ## 1. Product Overview
 
-**cali-product-workflow** is a multi-CLI product strategy orchestrator that transforms raw product ideas into approved, testable technical plans. It guides teams through a structured multi-stage workflow (Setup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Execution → Verification → Audit) combining Shape Up methodology, adversarial critique, interface brainstorming with visual review gates, and AI-aware technical scoping with automatic execution routing.
+**cali-product-workflow** is a multi-CLI product strategy orchestrator that transforms raw product ideas into approved, testable technical plans. It guides teams through a structured multi-stage workflow (Setup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Execution → Verification → Audit) combining Shape Up methodology, adversarial critique, interface alternatives with visual review gates, and AI-aware technical scoping with automatic execution routing.
 
 **Who uses it:** AI coding agent users (Pi, OpenCode, Claude Code, Codex) who need systematic product planning before implementation.
 
@@ -64,7 +64,7 @@ Phase 4:  Shape Up          → Shape the solution (IN/OUT scope)
 Phase 5:  Plan Critique     → Adversarial review via subagent
 Phase 6:  Review Gate       → Plannotator visual approval (REQUIRED)
 Phase 7:  Scope Adjustment   → Fine-tune after gate approval
-Phase 8:  Interface Brainstorm → 5 ASCII proposals + hybrid
+Phase 8:  Interface Alternatives → 5 ASCII proposals + hybrid
 Phase 9:  Interface Gate    → Plannotator visual approval
 Phase 10: Interface Selection → User picks via ask_user_question
 Phase 11: Tech Planning     → Typed scopes (feature/spike/optimize)
@@ -151,7 +151,7 @@ Phase 14: Execution Critique    → Post-execution verification
 
 ---
 
-### Feature: Interface Brainstorming
+### Feature: Interface Alternatives
 **Description:** Generate 5 interface proposals (ASCII wireframes) then create hybrid.
 
 **Rules:**
@@ -236,7 +236,7 @@ Stage Selection (new vs resume)
 [Phase 7] Scope Adjustment
     │
     ▼
-[Phase 8] Interface Brainstorming (conditional)
+[Phase 8] Interface Alternatives (conditional)
     │
     ▼
 [Phase 9] Interface Gate (Plannotator)
@@ -257,7 +257,7 @@ Stage Selection (new vs resume)
 [Phase 14] Execution Critique
 ```
 
-### Interface Brainstorming Flow
+### Interface Alternatives Flow
 ```
 User accepts Interface phase
     │
@@ -606,7 +606,7 @@ Output: .cali-product-workflow/{date}/{dir}/plans/spec-tech_{v}.md
 
 ---
 
-### AI Feature: Interface Brainstorming Proposals
+### AI Feature: Interface Alternatives Proposals
 
 **Provider:** Inherited from parent agent
 **Model:** Agent's default model
@@ -657,7 +657,7 @@ BR-008: Global workflows persist when project-local tracking has no matching wor
 
 BR-009: Domain auto-detection offers playbooks only for detected signals — no false positives.
 
-BR-010: Interface brainstorming generates exactly 5 proposals + 1 hybrid recommendation.
+BR-010: Interface Alternatives generates exactly 5 proposals + 1 hybrid recommendation.
 
 BR-011: ask_user_question with previews limited to 20 rows for side-by-side mode.
 

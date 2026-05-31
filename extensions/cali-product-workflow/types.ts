@@ -15,7 +15,7 @@ export const PHASE_NAMES = [
   "Critique",    // 5 — Phase 5: Plan Critique
   "Gate",        // 6 — Phase 6: Review Gate
   "Scope",       // 7 — Phase 7: Scope Adjustment
-  "Interface",   // 8 — Phase 8: Interface Brainstorming
+  "Interface",   // 8 — Phase 8: Interface Alternatives
   "Int.Gate",    // 9 — Phase 9: Interface Gate
   "Selection",   // 10 — Phase 10: Interface Selection
   "Planning",    // 11 — Phase 11: Tech Planning

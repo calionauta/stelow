@@ -170,6 +170,51 @@ For tasks that save output, use meaningful paths:
 
 ---
 
+---
+
+## Error Recovery
+
+Subagent failures can happen (API timeout, transient errors, rate limits).
+Use this pattern for graceful degradation:
+
+### Retry Pattern (timeout-aware)
+
+```
+For each subagent call:
+  1. Launch subagent with timeout
+  2. If success → continue
+  3. If fail (timeout, API error, crash):
+     a. Log error to execution-report.json
+     b. Retry ONCE with same inputs + timeout
+     c. If success on retry → continue (flag as recovered)
+     d. If fail again:
+        - Mark scope/task as SKIPPED
+        - Log reason to execution-report.json
+        - Continue to next task (do NOT block)
+```
+
+### What to log on failure
+
+```json
+{
+  "task": "[description]",
+  "attempt": 1|2,
+  "status": "recovered"|"skipped"|"failed",
+  "error": "[error message]",
+  "stage": "[stage name]"
+}
+```
+
+### Key rules
+
+1. **Do NOT block** other parallel subagents on one failure
+2. **Retry ONCE** — a second retry is overengineering for planning tasks
+3. **Always log** — silent failures are worse than skipped tasks
+4. **Graceful degradation** — a skipped subagent is better than a deadlocked workflow
+5. **Document failures** — include in execution report so the user knows what was skipped
+
+---
+
 ## Fallback (Generic)
 
 > Delegate parallel work to built-in subagents with task handoff pattern. Use the agent's native subagent/delegate tool.

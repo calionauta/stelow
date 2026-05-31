@@ -8,7 +8,7 @@ cd cali-product-workflow
 ./install.sh
 ```
 
-Auto-detects ALL your CLIs and installs 22 skills to `~/.agents/skills/`.
+Auto-detects ALL your CLIs and installs 25 skills to `~/.agents/skills/`.
 
 ---
 
@@ -16,7 +16,7 @@ Auto-detects ALL your CLIs and installs 22 skills to `~/.agents/skills/`.
 
 ```
 cali-product-workflow/          ← Source (versionado)
-└── skills/                     ← 22 skills flat
+└── skills/                     ← 25 skills flat
     ├── cali-product-workflow/   ← Orchestrator
     ├── cali-product-shape-up/
     └── ... (21 more)
@@ -24,15 +24,15 @@ cali-product-workflow/          ← Source (versionado)
 ~/.agents/skills/               ← Install target (home do usuário)
 ├── cali-product-workflow/       ← Copied
 ├── cali-product-shape-up/               ← Copied
-└── ... (22 total)
+└── ... (25 total)
 ```
 
-**Skills installed (22 total):**
+**Skills installed (25 total):**
 - `cali-product-workflow` — orchestrator (15 stages)
-- 7 workflow stage skills (shape-up, interface-brainstorm, product-critique, tech-planning, testing-ai-code, testing-execution, scope-executor)
-- 1 execution-critique skill
-- 5 strategic analysis skills
-- 8 domain library skills
+- 10 workflow stage skills (shape-up, interface-alternatives, plan-critique, codebase-critique, ux-critique, tech-planning, testing-ai-code, testing-execution, scope-executor, execution-critique)
+- 5 strategic analysis skills (job-to-be-done, discovery, opportunity-mapping, multi-method-market-analysis, evolutionary-principles)
+- 1 code-standards skill
+- 8 domain library skills (ads, pricing, promotions, trust-building, health, marketplace-playbook, business-models, open-source)
 
 ---
 
@@ -186,7 +186,6 @@ Pi requer npm packages para deep integration (slash commands, TUI, event hooks):
 | Package | Purpose | Can use `git:`? |
 |---------|---------|-----------------|
 | `pi-subagents` | Parallel subagent orchestration | ✅ `git:github.com/nicobailon/pi-subagents` |
-| `@capyup/pi-goal` | Goal management and tracking | ✅ `git:github.com/Michaelliv/pi-goal` |
 | `pi-intercom` | Session-to-session coordination | ✅ `git:github.com/nicobailon/pi-intercom` |
 | `pi-supervisor` | Conversation supervision | ✅ `git:github.com/tintinweb/pi-supervisor` |
 | `pi-autoresearch` | Autonomous experiment loops | ✅ `git:github.com/davebcn87/pi-autoresearch` |

@@ -23,7 +23,7 @@ date: 2026-05-15
 - Shaping ambiguities remain significant
 - Brainstorming is still active
 
-In those situations, return to shape-up-planning or invoke interface-brainstorming.
+In those situations, return to shape-up-planning or invoke interface-alternatives.
 
 ---
 
@@ -75,7 +75,7 @@ When building a new product:
    - Define testing pyramid early
    - No regression risk yet (but plan for future)
 
-### Questions to Ask (Phase 1 or early Phase 10)
+### Questions to Ask (Phase 1 or early Phase 11)
 
 ```typescript
 ask_user_question({

@@ -1,6 +1,6 @@
 ---
 name: cali-product-testing-execution
-description: "Run post-implementation testing protocol. Triggers when: user says 'test this', 'run tests', 'QA', 'dogfood', 'check quality', user finishes implementing a feature, or when a PR is ready for review. Also triggers on mentions of: test coverage, accessibility audit, WCAG, design review, code review, subagent review. Covers: parallel review via subagents, UI quality audit, accessibility check, and browser testing."
+description: "Run post-implementation testing protocol. Triggers when: user says 'test this', 'run tests', 'QA', 'dogfood', 'check quality', user finishes implementing a feature, or when a PR is ready for review. Also triggers on mentions of: test coverage, accessibility audit, WCAG, design review, code review, subagent review, UX quality audit. Covers: parallel review via subagents, UX/UI quality audit (via cali-product-ux-critique), accessibility check, and browser testing."
 metadata:
   frequency: weekly
   category: code
@@ -147,26 +147,22 @@ subagent({
 
 Only if the scope involves a visual interface.
 
-### Accessibility Audit
+### UI Critique
 
-Use `cali-product-critique` in Site mode for WCAG compliance.
+Use `cali-product-ux-critique` for a focused UX/UI quality audit.
 
-Checks:
-- Color contrast ratios
-- Keyboard navigation
-- Screen reader compatibility
-- ARIA attributes
-- Focus management
+**Input routing:**
+- **Live URL** → `cali-product-ux-critique` in Live Site mode (full browser audit)
+- **Source code** → `cali-product-ux-critique` in Codebase mode (static analysis, ~80% coverage)
+- **Screenshot** → `cali-product-ux-critique` in Screenshot mode (quick visual check)
 
-### Design Review
+**What it covers:**
+- **Accessibility:** Color contrast, ARIA, keyboard nav, alt text, focus management, semantic HTML
+- **Nielsen Heuristics:** All 10 usability heuristics scored
+- **Design Quality:** Visual hierarchy, cognitive load, consistency, mobile/responsive, AI slop detection
+- **UX:** Emotional journey, design personas, flows & affordances
 
-Use `cali-product-critique` in Site mode for design quality.
-
-Checks:
-- Cognitive load
-- Visual hierarchy
-- Consistency with existing patterns
-- AI slop detection (over-generated UI)
+**Output:** Classified gap report (🚨/🤔/🔎) with actionable recommendations per issue, saved to `.cali-ux-critique/`.
 
 ## Phase 4: Browser Testing (if interactive)
 
@@ -270,12 +266,11 @@ Final checklist → All green? Mark complete
 **Steps:**
 1. Run: `npm test`
 2. Launch subagent review (3+ files)
-3. Run: `cali-product-critique` in Site mode → found contrast issue on chart labels
-4. Run: `cali-product-critique` in Site mode → suggested reducing cognitive load
-5. Run: `/dogfood` → all interactive elements work
-6. Complete checklist
+3. Run: `cali-product-ux-critique` (URL mode) → found contrast issue on chart labels, high cognitive load on filters
+4. Run: `/dogfood` → all interactive elements work
+5. Complete checklist
 
-**Output:** "Tests pass. Review clean. Accessibility found 1 contrast issue (fixed). Design review suggests simpler chart layout."
+**Output:** "Tests pass. Review clean. UI critique found 1 contrast issue (P1) and 2 design issues (P2). Fixed contrast, noted cognitive load for next iteration."
 
 ## Edge Cases
 

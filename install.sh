@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #
 # cali-product-workflow Installer
-# Flattens 22 skills to ~/.agents/skills/ (DotAgents Protocol).
+# Flattens 24 skills to ~/.agents/skills/ (DotAgents Protocol).
 # Distribution to each harness via agent-sync (or manual config).
 #
-# Skills: 1 orchestrator + 21 subskills = 22 total flat
+# Skills: 1 orchestrator + 23 subskills = 24 total flat
 #
 
 set -euo pipefail
@@ -26,12 +26,14 @@ log_success() { echo "${GREEN}[ok]${RESET} $*"; }
 log_warn()    { echo "${YELLOW}[warn]${RESET} $*"; }
 log_error()   { echo "${RED}[error]${RESET} $*" >&2; }
 
-# List of all 22 skills (1 orchestrator + 21 subskills)
+# List of all 25 skills (1 orchestrator + 24 subskills)
 ALL_SKILLS=(
   "cali-product-workflow"
   "cali-product-shape-up"
-  "cali-product-interface-brainstorm"
-  "cali-product-critique"
+  "cali-product-interface-alternatives"
+  "cali-product-plan-critique"
+  "cali-product-codebase-critique"
+  "cali-product-ux-critique"
   "cali-product-tech-planning"
   "cali-product-job-to-be-done"
   "cali-product-discovery"
@@ -50,6 +52,7 @@ ALL_SKILLS=(
   "cali-product-testing-ai-code"
   "cali-product-testing-execution"
   "cali-product-execution-critique"
+  "cali-product-code-standards"
 )
 
 # CLI Detection
@@ -121,7 +124,7 @@ install_for_cli() {
 
 # Install skills to ~/.agents/skills/ (flat)
 install_skills_flat() {
-  log_info "Installing 22 skills to ~/.agents/skills/..."
+  log_info "Installing 24 skills to ~/.agents/skills/..."
   mkdir -p "$SKILLS_DIR"
 
   local installed=0
@@ -214,7 +217,7 @@ install_pi() {
   if [[ -z "${INSTALL_SKILLS_ONLY:-}" ]]; then
     log_info "    Installing supporting packages..."
     for pkg in \
-      "npm:pi-subagents" "npm:@capyup/pi-goal" "npm:pi-intercom" \
+      "npm:pi-subagents" "npm:pi-intercom" \
       "npm:pi-supervisor" "npm:pi-autoresearch" \
       "npm:@juicesharp/rpiv-ask-user-question" \
       "@plannotator/pi-extension"; do
@@ -463,7 +466,7 @@ show_help() {
   cat << 'EOF'
 cali-product-workflow Installer
 
-Flattens 22 skills to ~/.agents/skills/ (DotAgents Protocol).
+Flattens 24 skills to ~/.agents/skills/ (DotAgents Protocol).
 Distribution to each harness via agent-sync or manual config.
 
 Usage: install.sh [command]
@@ -478,12 +481,13 @@ Environment:
   INSTALL_SKILLS_ONLY  Skip npm packages (Pi only, skills-only)
   PRODUCT_WORKFLOW_CLI  Limit to one CLI (pi|opencode|claude-code|codex)
 
-Skills installed (20 total):
+Skills installed (24 total):
   - cali-product-workflow (orchestrator)
-  - 4 workflow skills (shape-up, interface-brainstorm, product-critique, tech-planning)
+  - 6 critique skills (plan-critique, codebase-critique, ux-critique, shape-up, interface-alternatives, tech-planning)
   - 5 strategic analysis skills
   - 8 domain library skills
   - 2 execution skills
+  - 2 testing skills (testing-ai-code, testing-execution)
 
 Examples:
   ./install.sh                                    # All detected CLIs

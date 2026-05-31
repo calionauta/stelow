@@ -40,52 +40,20 @@ same model, because the issue isn't identical models but contaminated context
 
 ### ui-quality (if visual)
 
-If the scope involves a visual interface, use a **two-tier approach**.
-The Quick Tier (browserless) catches ~80% of issues from source code alone.
-The Full Tier (agent-browser) catches the remaining ~20% that require a
-live browser.
+If the scope involves a visual interface, delegate to `cali-product-ux-critique`.
 
-See `references/cli-tools/agent_browser.md` for browser automation details.
+See `skills/cali-product-ux-critique/SKILL.md` for full instructions.
 
-#### Quick Tier — Source Code Analysis (browserless, ~80% coverage)
-
-Analyze the component source code and styles directly. This catches most
-accessibility and design issues without the cost of a live browser.
-
-Use the `subagent()` pattern from
-[`subagents.md`](references/cli-tools/subagents.md) with `context: "fresh"`
-and a reviewer task covering:
-- Accessibility from source: ARIA attributes, semantic HTML, alt text,
-  form labels, keyboard event handlers, focus management, color contrast
-  via CSS tokens, heading hierarchy
-- Design from source: cognitive load, visual hierarchy, AI slop detection
-  (generic text, icon-only buttons without labels)
-- Report what CAN be verified from source and flag what needs a live browser
+**Input routing:**
+- **Source code available** → Codebase mode (browserless, ~80% coverage)
+- **Live URL available** → Live Site mode (full browser audit)
+- **Both available** → Codebase mode first, then Live Site mode for issues flagged `[needs browser]`
 
 **Research basis:** AccessGuru (arXiv 2025) shows LLMs achieve ~84%
 violation score decrease analyzing HTML source — no browser needed for
 syntactic accessibility violations. Deque (2026) confirms ~40% of WCAG
 issues are auto-detectable; LLMs push this further by evaluating semantic
-correctness (e.g., "is this alt text meaningful?") that rule-based tools
-cannot assess.
-
-#### Full Tier — Browser Verification (agent-browser, remaining ~20%)
-
-**Only run if:**
-1. Quick Tier flagged issues that need a live browser to confirm
-2. The feature has complex CSS (animations, transitions, responsive)
-3. Screen reader behavior needs verification
-4. Visual regression is a concern
-
-Use `agent_browser` per `references/cli-tools/agent_browser.md`:
-- Open the component/feature in the browser
-- Snapshot interactive elements
-- Verify color contrast (rendered, not computed)
-- Check hover/focus/active states
-- Test keyboard navigation end-to-end
-- Test with viewport resizing
-
-Take screenshots for evidence. Compare against the Quick Tier findings.
+correctness that rule-based tools cannot assess.
 
 ### interactive-testing (if interactive)
 

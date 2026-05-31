@@ -84,8 +84,8 @@ cali-product-workflow/
 │   │           └── ...
 │   │
 │   ├── cali-product-shape-up/         # Flat skill (nome real)
-│   ├── cali-product-critique/    # Flat skill (nome real)
-│   ├── cali-product-interface-brainstorm/  # Flat skill (nome real)
+│   ├── cali-product-plan-critique/    # Flat skill (nome real)
+│   ├── cali-product-interface-alternatives/  # Flat skill (nome real)
 │   ├── cali-product-tech-planning/    # Flat skill (nome real)
 │   ├── cali-product-job-to-be-done/   # Flat skill (nome real)
 │   ├── cali-product-pricing/          # Flat skill (nome real)
@@ -687,7 +687,7 @@ Pi descobre skills por SKILL.md em diretórios planos. Claude/Codex/OpenCode car
 
 **DotAgents + GitAgent confirmam:** Skills são flat em `skills/`.
 
-**Solução:** `skills/cali-product-workflow/`, `skills/cali-product-shape-up/`, `skills/cali-product-critique/` — todos no mesmo nível.
+**Solução:** `skills/cali-product-workflow/`, `skills/cali-product-shape-up/`, `skills/cali-product-plan-critique/`, `skills/cali-product-codebase-critique/`, `skills/cali-product-ux-critique/` — todos no mesmo nível.
 
 ### Decisão 6: Por que `references/cli-tools/` mantido?
 

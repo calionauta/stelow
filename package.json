@@ -43,8 +43,7 @@
     "pi-intercom": ">=0.6.0",
     "pi-subagents": ">=0.24.0",
     "pi-supervisor": ">=0.4.0",
-    "pi-agent-codebase-workflows": "git:github.com/PriNova/pi-agent-codebase-workflows",
-    "context-mode": ">=1.0.0"
+    "pi-agent-codebase-workflows": "git:github.com/PriNova/pi-agent-codebase-workflows"
   },
   "publishConfig": {
     "access": "public"

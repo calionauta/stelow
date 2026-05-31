@@ -13,6 +13,11 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { getCLICapabilities } from '../../extensions/cali-product-workflow/types';
 import { EventDispatcher, type EventType } from '../../extensions/cali-product-workflow/adapters/event-dispatcher';
+import {
+  createGenericAdapter,
+  type CLIAdapter as GenericCLIAdapter,
+  type NotificationType,
+} from '../../extensions/cali-product-workflow/adapters/generic.js';
 import type { CLIAdapter } from '../../extensions/cali-product-workflow/adapters/cli-adapter';
 
 // Helper to create a mock adapter for testing EventDispatcher
@@ -56,6 +61,51 @@ describe('Event Dispatcher Integration Tests', () => {
   afterEach(() => {
     dispatcher.dispose();
   });
+
+  // ── Generic Adapter (merged from adapter-mutation.test.ts) ─────
+
+  describe('Generic Adapter factory', () => {
+    let genAdapter: GenericCLIAdapter;
+
+    beforeEach(() => {
+      genAdapter = createGenericAdapter();
+    });
+
+    it('should have correct name', () => {
+      expect(genAdapter.name).toBe('generic');
+    });
+
+    it('should return empty commands array', () => {
+      const commands = genAdapter.registerCommands();
+      expect(Array.isArray(commands)).toBe(true);
+      expect(commands.length).toBe(0);
+    });
+
+    it('should return 4 basic tools with correct names', () => {
+      const tools = genAdapter.getAvailableTools();
+      expect(tools).toHaveLength(4);
+      const names = tools.map(t => t.name);
+      expect(names).toContain('read');
+      expect(names).toContain('write');
+      expect(names).toContain('bash');
+      expect(names).toContain('edit');
+    });
+
+    it.each([
+      ['hello', 'info', '[INFO] hello'],
+      ['fail', 'error', '[ERROR] fail'],
+      ['careful', 'warning', '[WARNING] careful'],
+      ['done', 'success', '[SUCCESS] done'],
+    ] as [string, NotificationType, string][])('formats %s as %s notification', (msg, type, expected) => {
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+      genAdapter.showNotification(msg, type);
+      expect(consoleSpy).toHaveBeenCalledWith(expected);
+      consoleSpy.mockRestore();
+    });
+  });
+
+  // ── Event Dispatcher Core ────────────────────────────────────────
+
 
   // ── EventDispatcher.on() Subscription Tests ───────────────────────
 

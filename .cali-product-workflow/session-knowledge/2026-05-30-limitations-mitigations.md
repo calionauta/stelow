@@ -99,7 +99,7 @@ Passo 1: Existe .cali-product-workflow/state/ + spec-tech.md?
 |------|---------|-----------|
 | NFR checklist per scope | `skills/cali-product-tech-planning/references/scopes-and-sequencing.md` | Cada scope listar: error handling, observability, security, retry/fallback |
 | Verification 20% check | `stages/verification.md` | Checklist: □ Retry? □ Logging? □ Auth? □ Edges? □ Rollback? |
-| Critique NFR detection | `skills/cali-product-critique/references/checklists.md` | Item "Invisible 20% Gap Detection" no sistema |
+| Critique NFR detection | `skills/cali-product-plan-critique/references/checklists.md` | Item "Invisible 20% Gap Detection" no sistema |
 
 ### 3.3 Model Dependency
 

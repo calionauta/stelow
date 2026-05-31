@@ -52,7 +52,7 @@ Include:
 - workflow complexity
 
 Do not deeply solve interfaces here.
-Escalate to: `interface-brainstorming` skill
+Escalate to: `interface-alternatives` skill
 
 ---
 
@@ -76,7 +76,7 @@ When meaningful:
 - expert vs beginner tension
 - interaction uncertainty
 
-**Recommend:** `interface-brainstorming` skill
+**Recommend:** `interface-alternatives` skill
 
 **Use the `question` tool when available.**
 Recommended option should appear first whenever possible.
@@ -109,4 +109,4 @@ Generate strategic alternatives when useful.
 
 Do NOT generate detailed UI proposals here.
 
-If interaction/workflow complexity becomes important, recommend invoking `interface-brainstorming` and reconcile the selected direction back into shaping.
+If interaction/workflow complexity becomes important, recommend invoking `interface-alternatives` and reconcile the selected direction back into shaping.

@@ -30,7 +30,6 @@ echo ""
 # Required packages
 REQUIRED_PACKAGES=(
   "npm:pi-subagents"
-  "npm:@capyup/pi-goal"
   "npm:pi-intercom"
   "npm:pi-supervisor"
   "npm:pi-autoresearch"

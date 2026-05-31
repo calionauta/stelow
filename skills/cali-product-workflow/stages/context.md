@@ -6,7 +6,7 @@
 **After Setup**, the flow enters Strategic Context to enrich planning with optional context.
 The LLM checks if the user should be offered strategic analysis and/or domain libraries.
 
-### 2a. Strategic Exploration (always ask)
+### context:10 — Strategic Exploration (always ask)
 
 **ALWAYS ask** — use **Pattern 1** from `stages/ask-patterns.md` for the question format.
 **ALSO read** the "Strategic Approaches" table in the main `SKILL.md` for the full approach list with skill names and outputs.
@@ -34,7 +34,7 @@ Save results to .cali-product-workflow/{YYYY-MM-DD}/{_dir}/strategic/${approach.
 
 **If nothing selected (No strategic analysis):** proceed directly to Domain Context Detection (2b).
 
-### 2b. Domain Context Detection (conditional — LLM-driven)
+### context:20 — Domain Context Detection (conditional)
 
 **After Strategic Exploration (2a)**, the LLM analyzes the user's original request for **domain signals**:
 

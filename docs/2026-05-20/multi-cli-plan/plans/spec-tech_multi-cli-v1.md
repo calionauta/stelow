@@ -109,10 +109,6 @@ cali-product-workflow/
     "./skills": "./skills/",
     "./cli-tools": "./references/cli-tools/"
   },
-  "optionalPeerDependencies": {
-    "context-mode": ">=1.0.0"
-  }
-  // NO "pi:" field - keeps main package generic
   // NO Pi-specific peerDependencies - safe to ignore on other CLIs
 }
 ```
@@ -146,7 +142,7 @@ npm install -g @renatocaliari/cali-product-workflow
 case "$CLI" in
   pi)
     echo "Installing Pi-specific packages..."
-    pi install npm:pi-subagents npm:pi-goal npm:pi-intercom \
+    pi install npm:pi-subagents npm:pi-intercom \
       npm:pi-supervisor npm:pi-autoresearch \
       npm:@plannotator/pi-extension
     ;;

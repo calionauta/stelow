@@ -96,10 +96,10 @@ const PHASE_TO_MD_FILE: Record<string, string | null> = {
   "Setup": "setup.md",
   "Context": "context.md",
   "Shape": null,                          // Delegated to cali-product-shape-up skill
-  "Critique": null,                       // Delegated to cali-product-critique skill
+  "Critique": null,                       // Delegated to cali-product-plan-critique skill
   "Gate": "gate.md",                      // Shared: Gate + Int.Gate → gate.md
   "Scope": null,                          // Scope adjustment handled inline
-  "Interface": null,                      // Delegated to cali-product-interface-brainstorm skill
+  "Interface": null,                      // Delegated to cali-product-interface-alternatives skill
   "Int.Gate": "gate.md",                  // Shared: Gate + Int.Gate → gate.md
   "Selection": "selection.md",           // Shared: ItemSelect + Selection → selection.md
   "Planning": null,                       // Delegated to cali-product-tech-planning skill
@@ -117,22 +117,23 @@ function phaseNameToEnumMember(name: string): string {
 }
 
 /** SKILL.md flow diagram uses display names, not the PHASE_NAMES slugs */
-const DISPLAY_NAMES: Record<string, string> = {
-  "Triage": "Inbox Triage",
-  "ItemSelect": "Item Selection",
-  "Setup": "Setup",
-  "Context": "Strategic Context",
-  "Shape": "Shape Up",
-  "Critique": "Product Critique",
-  "Gate": "Plannotator Gate",
-  "Scope": "Scope Adjustment",
-  "Interface": "Interface Brainstorming",
-  "Int.Gate": "Plannotator Gate.*interfaces",
-  "Selection": "Interface Selection",
-  "Planning": "Tech Planning",
-  "Execution": "Execution",
-  "Verification": "Verification",
-  "Audit": "Execution Critique",
+/** SKILL.md flow diagram now uses slug-based format: `slug — Display Name` */
+const SLUG_NAMES: Record<string, string> = {
+  "Triage": "triage",
+  "ItemSelect": "select",
+  "Setup": "setup",
+  "Context": "context",
+  "Shape": "shape",
+  "Critique": "critique",
+  "Gate": "gate",
+  "Scope": "scope",
+  "Interface": "interface",
+  "Int.Gate": "int-gate",
+  "Selection": "selection",
+  "Planning": "planning",
+  "Execution": "execution",
+  "Verification": "verification",
+  "Audit": "audit",
 };
 
 // ── Tests ────────────────────────────────────────────────────────────
@@ -220,9 +221,9 @@ describe("Phase Consistency", () => {
     it("all PHASE_NAMES entries should be represented in the SKILL.md flow diagram", () => {
       const content = readFileSync(SKILL_MD_PATH, "utf-8");
       for (const name of phaseNames) {
-        const displayName = DISPLAY_NAMES[name];
-        const pattern = new RegExp(`Stage \\d+:\\s+${displayName}`, "i");
-        expect(content, `SKILL.md missing ${name} (display: ${displayName})`).toMatch(pattern);
+        const slug = SLUG_NAMES[name];
+        const pattern = new RegExp(`^${slug} —`, "m");
+        expect(content, `SKILL.md missing slug ${slug} (from ${name})`).toMatch(pattern);
       }
     });
   });

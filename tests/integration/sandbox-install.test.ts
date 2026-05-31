@@ -92,7 +92,7 @@ describe('Sandbox Install Verification', () => {
 
     it('should have workflow skills in flat structure', () => {
       const skillsDir = join(PROJECT_ROOT, 'skills');
-      const skills = ['cali-product-shape-up', 'cali-product-interface-brainstorm', 'cali-product-critique', 'cali-product-tech-planning'];
+      const skills = ['cali-product-shape-up', 'cali-product-interface-alternatives', 'cali-product-plan-critique', 'cali-product-ux-critique', 'cali-product-codebase-critique', 'cali-product-tech-planning'];
       skills.forEach(skill => {
         expect(existsSync(join(skillsDir, skill, 'SKILL.md'))).toBe(true);
       });

@@ -21,7 +21,7 @@
 
 | Phase | Purpose |
 |-------|---------|
-| Phase 11 (Execution) | Steering during execution |
+| Phase 12 (Execution) | Steering during execution |
 
 ---
 

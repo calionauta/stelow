@@ -21,7 +21,7 @@ Run a structured audit after any implementation — whether it followed the full
 every mode; only the **source of truth** differs based on what input is available.
 
 > **Tools:** See `references/cli-tools/subagents.md` for subagent patterns.
-> See `references/cli-tools/context-mode.md` for processing large outputs.
+> See `references/cli-tools/todo.md` for task management.
 
 ---
 
@@ -47,7 +47,7 @@ Input received:
 
 ## 🔄 When to Use
 
-This skill activates automatically as Stage 14 in `cali-product-workflow`,
+This skill activates automatically at the `audit` stage in `cali-product-workflow`,
 but can also be used standalone when you say:
 
 - "done", "finished", "completed"
@@ -155,6 +155,9 @@ cat >> .cali-product-workflow/lessons-learned/{date}-{workflow-name}.md << 'EOF'
 date: {timestamp}
 workflow: {workflow-name}
 model: {model_name}
+spec: .cali-product-workflow/{date}/{_dir}/specs/spec-product_v{N}.md
+plan: .cali-product-workflow/{date}/{_dir}/plans/spec-tech_v{N}.md
+critique: .cali-product-workflow/{date}/{_dir}/critiques/critique-report_v{N}.md
 ---
 
 ## What went well
@@ -352,10 +355,10 @@ Always save or display in this format. The Lessons Learned section also writes t
 
 ## Related Skills
 
-- **cali-product-workflow**: Coordinates this skill as Stage 14
-- **cali-product-critique**: Pre-implementation critique (complements this post-implementation audit)
+- **cali-product-workflow**: Coordinates this skill as the `audit` stage
+- **cali-product-plan-critique**: Pre-implementation critique (use before coding, complements this post-implementation audit)
 - **cali-product-testing-execution**: Post-implementation testing protocol (runs before this audit)
-- **cali-scope-executor**: Routes plan scopes to execution (feeds this audit's input)
+- **cali-product-scope-executor**: Routes plan scopes to execution (feeds this audit's input)
 
 ## Environment Adaptation
 

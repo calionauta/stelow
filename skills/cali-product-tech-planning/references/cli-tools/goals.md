@@ -1,13 +1,14 @@
-# Tool: Goal System (pi-goal)
+# Tool: Goal System
 
-> Package: @capyup/pi-goal (capyup)
-> Provides: ordered-execution-goal, ordered-discussion-goal, flexible-goal
+> **Built-in:** pi-subagents `subagent()` tool supports acceptace-based goals natively
+> (see `acceptance` parameter with `criteria`, `evidence`, `verify`, `review`, `stopRules`)
+> **Fallback:** `/sisyphus`, `/goals` commands when native is available
 
 ---
 
 ## Command Variants
 
-The goal system offers four modes based on two dimensions:
+When the goal system is available, four modes exist:
 
 | Semantic name | Command | Discussion | Preserves order | Best for |
 |---------------|---------|-------------|-----------------|----------|
@@ -29,9 +30,28 @@ Exploratory work:
   → flexible-discussion-goal (/goals) or flexible-execution-goal (/goals-set)
 ```
 
-### How to discover the command
+### Alternative: subagent acceptance (preferred)
 
-Read this file (`goals.md`) to find the command for each mode.
+Instead of creating a goal via CLI, pass an acceptance contract directly to `subagent()`:
+
+```typescript
+subagent({
+  agent: "worker",
+  task: "Implement X from the approved scope",
+  acceptance: {
+    criteria: [
+      { id: "SC-1", must: "Feature X works", severity: "required" },
+      { id: "SC-2", must: "Tests pass", severity: "required" }
+    ],
+    evidence: ["changed-files", "tests-added", "commands-run"],
+    verify: [
+      { id: "V-1", command: "go test ./..." }
+    ]
+  }
+})
+```
+
+This replaces the need for external goal packages.
 
 ---
 

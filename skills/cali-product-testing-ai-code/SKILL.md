@@ -24,7 +24,7 @@ metadata:
 ## Activation
 
 - **Trigger:** `product_type: software` or `product_type: hybrid` in spec-product.md frontmatter
-- **Phase:** Phase 10 (Tech Planning)
+- **Phase:** Phase 11 (Tech Planning)
 - **Prerequisite:** approved spec-product.md with scope defined
 
 ### Product Context (Greenfield vs Brownfield)
@@ -460,4 +460,4 @@ If tech stack detection fails:
 
 - **cali-product-tech-planning**: Produces scopes to test
 - **cali-product-scope-executor**: Executes test scopes
-- **cali-product-critique**: Can review testing strategy
+- **cali-product-plan-critique**: Can review testing strategy

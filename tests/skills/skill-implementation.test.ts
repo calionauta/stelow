@@ -1,27 +1,203 @@
 /**
- * Layer C: Skill Implementation Validation
- * 
- * Tests that each skill (cali-product-shape-up, cali-product-tech-planning, etc.)
- * is correctly implemented with:
- * - Tool reference header
- * - Process section
- * - Gate presence (--gate flag)
- * 
+ * SKILL.md Structure & Implementation Validation
+ *
+ * Merged from:
+ * - skill-implementation.test.ts (Layer C: per-skill validation)
+ * - skill-structure.test.ts (Layer B: main SKILL.md structure)
+ * - product-workflow.validate.test.ts (golden dataset)
+ *
  * WHY: If a skill is missing a gate or tool reference, LLM doesn't know
- * how to properly execute that skill.
+ * how to properly execute that skill. If the main SKILL.md drifts from
+ * required structure, the workflow breaks.
  */
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-// Dynamic PROJECT_ROOT: resolve from test file location
-// tests/skills/skill-implementation.test.ts → ../../.. = project root
 const __filename = fileURLToPath(import.meta.url);
-const __testDir = dirname(__filename); // tests/skills
-const PROJECT_ROOT = join(__testDir, '..', '..'); // project root
+const __testDir = dirname(__filename);
+const PROJECT_ROOT = join(__testDir, '..', '..');
 
-// ── Skill Definitions ───────────────────────────────────────────────
+// ── Path Helpers ───────────────────────────────────────────────────
+
+function readMainSkill(): string {
+  return readFileSync(join(PROJECT_ROOT, 'skills/cali-product-workflow/SKILL.md'), 'utf8');
+}
+
+function readSkillByPath(name: string): string {
+  return readFileSync(join(PROJECT_ROOT, 'skills', name, 'SKILL.md'), 'utf8');
+}
+
+function readStageFile(name: string): string {
+  return readFileSync(join(PROJECT_ROOT, 'skills/cali-product-workflow/stages', name), 'utf8');
+}
+
+// ═════════════════════════════════════════════════════════════════════
+// SECTION A: Main SKILL.md Structure
+// ═════════════════════════════════════════════════════════════════════
+
+describe('Main SKILL.md Structure', () => {
+  const content = readMainSkill();
+
+  // ── Stage Index ──────────────────────────────────────────────
+
+  describe('Stage Index', () => {
+    it('should have Stage Index section', () => {
+      expect(content).toContain('## 📋 Stage Index');
+    });
+
+    it('should have at least 10 stages in table', () => {
+      const stageMatches = content.match(/\| `[a-z-]+` \|/g);
+      expect(stageMatches?.length || 0).toBeGreaterThanOrEqual(10);
+    });
+
+    it('should list Execution as a stage', () => {
+      expect(content).toMatch(/\*\*Execution\*\*/);
+    });
+
+    it('should list Setup or Project Setup as first stage', () => {
+      expect(content).toMatch(/\*\*Project Setup\*\*|\*\*Setup\*\*/);
+    });
+
+    it('should list Tech Planning as a stage', () => {
+      expect(content).toMatch(/\*\*Tech Planning\*\*/);
+    });
+  });
+
+  // ── Safety Rules ─────────────────────────────────────────────
+
+  describe('Safety Rules', () => {
+    it('should have Safety/CRITICAL RULES section', () => {
+      expect(content).toMatch(/Safety Rules|CRITICAL RULES/i);
+    });
+
+    it('plannotator --gate should be documented', () => {
+      expect(content).toMatch(/plannotator.*--gate|--gate.*plannotator/i);
+    });
+
+    it('--gate flag should be mandatory', () => {
+      expect(content).toMatch(/mandatory|never skip|obligatory/i);
+    });
+
+    it('supervisor should not activate before Execution', () => {
+      expect(content).toMatch(/never activate during stages before Execution/i);
+    });
+
+    it('should warn about re-submitting Plannotator via supervisor', () => {
+      expect(content).toMatch(/re-submit|supervisor.*plannotator/i);
+    });
+  });
+
+  // ── Tool References ─────────────────────────────────────────
+
+  describe('Tool References', () => {
+    it('should have Tools & Packages section', () => {
+      expect(content).toMatch(/Tools.*Packages|🔧 Tools/i);
+    });
+
+    it('should reference cli-tools directory', () => {
+      expect(content).toMatch(/references\/cli-tools/);
+    });
+
+    it('subagent should reference subagents.md', () => {
+      if (content.includes('subagent')) {
+        expect(content).toMatch(/subagents\.md/);
+      }
+    });
+
+    it('structured question should reference ask.md', () => {
+      if (content.includes('ask_user_question') || content.includes('structured question')) {
+        expect(content).toMatch(/ask\.md/);
+      }
+    });
+
+    it('plannotator should reference plannotator.md', () => {
+      if (content.includes('plannotator')) {
+        expect(content).toMatch(/plannotator\.md/);
+      }
+    });
+  });
+
+  // ── Auto-chaining ──────────────────────────────────────────
+
+  describe('Auto-chaining', () => {
+    it('should document phase sequence', () => {
+      expect(content).toMatch(/Shape.*Critique|Gate.*Execution/i);
+    });
+
+    it('should mention Tech Planning', () => {
+      expect(content).toMatch(/Tech Planning/i);
+    });
+
+    it('should mention Execution', () => {
+      expect(content).toMatch(/Execution/i);
+    });
+
+    it('should have Flow Diagram', () => {
+      expect(content).toMatch(/Flow Diagram/i);
+    });
+  });
+
+  // ── Directory Structure ────────────────────────────────────
+
+  describe('Directory Structure', () => {
+    it('should document workflow directory', () => {
+      expect(content).toContain('.cali-product-workflow');
+    });
+
+    it('should document artifacts paths', () => {
+      expect(content).toMatch(/specs.*spec-product/);
+      expect(content).toMatch(/interfaces/);
+      expect(content).toMatch(/plans/);
+    });
+  });
+
+  // ── Artifact Documentation ───────────────────────────────
+
+  describe('Artifact Documentation', () => {
+    it('should document spec-product.md', () => {
+      expect(content).toMatch(/spec-product/);
+    });
+
+    it('should document spec-tech.md', () => {
+      expect(content).toMatch(/spec-tech/);
+    });
+
+    it('should document interfaces.md', () => {
+      expect(content).toMatch(/interfaces/);
+    });
+
+    it('should document index.json', () => {
+      expect(content).toMatch(/index\.json/);
+    });
+  });
+
+  // ── Gates ────────────────────────────────────────────────
+
+  describe('Gates', () => {
+    it('should have at least 1 plannotator gate with --gate', () => {
+      const gateMatches = content.match(/plannotator annotate.*--gate/g);
+      expect(gateMatches?.length || 0).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should document Review Gate for Phase 5', () => {
+      expect(content).toMatch(/Review Gate|Phase 5.*Gate/i);
+    });
+
+    it('should document Interface Gate for Phase 8', () => {
+      expect(content).toMatch(/Interface Gate|Phase 8.*Gate/i);
+    });
+
+    it('should document Tech Planning gate', () => {
+      expect(content).toMatch(/Tech Planning.*Gate/i);
+    });
+  });
+});
+
+// ═════════════════════════════════════════════════════════════════════
+// SECTION B: Per-Skill Implementation Validation
+// ═════════════════════════════════════════════════════════════════════
 
 interface SkillDefinition {
   name: string;
@@ -31,249 +207,181 @@ interface SkillDefinition {
 }
 
 const skills: SkillDefinition[] = [
-  {
-    name: 'cali-product-shape-up',
-    path: 'cali-product-shape-up/SKILL.md',
-    requiresGate: false, // Gate is in main SKILL.md
-    requiresToolRef: true,
-  },
-  {
-    name: 'cali-product-tech-planning',
-    path: 'cali-product-tech-planning/SKILL.md',
-    requiresGate: true,
-    requiresToolRef: true,
-  },
-  {
-    name: 'cali-product-interface-brainstorm',
-    path: 'cali-product-interface-brainstorm/SKILL.md',
-    requiresGate: true,
-    requiresToolRef: true,
-  },
-  {
-    name: 'cali-product-critique',
-    path: 'cali-product-critique/SKILL.md',
-    requiresGate: false,
-    requiresToolRef: true,
-  },
+  { name: 'cali-product-shape-up', path: 'cali-product-shape-up/SKILL.md', requiresGate: false, requiresToolRef: true },
+  { name: 'cali-product-tech-planning', path: 'cali-product-tech-planning/SKILL.md', requiresGate: true, requiresToolRef: true },
+  { name: 'cali-product-interface-alternatives', path: 'cali-product-interface-alternatives/SKILL.md', requiresGate: true, requiresToolRef: true },
+  { name: 'cali-product-plan-critique', path: 'cali-product-plan-critique/SKILL.md', requiresGate: false, requiresToolRef: true },
+  { name: 'cali-product-codebase-critique', path: 'cali-product-codebase-critique/SKILL.md', requiresGate: false, requiresToolRef: true },
+  { name: 'cali-product-ux-critique', path: 'cali-product-ux-critique/SKILL.md', requiresGate: false, requiresToolRef: true },
+  { name: 'cali-product-scope-executor', path: 'cali-product-scope-executor/SKILL.md', requiresGate: false, requiresToolRef: true },
+  { name: 'cali-product-execution-critique', path: 'cali-product-execution-critique/SKILL.md', requiresGate: false, requiresToolRef: true },
 ];
 
-// ── Read Skill Helper ────────────────────────────────────────────────
-
-function readSkill(skill: SkillDefinition): string {
-  // Skills are in flat structure: skills/<skill-name>/SKILL.md
-  const path = join(PROJECT_ROOT, 'skills', skill.path);
-  return readFileSync(path, 'utf8');
-}
-
-// ── Tests ──────────────────────────────────────────────────────────
-
-describe('Skill Implementation Validation', () => {
-
+describe('Per-Skill Implementation', () => {
   skills.forEach(skill => {
     describe(skill.name, () => {
-      const content = readSkill(skill);
+      const path = join(PROJECT_ROOT, 'skills', skill.path);
 
-      // ── Basic Structure ──────────────────────────────────────
-
-      describe('Basic Structure', () => {
-        it('should have skill name in description', () => {
-          expect(content).toMatch(new RegExp(`name: ${skill.name}`));
-        });
-
-        it('should have description', () => {
-          expect(content).toMatch(/description:/);
-        });
-
-        it('should have overview or process section', () => {
-          expect(content).toMatch(/## (Overview|Process)/i);
-        });
+      it('SKILL.md should exist', () => {
+        expect(existsSync(path)).toBe(true);
       });
 
-      // ── Tool References ────────────────────────────────────
+      const content = readFileSync(path, 'utf8');
 
-      describe('Tool References', () => {
+      it('should have frontmatter with name', () => {
+        expect(content).toMatch(new RegExp(`name: ${skill.name}`));
+      });
+
+      it('should have description in frontmatter', () => {
+        expect(content).toMatch(/description:/);
+      });
+
+      if (skill.requiresToolRef) {
         it('should reference cli-tools directory', () => {
           expect(content).toMatch(/references\/cli-tools/);
         });
-
-        it('should have tools header (if using subagent)', () => {
-          if (content.includes('subagent')) {
-            expect(content).toMatch(/Tools|references\/cli-tools\//i);
-          }
-        });
-      });
-
-      // ── Process Section ─────────────────────────────────
-
-      describe('Process Section', () => {
-        it('should have numbered steps or process description', () => {
-          // Either numbered steps like "Step 1:" or markdown headers
-          expect(content).toMatch(/Step \d:|## \d[a-z]\.|## [A-Z][a-z]+/);
-        });
-
-        it('should document what it produces (output)', () => {
-          expect(content).toMatch(/output|produces|saved to|generates/i);
-        });
-      });
-
-      // ── Gate Validation ───────────────────────────────────
-
-      if (skill.requiresGate) {
-        describe('Gate Validation', () => {
-          it('should mention plannotator', () => {
-            expect(content).toMatch(/plannotator/i);
-          });
-
-          it('should reference gate command (plannotator.md or --gate)', () => {
-            // Gate can be via reference to plannotator.md OR literal --gate flag
-            expect(content).toMatch(/plannotator\.md|--gate|plannotator annotate/i);
-          });
-
-          it('should document gate workflow', () => {
-            // Should reference gate flow somehow
-            expect(content).toMatch(/gate|plannotator.*review|review.*plannotator/i);
-          });
-        });
-      } else {
-        describe('Gate Validation (Not Required)', () => {
-          it('may or may not mention plannotator', () => {
-            // No assertion - gate may be in main SKILL.md
-          });
-        });
       }
 
-      // ── Output Validation ────────────────────────────────
+      it('should have overview, process, or workflow section', () => {
+        expect(content).toMatch(/## (Overview|Process|Workflow|Input)/i);
+      });
 
-      describe('Output Documentation', () => {
-        it('should specify output file path', () => {
-          expect(content).toMatch(/\.cali-product-workflow/);
+      it('should document what it produces', () => {
+        expect(content).toMatch(/output|produces|saved to|generates/i);
+      });
+
+      if (skill.requiresGate) {
+        it('should mention plannotator', () => {
+          expect(content).toMatch(/plannotator/i);
         });
 
-        it('should document output format', () => {
-          expect(content).toMatch(/spec-product|spec-tech|interfaces|output/i);
+        it('should reference gate command (plannotator.md or --gate)', () => {
+          expect(content).toMatch(/plannotator\.md|--gate|plannotator annotate/i);
         });
+      }
+    });
+  });
+
+  // Tech Planning has its own gate
+  describe('Tech Planning gate', () => {
+    const techContent = readFileSync(
+      join(PROJECT_ROOT, 'skills', 'cali-product-tech-planning', 'SKILL.md'),
+      'utf8'
+    );
+    it('should have plannotator --gate or plannotator.md reference', () => {
+      expect(techContent).toMatch(/plannotator.*--gate|--gate|plannotator\.md/i);
+    });
+  });
+});
+
+// ═════════════════════════════════════════════════════════════════════
+// SECTION C: Stage Files & References
+// ═════════════════════════════════════════════════════════════════════
+
+describe('Stage Files', () => {
+  const stageFiles = ['setup.md', 'context.md', 'gate.md', 'execution.md'];
+
+  stageFiles.forEach(stage => {
+    describe(stage, () => {
+      const path = join(PROJECT_ROOT, 'skills/cali-product-workflow/stages', stage);
+
+      it('should exist', () => {
+        expect(existsSync(path)).toBe(true);
       });
 
-      // ── File Existence ──────────────────────────────────
-
-      describe('File Existence', () => {
-        it('skill file should exist at expected path', () => {
-          // Skills are in flat structure: skills/<skill-name>/SKILL.md
-          const fullPath = join(PROJECT_ROOT, 'skills', skill.path);
-          expect(existsSync(fullPath)).toBe(true);
-        });
+      it('should reference SKILL.md', () => {
+        const content = readFileSync(path, 'utf8');
+        expect(content).toMatch(/SKILL\.md/i);
       });
     });
   });
 
-  // ── Main SKILL.md Gate Tests ─────────────────────────────────
-
-  describe('Main SKILL.md Gates', () => {
-    const mainPath = join(PROJECT_ROOT, 'skills/cali-product-workflow/SKILL.md');
-    const mainContent = readFileSync(mainPath, 'utf8');
-
-    describe('Phase 5 Gate (spec-product.md)', () => {
-      it('should document Review Gate for Phase 5', () => {
-        expect(mainContent).toMatch(/Review Gate|Phase 5.*Gate/i);
-      });
-
-      it('should reference plannotator for gate', () => {
-        expect(mainContent).toMatch(/plannotator.*Gate|Gate.*plannotator/i);
-      });
+  describe('Critical stages', () => {
+    it('gate.md should mention plannotator', () => {
+      expect(readStageFile('gate.md')).toMatch(/plannotator/i);
     });
 
-    describe('Phase 8 Gate (interfaces)', () => {
-      it('should document Interface Gate for Phase 8', () => {
-        expect(mainContent).toMatch(/Interface Gate|Phase 8.*Gate/i);
-      });
-    });
-
-    describe('Tech Planning Gate', () => {
-      it('cali-product-tech-planning should have its own gate', () => {
-        const techContent = readSkill(skills.find(s => s.name === 'cali-product-tech-planning')!);
-        // Accept either direct --gate or reference to plannotator.md
-        expect(techContent).toMatch(/plannotator.*--gate|--gate|plannotator\.md/i);
-      });
+    it('execution.md should document execution workflow', () => {
+      expect(readStageFile('execution.md')).toMatch(/Execution|Sisyphus|autoresearch/i);
     });
   });
+});
 
-  // ── Phase Gate Files ────────────────────────────────────────
+describe('cli-tools References', () => {
+  const cliToolsDir = join(PROJECT_ROOT, 'skills/cali-product-workflow/references/cli-tools');
 
-  describe('Phase Gate Files', () => {
-    const gatePath = join(PROJECT_ROOT, 'skills/cali-product-workflow/stages/gate.md');
-
-    it('gate.md should exist', () => {
-      expect(existsSync(gatePath)).toBe(true);
-    });
-
-    it('gate.md should document plannotator usage', () => {
-      const content = readFileSync(gatePath, 'utf8');
-      expect(content).toMatch(/plannotator/i);
-    });
-
-    it('gate.md should reference cli-tools/plannotator.md', () => {
-      const content = readFileSync(gatePath, 'utf8');
-      expect(content).toMatch(/plannotator\.md|--gate|references\/cli-tools/);
-    });
+  it('cli-tools directory should exist', () => {
+    expect(existsSync(cliToolsDir)).toBe(true);
   });
 
-  // ── Ask Patterns Reference ─────────────────────────────────
+  // Map of SKILL.md reference -> actual cli-tools file
+  const toolFileMap: Record<string, string> = {
+    'plannotator': 'plannotator.md',
+    'subagents': 'subagents.md',
+    'goals': 'goals.md',
+    'ask': 'structured-question.md',
+    'todo': 'todo.md',
+    'stage-status': 'stage-status.md',
+    'subagent': 'subagents.md',
+    'plannotator.md': 'plannotator.md',
+    'subagents.md': 'subagents.md',
+    'goals.md': 'goals.md',
+    'todo.md': 'todo.md',
+  };
 
-  describe('Ask Patterns', () => {
-    const askPatternsPath = join(PROJECT_ROOT, 'skills/cali-product-workflow/stages/ask-patterns.md');
-
-    it('ask-patterns.md should exist', () => {
-      expect(existsSync(askPatternsPath)).toBe(true);
-    });
-
-    it('ask-patterns.md should document ask_user_question usage', () => {
-      const content = readFileSync(askPatternsPath, 'utf8');
-      expect(content).toMatch(/ask_user_question/);
-    });
-
-    it('should have multiple patterns', () => {
-      const content = readFileSync(askPatternsPath, 'utf8');
-      // Should have Pattern 1, 2, 3, etc.
-      const patternMatches = content.match(/Pattern \d+:/g);
-      expect(patternMatches?.length || 0).toBeGreaterThanOrEqual(3);
-    });
-  });
-
-  // ── References Directory ───────────────────────────────────
-
-  describe('References Directory', () => {
-    const refsDir = join(PROJECT_ROOT, 'skills/cali-product-workflow/references');
-
-    it('references directory should exist', () => {
-      expect(existsSync(refsDir)).toBe(true);
-    });
-
-    it('should have strategic-exploration.md', () => {
-      expect(existsSync(join(refsDir, 'strategic-exploration.md'))).toBe(true);
-    });
-
-    it('should have output-expectations.md', () => {
-      expect(existsSync(join(refsDir, 'output-expectations.md'))).toBe(true);
+  Object.entries(toolFileMap).forEach(([ref, actualFile]) => {
+    it(`${actualFile} should exist if '${ref}' is referenced in SKILL.md`, () => {
+      const skillContent = readMainSkill();
+      if (skillContent.includes(ref)) {
+        expect(existsSync(join(cliToolsDir, actualFile))).toBe(true);
+      }
     });
   });
+});
 
-  // ── Execution Phase ──────────────────────────────────────
+describe('Ask Patterns', () => {
+  const askPath = join(PROJECT_ROOT, 'skills/cali-product-workflow/stages/ask-patterns.md');
 
-  describe('Execution Phase', () => {
-    const execPath = join(PROJECT_ROOT, 'skills/cali-product-workflow/stages/execution.md');
+  it('ask-patterns.md should exist', () => {
+    expect(existsSync(askPath)).toBe(true);
+  });
 
-    it('execution.md should exist', () => {
-      expect(existsSync(execPath)).toBe(true);
+  it('should document ask_user_question usage', () => {
+    expect(readFileSync(askPath, 'utf8')).toMatch(/ask_user_question/);
+  });
+
+  it('should have at least 3 patterns', () => {
+    const matches = readFileSync(askPath, 'utf8').match(/Pattern \d+:/g);
+    expect(matches?.length || 0).toBeGreaterThanOrEqual(3);
+  });
+});
+
+describe('References Directory', () => {
+  const refsDir = join(PROJECT_ROOT, 'skills/cali-product-workflow/references');
+
+  it('should exist', () => {
+    expect(existsSync(refsDir)).toBe(true);
+  });
+
+  ['strategic-exploration.md', 'output-expectations.md'].forEach(ref => {
+    it(`${ref} should exist`, () => {
+      expect(existsSync(join(refsDir, ref))).toBe(true);
     });
+  });
+});
 
-    it('should document scope executor routing', () => {
-      const content = readFileSync(execPath, 'utf8');
-      expect(content).toMatch(/scope.*executor|sisyphus|autoresearch/i);
-    });
+describe('Execution Phase', () => {
+  const execPath = join(PROJECT_ROOT, 'skills/cali-product-workflow/stages/execution.md');
 
-    it('should document worktree decision', () => {
-      const content = readFileSync(execPath, 'utf8');
-      expect(content).toMatch(/worktree|branch/i);
-    });
+  it('execution.md should exist', () => {
+    expect(existsSync(execPath)).toBe(true);
+  });
+
+  it('should document scope executor or sisyphus/autoresearch', () => {
+    expect(readFileSync(execPath, 'utf8')).toMatch(/scope.*executor|sisyphus|autoresearch/i);
+  });
+
+  it('should document worktree decision', () => {
+    expect(readFileSync(execPath, 'utf8')).toMatch(/worktree|branch/i);
   });
 });

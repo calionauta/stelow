@@ -23,6 +23,38 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 
 ---
 
+## 📖 Evidence-Based Design
+
+This workflow is grounded in empirical evidence from the 2025–2026 AI agent research boom. Every architectural decision — from parallel subagent orchestration to cross-session learning — is backed by peer-reviewed papers, open-source tools, and industry benchmarks.
+
+### ✅ Best Practices We Follow
+
+| Practice | Source | Evidence | Where We Implement |
+|----------|--------|----------|-------------------|
+| **Parallel orchestration** | [CAID](https://arxiv.org/abs/2603.21489) (Geng & Neubig, CMU, 2026) | +26.7% accuracy using git-worktree isolation + dependency DAG | `critique:30` — 4 parallel reviewers + consolidator |
+| **Cross-session learning** | [Cat](https://arxiv.org/abs/2512.22087) (Liu et al., Beihang, 2025); [Memory Transfer](https://arxiv.org/abs/2604.14004) (Kim et al., KAIST, 2026) | Context as callable tool; +3.7% via abstract memory pools | `setup:0.30` — Session Knowledge from `.cali-product-workflow/session-knowledge/` |
+| **Output validation guards** | [Stage-Gate Agentic](https://community.pdma.org/knowledgehub/bok/product-innovation-process/stage-gate-agentic-the-coming-revolution-in-the-new-product-process) (PDMA, 2026); [Phaselock](https://github.com/infinri/Phaselock) (2026) | AI agents with gates reduce execution failures; 80 enforceable rules | `shape:20` — Shape Up guard; `planning:10.10` — Tech Planning guard |
+| **Context isolation** | [Clean Context Pattern](https://agentfactory.panaversity.org/docs/General-Agents-Foundations/context-engineering/context-isolation) (Agent Factory, 2026); [GAM](https://arxiv.org/abs/2604.12285) (Zhejiang U., 2026) | Fresh context per agent outperforms shared pipelines; write isolation prevents contamination | `subagents.md` — `context:"fresh"` per subagent; disk-based artifacts |
+| **Visual review gate** | [Plannotator](https://plannotator.ai/) (backnotprop, 2025); [Placement Theory](https://tianpan.co/blog/2026-04-17-hitl-placement-theory-approval-gates) (Tian Pan, 2026) | Browser-based plan annotation with structured feedback loop | `gate:5` — Mandatory Plannotator visual review before execution |
+| **Intra-step recovery** | [Try-Heal-Retry](https://adriennevermorel.com/notes/try-heal-retry-pattern/) (Nweke, 2026); [PALADIN](https://arxiv.org/abs/2509.25238) (Chaudhary et al., 2025) | 89.68% recovery rate via annotated failure trajectories | `subagents.md` — Retry 1× + skip with logged error per subagent |
+| **Metric-driven optimization** | [ReflexGrad](https://arxiv.org/abs/2511.14584) (Kadu et al., 2025); [ReliabilityBench](https://arxiv.org/abs/2601.06112) (Gupta et al., 2026) | +40pp lift via dual-process routing; standardized reliability measurement | `optimization` scopes routed to autoresearch loop |
+
+### ⚠️ Known Limitations
+
+Even with these guardrails, the AI agent still exhibits predictable failure modes:
+
+| Limitation | Impact | Mitigation |
+|-----------|--------|-----------|
+| **Context rot in long sessions** | Agent quality degrades non-uniformly as context grows past 100K+ tokens | Disk-based artifacts; `context:"fresh"` per subagent; [PAACE](https://arxiv.org/abs/2512.16970) plan-aware compression |
+| **Confabulated research references** | Agents occasionally cite nonexistent papers or books in planning | Claim verification in `setup:0.20` (Lessons Learned cross-referencing) |
+| **Silent wrong answers** | Cross-task state leakage produces plausible but incorrect outputs ([UCC](https://arxiv.org/abs/2604.01350), 2026) | Write isolation per subagent; clean context pattern |
+| **Overconfidence in estimates** | AI systematically underestimates implementation complexity | `optimization` scopes use autoresearch with objective metrics |
+| **Approval gate fatigue** | Users can desensitize to visual gates and approve without scrutiny | Plannotator requires active annotations (deletions, comments, labels) |
+
+*Research sourced May 2026. All references are hyperlinked for verification.*
+
+---
+
 ## 📋 Table of Contents
 
 - [Philosophy](#philosophy)
@@ -35,7 +67,7 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 - [🔄 Process](#-process)
 - [🎮 Commands](#-commands)
 - [🖥️ TUI Visual](#️-tui-visual)
-- [📋 Skills (22)](#-skills-22)
+- [📋 Skills (25)](#-skills-25)
 - [📊 Version](#-version)
 - [License](#license)
 
@@ -207,9 +239,9 @@ This package works across **multiple coding agents** — not just pi.dev. See th
 | Your situation | Recommended command | What you get |
 |----------------|--------------------|-------------|
 | **New to CLIs** (no Node, no agent) | `curl -fsSL https://raw.githubusercontent.com/.../setup.sh \| sh` | Node.js + pi.dev + all extensions + 22 skills |
-| **Already use pi.dev** | `git clone ... && ./install.sh` | 22 skills + TUI overlay + slash commands |
-| **Use OpenCode / Claude Code / Codex** | `git clone ... && ./install.sh` | 22 skills + command files (no TUI) |
-| **Any CLI (skills only)** | `npx skills add renatocaliari/cali-product-workflow -g` | 22 skills via DotAgents Protocol |
+| **Already use pi.dev** | `git clone ... && ./install.sh` | 25 skills + TUI overlay + slash commands |
+| **Use OpenCode / Claude Code / Codex** | `git clone ... && ./install.sh` | 25 skills + command files (no TUI) |
+| **Any CLI (skills only)** | `npx skills add renatocaliari/cali-product-workflow -g` | 25 skills via DotAgents Protocol |
 
 See [docs/INSTALLATION.md](docs/INSTALLATION.md) for detailed options.
 Per-agent configuration files (commands, install scripts) are in [`cli-agents/`](cli-agents/).
@@ -224,13 +256,13 @@ Not every feature works on every CLI. Here's what to expect:
 
 | Feature | pi.dev | OpenCode | Claude Code | Codex |
 |---------|--------|----------|-------------|-------|
-| **Skills (all 22)** | ✅ | ✅ | ✅ | ✅ |
+| **Skills (all 25)** | ✅ | ✅ | ✅ | ✅ |
 | **`/pw-start`, `/pw-menu` commands** | ✅ Slash commands | ✅ Via `pw-*.md` files | ✅ Via command files | ✅ Via command files |
 | **TUI overlay (real-time status)** | ✅ Native | ❌ | ❌ | ❌ |
 | **Plannotator visual gate** | ✅ Extension | ⚠️ Manual | ⚠️ Manual | ⚠️ Manual |
 | **Deep hooks (events, gates)** | ✅ Extension | ❌ | ❌ | ❌ |
 
-> **Bottom line:** The **22 skills work identically on every CLI** — they run the full Shape Up workflow, generate plans, critique, scopes, everything. The TUI overlay and deep integration features are Pi-only because only Pi exposes an extension system. All CLIs can still complete the workflow; it just happens in chat rather than a visual panel.
+> **Bottom line:** The **25 skills work identically on every CLI** — they run the full Shape Up workflow, generate plans, critique, scopes, everything. The TUI overlay and deep integration features are Pi-only because only Pi exposes an extension system. All CLIs can still complete the workflow; it just happens in chat rather than a visual panel.
 
 ---
 
@@ -249,7 +281,7 @@ curl -fsSL https://raw.githubusercontent.com/renatocaliari/cali-product-workflow
 | **Node.js** | v20+ (if not installed) | — |
 | **pi.dev** | Latest version | pi.dev |
 | **Extensions (22)** | subagents, browser, intercom, supervisor, plannotator, etc. | pi.dev only |
-| **Skills (20)** | Shape Up, JTBD, Pricing, Ads, Discovery, and more | **All CLIs** ✅ |
+| **Skills (25)** | Shape Up, JTBD, Pricing, Ads, Discovery, code-standards, and more | **All CLIs** ✅ |
 | **Settings** | Theme, model defaults, skill shortcuts | pi.dev |
 
 > **Not using pi.dev?** The skills are still installed to `~/.agents/skills/` — they work on OpenCode, Claude Code, and Codex too. You just won't get the Pi-only extensions or TUI. The workflow itself runs fine.
@@ -391,7 +423,6 @@ Pi requires these npm packages for deep integration (slash commands, TUI, event 
 | Package | Purpose | Can use `git:`? |
 |---------|---------|-----------------|
 | `pi-subagents` | Parallel agent orchestration | ✅ `git:github.com/nicobailon/pi-subagents` |
-| `@capyup/pi-goal` | Goal management with status overlay | ✅ `git:github.com/Michaelliv/pi-goal` |
 | `pi-intercom` | Session coordination | ✅ `git:github.com/nicobailon/pi-intercom` |
 | `pi-supervisor` | Conversation supervision | ✅ `git:github.com/tintinweb/pi-supervisor` |
 | `pi-autoresearch` | Autonomous research | ✅ `git:github.com/davebcn87/pi-autoresearch` |
@@ -544,9 +575,9 @@ Toggle with `/pw-menu`.
 
 ---
 
-## 📋 Skills (22)
+## 📋 Skills (25)
 
-All 22 skills are flat in `skills/` directory, ready for `~/.agents/skills/`. They're organized into 4 layers:
+All 25 skills are flat in `skills/` directory, ready for `~/.agents/skills/`. They're organized into 4 layers:
 
 ### 🎛️ Orchestrator (1)
 
@@ -564,13 +595,15 @@ All 22 skills are flat in `skills/` directory, ready for `~/.agents/skills/`. Th
 | `cali-product-multi-method-market-analysis` | Multi-method market analysis |
 | `cali-product-evolutionary-principles` | Evolutionary principles for sustainable development |
 
-### ⚙️ Workflow Stages (8)
+### ⚙️ Workflow Stages (10)
 
 | Skill | Purpose |
 |-------|---------|
 | `cali-product-shape-up` | Shape Up planning — IN/OUT boundaries, risk analysis, focused scoping |
-| `cali-product-interface-brainstorm` | Interface exploration in ASCII art |
-| `cali-product-critique` | Multi-dimensional critique (plan / codebase / site) |
+| `cali-product-interface-alternatives` | Interface alternatives exploration (5 archetypes) |
+| `cali-product-plan-critique` | Product plan gap analysis (flows, states, data, feasibility) |
+| `cali-product-codebase-critique` | Codebase structural critique (architecture, performance, AI slop) |
+| `cali-product-ux-critique` | Full UX/UI audit (accessibility, Nielsen heuristics, personas, AI slop) |
 | `cali-product-tech-planning` | Technical scope generation with dependency mapping |
 | `cali-product-testing-ai-code` | AI-aware mutation testing strategy |
 | `cali-product-testing-execution` | Post-implementation testing protocol |

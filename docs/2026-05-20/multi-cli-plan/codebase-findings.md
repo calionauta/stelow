@@ -33,7 +33,7 @@
 - **Status:** PI-SPECIFIC. All UI is pi TUI.
 
 ### 7. `scripts/setup.sh` (lines 1-70)
-- Installs only pi-specific packages: `pi-subagents`, `pi-goal`, etc.
+- Installs only pi-specific packages: `pi-subagents`, etc.
 - **Status:** PI-SPECIFIC. No other CLI support.
 
 ---
