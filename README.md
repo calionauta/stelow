@@ -37,7 +37,7 @@ This workflow is grounded in empirical evidence from the 2025–2026 AI agent re
 | **Context isolation** | [Clean Context Pattern](https://agentfactory.panaversity.org/docs/General-Agents-Foundations/context-engineering/context-isolation) (Agent Factory, 2026); [GAM](https://arxiv.org/abs/2604.12285) (Zhejiang U., 2026) | Fresh context per agent outperforms shared pipelines; write isolation prevents contamination | `subagents.md` — `context:"fresh"` per subagent; disk-based artifacts |
 | **Visual review gate** | [Plannotator](https://plannotator.ai/) (backnotprop, 2025); [Placement Theory](https://tianpan.co/blog/2026-04-17-hitl-placement-theory-approval-gates) (Tian Pan, 2026) | Browser-based plan annotation with structured feedback loop | `gate:5` — Mandatory Plannotator visual review before execution |
 | **Intra-step recovery** | [Try-Heal-Retry](https://adriennevermorel.com/notes/try-heal-retry-pattern/) (Nweke, 2026); [PALADIN](https://arxiv.org/abs/2509.25238) (Chaudhary et al., 2025) | 89.68% recovery rate via annotated failure trajectories | `subagents.md` — Retry 1× + skip with logged error per subagent |
-| **Metric-driven optimization** | [ReflexGrad](https://arxiv.org/abs/2511.14584) (Kadu et al., 2025); [ReliabilityBench](https://arxiv.org/abs/2601.06112) (Gupta et al., 2026) | +40pp lift via dual-process routing; standardized reliability measurement | `optimization` scopes routed to autoresearch loop |
+| **Metric-driven optimization** | [ReflexGrad](https://arxiv.org/abs/2511.14584) (Kadu et al., 2025); [ReliabilityBench](https://arxiv.org/abs/2601.06112) (Gupta et al., 2026) | +40pp lift via dual-process routing; standardized reliability measurement | `optimization` scopes routed to optimization goals (subagent + acceptance) |
 
 ### ⚠️ Known Limitations
 
@@ -48,7 +48,7 @@ Even with these guardrails, the AI agent still exhibits predictable failure mode
 | **Context rot in long sessions** | Agent quality degrades non-uniformly as context grows past 100K+ tokens | Disk-based artifacts; `context:"fresh"` per subagent; [PAACE](https://arxiv.org/abs/2512.16970) plan-aware compression |
 | **Confabulated research references** | Agents occasionally cite nonexistent papers or books in planning | Claim verification in `setup:0.20` (Lessons Learned cross-referencing) |
 | **Silent wrong answers** | Cross-task state leakage produces plausible but incorrect outputs ([UCC](https://arxiv.org/abs/2604.01350), 2026) | Write isolation per subagent; clean context pattern |
-| **Overconfidence in estimates** | AI systematically underestimates implementation complexity | `optimization` scopes use autoresearch with objective metrics |
+| **Overconfidence in estimates** | AI systematically underestimates implementation complexity | `optimization` scopes use optimization goals (subagent + acceptance with benchmark verify) |
 | **Approval gate fatigue** | Users can desensitize to visual gates and approve without scrutiny | Plannotator requires active annotations (deletions, comments, labels) |
 
 *Research sourced May 2026. All references are hyperlinked for verification.*
@@ -57,18 +57,23 @@ Even with these guardrails, the AI agent still exhibits predictable failure mode
 
 ## 📋 Table of Contents
 
+- [📖 Evidence-Based Design](#-evidence-based-design)
 - [Philosophy](#philosophy)
 - [About the Author](#about-the-author)
 - [Why This Exists](#why-this-exists)
+- [How We Differ](#how-we-differ)
+- [❤️ Radical Transparency](#️-radical-transparency)
 - [🚀 Quick Start](#-quick-start)
 - [📦 Installation](#-installation)
 - [🔧 Dependencies](#-dependencies)
 - [📁 Artifact Directory](#-artifact-directory)
+- [cali-product-workflow Integration](#cali-product-workflow-integration)
 - [🔄 Process](#-process)
 - [🎮 Commands](#-commands)
 - [🖥️ TUI Visual](#️-tui-visual)
 - [📋 Skills (25)](#-skills-25)
 - [📊 Version](#-version)
+- [📞 Support](#-support)
 - [License](#license)
 
 ---
@@ -137,7 +142,7 @@ This workflow wasn't designed in a vacuum. It comes from years inside real teams
 **Key Features:**
 
 - **22 sub-skills** organized into 4 layers — orchestrator + strategies + workflow stages + tactics
-- Part of a broader ecosystem of **54+ skills** for coding, ops, research, and facilitation
+- Part of a broader ecosystem of **25 skills within the project** (plus additional skills from other packages in the user's agent environment)
 - Real-time TUI tracking with visual overlay (`/pw-menu`)
 - Gate approval via Plannotator — review, comment, approve or reject before implementation
 - Typed scopes for autonomous execution (feature, spike, test-*, optimize)
@@ -146,8 +151,8 @@ This workflow wasn't designed in a vacuum. It comes from years inside real teams
 
 This workflow combines product planning, domain knowledge, and technical execution for digital products. Here's how it compares:
 
-| Aspect | Standard Agent | Heavy Framework | cali-product-workflow |
-|--------|---------------|-----------------|---------------------|
+| Aspect | Standard Agent | Engineering-Focused Framework | Product-Focused Framework (this project) |
+|--------|---------------|-------------------------------|----------------------------------------|
 | **Scope** | Open-ended | Full lifecycle | Shaped proposals with IN/OUT |
 | **Review** | Manual chat | Configured | Adversarial critique + Gate |
 | **Domain Skills** | None | Generic | 8 product-specific (auto-detected) |
@@ -172,7 +177,7 @@ Both frameworks enforce structure for general software engineering. Here's what 
 
 | Aspect | [BMAD Method](https://github.com/bmad-code-org/BMAD-METHOD) | [Superpowers](https://github.com/obra/superpowers) | cali-product-workflow |
 |--------|--------|---------|-----------|
-| **Stars** | ~47K | ~199K | — |
+| **Stars** | ~48K | ~213K | — |
 | **Focus** | Enterprise team simulation (12+ workflows) | TDD-first engineering methodology | Product planning + domain knowledge + execution |
 | **Phases** | 4 (Analysis → Planning → Solutioning → Implementation) | Skills system (14 skills) | 15 stages (Triage → Setup → Strategy → Shape Up → Critique → Gate → Scope → Interface → Int.Gate → Selection → Tech Planning → Execution → Verification → Execution Critique) |
 | **Scope Definition** | User stories, epics | Implementation plans | Shape Up with IN/OUT boundaries |
@@ -204,7 +209,7 @@ need to know about.
 | 7 | **Expertise cliff** — AI fails in mature codebases with implicit conventions, undocumented architecture, organizational knowledge that isn't in any file | [Tian Pan Mai 2026](https://tianpan.co/blog/2026-05-04-expertise-cliff-tacit-knowledge-ai-coding-agents) (tacit knowledge violation in brownfield); [METR 2025 RCT](https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/) (experienced devs 19% slower with AI, 0% AI PRs mergeable as-is) | The workflow's domain libraries and structured specs help surface some conventions, but they don't replace organizational knowledge. Execution Critique checks for broken refs and anti-patterns. | **Not addressed.** This workflow was designed for greenfield projects or well-documented features. If your codebase has 10 years of undocumented architecture decisions, the AI will violate them regardless of how structured the plan is. The 19% slowdown (METR 2025) applies here too — experienced devs navigating mature codebases with AI may actually be slower. |
 | 8 | **Plan staleness** — plans are generated against one snapshot of the codebase; by the time execution starts, the target has changed | [Superpowers Issue #989](https://github.com/obra/superpowers/issues/989) (parallel sessions cause spec/plan staleness, fixed via worktree isolation in PR #997) | Each stage re-reads artifacts from disk. Execution has a Context Rot Check that re-reads spec-tech.md from disk (not memory). Gate stage freezes spec-product.md after Plannotator approval. Git worktree check creates isolated branches.  **Plan staleness detection now added:** before scope execution, `git diff HEAD -- $(paths from spec-tech.md)` detects if target files changed since the plan was created. If diff > 0, alert: "Target files changed since plan. Verify before continuing?" | **Staleness detected but not auto-resolved.** The new git diff check surfaces staleness, but: (1) it only detects file-level changes, not semantic staleness (renamed functions, restructured modules), (2) the LLM decides whether the staleness matters — no mechanism forces re-plan, (3) the spec-tech.md might reference files that don't exist at those paths anymore. |
 | 9 | **Pipeline memory loss** — the pipeline has no cross-session memory of its own failure patterns. The same mistake repeats in every cycle. | [Flamehaven 2026](https://flamehaven.space/writing/the-two-problems-no-one-talks-about-in-ai-agent-coding-pipelines/) (cross-session memory, MICA governance schema); validated by [CODESKILL (arXiv 2026)](https://arxiv.org/abs/2605.25430), [FORGE (arXiv 2026)](https://arxiv.org/abs/2605.16233), [Agent Learning Flywheel (Augment Code 2026)](https://www.augmentcode.com/guides/agent-learning-flywheel) — all confirm cross-cycle learning improves agent performance | Execution Critique saves lessons to `.cali-product-workflow/lessons-learned/{date}-{name}.md`. Setup stage (0b) automatically reads past lessons and injects them with explicit instruction to check for repeated patterns **plus forced reflection:** "List 3 patterns to avoid in THIS cycle." No user action needed. The gap registry tracks recurring patterns. Academic research (CODESKILL 2026, FORGE 2026) confirms that injecting past learnings as structured context improves future agent decisions, especially for meta-knowledge (validation routines, failure patterns). | **Captured, injected with forced reflection, but limits remain.** Research validates the approach (CODESKILL: meta-knowledge transfers better than code; FORGE: same-LLM memory evolution works). Forced reflection improves the LLM's processing of lessons. However: (1) the same model that made mistakes reads the lessons, (2) context rot can still cause mid-session forgetting of the reflection, (3) lesson quality depends on Execution Critique's blind spots, (4) cannot auto-verify lesson adherence. |
-| 10 | **Code complexity growth** — AI-generated code tends to increase complexity over time. Static analysis warnings +30%, code complexity +41% after month 2 of sustained AI use. | [Cursor Study (MSR 2026)](https://arxiv.org/abs/2511.04427) — causal estimate: static analysis warnings +30%, code complexity +41% after month 2; [Faros AI 2025](https://www.faros.ai/ai-productivity-paradox) (47% more PRs/day, 0 DORA improvement across 10K developers, 1,255 teams) | Execution Critique includes anti-pattern detection (god functions >100 lines, global mutable state). Execution's optional Code Quality Gate now includes language-agnostic static analysis: `go vet ./...` (Go), `npm run lint` (Node), `ruff check .` or `pylint` (Python), `cargo clippy` (Rust). | **Caught too late, but now static analysis is language-agnostic.** Complexity analysis happens after code is written. The Code Quality Gate's static analysis commands work across Go/Node/Python/Rust (not just eslint/tsc). Still, the workflow has no mechanism to prevent complexity during generation — only flag it after. Preventive measures (architecture boundaries, human review) are outside workflow scope. |
+| 10 | **Code complexity growth** — AI-generated code tends to increase complexity over time. Static analysis warnings +30%, code complexity +41% after month 2 of sustained AI use. | [Cursor Study (MSR 2026)](https://arxiv.org/abs/2511.04427) — causal estimate: static analysis warnings +30%, code complexity +41% after month 2; [Faros AI 2025](https://www.faros.ai/ai-productivity-paradox) (47% more PRs/day, 0 DORA improvement across 10K developers, 1,255 teams) | Execution Critique includes anti-pattern detection (god functions >100 lines, global mutable state). Execution's optional Code Quality Gate now includes language-agnostic static analysis: `go vet ./...` (Go), `npm run lint` (Node), `ruff check .` or `pylint` (Python), `cargo clippy` (Rust). | **Caught too late.** Complexity analysis happens after code is written. The Code Quality Gate includes language-agnostic static analysis (`go vet`, `npm run lint`, `ruff`, `cargo clippy`), but the workflow has no mechanism to prevent complexity during generation — only flag it after. Preventive measures (architecture boundaries, human review) are outside workflow scope. |
 | 11 | **Activity ≠ productivity** — more PRs, more commits, more tasks completed does not mean more value delivered. AI teams look busy without being effective. | [METR 2025 RCT](https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/) (19% slower for experienced devs, $0.5M-2M cost/repo for full rollout); [Faros AI 2025](https://www.faros.ai/ai-productivity-paradox) (9% more tasks, 47% more PRs, 0% DORA improvement); [Stack Overflow 2025 Survey](https://survey.stackoverflow.co/2025) (45% of devs find AI debugging takes longer, 66% frustrated with "almost right" AI solutions) | The workflow is designed to reduce activity — OUT/IN scoping in Shape Up keeps proposals focused. The Execution Critique's decision matrix includes "close without follow-up" as a valid outcome. | **Philosophical tension.** The workflow itself generates activity (artifacts, sessions, gates, critiques). More structure could mean more busywork. The Shape Up skill has OUT/IN scoping BUT no explicit appetite mechanism (no time-constrained betting) — so there is no enforced limit on scope size. The 19% slowdown for experienced devs (METR 2025) raises an uncomfortable question: this workflow might add overhead without proportional value for some teams. |
 
 ### How to read this table
@@ -425,7 +430,7 @@ Pi requires these npm packages for deep integration (slash commands, TUI, event 
 | `pi-subagents` | Parallel agent orchestration | ✅ `git:github.com/nicobailon/pi-subagents` |
 | `pi-intercom` | Session coordination | ✅ `git:github.com/nicobailon/pi-intercom` |
 | `pi-supervisor` | Conversation supervision | ✅ `git:github.com/tintinweb/pi-supervisor` |
-| `pi-autoresearch` | Autonomous research | ✅ `git:github.com/davebcn87/pi-autoresearch` |
+| `pi-autoresearch` | *Deprecated* — optimization goals use `subagent() + acceptance` | ✅ Deprecated. See `references/cli-tools/goals.md` |
 | `@juicesharp/rpiv-ask-user-question` | User prompts | ✅ `git:github.com/juicesharp/rpiv-mono` |
 | `@plannotator/pi-extension` | Visual plan review | ✅ `git:github.com/backnotprop/plannotator` |
 
@@ -510,7 +515,7 @@ All workflow artifacts are stored in:
 
 ## 🔄 Process
 
-The workflow has **3 conceptual phases** (15 stages total), from idea triage to post-execution audit. See the [`🥙 Stage Index`](#-skills-22) in the orchestrator skill for the complete stage map with auto-chain rules and flow diagram.
+The workflow has **3 conceptual phases** (15 stages total), from idea triage to post-execution audit. See the [`🥙 Stage Index`](#-skills-25) in the orchestrator skill for the complete stage map with auto-chain rules and flow diagram.
 
 ### 1. 🎨 Shaping
 
@@ -577,7 +582,7 @@ Toggle with `/pw-menu`.
 
 ## 📋 Skills (25)
 
-All 25 skills are flat in `skills/` directory, ready for `~/.agents/skills/`. They're organized into 4 layers:
+All 25 skills are flat in `skills/` directory, ready for `~/.agents/skills/`. They're organized into 4 layers plus 1 complementary skill:
 
 ### 🎛️ Orchestrator (1)
 
@@ -622,6 +627,12 @@ All 25 skills are flat in `skills/` directory, ready for `~/.agents/skills/`. Th
 | `cali-product-pricing` | Pricing strategy and tactics |
 | `cali-product-promotions` | Promotions and campaigns |
 | `cali-product-trust-building` | Trust-building mechanisms |
+
+### 📐 Complementary (1)
+
+| Skill | Purpose |
+|-------|---------|
+| `cali-product-code-standards` | Product-domain coding standards — Datastar rules, SSE-first, HATEOAS, LoB |
 
 ### Installation
 

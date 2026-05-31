@@ -56,7 +56,7 @@ Each scope must be typed:
 | Type | Description | Executor | TDD Recommended? |
 |------|-------------|----------|------------------|
 | **`feature`** | Implement new functionality, UI, API endpoints, workflows | worker | Optional |
-| **`optimization`** | Improve an existing measurable metric (perf, bundle, build time, test speed, Lighthouse score, memory, cost) | autoresearch | No |
+| **`optimization`** | Improve an existing measurable metric (perf, bundle, build time, test speed, Lighthouse score, memory, cost) | subagent + acceptance (benchmark verify) | No |
 | **`spike`** | Research/prototype to reduce uncertainty | scout + researcher | No |
 | **`test-unit`** | Unit tests for business logic with mutation validation | worker | **Yes — for critical paths** |
 | **`test-integration`** | Integration tests with real dependencies (DB, APIs) | worker | No (test-after) |
@@ -113,11 +113,11 @@ scopes:
 ```
 [SCOPE-4]
 [TYPE] feature
-[EXECUTOR] autoresearch
+[EXECUTOR] optimization-goal
 [METRIC] Average cyclomatic complexity < 10 (lower is better)
 ```
 
-### Rule: when to add `[EXECUTOR] autoresearch`
+### Rule: when to override `[EXECUTOR]` for optimization
 
 Add when ALL conditions are true:
 
@@ -127,14 +127,14 @@ Add when ALL conditions are true:
 
 **⚠️ IMPORTANT: Routing via subagent**
 
-The `autoresearch` executor NEVER runs in the main agent. The routing is:
+Optimization goals NEVER run in the main agent. The routing is:
 
 ```
-optimization scope → cali-product-scope-executor → subagent (delegate/worker) → **experiment-loop** (see `references/cli-tools/autoresearch.md`)
+optimization scope → cali-product-scope-executor → subagent → **optimization goal** (see `references/cli-tools/goals.md` → Optimization Goals)
 ```
 
-The cali-product-scope-executor delegates to a subagent that executes **experiment-loop** (see `references/cli-tools/autoresearch.md`).
-Never invoke autoresearch directly in the main agent — this creates infinite loops in the planner's context.
+The cali-product-scope-executor delegates to a subagent with an acceptance contract that includes benchmark verify commands.
+Never run optimization loops directly in the main agent — this creates infinite context.
 
 **Keep default routing (no `[EXECUTOR]`) when:**
 
@@ -146,9 +146,9 @@ Never invoke autoresearch directly in the main agent — this creates infinite l
 
 | Scope | Measurable? | Benchmark? | Existing code? | `[EXECUTOR]`? |
 |---|---|---|---|---|
-| Refactor payment module | ✅ Complexity | ✅ `lint --complexity` | ✅ Yes | ✅ autoresearch |
+| Refactor payment module | ✅ Complexity | ✅ `lint --complexity` | ✅ Yes | ✅ optimization-goal |
 | Implement login screen | ❌ Binary | ❌ | ❌ New | ❌ Worker |
-| Optimize search query | ✅ P95 latency | ✅ Load test | ✅ Yes | ✅ autoresearch |
+| Optimize search query | ✅ P95 latency | ✅ Load test | ✅ Yes | ✅ optimization-goal |
 | Create new dashboard | ❌ Visual quality | ❌ | ❌ New | ❌ Worker |
 | Fix auth bug | ❌ Binary | ❌ | ✅ Yes | ❌ Worker |
 

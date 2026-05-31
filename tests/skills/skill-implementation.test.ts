@@ -302,7 +302,7 @@ describe('Stage Files', () => {
     });
 
     it('execution.md should document execution workflow', () => {
-      expect(readStageFile('execution.md')).toMatch(/Execution|Sisyphus|autoresearch/i);
+      expect(readStageFile('execution.md')).toMatch(/Execution|subagent|acceptance|optimization.*goal/i);
     });
   });
 });
@@ -377,8 +377,8 @@ describe('Execution Phase', () => {
     expect(existsSync(execPath)).toBe(true);
   });
 
-  it('should document scope executor or sisyphus/autoresearch', () => {
-    expect(readFileSync(execPath, 'utf8')).toMatch(/scope.*executor|sisyphus|autoresearch/i);
+  it('should document scope executor or goals (subagent + acceptance)', () => {
+    expect(readFileSync(execPath, 'utf8')).toMatch(/scope.*executor|goal|subagent.*acceptance/i);
   });
 
   it('should document worktree decision', () => {

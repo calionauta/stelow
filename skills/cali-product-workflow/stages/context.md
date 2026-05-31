@@ -15,20 +15,7 @@ The LLM checks if the user should be offered strategic analysis and/or domain li
 
 **If user selects one or more approaches:**
 1. Read `references/strategic-exploration.md` for each approach's details
-2. Execute the selected ones **in parallel** via subagent:
-```typescript
-subagent({
-  tasks: selectedApproaches.map(approach => ({
-    agent: "delegate",
-    task: `Execute the analysis using the corresponding skill for the context: [project context].
-Use the skill: cali-product-${approach.skill}
-Save results to .cali-product-workflow/{YYYY-MM-DD}/{_dir}/strategic/${approach.name}.md`,
-    output: `.cali-product-workflow/{YYYY-MM-DD}/{_dir}/strategic/${approach.name}.md`,
-    context: "fork"
-  })),
-  concurrency: selectedApproaches.length // all in parallel
-})
-```
+2. Execute the selected ones **in parallel** using the subagents tool (see `references/cli-tools/subagents.md`):
 3. Consolidate into `strategic-insights.md`
 4. Incorporate outputs as Shape Up input
 
@@ -58,28 +45,11 @@ The user's request is exclusively about one of these domains (e.g., "help me def
 
 **Mode B — General product request with domain overlap** (user asks for product planning but mentions domains):
 The user wants full product planning but the input also contains domain signals.
-→ Offer domain libraries as **complementary context** using `ask_user_question`:
+→ Offer domain libraries as **complementary context** using the ask tool (see `references/cli-tools/structured-question.md`), referencing patterns from `stages/ask-patterns.md`:
 
-```typescript
-ask_user_question({
-  questions: [{
-    question: `Your request mentions specific areas. Would you like to load reference playbooks to enrich planning?
-Each playbook provides frameworks and references about the domain.`,
-    header: "Domain Libraries",
-    multiSelect: true,
-    options: [
-      // Only include options for detected domains, e.g.:
-      // {
-      //   label: "Pricing",
-      //   description: "Exchange base, consumption control, interest alignment, perception techniques"
-      // },
-      // {
-      //   label: "Promotions",
-      //   description: "MAGIC framework, Loss Leader, Gift Card Sale, Limited Package"
-      // },
-      // ... (only the detected ones)
-    ]
-  }]
+```
+ask tool: multiSelect question with detected domain options
+```
 })
 ```
 

@@ -68,7 +68,7 @@ Phase 8:  Interface Alternatives → 5 ASCII proposals + hybrid
 Phase 9:  Interface Gate    → Plannotator visual approval
 Phase 10: Interface Selection → User picks via ask_user_question
 Phase 11: Tech Planning     → Typed scopes (feature/spike/optimize)
-Phase 12: Execution         → Automatic via ordered-execution-goal or autoresearch
+Phase 12: Execution         → Automatic via subagent + acceptance (see goals.md)
 Phase 13: Verification      → Full test suite, code review, UI/browser testing
 Phase 14: Execution Critique    → Post-execution verification
 ```
@@ -170,14 +170,14 @@ Phase 14: Execution Critique    → Post-execution verification
 
 | Type | Executor | Use Case |
 |------|----------|----------|
-| `feature` | **ordered-execution-goal** (see goals.md) + `/supervise` | Standard features |
-| `optimization` | `autoresearch-create` | Performance tuning |
-| `spike` | **ordered-execution-goal** (see goals.md) + `/supervise` | Research/uncertainty |
-| `test-*` | **ordered-execution-goal** (see goals.md) + testing gates | Test coverage |
+| `feature` | subagent + acceptance (see goals.md) + `/supervise` | Standard features |
+| `optimization` | subagent + acceptance (benchmark verify) | Performance tuning |
+| `spike` | subagent + acceptance (see goals.md) + `/supervise` | Research/uncertainty |
+| `test-*` | subagent + acceptance (see goals.md) + testing gates | Test coverage |
 
 **Rules:**
 - Sequencing: Riskiest-first or UI-first principle
-- Executor override: `[EXECUTOR] autoresearch` optional tag
+- Executor override: `[EXECUTOR] optimization-goal` optional tag
 - TDD guidance: TDD for critical paths + mutation testing for AI-generated code
 - Worktree: Optional git worktree for isolated execution in shared repo
 
@@ -296,10 +296,10 @@ Worktree Check ───► [Create git worktree if needed]
     ▼
 For each scope (in sequence):
     │
-    ├── TYPE=feature ──► ordered-execution-goal + /supervise
-    ├── TYPE=optimization ──► /autoresearch-create
-    ├── TYPE=spike ──► ordered-execution-goal + /supervise
-    └── TYPE=test-* ──► ordered-execution-goal + testing gates
+    ├── TYPE=feature ──► subagent + acceptance + /supervise
+    ├── TYPE=optimization ──► subagent + acceptance (benchmark verify)
+    ├── TYPE=spike ──► subagent + acceptance + /supervise
+    └── TYPE=test-* ──► subagent + acceptance + testing gates
     │
     ▼
 Code Quality Gate (optional)
@@ -661,7 +661,7 @@ BR-010: Interface Alternatives generates exactly 5 proposals + 1 hybrid recommen
 
 BR-011: ask_user_question with previews limited to 20 rows for side-by-side mode.
 
-BR-012: Scope executor routing: feature→sisyphus, optimization→autoresearch, spike→sisyphus, test-*→sisyphus+testing.
+BR-012: Scope executor routing: feature→subagent+acceptance, optimization→subagent+acceptance with benchmark verify, spike→subagent+acceptance, test-*→subagent+acceptance+testing gates.
 
 BR-013: TDD recommended only for critical business logic; test-after for external APIs and AI workflows.
 

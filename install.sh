@@ -218,7 +218,7 @@ install_pi() {
     log_info "    Installing supporting packages..."
     for pkg in \
       "npm:pi-subagents" "npm:pi-intercom" \
-      "npm:pi-supervisor" "npm:pi-autoresearch" \
+      "npm:pi-supervisor" \
       "npm:@juicesharp/rpiv-ask-user-question" \
       "@plannotator/pi-extension"; do
       pi install "$pkg" 2>/dev/null || true

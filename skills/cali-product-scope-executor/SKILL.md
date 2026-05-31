@@ -96,7 +96,7 @@ For each scope in the plan:
 |---|---|---|
 | `feature` | *absent* → worker |
 | `feature` | `research` → **research loop** (override) |
-| `optimization` | *absent* → research loop |
+| `optimization` | *absent* → goals tool (see `references/cli-tools/goals.md`, Optimization Goals) |
 | `optimization` | `worker` → **worker** (override) |
 | `spike` | *absent* → scout + researcher |
 | `spike` | `research` → **research loop** (override, rare) |
@@ -115,10 +115,10 @@ Before executing, present a clear execution plan to the user with the resolved e
 Phase 1 (parallel):
   ⏩ [SCOPE-1] Login — feature → worker
   ⏩ [SCOPE-3] Vector DB eval — spike → scout + researcher
-  ⏩ [SCOPE-4] Refactor payments — feature → autoresearch (override)
+  ⏩ [SCOPE-4] Refactor payments — feature → subagent (override)
 
 Phase 2 (after SCOPE-1):
-  ⏩ [SCOPE-2] Search optimization — optimization → autoresearch
+  ⏩ [SCOPE-2] Search optimization — optimization → goals tool
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -129,11 +129,11 @@ Shall I proceed with autonomous execution? I'll report back when all scopes are 
 
 If the user says yes, proceed autonomously. If no, ask what they'd like to adjust.
 
-### Step 3: Execute feature scopes (feature → ordered-execution-goal)
+### Step 3: Execute feature scopes (feature → goals tool)
 
 For each scope with `[TYPE] feature`:
 
-1. **Create ordered-execution-goal** (see `references/cli-tools/goals.md`, `sisyphus-set` variant) with the scope's DoD and ACs as the objective steps.
+1. **Create a goal** using the goals tool (see `references/cli-tools/goals.md`) with the scope's DoD and ACs. The goal reference documents all patterns and fallbacks.
 
 2. **Activate supervision** (see `references/cli-tools/supervise.md`) for the feature scope before starting implementation.
    ⚠️ Supervise ONLY during execution (Execution stage and later), never during earlier stages — it can loop on Plannotator.
@@ -152,19 +152,18 @@ For each scope with `[TYPE] feature`:
 
 6. **DoD verification** (see Step 7) — scope is NOT complete until all DoD items pass.
 
-### Step 4: Execute optimization scopes (optimization → experiment-loop)
+### Step 4: Execute optimization scopes (optimization → goals tool)
 
 For each scope with `[TYPE] optimization`:
 
-1. **Check if experiment-loop is already set up** for this metric (see `references/cli-tools/autoresearch.md`)
-2. **If not set up**, delegate experiment-loop setup to a subagent (see `references/cli-tools/subagents.md`):
-   - Agent: `delegate` or equivalent
-   - Task: setup with scope objective, metric, command, and constraints
-3. **Set a stopping condition.** Experiment loops run forever by default:
+1. **Create an optimization goal** using the goals tool (see `references/cli-tools/goals.md` → Optimization Goals). The goals reference documents acceptance patterns, benchmark verify commands, and iteration loops.
+
+2. **Set a stopping condition:**
    - If metric target is defined in the plan: stop when target is met
-   - If no target: run for a reasonable number of iterations (10-20) or until improvements plateau
-4. **When experiment completes**, run parallel code review (see `references/cli-tools/subagents.md`)
-5. **DoD verification** (see Step 7)
+   - If no target: run for a reasonable number of iterations (5-10) or until improvements plateau
+
+3. **When optimization completes**, run parallel code review (see `references/cli-tools/subagents.md`)
+4. **DoD verification** (see Step 7)
 
 ### Step 5: Execute spike scopes (spike → scout + researcher)
 
@@ -234,7 +233,7 @@ Next steps:
 ## Error Handling
 
 - **If a worker fails** (crash, stuck, timeout): note it, log the error, and move to the next scope. Do not block the entire execution on one failure.
-- **If autoresearch crashes:** check the log, fix if trivial, otherwise skip and note it.
+- **If an optimization goal fails:** check the log, fix if trivial, otherwise skip and note it.
 - **If a reviewer finds blocking issues:** flag them but continue execution. Report them in the final summary. Do not halt the pipeline for review findings — the user will address them.
 - **If a spike is inconclusive:** document what was learned and recommend next steps.
 
@@ -267,7 +266,7 @@ This skill runs **after** the Plannotator gate approves the plan, replacing manu
    ├── Read spec-tech.md (has product context + typed scopes)
    ├── Report execution plan → user confirms
    ├── Execute features → worker + parallel-review
-   ├── Execute optimizations → autoresearch
+   ├── Execute optimizations → goals tool (see goals.md, Optimization Goals)
    ├── Execute spikes → scout + researcher
    └── Report consolidated results to execution-report.md
 7. [HANDOFF] → Verification stage (full test suite, code review, UI/browser testing)
@@ -295,7 +294,7 @@ Read this SKILL.md and follow the steps directly.
 
 Delegate to a subagent (see `references/cli-tools/subagents.md`):
 - Agent: `delegate` or `worker`
-- Skills: `cali-product-scope-executor` + `autoresearch-create`
+- Skills: `cali-product-scope-executor` + `goals` (optimization goals via subagent + acceptance)
 - Context: fork
 
 ## Interaction with Tools
@@ -305,7 +304,7 @@ Delegate to a subagent (see `references/cli-tools/subagents.md`):
 | Goal creation and tracking | `references/cli-tools/goals.md` |
 | Subagent delegation (worker, reviewer, scout, researcher) | `references/cli-tools/subagents.md` |
 | Execution steering | `references/cli-tools/supervise.md` |
-| Automated experimentation | `references/cli-tools/autoresearch.md` |
+| Optimization goals | `references/cli-tools/goals.md` (Optimization Goals section) |
 | Visual review gate | `references/cli-tools/plannotator.md` |
 
 ## Environment Adaptation
@@ -337,12 +336,12 @@ Once input is resolved, proceed to Step 1: Read and parse the plan.
 
 Strong execution runs:
 - **Respect dependency order** — no scope starts before its dependencies
-- **Use the right tool for each type** — worker for features, autoresearch for optimization, scout for spikes
+- **Use the right tool for each type** — worker for features, goals tool for optimization, scout for spikes
 - **Handle failures gracefully** — one failed scope doesn't block the rest
 - **Produce a clear final report** — what was done, what changed, what failed
 
 Weak execution runs:
 - **Run everything sequentially** when parallel is safe
-- **Use worker for optimization scopes** (loses the autoresearch loop advantage)
+- **Treat optimization scopes as plain worker tasks instead of using the goals tool** (loses the optimization loop advantage)
 - **Ignore scope types** and treat everything as implementation
 - **Block on minor failures** or reviewer feedback

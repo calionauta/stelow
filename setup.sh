@@ -34,7 +34,7 @@ PI_PACKAGES=(
   "npm:pi-intercom"
   "npm:pi-supervisor"
   "npm:pi-agent-browser-native"
-  "npm:pi-autoresearch"
+  # "npm:pi-autoresearch" — DEPRECATED, use subagent + acceptance with benchmark verify
   "npm:pi-rewind-hook"
   "npm:pi-skillful"
   "npm:pi-powerline-footer"

@@ -108,36 +108,15 @@ pytest
 - Config-only change
 - Documentation update
 
-Launch fresh-context reviewers in parallel:
+Use the subagents tool (see `references/cli-tools/subagents.md`) in parallel for context gathering:
 
-```typescript
-subagent({
-  tasks: [
-    {
-      agent: "reviewer",
-      task: "Review this diff for correctness, regressions, and edge cases. Focus on: logic errors, missing error handling, security issues, performance regressions. Provide specific line references.",
-      output: false
-    },
-    {
-      agent: "reviewer",
-      task: "Review this diff for simplicity and code quality. Focus on: unnecessary complexity, dead code, naming clarity, adherence to project conventions. Remove slop and verbosity.",
-      output: false
-    }
-  ],
-  concurrency: 2,
-  context: "fresh"
-})
+```
+2 parallel scouts (fresh context):
+1. Map current code state → context/current-state.md
+2. Map technical risks → context/risks.md
 ```
 
-**When to use subagents:**
-- Diff touches 3+ files
-- Feature involves multiple components
-- Changes affect critical paths (auth, payments, data)
-
-**When to skip:**
-- Single-file typo fix
-- Config-only change
-- Documentation update
+**Error handling:** If a scout fails, retry per the retry pattern in `references/cli-tools/subagents.md`.
 
 ## Phase 3: UI Quality (if visual)
 

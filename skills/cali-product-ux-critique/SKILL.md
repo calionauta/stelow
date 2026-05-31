@@ -92,47 +92,22 @@ Audita um site ao vivo abrindo no browser e avaliando a UX completa.
 
 ### 2. Open and explore
 
-```typescript
-agent_browser({
-  args: ["open", "--url", "{URL}", "--", "snapshot", "-i"]
-})
-```
-
-Navegue pelos fluxos principais: login, ação primária, estado vazio, estado de erro,
-confirmação destrutiva, formulários.
+Use the browser tool (see `references/cli-tools/agent_browser.md`) to open the URL and explore main flows (login, primary action, empty state, error state, destructive confirmation, forms).
 
 ### 3. Run audit via subagent
 
-```typescript
-subagent({
-  agent: "reviewer",
-  task: `Audit this live site for UX quality.
-Mode: Live Site
-URL: {URL}
-Browser snapshots available.
+Use the subagents tool (see `references/cli-tools/subagents.md`) to audit the live site:
 
-Use all reference files from:
-- ui-audit-dimensions.md: Accessibility (contrast, ARIA, keyboard nav, alt text,
-  focus management, semantic HTML, form labels/errors), Design Quality (visual hierarchy,
-  cognitive load, consistency, mobile/responsive)
-- ux-frameworks.md: Nielsen 10 Heuristics (apply all 10), Emotional Journey (Peak-End,
-  anxiety valleys, reassurance), Personas (Alex/Jordan/Sam/Morgan/Taylor), AI Slop Detection
-  (10 tells checklist)
-
-Output per output-format.md:
-1. 🎯 Executive Summary (accessibility + design scores, top issues)
-2. 🚨 Critical Issues (P0 — WCAG A failure, blocking UX)
-3. 🤔 Important Issues (P1-P2 — WCAG AA, significant difficulty)
-4. 🔎 Minor Issues (P3 — polish, edge cases)
-5. ✅ Strengths (what's working well)
-
-For each issue: severity (P0/P1/P2/P3), dimension, what was observed, which checklist item
-flagged it, actionable recommendation.
-
-Save to .cali-ux-critique/live-audit-report.md`,
-  output: ".cali-ux-critique/live-audit-report.md"
-})
 ```
+Agent: reviewer
+Task: Audit live site for UX quality (Live Site mode)
+Reads: ui-audit-dimensions.md, ux-frameworks.md
+Mode: {URL}
+Output: .cali-ux-critique/live-audit-report.md (per output-format.md)
+```
+
+The reviewer applies all checklists from the reference files and produces a report
+with severity-classified findings (P0-P3), dimension tags, and actionable recommendations.
 
 ### 4. Gap Resolution
 
@@ -165,31 +140,23 @@ find {INPUT_PATH} -maxdepth 3 -type f \( -name "*.templ" -o -name "*.html" -o -n
 
 ### 3. Run audit via subagent
 
-```typescript
-subagent({
-  agent: "reviewer",
-  task: `Audit this codebase for UX quality.
-Mode: Codebase
-Input path: {INPUT_PATH}
+Use the subagents tool (see `references/cli-tools/subagents.md`) to audit the codebase:
 
-Use all reference files from:
-- ui-audit-dimensions.md: Accessibility from source (ARIA attributes, semantic HTML,
-  heading hierarchy, alt text, form labels/errors/required indicators, keyboard event
-  handlers, focus management via tabIndex, color contrast via CSS tokens). Design from
-  source (visual hierarchy via component structure, cognitive load via props/state
-  complexity, consistency via design tokens, mobile via media queries and touch target
-  sizes in CSS).
-- ux-frameworks.md: Nielsen Heuristics from source (consistency, error prevention,
-  aesthetic design), cognitive load checklist, AI Slop Detection (generic component
-  patterns, redundant microcopy, icon-only buttons without labels).
-
-For each issue: note if it can be verified from source or [needs browser].
-
-Output per output-format.md.
-Save to .cali-ux-critique/codebase-audit-report.md`,
-  output: ".cali-ux-critique/codebase-audit-report.md"
-})
 ```
+Agent: reviewer
+Task: Audit codebase for UX quality (Codebase mode)
+Reads: ui-audit-dimensions.md, ux-frameworks.md
+Input: {INPUT_PATH}
+Output: .cali-ux-critique/codebase-audit-report.md (per output-format.md)
+```
+
+The reviewer applies checklists adapted for source code analysis:
+- ARIA attributes, heading hierarchy, alt text, form labels, keyboard event handlers
+- Visual hierarchy via component structure, cognitive load via props/state complexity
+- Consistency via design tokens, responsiveness via media queries
+- AI slop detection (generic patterns, redundant microcopy, icon-only buttons)
+
+For each issue: severity, dimension, if it can be verified from source or [needs browser].
 
 ### 4. Flag what needs browser
 
@@ -210,30 +177,19 @@ Audita uma imagem de screenshot para análise visual rápida (~60% coverage).
 
 ### 2. Analyze screenshot
 
-Leia o arquivo de imagem para análise visual, então:
+Leia o arquivo de imagem para análise visual. Use o subagents tool (see `references/cli-tools/subagents.md`) to audit:
 
-```typescript
-subagent({
-  agent: "reviewer",
-  task: `Audit this screenshot for UX quality.
-Mode: Screenshot
-Input file: {INPUT_PATH}
-
-Use all reference files:
-- ui-audit-dimensions.md: Accessibility limited to contrast (estimated), alt text
-  presence, heading hierarchy visible in layout. Design Quality (visual hierarchy,
-  cognitive load — info density, primary action clarity, grouping).
-- ux-frameworks.md: Nielsen heuristics (visibility, consistency, aesthetic),
-  personas (visual walkthrough), AI Slop Detection (10 tells).
-
-Note limitations: contrast is estimated visually. [needs live testing] for keyboard,
-  screen reader, focus, interactive states, animation.
-
-Output per output-format.md.
-Save to .cali-ux-critique/screenshot-audit-report.md`,
-  output: ".cali-ux-critique/screenshot-audit-report.md"
-})
 ```
+Agent: reviewer
+Task: Audit screenshot for UX quality (Screenshot mode)
+Reads: ui-audit-dimensions.md, ux-frameworks.md
+Input: {INPUT_PATH}
+Output: .cali-ux-critique/screenshot-audit-report.md (per output-format.md)
+```
+
+The reviewer is limited to what's visible: estimated contrast, alt text presence,
+heading hierarchy, visual density. Notes limitations: [needs live testing] for
+keyboard, screen reader, focus, interactive states, animation.
 
 ### 3. Limitations
 

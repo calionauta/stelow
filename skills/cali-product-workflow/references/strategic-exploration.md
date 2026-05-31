@@ -14,12 +14,7 @@ Look for user mentions of:
 
 ## Ask
 
-```typescript
-ask_user_question({
-  questions: [{
-    question: `Select extra strategic approaches before Shape Up.`,
-    header: "Approaches",
-    multiSelect: true,
+Use the ask tool (see `references/cli-tools/structured-question.md`):
     options: [
       {
         label: "Job-to-Be-Done Framework",
@@ -50,19 +45,7 @@ ask_user_question({
 
 If user selects one or more:
 
-1. Run each selected skill via parallel subagent (fresh context, ALL concurrently):
-```typescript
-subagent({
-  tasks: selectedApproaches.map(approach => ({
-    agent: "delegate",
-    task: `Execute the analysis using the skill: ${approach.skill}
-for the context: [project context]. Return markdown with complete analysis.`,
-    output: `.cali-product-workflow/{YYYY-MM-DD}/{_dir}/strategic/${approach.name}.md`,
-    context: "fork"
-  })),
-  concurrency: selectedApproaches.length
-})
-```
+1. Run each selected skill via parallel subagent (see `references/cli-tools/subagents.md`), fresh context, ALL concurrently.
 
 2. Save individual files to `.cali-product-workflow/{YYYY-MM-DD}/{_dir}/strategic/`
    - `<skill>-analysis.md`
@@ -75,17 +58,7 @@ for the context: [project context]. Return markdown with complete analysis.`,
 
 4. Show summary in chat with file links
 
-5. For each skill, ask granular integration:
-```typescript
-ask_user_question({
-  questions: [{
-    question: `{Skill} — Select insights to incorporate into Shape Up:`,
-    header: "Insights",
-    multiSelect: true,
-    options: [
-      // Generated dynamically based on actual analysis output
-    ]
-  }])
+5. For each skill, ask granular integration using the ask tool (see `references/cli-tools/structured-question.md`).
 ```
    - If no insights selected from a skill → skip that skill
    - Proceed to next or Shape Up

@@ -63,29 +63,14 @@ fi
 ```
 
 **If in the main repository (`MAIN_REPO`) and modifying code:**
-Ask the user:
+Use the ask tool (see `references/cli-tools/structured-question.md`) with Pattern 1 from `stages/ask-patterns.md` for the worktree decision.
 
-```typescript
-ask_user_question({
-  questions: [{
-    question: `This workflow will modify code.
-Create an isolated branch + worktree to avoid conflicts with other workflows?
-
-Branch: pw/{name}/{YYYY-MM-DD}
-Dir:    .worktrees/pw-{name}-{date}/`,
-    header: "Worktree",
-    options: [
-      {
-        label: "Yes — create isolated worktree (Recommended)",
-        description: "Creates separate branch and worktree. Allows multiple parallel workflows without conflicts."
-      },
-      {
-        label: "No — execute in current directory",
-        description: "No isolation. Only for 1 workflow at a time in the same repo."
-      }
-    ]
-  }]
-})
+```markdown
+Question: This workflow will modify code. Create an isolated branch + worktree?
+Options:
+  - Yes — create isolated worktree (Recommended)
+  - No — execute in current directory
+```
 ```
 
 **If Yes:**
@@ -109,26 +94,27 @@ Proceed directly to scope execution in the current directory.
 
 ### execution:20 — Scope Executor Routing
 
-> **Goal system:** See `references/cli-tools/goals.md` for command variants (ordered-execution-goal = /sisyphus-set)
+> **Goal system:** See `references/cli-tools/goals.md` for all scope types —
+> optimization scopes use the goals tool with benchmark verify commands.
 
 | Scope Type | Executor | Supervision |
 |---|---|---|
-| `[TYPE] optimization` | `/skill:autoresearch-create` | Metric loop (auto) |
-| `[EXECUTOR] autoresearch` | `/skill:autoresearch-create` | Metric loop (auto) |
-| Spike with metric | `/skill:autoresearch-create` | Metric loop (auto) |
-| `feature` | **ordered-execution-goal** (see goals.md) | `/supervise` with outcome = DoD |
-| Refactoring without metric | **ordered-execution-goal** (see goals.md) | `/supervise` with outcome = DoD |
-| Investigative spike | **ordered-execution-goal** (see goals.md) | `/supervise` with outcome = DoD |
-| Interface alternatives | **ordered-execution-goal** (see goals.md) | `/supervise` with outcome = DoD |
-| `test-unit` | **ordered-execution-goal** (see goals.md) | Testing gates (see below) |
-| `test-integration` | **ordered-execution-goal** (see goals.md) | Testing gates (see below) |
-| `test-security` | **ordered-execution-goal** (see goals.md) | Testing gates (see below) |
-| `test-behavior` | **ordered-execution-goal** (see goals.md) | Testing gates (see below) |
+| `[TYPE] optimization` | goals tool (see `references/cli-tools/goals.md`, Optimization Goals) | Metric verify (auto) |
+| `[EXECUTOR] optimization-goal` | goals tool (see `references/cli-tools/goals.md`, Optimization Goals) | Metric verify (auto) |
+| Spike with metric | goals tool (see `references/cli-tools/goals.md`, Optimization Goals) | Metric verify (auto) |
+| `feature` | goals tool (see `references/cli-tools/goals.md`) — CLI fallback: ordered-execution-goal (`/sisyphus-set`) | `/supervise` with outcome = DoD |
+| Refactoring without metric | goals tool (see `references/cli-tools/goals.md`) — CLI fallback: ordered-execution-goal (`/sisyphus-set`) | `/supervise` with outcome = DoD |
+| Investigative spike | goals tool (see `references/cli-tools/goals.md`) — CLI fallback: ordered-execution-goal (`/sisyphus-set`) | `/supervise` with outcome = DoD |
+| Interface alternatives | goals tool (see `references/cli-tools/goals.md`) — CLI fallback: ordered-execution-goal (`/sisyphus-set`) | `/supervise` with outcome = DoD |
+| `test-unit` | goals tool (see `references/cli-tools/goals.md`) — CLI fallback: ordered-execution-goal (`/sisyphus-set`) | Testing gates (see below) |
+| `test-integration` | goals tool (see `references/cli-tools/goals.md`) — CLI fallback: ordered-execution-goal (`/sisyphus-set`) | Testing gates (see below) |
+| `test-security` | goals tool (see `references/cli-tools/goals.md`) — CLI fallback: ordered-execution-goal (`/sisyphus-set`) | Testing gates (see below) |
+| `test-behavior` | goals tool (see `references/cli-tools/goals.md`) — CLI fallback: ordered-execution-goal (`/sisyphus-set`) | Testing gates (see below) |
 
 ### When starting execution of each scope:
 
-1. **Feature/refactor/spike without metric → ordered-execution-goal + `/supervise`** (see goals.md)
-   - Create goal with **ordered-execution-goal** (no discussion, starts immediately)
+1. **Feature/refactor/spike without metric → goals tool** (see `references/cli-tools/goals.md`)
+   - CLI fallback: **ordered-execution-goal** (`/sisyphus-set`, no discussion, starts immediately)
    - Activate `/supervise` with:
      ```
      /supervise outcome="Execute scope '{scope_name}' per spec-tech.md.
@@ -136,8 +122,8 @@ Proceed directly to scope execution in the current directory.
      ```
    - The supervisor detects deviation and re-centers if the LLM leaves scope
 
-2. **Optimization/spike with metric → `/skill:autoresearch-create`**
-   - No supervisor needed (experiment loop is self-supervising via metric)
+2. **Optimization/spike with metric → goals tool** (see `references/cli-tools/goals.md`, Optimization Goals)
+   - No supervisor needed (goals tool with benchmark verify is self-supervising via metric)
 
 3. **If blocked:** `pause_goal` with reason documenting the blockage
 
@@ -190,83 +176,24 @@ After Plannotator approval on spec-tech_v{N}.md:
 
 | Scope Type | Executor | Command |
 |------------|----------|--------|
-| `feature` | **ordered-execution-goal** (see goals.md) + `/supervise` | see `skills/cali-product-scope-executor/SKILL.md` for instructions |
-| `optimization` | `/skill:autoresearch-create` | `/skill:autoresearch-create` |
-| `spike` | **ordered-execution-goal** (see goals.md) + `/supervise` | see `skills/cali-product-scope-executor/SKILL.md` for instructions |
-| `test-*` | **ordered-execution-goal** (see goals.md) + testing gates | see `skills/cali-product-scope-executor/SKILL.md` for instructions |
-
-### Executing Scopes
-
-Run see `skills/cali-product-scope-executor/SKILL.md` for instructions — this routes each scope to its correct executor.
-
-**For feature scopes:**
-```bash
-/sisyphus-set Scope: [scope-name]
-  Objective: {from scope description}
-  Done when:
-  - [ ] Criterion 1
-  - [ ] Criterion 2
-/supervise outcome="Execute scope '[scope-name]' per spec-tech.md. DoD: {DoD}. Do not deviate."
-```
-
-**For optimization scopes:**
-```bash
-/skill:autoresearch-create
-```
-
-### ⚠️ NEVER ASK
-
-After Tech Planning approval, **DO NOT** ask:
-- "Would you like to execute now?"
-- "Create ordered-execution-goal?"
-- "Review plan first?"
-- Any variation of "what would you like to do next"
-
-**The workflow proceeds automatically: Execution → Verification → Execution Critique.**
-
-### After Execution
-
-After completing all scopes:
-1. **Do not ask user** what to do next
-2. **Automatically proceed** to Verification stage
-3. Run the testing protocol per [`verification.md`](./verification.md)
-4. After Verification passes, **automatically proceed** to Execution Critique per `skills/cali-product-execution-critique/SKILL.md`
-
-> **CRITICAL: After Tech Planning approval, execution is MANDATORY.**
-> Do NOT ask the user "what to do next". The workflow proceeds automatically.
-
-### Execution Flow
-
-After Plannotator approval on spec-tech_v{N}.md:
-
-1. **Worktree check** (if modifying code in shared repo)
-2. **Route to executor** based on scope type:
-
-| Scope Type | Executor | Command |
-|------------|----------|--------|
-| `feature` | **ordered-execution-goal** (see goals.md) + `/supervise` | see `skills/cali-product-scope-executor/SKILL.md` for instructions |
-| `optimization` | `/skill:autoresearch-create` | `/skill:autoresearch-create` |
-| `spike` | **ordered-execution-goal** (see goals.md) + `/supervise` | see `skills/cali-product-scope-executor/SKILL.md` for instructions |
-| `test-*` | **ordered-execution-goal** (see goals.md) + testing gates | see `skills/cali-product-scope-executor/SKILL.md` for instructions |
+| `feature` | goals tool (see `references/cli-tools/goals.md`) + `/supervise` | see `skills/cali-product-scope-executor/SKILL.md` for instructions |
+| `optimization` | goals tool (see `references/cli-tools/goals.md`, Optimization Goals) | see `skills/cali-product-scope-executor/SKILL.md` for instructions |
+| `spike` | goals tool (see `references/cli-tools/goals.md`) + `/supervise` | see `skills/cali-product-scope-executor/SKILL.md` for instructions |
+| `test-*` | goals tool (see `references/cli-tools/goals.md`) + testing gates | see `skills/cali-product-scope-executor/SKILL.md` for instructions |
 
 ### Executing Scopes
 
 **Run see `skills/cali-product-scope-executor/SKILL.md` for instructions** — this routes each scope to its correct executor.
 
 **For feature scopes:**
-```bash
-/sisyphus-set Scope: [scope-name]
-  Objective: {from scope description}
-  Done when:
-  - [ ] Criterion 1
-  - [ ] Criterion 2
-/supervise outcome="Execute scope '[scope-name]' per spec-tech.md. DoD: {DoD}. Do not deviate."
-```
+
+Use the goals tool (see `references/cli-tools/goals.md`) to create a goal with acceptance criteria from the scope's DoD. The goals reference documents all supported patterns.
 
 **For optimization scopes:**
-```bash
-/skill:autoresearch-create
-```
+
+Use the goals tool (see `references/cli-tools/goals.md` → Optimization Goals) to create an optimization goal with benchmark verify commands and iteration loop.
+
+For iteration loops, see goals.md → Optimization Goals section.
 
 ### ⚠️ NEVER ASK
 

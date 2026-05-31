@@ -174,31 +174,20 @@ See `references/cli-tools/plannotator.md` for command format, after-approval wor
 
 ### planning:40 — Goal Generation
 
-After tech plan approval, convert each scope into an **ordered-execution-goal**
-(see `references/cli-tools/goals.md`, `sisyphus-set` variant). Goals are mandatory —
-never use simple todo lists as a substitute; goals carry DoD, ACs, and dependencies
-that todo items cannot express.
+After tech plan approval, convert each scope into a **goal**
+using the goals tool (see `references/cli-tools/goals.md`). Goals are mandatory —
+never use simple todo lists as a substitute; goals carry DoD, ACs, dependencies,
+verification commands, and evidence types that todo items cannot express.
 
 **For each feature/test scope in the approved spec-tech.md:**
 
-Create an ordered-execution-goal (see `references/cli-tools/goals.md`):
-
-```text
-Objective: {scope name}
-Steps:
-1. {step 1}
-   Done: {criterion}
-2. {step 2}
-   Done: {criterion}
-...
-
-DoD: {scope DoD}
-AC: {acceptance criteria}
-Deps: {scope dependencies}
-```
+Create a goal using the goals tool (see `references/cli-tools/goals.md`).
+The goals reference documents acceptance patterns, evidence types, verify commands,
+and CLI fallbacks.
 
 **Optimization scopes with metrics:**
-These become experiment-loops (see `references/cli-tools/autoresearch.md`), not goals.
+These become optimization goals using the goals tool
+(see `references/cli-tools/goals.md` → Optimization Goals section).
 
 **Rules:**
 - Scopes with dependencies: create goal AFTER the dependency is complete
@@ -232,10 +221,10 @@ Read skills/cali-product-scope-executor/SKILL.md for routing rules.
 
 | Scope type | Route to |
 |------------|----------|
-| `feature` | ordered-execution-goal (see `references/cli-tools/goals.md`) + supervision (see `references/cli-tools/supervise.md`) |
-| `optimization` | experiment-loop (see `references/cli-tools/autoresearch.md`) |
+| `feature` | subagent + acceptance (see `references/cli-tools/goals.md`) + supervision (see `references/cli-tools/supervise.md`) |
+| `optimization` | subagent + acceptance with benchmark verify (see `references/cli-tools/goals.md` → Optimization Goals) |
 | `spike` | scout + researcher (see `references/cli-tools/subagents.md`) |
-| `test-*` | ordered-execution-goal (see `references/cli-tools/goals.md`) with testing gates |
+| `test-*` | subagent + acceptance (see `references/cli-tools/goals.md`) with testing gates |
 
 See `stages/execution.md` for full execution flow.
 

@@ -74,7 +74,7 @@ In the Strategic Context stage, the user can choose strategic analyses **in para
 | **Multi-Method Market Analysis** | `cali-product-multi-method-market-analysis` | PESTLE, Wardley Maps, Foresight, trends |
 | **Product Discovery** | `cali-product-discovery` | Experiment plan, metrics, pricing |
 
-All execute **concurrently** via `subagent({tasks: [...], concurrency: N})`.
+All execute **concurrently** via subagents tool (see `references/cli-tools/subagents.md`).
 See `stages/context.md` for the full flow.
 
 ---

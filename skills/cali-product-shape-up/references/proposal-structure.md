@@ -144,17 +144,11 @@ generated_by: "{model_name}"
 
 ### When to ask:
 
-Use `ask_user_question` to determine `product_type` if ambiguous:
+Use the ask tool (see `references/cli-tools/structured-question.md`) to determine `product_type` if ambiguous:
 
-```typescript
-ask_user_question({
-  questions: [{
-    question: "What type of product is this?",
-    header: "Product Type",
-    options: [
-      { label: "Software (codebase)", description: "Web app, mobile, CLI tool, library. Triggers AI-aware testing strategy." },
-      { label: "Service (managed)", description: "Consulting, managed service, operations. No testing strategy." }
-    ]
-  }]
-})
+```
+ask tool: "What type of product is this?"
+Options:
+  - Software (codebase): Web app, mobile, CLI tool, library. Triggers AI-aware testing strategy.
+  - Service (managed): Consulting, managed service, operations. No testing strategy.
 ```

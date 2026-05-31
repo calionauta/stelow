@@ -32,7 +32,6 @@ REQUIRED_PACKAGES=(
   "npm:pi-subagents"
   "npm:pi-intercom"
   "npm:pi-supervisor"
-  "npm:pi-autoresearch"
   "npm:@juicesharp/rpiv-ask-user-question"
   "npm:@plannotator/pi-extension"
 )

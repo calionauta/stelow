@@ -90,14 +90,14 @@ find {INPUT_PATH} -maxdepth 3 -type f \( -name "*.templ" -o -name "*.go" -o -nam
 
 ### 3. Run critique via subagent
 
-```typescript
-subagent({
-  agent: "reviewer",
-  task: `Critique this codebase.
-Mode: Codebase
-Input: {INPUT_PATH}
+Use the subagents tool (see `references/cli-tools/subagents.md`) to critique the codebase:
 
-Use references/:
+```
+Agent: reviewer
+Task: Critique codebase (Codebase mode)
+Reads: references/*.md
+Input: {INPUT_PATH}
+```
 - codebase-audit-dimensions.md: Run ALL dimensions systematically:
   1. Architecture — module structure, dependency direction, coupling, abstraction layers
   2. Data Flow — call chains, state management (global vs local), event propagation
@@ -112,10 +112,7 @@ For each issue: severity (P0/P1/P2/P3), what was observed, which dimension flagg
   actionable recommendation. Note if issue is structural (hard to fix) or cosmetic (easy fix).
 
 Output per output-format.md.
-Save to .cali-codebase-critique/critique-report.md`,
-  output: ".cali-codebase-critique/critique-report.md"
-})
-```
+Save to .cali-codebase-critique/critique-report.md.
 
 ### 4. Gap Resolution
 

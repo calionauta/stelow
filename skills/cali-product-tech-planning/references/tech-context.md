@@ -77,18 +77,15 @@ When building a new product:
 
 ### Questions to Ask (Phase 1 or early Phase 11)
 
-```typescript
-ask_user_question({
-  questions: [{
-    question: "Is this a new product or an evolution of an existing one?",
-    header: "Context",
-    options: [
-      { label: "Greenfield — New product", description: "No existing code. Full TDD + mutation testing. No legacy constraints." },
-      { label: "Brownfield — Existing product", description: "Adding features to existing codebase. Focus on regression + characterization tests." },
-      { label: "Hybrid — Feature addition", description: "New features in existing product. Protect invariants, test new carefully." }
-    ]
-  }]
-})
+Use the ask tool (see `references/cli-tools/structured-question.md`):
+
+```
+ask tool: "Is this a new product or an evolution of an existing one?"
+Options:
+  - Greenfield — New product: Full TDD + mutation testing. No legacy constraints.
+  - Brownfield — Existing product: Focus on regression + characterization tests.
+  - Hybrid — Feature addition: Protect invariants, test new carefully.
+```})
 ```
 
 **Based on answer:**

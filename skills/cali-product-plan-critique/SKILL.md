@@ -88,82 +88,19 @@ and implementation constraints.
 
 ### critique:30 — Run parallel subagents (4 dimensions)
 
-Instead of a single reviewer running all 6 checklists, launch 4 parallel reviewers,
-each evaluating a different dimension of the same spec-product.md. This gives fresh
-context per dimension and catches more gaps than a single pass.
+Instead of a single reviewer running all 6 checklists, launch 4 parallel reviewers
+using the subagents tool (see `references/cli-tools/subagents.md`),
+each evaluating a different dimension of the same spec-product.md with fresh context.
 
-```typescript
-subagent({
-  tasks: [
-    {
-      agent: "reviewer",
-      task: `Critique this product plan for FLOWS and STATES.
+```
+Launch 4 parallel reviewers:
+  A: Flows + States → critiques/critique-flows-states.md
+  B: Data + System   → critiques/critique-data-system.md
+  C: Affordances + UX → critiques/critique-affordances-ux.md
+  D: Feasibility      → critiques/critique-feasibility.md
 
-Input: {INPUT_PATH} (spec-product.md)
-
-Checklists: checklists.md — sections 1 (Flows) and 2 (States):
-- Flows: primary, alternative, error, rollback, sync
-- States: empty, loading, partial, error, boundary, edge
-
-Output per output-format.md with topic tags [flow] and [state].
-Auto-resolve clear defaults per auto-resolve-rules.md.
-
-Save to critiques/critique-flows-states.md`,
-      output: "critiques/critique-flows-states.md",
-      context: "fresh"
-    },
-    {
-      agent: "reviewer",
-      task: `Critique this product plan for DATA and SYSTEM.
-
-Input: {INPUT_PATH} (spec-product.md)
-
-Checklists: checklists.md — sections 4 (Data) and 5 (System):
-- Data: validation, defaults, null handling, persistence, duplicates
-- System: API contracts, timeouts, retry, fallback, offline, rate limit
-
-Output per output-format.md with topic tags [data] and [system].
-Auto-resolve clear defaults per auto-resolve-rules.md.
-
-Save to critiques/critique-data-system.md`,
-      output: "critiques/critique-data-system.md",
-      context: "fresh"
-    },
-    {
-      agent: "reviewer",
-      task: `Critique this product plan for AFFORDANCES and UX.
-
-Input: {INPUT_PATH} (spec-product.md)
-
-Checklist: checklists.md — section 3 (Affordances):
-- Hover/focus/disabled states, touch targets ≥44px, keyboard nav
-
-Output per output-format.md with topic tag [affordance].
-Auto-resolve clear defaults per auto-resolve-rules.md.
-
-Save to critiques/critique-affordances-ux.md`,
-      output: "critiques/critique-affordances-ux.md",
-      context: "fresh"
-    },
-    {
-      agent: "reviewer",
-      task: `Critique this product plan for FEASIBILITY.
-
-Input: {INPUT_PATH} (spec-product.md)
-
-Checklist: checklists.md — section 6 (Feasibility):
-- Architecture, stack, security, effort estimation, risks
-
-Output per output-format.md with topic tag [feasibility].
-Auto-resolve clear defaults per auto-resolve-rules.md.
-
-Save to critiques/critique-feasibility.md`,
-      output: "critiques/critique-feasibility.md",
-      context: "fresh"
-    }
-  ],
-  concurrency: 4
-})
+Each reads checklists.md from references/, outputs per output-format.md,
+and auto-resolves clear defaults per auto-resolve-rules.md.
 ```
 
 > **Error recovery:** If any parallel subagent fails, retry once per the
@@ -173,24 +110,16 @@ Save to critiques/critique-feasibility.md`,
 
 ### critique:40 — Consolidate critique reports
 
-After all 4 parallel reviews complete, run a consolidation step that merges
-them into a single unified report:
+After all 4 parallel reviews complete, run a consolidation step using the
+subagents tool (see `references/cli-tools/subagents.md`) that merges them
+into a single unified report:
 
-```typescript
-subagent({
-  agent: "worker",
-  task: `Read the 4 critique reports and consolidate them.
-
-Read these 4 files:
-1. critiques/critique-flows-states.md
-2. critiques/critique-data-system.md
-3. critiques/critique-affordances-ux.md
-4. critiques/critique-feasibility.md
-
-Consolidation rules:
-- Merge into one report per output-format.md
-- Deduplicate overlapping findings (keep the more specific version)
-- Apply auto-resolve rules from references/auto-resolve-rules.md
+```
+Agent: worker
+Task: Consolidate critique reports
+Read: critiques/critique-{flows-states,data-system,affordances-ux,feasibility}.md
+Output: critiques/critique-report.md (per output-format.md)
+```
 - Apply gap classification per table below
 
 Output: a single critique-report.md ready for the Review Gate.

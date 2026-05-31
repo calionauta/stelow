@@ -78,31 +78,15 @@ Prefix the session with:
 ### setup:0.40 — External Context Pre-Load
 
 After session knowledge, ask the user if they want to inject external
-context before the workflow begins. This closes the Dillon gap — allowing
+context before the workflow begins. This closes the pre-session context injection gap — allowing
 third-party analysis, competitive research, peer reviews, or customer
 research to inform planning from the start.
 
-```typescript
-ask_user_question({
-  questions: [{
-    question: "Do you have external context to load before we start planning?\n\nExamples: competitive analysis, customer research, third-party audit, peer review, prior session output.",
-    header: "Context",
-    options: [
-      {
-        label: "Yes, load files (Recommended)",
-        description: "Provide file paths to load as planning context."
-      },
-      {
-        label: "No, proceed without",
-        description: "External context optional — skip and continue."
-      },
-      {
-        label: "Tell me about it",
-        description: "Describe it verbally, I'll capture the key points."
-      }
-    ]
-  }]
-})
+Use the ask tool (see `references/cli-tools/structured-question.md`):
+
+```
+ask tool: "Do you have external context to load before we start planning?"
+Options: Yes (load files, Recommended), No (skip), Tell me (describe verbally)
 ```
 
 **If yes (files):** read each file path the user provides and inject as session context.
@@ -147,51 +131,19 @@ fi
 
 **If 1 or more in-progress workflows exist**:
 1. Read the found `index.json` files
-2. If **only 1**: show "Active workflow: {name} ({current_stage})" and ask:
-```typescript
-ask_user_question({
-  questions: [{
-    question: `Workflow "{name}" is in progress at stage {current_stage}. Continue?`,
-    header: "Resume",
-    options: [
-      {
-        label: "Continue from where you left off (Recommended)",
-        description: `Resume from stage {current_phase}. Existing artifacts preserved.`
-      },
-      {
-        label: "View detailed status",
-        description: `Show artifacts and stages without proceeding.`
-      },
-      {
-        label: "Cancel workflow",
-        description: `Archive and start fresh. Use /pw-start for new.`
-      }
-    ]
-  }]
-})
+2. If **only 1**: ask using the ask tool (see `references/cli-tools/structured-question.md`):
+
+```
+ask tool: 'Workflow "{name}" in progress at stage {current_stage}. Continue?'
+Options: Continue (Recommended), View status, Cancel workflow
 ```
 3. If **multiple active workflows**: show the list and recommend `/pw-clean`:
-```typescript
-ask_user_question({
-  questions: [{
-    question: `There are ${count} active workflows. Use /pw-clean to organize or select: Continue for: ${name}`,
-    header: "Multiple",
-    options: [
-      {
-        label: `Continue "${name}"`,
-        description: `Ignore the others and focus on this one.`
-      },
-      {
-        label: "List all",
-        description: `View all active workflows.`
-      },
-      {
-        label: "Run /pw-clean",
-        description: `Archive orphaned/stalled workflows.`
-      }
-    ]
-  }]
-})
+
+Use the ask tool (see `references/cli-tools/structured-question.md`):
+
+```
+ask tool: 'There are {count} active workflows. Use /pw-clean to organize.'
+Options: Continue "{name}", List all, Run /pw-clean
 ```
 
 **If new workflow**:

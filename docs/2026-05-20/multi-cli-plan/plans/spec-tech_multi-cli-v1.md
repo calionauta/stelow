@@ -143,7 +143,7 @@ case "$CLI" in
   pi)
     echo "Installing Pi-specific packages..."
     pi install npm:pi-subagents npm:pi-intercom \
-      npm:pi-supervisor npm:pi-autoresearch \
+      npm:pi-supervisor \
       npm:@plannotator/pi-extension
     ;;
   opencode)

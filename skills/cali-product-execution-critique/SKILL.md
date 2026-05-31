@@ -226,12 +226,19 @@ sem entities
 
 ### URL input
 
-Use `agent_browser` to open and explore the site:
-```typescript
-agent_browser({
-  args: ["open", "--url", "{URL}", "--", "snapshot", "-i"]
-})
+Use the browser tool (see `references/cli-tools/agent_browser.md`) to open the site:
+
 ```
+agent_browser: open URL → snapshot → explore flows → snapshot → compare vs spec
+```
+
+Visit:
+- Main flow (happy path) — does it match spec?
+- Empty state — is it handled?
+- Error state — clear feedback?
+- Edge cases — what breaks?
+
+Capture before/after snapshots for evidence.
 
 ### Run all 8 criteria
 

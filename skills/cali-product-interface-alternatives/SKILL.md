@@ -40,20 +40,17 @@ This skill works standalone. Use the Input Detection section below to tell the s
 
 ## Generate Proposals (Step 1-2)
 
-**Step 1:** Generate 5 proposals in parallel (5 independent workers):
+Use the subagents tool (see `references/cli-tools/subagents.md`) to generate 5 proposals in parallel (5 independent workers):
 
-```typescript
-subagent({
-  tasks: [
-    { agent: "worker", task: `Generate Proposal A (Archetype A — Conventional Standard) for [product context]. Full format per references/output-format.md.` },
-    { agent: "worker", task: `Generate Proposal B (Archetype B — Interaction Paradigm Shift) for [product context]. Full format per references/output-format.md.` },
-    { agent: "worker", task: `Generate Proposal C (Archetype C — Technological Vanguard) for [product context]. Full format per references/output-format.md.` },
-    { agent: "worker", task: `Generate Proposal D (Archetype D — Radical Simplicity) for [product context]. Full format per references/output-format.md.` },
-    { agent: "worker", task: `Generate Proposal E (Archetype E — Expert/Command-First) for [product context]. Full format per references/output-format.md.` },
-  ],
-  concurrency: 5,
-  context: "fork"
-})
+```
+5 parallel workers (fork context):
+  A: Proposal A (Archetype A — Conventional Standard)
+  B: Proposal B (Archetype B — Interaction Paradigm Shift)
+  C: Proposal C (Archetype C — Technological Vanguard)
+  D: Proposal D (Archetype D — Radical Simplicity)
+  E: Proposal E (Archetype E — Expert/Command-First)
+
+Each outputs to .cali-product-workflow/{date}/{dir}/interfaces/proposal-{letter}.md
 ```
 
 - Each worker generates **one** proposal (independent, no cross-contamination)
@@ -67,17 +64,15 @@ subagent({
 
 
 **CRITICAL:** Hybrid is generated **AFTER** all 5 proposals are complete to avoid bias.
-**`agent` parameter is REQUIRED** — always use `"worker"`:
 
-```typescript
-subagent({
-  agent: "worker",
-  task: `Read the 5 proposals (A-E) from .cali-product-workflow/{YYYY-MM-DD}/{_dir}/interfaces/interfaces_{v}.md.
-Then generate a **Hybrid Proposal** that combines the strongest elements from 2 or more archetypes.
-Follow references/hybrid-recommendation.md for the strategy.
-Append to the interfaces file.`,
-  reads: [`.cali-product-workflow/{YYYY-MM-DD}/{_dir}/interfaces/interfaces_{v}.md`]
-})
+Use the subagents tool (see `references/cli-tools/subagents.md`) to merge:
+
+```
+Agent: worker
+Task: Generate Hybrid Proposal
+Reads: 5 proposal files
+Output: Append to interfaces.md per hybrid-recommendation.md
+```
 ```
 
 

@@ -31,26 +31,12 @@ This skill works standalone. Use the Input Detection section below to tell the s
 
 Before shaping, launch `subagent` to map context:
 
-```typescript
-subagent({
-  tasks: [
-    {
-      agent: "scout",
-      task: `Map the current code state related to: [description].
-Identify relevant files, existing flows, and impact points.`,
-      output: ".cali-product-workflow/{YYYY-MM-DD}/{_dir}/context/current-state.md",
-      context: "fresh"
-    },
-    {
-      agent: "scout",
-      task: `Map technical risks, external dependencies, and
-constraints for: [description].`,
-      output: ".cali-product-workflow/{YYYY-MM-DD}/{_dir}/context/risks.md",
-      context: "fresh"
-    }
-  ],
-  concurrency: 2
-})
+Use the subagents tool (see `references/cli-tools/subagents.md`) in parallel for optional recon:
+
+```
+2 parallel scouts (fresh context):
+1. Map current code state → context/current-state.md
+2. Map technical risks → context/risks.md
 ```
 
 Read the outputs before proceeding.
