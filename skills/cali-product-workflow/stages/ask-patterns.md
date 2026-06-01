@@ -353,7 +353,7 @@ Appetite is declared first, then the mode of interaction is chosen.`,
       },
       {
         label: "Comprehensive",
-        description: "Multi-feature product — ~8+ page spec, 8-15 scopes, full edge case mapping, 3-5 alternatives compared."
+        description: "Multi-feature product — ~8+ page spec, 8-15 scopes, full edge case mapping, 3-5 implementation strategies compared with trade-offs."
       }
     ]
   }]
@@ -390,11 +390,11 @@ ask_user_question({
 
 **How appetite shapes the output:**
 
-| Level | Spec size | Scopes | Alternatives | Edge cases | Each checkbox adds |
-|-------|-----------|--------|-------------|------------|-------------------|
-| PoC | ~1 page | 1-2 | 1 direct | Not documented | +1 scope each |
-| Focused | ~3 pages | 3-5 | 1-2 | Only obvious ones | +2-3 scopes each |
-| Comprehensive | ~8+ pages | 8-15 | 3-5 compared | Fully mapped | +3-5 scopes each |
+| Level | Spec size | Scopes | Implementation strategies | Edge cases | Each checkbox adds |
+|-------|-----------|--------|--------------------------|------------|-------------------|
+| PoC | ~1 page | 1-2 | 1 direct — no divergence | Not documented | +1 scope each |
+| Focused | ~3 pages | 3-5 | 1-2 considered with brief rationale | Only obvious ones | +2-3 scopes each |
+| Comprehensive | ~8+ pages | 8-15 | 3-5 compared with trade-off analysis | Fully mapped | +3-5 scopes each |
 
 **Storage:** Save to `index.json` as `config.appetite`, save checkboxes as `config.{auth,database,payment}`, and inject into `spec-product.md` frontmatter as `appetite: {chosen}`.
 

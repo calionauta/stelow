@@ -256,7 +256,7 @@ Appetite is declared first, then the mode of interaction is chosen.`,
     options: [
       { label: "PoC", description: "Quick validation — 1 minimal feature, ~1 page spec, 1-2 scopes. No edge cases." },
       { label: "Focused (Recommended)", description: "One feature product, main Job To Be Done — ~3 page spec, 3-5 scopes, obvious edge cases." },
-      { label: "Comprehensive", description: "Multi-feature product — ~8+ page spec, 8-15 scopes, full edge case mapping, 3-5 alternatives compared." }
+      { label: "Comprehensive", description: "Multi-feature product — ~8+ page spec, 8-15 scopes, full edge case mapping, 3-5 implementation strategies compared with trade-offs." }
     ]
   }, {
     question: `Which capabilities does this need?`,
