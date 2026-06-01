@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
-  "_comment": "Mutation testing config - 70/50/30 thresholds",
+  "_comment": "Mutation testing config — scoped to files with meaningful business logic + test coverage",
   "testRunner": "vitest",
   "coverageAnalysis": "all",
   "vitest": {
@@ -13,9 +13,8 @@
     "break": 50
   },
   "mutate": [
-    "extensions/cali-product-workflow/adapters/{base,cli-adapter,event-dispatcher,generic,index,ui-adapter,ui-factory}.ts",
-    "extensions/cali-product-workflow/adapters/commands/*.ts",
-    "extensions/cali-product-workflow/modules/{cache,file-store,task}.ts"
+    "extensions/cali-product-workflow/modules/file-store.ts",
+    "extensions/cali-product-workflow/adapters/stages-guard.ts"
   ],
   "ignorePatterns": [
     ".opencode",

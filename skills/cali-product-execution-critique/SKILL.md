@@ -4,8 +4,7 @@ description: >
   [Cali] Post-implementation execution critique: verify scope completion, implementation quality,
   NFR coverage, edge cases, doc/tests, and produce a gap registry with decision matrix.
   Supports 4 modes: workflow (spec-tech.md), plan (spec-product.md), context (dir/URL),
-  and standalone (auto-detects via sem diff + git). Merges and replaces
-  cali-post-execution-check (deprecated).
+  and standalone (auto-detects via sem diff + git).
 metadata:
   frequency: weekly
   category: meta
