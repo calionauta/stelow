@@ -73,6 +73,11 @@ pnpm-lock.yaml
 # yarn.lock (uncomment if needed)
 # package-lock.json (uncomment if needed)
 
+# Subagent reviewer artifacts
+*reviewer*-findings.md
+gap-analysis.md
+edge-case-review.md
+
 # Local skills (pi installs here)
 .agents/
 
