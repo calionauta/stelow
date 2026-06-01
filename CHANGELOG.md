@@ -4,8 +4,17 @@ All notable changes to `@renatocaliari/cali-product-workflow` will be documented
 
 ## [Unreleased]
 
+## [0.8.2-alpha] - 2026-06-01
+
+### Fixed
+
+- **Cross-skill references**: Replaced `skills/cali-product-*/SKILL.md` paths with skill names (e.g., `cali-product-shape-up`) across orchestrator, stages, tech-planning, scope-executor, and all 25 goals.md files — skills now work standalone at `~/.agents/skills/`
+- **Broken ask.md reference**: Fixed 4 references to non-existent `ask.md` → `structured-question.md` in shape-up/SKILL.md and workflow/SKILL.md
+- **permissions.md paths**: Removed repo-relative prefixes for standalone compatibility
+
 ### Added
 
+- **README standalone note**: Documented that each skill is fully self-contained with its own references/
 - **Structured exports**: Added exports field for cleaner imports
 
 ## [0.7.0-alpha] - 2026-05-30
