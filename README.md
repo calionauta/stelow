@@ -533,6 +533,73 @@ The workflow has **3 conceptual phases** (15 stages total), from idea triage to 
 
 ---
 
+## 🎚️ Appetite & Mode
+
+The workflow is controlled by two orthogonal dimensions: **Appetite** (declared by the human) and **Mode** (auto-detected or overridden). Together they determine which stages run, with what depth, and whether visual approval is required.
+
+### Appetite
+
+Appetite is the **review budget** — how much time you want the AI to spend planning, critiquing, and verifying. Declare it in the Setup stage before shaping begins. The LLM separately estimates `complexity_estimate` (XS/S/M/L/XL) after shaping; if estimate exceeds appetite, the scope must be split.
+
+| Appetite | What it means | Critique depth | Supervisor | Verification | Best for |
+|----------|---------------|----------------|------------|-------------|----------|
+| **PoC** | Validate an idea fast. Minimal ceremony. | Single reviewer (light) | 🚫 Skip | Minimal: build + unit test | Idea validation, spike, throwaway prototype |
+| **Focused (default)** | Standard review. Balance of depth and speed. | Single reviewer (standard) | Low sensitivity | Standard: build + unit + lint | Most features, bug fixes, small improvements |
+| **Comprehensive** | Full pipeline. No shortcuts. | 4 parallel reviewers + consolidator | Normal sensitivity | Full: build + unit + lint + a11y + mutation + code review | Critical features, high-risk changes, production releases |
+
+**How appetite cascades through stages:**
+
+| Stage | PoC | Focused | Comprehensive |
+|-------|-----|---------|---------------|
+| **Critique** | Single reviewer, light depth | Single reviewer, standard depth | 4 parallel reviewers + consolidator |
+| **Gate** | Skip Plannotator on Auto mode | Plannotator encouraged | **Mandatory** Plannotator visual review |
+| **Execution** | Skip supervisor | Low supervisor sensitivity | Normal supervisor sensitivity |
+| **Verification** | Build + unit only | Build + unit + lint | Build + unit + lint + a11y + mutation + code review |
+
+### Mode
+
+Mode controls the **breadth** of the workflow — how many stages run. Unlike Appetite (declared by the human), Mode is **auto-detected** from the context and can be overridden.
+
+| Mode | Stages run | Plannotator Gate | When auto-detected |
+|------|-----------|-----------------|--------------------|
+| **Auto** | Minimal: skip to planning | 🚫 Skip (auto-approve) | PoC appetite with minimal context |
+| **Light** | Triage → Setup → Context → Shape → Gate → Interface → Tech Planning | Optional | Quick project, no product domain |
+| **Moderate** | Full except strategy | Recommended | Mid-size project with some product context |
+| **Full Product** | All 15 stages including strategy | **Mandatory** | Product with domain context (pricing, trust, etc.) |
+| **Full Tech** | All 15 stages, skip strategy | **Mandatory** | Technical project, no product domain needed |
+
+**Detection:** The Setup stage scans the working directory for domain indicators (pricing files, trust pages, accessibility requirements) and sets the Mode accordingly. Override with `--mode <name>`.
+
+### How Appetite & Mode Interact
+
+```
+Mode controls WHAT runs (breadth)     →  Light vs Full Product, etc.
+Appetite controls HOW DEEP it runs     →  PoC vs Focused vs Comprehensive
+```
+
+| | PoC | Focused | Comprehensive |
+|---|---|---|---|
+| **Auto** | Fast path: single review, skip gate, minimal verify | Standard: single review, auto-approve, standard verify | N/A (Comprehensive forces Full mode) |
+| **Full Product** | Strategy + shape + single critique + gate + interface + planning | Full workflow | Full workflow with parallel critique + mandatory Plannotator + a11y + mutation |
+
+**Examples:**
+- `PoC + Auto` → "Just check if this idea makes sense. Ship the spec." (~2 stages)
+- `Focused + Moderate` → "Standard feature. Run everything except strategy." (~8 stages)
+- `Comprehensive + Full Product` → "Critical feature. No shortcuts." (~15 stages)
+
+### Motivation
+
+Before Appetite & Mode, the workflow had a single "full" path. Small changes paid the same overhead as large features. The cascade system ensures:
+
+- **PoC skips supervisor** — no human-in-loop overhead for throwaway prototypes
+- **Comprehensive forces parallel critique** — 4 reviewers catch more gaps before execution
+- **Auto mode skips Plannotator** — for lightweight validations where visual review is overkill
+- **Full Product mode enforces strategy** — JTBD, Opportunity Mapping, etc. run before shaping if product context exists
+
+This is an **appetite-first** design: the human's declaration of review budget propagates automatically through all stages. The LLM never guesses how deep to go.
+
+---
+
 ## 🎮 Commands
 
 ### Primary Commands
