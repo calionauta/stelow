@@ -136,7 +136,7 @@ then produce the spec-tech artifact directly in the current context.
    - Content: mutation score targets (70/50/30%), tech stack detection, CI/CD gates, anti-patterns
 
    **⚠️ FALLBACK — if subagent fails or is unavailable (API key missing, agent not found):**
-   Generate testing-strategy.md INLINE. Read `skills/cali-product-testing-ai-code/SKILL.md`
+   Generate testing-strategy.md INLINE. Read the `cali-product-testing-ai-code` skill
    and produce the testing-strategy.md artifact directly in the current context.
    Do NOT skip — the testing strategy gates are required for execution.
 
@@ -226,7 +226,7 @@ Do NOT start implementing scopes directly — always go through scope executor f
 
 **planning:50.10 — Load the scope executor skill**
 ```text
-Read skills/cali-product-scope-executor/SKILL.md for routing rules.
+Read the cali-product-scope-executor skill for routing rules.
 ```
 
 **planning:50.20 — Route each scope by type**
@@ -260,7 +260,7 @@ For test-* scopes, the execution includes hard blocks:
 - **test-security**: security_findings == 0 on critical paths → BLOCK if found
 - **test-integration**: flaky_rate < 5% → WARN if above
 
-See `skills/cali-product-testing-ai-code/SKILL.md`
+See the `cali-product-testing-ai-code` skill
 
 ## Related Skills
 

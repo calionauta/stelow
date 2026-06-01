@@ -236,6 +236,6 @@ If both subagent acceptance and goal system are unavailable:
 - Execution stage (see `stages/execution.md`)
 - Verification stage (see `stages/verification.md`)
 - spec-tech scopes
-- Testing strategy (see `skills/cali-product-testing-ai-code/SKILL.md`)
-- Testing protocol (see `skills/cali-product-testing-execution/SKILL.md`)
+- Testing strategy (see the `cali-product-testing-ai-code` skill)
+- Testing protocol (see the `cali-product-testing-execution` skill)
 

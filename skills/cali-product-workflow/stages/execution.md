@@ -182,7 +182,7 @@ APPETITE=$(grep -oP '^appetite:\s*\K\S+' .cali-product-workflow/{YYYY-MM-DD}/{_d
 - ❌ Single-run validation — agents are non-deterministic
 - ❌ Snapshot tests for non-UI components
 
-See `skills/cali-product-testing-ai-code/SKILL.md`
+See the `cali-product-testing-ai-code` skill
 
 ## Execution — AUTOMATIC
 
@@ -198,14 +198,14 @@ After Plannotator approval on spec-tech_v{N}.md:
 
 | Scope Type | Executor | Command |
 |------------|----------|--------|
-| `feature` | goals tool (see `references/cli-tools/goals.md`) + `/supervise` | see `skills/cali-product-scope-executor/SKILL.md` for instructions |
-| `optimization` | goals tool (see `references/cli-tools/goals.md`, Optimization Goals) | see `skills/cali-product-scope-executor/SKILL.md` for instructions |
-| `spike` | goals tool (see `references/cli-tools/goals.md`) + `/supervise` | see `skills/cali-product-scope-executor/SKILL.md` for instructions |
-| `test-*` | goals tool (see `references/cli-tools/goals.md`) + testing gates | see `skills/cali-product-scope-executor/SKILL.md` for instructions |
+| `feature` | goals tool (see `references/cli-tools/goals.md`) + `/supervise` | see the `cali-product-scope-executor` skill for instructions |
+| `optimization` | goals tool (see `references/cli-tools/goals.md`, Optimization Goals) | see the `cali-product-scope-executor` skill for instructions |
+| `spike` | goals tool (see `references/cli-tools/goals.md`) + `/supervise` | see the `cali-product-scope-executor` skill for instructions |
+| `test-*` | goals tool (see `references/cli-tools/goals.md`) + testing gates | see the `cali-product-scope-executor` skill for instructions |
 
 ### Executing Scopes
 
-**Run see `skills/cali-product-scope-executor/SKILL.md` for instructions** — this routes each scope to its correct executor.
+**Use the `cali-product-scope-executor` skill** — this routes each scope to its correct executor.
 
 **For feature scopes:**
 

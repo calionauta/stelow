@@ -29,7 +29,7 @@ You are a strategic product planner following the Shape Up method. This is the *
 | Tool | Reference |
 |------|----------|
 | `subagent` | `references/cli-tools/subagents.md` |
-| `structured question` | `references/cli-tools/ask.md` |
+| `structured question` | `references/cli-tools/structured-question.md` |
 | `plannotator annotate --gate` | `references/cli-tools/plannotator.md` |
 | `goal-system` (ordered + flexible) | `references/cli-tools/goals.md` |
 | `safe-change` | `references/cli-tools/safe-change.md` |
@@ -126,10 +126,10 @@ LLMs suffer from **context rot**: compliance with their own rules drops from
 
 Follow the sequence below. For Shape Up, Critique, Interface, and Int. Gate stages, read the subskill SKILL.md directly. Each subskill has its own **Reference Index** — read the file to see it:
 
-1. Shape: see `skills/cali-product-shape-up/SKILL.md` for instructions
-2. Critique: see `skills/cali-product-plan-critique/SKILL.md` for instructions
-3. Interface: see `skills/cali-product-interface-alternatives/SKILL.md` for instructions
-4. Int. Gate: see `skills/cali-product-tech-planning/SKILL.md` for instructions
+1. Shape: see the `cali-product-shape-up` skill for instructions
+2. Critique: see the `cali-product-plan-critique` skill for instructions
+3. Interface: see the `cali-product-interface-alternatives` skill for instructions
+4. Int. Gate: see the `cali-product-tech-planning` skill for instructions
 
 Do NOT use `/skill:` for internal subskills.
 
@@ -167,7 +167,7 @@ cali-product-testing-ai-code → testing-strategy.md + test-* scopes
 Execution
 ```
 
-See `skills/cali-product-testing-ai-code/SKILL.md`
+See the `cali-product-testing-ai-code` skill
 
 ### Flow Diagram
 
@@ -217,7 +217,7 @@ audit — Execution Critique
 **Verification** runs automatically after Execution — test suite, code review, UI audit, browser testing.
 **Interface Gate** shows all proposals visually before selection.
 **Execution** runs automatically after Tech Planning — DO NOT ask user what to do next.
-**Execution Critique** runs after Verification. Uses `skills/cali-product-execution-critique/SKILL.md` for all 8 evaluation criteria.
+**Execution Critique** runs after Verification. Uses the `cali-product-execution-critique` skill for all 8 evaluation criteria.
 
 ---
 
@@ -244,9 +244,9 @@ audit — Execution Critique
 - Before generating scopes: verify `approved: true` in spec-product.md
 - **Deterministic** — do not rely on memory, read the YAML frontmatter
 - **AI-Aware Testing**: If `product_type: software` or `product_type: hybrid` in frontmatter:
-  - Activate `see `skills/cali-product-testing-ai-code/SKILL.md` for instructions` to generate testing-strategy.md
+  - Activate the `cali-product-testing-ai-code` skill to generate testing-strategy.md
   - Add `test-*` scope types to spec-tech.md
-  - See `skills/cali-product-testing-ai-code/SKILL.md`
+  - See the `cali-product-testing-ai-code` skill
 
 ### Supervisor (Execution)
 - **Never activate during stages before Execution.** The supervisor would re-submit Plannotator.
@@ -255,11 +255,11 @@ audit — Execution Critique
 ### Execution
 - **DO NOT ask** "Would you like to execute?", "Create ordered-execution-goal?", "Review plan first?"
 - **Execution is automatic** after Tech Planning approval. Proceed directly.
-- see `skills/cali-product-scope-executor/SKILL.md` for instructions for scope routing.
+- see the `cali-product-scope-executor` skill for instructions for scope routing.
 - See `stages/execution.md` for details.
 - **DO NOT ask** "Would you like to execute?", "Create ordered-execution-goal?", "Review plan first?"
 - **Execution is automatic** after Tech Planning approval. Proceed directly.
-- see `skills/cali-product-scope-executor/SKILL.md` for instructions for scope routing.
+- see the `cali-product-scope-executor` skill for instructions for scope routing.
 - See `stages/execution.md` for details.
 
 ### Worktree

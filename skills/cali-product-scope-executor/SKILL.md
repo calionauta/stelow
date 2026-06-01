@@ -300,7 +300,7 @@ This skill runs **after** the Plannotator gate approves the plan, replacing manu
    ├── Execute spikes → scout + researcher
    └── Report consolidated results to execution-report.md
 7. [HANDOFF] → Verification stage (full test suite, code review, UI/browser testing)
-   See `skills/cali-product-testing-execution/SKILL.md` for the testing protocol.
+   See the `cali-product-testing-execution` skill for the testing protocol.
 ```
 
 ---

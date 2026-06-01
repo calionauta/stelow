@@ -5,7 +5,7 @@
 
 Delegates to standalone skill `cali-product-execution-critique`:
 
-1. Read `skills/cali-product-execution-critique/SKILL.md` for full instructions
+1. Read the `cali-product-execution-critique` skill for full instructions
 2. Pass path to the most recent `spec-tech_v{N}.md` as input (find by glob:
    `.cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_v*.md`, pick highest N)
 3. The skill runs all 8 criteria against the tech plan

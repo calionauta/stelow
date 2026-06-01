@@ -121,10 +121,10 @@ When triggered by the orchestrator:
 
 Show the IN/OUT scope table. Ask:
 
-1. **Remove from IN?** — use the ask tool with multiSelect (see `references/cli-tools/ask.md`) with current IN scopes
-2. **Add to IN?** — use the ask tool with multiSelect (see `references/cli-tools/ask.md`) with OUT scope items
+1. **Remove from IN?** — use the ask tool with multiSelect (see `references/cli-tools/structured-question.md`) with current IN scopes
+2. **Add to IN?** — use the ask tool with multiSelect (see `references/cli-tools/structured-question.md`) with OUT scope items
 
-[Use the ask tool — see `references/cli-tools/ask.md`]
+[Use the ask tool — see `references/cli-tools/structured-question.md`]
 
 **If user removes items:** update spec
 **If user adds items:** create `spec-product_{v+1}.md` (user is aware)

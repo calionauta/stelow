@@ -651,7 +651,13 @@ Toggle with `/pw-menu`.
 
 ## 📋 Skills (25)
 
-All 25 skills are flat in `skills/` directory, ready for `~/.agents/skills/`. They're organized into 4 layers plus 1 complementary skill:
+All 25 skills are flat in `skills/` directory, ready for `~/.agents/skills/`. They're organized into 4 layers plus 1 complementary skill.
+
+**Each skill is fully self-contained** — the installer copies the complete directory tree including its own `references/cli-tools/`, `references/`, and `stages/` files. This means:
+- ✅ **Skills work standalone** — invoke any sub-skill (e.g., `cali-product-shape-up`, `cali-product-plan-critique`) independently of the orchestrator
+- ✅ **Portable across CLIs** — Pi, Claude Code, Codex, OpenCode all reference skills by name (`~/.agents/skills/`)
+- ✅ **References resolve locally** — every `references/cli-tools/*.md` path is relative to the skill's own directory
+- ❌ **Not in `~/.agents/skills/`?** Use `./install.sh` or `npx skills add renatocaliari/cali-product-workflow -g`
 
 ### 🎛️ Orchestrator (1)
 

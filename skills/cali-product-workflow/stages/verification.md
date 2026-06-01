@@ -92,7 +92,7 @@ UI_FILES=$(git diff --name-only HEAD~1 2>/dev/null | grep -cE '\.(templ|html|tsx
 
 If running, delegate to `cali-product-ux-critique`.
 
-See `skills/cali-product-ux-critique/SKILL.md` for full instructions.
+See the `cali-product-ux-critique` skill for full instructions.
 
 **Input routing:**
 - **Source code available** → Codebase mode (browserless, ~80% coverage)
@@ -200,4 +200,4 @@ After all verification steps pass, **automatically proceed to Execution Critique
 > [agent_browser.md](references/cli-tools/agent_browser.md). Other CLIs should
 > rely on the Quick Tier and note what couldn't be verified for human review.
 
-See `skills/cali-product-testing-execution/SKILL.md` for the full testing protocol reference.
+See the `cali-product-testing-execution` skill for the full testing protocol reference.

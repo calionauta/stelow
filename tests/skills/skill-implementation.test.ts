@@ -106,9 +106,9 @@ describe('Main SKILL.md Structure', () => {
       }
     });
 
-    it('structured question should reference ask.md', () => {
+    it('structured question should reference structured-question.md', () => {
       if (content.includes('ask_user_question') || content.includes('structured question')) {
-        expect(content).toMatch(/ask\.md/);
+        expect(content).toMatch(/structured-question\.md/);
       }
     });
 
