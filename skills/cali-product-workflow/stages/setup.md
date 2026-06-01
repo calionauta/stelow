@@ -224,7 +224,7 @@ After identifying the workflow:
 
 5. **Determine resume point**:
    - If `current_phase_index` is 0 → start from Setup stage
-   - If `current_phase_index` is 1 → start from Context (Strategic Context)
+   - If `current_phase_index` is 1 → start from Context (Strategic Context, beginning with `context:5` appetite/mode gate)
    - If checkpoint has `phase == current_phase_index` → jump to `checkpoint.step`
    - If checkpoint has `phase < current_phase_index` → previous phase is done; start current phase
    - If no checkpoint → start current phase from beginning
@@ -296,7 +296,7 @@ Mode is orthogonal to appetite: appetite defines depth, mode defines feedback.`,
       { label: "Light", description: "Product approval only: one Plannotator gate before tech planning. Interface = LLM recommendation. No IN/OUT confirmation." },
       { label: "Moderate", description: "Product + UX approval: Light + user chooses between interface alternatives." },
       { label: "Full Product", description: "Full flow: all gates, questions, and details. Except tech planning approval — those use Auto." },
-      { label: "Full Tech", description: "Everything including tech: all gates, all questions, plus tech planning approval and technical questions." }
+      { label: "Full Product + Tech", description: "Everything including tech: all gates, all questions, plus tech planning approval and technical questions." }
     ]
   }]
 })
@@ -304,9 +304,9 @@ Mode is orthogonal to appetite: appetite defines depth, mode defines feedback.`,
 
 **Validate the mode value:**
 ```bash
-VALID_MODES="Auto Light Moderate Full Product Full Tech"
+VALID_MODES="Auto Light Moderate Full Product Full Product + Tech"
 if ! echo "$VALID_MODES" | grep -qw "{chosen_mode}"; then
-  echo "INVALID_MODE: '{chosen_mode}' must be one of: Auto, Light, Moderate, Full Product, Full Tech"
+  echo "INVALID_MODE: '{chosen_mode}' must be one of: Auto, Light, Moderate, Full Product, Full Product + Tech"
   exit 1
 fi
 ```

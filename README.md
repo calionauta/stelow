@@ -566,7 +566,7 @@ Mode controls the **breadth** of the workflow — how many stages run. Unlike Ap
 | **Light** | Triage → Setup → Context → Shape → Gate → Interface → Tech Planning | Optional | Quick project, no product domain |
 | **Moderate** | Full except strategy | Recommended | Mid-size project with some product context |
 | **Full Product** | All 15 stages including strategy | **Mandatory** | Product with domain context (pricing, trust, etc.) |
-| **Full Tech** | All 15 stages, skip strategy | **Mandatory** | Technical project, no product domain needed |
+| **Full Product + Tech** | All 15 stages, skip strategy | **Mandatory** | Technical project, no product domain needed |
 
 **Detection:** The Setup stage scans the working directory for domain indicators (pricing files, trust pages, accessibility requirements) and sets the Mode accordingly. Override with `--mode <name>`.
 
@@ -583,8 +583,10 @@ Appetite controls HOW DEEP it runs     →  PoC vs Focused vs Comprehensive
 | **Full Product** | Strategy + shape + single critique + gate + interface + planning | Full workflow | Full workflow with parallel critique + mandatory Plannotator + a11y + mutation |
 
 **Examples:**
-- `PoC + Auto` → "Just check if this idea makes sense. Ship the spec." (~2 stages)
-- `Focused + Moderate` → "Standard feature. Run everything except strategy." (~8 stages)
+- `PoC + Auto` → "Just check if this idea makes sense. Ship the spec." (~2 stages). Note: the entire `context` stage is skipped via `context:5` (no JTBD, no domain libraries).
+- `Focused + Moderate` → "Standard feature. Run everything except strategy." (~8 stages). Full `context:10` (5 strategic approaches, parallel subagents) + `context:20` (8 domain libraries, detect + execute).
+
+**Gate behavior:** For all combinations, `context:5` decides whether `context:10` and `context:20` run, run in reduced form, or are skipped. See `skills/cali-product-workflow/stages/context.md#context:5`.
 - `Comprehensive + Full Product` → "Critical feature. No shortcuts." (~15 stages)
 
 ### Motivation

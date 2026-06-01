@@ -38,6 +38,8 @@ Preview limits:
 
 Used in `stages/context.md` for strategic approach selection.
 
+> **Gate awareness:** Before applying this pattern, run `context:5` (appetite/mode gate). If `PoC` + `Auto`, skip the question entirely. If `PoC` + non-Auto, present this pattern with opt-in execution note (subagents not automatic). If `Focused`/`Comprehensive`, apply as-is.
+
 ```typescript
 ask_user_question({
   questions: [{
@@ -431,7 +433,7 @@ Mode is orthogonal to appetite: appetite defines depth, mode defines feedback.`,
         description: "Full flow: all gates, questions, and details. Except tech planning approval and technical questions — those use Auto."
       },
       {
-        label: "Full Tech",
+        label: "Full Product + Tech",
         description: "Everything including tech: all gates, all questions, all details, plus tech planning approval and technical questions."
       }
     ]
@@ -448,7 +450,7 @@ Mode is orthogonal to appetite: appetite defines depth, mode defines feedback.`,
 | Light | 1 (pre-tech) | None (final confirm only) | LLM recommends | LLM decides | Gate only |
 | Moderate | 1 (pre-tech) | Interface selection | User chooses | LLM decides | Gate only |
 | Full Product | Gate + Int-Gate | All except technical | User chooses | User confirms | Auto |
-| Full Tech | Gate + Int-Gate | All including technical | User chooses | User confirms | Gate + tech Qs |
+| Full Product + Tech | Gate + Int-Gate | All including technical | User chooses | User confirms | Gate + tech Qs |
 
 **Storage:** Save to `index.json` as `config.mode`.
 

@@ -20,7 +20,7 @@ MODE=$(grep -oP '"mode"\s*:\s*"\K[^"]+' $INDEX 2>/dev/null || echo "Full Product
 | Light | ✅ Run | 🚫 Skip | 🚫 Skip |
 | Moderate | ✅ Run | ✅ Run | 🚫 Skip |
 | Full Product | ✅ Run | ✅ Run | 🚫 Skip |
-| Full Tech | ✅ Run | ✅ Run | ✅ Run |
+| Full Product + Tech | ✅ Run | ✅ Run | ✅ Run |
 
 **If Mode = Auto:**
 ```bash

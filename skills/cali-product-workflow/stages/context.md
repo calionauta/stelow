@@ -6,7 +6,39 @@
 **After Setup**, the flow enters Strategic Context to enrich planning with optional context.
 The LLM checks if the user should be offered strategic analysis and/or domain libraries.
 
-### context:10 — Strategic Exploration (always ask)
+**Prerequisites:** Appetite (PoC / Focused / Comprehensive) and Mode (Auto / Light / Moderate / Full Product / Full Product + Tech) must already be declared in `setup:15` and stored in `index.json` (read via `stages.yaml` conventions).
+
+### context:5 — Appetite & Mode Gate (auto-skip / reduced)
+
+Before executing `context:10` or `context:20`, check the declared appetite and mode.
+
+**Canonical values (from `tests/appetite-consistency.test.ts`):**
+- Appetite: `PoC` | `Focused` (Recommended) | `Comprehensive`
+- Mode: `Auto` | `Light` | `Moderate` | `Full Product` | `Full Product + Tech`
+
+**Gate matrix:**
+
+| Appetite | Mode | `context:10` (Strategic Approaches — 5 options) | `context:20` (Domain Libraries — 8 options) |
+|---|---|---|---|
+| `PoC` | `Auto` | **Skip** entire Context stage → go directly to `shape:10` | **Skip** (not reached) |
+| `PoC` | `Light` / `Moderate` / `Full Product` / `Full Product + Tech` | **Reduced ask**: present all 5 strategic approaches, but mark execution as opt-in per approach (no automatic parallel subagents) | **Reference-only**: detect domain signals and load the 8 libraries as passive context for Shape/Scope; do not execute subagents per library |
+| `Focused` | any | **Full ask** (current behavior): present all 5, execute selected in parallel, consolidate into `strategic-insights.md` | **Full detect + execute**: 1..N of the 8 libraries via parallel subagents, inject into Shape/Scope/Interface |
+| `Comprehensive` | any | **Full ask** + advisory note: "Comprehensive detected — running all 5 strategic approaches is recommended" | **Full detect + execute** of all 8 libraries detected |
+
+**Skip log (when `PoC` + `Auto`):**
+
+The LLM surfaces this message in the chat output (visible to the user) AND in the per-session log file under `.cali-product-workflow/{date}/{dir}/session.log`:
+
+```
+echo "PoC appetite + Auto mode detected — skipping Context per context:5 policy"
+echo "Proceeding directly to shape:10"
+```
+
+**Reference-only library handling (when `PoC` + non-Auto):** Detected domain libraries are noted in the `## Domain Signals` section of `spec-product.md` (or appended as a single-line `domains_detected: [pricing, marketplace]` field in frontmatter). They are NOT executed as subagents and no `strategic-insights.md` is produced. The downstream Shape/Scope/Interface/Planning stages load the listed libraries as passive context (their `SKILL.md` files are referenced on demand).
+
+**Why this gate exists:** Appetite controls depth, Mode controls breadth (see `README.md` "Appetite & Mode"). For tiny PoCs under Auto mode, strategic analysis and domain library execution are overhead that defeats the purpose of the appetite declaration. The five Strategic Approaches and eight Domain Libraries remain available — only the *execution* is gated, not the *availability*.
+
+### context:10 — Strategic Exploration (always ask unless gated by `context:5`)
 
 **ALWAYS ask** — use **Pattern 1** from `stages/ask-patterns.md` for the question format.
 **ALSO read** the "Strategic Approaches" table in the main `SKILL.md` for the full approach list with skill names and outputs.
@@ -15,15 +47,15 @@ The LLM checks if the user should be offered strategic analysis and/or domain li
 
 **If user selects one or more approaches:**
 1. Read `references/strategic-exploration.md` for each approach's details
-2. Execute the selected ones **in parallel** using the subagents tool (see `references/cli-tools/subagents.md`):
+2. (Unless `context:5` reduced this to opt-in.) Execute the selected ones **in parallel** using the subagents tool (see `references/cli-tools/subagents.md`):
 3. Consolidate into `strategic-insights.md`
 4. Incorporate outputs as Shape Up input
 
-**If nothing selected (No strategic analysis):** proceed directly to Domain Context Detection (2b).
+**If nothing selected (No strategic analysis):** proceed directly to Domain Context Detection (`:20`).
 
 ### context:20 — Domain Context Detection (conditional)
 
-**After Strategic Exploration (2a)**, the LLM analyzes the user's original request for **domain signals**:
+**After Strategic Exploration (`:10`)**, the LLM analyzes the user's original request for **domain signals**:
 
 | User Input Signal | Domain | Skill |
 |---|---|---|

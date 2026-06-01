@@ -69,7 +69,7 @@ UI_FILES=$(git diff --name-only HEAD~1 2>/dev/null | grep -cE '\.(templ|html|tsx
 | `Focused` | 0 | **Skip.** |
 | `Focused` | 1+ | **Codebase mode (~80%).** No browser. Syntactic a11y + AI slop only. |
 | `Comprehensive` | 0 | **Skip** (no UI to audit) |
-| `Comprehensive` | 1+ | **Live Site mode.** Full audit with browser + real a11y. Human reviews report in Full Product/Full Tech mode. |
+| `Comprehensive` | 1+ | **Live Site mode.** Full audit with browser + real a11y. Human reviews report in Full Product/Full Product + Tech mode. |
 
 **Rationale:** UX critique com browser é caro (abre URL, navega, tira screenshot).
 Para PoC/Focused, o custo operacional supera o valor — lint de a11y + revisão de código

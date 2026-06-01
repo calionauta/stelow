@@ -4,6 +4,13 @@ All notable changes to `@renatocaliari/cali-product-workflow` will be documented
 
 ## [Unreleased]
 
+### Added
+- **`context:5` appetite/mode gate** in `stages/context.md`. PoC + Auto skips the entire Context stage; PoC + non-Auto uses a reduced ask (5 strategic approaches listed with opt-in execution, 8 domain libraries detected as reference-only). Focused and Comprehensive retain full behavior. See `stages/context.md#context:5` for the full matrix.
+
+### Changed
+- **Label standardization**: Stage references in `SKILL.md` now use `:10`/`:20` instead of `2a`/`2b`, matching the gap-based numbering convention in `AGENTS.md`.
+- **Mode rename**: `Full Tech` → `Full Product + Tech` across README, all 5 stage files, 2 skill SKILL.md files, and the canonical consistency test. Old label is fully removed.
+
 ## [0.8.2-alpha] - 2026-06-01
 
 ### Fixed

@@ -132,7 +132,7 @@ APPETITE=$(grep -oP '^appetite:\s*\K\S+' .cali-product-workflow/*/*/plans/spec-p
 if [ "$APPETITE" = "Comprehensive" ]; then
   echo "⚠️ COMPREHENSIVE APPETITE: Human-in-loop mode may be needed for architectural changes."
   echo "Check the workflow's 'mode' setting in index.json."
-  echo "In Full Tech mode, each PR/fork-point requires human approval before merge."
+  echo "In Full Product + Tech mode, each PR/fork-point requires human approval before merge."
 ```
 
 Ask the user:

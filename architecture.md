@@ -274,7 +274,7 @@ No config files needed. Structure IS the configuration.
 | 0 | `Triage` | Inbox parsing, item extraction |
 | 1 | `ItemSelect` | User picks item from ranked list |
 | 2 | `Setup` | Project setup, stage selection, lessons injection |
-| 3 | `Context` | Strategic exploration (optional) + domain detection |
+| 3 | `Context` | Strategic exploration (optional, gated by `context:5` appetite/mode) + domain detection |
 | 4 | `Shape` | Shape Up proposal with IN/OUT |
 | 5 | `Critique` | Multi-dimensional adversarial critique |
 | 6 | `Gate` | Plannotator visual review — never skip |

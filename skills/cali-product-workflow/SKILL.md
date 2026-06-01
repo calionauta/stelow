@@ -62,7 +62,7 @@ Artifacts are stored in `.cali-product-workflow/{YYYY-MM-DD}/{_dir}/`:
 
 ---
 
-## 🧭 Strategic Approaches (Context stage — 2a)
+## 🧭 Strategic Approaches (Context stage — :10)
 
 In the Strategic Context stage, the user can choose strategic analyses **in parallel**:
 
@@ -79,7 +79,7 @@ See `stages/context.md` for the full flow.
 
 ---
 
-## 📚 Complementary Domain Libraries (Context stage — 2b)
+## 📚 Complementary Domain Libraries (Context stage — :20)
 
 Domain playbooks available for tactical reference during planning/execution:
 
@@ -140,7 +140,7 @@ Do NOT use `/skill:` for internal subskills.
 | `triage` | **Inbox Triage** | Extract items from list, accept/group/defer/reject | Auto (list detected) |
 | `select` | **Item Selection** | Rank accepted items, user picks one | After triage |
 | `setup` | **Project Setup** | Stages selection, safe-change | — |
-| `context` | **Strategic Context** (optional) | Strategic exploration + domain detection | — |
+| `context` | **Strategic Context** (optional) | Strategic exploration + domain detection. See `context:5` (appetite/mode gate), `context:10` (Strategic Approaches — 5 options), `context:20` (Domain Libraries — 8 libraries) | — |
 | `shape` | **Shape Up** | Create spec with problem/solution/scope | — |
 | `critique` | **Product Critique** | Multi-dimensional critique (plan/codebase/site) | — |
 | `gate` | **Review Gate (Plannotator)** | Visual approval — **never skip** | — |

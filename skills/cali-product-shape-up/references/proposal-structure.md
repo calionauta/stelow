@@ -162,7 +162,7 @@ Mode is defined independently and stored in `index.json`. It affects gates and q
 | Light | 1 (pre-tech) | None (final confirm) | LLM recommends | LLM decides | Gate only |
 | Moderate | 1 (pre-tech) | Interface selection | User chooses | LLM decides | Gate only |
 | Full Product | Gate + Int-Gate | All except technical | User chooses | User confirms | Auto |
-| Full Tech | Gate + Int-Gate | All including technical | User chooses | User confirms | Gate + tech Qs |
+| Full Product + Tech | Gate + Int-Gate | All including technical | User chooses | User confirms | Gate + tech Qs |
 
 ### Appetite Cascade (how each level affects the workflow)
 

@@ -240,7 +240,7 @@ describe('Valid appetite values throughout', () => {
     expect(content).toContain('"Light"');
     expect(content).toContain('"Moderate"');
     expect(content).toContain('"Full Product"');
-    expect(content).toContain('"Full Tech"');
+    expect(content).toContain('"Full Product + Tech"');
   });
 
   it('proposal-structure.md references only valid appetite values', () => {
@@ -403,5 +403,69 @@ describe('Sub-skill cli-tools are present', () => {
         expect(existsSync(join(cliToolsDir, tool))).toBe(true);
       }
     }
+  });
+});
+
+describe('context:5 appetite/mode gate', () => {
+  const context = readStage('context.md');
+
+  test('declares context:5 stage before context:10', () => {
+    const idx5 = context.indexOf('### context:5');
+    const idx10 = context.indexOf('### context:10');
+    expect(idx5).toBeGreaterThan(-1);
+    expect(idx10).toBeGreaterThan(-1);
+    expect(idx5).toBeLessThan(idx10);
+  });
+
+  test('lists all 5 strategic approaches (5-option rule)', () => {
+    const skillMd = readSkill('cali-product-workflow');
+    expect(skillMd).toContain('Jobs To Be Done');
+    expect(skillMd).toContain('Evolutionary Principles');
+    expect(skillMd).toContain('Opportunity Mapping');
+    expect(skillMd).toContain('Multi-Method Market Analysis');
+    expect(skillMd).toContain('Product Discovery');
+  });
+
+  test('lists all 8 domain libraries (8-option rule)', () => {
+    const skillMd = readSkill('cali-product-workflow');
+    expect(skillMd).toContain('Pricing');
+    expect(skillMd).toContain('Trust');
+    expect(skillMd).toContain('Ads');
+    expect(skillMd).toContain('Promotions');
+    expect(skillMd).toContain('Health');
+    expect(skillMd).toContain('Marketplace');
+    expect(skillMd).toContain('Open Source');
+    expect(skillMd).toContain('Business Models');
+  });
+
+  test('gate uses canonical mode label "Full Product + Tech" (not "Full Tech")', () => {
+    expect(context).toContain('Full Product + Tech');
+    expect(context).not.toContain('Full Tech');
+  });
+
+  test('gate uses canonical appetite labels (PoC, Focused, Comprehensive)', () => {
+    expect(context).toContain('PoC');
+    expect(context).toContain('Focused');
+    expect(context).toContain('Comprehensive');
+  });
+
+  test('gate matrix has PoC + Auto skip rule', () => {
+    expect(context).toMatch(/PoC.*Auto|skip.*PoC|skip.*Auto/i);
+  });
+
+  test('gate matrix has PoC + non-Auto reduced ask rule', () => {
+    expect(context).toMatch(/Reduced ask|reference-only|opt-in/i);
+  });
+
+  test('gate matrix has Focused/Comprehensive full behavior', () => {
+    expect(context).toMatch(/Focused.*Full|full ask|Comprehensive.*Full/i);
+  });
+
+  test('SKILL.md uses :10/:20 labels (not 2a/2b)', () => {
+    const skillMd = readSkill('cali-product-workflow');
+    expect(skillMd).toMatch(/Context stage — :10/);
+    expect(skillMd).toMatch(/Context stage — :20/);
+    expect(skillMd).not.toMatch(/Context stage — 2a/);
+    expect(skillMd).not.toMatch(/Context stage — 2b/);
   });
 });

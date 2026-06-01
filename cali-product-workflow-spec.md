@@ -59,7 +59,7 @@ This is a single-user tool per coding agent session. No multi-user roles exist.
 Phase 0:  Inbox Triage      → Classify incoming request
 Phase 1:  Item Selection    → User picks what to work on
 Phase 2:  Project Setup     → Auto-discovery, stage selection
-Phase 3:  Strategic Context → Optional: JTBD, domain libraries
+Phase 3:  Strategic Context → Optional, gated by `context:5` (appetite/mode): 5 strategic approaches (JTBD, Evolutionary, Opportunity Mapping, Market Analysis, Product Discovery) + 8 domain libraries (Pricing, Trust, Ads, Promotions, Health, Marketplace, Open Source, Business Models)
 Phase 4:  Shape Up          → Shape the solution (IN/OUT scope)
 Phase 5:  Plan Critique     → Adversarial review via subagent
 Phase 6:  Review Gate       → Plannotator visual approval (REQUIRED)

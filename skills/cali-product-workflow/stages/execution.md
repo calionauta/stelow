@@ -111,7 +111,7 @@ APPETITE=$(grep -oP '^appetite:\s*\K\S+' .cali-product-workflow/{YYYY-MM-DD}/{_d
 | `Comprehensive` | **Activate** | `medium` | No | Multiple scopes increase drift surface area; standard supervision. |
 
 > **Human-in-loop is controlled by Mode** (from `index.json`), not by appetite.
-> Mode = Full Product or Full Tech may add human approval checkpoints per PR.
+> Mode = Full Product or Full Product + Tech may add human approval checkpoints per PR.
 
 | Scope Type | Executor | Supervision |
 |---|---|---|
