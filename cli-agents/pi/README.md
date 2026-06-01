@@ -14,7 +14,7 @@ The install script:
 - Builds the Pi extension (`extensions/cali-pw-pi/`)
 - Installs the extension to Pi
 - Installs required npm packages (`pi-subagents`, `pi-intercom`, etc.)
-- Installs all 22 skills to `~/.agents/skills/`
+- Installs all 25 skills to `~/.agents/skills/`
 - Cleans up any conflicting local Pi skill copies
 
 ## Available Commands
@@ -33,7 +33,7 @@ Full command matrix: `../COMMANDS.md`
 | Component | Location |
 |-----------|----------|
 | Extension | `~/.pi/agent/extensions/cali-pw-pi/` |
-| Skills | `~/.agents/skills/` (22 skills flat) |
+| Skills | `~/.agents/skills/` (25 skills flat) |
 | Commands | Via extension (slash commands with TUI) |
 
 ## Extension Architecture

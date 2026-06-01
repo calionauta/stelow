@@ -88,7 +88,7 @@ And the workflow begins asking questions, exploring scope, shaping the proposal,
 
 **Key Features:**
 
-- **22 sub-skills** organized into 4 layers — orchestrator + strategies + workflow stages + tactics
+- **24 sub-skills** organized into 4 layers — orchestrator + strategies + workflow stages + tactics
 - Part of a broader ecosystem of **25 skills within the project** (plus additional skills from other packages in the user's agent environment)
 - Real-time TUI tracking with visual overlay (`/pw-menu`)
 - Gate approval via Plannotator — review, comment, approve or reject before implementation
@@ -261,7 +261,7 @@ This package works across **multiple coding agents** — not just pi.dev. See th
 
 | Your situation | Recommended command | What you get |
 |----------------|--------------------|-------------|
-| **New to CLIs** (no Node, no agent) | `curl -fsSL https://raw.githubusercontent.com/.../setup.sh \| sh` | Node.js + pi.dev + all extensions + 22 skills |
+| **New to CLIs** (no Node, no agent) | `curl -fsSL https://raw.githubusercontent.com/.../setup.sh \| sh` | Node.js + pi.dev + all extensions + 25 skills |
 | **Already use pi.dev** | `git clone ... && ./install.sh` | 25 skills + TUI overlay + slash commands |
 | **Use OpenCode / Claude Code / Codex** | `git clone ... && ./install.sh` | 25 skills + command files (no TUI) |
 | **Any CLI (skills only)** | `npx skills add renatocaliari/cali-product-workflow -g` | 25 skills via DotAgents Protocol |
@@ -329,7 +329,7 @@ cd cali-product-workflow
 ./install.sh
 ```
 
-The installer detects your CLI and installs **skills + command files**. No extensions, no TUI — just the 22 skills that run the workflow.
+The installer detects your CLI and installs **skills + command files**. No extensions, no TUI — just the 25 skills that run the workflow.
 
 **Or, with npx (no clone needed):**
 
@@ -337,7 +337,7 @@ The installer detects your CLI and installs **skills + command files**. No exten
 npx skills add renatocaliari/cali-product-workflow -g
 ```
 
-This installs all 22 skills to `~/.agents/skills/` — works on any CLI.
+This installs all 25 skills to `~/.agents/skills/` — works on any CLI.
 
 > For CLI-specific setup (OpenCode config, Claude Code plugin, Codex plugin), see [docs/INSTALLATION.md](docs/INSTALLATION.md).
 

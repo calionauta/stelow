@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #
 # cali-product-workflow Installer
-# Flattens 24 skills to ~/.agents/skills/ (DotAgents Protocol).
+# Flattens 25 skills to ~/.agents/skills/ (DotAgents Protocol).
 # Distribution to each harness via agent-sync (or manual config).
 #
-# Skills: 1 orchestrator + 23 subskills = 24 total flat
+# Skills: 1 orchestrator + 24 subskills = 25 total flat
 #
 
 set -euo pipefail
@@ -124,7 +124,7 @@ install_for_cli() {
 
 # Install skills to ~/.agents/skills/ (flat)
 install_skills_flat() {
-  log_info "Installing 24 skills to ~/.agents/skills/..."
+  log_info "Installing 25 skills to ~/.agents/skills/..."
   mkdir -p "$SKILLS_DIR"
 
   local installed=0
@@ -466,7 +466,7 @@ show_help() {
   cat << 'EOF'
 cali-product-workflow Installer
 
-Flattens 24 skills to ~/.agents/skills/ (DotAgents Protocol).
+Flattens 25 skills to ~/.agents/skills/ (DotAgents Protocol).
 Distribution to each harness via agent-sync or manual config.
 
 Usage: install.sh [command]
@@ -481,12 +481,12 @@ Environment:
   INSTALL_SKILLS_ONLY  Skip npm packages (Pi only, skills-only)
   PRODUCT_WORKFLOW_CLI  Limit to one CLI (pi|opencode|claude-code|codex)
 
-Skills installed (24 total):
+Skills installed (25 total):
   - cali-product-workflow (orchestrator)
   - 6 critique skills (plan-critique, codebase-critique, ux-critique, shape-up, interface-alternatives, tech-planning)
   - 5 strategic analysis skills
   - 8 domain library skills
-  - 2 execution skills
+  - 3 execution skills (scope-executor, execution-critique, code-standards)
   - 2 testing skills (testing-ai-code, testing-execution)
 
 Examples:

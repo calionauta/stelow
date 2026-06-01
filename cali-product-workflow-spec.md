@@ -18,7 +18,7 @@
 | Layer | Technology | Notes |
 |-------|-----------|-------|
 | Extension | TypeScript (ESM) | Pi, OpenCode, Claude Code, Codex plugins |
-| Skills | Markdown | 16 skill files for workflow phases |
+| Skills | Markdown | 25 skill files for workflow phases |
 | State | JSON files | Per-project + global tracking |
 | CLI Detection | Node.js fs/path | Dir-based + env var |
 | Security | Trivy, Socket.dev, OSV | Supply chain scanning |

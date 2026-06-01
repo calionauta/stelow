@@ -6,7 +6,7 @@
 #   1. Node.js (if needed)
 #   2. pi.dev coding agent
 #   3. All extensions
-#   4. cali-product-workflow (24 skills)
+#   4. cali-product-workflow (25 skills)
 #   5. Configures settings.json with optimized defaults
 #
 # Usage:
@@ -70,6 +70,7 @@ ALL_SKILLS=(
   "cali-product-plan-critique"
   "cali-product-codebase-critique"
   "cali-product-ux-critique"
+  "cali-product-code-standards"
   "cali-product-tech-planning"
   "cali-product-job-to-be-done"
   "cali-product-discovery"
@@ -311,7 +312,7 @@ install_extensions() {
 # ─── Skills ──────────────────────────────────────────────────────────────────
 
 install_skills() {
-  log_step "Step 5/5: Installing cali-product-workflow Skills (24 skills)"
+  log_step "Step 5/5: Installing cali-product-workflow Skills (25 skills)"
 
   local skills_dir="$HOME/.agents/skills"
   if [[ "$DRY_RUN" == "false" ]]; then
@@ -484,7 +485,7 @@ print_summary() {
   echo "  ${CYAN}Node.js${RESET}       $(node --version 2>/dev/null || echo 'not found')"
   echo "  ${CYAN}pi.dev${RESET}        $(pi --version 2>/dev/null || echo 'not found')"
   echo "  ${CYAN}Extensions${RESET}    (subagents, browser, intercom, etc.)"
-  echo "  ${CYAN}Skills${RESET}        23 product workflow skills"
+  echo "  ${CYAN}Skills${RESET}        25 product workflow skills"
   echo "  ${CYAN}Settings${RESET}      Optimized configuration"
   echo ""
   echo "  ${BOLD}What's next:${RESET}"
@@ -527,7 +528,7 @@ main() {
   echo "    • Node.js (if needed)"
   echo "    • pi.dev coding agent"
   echo "    • Pi extensions"
-  echo "    • 23 product workflow skills"
+  echo "    • 25 product workflow skills"
   echo "    • Optimized settings"
   echo ""
 

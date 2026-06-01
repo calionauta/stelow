@@ -320,7 +320,7 @@ describe('Command Dispatcher Integration Tests', () => {
       expect(files.length).toBe(0);
     });
 
-    it('opencode generates 16 skill files', () => {
+    it('opencode generates 16 command files', () => {
       const system = getCommandSystem('opencode');
       const files = system.generateCommandFiles();
       
@@ -346,7 +346,7 @@ describe('Command Dispatcher Integration Tests', () => {
       expect(startFile?.content).toContain('pw-start');
     });
 
-    it('claude-code generates 16 skill files', () => {
+    it('claude-code generates 16 command files', () => {
       const system = getCommandSystem('claude-code');
       const files = system.generateCommandFiles();
       
