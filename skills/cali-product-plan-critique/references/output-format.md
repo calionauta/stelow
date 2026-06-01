@@ -32,7 +32,7 @@ Format for each gap:
   - **Recommendation:** Specific, actionable question the team needs to answer
   - **Resolved:** Yes (by [rule]) | No
 
-Tags: `[flow]`, `[state]`, `[affordance]`, `[data]`, `[system]`, `[feasibility]`
+Tags: `[flow]`, `[state]`, `[affordance]`, `[data]`, `[system]`, `[feasibility]`, `[composition]`, `[design-quality]`
 
 ## 3. 🤔 Important Gaps (Refinement)
 

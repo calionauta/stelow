@@ -33,15 +33,17 @@ que podem ser avaliadas em uma interface visual ou código-fonte de UI:
 
 | Dimensão | O que avalia | Framework |
 |----------|-------------|-----------|
-| **Accessibility (A11y)** | Contraste WCAG AA, ARIA, keyboard nav, alt text, foco, semântica HTML, forms | WCAG AA / UI Audit |
+| **Accessibility (A11y)** | Contraste WCAG AA, ARIA, keyboard nav, alt text, foco, semântica HTML, forms, reduced motion, forced colors, dark mode | WCAG AA / UI Audit |
 | **Nielsen Heuristics** | Visibilidade, consistência, prevenção de erros, liberdade, estética, etc. | Nielsen 10 |
+| **Compositional Quality** | Work-pattern identification, purpose-layout alignment, density strategy, multi-pattern hierarchy | UI Audit |
+| **Interaction States** | 9 estados por componente (idle, hover, active, focus, disabled, loading, empty, error, overflow) — baseline humana vs AI | UI Audit |
 | **Visual Hierarchy** | Primary action, visual weight, spacing, alinhamento, tipografia | UI Audit |
 | **Cognitive Load** | Progressive disclosure, info density, grouping, labeling, decisões | 8-item checklist |
 | **Consistency** | Design tokens, padrões de componentes, ícones, border-radius | UI Audit |
 | **Mobile / Responsive** | Touch targets, breakpoints, text scaling, horizontal scroll | Design Quality |
 | **Emotional Journey** | Peak-End, anxiety valleys, reassurance, progress indicators | Critique Frameworks |
 | **Design Personas** | Alex (power), Jordan (first-timer), Sam (manager), Morgan (a11y), Taylor (mobile) | Critique Frameworks |
-| **AI Slop Detection** | 10 tells + anti-patterns de interfaces geradas por IA | Critique Frameworks |
+| **AI Slop Detection** | 14 tells + anti-patterns de interfaces geradas por IA (empirically validated: ~10 patterns = ~90% of signal) | Critique Frameworks |
 
 Aceita **3 tipos de input**, cada um ativando um subset diferente das dimensões:
 

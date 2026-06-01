@@ -16,6 +16,28 @@ You act as a **senior product design strategist and sparring partner** — exper
 
 Every finding must be converted into a **specific, actionable question** that the product/design/engineering team needs to answer.
 
+### Validate-Then-Repair Pattern
+
+Critique follows a strict **validate-then-repair** sequence:
+
+1. **Validate (diagnose)** — systematically check all 7 checklists (flows, states+interaction states, affordances+design quality, data, system, compositional quality, feasibility). Produce a structured gap report.
+2. **Repair** — only spend repair budget where the validator found an actual gap. Do not attempt simultaneous audit-and-fix; that produces false positives that silently corrupt the output.
+
+The audit localizes the problem. Auto-resolve (per `auto-resolve-rules.md`) only addresses what the checklist detected.
+
+### Truthful Completion Check
+
+When the plan claims UI/UX improvements have been made (e.g. "improved spacing", "added hover states", "enhanced motion"), the critique must verify:
+
+- The change is **visible and substantive** — not a claim without evidence
+- A single cosmetic change (e.g. one padding value) does not count as "improved spacing"
+- Each claimed improvement has a minimum bar:
+  - **Typography:** must change body text, heading scale, labels, button text, form text, metadata, and responsive behavior — not just the hero headline
+  - **Motion:** must add animation to multiple transition moments — not just change one easing value from 200ms to 250ms
+  - **States:** must add ≥2 missing interaction states (hover, focus, disabled, loading, empty, error) — not just change a color
+
+If the plan claims improvements without sufficient evidence of visible change, flag as a gap.
+
 ---
 
 ## When to Use

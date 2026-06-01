@@ -2,7 +2,8 @@
 name: cali-product-plan-critique
 description: >
   [Cali] Systematic gap analysis for product plans. Accepts a spec-product.md file and
-  evaluates flows, states, affordances, data handling, system contracts, and feasibility
+  evaluates flows, states, affordances+design quality, data handling, system contracts,
+  compositional quality (purpose-layout alignment), and feasibility
   — then generates a classified gap report with actionable questions.
   Part of cali-product-workflow (`critique` stage) but usable standalone.
 metadata:
@@ -27,15 +28,16 @@ before implementation. Every finding becomes a specific, actionable question.
 
 ## Checklists
 
-This skill runs 6 specialized checklists against product plans:
+This skill runs 7 specialized checklists against product plans:
 
 | Checklist | What it evaluates |
 |-----------|-------------|
 | 🌀 **Flows** | Main flow, alternative, error, rollback, synchronization |
-| 🎯 **States** | Empty, loading, partial, error, boundary, edge |
-| 👆 **Affordances** | Hover/focus/disabled states, touch targets, keyboard nav |
+| 🎯 **States** | Data states (empty, loading, partial, error, boundary, edge) + **interaction states** (idle, hover, active, focus, disabled, loading, empty, error, overflow) |
+| 👆 **Affordances + Design Quality** | Hover/focus/disabled states, touch targets, keyboard nav; **anti-pattern audit** (10 design smells) |
 | 📊 **Data** | Validation, defaults, null handling, persistence |
 | 🔧 **System** | API contracts, timeouts, retry, fallback, offline |
+| 📐 **Compositional Quality** | Work-pattern alignment, purpose-layout match, density strategy |
 | ⚖️ **Feasibility** | Architecture, stack, security, effort estimation |
 
 **Golden rule:** Every gap becomes a **specific, actionable question** —
@@ -81,7 +83,7 @@ and implementation constraints.
 | File | Covers |
 |------|--------|
 | `references/plan-critique-context.md` | Role, when to use, workflow position, output expectations |
-| `references/checklists.md` | 6 checklists (flows, states, affordances, data, system, feasibility) |
+| `references/checklists.md` | 7 checklists (flows, states+interaction states, affordances+design quality, data, system, compositional quality, feasibility) |
 | `references/auto-resolve-rules.md` | Rules for auto-resolving gaps with defaults |
 | `references/output-format.md` | Report format specification |
 
@@ -124,18 +126,19 @@ case "$APPETITE" in
 esac
 ```
 
-### critique:30 — Run parallel subagents (4 dimensions)
+### critique:30 — Run parallel subagents (5 dimensions)
 
-Instead of a single reviewer running all 6 checklists, launch 4 parallel reviewers
+Instead of a single reviewer running all 7 checklists, launch 5 parallel reviewers
 using the subagents tool (see `references/cli-tools/subagents.md`),
 each evaluating a different dimension of the same spec-product.md with fresh context.
 
 ```
-Launch 4 parallel reviewers:
+Launch 5 parallel reviewers:
   A: Flows + States → critiques/critique-flows-states.md
   B: Data + System   → critiques/critique-data-system.md
-  C: Affordances + UX → critiques/critique-affordances-ux.md
-  D: Feasibility      → critiques/critique-feasibility.md
+  C: Affordances + UX + Design Quality → critiques/critique-affordances-ux.md
+  D: Compositional Quality (Purpose-Layout Alignment) → critiques/critique-composition.md
+  E: Feasibility      → critiques/critique-feasibility.md
 
 Each reads checklists.md from references/, outputs per output-format.md,
 and auto-resolves clear defaults per auto-resolve-rules.md.
@@ -148,14 +151,14 @@ and auto-resolves clear defaults per auto-resolve-rules.md.
 
 ### critique:40 — Consolidate critique reports
 
-After all 4 parallel reviews complete, run a consolidation step using the
+After all 5 parallel reviews complete, run a consolidation step using the
 subagents tool (see `references/cli-tools/subagents.md`) that merges them
 into a single unified report:
 
 ```
 Agent: worker
 Task: Consolidate critique reports
-Read: critiques/critique-{flows-states,data-system,affordances-ux,feasibility}.md
+Read: critiques/critique-{flows-states,data-system,affordances-ux,composition,feasibility}.md
 Output: critiques/critique-report.md (per output-format.md)
 ```
 - Apply gap classification per table below
@@ -166,6 +169,7 @@ Save to .cali-product-workflow/{YYYY-MM-DD}/{_dir}/critiques/critique-report.md`
     "critiques/critique-flows-states.md",
     "critiques/critique-data-system.md",
     "critiques/critique-affordances-ux.md",
+    "critiques/critique-composition.md",
     "critiques/critique-feasibility.md"
   ],
   output: ".cali-product-workflow/{YYYY-MM-DD}/{_dir}/critiques/critique-report.md"
@@ -195,7 +199,8 @@ Only flag genuinely ambiguous gaps as unresolved.
   critique-flows-states.md     ← parallel reviewer 1
   critique-data-system.md      ← parallel reviewer 2
   critique-affordances-ux.md   ← parallel reviewer 3
-  critique-feasibility.md      ← parallel reviewer 4
+  critique-composition.md      ← parallel reviewer 4 (design quality + work-pattern alignment)
+  critique-feasibility.md      ← parallel reviewer 5
   critique-report.md           ← consolidated (single unified report)
 ```}
 
@@ -208,7 +213,7 @@ Only flag genuinely ambiguous gaps as unresolved.
 ```
 critique: Critique Gate
   └── cali-product-plan-critique (input: spec-product.md)
-       ├── 6 checklists → gap report
+       ├── 7 checklists (flows, states+interaction states, affordances+design quality, data, system, compositional quality, feasibility) → gap report
        └── Auto-resolve → updated spec-product.md
 ```
 

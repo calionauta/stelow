@@ -4,6 +4,23 @@ All notable changes to `@renatocaliari/cali-product-workflow` will be documented
 
 ## [Unreleased]
 
+### Added
+- **State coverage baseline**: Standardized coverage formula `(✅ + ⬆️) / (✅ + ❌ + ⬆️)` across all 4 skills (interface-alternatives, interface-rules, checklists, ui-audit-dimensions)
+- **Component Typing section** in `ui-audit-dimensions.md`: Int/Disp classification with baseline applicability rules
+- **N/A ⬆️ semantics**: ⬆️ (inherited) counts toward coverage, with named system reference requirement
+- **Guardrails**: Component grouping (×N for repeated components), platform-aware states (web vs mobile), self-audit checklist before finalizing coverage table, N/A justification rule (>1 N/A per Int = required note), Display misclassification self-check
+- **Quantitative consistency checks**: Coverage plausibility, N/A inflation detection, Display cell cap (≤3)
+- **Escape hatch expansion** beyond Archetype D: all Archetype A tables may declare escape rows with ⬆️^DS
+- **Baseline relaxation**: read-only/kiosk, voice-only, simple Int components (single-state: toggle, badge)
+
+### Fixed
+- **Coverage formula contradiction**: `interface-rules.md` now uses `(✅ + ⬆️) / (✅ + ❌ + ⬆️)` (was excluding ⬆️), matching `output-format.md`
+- **Bugged coverage example**: Row showing `4/4` corrected to `6/6` (5 ✅ + 1 ⬆️ = 6 applicable cells)
+- **⬆️ missing from N/A Semantics table** in `interface-rules.md`: Added inheritance row
+- **Missing coverage formula** in `checklists.md`: Added formula + numeric example
+- **Missing scoring threshold alignment**: Added `Maps to (present tells)` column + cross-file reference for inverted scales
+- **Missing Int/Disp typing** in `ui-audit-dimensions.md`: Added Component Typing section
+
 ## [0.8.4-alpha] - 2026-06-01
 
 ### Fixed

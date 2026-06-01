@@ -34,7 +34,7 @@ This skill works standalone. Use the Input Detection section below to tell the s
 |---|---|---|
 | `references/interface-context.md` | Progressive Clarification, when to use, system equivalents | **Before starting** |
 | `references/interface-reconstruction.md` | Context reconstruction, hidden job extraction | **Before generating** |
-| `references/interface-rules.md` | Separation Rule, Forced Trade-Off Rule, output quality | **Before generating** |
+| `references/interface-rules.md` | Separation Rule, Work-Pattern-First Composition, Smell Self-Audit, State Coverage Baseline, Forced Trade-Off Rule, output quality | **Before generating** |
 | `references/archetypes.md` | 5 archetypes with descriptions | **During generation** |
 | `references/hybrid-recommendation.md` | Hybrid recommendation strategy | **Step 3 only** |
 
@@ -50,10 +50,17 @@ Use the subagents tool (see `references/cli-tools/subagents.md`) to generate 5 p
   D: Proposal D (Archetype D — Radical Simplicity)
   E: Proposal E (Archetype E — Expert/Command-First)
 
+⚠️ CRITICAL — Before generating, each worker MUST read:
+  1. references/interface-rules.md — Work-Pattern-First Composition (mandatory Section 0)
+  2. references/interface-rules.md — Smell Self-Audit (mandatory Section 6)
+  3. references/interface-rules.md — State Coverage Baseline (mandatory Section 7)
+  4. references/output-format.md — full output format with all 8 sections
+
 Each outputs to .cali-product-workflow/{date}/{dir}/interfaces/proposal-{letter}.md
 ```
 
 - Each worker generates **one** proposal (independent, no cross-contamination)
+- Each proposal **must** include Work Pattern Declaration (Section 0), Design Smell Audit (Section 6), and State Coverage Table (Section 7)
 - Combined output: `.cali-product-workflow/{YYYY-MM-DD}/{_dir}/interfaces/interfaces_{v}.md`
 
 
