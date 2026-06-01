@@ -51,4 +51,4 @@ extensions/cali-product-workflow/  # Source (TypeScript)
 
 - Pi loads AGENTS.md from `~/.pi/agent/AGENTS.md` for development sessions
 - The extension provides commands with TUI, not markdown commands
-- Skills are loaded from `~/.agents/skills/` (DotAgents Protocol)
+- Skills are loaded from `~/.agents/skills/`

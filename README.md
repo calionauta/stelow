@@ -264,7 +264,7 @@ This package works across **multiple coding agents** — not just pi.dev. See th
 | **New to CLIs** (no Node, no agent) | `curl -fsSL https://raw.githubusercontent.com/.../setup.sh \| sh` | Node.js + pi.dev + all extensions + 25 skills |
 | **Already use pi.dev** | `git clone ... && ./install.sh` | 25 skills + TUI overlay + slash commands |
 | **Use OpenCode / Claude Code / Codex** | `git clone ... && ./install.sh` | 25 skills + command files (no TUI) |
-| **Any CLI (skills only)** | `npx skills add renatocaliari/cali-product-workflow -g` | 25 skills via DotAgents Protocol |
+| **Any CLI (skills only)** | `npx skills add renatocaliari/cali-product-workflow -g` | 25 skills + cross-CLI support |
 
 See [docs/INSTALLATION.md](docs/INSTALLATION.md) for detailed options.
 Per-agent configuration files (commands, install scripts) are in [`cli-agents/`](cli-agents/).
@@ -321,7 +321,7 @@ The installer auto-detects your CLIs and installs skills + extensions + slash co
 
 ### 📋 Path C: Other CLI (OpenCode / Claude Code / Codex)
 
-The **skills** are the core of this project — they work on **any** agent that supports the [DotAgents Protocol](https://dotagents.org).
+The **skills** are the core of this project — they work on **any** agent (Pi, OpenCode, Claude Code, Codex).
 
 ```bash
 git clone https://github.com/renatocaliari/cali-product-workflow.git
