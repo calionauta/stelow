@@ -4,8 +4,8 @@ import { execSync } from "node:child_process";
 import { existsSync, mkdirSync, writeFileSync, readFileSync, readdirSync, cpSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
-import { parse as parseYaml } from "yaml";
 import { WORKFLOW_DIR, TRACKING_FILE, SCHEMA_URL, STAGE } from "./types";
+import { getRetiredSkillNames } from "./sync-skills";
 
 // Stage guard imports
 import { createStagesGuardFromPaths } from "./adapters/stages-guard";
@@ -121,27 +121,6 @@ export default function (pi: ExtensionAPI) {
   // skills/cali-product-workflow/retired-skills.yaml (lets us clean up
   // skills that were deleted/renamed in a previous release, not just the
   // current one).
-  function getRetiredSkillNames(cloneSkillsDir: string): Set<string> {
-    const retiredFile = join(cloneSkillsDir, "cali-product-workflow", "retired-skills.yaml");
-    if (!existsSync(retiredFile)) return new Set();
-    try {
-      const doc = parseYaml(readFileSync(retiredFile, "utf8")) as
-        | { retired?: Array<{ name?: string }> }
-        | undefined;
-      const names = new Set<string>();
-      for (const entry of doc?.retired ?? []) {
-        if (typeof entry?.name === "string" && entry.name.length > 0) {
-          names.add(entry.name);
-        }
-      }
-      return names;
-    } catch {
-      // Malformed YAML must NOT break the sync — just log and continue.
-      // The sync is best-effort; the marker hash will retry next time.
-      return new Set();
-    }
-  }
-
   function syncSkillsFromClone() {
     try {
       const HOME = homedir();
