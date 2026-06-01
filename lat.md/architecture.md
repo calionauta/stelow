@@ -66,13 +66,12 @@ The flow lives in `syncSkillsFromClone` (`extensions/cali-product-workflow/index
 
 ### Prune Rules
 
-A skill in `~/.agents/skills/` is removed if ALL hold:
+A skill in `~/.agents/skills/` is removed if BOTH hold:
 
 1. Its name matches a `knownPrefixes` entry (we own it — e.g. `cali-product-`)
 2. It is NOT in the current `skills/` of the clone
-3. It is NOT in `skills/cali-product-workflow/retired-skills.yaml`
 
-The retired allow-list lets us clean up skills that were *removed in prior releases* — without that list, the prune loop would also be satisfied by "this skill was just deleted from the project", but we'd lose the ability to actively *remove* the stale copy on a user machine that hasn't synced since the skill existed.
+That's it. Skills listed in `retired-skills.yaml` are **also removed** — they are just a documentation convenience for tracking historical retirements. The runtime prune does not read the YAML; it simply mirrors whatever is in `skills/`.
 
 ### Retired Skills Registry
 

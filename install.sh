@@ -151,6 +151,28 @@ install_skills_flat() {
 
   log_success "  Installed $installed skills"
   if [[ $skipped -gt 0 ]]; then log_warn "  Skipped $skipped skills (not found)"; fi
+
+  # ── Prune: remove skills de projetos gerenciados que não estão mais na lista ──
+  local pruned=0
+  for entry in "$SKILLS_DIR"/*/; do
+    local name="$(basename "$entry")"
+    # Só mexe em skills com prefixo gerenciado
+    case "$name" in
+      cali-product-*|cali-pw-*) ;;
+      *) continue ;;
+    esac
+    # Se não está na lista atual, remove
+    local found=false
+    for s in "${ALL_SKILLS[@]}"; do
+      if [[ "$s" == "$name" ]]; then found=true; break; fi
+    done
+    if ! $found; then
+      rm -rf "$SKILLS_DIR/$name"
+      log_warn "    Removed retired skill: $name (no longer in project)"
+      ((pruned++)) || true
+    fi
+  done
+  if [[ $pruned -gt 0 ]]; then log_warn "  Pruned $pruned retired skill(s)"; fi
 }
 
 
