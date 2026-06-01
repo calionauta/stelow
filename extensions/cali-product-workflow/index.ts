@@ -4,6 +4,7 @@ import { execSync } from "node:child_process";
 import { existsSync, mkdirSync, writeFileSync, readFileSync, readdirSync, cpSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
+import { parse as parseYaml } from "yaml";
 import { WORKFLOW_DIR, TRACKING_FILE, SCHEMA_URL, STAGE } from "./types";
 
 // Stage guard imports
@@ -116,7 +117,31 @@ export default function (pi: ExtensionAPI) {
   //
   // Syncs ALL installed skills on change, not just new ones — handles renamed,
   // modified, and deleted files. Also removes orphaned skills that no longer
-  // exist in the project.
+  // exist in the project — and skills listed as retired in
+  // skills/cali-product-workflow/retired-skills.yaml (lets us clean up
+  // skills that were deleted/renamed in a previous release, not just the
+  // current one).
+  function getRetiredSkillNames(cloneSkillsDir: string): Set<string> {
+    const retiredFile = join(cloneSkillsDir, "cali-product-workflow", "retired-skills.yaml");
+    if (!existsSync(retiredFile)) return new Set();
+    try {
+      const doc = parseYaml(readFileSync(retiredFile, "utf8")) as
+        | { retired?: Array<{ name?: string }> }
+        | undefined;
+      const names = new Set<string>();
+      for (const entry of doc?.retired ?? []) {
+        if (typeof entry?.name === "string" && entry.name.length > 0) {
+          names.add(entry.name);
+        }
+      }
+      return names;
+    } catch {
+      // Malformed YAML must NOT break the sync — just log and continue.
+      // The sync is best-effort; the marker hash will retry next time.
+      return new Set();
+    }
+  }
+
   function syncSkillsFromClone() {
     try {
       const HOME = homedir();
@@ -160,12 +185,21 @@ export default function (pi: ExtensionAPI) {
         cpSync(join(cloneSkillsDir, skill), join(agentsDir, skill), { recursive: true });
       }
 
-      // 3. Remove orphaned skills from ~/.agents/skills/
+      // 3. Remove orphaned/retired skills from ~/.agents/skills/.
+      //    A skill is removed if BOTH conditions hold:
+      //      a) it matches one of our managed prefixes (we own it), AND
+      //      b) it is NOT in the current project skills AND NOT in the
+      //         retired-skills.yaml allow-list (the latter lets us keep
+      //         a skill in the list even if its current code has already
+      //         been removed in a prior release).
+      const retiredNames = getRetiredSkillNames(cloneSkillsDir);
       if (existsSync(agentsDir)) {
         for (const entry of readdirSync(agentsDir, { withFileTypes: true })) {
           if (!entry.isDirectory()) continue;
           const isOurs = knownPrefixes.some(p => entry.name.startsWith(p));
-          if (isOurs && !projectSkills.has(entry.name)) {
+          const isActive = projectSkills.has(entry.name);
+          const isRetired = retiredNames.has(entry.name);
+          if (isOurs && !isActive && !isRetired) {
             rmSync(join(agentsDir, entry.name), { recursive: true, force: true });
           }
         }
