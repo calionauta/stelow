@@ -45,7 +45,14 @@ function readVersion(filePath) {
 function writeVersion(filePath, version) {
   const content = readFileSync(filePath, "utf-8");
   const pkg = JSON.parse(content);
-  pkg.version = version;
+  // marketplace.json files use metadata.version (Claude/Codex schema);
+  // plugin.json files use a root-level version. Prefer metadata when
+  // present, fall back to root.
+  if (pkg.metadata && typeof pkg.metadata === "object") {
+    pkg.metadata.version = version;
+  } else {
+    pkg.version = version;
+  }
   writeFileSync(filePath, JSON.stringify(pkg, null, 2) + "\n");
   console.log(`  ✅ Synced version to: ${filePath.replace(ROOT + "/", "")}`);
 }
