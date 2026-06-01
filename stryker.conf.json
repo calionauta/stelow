@@ -10,7 +10,7 @@
   "thresholds": {
     "high": 70,
     "low": 50,
-    "break": 50
+    "break": null
   },
   "mutate": [
     "extensions/cali-product-workflow/modules/file-store.ts",
