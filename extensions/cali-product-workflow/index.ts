@@ -5,6 +5,7 @@ import { existsSync, mkdirSync, writeFileSync, readFileSync, readdirSync, cpSync
 import { join } from "node:path";
 import { homedir } from "node:os";
 import { WORKFLOW_DIR, TRACKING_FILE, SCHEMA_URL, STAGE } from "./types";
+import { getRetiredSkillNames } from "./sync-skills";
 
 // Stage guard imports
 import { createStagesGuardFromPaths } from "./adapters/stages-guard";
@@ -163,17 +164,20 @@ export default function (pi: ExtensionAPI) {
         cpSync(join(cloneSkillsDir, skill), join(agentsDir, skill), { recursive: true });
       }
 
-      // 3. Remove orphaned skills from ~/.agents/skills/.
-      //    Removes skills that match a managed prefix but are no longer
-      //    in the project. Skills listed in retired-skills.yaml are also
-      //    removed — they are explicitly retired and should not persist
-      //    on users' machines.
+      // 3. Remove orphaned/retired skills from ~/.agents/skills/.
+      //    Removes skills that match a managed prefix AND that are
+      //    not active (not in projectSkills). Skills listed in
+      //    retired-skills.yaml are also removed — they are explicitly
+      //    retired, even if they somehow appear as active (the YAML
+      //    overrides the active check).
+      const retiredNames = getRetiredSkillNames(cloneSkillsDir);
       if (existsSync(agentsDir)) {
         for (const entry of readdirSync(agentsDir, { withFileTypes: true })) {
           if (!entry.isDirectory()) continue;
           const isOurs = knownPrefixes.some(p => entry.name.startsWith(p));
           const isActive = projectSkills.has(entry.name);
-          if (isOurs && !isActive) {
+          const isRetired = retiredNames.has(entry.name);
+          if (isOurs && (!isActive || isRetired)) {
             rmSync(join(agentsDir, entry.name), { recursive: true, force: true });
           }
         }

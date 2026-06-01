@@ -152,27 +152,45 @@ install_skills_flat() {
   log_success "  Installed $installed skills"
   if [[ $skipped -gt 0 ]]; then log_warn "  Skipped $skipped skills (not found)"; fi
 
-  # ── Prune: remove skills de projetos gerenciados que não estão mais na lista ──
+  # ── Prune: remove skills órfãs ou retired ──
+  # Duas fontes determinam o que remover:
+  #   1. Skills que não estão mais em ALL_SKILLS[] (órfãs naturais)
+  #   2. Skills explicitamente listadas em retired-skills.yaml (retirements)
+  #
+  # Só mexe em skills com prefixo gerenciado.
+  local retired_list="$SCRIPT_DIR/skills/cali-product-workflow/retired-skills.yaml"
   local pruned=0
   for entry in "$SKILLS_DIR"/*/; do
     local name="$(basename "$entry")"
-    # Só mexe em skills com prefixo gerenciado
     case "$name" in
       cali-product-*|cali-pw-*) ;;
       *) continue ;;
     esac
-    # Se não está na lista atual, remove
-    local found=false
+    # Fonte 1: não está em ALL_SKILLS[] (órfã natural)
+    local in_all=false
     for s in "${ALL_SKILLS[@]}"; do
-      if [[ "$s" == "$name" ]]; then found=true; break; fi
+      if [[ "$s" == "$name" ]]; then in_all=true; break; fi
     done
-    if ! $found; then
+    # Fonte 2: está em retired-skills.yaml (retirada explícita)
+    local in_retired=false
+    if [[ -f "$retired_list" ]]; then
+      local yaml_name
+      yaml_name="$(sed -n 's/^  - name: //p' "$retired_list" 2>/dev/null || true)"
+      while IFS= read -r rname; do
+        if [[ "$rname" == "$name" ]]; then in_retired=true; break; fi
+      done <<< "$yaml_name"
+    fi
+    if ! $in_all || $in_retired; then
       rm -rf "$SKILLS_DIR/$name"
-      log_warn "    Removed retired skill: $name (no longer in project)"
+      if $in_retired; then
+        log_warn "    Removed retired skill: $name (from retired-skills.yaml)"
+      else
+        log_warn "    Removed orphaned skill: $name (no longer in project)"
+      fi
       ((pruned++)) || true
     fi
   done
-  if [[ $pruned -gt 0 ]]; then log_warn "  Pruned $pruned retired skill(s)"; fi
+  if [[ $pruned -gt 0 ]]; then log_warn "  Pruned $pruned retired/orphaned skill(s)"; fi
 }
 
 

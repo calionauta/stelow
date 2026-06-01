@@ -71,7 +71,7 @@ A skill in `~/.agents/skills/` is removed if BOTH hold:
 1. Its name matches a `knownPrefixes` entry (we own it — e.g. `cali-product-`)
 2. It is NOT in the current `skills/` of the clone
 
-That's it. Skills listed in `retired-skills.yaml` are **also removed** — they are just a documentation convenience for tracking historical retirements. The runtime prune does not read the YAML; it simply mirrors whatever is in `skills/`.
+Skills listed in `retired-skills.yaml` are **also removed** — both the extension's sync and the install.sh prune read the YAML and treat listed names as explicit removal targets. This provides a safety net for skills that were removed from `skills/` before the prune logic existed: adding them to the YAML is enough to trigger cleanup on next install/sync.
 
 ### Retired Skills Registry
 
