@@ -1,0 +1,35 @@
+# retired-skills.yaml — Skills aposentadas/removidas do projeto
+#
+# Lista de skills que FORAM PARTE do projeto mas não fazem mais parte
+# do `skills/` atual. O `syncSkillsFromClone` lê este arquivo e remove
+# cópias obsoletas de `~/.agents/skills/` no próximo session_start.
+#
+# IMPORTANTE: este arquivo NÃO é uma skill (não tem SKILL.md). Ele vive
+# dentro da pasta da skill orchestrator apenas para organização — o sync
+# não copia este arquivo para ~/.agents/skills/.
+#
+# Formato de cada entrada:
+#   - name:           (obrigatório) nome da skill aposentada
+#     retired_at:     (opcional)   data ISO 8601 do retirement
+#     reason:         (opcional)   superseded | renamed | merged | deleted | experimental
+#     superseded_by:  (opcional)   lista de skills que substituem esta
+#     note:           (opcional)   texto livre explicando o contexto
+#
+# Apenas `name` é obrigatório — o sync funciona mesmo com entry mínimo.
+
+version: 1
+
+retired:
+  - name: cali-product-critique
+    retired_at: 2026-05-29
+    reason: superseded
+    superseded_by:
+      - cali-product-plan-critique
+      - cali-product-codebase-critique
+      - cali-product-ux-critique
+      - cali-product-execution-critique
+    note: |
+      Skill monolítica original foi dividida em 4 skills de domínio
+      específico (plan, codebase, ux, execution). Cada uma cobre
+      um input distinto (spec, código, URL, post-impl) e gera
+      relatórios de gap classificados.
