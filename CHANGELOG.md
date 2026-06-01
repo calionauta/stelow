@@ -4,6 +4,13 @@ All notable changes to `@renatocaliari/cali-product-workflow` will be documented
 
 ## [Unreleased]
 
+## [0.8.4-alpha] - 2026-06-01
+
+### Fixed
+- **Approach name mismatch**: `stages/ask-patterns.md` and `cali-product-workflow-spec.md` now use the canonical name `Multi-Method Market Analysis` (matching `SKILL.md`), instead of the truncated `Market Analysis`.
+- **`stages.yaml` awareness**: `context` stage description now references the `context:5` gate (previously silent on the new gate mechanism).
+- **Gate matrix clarity**: `stages/context.md` `context:5` matrix row for `Comprehensive | any` now notes that `Auto` is unreachable (Comprehensive appetite forces `Full Product` or `Full Product + Tech` per `README.md`).
+
 ## [0.8.3-alpha] - 2026-06-01
 
 ### Added
