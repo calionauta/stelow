@@ -7,6 +7,11 @@ context.md
 research.md
 context-opencode-api.md
 
+# Session comparison/proposal drafts (auto-saved brainstorming, not docs)
+.sem/
+about-keydiff-*.md
+about-proposal-*.md
+
 # Investigation and migration docs
 docs/investigacao-*.md
 docs/plano-migracao-*.md
