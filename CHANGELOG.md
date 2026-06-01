@@ -4,6 +4,8 @@ All notable changes to `@renatocaliari/cali-product-workflow` will be documented
 
 ## [Unreleased]
 
+## [0.8.3-alpha] - 2026-06-01
+
 ### Added
 - **`context:5` appetite/mode gate** in `stages/context.md`. PoC + Auto skips the entire Context stage; PoC + non-Auto uses a reduced ask (5 strategic approaches listed with opt-in execution, 8 domain libraries detected as reference-only). Focused and Comprehensive retain full behavior. See `stages/context.md#context:5` for the full matrix.
 
