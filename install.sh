@@ -26,34 +26,18 @@ log_success() { echo "${GREEN}[ok]${RESET} $*"; }
 log_warn()    { echo "${YELLOW}[warn]${RESET} $*"; }
 log_error()   { echo "${RED}[error]${RESET} $*" >&2; }
 
-# List of all 25 skills (1 orchestrator + 24 subskills)
-ALL_SKILLS=(
-  "cali-product-workflow"
-  "cali-product-shape-up"
-  "cali-product-interface-alternatives"
-  "cali-product-plan-critique"
-  "cali-product-codebase-critique"
-  "cali-product-ux-critique"
-  "cali-product-tech-planning"
-  "cali-product-job-to-be-done"
-  "cali-product-discovery"
-  "cali-product-opportunity-mapping"
-  "cali-product-multi-method-market-analysis"
-  "cali-product-evolutionary-principles"
-  "cali-product-pricing"
-  "cali-product-ads"
-  "cali-product-trust-building"
-  "cali-product-promotions"
-  "cali-product-business-models"
-  "cali-product-health"
-  "cali-product-marketplace-playbook"
-  "cali-product-open-source"
-  "cali-product-scope-executor"
-  "cali-product-testing-ai-code"
-  "cali-product-testing-execution"
-  "cali-product-execution-critique"
-  "cali-product-code-standards"
-)
+# Scan filesystem for project skills (source of truth, replaces static ALL_SKILLS)
+# Returns skill names (directories with SKILL.md under $SCRIPT_DIR/skills/).
+get_project_skills() {
+  local skills=()
+  for dir in "$SCRIPT_DIR/skills/"*/; do
+    local name="$(basename "$dir")"
+    if [[ -f "$dir/SKILL.md" ]]; then
+      skills+=("$name")
+    fi
+  done
+  printf '%s\n' "${skills[@]}"
+}
 
 # CLI Detection
 has_cli() {
@@ -129,7 +113,9 @@ install_skills_flat() {
 
   local installed=0
   local skipped=0
-  for skill in "${ALL_SKILLS[@]}"; do
+  local project_skills=()
+  while IFS= read -r s; do project_skills+=("$s"); done < <(get_project_skills)
+  for skill in "${project_skills[@]}"; do
     local src="$SCRIPT_DIR/skills/$skill"
     local dst="$SKILLS_DIR/$skill"
     if [[ -d "$src" ]]; then
@@ -154,7 +140,7 @@ install_skills_flat() {
 
   # ── Prune: remove skills órfãs ou retired ──
   # Duas fontes determinam o que remover:
-  #   1. Skills que não estão mais em ALL_SKILLS[] (órfãs naturais)
+  #   1. Skills que não estão mais no projeto (órfãs naturais)
   #   2. Skills explicitamente listadas em retired-skills.yaml (retirements)
   #
   # Só mexe em skills com prefixo gerenciado.
@@ -166,10 +152,10 @@ install_skills_flat() {
       cali-product-*|cali-pw-*) ;;
       *) continue ;;
     esac
-    # Fonte 1: não está em ALL_SKILLS[] (órfã natural)
-    local in_all=false
-    for s in "${ALL_SKILLS[@]}"; do
-      if [[ "$s" == "$name" ]]; then in_all=true; break; fi
+    # Fonte 1: não está nas skills ativas do projeto (órfã natural)
+    local in_project=false
+    for s in "${project_skills[@]}"; do
+      if [[ "$s" == "$name" ]]; then in_project=true; break; fi
     done
     # Fonte 2: está em retired-skills.yaml (retirada explícita)
     local in_retired=false
@@ -180,7 +166,7 @@ install_skills_flat() {
         if [[ "$rname" == "$name" ]]; then in_retired=true; break; fi
       done <<< "$yaml_name"
     fi
-    if ! $in_all || $in_retired; then
+    if ! $in_project || $in_retired; then
       rm -rf "$SKILLS_DIR/$name"
       if $in_retired; then
         log_warn "    Removed retired skill: $name (from retired-skills.yaml)"
@@ -402,7 +388,9 @@ install_generic() {
 # Update
 update_all() {
   log_info "Updating skills in $SKILLS_DIR..."
-  for skill in "${ALL_SKILLS[@]}"; do
+  local project_skills=()
+  while IFS= read -r s; do project_skills+=("$s"); done < <(get_project_skills)
+  for skill in "${project_skills[@]}"; do
     local src="$SCRIPT_DIR/skills/$skill"
     local dst="$SKILLS_DIR/$skill"
     if [[ -d "$src" ]]; then
@@ -457,7 +445,9 @@ uninstall_all() {
   log_info "Uninstalling for: $clis"
   log_info "Removing skills from $SKILLS_DIR..."
   
-  for skill in "${ALL_SKILLS[@]}"; do
+  local project_skills=()
+  while IFS= read -r s; do project_skills+=("$s"); done < <(get_project_skills)
+  for skill in "${project_skills[@]}"; do
     rm -rf "$SKILLS_DIR/$skill"
   done
   
