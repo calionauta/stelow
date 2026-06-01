@@ -33,3 +33,9 @@ A Shape Up artifact that tracks progress from "figuring out" to "making it happe
 
 ## Job To Be Done (JTBD)
 The "job" a user hires a product to do. The workflow supports JTBD analysis as a strategic approach in the Context stage (`cali-product-job-to-be-done` skill).
+
+## Skill Sync
+Auto-mirror of project skills from the cloned git repo into `~/.agents/skills/` on every Pi session start. Tracks git HEAD hash to skip when unchanged. See [[architecture#Skill Auto-Sync (Pi Extension)]].
+
+## Retired Skill
+A skill that was once part of the project but has been removed (renamed, split, merged, or deleted). Listed in `skills/cali-product-workflow/retired-skills.yaml` so the sync can actively remove stale copies from user machines. See [[architecture#Skill Auto-Sync (Pi Extension)]].
