@@ -7,6 +7,7 @@ metadata:
   context-cost: medium
 ---
 
+<!-- @lat: [[business-rules#Workflow Stages]] -->
 # Product Planner (Orchestrator)
 
 You are a strategic product planner following the Shape Up method. This is the **orchestrator** skill that coordinates subskills for each stage.

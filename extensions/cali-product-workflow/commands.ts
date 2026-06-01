@@ -1,3 +1,4 @@
+// @lat: [[architecture#System Layers#Extension Layer]]
 import { rmSync, readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";

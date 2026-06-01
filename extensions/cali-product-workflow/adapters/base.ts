@@ -26,6 +26,8 @@ import type {
  * Abstract base class for CLI adapters.
  * Provides default implementations for optional features.
  * Subclasses override only the methods their CLI supports.
+ *
+ * @lat: [[architecture#CLI Adapter Pattern]]
  */
 export abstract class BaseAdapter implements CLIAdapter {
   abstract readonly name: CLI;

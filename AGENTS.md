@@ -102,6 +102,43 @@ The Planning stage generates typed scopes with dependency mapping.
 - **Domain-driven** — Auto-detects product domain from your language
 - **Technical scope mapping** — Breaks down into typed scopes, maps dependencies
 
+## Living Documentation (lat.md)
+
+This project uses [[lat.md/lat.md]] as its living documentation — a knowledge
+graph of markdown files with [[wiki links]], `// @lat:` code refs, and semantic
+search. The Pi extension (`.pi/extensions/lat.md.ts`) provides tools for
+querying and validating this documentation.
+
+### Roles
+
+| Layer | What it contains | Who updates |
+|---|---|---|
+| `lat.md/` (markdown files) | Business rules, architecture, data model, ADRs, risks, glossary, guides | Agents + maintainers during development |
+| `// @lat:` annotations in code | Links from source code → documentation sections | Agents during implementation (add when creating/modifying a documented entity) |
+| `.pi/extensions/lat.md.ts` | 6 native tools: `lat_search`, `lat_section`, `lat_locate`, `lat_check`, `lat_expand`, `lat_refs` | Template from `lat.md` — updated via `npm update -g lat.md` |
+
+### Freshness Policy
+
+- **Workflow artifacts** (`spec-*.md`, `critique-*.md`, `session-knowledge/*.md`)
+  are **historical records** — they document what was *planned*, not what was *built*.
+- **`lat.md/` is the source of truth for what the code does today.**
+  It supersedes planning artifacts for future decisions.
+- After implementing a scope, run `lat check` and update any `lat.md/` sections
+  whose `// @lat:` entities were affected.
+- If code changes faster than documentation, agents should flag staleness
+  (see `cali-lat-md-seed` skill, Step 5 freshness check).
+
+### Available Tools (via Pi extension)
+
+| Tool | Description |
+|------|-------------|
+| `lat_search <query>` | Semantic search across all lat.md documentation |
+| `lat_section <path>` | Read a specific section by path (e.g. `architecture#System Layers`) |
+| `lat_locate <term>` | Find everywhere a term is documented |
+| `lat_check` | Validate all wiki links, code refs, and section structure |
+| `lat_expand` | Visualize the wiki link graph between documents |
+| `lat_refs <section>` | List all `// @lat:` annotations pointing to a section |
+
 ## See Also
 
 - **[architecture.md](architecture.md)** — System architecture, modules, data flow, how to extend

@@ -24,7 +24,7 @@ Product planning workflow system for AI coding agents (Pi, Claude Code, OpenCode
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  MODULES (modules/)                                        │
+│  MODULES (extensions/.../modules/)                          │
 │  - File persistence (JSON, Markdown)                       │
 │  - Cache management                                        │
 │  - Task types                                              │

@@ -8,6 +8,8 @@
  *   const store = new TextFileStore(cwd, '.cali-product-workflow/inbox/items.md');
  *   store.read();           // returns string
  *   store.write('content'); // writes to file
+ *
+ * @lat: [[data-model#File Store Types]]
  */
 
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
@@ -42,7 +44,6 @@ export class TextFileStore implements IFileStore<string> {
   }
 
   read(): string | null {
-    if (!this.exists()) return null;
     try {
       const raw = readFileSync(this.basePath, "utf-8");
       return this.decoder(raw);
@@ -53,9 +54,7 @@ export class TextFileStore implements IFileStore<string> {
 
   write(data: string): void {
     const dir = dirname(this.basePath);
-    if (!existsSync(dir)) {
-      mkdirSync(dir, { recursive: true });
-    }
+    mkdirSync(dir, { recursive: true });
     writeFileSync(this.basePath, this.encoder(data), "utf-8");
   }
 
@@ -83,7 +82,6 @@ export class JsonFileStore<T extends object = object> implements IFileStore<T> {
   }
 
   read(): T | null {
-    if (!this.exists()) return null;
     try {
       const content = readFileSync(this.basePath, "utf-8");
       return JSON.parse(content, this.reviver) as T;
@@ -94,9 +92,7 @@ export class JsonFileStore<T extends object = object> implements IFileStore<T> {
 
   write(data: T): void {
     const dir = dirname(this.basePath);
-    if (!existsSync(dir)) {
-      mkdirSync(dir, { recursive: true });
-    }
+    mkdirSync(dir, { recursive: true });
     writeFileSync(this.basePath, JSON.stringify(data, this.replacer, 2), "utf-8");
   }
 
@@ -127,7 +123,6 @@ export class MarkdownFileStore implements IFileStore<string[]> {
    * Skips header line and empty lines.
    */
   read(): string[] {
-    if (!this.exists()) return [];
     try {
       const content = readFileSync(this.basePath, "utf-8");
       return content
@@ -145,9 +140,7 @@ export class MarkdownFileStore implements IFileStore<string[]> {
    */
   write(items: string[]): void {
     const dir = dirname(this.basePath);
-    if (!existsSync(dir)) {
-      mkdirSync(dir, { recursive: true });
-    }
+    mkdirSync(dir, { recursive: true });
     const header = `${this.headerLine}\n\n`;
     const content = items.length > 0 ? items.join("\n") + "\n" : "\n";
     writeFileSync(this.basePath, header + content, "utf-8");
@@ -162,7 +155,5 @@ export class MarkdownFileStore implements IFileStore<string[]> {
  * Ensure directory exists.
  */
 export function ensureDir(path: string): void {
-  if (!existsSync(path)) {
-    mkdirSync(path, { recursive: true });
-  }
+  mkdirSync(path, { recursive: true });
 }

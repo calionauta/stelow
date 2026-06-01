@@ -11,6 +11,8 @@ import { WORKFLOW_DIR, TRACKING_FILE, GLOBAL_TRACKING_FILE, SCHEMA_URL, PHASE_NA
 /**
  * Detection signals for each CLI.
  * Priority: 1. Env var, 2. Config directories, 3. Command availability, 4. Generic
+ *
+ * @lat: [[data-model#Workflow Directory Structure]]
  */
 const CLI_DETECTION_SIGNALS: Record<CLI, { dirs: string[]; cmds: string[]; confidence: "high" | "medium" | "low" }> = {
   "pi": {
@@ -406,6 +408,7 @@ export function scanWorkflowDirs(cwd: string): DiskWorkflow[] {
 
   return result;
 }
+// @lat: [[data-model#Data Flow Patterns#Workflow Scan (Auto-Discovery)]]
 
 /**
  * Reconcile workflows found on disk with the local tracking file.
