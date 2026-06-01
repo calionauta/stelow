@@ -23,7 +23,7 @@ Before executing `context:10` or `context:20`, check the declared appetite and m
 | `PoC` | `Auto` | **Skip** entire Context stage → go directly to `shape:10` | **Skip** (not reached) |
 | `PoC` | `Light` / `Moderate` / `Full Product` / `Full Product + Tech` | **Reduced ask**: present all 5 strategic approaches, but mark execution as opt-in per approach (no automatic parallel subagents) | **Reference-only**: detect domain signals and load the 8 libraries as passive context for Shape/Scope; do not execute subagents per library |
 | `Focused` | any | **Full ask** (current behavior): present all 5, execute selected in parallel, consolidate into `strategic-insights.md` | **Full detect + execute**: 1..N of the 8 libraries via parallel subagents, inject into Shape/Scope/Interface |
-| `Comprehensive` | any | **Full ask** + advisory note: "Comprehensive detected — running all 5 strategic approaches is recommended" | **Full detect + execute** of all 8 libraries detected |
+| `Comprehensive` | any (note: `Auto` is unreachable here — `Comprehensive` appetite forces `Full Product` or `Full Product + Tech` per `README.md`) | **Full ask** + advisory note: "Comprehensive detected — running all 5 strategic approaches is recommended" | **Full detect + execute** of all 8 libraries detected |
 
 **Skip log (when `PoC` + `Auto`):**
 

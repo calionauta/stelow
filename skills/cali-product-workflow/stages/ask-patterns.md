@@ -62,7 +62,7 @@ Recommendation: [justification based on project context].`,
         description: "Map problem opportunities with ranked solutions. Generates a prioritized opportunity map."
       },
       {
-        label: "Market Analysis",
+        label: "Multi-Method Market Analysis",
         description: "PESTLE, Foresight, Wardley Maps. Useful for understanding competition, trends and positioning."
       },
       {
