@@ -33,3 +33,12 @@ retired:
       específico (plan, codebase, ux, execution). Cada uma cobre
       um input distinto (spec, código, URL, post-impl) e gera
       relatórios de gap classificados.
+
+  - name: cali-product-interface-brainstorm
+    retired_at: 2026-05-31
+    reason: renamed
+    superseded_by:
+      - cali-product-interface-alternatives
+    note: |
+      Renomeada em f3f707a como parte do gap A (1 source = 1 truth).
+      Conteúdo e semântica preservados; apenas o nome mudou.

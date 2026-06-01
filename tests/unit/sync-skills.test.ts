@@ -122,4 +122,37 @@ describe("getRetiredSkillNames", () => {
     const names = getRetiredSkillNames(cloneSkillsDir);
     expect(names.size).toBe(0);
   });
+
+  it("returns names from multiple entries with mixed reasons (superseded + renamed)", () => {
+    // Real-world scenario: one skill split into N (superseded) and one
+    // renamed (renamed). Both should land in the allow-list regardless
+    // of their `reason` value — the parser must not discriminate.
+    writeFileSync(
+      retiredFilePath(),
+      [
+        "version: 1",
+        "retired:",
+        "  - name: cali-product-critique",
+        "    retired_at: 2026-05-29",
+        "    reason: superseded",
+        "    superseded_by:",
+        "      - cali-product-plan-critique",
+        "      - cali-product-codebase-critique",
+        "  - name: cali-product-interface-brainstorm",
+        "    retired_at: 2026-05-31",
+        "    reason: renamed",
+        "    superseded_by:",
+        "      - cali-product-interface-alternatives",
+        "",
+      ].join("\n")
+    );
+
+    const names = getRetiredSkillNames(cloneSkillsDir);
+    expect(names).toEqual(
+      new Set([
+        "cali-product-critique",
+        "cali-product-interface-brainstorm",
+      ])
+    );
+  });
 });
