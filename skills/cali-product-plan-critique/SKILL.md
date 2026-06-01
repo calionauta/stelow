@@ -87,41 +87,39 @@ and implementation constraints.
 | `references/auto-resolve-rules.md` | Rules for auto-resolving gaps with defaults |
 | `references/output-format.md` | Report format specification |
 
-### critique:20 — Appetite Violation Check
+### critique:20 — Appetite Fit Check
 
-**Before launching parallel reviewers**, check the appetite from spec-product.md frontmatter:
+**Before launching parallel reviewers**, check the `appetite_fit` from spec-product.md frontmatter:
 
 ```bash
 APPETITE=$(grep -oP '^appetite:\s*\K\S+' "$INPUT" 2>/dev/null || echo "Focused")
-COMPLEXITY=$(grep -oP '^complexity_estimate:\s*\K\S+' "$INPUT" 2>/dev/null || echo "$APPETITE")
+FIT=$(grep -oP '^appetite_fit:\s*\K\S+' "$INPUT" 2>/dev/null || echo "fits")
 ```
 
 **Note:** Auto-skip of critique is now controlled by **Mode** (from `index.json`), not by appetite. When the orchestrator calls plan-critique, mode has already decided whether critique runs. When standalone, plan-critique always runs in Full mode.
 
-**Check for appetite violation:**
+**Check appetite fit (constraint check, not estimation):**
 
 ```bash
-# complexity_estimate uses XS/S/M/L/XL scale, appetite uses PoC/Focused/Comprehensive
-# They are different scales — cannot compare by ordinal.
-# Instead, check if the estimate suggests more effort than the appetite implies:
-#   - PoC: complexity must be XS or S (≤5 scopes)
-#   - Focused: complexity must be M or less (≤10 scopes)
-#   - Comprehensive: any complexity fits
-case "$APPETITE" in
-  PoC)
-    case "$COMPLEXITY" in
-      M|L|XL) echo "APPETITE_VIOLATION: PoC appetite but complexity=$COMPLEXITY — scope too large for declared review attention." ;;
-      *) echo "APPETITE_FITS: PoC + $COMPLEXITY — OK." ;;
-    esac
+# appetite_fit is the LLM's assessment of whether the shaped proposal
+# fits within the human-declared appetite (constraint).
+# Appetite is NOT a target — it's a budget. The LLM does not estimate effort.
+# It checks: does this shaped design fit the declared investment?
+case "$FIT" in
+  fits)
+    echo "APPETITE_FITS: Shaped proposal fits within $APPETITE appetite. Proceed."
     ;;
-  Focused)
-    case "$COMPLEXITY" in
-      L|XL) echo "APPETITE_VIOLATION: Focused appetite but complexity=$COMPLEXITY — consider splitting scope." ;;
-      *) echo "APPETITE_FITS: Focused + $COMPLEXITY — OK." ;;
-    esac
+  cuts_needed)
+    echo "APPETITE_CUTS_NEEDED: $APPETITE appetite but proposal needs cuts."
+    echo "Critique will highlight which parts should be cut. Human decides final scope."
     ;;
-  Comprehensive)
-    echo "APPETITE_FITS: Comprehensive + $COMPLEXITY — always OK (no upper bound on depth)."
+  reshape)
+    echo "APPETITE_RESHAPE_NEEDED: Proposal fundamentally exceeds $APPETITE appetite."
+    echo "Critique cannot proceed — must reshape before continuing."
+    exit 1
+    ;;
+  *)
+    echo "APPETITE_FIT_UNKNOWN: '$FIT' invalid. Defaulting to 'fits'."
     ;;
 esac
 ```

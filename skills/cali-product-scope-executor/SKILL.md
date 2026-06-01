@@ -113,7 +113,7 @@ Before executing, present a clear execution plan to the user with the resolved e
 📋 Execution Plan for: {plan-name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Appetite: {PoC|Focused|Comprehensive} (human-set)
-Complexity Estimate: {XS|S|M|L|XL} (LLM-set)
+Appetite Fit: {fits|cuts_needed|reshape} (LLM-set)
 Phase 1 (parallel):
   ⏩ [SCOPE-1] Login — feature → worker
   ⏩ [SCOPE-3] Vector DB eval — spike → scout + researcher

@@ -114,7 +114,7 @@ Use OUT/IN order (convention from Shape Up):
 - If unclear, mark as OUT (conservative scoping)
 - IN items should be scoped to fit the declared appetite
 - OUT items can be revisited in future cycles
-- If the scope doesn't fit the appetite: split, don't extend the appetite
+- If the scope doesn't fit the appetite: cut or split, never extend the appetite
 
 ---
 
@@ -128,7 +128,7 @@ name: {product-name}
 product_type: {software|service|hybrid}
 appetite: {PoC|Focused|Comprehensive}  # human-set: depth of scope to prepare
 appetite_source: {setup|resume}         # where it was defined
-complexity_estimate: {XS|S|M|L|XL}     # LLM-set: estimated review effort the output requires
+appetite_fit: {fits|cuts_needed|reshape}  # LLM-set: does the shaped proposal fit within the declared appetite?
 interface: {none|standard|full}
 created_at: {YYYY-MM-DD}
 approved: false
@@ -148,9 +148,15 @@ generated_by: "{model_name}"
 
 > **Who sets appetite:** The human in the setup stage, using two independent choices: Appetite (depth) + Mode (interaction level). Mode is stored separately in `index.json` and controls gates/questions/approvals.
 
-> **`complexity_estimate`** is the LLM's estimate of how much review effort the proposed output will take. The LLM fills this by comparing the proposed scope against the human-declared appetite. If `complexity_estimate > appetite`, the scope is too large — it must be split before proceeding.
-
-> **Golden rule:** If `complexity_estimate > appetite`, the LLM must suggest splits or scope reductions until it fits. The final decision to extend appetite (or accept the split) is always human.
+> **`appetite_fit`** is the LLM's assessment of whether the shaped proposal fits within the declared appetite. The LLM answers after shaping, comparing what was proposed against the constraint set by appetite.
+>
+> | Value | Meaning |
+> |-------|---------|
+> | `fits` | Proposal fits within appetite — proceed as shaped |
+> | `cuts_needed` | Proposal almost fits but needs targeted cuts (LLM suggests what to cut; human decides) |
+> | `reshape` | Proposal fundamentally exceeds appetite — must be reshaped before continuing |
+>
+> **This is NOT an estimate.** Appetite is a constraint, not a target. The LLM does not estimate effort — it checks whether the shaped design fits the human's declared budget. If it doesn't fit, the LLM proposes cuts or reshaping, never an appetite extension. The final decision is always human.
 
 ### Mode (separate from appetite)
 

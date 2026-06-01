@@ -46,6 +46,7 @@ describe('No stale old appetite labels', () => {
     { path: join(SKILLS_DIR, 'cali-product-codebase-critique', 'SKILL.md'), name: 'codebase-critique/SKILL.md' },
     { path: join(SKILLS_DIR, 'cali-product-ux-critique', 'SKILL.md'), name: 'ux-critique/SKILL.md' },
     { path: join(SKILLS_DIR, 'cali-product-scope-executor', 'SKILL.md'), name: 'scope-executor/SKILL.md' },
+    { path: join(SKILLS_DIR, 'cali-product-execution-critique', 'SKILL.md'), name: 'execution-critique/SKILL.md' },
     { path: join(SKILLS_DIR, 'cali-product-tech-planning', 'SKILL.md'), name: 'tech-planning/SKILL.md' },
     { path: join(SKILLS_DIR, 'cali-product-shape-up', 'references', 'proposal-structure.md'), name: 'proposal-structure.md' },
     { path: join(WORKFLOW_DIR, 'references', 'cli-tools', 'supervise.md'), name: 'supervise.md' },
@@ -57,9 +58,10 @@ describe('No stale old appetite labels', () => {
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
-      // Skip lines that are part of complexity_estimate (valid usage)
-      if (line.includes('complexity_estimate')) continue;
-      if (line.includes('{XS|S|M|L|XL}')) continue;
+      // Skip lines that include appetite_fit (valid usage)
+      if (line.includes('appetite_fit')) continue;
+      // Skip lines describing how report verbosity varies by appetite (uses XS/S/L/XL conceptually)
+      if (line.includes('report is more concise') || line.includes('full recommendations')) continue;
 
       // Check for backtick-wrapped old labels
       const oldLabelMatch = line.match(/`(XS|S|M|L|XL)`/);
@@ -362,17 +364,48 @@ describe('Ask patterns completeness', () => {
 });
 
 // ═════════════════════════════════════════════════════════════════════
-// 11. COMPLEXITY_ESTIMATE COMPARISON LOGIC
+// 11. APPETITE_FIT CHECK LOGIC (constraint, not estimation)
 // ═════════════════════════════════════════════════════════════════════
 
-describe('Complexity_estimate comparison logic (no ordinal comparison bug)', () => {
-  it('plan-critique uses case-based comparison, not ordinal mapping', () => {
+describe('Appetite_fit check logic (constraint check, not estimation)', () => {
+  it('plan-critique uses appetite_fit case-based check, not ordinal mapping', () => {
     const content = readSkill('cali-product-plan-critique');
-    expect(content).toMatch(/case "\$APPETITE" in/);
-    expect(content).toMatch(/PoC\)/);
-    expect(content).toMatch(/Focused\)/);
-    expect(content).toMatch(/Comprehensive\)/);
+    expect(content).toMatch(/case "\$FIT" in/);
+    expect(content).toMatch(/fits\)/);
+    expect(content).toMatch(/cuts_needed\)/);
+    expect(content).toMatch(/reshape\)/);
     expect(content).not.toMatch(/APPETITE_ORDER/);
+    expect(content).not.toMatch(/complexity_estimate/);
+  });
+
+  it('proposal-structure.md uses appetite_fit not complexity_estimate', () => {
+    const content = readFileSync(
+      join(SKILLS_DIR, 'cali-product-shape-up', 'references', 'proposal-structure.md'),
+      'utf-8'
+    );
+    expect(content).toMatch(/appetite_fit/);
+    expect(content).not.toMatch(/complexity_estimate/);
+    expect(content).toMatch(/This is NOT an estimate/);
+  });
+
+  it('shape-up SKILL.md uses appetite_fit not complexity_estimate', () => {
+    const content = readSkill('cali-product-shape-up');
+    expect(content).toMatch(/appetite_fit/);
+    expect(content).not.toMatch(/complexity_estimate/);
+    expect(content).toMatch(/constraint, não estimativa/);
+  });
+
+  it('scope-executor SKILL.md uses Appetite Fit not Complexity Estimate', () => {
+    const content = readSkill('cali-product-scope-executor');
+    expect(content).toMatch(/Appetite Fit/);
+    expect(content).not.toMatch(/Complexity Estimate/);
+  });
+
+  it('setup.md references appetite_fit not complexity_estimate', () => {
+    const content = readStage('setup.md');
+    expect(content).toMatch(/appetite_fit/);
+    expect(content).not.toMatch(/complexity_estimate/);
+    expect(content).toMatch(/constraint, not a target/);
   });
 });
 

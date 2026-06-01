@@ -71,7 +71,7 @@ VALID=true
 grep -q "IN scope" "$SPEC" || { echo "VALIDATION_FAILED: missing IN scope"; VALID=false; }
 grep -q "OUT scope" "$SPEC" || { echo "VALIDATION_FAILED: missing OUT scope"; VALID=false; }
 grep -q "appetite:" "$SPEC" || { echo "VALIDATION_FAILED: missing appetite field (human-set)"; VALID=false; }
-grep -q "complexity_estimate:" "$SPEC" || { echo "VALIDATION_FAILED: missing complexity_estimate field (LLM-set)"; VALID=false; }
+grep -q "appetite_fit:" "$SPEC" || { echo "VALIDATION_FAILED: missing appetite_fit field (LLM-set: does shaped proposal fit appetite?)"; VALID=false; }
 grep -q -E "## (Risks|Rabbit ?holes)" "$SPEC" || { echo "VALIDATION_FAILED: missing Risks section"; VALID=false; }
 
 if [ "$VALID" = false ]; then
@@ -84,11 +84,13 @@ fi
 
 > **Rationale:** Appetite é o que torna o escopo verificável. Sem appetite declarado, a LLM pode gerar escopo arbitrariamente grande — e o gargalo não é gerar, é verificar. Appetite mede atenção humana, não velocidade da LLM.
 >
-> **Appetite é diferente de complexity_estimate:**
-> - `appetite` — definido pelo **humano** no setup stage. Quanto review esse problema merece?
-> - `complexity_estimate` — definido pela **LLM** pós-shaping. Quanto review o output proposto deve consumir?
+> **Appetite é constraint, não estimativa:**
+> - `appetite` — definido pelo **humano** no setup stage. Quanto investimento esse problema merece? (orçamento, não estimativa)
+> - `appetite_fit` — definido pela **LLM** pós-shaping. O proposal cabe dentro do appetite declarado?
 >
-> **Se `complexity_estimate > appetite`:** a LLM sugere splits ou reduções de escopo. O humano decide se aceita o split ou estende o appetite. A LLM **nunca** decide sozinha estender appetite — seria circular.
+> **Se `appetite_fit = cuts_needed`:** a LLM sugere cortes específicos. O humano decide quais aceitar.
+> **Se `appetite_fit = reshape`:** o proposal não cabe de forma alguma — precisa ser remodelado.
+> A LLM **nunca** pode estender appetite. Appetite é fixo para o ciclo.
 >
 > **How to define appetite:** see `references/proposal-structure.md` — PoC / Focused / Comprehensive with depth of scope. Mode controls gates/questions independently (stored in `index.json`).
 

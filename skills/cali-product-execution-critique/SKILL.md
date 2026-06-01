@@ -72,9 +72,9 @@ but can also be used standalone when you say:
 
 > All 8 criteria run in every mode. Only the **source of truth** differs.
 
-> **Appetite-aware depth:** The audit always runs all 8 criteria, but for XS/S
+> **Appetite-aware depth:** The audit always runs all 8 criteria, but for PoC/Focused
 > appetites the report is more concise (executive summary + gap registry only).
-> For L/XL, it includes full recommendations, lessons learned, and decision matrix.
+> For Comprehensive, it includes full recommendations, lessons learned, and decision matrix.
 > This is cosmetic — the evaluation coverage is identical regardless of appetite.
 
 ---

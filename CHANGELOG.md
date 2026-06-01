@@ -4,6 +4,18 @@ All notable changes to `@renatocaliari/cali-product-workflow` will be documented
 
 ## [Unreleased]
 
+## [0.10.0-alpha] - 2026-06-01
+
+### Changed
+- **BREAKING**: Removed `complexity_estimate` field from proposal-structure.md — replaced with `appetite_fit` (fits/cuts_needed/reshape). Appetite is now treated as a constraint, not a target for estimation. The LLM checks whether the shaped proposal fits the declared appetite, rather than estimating effort on an ordinal scale.
+- **BREAKING**: plan-critique/SKILL.md appetite violation check now uses `appetite_fit` case-based logic instead of ordinal comparison (PoC vs XS/S/M/L/XL). `reshape` halts critique with exit 1.
+- **shape-up/SKILL.md**: Validation guard updated to check `appetite_fit` field instead of `complexity_estimate`. Conceptual callout rewritten to emphasize appetite as constraint.
+- **scope-executor/SKILL.md**: Template reference updated from `Complexity Estimate` to `Appetite Fit`.
+- **execution-critique/SKILL.md**: Fixed stale XS/S/L/XL appetite labels → PoC/Focused/Comprehensive.
+- **setup.md**: Comment updated to reference `appetite_fit` constraint model.
+- **README.md**: Complete restructure — new section ordering, Key Differentiators as proper heading, "Measure thrice, cut once" as blockquote, Appetite & Mode promoted, Evidence-Based Design + Radical Transparency merged into unified Evidence & Limitations section, Mode system added to differentiators, links added for all Known Limitations papers.
+- **appetite-consistency.test.ts**: Tests updated for new schema; execution-critique added to stale-label scan.
+
 ### Added
 - **State coverage baseline**: Standardized coverage formula `(✅ + ⬆️) / (✅ + ❌ + ⬆️)` across all 4 skills (interface-alternatives, interface-rules, checklists, ui-audit-dimensions)
 - **Component Typing section** in `ui-audit-dimensions.md`: Int/Disp classification with baseline applicability rules

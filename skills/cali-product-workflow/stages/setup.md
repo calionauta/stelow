@@ -343,8 +343,9 @@ appetite: {chosen_appetite}
 appetite_source: setup
 ```
 The Shape Up validation guard will reject the file if `appetite:` is missing.
-The LLM then sets its own `complexity_estimate` after shaping — if it exceeds
-appetite, the scope must be split.
+The LLM then assesses `appetite_fit` after shaping — does the shaped proposal fit
+within the declared appetite? If not (cuts_needed or reshape), the scope must be
+cut or reshaped. Appetite is a constraint, not a target — never extended.
 
 > **Rules:**
 > 1. Appetite is FIXED for the cycle. The LLM cannot extend it.
