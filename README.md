@@ -3,6 +3,7 @@
 [![CI](https://github.com/renatocaliari/cali-product-workflow/actions/workflows/ci.yml/badge.svg)](https://github.com/renatocaliari/cali-product-workflow/actions/workflows/ci.yml)
 [![Mutation Testing](https://github.com/renatocaliari/cali-product-workflow/actions/workflows/mutation.yml/badge.svg)](https://github.com/renatocaliari/cali-product-workflow/actions/workflows/mutation.yml)
 [![Coverage](https://img.shields.io/badge/coverage-70%25-brightgreen)](https://github.com/renatocaliari/cali-product-workflow/actions/workflows/ci.yml)
+[![Version](https://img.shields.io/github/v/release/renatocaliari/cali-product-workflow?logo=github&label=release)](https://github.com/renatocaliari/cali-product-workflow/releases)
 
 **Transform product ideas into approved, testable plans — systematically.**
 
@@ -42,7 +43,6 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 - [cali-product-workflow Integration](#cali-product-workflow-integration)
 - [🔧 Dependencies](#-dependencies)
 - [About the Author](#about-the-author)
-- [📊 Version](#-version)
 - [License](#license)
 - [📞 Support](#-support)
 
@@ -556,14 +556,6 @@ This workflow wasn't designed in a vacuum. It comes from years inside real teams
 |------|-------------|
 | [timeproduto.com.br](https://www.timeproduto.com.br/) | Product process divided into stages, with AI tools and prompts for each stage |
 | [calirenato82.substack.com](https://calirenato82.substack.com) | Blog exploring AI, organizational culture, daily philosophy, narrative practices, and product thinking — with published prompts and free e-books |
-
----
-
-## 📊 Version
-
-Current: **1.0.0-alpha**
-
-See [CHANGELOG.md](CHANGELOG.md) for release history.
 
 ---
 

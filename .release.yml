@@ -1,0 +1,29 @@
+# ============================================================================
+# Release configuration for cali-ops-github-releases skill
+# ============================================================================
+# This file tells the skill how to create releases for this project.
+# Fields are optional — the skill uses defaults when not specified.
+# ============================================================================
+
+# Suffix appended to version numbers (e.g. 0.11.1-alpha)
+# Default: ""  (no suffix)
+suffix: alpha
+
+# Version files to sync when bumping (relative to project root)
+# The skill will update the version field in each file.
+# Default: [] (auto-detect package.json, pyproject.toml, Cargo.toml)
+version_files:
+  - package.json
+  - .claude-plugin/plugin.json
+  - .claude-plugin/marketplace.json
+  - .codex-plugin/plugin.json
+  - .codex-plugin/marketplace.json
+  - .opencode-plugin/plugin.json
+
+# Command to run tests before release
+# Default: "" (no tests)
+test_command: npm test
+
+# Command to run lint/typecheck before release
+# Default: "" (no lint)
+lint_command: npm run typecheck
