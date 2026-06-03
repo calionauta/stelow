@@ -16,6 +16,9 @@ import {
 import { updateFooter, notifyPhase, showOverlay, getUIAdapter } from "./ui";
 import cmdStart from "./start";
 
+// ── Stages Guard (pure file-state management) ────────────────────────
+import { PHASE_TO_STAGE, syncStagesGuardState } from "./stages-guard";
+
 // ── Import Command Dispatcher for Multi-CLI Support ─────────────────
 import { WORKFLOW_COMMANDS, type CommandDescriptor } from "./adapters/commands/dispatcher";
 
@@ -476,37 +479,7 @@ function cmdList(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
   }
 }
 
-// ── Stages guard sync helper ───────────────────────────────────────
-// Maps PHASE_NAMES index to stages.yaml stage name and updates
-// current-stage.json so the stages guard picks up phase changes.
-const PHASE_TO_STAGE: Record<number, string> = {
-  0: "triage", 1: "select", 2: "setup", 3: "context",
-  4: "shape", 5: "critique", 6: "gate", 7: "scope",
-  8: "interface", 9: "int-gate", 10: "selection",
-  11: "planning", 12: "execution", 13: "verification",
-  14: "audit",
-};
 
-function syncStagesGuardState(cwd: string, phaseIndex: number): void {
-  const stageName = PHASE_TO_STAGE[phaseIndex];
-  if (!stageName) return;
-  const stateDir = join(cwd, WORKFLOW_DIR, "state");
-  if (!existsSync(stateDir)) mkdirSync(stateDir, { recursive: true });
-  const statePath = join(stateDir, "current-stage.json");
-  const now = new Date().toISOString();
-  const prev = existsSync(statePath)
-    ? JSON.parse(readFileSync(statePath, "utf-8"))
-    : { current_stage: "triage", previous_stage: null, transitioned_at: now, history: [], gates_passed: [], supervisor_active: false };
-  const newState = {
-    current_stage: stageName,
-    previous_stage: prev.current_stage,
-    transitioned_at: now,
-    history: [...(prev.history || []), { stage: prev.current_stage, entered_at: prev.transitioned_at, exited_at: now }],
-    gates_passed: prev.gates_passed || [],
-    supervisor_active: prev.supervisor_active || false,
-  };
-  writeFileSync(statePath, JSON.stringify(newState, null, 2));
-}
 
 // ── SETPHASE ─────────────────────────────────────────────────────────
 
