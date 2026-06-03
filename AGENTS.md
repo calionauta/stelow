@@ -5,9 +5,12 @@
 ## Project Overview
 
 **Type:** Workflow CLI for product planning (skills + stages).
-**Stack:** Node 20+, TypeScript 5 strict, npm.
-**Architecture:** See [architecture.md](architecture.md) — module layout, data flow, how to extend. Skills live in `skills/*/SKILL.md`; stages in `stages.yaml`.
-**Stages:** 15, defined in `stages.yaml` (single source of truth). Visual review gate at `gate` and `int-gate` (Plannotator) — never skip.
+**Stack:** Node 20+, TypeScript 6.0 strict, npm.
+
+## Architecture
+
+See [architecture.md](architecture.md) for module layout, data flow, and how to extend. Skills live in `skills/*/SKILL.md`; stages defined in `stages.yaml` (single source of truth). Visual review gates: `gate` and `int-gate` (Plannotator) — never skip.
+
 
 ## Commands
 
