@@ -118,10 +118,10 @@ export default async function cmdStart(
     draftContent: fullDraft ? truncateText(fullDraft, 5000) : undefined,
     source: sources.length > 0 ? sources[0] : undefined,
     status: "in-progress",
-    currentPhase: 0,
+    currentPhase: 2,
     phases: PHASE_NAMES.map((name, i) => ({
       id: `${i}-${name.toLowerCase()}`, name,
-      status: i === 0 ? "in-progress" : "pending"
+      status: i < 2 ? "completed" : i === 2 ? "in-progress" : "pending"
     })),
     created: new Date().toISOString(),
     updated: new Date().toISOString(),
@@ -147,7 +147,7 @@ export default async function cmdStart(
     updated_at: new Date().toISOString(),
     name: finalName, _dir: dirHash,
     workflow_status: "in-progress",
-    current_phase: "setup", current_phase_index: 0,
+    current_phase: "setup", current_phase_index: 2,
     artifacts: {}, approved: false, approved_at: null,
     draft: fullDraft ? truncateText(fullDraft, 10000) : undefined,
     sources,

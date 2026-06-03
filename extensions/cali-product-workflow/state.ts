@@ -393,7 +393,13 @@ export function scanWorkflowDirs(cwd: string): DiskWorkflow[] {
           result.push({
             name: raw.name || raw.slug || wfDir,
             status: raw.workflow_status || "unknown",
-            currentPhase: raw.current_phase_index ?? 0,
+            // Backward compatibility: old workflows had current_phase_index: 0 for Setup
+            // (the bug that was just fixed). If phase name says "setup" but index is 0,
+            // normalize to 2 (correct index for Setup in PHASE_NAMES).
+            currentPhase:
+              raw.current_phase_index === 0 && raw.current_phase === "setup"
+                ? 2
+                : (raw.current_phase_index ?? 0),
             created: raw.created_at || "",
             updated: raw.updated_at || "",
             draftContent: raw.draft,
@@ -495,6 +501,54 @@ export function archiveWorkflowOnDisk(cwd: string, workflowName: string): boolea
     }
   } catch { /* skip */ }
   return false;
+}
+
+/**
+ * Centralized write-through to index.json on disk.
+ * Merges partial `updates` into the on-disk index.json, reading current state first.
+ * Path is derived from wf.dirHash (stable directory name) and wf.created (date stamp).
+ * Returns true if written, false if wf.dirHash is missing.
+ *
+ * Call this on EVERY phase/status mutation so the three state sources stay aligned:
+ * - tracking file (cali-product-workflow.json)
+ * - global tracking (~/.cali-pw-global.json)
+ * - index.json (.cali-product-workflow/<date>/<hash>/index.json)
+ */
+export function updateWorkflowIndexJson(
+  cwd: string,
+  wf: Workflow,
+  updates: Record<string, unknown>
+): boolean {
+  if (!wf.dirHash) return false;
+  // Defensive date: avoid RangeError from invalid wf.created
+  const createdDate = new Date(wf.created);
+  const ds = isNaN(createdDate.getTime()) ? getDateStamp() : getDateStamp(createdDate);
+  const idxPath = join(cwd, WORKFLOW_DIR, ds, wf.dirHash, "index.json");
+
+  let idx: Record<string, unknown> = {};
+  try {
+    idx = JSON.parse(readFileSync(idxPath, "utf-8"));
+  } catch {
+    if (existsSync(idxPath)) {
+      // File exists but is corrupt — warn and rebuild from workflow state
+      console.warn(`[cali-product-workflow] Corrupt index.json, rebuilding: ${idxPath}`);
+    }
+    // Init from workflow state (defensive recovery)
+    idx = {
+      name: wf.name,
+      workflow_status: wf.status,
+      current_phase: PHASE_NAMES[wf.currentPhase]?.toLowerCase() || "setup",
+      current_phase_index: wf.currentPhase,
+      created_at: wf.created,
+    };
+  }
+
+  Object.assign(idx, updates);
+  idx.updated_at = new Date().toISOString();
+
+  mkdirSync(dirname(idxPath), { recursive: true });
+  writeFileSync(idxPath, JSON.stringify(idx, null, 2));
+  return true;
 }
 
 /** Safe directory listing that returns [] on error. */

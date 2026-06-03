@@ -34,4 +34,4 @@ After Triage completes with one or more accepted items. If the user had a single
 
 ### Completion
 
-When the user has selected one item, call `/pw-next` to advance to Setup.
+When the user has selected one item, advance to Setup automatically.

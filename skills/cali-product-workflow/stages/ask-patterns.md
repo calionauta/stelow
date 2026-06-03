@@ -239,6 +239,9 @@ ask_user_question({
 
 Used in `stages/setup.md` for workflow stage selection and safe-change.
 
+> **Note:** This pattern is only shown for Moderate/Full/Full+Tech modes.
+> Auto/Light modes auto-define stages.
+
 > **Note:** This is the ONLY place with multiple questions in parallel.
 
 ```typescript
@@ -268,16 +271,16 @@ Select the desired stages:`,
       ]
     },
     {
-      question: "Before starting, would you like to validate the impact of changes on existing code?",
-      header: "Safe-change",
+      question: "Before starting, would you like to run tests to check for regressions?",
+      header: "Tests",
       options: [
         {
-          label: "Yes — run safe-change (Recommended)",
-          description: "+ Checks regressions automatically | + Catches issues before planning | - ~2-5 min extra\n  → Executes safe-change from pi-agent-codebase-workflows (PriNova)"
+          label: "Yes — run tests (Recommended)",
+          description: "Runs test suite to check for regressions before planning changes. ~2-5 min."
         },
         {
           label: "No — proceed directly",
-          description: "+ Faster | + No automatic validation | - No safety net"
+          description: "Faster start, no automatic validation."
         }
       ]
     }
@@ -285,7 +288,7 @@ Select the desired stages:`,
 })
 ```
 
-**If user chooses "Yes" for safe-change:** Run `safe-change` BEFORE proceeding.
+**If user chooses "Yes" for tests:** Run `npm test` if repo has `package.json`, or appropriate test command.
 
 ---
 ## Pattern 6: Workflow Interruption
@@ -333,7 +336,7 @@ What would you like to do?`,
 
 Used by `setup:15` when the human declares the depth of scope to prepare.
 
-> **Trigger:** Before stage selection, after inbox/lessons/context pre-load.
+> **Trigger:** Before stage selection, after inbox/lessons/session knowledge injection.
 
 ```typescript
 ask_user_question({
@@ -361,42 +364,15 @@ Appetite is declared first, then the mode of interaction is chosen.`,
 
 ```
 
-**Checkboxes (cross-cutting concerns):**
-
-```typescript
-ask_user_question({
-  questions: [{
-    question: `Which capabilities does this need?`,
-    header: "Capabilities",
-    multiSelect: true,
-    options: [
-      {
-        label: "Authentication",
-        description: "Login, session management, RBAC/permissions"
-      },
-      {
-        label: "Database",
-        description: "Storage, schema design, migrations, queries"
-      },
-      {
-        label: "Payment",
-        description: "Checkout flow, subscriptions, refunds, invoices"
-      }
-    ]
-  }]
-})
-
-```
-
 **How appetite shapes the output:**
 
-| Level | Spec size | Scopes | Implementation strategies | Edge cases | Each checkbox adds |
-|-------|-----------|--------|--------------------------|------------|-------------------|
-| PoC | ~1 page | 1-2 | 1 direct — no divergence | Not documented | +1 scope each |
-| Focused | ~3 pages | 3-5 | 1-2 considered with brief rationale | Only obvious ones | +2-3 scopes each |
-| Comprehensive | ~8+ pages | 8-15 | 3-5 compared with trade-off analysis | Fully mapped | +3-5 scopes each |
+| Level | Spec size | Scopes | Implementation strategies | Edge cases |
+|-------|-----------|--------|--------------------------|------------|
+| PoC | ~1 page | 1-2 | 1 direct — no divergence | Not documented |
+| Focused | ~3 pages | 3-5 | 1-2 considered with brief rationale | Only obvious ones |
+| Comprehensive | ~8+ pages | 8-15 | 3-5 compared with trade-off analysis | Fully mapped |
 
-**Storage:** Save to `index.json` as `config.appetite`, save checkboxes as `config.{auth,database,payment}`, and inject into `spec-product.md` frontmatter as `appetite: {chosen}`.
+**Storage:** Save to `index.json` as `config.appetite`, and inject into `spec-product.md` frontmatter as `appetite: {chosen_appetite}`.
 
 > **Key rule:** Appetite is FIXED for the cycle. The LLM cannot extend it. If scope doesn't fit, the LLM splits — the human decides whether to accept the split or extend appetite in a NEW cycle.
 
@@ -406,7 +382,7 @@ ask_user_question({
 
 Used by `setup:15` after appetite is declared. Defines how much the workflow interacts with the human.
 
-> **Trigger:** After appetite + capabilities selection, before stage selection.
+> **Trigger:** After appetite selection, before stage selection.
 
 ```typescript
 ask_user_question({

@@ -213,7 +213,7 @@ Add AI summarization
 
 1. **Every response**: Start with phase indicator, show todo list
 2. **Before calling todo tool**: Read current workflow state from tracking file
-3. **After phase completion**: Call `/pw-next` to advance and create new todo set
+3. **After phase completion**: Auto-advance to next stage. `/pw-next` only needed if workflow was paused or halted by error.
 4. **On session resume**: Reconstruct todo list from current phase tracking data
 5. **Never mix phases**: Each todo set belongs to one phase only
 6. **File persistence**: Always write todos to `phase-todos.json` (see Source of Truth)

@@ -47,4 +47,4 @@ Triggered when the user's initial request contains multiple items (bullets, numb
 
 ### Completion
 
-When all items have been triaged, call `/pw-next` to advance to Item Selection. If all items were rejected/deferred, end the workflow.
+When all items have been triaged, advance to Item Selection automatically. If all items were rejected/deferred, end the workflow.

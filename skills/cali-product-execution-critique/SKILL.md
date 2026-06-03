@@ -2,9 +2,10 @@
 name: cali-product-execution-critique
 description: >
   [Cali] Post-implementation execution critique: verify scope completion, implementation quality,
-  NFR coverage, edge cases, doc/tests, and produce a gap registry with decision matrix.
+  NFR coverage, edge cases, doc/tests, produce a gap registry with decision matrix.
   Supports 4 modes: workflow (spec-tech.md), plan (spec-product.md), context (dir/URL),
-  and standalone (auto-detects via sem diff + git).
+  and standalone (auto-detects via sem diff + git). Merges and replaces cali-post-execution-check (deprecated).
+  Falls back to git diff when sem is not installed.
 metadata:
   frequency: weekly
   category: meta
@@ -20,7 +21,7 @@ Run a structured audit after any implementation — whether it followed the full
 every mode; only the **source of truth** differs based on what input is available.
 
 > **Tools:** See `references/cli-tools/subagents.md` for subagent patterns.
-> See `references/cli-tools/todo.md` for task management.
+> See `references/cli-tools/context-mode.md` for processing large outputs.
 
 ---
 
@@ -38,9 +39,52 @@ Input received:
   │   └→ 📁 Mode: Context Audit (source of truth = sem diff + git + session)
   └── NOTHING / no input?
       └→ 💻 Mode: Standalone Audit (source of truth = auto-discovered)
-         Run: sem diff HEAD~1, sem diff, git diff, session file list
+         Run: sem diff HEAD~1 (or git fallback), git diff, session file list
          If nothing found: ask "What changed?"
 ```
+
+---
+
+## 🔧 Tool Availability & Fallbacks
+
+Before entering any mode, check what's available:
+
+```bash
+# Check sem
+command -v sem && HAS_SEM=1 || HAS_SEM=0
+
+# Check if HEAD~1 exists (new repos, first commit)
+git rev-parse HEAD~1 >/dev/null 2>&1 && HAS_PREV=1 || HAS_PREV=0
+
+# Check if .cali-product-workflow/ exists
+[ -d ".cali-product-workflow/" ] && HAS_WORKFLOW_DIR=1 || HAS_WORKFLOW_DIR=0
+```
+
+### sem not installed
+
+If `sem` is absent, fall back to git:
+- `sem diff HEAD~1` → `git log --name-only HEAD~1..HEAD` + `git diff --stat HEAD~1`
+- `sem diff` (working tree) → `git diff --stat -- .`
+- `sem stats` → `git diff --stat HEAD~1`
+- `sem entities` → `find ./ -name '*.go' -o -name '*.ts' -o -name '*.py' | head -50`
+
+**Never block** an audit on `sem` being absent. The audit quality drops
+(structural analysis lost) but the remaining criteria (implementation
+quality, NFRs, edge cases, docs/tests) still deliver value.
+
+### No prior commit (`HEAD~1` doesn't exist)
+
+New repo or first commit. Fall back:
+- Use `git diff HEAD` for working tree changes
+- Use `git diff --staged` for staged changes
+- Show: "This is the first commit — auditing working tree and staged changes."
+
+### `.cali-product-workflow/` doesn't exist
+
+If this directory is missing:
+- In Workflow mode: show "No workflow directory found. The project may not
+  have run through `cali-product-workflow`. Switching to Standalone mode."
+- In other modes: no impact (they don't depend on this directory)
 
 ---
 
@@ -71,10 +115,63 @@ but can also be used standalone when you say:
 
 > All 8 criteria run in every mode. Only the **source of truth** differs.
 
-> **Appetite-aware depth:** The audit always runs all 8 criteria, but for PoC/Focused
-> appetites the report is more concise (executive summary + gap registry only).
-> For Comprehensive, it includes full recommendations, lessons learned, and decision matrix.
-> This is cosmetic — the evaluation coverage is identical regardless of appetite.
+> **Appetite-aware depth:** All 8 criteria always run. For PoC/Focused, report is
+> concise (summary + gap registry). For Comprehensive, full recommendations + lessons.
+> Coverage is identical regardless of appetite.
+
+---
+
+## 📋 Examples
+
+### Example 1: Workflow mode (spec-tech.md path)
+
+**Input:** "@.cali-product-workflow/teste/plans/spec-tech_v1.md — audit implementation"
+
+**Output:**
+```markdown
+# Execution Critique Report
+
+**Mode:** workflow
+**Source:** spec-tech_v1.md (12 scopes: 8 feature, 2 optimization, 2 test-*)
+
+## Summary
+| Items evaluated | 12 |
+| Items complete | 10 |
+| Items partial | 2 |
+| Gaps identified | 3 |
+
+### 1. Scope Completeness
+| Scope | Status | Notes |
+|-------|--------|-------|
+| S1: Auth middleware | ✅ | |
+| S2: Login page | ✅ | |
+| S3: Rate limiter | ⚠️ | Missing tests |
+
+### Decision
+⚠️ Follow-up: S3 needs integration tests before next cycle
+```
+
+### Example 2: Standalone mode (no input)
+
+**Input:** "Check my work" (in a Git repo, after implementing a feature)
+
+**Output:**
+```markdown
+# Execution Critique Report
+**Mode:** standalone
+**Source:** sem diff + git diff (5 entities changed)
+
+## Summary
+| Items evaluated | 5 |
+| Items complete | 5 |
+| Gaps identified | 1 |
+
+### Gap: No tests for auth.go (new file)
+| Gap Type: missing-tests | Impact: medium | Resolution: Add unit tests |
+
+### Decision
+📝 Document gap, close cycle. Add tests in next PR.
+```
 
 ---
 
@@ -93,12 +190,18 @@ ls -t .cali-product-workflow/*/plans/spec-tech_v*.md 2>/dev/null | head -1
 
 Parse all scopes — each has type, DoD, acceptance criteria, and (if present) NFRs.
 
-### 2. Run `sem diff` for entity-level change detection
+### 2. Run entity-level change detection
 
 ```bash
-sem diff HEAD~1     # entities modified in last commit
-sem diff            # working tree changes (if any)
-sem stats           # diff statistics
+if command -v sem &>/dev/null; then
+  sem diff HEAD~1   # entities modified in last commit
+  sem diff          # working tree changes
+  sem stats
+else
+  echo "⚠️  sem not installed — using git fallback"
+  git diff --stat HEAD~1
+  git log --name-only HEAD~1..HEAD
+fi
 ```
 
 Each modified entity maps to one or more plan scopes. Entities with no matching
@@ -199,9 +302,19 @@ of truth is the product spec's IN/OUT scope and DoD.
 Parse IN scope items and their acceptance criteria. Each IN item becomes an
 "inferred scope" for the audit.
 
-### 2. Run `sem diff` + `git diff`
+### 2. Run change detection
 
-Same as Workflow mode — detect what entities changed and map them to IN items.
+```bash
+if command -v sem &>/dev/null; then
+  sem diff HEAD~1
+  sem diff
+  sem entities
+else
+  echo "⚠️  sem not installed — using git fallback"
+  git diff --stat HEAD~1
+  git log --name-only HEAD~1..HEAD
+fi
+```
 
 ### 3. Run all 8 criteria
 
@@ -222,10 +335,16 @@ is the current state of the codebase or site.
 # Quick structural overview
 find {INPUT_PATH} -maxdepth 3 -type f | head -100
 
-# Semantic diff for entity-level changes
-sem diff HEAD~1
-sem diff
-sem entities
+# Entity-level changes (sem fallback to git)
+if command -v sem &>/dev/null; then
+  sem diff HEAD~1
+  sem diff
+  sem entities
+else
+  echo "⚠️  sem not installed — using git fallback"
+  git diff --stat HEAD~1
+  git log --name-only HEAD~1..HEAD
+fi
 ```
 
 ### URL input
@@ -261,16 +380,14 @@ auto-discovers what changed.
 ### Auto-discovery
 
 ```bash
-# Entities modified since last commit
-sem diff HEAD~1
+# Entities changed since last commit
+if command -v sem &>/dev/null; then
+  sem diff HEAD~1 && sem diff && sem stats
+else
+  echo "⚠️  sem not installed — git fallback"
+  git diff --stat HEAD~1 && git diff --stat -- .
+fi
 
-# Working tree changes
-sem diff
-
-# Entity statistics
-sem stats
-
-# Git log of recent changes
 git log --oneline -10
 ```
 
@@ -358,9 +475,7 @@ Always save or display in this format. The Lessons Learned section also writes t
 - **Don't assume** — Verify against the source of truth, don't guess.
 - **Don't rush** — A thorough audit saves hours of debugging later.
 - **Don't ignore warnings** — Even minor gaps compound over multiple cycles.
-- **Don't trust the same model** — If the implementation was done by model X,
-  a different model (or a human) should do the audit for genuine blind-spot
-  detection.
+- **Don't trust the same model** — audit with a different model (or human) for genuine blind-spot detection.
 
 ---
 
@@ -371,8 +486,15 @@ Always save or display in this format. The Lessons Learned section also writes t
 - **cali-product-testing-execution**: Post-implementation testing protocol (runs before this audit)
 - **cali-product-scope-executor**: Routes plan scopes to execution (feeds this audit's input)
 
+## References
+
+| Reference | Purpose | When to consult |
+|-----------|---------|-----------------|
+| [Tool Availability & Fallbacks](#-tool-availability--fallbacks) | sem/git fallback strategy | Before any mode |
+| `references/cli-tools/subagents.md` | Subagent patterns for parallel audit | Workflow mode with many scopes |
+| `references/cli-tools/context-mode.md` | Processing large codebase outputs | Output exceeds viewport |
+
 ## Environment Adaptation
 
-If a tool is unavailable, check:
-`references/cli-tools/`
-
+If a tool is unavailable, see [Tool Availability & Fallbacks](#-tool-availability--fallbacks) above.
+For subagent and large-output patterns, see `references/cli-tools/`.

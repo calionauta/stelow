@@ -268,6 +268,17 @@ audit — Execution Critique
 - Single-scope workflows can skip worktree.
 
 ### Workflow Interruption
+
+#### Auto-Advance (Default Behavior)
+
+After completing each stage, the LLM **must proceed directly to the next stage** without asking the user for permission and without requiring `/pw-next`. The `/pw-next` command exists **only** for these cases:
+- User explicitly paused the workflow (e.g., to discuss, wait for external input)
+- Execution halted due to an error
+- User typed `/pw-next` manually to advance faster
+
+**Exception:** If a stage produced output requiring human review (e.g., Plannotator gate rejected the spec, interface selection needs user choice), pause and wait for user input BEFORE advancing. After the user responds, resume auto-advance.
+
+#### Other Interruption Rules
 - If user introduces new work mid-workflow, use **Pattern 6** from `stages/ask-patterns.md`
 - **Never auto-abandon** an active workflow without confirmation
 - If workflow is near completion (Execution or Verification stage), recommend "Continue current"

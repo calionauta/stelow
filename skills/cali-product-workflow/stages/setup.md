@@ -75,28 +75,6 @@ Prefix the session with:
 > discoveries and decisions from prior work. Use them as background
 > context for the current cycle.
 
-### setup:0.40 — External Context Pre-Load
-
-After session knowledge, ask the user if they want to inject external
-context before the workflow begins. This closes the pre-session context injection gap — allowing
-third-party analysis, competitive research, peer reviews, or customer
-research to inform planning from the start.
-
-Use the ask tool (see `references/cli-tools/structured-question.md`):
-
-```
-ask tool: "Do you have external context to load before we start planning?"
-Options: Yes (load files, Recommended), No (skip), Tell me (describe verbally)
-```
-
-**If yes (files):** read each file path the user provides and inject as session context.
-**If tell me:** capture the user's description as a free-form note.
-**If no:** proceed without.
-
-> **Key difference from `context` stage (Strategic Context):** This is passive
-> pre-load of EXISTING materials (analyses, research done previously).
-> The `context` stage generates NEW strategic analysis (JTBD, Opportunity Maps, etc.).
-
 ### setup:10 — Auto-Discovery Check
 
 **BEFORE asking anything to the user**, verify the directory structure exists:
@@ -244,7 +222,7 @@ Appetite defines the **depth of scope** (what the LLM prepares). Mode defines th
 
 Use **Pattern 7 (Appetite Declaration)** from `stages/ask-patterns.md`.
 
-Present three options with checkboxes for cross-cutting capabilities:
+Present three options for appetite:
 
 ```
 ask_user_question({
@@ -257,15 +235,6 @@ Appetite is declared first, then the mode of interaction is chosen.`,
       { label: "PoC", description: "Quick validation — 1 minimal feature, ~1 page spec, 1-2 scopes. No edge cases." },
       { label: "Focused (Recommended)", description: "One feature product, main Job To Be Done — ~3 page spec, 3-5 scopes, obvious edge cases." },
       { label: "Comprehensive", description: "Multi-feature product — ~8+ page spec, 8-15 scopes, full edge case mapping, 3-5 implementation strategies compared with trade-offs." }
-    ]
-  }, {
-    question: `Which capabilities does this need?`,
-    header: "Capabilities",
-    multiSelect: true,
-    options: [
-      { label: "Authentication", description: "Login, session management, RBAC/permissions" },
-      { label: "Database", description: "Storage, schema design, migrations, queries" },
-      { label: "Payment", description: "Checkout flow, subscriptions, refunds, invoices" }
     ]
   }]
 })
@@ -322,10 +291,7 @@ if [ -n "$INDEX" ]; then
   CONFIG_JSON=$(cat <<EOF
   "config": {
     "appetite": "{chosen_appetite}",
-    "mode": "{chosen_mode}",
-    "auth": {auth_bool},
-    "database": {database_bool},
-    "payment": {payment_bool}
+    "mode": "{chosen_mode}"
   },
 EOF
   )
@@ -357,12 +323,31 @@ cut or reshaped. Appetite is a constraint, not a target — never extended.
 
 ### setup:20 — Stage Selection
 
-Use **Pattern 5** from `stages/ask-patterns.md`.
+**Mode-dependent behavior:**
 
-**If user chooses "Yes" for safe-change:**
-Run `safe-change` from **pi-agent-codebase-workflows** (PriNova) BEFORE proceeding.
+| Mode | Stage selection |
+|------|----------------|
+| Auto | Auto-selects Shape Up → Execution (auto-determined). Skip Pattern 5 entirely. |
+| Light | Auto-selects Shape Up → Critique → Gate → Interface (LLM-recommended) → Planning → Execution. Skip Pattern 5 entirely. |
+| Moderate | Show Pattern 5 (recommended: Shape Up + Interface). |
+| Full Product | Show Pattern 5 (recommended: all stages). |
+| Full Product + Tech | Show Pattern 5 (recommended: all stages). |
 
-**If user selects no workflow option:** proceed to Strategic Context.
+**For Auto/Light modes:** auto-define stages without asking. Proceed directly to setup:30.
+
+**For Moderate/Full/Full+Tech:** Use **Pattern 5** from `stages/ask-patterns.md`.
+
+**Safe-change behavior (mode-dependent):**
+
+| Mode | Safe-change |
+|------|------------|
+| Auto | Skip — no check needed |
+| Light | Auto-run `npm test` if repo has `package.json` or similar test marker |
+| Moderate | Auto-run `npm test` if repo has test marker |
+| Full Product | Ask user (Pattern 5's safe-change question) |
+| Full Product + Tech | Ask user (Pattern 5's safe-change question) |
+
+**If safe-change runs and fails:** inform user and offer to fix or skip.
 
 ### Auto-chaining rules
 

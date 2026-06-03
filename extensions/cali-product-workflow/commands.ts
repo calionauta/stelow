@@ -4,11 +4,11 @@ import { join } from "node:path";
 import { homedir } from "node:os";
 // @ts-ignore - Optional peer dependency for Pi environment
 import type { ExtensionAPI, ExtensionCommandContext } from "@earendil-works/pi-coding-agent";
-import { WORKFLOW_DIR, PHASE_NAMES } from "./types";
+import { WORKFLOW_DIR, PHASE_NAMES, STAGE } from "./types";
 import {
   readTracking, writeTracking, readGlobalTracking, writeGlobalTracking,
   getActiveWorkflow, renameWorkflow, toSafeName, reconcileTracking, scanWorkflowDirs,
-  archiveWorkflowOnDisk, resolveProjectDir,
+  archiveWorkflowOnDisk, updateWorkflowIndexJson, resolveProjectDir,
   writePhaseTodos, getPhaseTodos, getPhaseTodosFromCache, setPhaseTodos, type PhaseTodo,
   readInbox, addToInbox, removeFromInbox, clearInbox,
   TASK_ICONS,
@@ -226,6 +226,14 @@ function cmdPause(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
     writeGlobalTracking(gt);
   }
 
+  // Sync index.json on disk (write-through)
+  updateWorkflowIndexJson(wd, wf, {
+    workflow_status: "paused",
+  });
+
+  // Sync stages guard state
+  syncStagesGuardState(wd, wf.currentPhase);
+
   ctx.ui?.setStatus("workflow", ctx.ui?.theme?.fg("warning", `⏸ ${wf.name}`));
   reply(ctx, `⏸ Workflow '${wf.name}' paused.`);
 }
@@ -274,6 +282,14 @@ function cmdResume(pi: ExtensionAPI, args: string, ctx: CmdCtx) {
     if (idx !== -1) gt.workflows[idx].status = "in-progress";
     writeGlobalTracking(gt);
   }
+
+  // Sync index.json on disk (write-through)
+  updateWorkflowIndexJson(wd, paused, {
+    workflow_status: "in-progress",
+  });
+
+  // Sync stages guard state
+  syncStagesGuardState(wd, paused.currentPhase);
 
   updateFooter(ctx, wd);
   reply(ctx, `▶️ '${paused.name}' resumed. Stage: ${PHASE_NAMES[paused.currentPhase]}`);
@@ -467,7 +483,8 @@ const PHASE_TO_STAGE: Record<number, string> = {
   0: "triage", 1: "select", 2: "setup", 3: "context",
   4: "shape", 5: "critique", 6: "gate", 7: "scope",
   8: "interface", 9: "int-gate", 10: "selection",
-  11: "planning", 12: "execution", 13: "audit",
+  11: "planning", 12: "execution", 13: "verification",
+  14: "audit",
 };
 
 function syncStagesGuardState(cwd: string, phaseIndex: number): void {
@@ -536,6 +553,13 @@ function cmdSetPhase(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
     writeGlobalTracking(gt);
   }
 
+  // Sync index.json on disk (write-through)
+  updateWorkflowIndexJson(wd, wf, {
+    current_phase: PHASE_NAMES[phase].toLowerCase(),
+    current_phase_index: phase,
+    workflow_status: "in-progress",
+  });
+
   // Sync wf in-memory so notifyPhase compares correctly
   wf.currentPhase = phase;
   updateFooter(ctx, wd);
@@ -551,7 +575,25 @@ function cmdNext(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
   const wf = getActiveWorkflow(wd);
   if (!wf) { noActive(ctx); return; }
 
-  const next = wf.currentPhase + 1;
+  // ── Phase-skip: some phases are auto-skipped (no user interaction needed) ──
+  // After Setup (2), skip Context (3) — the skill handles context inline.
+  // Add entries here as needed.
+  const SKIP_NEXT: Record<number, number> = {
+    [STAGE.SETUP()]: STAGE.SHAPE(),
+  };
+
+  const target = SKIP_NEXT[wf.currentPhase];
+  let next: number;
+  if (target !== undefined) {
+    next = target;
+    // Mark skipped phases as "completed"
+    for (let i = wf.currentPhase + 1; i < target; i++) {
+      wf.phases[i].status = "completed";
+    }
+  } else {
+    next = wf.currentPhase + 1;
+  }
+
   if (next >= PHASE_NAMES.length) {
     reply(ctx, "All phases complete. /pw-complete");
     return;
@@ -576,6 +618,13 @@ function cmdNext(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
     if (idx !== -1) gt.workflows[idx].currentPhase = next;
     writeGlobalTracking(gt);
   }
+
+  // Sync index.json on disk (write-through — third state source)
+  updateWorkflowIndexJson(wd, wf, {
+    current_phase: PHASE_NAMES[next].toLowerCase(),
+    current_phase_index: next,
+    workflow_status: "in-progress",
+  });
 
   // Sync wf in-memory so notifyPhase compares correctly
   wf.currentPhase = next;
@@ -609,6 +658,16 @@ function cmdComplete(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
     if (idx !== -1) gt.workflows[idx].status = "completed";
     writeGlobalTracking(gt);
   }
+
+  // Sync index.json on disk
+  updateWorkflowIndexJson(wd, wf, {
+    workflow_status: "completed",
+    current_phase_index: PHASE_NAMES.length - 1,
+    current_phase: PHASE_NAMES[PHASE_NAMES.length - 1].toLowerCase(),
+  });
+
+  // Sync stages guard state
+  syncStagesGuardState(wd, PHASE_NAMES.length - 1);
 
   ctx.ui?.notify(`🎉 ${wf.name} completed!`, "info");
 }

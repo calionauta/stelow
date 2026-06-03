@@ -89,29 +89,11 @@ ask_user_question({
 })
 ```
 
-### External context loading (single-select)
+### Appetite / Mode (single-select)
 
 ```typescript
 ask_user_question({
   questions: [{
-    question: "Do you have external context to load before we start planning?\n\nExamples: competitive analysis, customer research, third-party audit, peer review, prior session output.",
-    header: "Context",
-    options: [
-      { label: "Yes, load files (Recommended)", description: "Provide file paths to load as planning context." },
-      { label: "No, proceed without", description: "External context optional — skip and continue." },
-      { label: "Tell me about it", description: "Describe it verbally, I'll capture the key points." }
-    ]
-  }]
-})
-```
-
-### Domain libraries (multi-select)
-
-```typescript
-ask_user_question({
-  questions: [{
-    question: "Your request mentions specific areas. Would you like to load reference playbooks?",
-    header: "Domain Libraries",
     multiSelect: true,
     options: [
       // Only detected domains, e.g.:

@@ -133,17 +133,25 @@ This is **not an estimate**. The LLM does not estimate effort — it checks whet
 
 ### Mode
 
-Mode controls the **breadth** of the workflow — how many stages run and how much human interaction is needed. Unlike Appetite (declared by the human), Mode is **auto-detected** from the context and can be overridden.
+Mode controls the **breadth** of the workflow — how many gates and questions are active. Unlike Appetite (depth of scope), Mode determines the **level of interaction** with the human.
 
-| Mode | Stages run | Plannotator Gate | When auto-detected |
-|------|-----------|-----------------|--------------------|
-| **Auto** | Minimal: skip to planning | 🚫 Skip (auto-approve) | PoC appetite with minimal context |
-| **Light** | Triage → Setup → Context → Shape → Gate → Interface → Tech Planning | Optional | Quick project, no product domain |
-| **Moderate** | Full except strategy | Recommended | Mid-size project with some product context |
-| **Full Product** | All 15 stages including strategy | **Mandatory** | Product with domain context (pricing, trust, etc.) |
-| **Full Product + Tech** | All 15 stages including strategy | **Mandatory** | Full workflow + tech planning gate and technical questions, plus tech approval |
+Mode is set explicitly by the user during `setup:15` via `ask_user_question`. It is NOT auto-detected.
 
-**Detection:** The Setup stage scans the working directory for domain indicators (pricing files, trust pages, accessibility requirements) and sets the Mode accordingly. Override with `--mode <name>`.
+| Mode | Plannotator Gates | Interface | IN/OUT Confirmation | Tech Approval | Best for |
+|------|:---:|:---:|:---:|:---:|---------|
+| **Auto** | None | LLM recommends | LLM decides | Auto | Throwaway prototype, quick validation, spike |
+| **Light** | **1 pre-tech** | LLM recommends | LLM decides | Auto | Standard feature, bug fix, small improvement |
+| **Moderate** | **1 pre-tech** | **User chooses** | LLM decides | Auto | Feature where interface matters |
+| **Full Product** | **Gate + Int.Gate** | User chooses | **User confirms** | Auto | Critical feature, product with domain context |
+| **Full Product + Tech** | **Gate + Int.Gate** | User chooses | User confirms | **Gate + tech Qs** | Full pipeline, high-risk changes, production |
+
+**Key rules:**
+
+- **Auto:** No gates, no Plannotator, no questions. LLM decides everything. Quickest path.
+- **Light:** One Plannotator gate (spec-product visual approval before tech planning). Interface = LLM recommendation without user choosing between alternatives. All other gates skipped.
+- **Moderate:** Same as Light + user chooses between generated interface alternatives via the ask tool with preview.
+- **Full Product:** All gates active (pre-tech + int-gate). User confirms IN/OUT boundaries. Tech approval uses Auto (no Plannotator for tech plan).
+- **Full Product + Tech:** Everything in Full Product + tech plan goes through Plannotator gate + user answers technical questions.
 
 ### How Appetite & Mode Interact
 
@@ -154,13 +162,14 @@ Appetite controls HOW DEEP it runs     →  PoC vs Focused vs Comprehensive
 
 | | PoC | Focused | Comprehensive |
 |---|---|---|---|
-| **Auto** | Fast path: single review, skip gate, minimal verify | Standard: single review, auto-approve, standard verify | N/A (Comprehensive forces Full mode) |
-| **Full Product** | Strategy + shape + critique + gate + interface + planning | Full workflow | Full workflow with parallel critique + mandatory Plannotator + a11y + mutation |
+| **Auto** | No gates. Fastest path: smaller spec, minimal verify. | No gates. Standard planning depth, standard verify. | No gates. Deep planning, full verify. |
+| **Full Product** | 2 gates (Gate + Int.Gate). User confirms IN/OUT. | 2 gates + IN/OUT confirmation. Full workflow. | 2 gates + all questions. No shortcuts. |
 
 **Examples:**
-- `PoC + Auto` → "Just check if this idea makes sense. Ship the spec." (~2 stages). Note: the entire `context` stage is skipped via `context:5` (no JTBD, no domain libraries).
-- `Focused + Moderate` → "Standard feature. Run everything except strategy." (~8 stages). Full `context:10` (5 strategic approaches, parallel subagents) + `context:20` (8 domain libraries, detect + execute).
-- `Comprehensive + Full Product` → "Critical feature. No shortcuts." (~15 stages)
+- `PoC + Auto` → Fastest path: no gates, no questions, no Plannotator. LLM decides scope. Just shape + execute. (~4 stages)
+- `Focused + Light` → Standard feature: 1 Plannotator gate (pre-tech), interface = LLM recommendation. (~8 stages)
+- `Focused + Moderate` → Feature where interface matters: 1 Plannotator gate + user chooses interface. (~8 stages)
+- `Comprehensive + Full Product` → Critical feature: 2 Plannotator gates + all questions. No shortcuts. (~13 stages)
 
 ### Motivation
 
