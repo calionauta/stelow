@@ -4,6 +4,21 @@ All notable changes to `@renatocaliari/cali-product-workflow` will be documented
 
 ## [Unreleased]
 
+## [0.14.0-alpha] - 2026-06-03
+
+### Added
+- **Product-level DoD and ACs** in shape-up: each shaped proposal now includes Definition
+  of Done and Acceptance Criteria, validated by output guard.
+- **Explicit DoD/AC verification** in scope-executor iteration loop (Step 7): each DoD
+  and AC is checked with concrete evidence before declaring success.
+
+### Changed
+- **Coding standards merged**: `cali-product-coding-standards` created as self-contained
+  skill (universal principles + product-domain depth). Old `cali-product-code-standards`
+  removed. Simplicity reviewer now loads the merged skill explicitly.
+- **Datastar depth moved**: backend source of truth, SSE-First, HATEOAS details moved
+  from product skill to `cali-coding-go-stack` (~/.agents/skills/).
+
 ## [0.13.0-alpha] - 2026-06-03
 
 ### Added
