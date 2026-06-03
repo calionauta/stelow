@@ -21,7 +21,7 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 - **Visual review gate** — Plannotator opens the full plan for point-by-point comments before implementation, not a rubber-stamp approval.
 - **Interface exploration in ASCII art** — 5 archetypes with trade-offs in seconds — no coded mockups wasted — then LLM creates a hybrid combining the best points for your context.
 - **Product domain libraries** — 8 domains auto-detected from your language (Pricing, Trust, Ads, Promotions, Open Source, Health, Marketplace, Business Models).
-- **Typed technical scopes** — feature, spike, optimize, test-* with dependency mapping and sequencing for autonomous execution.
+- **Typed technical scopes** — feature (with auto-iteration loop), spike, optimize, test-* with dependency mapping and sequencing for autonomous execution.
 - **Real-time TUI tracking** — see workflow state as it progresses through all stages.
 
 ---
@@ -194,7 +194,7 @@ The workflow has **3 conceptual phases** (15 stages total), from idea triage to 
 
 ### 2. ⚡ Execution
 
-**Stages 12–13** — Autonomous scope execution via ordered-execution-goal, supervised, with context-rot and plan-staleness checks before each scope.
+**Stages 12–13** — Autonomous scope execution via typed executors: feature scopes use an auto-iteration loop (implement → verify → review → quality, repeat until criteria met or `[MAX_ITERATIONS]` exhausted), optimization scopes use benchmark-driven iteration, and all scopes include context-rot and plan-staleness checks before execution.
 
 ### 3. ✅ Verification & Audit
 
@@ -240,7 +240,7 @@ All 25 skills are flat in `skills/` directory, ready for `~/.agents/skills/`. Th
 | `cali-product-tech-planning` | Technical scope generation with dependency mapping |
 | `cali-product-testing-ai-code` | AI-aware mutation testing strategy |
 | `cali-product-testing-execution` | Post-implementation testing protocol |
-| `cali-product-scope-executor` | Autonomous scope execution with dependency mapping |
+| `cali-product-scope-executor` | Autonomous scope execution with auto-iteration loop for features, dependency mapping, and human escalation |
 | `cali-product-execution-critique` | Post-execution audit (scope fidelity, NFRs, edge cases, docs, test quality) |
 
 ### 📘 Product Tactics (8)
