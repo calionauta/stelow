@@ -4,11 +4,15 @@ All notable changes to `@renatocaliari/cali-product-workflow` will be documented
 
 ## [Unreleased]
 
+## [0.13.0-alpha] - 2026-06-03
+
 ### Added
 - **Feature scope auto-iteration loop** in cali-product-scope-executor: feature scopes now
   run implement → verify → review → quality cycles with plateau detection, `[MAX_ITERATIONS]`
   budget (default: 3), and human escalation after exhaustion. See `scopes-and-sequencing.md`
   for `[MAX_ITERATIONS]` docs and scope-executor/SKILL.md Step 3.
+- **8 new tests** validating iteration loop structure, MAX_ITERATIONS documentation,
+  and consistency across all 25 goals.md copies.
 
 ## [0.10.0-alpha] - 2026-06-01
 
