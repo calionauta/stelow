@@ -118,7 +118,7 @@ APPETITE=$(grep -oP '^appetite:\s*\K\S+' .cali-product-workflow/{YYYY-MM-DD}/{_d
 | `[TYPE] optimization` | goals tool (see `references/cli-tools/goals.md`, Optimization Goals) | Metric verify (auto) |
 | `[EXECUTOR] optimization-goal` | goals tool (see `references/cli-tools/goals.md`, Optimization Goals) | Metric verify (auto) |
 | Spike with metric | goals tool (see `references/cli-tools/goals.md`, Optimization Goals) | Metric verify (auto) |
-| `feature` | goals tool (see `references/cli-tools/goals.md`) — CLI fallback: ordered-execution-goal (`/sisyphus-set`) | `/supervise` with outcome = DoD |
+| `feature` | iteration loop (see scope-executor Step 3 — implement → verify → review → quality, repeat until criteria met or `[MAX_ITERATIONS]` exhausted) | `/supervise` with outcome = DoD |
 | Refactoring without metric | goals tool (see `references/cli-tools/goals.md`) — CLI fallback: ordered-execution-goal (`/sisyphus-set`) | `/supervise` with outcome = DoD |
 | Investigative spike | goals tool (see `references/cli-tools/goals.md`) — CLI fallback: ordered-execution-goal (`/sisyphus-set`) | `/supervise` with outcome = DoD |
 | Interface alternatives | goals tool (see `references/cli-tools/goals.md`) — CLI fallback: ordered-execution-goal (`/sisyphus-set`) | `/supervise` with outcome = DoD |
@@ -209,13 +209,17 @@ After Plannotator approval on spec-tech_v{N}.md:
 
 **For feature scopes:**
 
-Use the goals tool (see `references/cli-tools/goals.md`) to create a goal with acceptance criteria from the scope's DoD. The goals reference documents all supported patterns.
+Feature scopes use an **auto-iteration loop** (see `cali-product-scope-executor` Step 3):
+implement → verify (tests, lint, typecheck) → quality checks → parallel review → evaluate.
+If criteria fail, the next iteration receives accumulated feedback. The loop repeats until
+success or `[MAX_ITERATIONS]` exhaustion (default: 3), then escalates to human.
 
 **For optimization scopes:**
 
 Use the goals tool (see `references/cli-tools/goals.md` → Optimization Goals) to create an optimization goal with benchmark verify commands and iteration loop.
 
-For iteration loops, see goals.md → Optimization Goals section.
+**For iteration loops:** feature scopes use `cali-product-scope-executor` Step 3;
+optimization scopes use `goals.md` → Optimization Goals section.
 
 ### ⚠️ NEVER ASK
 

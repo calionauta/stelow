@@ -34,6 +34,7 @@ Each scope should explicitly state the layer decomposition to reduce the gap bet
 ```yaml
 [SCOPE-1] Authentication Foundation
 [TYPE] feature
+[MAX_ITERATIONS] 5
 [LAYERS]
   domain:    Token lifecycle, session state, refresh mechanism
   data:      UserSession table, JWT claims schema, Redis cache
@@ -55,7 +56,7 @@ Each scope must be typed:
 
 | Type | Description | Executor | TDD Recommended? |
 |------|-------------|----------|------------------|
-| **`feature`** | Implement new functionality, UI, API endpoints, workflows | worker | Optional |
+| **`feature`** | Implement new functionality, UI, API endpoints, workflows | worker + iteration loop (see `[MAX_ITERATIONS]`) | Optional |
 | **`optimization`** | Improve an existing measurable metric (perf, bundle, build time, test speed, Lighthouse score, memory, cost) | subagent + acceptance (benchmark verify) | No |
 | **`spike`** | Research/prototype to reduce uncertainty | scout + researcher | No |
 | **`test-unit`** | Unit tests for business logic with mutation validation | worker | **Yes — for critical paths** |
@@ -103,6 +104,37 @@ scopes:
       security: "auth middleware, rate limiting (100/min), input sanitization"
       rollback: "git revert + migration reversal script"
 ```
+
+---
+
+## Iteration Budget (`[MAX_ITERATIONS]`)
+
+**Optional.** Controls how many auto-iteration cycles a feature scope gets before escalating to human.
+
+```
+[SCOPE-1]
+[TYPE] feature
+[MAX_ITERATIONS] 5
+```
+
+| Setting | Behavior |
+|---------|----------|
+| Not specified | Default: 3 iterations |
+| `1` | One-shot (no auto-iteration — equivalent to old behavior) |
+| `3-5` | Standard range for complex features |
+| `5+` | High-complexity features with many edge cases |
+
+**How it works (see `cali-product-scope-executor`):**
+Each iteration runs the full cycle: implement → verify (tests, lint, typecheck) → review (correctness + simplicity) → quality checks (UI or codebase audit). If any check fails, the error feeds into the next iteration. After max_iterations without success, the scope escalates to a human.
+
+**When to increase from default (3):**
+- High uncertainty in implementation approach
+- Many integration points that can fail
+- New tech stack or pattern being introduced
+
+**When to decrease (1-2):**
+- Trivial, well-understood change
+- Low-risk, well-tested codebase area
 
 ---
 

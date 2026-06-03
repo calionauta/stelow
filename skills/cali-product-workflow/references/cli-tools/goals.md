@@ -13,7 +13,8 @@ No separate extensions needed — pi-subagents acceptance handles it all.
 
 | Scope Type | How it becomes a goal |
 |------------|----------------------|
-| `feature`, `spike` | subagent + acceptance with evidence + verify commands |
+| `feature` | worker + iteration loop (see scope-executor Step 3) |
+| `spike` | scout + researcher (see subagents.md) |
 | `optimization` | subagent + acceptance with **benchmark verify** commands (see Optimization Goals below) |
 | `test-*` | subagent + acceptance with mutation/security gates |
 
@@ -157,7 +158,7 @@ metric command, and stopping condition as task parameters.
 
 | Type | Description | Executor |
 |------|-------------|----------|
-| `feature` | New functionality | subagent + acceptance (evidence + verify) |
+| `feature` | New functionality | worker + iteration loop (see scope-executor Step 3) |
 | `optimization` | Measurable metric improvement | subagent + acceptance (benchmark verify + iteration loop) |
 | `spike` | Research/prototype | subagent + acceptance |
 | `test-unit` | Unit tests with mutation validation | subagent + acceptance + testing gates |
@@ -167,20 +168,30 @@ metric command, and stopping condition as task parameters.
 
 ---
 
-## Pattern for feature/spike goals
+## Pattern for feature goals
+
+Feature scopes use the **iteration loop** (see `cali-product-scope-executor` Step 3), not a direct subagent call.
+The iteration loop wraps the subagent in implement → verify → review → quality → repeat cycles.
+
+```typescript
+// The iteration loop handles this automatically.
+// Do NOT call subagent directly for feature scopes.
+// See scope-executor Step 3 for the full pattern.
+```
+
+## Pattern for spike goals
 
 ```typescript
 subagent({
   agent: "worker",
-  task: `Scope: login
-Objective: implement email/password login
-DoD: login flow works with valid credentials, rejects invalid`,
+  task: `Scope: spike-login
+Objective: Evaluate auth strategies
+DoD: Recommendation doc with pros/cons`,
   acceptance: {
     criteria: [
-      { id: "SC-1", must: "Login with valid credentials works", severity: "required" },
-      { id: "SC-2", must: "Invalid credentials rejected with error", severity: "required" }
+      { id: "SC-1", must: "At least 2 strategies evaluated", severity: "required" }
     ],
-    evidence: ["changed-files", "tests-added", "commands-run", "residual-risks"],
+    evidence: ["changed-files", "commands-run", "residual-risks"],
     verify: [{ id: "tests", command: "go test ./..." }]
   }
 })

@@ -11,7 +11,7 @@
  * required structure, the workflow breaks.
  */
 import { describe, it, expect } from 'vitest';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -242,6 +242,29 @@ describe('Per-Skill Implementation', () => {
         });
       }
 
+      // ── Scope-executor specific: iteration loop ──────────────
+      if (skill.name === 'cali-product-scope-executor') {
+        it('should have auto-iteration loop in Step 3', () => {
+          expect(content).toMatch(/iteration loop/i);
+          expect(content).toMatch(/MAX_ITERATIONS/);
+          expect(content).toMatch(/feedback_log/);
+          expect(content).toMatch(/plateau_counter/);
+        });
+
+        it('should persist state to iteration-state file', () => {
+          expect(content).toMatch(/iteration-state-/);
+          expect(content).toMatch(/Persist state to file/);
+        });
+
+        it('should handle resume after compaction', () => {
+          expect(content).toMatch(/resume|rehydrate/i);
+        });
+
+        it('should escalate to human after max_iterations', () => {
+          expect(content).toMatch(/ESCALATE/);
+        });
+      }
+
       it('should have overview, process, or workflow section', () => {
         expect(content).toMatch(/## (Overview|Process|Workflow|Input)/i);
       });
@@ -277,6 +300,51 @@ describe('Per-Skill Implementation', () => {
 // ═════════════════════════════════════════════════════════════════════
 // SECTION C: Stage Files & References
 // ═════════════════════════════════════════════════════════════════════
+
+describe('Iteration Loop Consistency', () => {
+  it('scopes-and-sequencing.md should document [MAX_ITERATIONS]', () => {
+    const path = join(PROJECT_ROOT, 'skills/cali-product-tech-planning/references/scopes-and-sequencing.md');
+    const content = readFileSync(path, 'utf8');
+    expect(content).toMatch(/MAX_ITERATIONS/);
+  });
+
+  it('execution.md routing table should show iteration loop for features', () => {
+    const execContent = readFileSync(
+      join(PROJECT_ROOT, 'skills/cali-product-workflow/stages/execution.md'), 'utf8'
+    );
+    expect(execContent).toMatch(/iteration loop/);
+  });
+
+  it('core goals.md files should reference iteration loop for feature type', () => {
+    const goalsFiles = [
+      join(PROJECT_ROOT, 'skills/cali-product-workflow/references/cli-tools/goals.md'),
+      join(PROJECT_ROOT, 'skills/cali-product-scope-executor/references/cli-tools/goals.md'),
+      join(PROJECT_ROOT, 'skills/cali-product-tech-planning/references/cli-tools/goals.md'),
+      join(PROJECT_ROOT, 'skills/cali-product-testing-ai-code/references/cli-tools/goals.md'),
+    ];
+    goalsFiles.forEach(f => {
+      const content = readFileSync(f, 'utf8');
+      expect(content).toMatch(/iteration loop/);
+    });
+  });
+
+  it('no goals.md file should reference subagent + acceptance for features', () => {
+    const skillsDir = join(PROJECT_ROOT, 'skills');
+    const entries = readdirSync(skillsDir, { withFileTypes: true });
+    entries.forEach(entry => {
+      if (!entry.isDirectory()) return;
+      const goalsPath = join(skillsDir, entry.name, 'references/cli-tools/goals.md');
+      if (!existsSync(goalsPath)) return;
+      const content = readFileSync(goalsPath, 'utf8');
+      const escaped = content.includes('\\`feature\\`');
+      const pattern = escaped ? /^\| \\`feature\\` .*$/gm : /^\| `feature` .*$/gm;
+      const featureRows = content.match(pattern) || [];
+      featureRows.forEach(row => {
+        expect(row).not.toMatch(/subagent \+ acceptance/);
+      });
+    });
+  });
+});
 
 describe('Stage Files', () => {
   const stageFiles = ['setup.md', 'context.md', 'gate.md', 'execution.md'];

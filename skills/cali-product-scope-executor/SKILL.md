@@ -58,6 +58,7 @@ Example scope shape:
 ```
 [SCOPE-1]
 [TYPE] feature
+[MAX_ITERATIONS] 5                     # optional, default: 3
 Objective: Implement user login
 Dependencies: None
 DoD: User can log in with email/password
@@ -94,7 +95,7 @@ For each scope in the plan:
 
 | `[TYPE]` | `[EXECUTOR]` | Result |
 |---|---|---|
-| `feature` | *absent* → worker |
+| `feature` | *absent* → worker + **iteration loop** (see Step 3) |
 | `feature` | `research` → **research loop** (override) |
 | `optimization` | *absent* → goals tool (see `references/cli-tools/goals.md`, Optimization Goals) |
 | `optimization` | `worker` → **worker** (override) |
@@ -159,28 +160,93 @@ Rationale: OWASP LLM06 (Excessive Agency) — architectural changes with high
 regression risk require human authorization. This is a security measure,
 not overhead.
 
-### Step 3: Execute feature scopes (feature → goals tool)
+### Step 3: Execute feature scopes (feature → iteration loop)
 
 For each scope with `[TYPE] feature`:
 
-1. **Create a goal** using the goals tool (see `references/cli-tools/goals.md`) with the scope's DoD and ACs. The goal reference documents all patterns and fallbacks.
+**Read iteration config:**
+- Check for `[MAX_ITERATIONS] N` in the scope definition (default: 3)
+- The plan file path (`docs/{YYYY-MM-DD}/{slug}/plans/spec-tech_{v}.md`) determines the state file base directory:
+  - State file: `docs/{YYYY-MM-DD}/{slug}/iteration-state-{SCOPE-ID}.md`
+  - This is CLI-agnostic — works on any platform with file system access
+- Try to read the existing state file (resumes after compaction/crash)
+  - If file exists → rehydrate `current_iteration`, `plateau_counter`, `feedback_log` from it
+  - If file doesn't exist → initialize fresh: `current_iteration = 1`, `feedback_log = []`, `plateau_counter = 0`
 
-2. **Activate supervision** (see `references/cli-tools/supervise.md`) for the feature scope before starting implementation.
-   ⚠️ Supervise ONLY during execution (Execution stage and later), never during earlier stages — it can loop on Plannotator.
+**Auto-iteration loop:**
 
-3. **After scope implementation completes**, run parallel code review via subagents (see `references/cli-tools/subagents.md`):
-   - One reviewer for correctness and regressions
-   - One reviewer for simplicity and code quality (KISS, DRY, function/file size limits)
+While `current_iteration <= max_iterations`:
 
-4. **Apply feedback:** synthesize reviewer findings and apply fixes worth doing now
+  1. **Create a goal** using the goals tool (see `references/cli-tools/goals.md`) with the scope's DoD, ACs, and accumulated `feedback_log`.
+     - Pass `feedback_log` in the task description so the worker knows what failed previously
+     - If `current_iteration > 1`, include: "Previous attempt(s) failed with: {feedback_log}. Try a different approach — do not repeat the same fix."
 
-5. **If the scope involves UI/visual changes**, run quality checks:
-   - Use `cali-product-ux-critique` in Live Site or Codebase mode — accessibility (WCAG POUR), Nielsen heuristics, visual hierarchy, cognitive load, emotional journey, design personas, consistency, mobile/responsive, AI slop detection.
+  2. **Activate supervision** (see `references/cli-tools/supervise.md`) — verify it's still active.
 
-6. **If the scope is a codebase-only change** (no UI), run:
-   - Use `cali-product-codebase-critique` — architecture, data flow, API contracts, performance, theming, AI slop in code.
+  3. **Execute via worker subagent** (see `references/cli-tools/subagents.md`):
+     - Agent: worker
+     - Delegates implementation to a fresh subagent each iteration (prevents context pollution)
 
-6. **DoD verification** (see Step 7) — scope is NOT complete until all DoD items pass.
+  4. **Run verify commands** (tests, lint, typecheck — whatever the plan specifies):
+     - From the scope's acceptance criteria and spec-tech verify commands
+
+  5. **Run quality checks:**
+     - **If UI/visual scope:** Use `cali-product-ux-critique` — accessibility (WCAG POUR), Nielsen heuristics, visual hierarchy, cognitive load, consistency, mobile/responsive.
+     - **If codebase-only scope:** Use `cali-product-codebase-critique` — architecture, data flow, API contracts, performance.
+     - **If both or unclear:** Run both.
+
+  6. **Run parallel code review** (correctness + simplicity reviewers):
+     - One reviewer for correctness and regressions
+     - One reviewer for simplicity and code quality (KISS, DRY, function/file size limits)
+
+  7. **Evaluate all results against scope criteria:**
+     - ✅ **All pass** (verify + review + quality) → scope **DONE**, exit loop
+     - ❌ **Any failure:**
+       a. Collect errors into `feedback_log`
+       b. **Plateau detection:** if the same error appeared in the previous iteration, increment `plateau_counter`
+       c. If `plateau_counter >= 2` AND `current_iteration < max_iterations`:
+          - Log: "Plateau detected (same failure persisted for 2 iterations). Forcing different approach."
+          - Add explicit instruction to feedback: "The previous approach did not work. Try a fundamentally different solution."
+          - Reset `plateau_counter`
+       d. `current_iteration++`
+
+  8. **Persist state to file** (after every iteration — survives compaction and crash):
+     - Write/overwrite `docs/{YYYY-MM-DD}/{slug}/iteration-state-{SCOPE-ID}.md`:
+     ```markdown
+     # Iteration State: {SCOPE-ID}
+
+     scope: {SCOPE-ID}
+     max_iterations: {N}
+     current_iteration: {M}
+     plateau_counter: {P}
+     status: {running | done | escalated}
+
+     ## Iteration Log
+
+     ### Iteration 1 — {status}
+     - **Errors:** {error summary}
+     - **Files changed:** {file list}
+     - **Feedback:** {feedback_text}
+
+     ### Iteration 2 — {status}
+     ...
+     ```
+     - This file is the **source of truth** — always write before advancing the loop
+
+  9. **Check exit condition:**
+     - If `current_iteration > max_iterations`:
+       → Update state file: `status: escalated`
+       → **ESCALATE to human** with full report including all attempts, errors per iteration, and files changed
+
+**On successful completion** (all pass): update state file `status: done`, then clean up (delete state file or mark as final).
+
+**Report per scope:**
+```
+✅ [SCOPE-1] Login — DONE (2/3 iterations, 3 files, 2 reviews passed)
+⚠️ [SCOPE-2] Dashboard — ESCALATED (3/3 iterations, last error: e2e test timeout)
+```
+
+> **Why file persistence?** LLM context can be compacted (pi's `/compact`, `/clear`, or tool-level resets). The state file ensures the iteration loop resumes correctly after any context loss. This pattern is CLI-agnostic — any agent with file system access can read/write the same format.
 
 ### Step 4: Execute optimization scopes (optimization → goals tool)
 
@@ -237,15 +303,16 @@ After all scopes are executed and compliance verified, produce a consolidated re
 ```
 📊 Execution Results: {plan-name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✅ [SCOPE-1] Login — feature — DONE (3 files changed, 2 reviews passed)
+✅ [SCOPE-1] Login — feature — DONE (2/3 iterations, 3 files, 2 reviews passed)
 ✅ [SCOPE-2] Search optimization — optimization — DONE (latency 180ms, target <200ms ✓)
 ✅ [SCOPE-3] Vector DB eval — spike — DONE (recommendation in docs/spikes/)
+⚠️ [SCOPE-4] Dashboard — feature — ESCALATED (3/3 iterations, last error: e2e timeout)
 
 Timeline: {total duration}
 Commits: {commit hashes for each scope}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Next steps:
-- Review and merge branches
+- Review and merge branches (escalated scopes need human attention)
 - Handoff to Verification: run test suite, code review, UI/browser testing
 ```
 
@@ -264,7 +331,7 @@ Next steps:
 
 - **If a worker fails** (crash, stuck, timeout): note it, log the error, and move to the next scope. Do not block the entire execution on one failure.
 - **If an optimization goal fails:** check the log, fix if trivial, otherwise skip and note it.
-- **If a reviewer finds blocking issues:** flag them but continue execution. Report them in the final summary. Do not halt the pipeline for review findings — the user will address them.
+- **If a reviewer finds blocking issues:** flag them and feed back into the iteration loop (see Step 3). The next iteration will receive the review findings as feedback. Only escalate if max_iterations is reached.
 - **If a spike is inconclusive:** document what was learned and recommend next steps.
 
 ---
@@ -295,7 +362,7 @@ This skill runs **after** the Plannotator gate approves the plan, replacing manu
 6. Execution Executor
    ├── Read spec-tech.md (has product context + typed scopes)
    ├── Report execution plan → user confirms
-   ├── Execute features → worker + parallel-review
+   ├── Execute features → iteration loop (worker + verify + review + quality, repeat until criteria met)
    ├── Execute optimizations → goals tool (see goals.md, Optimization Goals)
    ├── Execute spikes → scout + researcher
    └── Report consolidated results to execution-report.md
@@ -366,7 +433,7 @@ Once input is resolved, proceed to Step 1: Read and parse the plan.
 
 Strong execution runs:
 - **Respect dependency order** — no scope starts before its dependencies
-- **Use the right tool for each type** — worker for features, goals tool for optimization, scout for spikes
+- **Use the right tool for each type** — iteration loop for features, goals tool for optimization, scout for spikes
 - **Handle failures gracefully** — one failed scope doesn't block the rest
 - **Produce a clear final report** — what was done, what changed, what failed
 

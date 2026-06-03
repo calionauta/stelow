@@ -13,7 +13,8 @@ No separate extensions needed — pi-subagents acceptance handles it all.
 
 | Scope Type | How it becomes a goal |
 |------------|----------------------|
-| `feature`, `spike` | subagent + acceptance with evidence + verify commands |
+| \`feature\` | worker + iteration loop (see scope-executor Step 3) |
+| \`spike\` | scout + researcher (see subagents.md) |
 | `optimization` | subagent + acceptance with **benchmark verify** commands (see Optimization Goals below) |
 | `test-*` | subagent + acceptance with mutation/security gates |
 
@@ -157,7 +158,7 @@ metric command, and stopping condition as task parameters.
 
 | Type | Description | Executor |
 |------|-------------|----------|
-| `feature` | New functionality | subagent + acceptance (evidence + verify) |
+| \`feature\` | New functionality | worker + iteration loop (see scope-executor Step 3) |
 | `optimization` | Measurable metric improvement | subagent + acceptance (benchmark verify + iteration loop) |
 | `spike` | Research/prototype | subagent + acceptance |
 | `test-unit` | Unit tests with mutation validation | subagent + acceptance + testing gates |

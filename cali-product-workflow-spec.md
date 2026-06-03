@@ -170,7 +170,7 @@ Phase 14: Execution Critique    → Post-execution verification
 
 | Type | Executor | Use Case |
 |------|----------|----------|
-| `feature` | subagent + acceptance (see goals.md) + `/supervise` | Standard features |
+| `feature` | worker + iteration loop (see scope-executor Step 3) + `/supervise` | Standard features |
 | `optimization` | subagent + acceptance (benchmark verify) | Performance tuning |
 | `spike` | subagent + acceptance (see goals.md) + `/supervise` | Research/uncertainty |
 | `test-*` | subagent + acceptance (see goals.md) + testing gates | Test coverage |
@@ -296,7 +296,7 @@ Worktree Check ───► [Create git worktree if needed]
     ▼
 For each scope (in sequence):
     │
-    ├── TYPE=feature ──► subagent + acceptance + /supervise
+    ├── TYPE=feature ──► iteration loop (implement → verify → review → quality, repeat)
     ├── TYPE=optimization ──► subagent + acceptance (benchmark verify)
     ├── TYPE=spike ──► subagent + acceptance + /supervise
     └── TYPE=test-* ──► subagent + acceptance + testing gates
@@ -661,7 +661,7 @@ BR-010: Interface Alternatives generates exactly 5 proposals + 1 hybrid recommen
 
 BR-011: ask_user_question with previews limited to 20 rows for side-by-side mode.
 
-BR-012: Scope executor routing: feature→subagent+acceptance, optimization→subagent+acceptance with benchmark verify, spike→subagent+acceptance, test-*→subagent+acceptance+testing gates.
+BR-012: Scope executor routing: feature→iteration loop (worker + verify + review + quality, `[MAX_ITERATIONS]` default 3), optimization→subagent+acceptance with benchmark verify, spike→scout+researcher, test-*→subagent+acceptance+testing gates.
 
 BR-013: TDD recommended only for critical business logic; test-after for external APIs and AI workflows.
 

@@ -233,7 +233,7 @@ Read the cali-product-scope-executor skill for routing rules.
 
 | Scope type | Route to |
 |------------|----------|
-| `feature` | subagent + acceptance (see `references/cli-tools/goals.md`) + supervision (see `references/cli-tools/supervise.md`) |
+| `feature` | worker + iteration loop (see scope-executor Step 3 — implement → verify → review → quality, repeat) + supervision (see `references/cli-tools/supervise.md`) |
 | `optimization` | subagent + acceptance with benchmark verify (see `references/cli-tools/goals.md` → Optimization Goals) |
 | `spike` | scout + researcher (see `references/cli-tools/subagents.md`) |
 | `test-*` | subagent + acceptance (see `references/cli-tools/goals.md`) with testing gates |
