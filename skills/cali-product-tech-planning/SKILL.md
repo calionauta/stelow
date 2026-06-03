@@ -54,7 +54,7 @@ Read the `references/` files to guide the process:
 | `references/tech-context.md` | Tech planning context, prerequisites, workflow position | **Before starting** — sets planning context |
 | `references/scopes-and-sequencing.md` | Scope types (feature/optimization/spike + test-*), executor routing, sequencing principles | **During generation** — defines scope structure |
 | `references/tech-output.md` | Tech plan output format, frontmatter, receipts | **After generation** — formats output |
-| `cali-product-code-standards` (skill) | Coding standards + Datastar framework philosophy | **During generation** — guides implementation |
+| `cali-product-coding-standards` (skill) | Coding standards + Datastar framework philosophy | **During generation** — guides implementation |
 
 ## Process
 
@@ -120,7 +120,7 @@ esac
 **⚠️ FALLBACK — if subagent fails or is unavailable:**
 Generate spec-tech.md INLINE using the same process. Read the references files
 (`tech-context.md`, `scopes-and-sequencing.md`, `tech-output.md`)
-and read `cali-product-code-standards` for Datastar framework philosophy,
+and read `cali-product-coding-standards` for Datastar framework philosophy,
 then produce the spec-tech artifact directly in the current context.
 
 ### planning:20 — AI-Aware Testing Strategy (Software Only)

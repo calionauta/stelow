@@ -59,6 +59,28 @@ Use the ask tool (see `references/cli-tools/structured-question.md`) for strateg
 After shaping:
 - Save to `.cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md`
 
+### Product-Level DoD and Acceptance Criteria
+
+Each shaped proposal should include **product-level DoD and ACs** that define what "done"
+means from the user's perspective. These are distinct from technical DoD/ACs (added during
+Tech Planning) — they describe the **outcome**, not the implementation.
+
+Include in `spec-product.md`:
+
+```
+## Definition of Done (Product)
+
+- [ ] Users can complete the core flow end-to-end
+- [ ] Error states are handled and visible to the user
+- [ ] Analytics events fire for key actions
+- [ ] Works on mobile and desktop
+
+## Acceptance Criteria
+
+1. [Given/When/Then format]
+2. ...
+```
+
 ### Output Validation Guard
 
 After saving, validate the shaped proposal has all required sections:
@@ -73,6 +95,8 @@ grep -q "OUT scope" "$SPEC" || { echo "VALIDATION_FAILED: missing OUT scope"; VA
 grep -q "appetite:" "$SPEC" || { echo "VALIDATION_FAILED: missing appetite field (human-set)"; VALID=false; }
 grep -q "appetite_fit:" "$SPEC" || { echo "VALIDATION_FAILED: missing appetite_fit field (LLM-set: does shaped proposal fit appetite?)"; VALID=false; }
 grep -q -E "## (Risks|Rabbit ?holes)" "$SPEC" || { echo "VALIDATION_FAILED: missing Risks section"; VALID=false; }
+grep -q "Definition of Done" "$SPEC" || { echo "VALIDATION_FAILED: missing Definition of Done section"; VALID=false; }
+grep -q "Acceptance Criteria" "$SPEC" || { echo "VALIDATION_FAILED: missing Acceptance Criteria section"; VALID=false; }
 
 if [ "$VALID" = false ]; then
   echo "One or more required sections missing. Regenerating spec with missing sections flagged..."

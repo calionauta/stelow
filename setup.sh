@@ -70,7 +70,7 @@ ALL_SKILLS=(
   "cali-product-plan-critique"
   "cali-product-codebase-critique"
   "cali-product-ux-critique"
-  "cali-product-code-standards"
+  "cali-product-coding-standards"
   "cali-product-tech-planning"
   "cali-product-job-to-be-done"
   "cali-product-discovery"
@@ -420,7 +420,7 @@ configure_settings() {
       .skillful.toggleSlots //= {
         "1": "cali-product-workflow",
         "2": "cali-go-stack",
-        "3": "cali-coding-standards",
+        "3": "cali-product-coding-standards",
         "4": "cali-product-testing-execution",
         "5": "cali-github-releases"
       } |
@@ -459,7 +459,7 @@ configure_settings() {
     "toggleSlots": {
       "1": "cali-product-workflow",
       "2": "cali-go-stack",
-      "3": "cali-coding-standards",
+      "3": "cali-product-coding-standards",
       "4": "cali-product-testing-execution",
       "5": "cali-github-releases"
     },

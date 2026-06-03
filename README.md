@@ -260,7 +260,7 @@ All 25 skills are flat in `skills/` directory, ready for `~/.agents/skills/`. Th
 
 | Skill | Purpose |
 |-------|---------|
-| `cali-product-code-standards` | Product-domain coding standards — Datastar rules, SSE-first, HATEOAS, LoB |
+| `cali-product-coding-standards` | Self-contained coding standards — universal principles + Datastar rules (SSE-first, HATEOAS, LoB) |
 
 ---
 

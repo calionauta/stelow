@@ -197,10 +197,16 @@ While `current_iteration <= max_iterations`:
 
   6. **Run parallel code review** (correctness + simplicity reviewers):
      - One reviewer for correctness and regressions
-     - One reviewer for simplicity and code quality (KISS, DRY, function/file size limits)
+     - One reviewer for simplicity and code quality — **load `cali-product-coding-standards` skill**
+       and verify every principle (KISS, DRY, LoB/SoC, Fail Fast, YAGNI, file/function limits)
 
   7. **Evaluate all results against scope criteria:**
-     - ✅ **All pass** (verify + review + quality) → scope **DONE**, exit loop
+     a. **DoD/AC verification:** read the scope's DoD and Acceptance Criteria from spec-tech.md
+        and verify each one with concrete evidence from the iteration output
+     b. **Verify commands:** all passed?
+     c. **Quality checks:** all approved?
+     d. **Review:** both reviewers approved?
+     - ✅ **All pass** (DoD/AC + verify + review + quality) → scope **DONE**, exit loop
      - ❌ **Any failure:**
        a. Collect errors into `feedback_log`
        b. **Plateau detection:** if the same error appeared in the previous iteration, increment `plateau_counter`
@@ -289,7 +295,7 @@ Before generating the final report, cross-reference the original plan (spec-tech
    - If extra scopes were created: document the justification
 2. **DoD:** did each executed scope meet its Definition of Done?
    - If not: document the gap
-3. **Principles:** read `cali-product-code-standards` (skill)
+3. **Principles:** read `cali-product-coding-standards` (skill)
    and check if principles were followed in the generated code
    - If violations were detected by parallel-review: were they fixed?
 4. **Verification result:** APPROVED | CAVEATS | REJECTED
