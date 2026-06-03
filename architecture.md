@@ -283,7 +283,7 @@ No config files needed. Structure IS the configuration.
 | 9 | `Int.Gate` | Interface Plannotator gate |
 | 10 | `Selection` | User selects interface approach |
 | 11 | `Planning` | Tech planning, typed scopes, dependency mapping |
-| 12 | `Execution` | Autonomous scope execution via goals + supervise |
+| 12 | `Execution` | Autonomous scope execution: features with auto-iteration loop (`[MAX_ITERATIONS]`, verify→review→quality, escalate), optimization with benchmark iteration, spikes with research |
 | 13 | `Verification` | Test suite, code review, UI audit, static analysis |
 | 14 | `Audit` | Execution critique (scope, quality, NFRs, docs) |
 
