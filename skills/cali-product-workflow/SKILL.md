@@ -146,7 +146,7 @@ Do NOT use `/skill:` for internal subskills.
 | `critique` | **Product Critique** | Multi-dimensional critique (plan/codebase/site) | — |
 | `gate` | **Review Gate (Plannotator)** | Visual approval — **never skip** | — |
 | `scope` | **Scope Adjustment** | Add/remove from IN/OUT (ask) | — |
-| `interface` | **Interface Alternatives** | 5 proposals + hybrid (if selected) | — |
+| `interface` | **Interface Alternatives** | 5 proposals + hybrid | — |
 | `int-gate` | **Interface Gate (Plannotator)** | Visual review of all interfaces | — |
 | `selection` | **Interface Selection** | User picks via ask with preview | — |
 | `planning` | **Tech Planning** | Typed scopes + sequencing | — |
@@ -189,7 +189,7 @@ gate — Plannotator Gate ← visual pause
   ↓
 scope — Scope Adjustment (ask)
   ↓
-interface — Interface Alternatives (if selected)
+interface — Interface Alternatives
   ↓
 int-gate — Plannotator Gate (interfaces) ← visual pause
   ↓
@@ -208,8 +208,7 @@ audit — Execution Critique
 
 | User selection | Stages that run automatically |
 |---|---|
-| Shape Up only | Shape Up → **Product Critique** → **Gate** → **Scope** → Tech Planning → **Execution** → **Verification** → **Execution Critique** |
-| Shape Up + Interface | Shape Up → **Product Critique** → **Gate** → **Scope** → Interface → **Interface Gate** → Selection → Tech Planning → **Execution** → **Verification** → **Execution Critique** |
+| Shape Up | Shape Up → **Product Critique** → **Gate** → **Scope** → Interface → **Interface Gate** → Selection → Tech Planning → **Execution** → **Verification** → **Execution Critique** |
 | Tech Planning only | Tech Planning (with embedded Gate) → **Execution** → **Verification** → **Execution Critique** |
 
 **Product Critique** runs automatically before every Gate.

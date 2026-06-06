@@ -129,7 +129,7 @@ product_type: {software|service|hybrid}
 appetite: {PoC|Focused|Comprehensive}  # human-set: depth of scope to prepare
 appetite_source: {setup|resume}         # where it was defined
 appetite_fit: {fits|cuts_needed|reshape}  # LLM-set: does the shaped proposal fit within the declared appetite?
-interface: {none|standard|full}
+interface: {standard|full}
 created_at: {YYYY-MM-DD}
 approved: false
 generated_by: "{model_name}"
@@ -166,8 +166,8 @@ Mode is defined independently and stored in `index.json`. It affects gates and q
 
 | Mode | Plannotator Gates | User Questions | Interface | IN/OUT Confirmation | Tech Approval |
 |------|------------------|---------------|-----------|---------------------|---------------|
-| Auto | None | None | LLM recommends | LLM decides | Auto |
-| Light | 1 (pre-tech) | None (final confirm) | LLM recommends | LLM decides | Gate only |
+| Auto | None | None | standard (fixo) | LLM decides | Auto |
+| Light | 1 (pre-tech) | None (final confirm) | standard (fixo) | LLM decides | Gate only |
 | Moderate | 1 (pre-tech) | Interface selection | User chooses | LLM decides | Gate only |
 | Full Product | Gate + Int-Gate | All except technical | User chooses | User confirms | Auto |
 | Full Product + Tech | Gate + Int-Gate | All including technical | User chooses | User confirms | Gate + tech Qs |

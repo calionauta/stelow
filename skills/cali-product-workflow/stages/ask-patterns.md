@@ -422,8 +422,8 @@ Mode is orthogonal to appetite: appetite defines depth, mode defines feedback.`,
 
 | Mode | Plannotator Gates | User Questions | Interface | IN/OUT Confirmation | Tech Approval |
 |------|------------------|---------------|-----------|---------------------|---------------|
-| Auto | None | None | LLM recommends | LLM decides | Auto |
-| Light | 1 (pre-tech) | None (final confirm only) | LLM recommends | LLM decides | Gate only |
+| Auto | None | None | standard (fixo) | LLM decides | Auto |
+| Light | 1 (pre-tech) | None (final confirm only) | standard (fixo) | LLM decides | Gate only |
 | Moderate | 1 (pre-tech) | Interface selection | User chooses | LLM decides | Gate only |
 | Full Product | Gate + Int-Gate | All except technical | User chooses | User confirms | Auto |
 | Full Product + Tech | Gate + Int-Gate | All including technical | User chooses | User confirms | Gate + tech Qs |
