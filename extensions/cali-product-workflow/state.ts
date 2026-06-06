@@ -5,6 +5,7 @@ import type { Workflow, TrackingData, ParsedInput, CLI } from "./types";
 import { TASK_ICONS } from "./modules/task";
 import type { PhaseTodo, PhaseTodosData } from "./modules/task";
 import { WORKFLOW_DIR, TRACKING_FILE, GLOBAL_TRACKING_FILE, SCHEMA_URL, PHASE_NAMES, getCLICapabilities } from "./types";
+import { PHASE_TO_STAGE } from "./stages-guard";
 
 // ── CLI Detection ────────────────────────────────────────────────────
 
@@ -448,6 +449,14 @@ export function reconcileTracking(cwd: string): Workflow[] {
         updated: dw.updated || new Date().toISOString(),
         cwd,
         dirHash: dw.dirHash,  // CRITICAL: needed for rename/archive operations
+        stage: {
+          current_stage: PHASE_TO_STAGE[dw.currentPhase] || "setup",
+          previous_stage: null,
+          transitioned_at: new Date().toISOString(),
+          history: [],
+          gates_passed: [],
+          supervisor_active: false,
+        },
       };
       known.push(wf);
       changed = true;

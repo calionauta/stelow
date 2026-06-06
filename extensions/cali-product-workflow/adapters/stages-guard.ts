@@ -53,17 +53,32 @@ export function loadStages(configPath: string): StagesConfig {
 
 export function loadState(statePath: string): StageState {
   if (!existsSync(statePath)) {
-    // Fallback seguro: assume triage
-    return {
-      current_stage: 'triage',
-      previous_stage: null,
-      transitioned_at: new Date().toISOString(),
-      history: [],
-      gates_passed: [],
-      supervisor_active: false
-    };
+    return defaultStageState();
   }
-  return JSON.parse(readFileSync(statePath, 'utf-8'));
+  const raw = JSON.parse(readFileSync(statePath, 'utf-8'));
+
+  // Auto-detect: if file has `workflows` array, it's a tracking file.
+  // Extract stage from the active (in-progress) workflow.
+  if (raw.workflows && Array.isArray(raw.workflows)) {
+    const active = raw.workflows.find((w: any) => w.status === 'in-progress');
+    if (active?.stage) return active.stage as StageState;
+    // Fallback: no active workflow or missing stage field
+    return defaultStageState();
+  }
+
+  // Otherwise, treat as direct stage state file (legacy current-stage.json)
+  return raw as StageState;
+}
+
+function defaultStageState(): StageState {
+  return {
+    current_stage: 'triage',
+    previous_stage: null,
+    transitioned_at: new Date().toISOString(),
+    history: [],
+    gates_passed: [],
+    supervisor_active: false
+  };
 }
 
 // ── Guard ────────────────────────────────────────────────────────

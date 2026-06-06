@@ -290,16 +290,52 @@ After completing each stage, the LLM **must proceed directly to the next stage**
 
 Each tool in `references/cli-tools/` documents its own fallback.
 
-## Stage State Management
+## Stage State Management — Single Source of Truth
 
-The current workflow stage is tracked in `.cali-product-workflow/state/current-stage.json`.
+The workflow state is tracked in a **single file**: `cali-product-workflow.json` at the project root.
+No other state files are needed — this is the canonical source for TUI display, resume,
+cross-CLI adapters, and LLM stage tracking.
 
-When transitioning to a new stage:
-1. Read `.cali-product-workflow/state/current-stage.json` to know current stage
-2. Read `stages.yaml` to validate tools allowed in new stage
-3. Update `.cali-product-workflow/state/current-stage.json` with `transition()` from state-manager
-4. If the new stage has `supervisor: true`, activate supervisor
-5. If the new stage has `requires_approval: true`, gate before proceeding
+The file contains a `workflows[]` array. Each active workflow has:
+- `currentPhase` (number index into PHASE_NAMES)
+- `phases[]` (array of {id, name, status})
+- `stage` (object with `current_stage`, `previous_stage`, `transitioned_at`, `history`,
+  `gates_passed`, `supervisor_active`)
+
+### Stage Transitions
+
+When completing a stage and moving to the next:
+
+**For Pi extension:** Use `/pw-next` or `/pw-setphase phasename=<stage>`.
+The extension handles all three tracking mechanisms (TUI, resume, tool restrictions).
+
+**For non-Pi CLIs (Claude Code, OpenCode, Codex):**
+1. Call `state-manager.transition()` from `adapters/state-manager.ts` to update stage state
+   - Pass `statePath` pointing to the legacy `current-stage.json`
+   - Pass `trackingPath` pointing to `cali-product-workflow.json` (ensures sync)
+2. Also update `cali-product-workflow.json` fields directly:
+   ```javascript
+   const tracking = JSON.parse(readFileSync('cali-product-workflow.json', 'utf-8'));
+   const idx = tracking.workflows.findIndex(w => w.status === 'in-progress');
+   tracking.workflows[idx].currentPhase = newPhaseIndex;
+   tracking.workflows[idx].phases.forEach((p, i) => {
+     p.status = i < newPhaseIndex ? 'completed' : i === newPhaseIndex ? 'in-progress' : 'pending';
+   });
+   tracking.workflows[idx].stage.current_stage = newStageSlug;
+   tracking.workflows[idx].updated = new Date().toISOString();
+   tracking.updated = tracking.workflows[idx].updated;
+   writeFileSync('cali-product-workflow.json', JSON.stringify(tracking, null, 2));
+   ```
+3. Verify the update by reading `cali-product-workflow.json` back
+
+### Cross-CLI Portability
+
+The single file works on ALL harnesses:
+- **Pi TUI** reads `cali-product-workflow.json` for status display
+- **Claude Code / OpenCode / Codex** adapters read `cali-product-workflow.json`
+  via `adapters/stages-guard.ts` (auto-detects tracking file format)
+- **Resume** reads the active workflow's `currentPhase` from this file
+- **LLM auto-advance** writes to this file via `/pw-next` or direct file write
 
 ## Tool Restrictions
 

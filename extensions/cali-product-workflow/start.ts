@@ -123,6 +123,15 @@ export default async function cmdStart(
       id: `${i}-${name.toLowerCase()}`, name,
       status: i < 2 ? "completed" : i === 2 ? "in-progress" : "pending"
     })),
+    /** Initial stage state: workflow starts at setup */
+    stage: {
+      current_stage: "setup",
+      previous_stage: null,
+      transitioned_at: new Date().toISOString(),
+      history: [],
+      gates_passed: [],
+      supervisor_active: false,
+    },
     created: new Date().toISOString(),
     updated: new Date().toISOString(),
     cwd: wd,

@@ -219,6 +219,25 @@ export interface ParsedInput {
   draftText: string;
 }
 
+export interface StageState {
+  /** Current stage slug (e.g., "shape", "planning") */
+  current_stage: string;
+  /** Previous stage slug, or null for first transition */
+  previous_stage: string | null;
+  /** ISO timestamp of last transition */
+  transitioned_at: string;
+  /** Ordered history of all stage transitions */
+  history: Array<{
+    stage: string;
+    entered_at: string;
+    exited_at: string | null;
+  }>;
+  /** Plannotator gates passed by name */
+  gates_passed: string[];
+  /** Whether supervisor is active in current stage */
+  supervisor_active: boolean;
+}
+
 export interface Phase {
   id: string;
   name: string;
@@ -235,6 +254,8 @@ export interface Workflow {
   status: string;      // in-progress | paused | completed | archived
   currentPhase: number;
   phases: Phase[];
+  /** Unified stage tracking — replaces external current-stage.json */
+  stage: StageState;
   created: string;
   updated: string;
   cwd?: string;

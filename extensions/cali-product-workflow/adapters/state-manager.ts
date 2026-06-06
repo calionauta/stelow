@@ -1,5 +1,6 @@
 // extensions/cali-product-workflow/adapters/state-manager.ts
-// Gerencia current-stage.json — transições e histórico
+// Gerencia estado do workflow — transições e histórico
+// SINGLE SOURCE OF TRUTH: cali-product-workflow.json
 
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import type { StageState, StagesConfig } from './stages-guard';
@@ -26,7 +27,9 @@ export function transition(
   statePath: string,
   toStage: string,
   stages: StagesConfig,
-  transitionType: string = 'next'
+  transitionType: string = 'next',
+  /** Optional path to cali-product-workflow.json for single-source-of-truth sync */
+  trackingPath?: string
 ): StageState {
   const state = loadState(statePath);
   const stage = stages.stages.find(s => s.name === toStage);
@@ -55,6 +58,23 @@ export function transition(
   state.supervisor_active = stage?.supervisor ?? false;
 
   saveState(statePath, state);
+
+  // Sync to cali-product-workflow.json if trackingPath provided
+  if (trackingPath && existsSync(trackingPath)) {
+    try {
+      const tracking = JSON.parse(readFileSync(trackingPath, 'utf-8'));
+      const idx = (tracking.workflows || []).findIndex((w: any) => w.status === 'in-progress');
+      if (idx !== -1) {
+        tracking.workflows[idx].stage = state;
+        tracking.workflows[idx].updated = now;
+        tracking.updated = now;
+        writeFileSync(trackingPath, JSON.stringify(tracking, null, 2), 'utf-8');
+      }
+    } catch {
+      // If tracking file is corrupt, skip sync
+    }
+  }
+
   return state;
 }
 

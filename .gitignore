@@ -29,7 +29,7 @@ stryker-reports/
 .cali-product-workflow/2025-*
 .cali-product-workflow/.gitkeep
 !.cali-product-workflow/state/
-!.cali-product-workflow/state/current-stage.json
+!.cali-product-workflow/state/
 .cali-pw-global.json
 
 # OpenCode session plans

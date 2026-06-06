@@ -35,6 +35,7 @@ import { tmpdir } from "node:os";
 import {
   PHASE_NAMES,
   WORKFLOW_DIR,
+  TRACKING_FILE,
   STAGE,
   type Workflow,
 } from "../../extensions/cali-product-workflow/types";
@@ -307,8 +308,34 @@ describe("updateWorkflowIndexJson — corrupt index recovery", () => {
 });
 
 // ══════════════════════════════════════════════════════════════════════
-// 5. syncStagesGuardState — current-stage.json contract
+// 5. syncStagesGuardState — writes stage INTO cali-product-workflow.json (single source of truth)
 // ══════════════════════════════════════════════════════════════════════
+
+/** Creates a minimal tracking file with an in-progress workflow so syncStagesGuardState can find it */
+function writeTrackingWithWorkflow(root: string, phase: number = 2) {
+  const trackingPath = join(root, TRACKING_FILE);
+  const now = new Date().toISOString();
+  const tracking = {
+    $schema: "",
+    version: "1.0",
+    created: now,
+    updated: now,
+    workflows: [{
+      name: "test-workflow",
+      description: "regression test",
+      status: "in-progress",
+      currentPhase: phase,
+      phases: PHASE_NAMES.map((name, i) => ({
+        id: `${i}-${name.toLowerCase()}`, name,
+        status: i < phase ? "completed" : i === phase ? "in-progress" : "pending",
+      })),
+      created: now,
+      updated: now,
+    }],
+  };
+  writeFileSync(trackingPath, JSON.stringify(tracking, null, 2));
+  return trackingPath;
+}
 
 describe("syncStagesGuardState", () => {
   let env: TempEnv;
@@ -321,57 +348,75 @@ describe("syncStagesGuardState", () => {
     env.cleanup();
   });
 
-  it("creates current-stage.json with correct initial state", () => {
-    // Simulate first call at phase index 2 (Setup)
-    syncStagesGuardState(env.root, STAGE.SETUP());
+  it("writes stage into cali-product-workflow.json with correct initial state", () => {
+    writeTrackingWithWorkflow(env.root, STAGE.SETUP());
+    syncStagesGuardState(env.root, STAGE.SHAPE());
 
-    const statePath = join(env.root, WORKFLOW_DIR, "state", "current-stage.json");
-    expect(existsSync(statePath)).toBe(true);
+    const trackingPath = join(env.root, TRACKING_FILE);
+    const data = JSON.parse(readFileSync(trackingPath, "utf-8"));
+    const stage = data.workflows[0].stage;
 
-    const state = JSON.parse(readFileSync(statePath, "utf-8"));
-    expect(state.current_stage).toBe("setup");
-    expect(state.previous_stage).toBe("triage");
-    expect(state.transitioned_at).toBeDefined();
-    expect(Array.isArray(state.history)).toBe(true);
-    expect(state.history.length).toBe(1);
-    expect(state.history[0].stage).toBe("triage");
-    expect(state.history[0].entered_at).toBeDefined();
-    expect(state.history[0].exited_at).toBeDefined();
-    expect(Array.isArray(state.gates_passed)).toBe(true);
-    expect(state.supervisor_active).toBe(false);
+    expect(stage.current_stage).toBe("shape");
+    expect(stage.previous_stage).toBe("setup");
+    expect(stage.transitioned_at).toBeDefined();
+    expect(Array.isArray(stage.history)).toBe(true);
+    expect(stage.history.length).toBe(1);
+    expect(stage.history[0].stage).toBe("setup");
+    expect(stage.history[0].entered_at).toBeDefined();
+    expect(stage.history[0].exited_at).toBeDefined();
+    expect(Array.isArray(stage.gates_passed)).toBe(true);
+    expect(stage.supervisor_active).toBe(false);
   });
 
   it("appends to history on subsequent transitions", () => {
-    // First transition: Triage → Setup
-    syncStagesGuardState(env.root, STAGE.SETUP());
+    writeTrackingWithWorkflow(env.root, STAGE.SETUP());
 
-    // Second transition: Setup → Shape (skipping Context via SKIP_NEXT)
+    // First transition: Setup → Shape
     syncStagesGuardState(env.root, STAGE.SHAPE());
 
-    const statePath = join(env.root, WORKFLOW_DIR, "state", "current-stage.json");
-    const state = JSON.parse(readFileSync(statePath, "utf-8"));
+    // Second transition: Shape → Critique
+    syncStagesGuardState(env.root, STAGE.CRITIQUE());
 
-    expect(state.current_stage).toBe("shape");
-    expect(state.previous_stage).toBe("setup");
-    expect(state.history.length).toBe(2);
-    expect(state.history[0].stage).toBe("triage");
-    expect(state.history[1].stage).toBe("setup");
+    const trackingPath = join(env.root, TRACKING_FILE);
+    const data = JSON.parse(readFileSync(trackingPath, "utf-8"));
+    const stage = data.workflows[0].stage;
+
+    expect(stage.current_stage).toBe("critique");
+    expect(stage.previous_stage).toBe("shape");
+    expect(stage.history.length).toBe(2);
+    expect(stage.history[0].stage).toBe("setup");
+    expect(stage.history[1].stage).toBe("shape");
   });
 
   it("maps phase 0 (Triage) correctly", () => {
+    writeTrackingWithWorkflow(env.root, 0);
     syncStagesGuardState(env.root, 0);
 
-    const statePath = join(env.root, WORKFLOW_DIR, "state", "current-stage.json");
-    const state = JSON.parse(readFileSync(statePath, "utf-8"));
-    expect(state.current_stage).toBe("triage");
+    const trackingPath = join(env.root, TRACKING_FILE);
+    const data = JSON.parse(readFileSync(trackingPath, "utf-8"));
+    expect(data.workflows[0].stage.current_stage).toBe("triage");
   });
 
   it("maps phase 14 (Audit) correctly", () => {
+    writeTrackingWithWorkflow(env.root, STAGE.AUDIT());
     syncStagesGuardState(env.root, STAGE.AUDIT());
 
-    const statePath = join(env.root, WORKFLOW_DIR, "state", "current-stage.json");
-    const state = JSON.parse(readFileSync(statePath, "utf-8"));
-    expect(state.current_stage).toBe("audit");
+    const trackingPath = join(env.root, TRACKING_FILE);
+    const data = JSON.parse(readFileSync(trackingPath, "utf-8"));
+    expect(data.workflows[0].stage.current_stage).toBe("audit");
+  });
+
+  it("creates tracking file if missing and writes stage into it", () => {
+    // No prior tracking file — syncStagesGuardState should create one
+    syncStagesGuardState(env.root, STAGE.SETUP());
+
+    const trackingPath = join(env.root, TRACKING_FILE);
+    expect(existsSync(trackingPath)).toBe(true);
+    const data = JSON.parse(readFileSync(trackingPath, "utf-8"));
+    // Created file has empty workflows array; stage state is written
+    // but there's no active workflow to attach it to
+    expect(data.workflows).toEqual([]);
+    expect(data.updated).toBeDefined();
   });
 });
 

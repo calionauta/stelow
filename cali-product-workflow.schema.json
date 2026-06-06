@@ -72,6 +72,10 @@
             "$ref": "#/definitions/phase"
           }
         },
+        "stage": {
+          "$ref": "#/definitions/stage-state",
+          "description": "Unified stage tracking — replaces legacy current-stage.json"
+        },
         "tags": {
           "type": "array",
           "items": {
@@ -82,6 +86,47 @@
         "metadata": {
           "type": "object",
           "description": "Additional workflow metadata"
+        }
+      }
+    },
+    "stage-state": {
+      "type": "object",
+      "required": ["current_stage", "previous_stage", "transitioned_at", "history"],
+      "properties": {
+        "current_stage": {
+          "type": "string",
+          "description": "Current stage slug (e.g., 'shape', 'planning')"
+        },
+        "previous_stage": {
+          "type": ["string", "null"],
+          "description": "Previous stage slug, or null for first transition"
+        },
+        "transitioned_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO timestamp of last transition"
+        },
+        "history": {
+          "type": "array",
+          "description": "Ordered history of all stage transitions",
+          "items": {
+            "type": "object",
+            "required": ["stage", "entered_at"],
+            "properties": {
+              "stage": { "type": "string" },
+              "entered_at": { "type": "string", "format": "date-time" },
+              "exited_at": { "type": ["string", "null"], "format": "date-time" }
+            }
+          }
+        },
+        "gates_passed": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Plannotator gates passed by name"
+        },
+        "supervisor_active": {
+          "type": "boolean",
+          "description": "Whether supervisor is active in current stage"
         }
       }
     },

@@ -6,7 +6,8 @@ Documentation of what permissions the cali-product-workflow requires per stage.
 
 | Path | Stage | Access | Purpose |
 |------|-------|--------|---------|
-| `.cali-product-workflow/state/current-stage.json` | All | Read/Write | Stage state persistence |
+| `cali-product-workflow.json` | All | Read/Write | **Stage state — single source of truth** (phases, currentPhase, stage) |
+| `.cali-product-workflow/state/current-stage.json` | All | Read (write via state-manager) | Legacy — maintained for backward compat; LLM prefers cali-product-workflow.json |
 | `.cali-product-workflow/inbox/` | triage | Read/Write | Inbox items |
 | `.cali-product-workflow/{yyyy-mm-dd}/` | setup+ | Read/Write | Workflow artifacts |
 | `stages.yaml` | All | Read | Tool restriction metadata |
