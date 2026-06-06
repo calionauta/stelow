@@ -4,6 +4,21 @@ All notable changes to `@renatocaliari/cali-product-workflow` will be documented
 
 ## [Unreleased]
 
+## [0.16.0-alpha] - 2026-06-06
+
+### Changed
+- **Single source of truth for stage state**: merged `current-stage.json` into
+  `cali-product-workflow.json`. The `stage` field on each workflow now holds
+  transition history, gates_passed, and supervisor_active. Eliminates drift
+  between LLM state and TUI display.
+- **syncStagesGuardState** writes to `cali-product-workflow.json` (reads legacy
+  `current-stage.json` as migration fallback).
+- **adapters/stages-guard.ts** auto-detects tracking vs stage-state file format.
+- **adapters/state-manager.ts** `transition()` accepts optional `trackingPath`
+  to sync stage state into `cali-product-workflow.json`.
+- **SKILL.md** state management section now points to `cali-product-workflow.json`.
+- **Tests updated**: all 639 pass.
+
 ## [0.15.1-alpha] - 2026-06-06
 
 ### Documentation
