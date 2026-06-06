@@ -68,6 +68,10 @@ export function syncStagesGuardState(cwd: string, phaseIndex: number): void {
           gates_passed: [],
           supervisor_active: false,
         };
+      } else {
+        // Tracking file exists but no active workflow — prev from fallback,
+        // but keep trackingData so we don't overwrite existing workflows
+        prev = getFallbackState(cwd, now);
       }
     } catch {
       trackingData = null;

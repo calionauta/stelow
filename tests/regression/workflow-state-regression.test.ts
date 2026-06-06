@@ -84,6 +84,14 @@ function makeMinimalWorkflow(overrides?: Partial<Workflow>): Workflow {
             ? "in-progress"
             : "pending",
     })),
+    stage: {
+      current_stage: "setup",
+      previous_stage: null,
+      transitioned_at: now,
+      history: [],
+      gates_passed: [],
+      supervisor_active: false,
+    },
     created: now,
     updated: now,
     dirHash: generateDirHash(),
@@ -413,10 +421,87 @@ describe("syncStagesGuardState", () => {
     const trackingPath = join(env.root, TRACKING_FILE);
     expect(existsSync(trackingPath)).toBe(true);
     const data = JSON.parse(readFileSync(trackingPath, "utf-8"));
-    // Created file has empty workflows array; stage state is written
-    // but there's no active workflow to attach it to
+    // Created file has empty workflows array
     expect(data.workflows).toEqual([]);
     expect(data.updated).toBeDefined();
+  });
+
+  it("updates existing stage field on re-transition (non-migration path)", () => {
+    writeTrackingWithWorkflow(env.root, STAGE.SHAPE());
+    // Manually add a stage field (simulating existing workflow with stage)
+    const trackingPath = join(env.root, TRACKING_FILE);
+    const data = JSON.parse(readFileSync(trackingPath, "utf-8"));
+    data.workflows[0].stage = {
+      current_stage: "shape",
+      previous_stage: "setup",
+      transitioned_at: new Date().toISOString(),
+      history: [{ stage: "setup", entered_at: new Date().toISOString(), exited_at: new Date().toISOString() }],
+      gates_passed: [],
+      supervisor_active: false,
+    };
+    data.workflows[0].currentPhase = STAGE.SHAPE();
+    writeFileSync(trackingPath, JSON.stringify(data, null, 2));
+
+    // Transition: Shape → Critique
+    syncStagesGuardState(env.root, STAGE.CRITIQUE());
+
+    const updated = JSON.parse(readFileSync(trackingPath, "utf-8"));
+    const stage = updated.workflows[0].stage;
+    expect(stage.current_stage).toBe("critique");
+    expect(stage.previous_stage).toBe("shape");
+    expect(stage.history.length).toBe(2);
+    expect(stage.history[0].stage).toBe("setup");
+    expect(stage.history[1].stage).toBe("shape");
+    expect(updated.workflows[0].currentPhase).toBe(STAGE.CRITIQUE());
+  });
+
+  it("handles no active workflow in tracking file without crashing", () => {
+    // Create tracking file with only archived workflows (no in-progress)
+    const trackingPath = join(env.root, TRACKING_FILE);
+    const now = new Date().toISOString();
+    writeFileSync(trackingPath, JSON.stringify({
+      $schema: "", version: "1.0", created: now, updated: now,
+      workflows: [{
+        name: "old-workflow", description: "",
+        status: "archived", currentPhase: 14,
+        phases: [], created: now, updated: now,
+      }],
+    }, null, 2));
+
+    // Should not throw even though no in-progress workflow exists
+    expect(() => syncStagesGuardState(env.root, STAGE.SETUP())).not.toThrow();
+
+    const data = JSON.parse(readFileSync(trackingPath, "utf-8"));
+    // Stage should NOT be written (no active workflow), but file must remain intact
+    expect(data.workflows[0].stage).toBeUndefined();
+    expect(data.workflows.length).toBe(1);
+    expect(data.workflows[0].status).toBe("archived");
+  });
+
+  it("handles corrupt tracking file and recovers", () => {
+    // Write corrupt JSON
+    const trackingPath = join(env.root, TRACKING_FILE);
+    writeFileSync(trackingPath, "{this is not valid json}");
+
+    // Should not throw — falls back to default state
+    expect(() => syncStagesGuardState(env.root, STAGE.SETUP())).not.toThrow();
+
+    // Should create new valid tracking file
+    const data = JSON.parse(readFileSync(trackingPath, "utf-8"));
+    expect(data.workflows).toEqual([]);
+    expect(data.version).toBe("1.0");
+  });
+
+  it("ignores invalid phase index with early return", () => {
+    writeTrackingWithWorkflow(env.root, STAGE.SETUP());
+    // Phase 99 doesn't exist in PHASE_TO_STAGE
+    syncStagesGuardState(env.root, 99);
+
+    // File should remain unchanged
+    const trackingPath = join(env.root, TRACKING_FILE);
+    const data = JSON.parse(readFileSync(trackingPath, "utf-8"));
+    expect(data.workflows[0].stage).toBeUndefined();
+    expect(data.workflows[0].currentPhase).toBe(STAGE.SETUP());
   });
 });
 

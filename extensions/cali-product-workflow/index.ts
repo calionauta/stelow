@@ -66,7 +66,12 @@ let guardCheckTool: ((tool: string) => import("./adapters/stages-guard").StagesG
 function getStageGuard(projectDir: string) {
   try {
     const stagesPath = join(projectDir, "skills", "cali-product-workflow", "stages.yaml");
-    const statePath = join(projectDir, ".cali-product-workflow", "state", "current-stage.json");
+    // Read stage from cali-product-workflow.json (single source of truth).
+    // The adapter's loadState() auto-detects tracking file format.
+    const trackingPath = join(projectDir, TRACKING_FILE);
+    const statePath = existsSync(trackingPath)
+      ? trackingPath
+      : join(projectDir, ".cali-product-workflow", "state", "current-stage.json");
     // Always re-create to pick up phase changes from /pw-next /pw-setphase
     guardCheckTool = createStagesGuardFromPaths(stagesPath, statePath);
   } catch {
