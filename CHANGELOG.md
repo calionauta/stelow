@@ -4,6 +4,16 @@ All notable changes to `@renatocaliari/cali-product-workflow` will be documented
 
 ## [Unreleased]
 
+## [0.16.1-alpha] - 2026-06-06
+
+### Fixed
+- **syncStagesGuardState crash** when tracking file has no active workflow.
+- **Tool restrictions stale**: `getStageGuard()` now reads from `cali-product-workflow.json`
+  instead of orphaned `current-stage.json`.
+- **Tracking file overwrite**: no longer nullifies `trackingData` when no active workflow.
+- **4 new edge case tests** for re-transition, no active workflow, corrupt file,
+  invalid phase index. All 643 tests pass.
+
 ## [0.16.0-alpha] - 2026-06-06
 
 ### Changed
