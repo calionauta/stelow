@@ -4,6 +4,17 @@ All notable changes to `@renatocaliari/cali-product-workflow` will be documented
 
 ## [Unreleased]
 
+## [0.15.0-alpha] - 2026-06-06
+
+### Changed
+- **Interface Alternatives mandatory**: Removed `none` option from `interface:` field in
+  spec-product frontmatter. Interface now always runs, even in Auto/Light mode.
+  The skill covers system interfaces too (API contracts, auth flows, data layer
+  patterns), not just visual UI.
+- **Auto-chaining simplified**: "Shape Up" now always includes Interface,
+  eliminating the separate "Shape Up + Interface" option. Auto/Light mode no
+  longer delegates the interface decision to the LLM — `standard` is fixed.
+
 ## [0.14.0-alpha] - 2026-06-03
 
 ### Added
