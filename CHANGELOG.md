@@ -4,6 +4,13 @@ All notable changes to `@renatocaliari/cali-product-workflow` will be documented
 
 ## [Unreleased]
 
+## [0.15.1-alpha] - 2026-06-06
+
+### Documentation
+- **README updated** for mandatory Interface Alternatives: Auto/Light mode table now
+  shows `standard (fixo)`, Light description updated, examples reflect new stage
+  counts.
+
 ## [0.15.0-alpha] - 2026-06-06
 
 ### Changed
