@@ -139,8 +139,8 @@ Mode is set explicitly by the user during `setup:15` via `ask_user_question`. It
 
 | Mode | Plannotator Gates | Interface | IN/OUT Confirmation | Tech Approval | Best for |
 |------|:---:|:---:|:---:|:---:|---------|
-| **Auto** | None | LLM recommends | LLM decides | Auto | Throwaway prototype, quick validation, spike |
-| **Light** | **1 pre-tech** | LLM recommends | LLM decides | Auto | Standard feature, bug fix, small improvement |
+| **Auto** | None | standard (fixo) | LLM decides | Auto | Throwaway prototype, quick validation, spike |
+| **Light** | **1 pre-tech** | standard (fixo) | LLM decides | Auto | Standard feature, bug fix, small improvement |
 | **Moderate** | **1 pre-tech** | **User chooses** | LLM decides | Auto | Feature where interface matters |
 | **Full Product** | **Gate + Int.Gate** | User chooses | **User confirms** | Auto | Critical feature, product with domain context |
 | **Full Product + Tech** | **Gate + Int.Gate** | User chooses | User confirms | **Gate + tech Qs** | Full pipeline, high-risk changes, production |
@@ -148,7 +148,7 @@ Mode is set explicitly by the user during `setup:15` via `ask_user_question`. It
 **Key rules:**
 
 - **Auto:** No gates, no Plannotator, no questions. LLM decides everything. Quickest path.
-- **Light:** One Plannotator gate (spec-product visual approval before tech planning). Interface = LLM recommendation without user choosing between alternatives. All other gates skipped.
+- **Light:** One Plannotator gate (spec-product visual approval before tech planning). Interface always runs (5 proposals + hybrid, LLM chooses standard vs full depth). User does not choose between alternatives. All other gates skipped.
 - **Moderate:** Same as Light + user chooses between generated interface alternatives via the ask tool with preview.
 - **Full Product:** All gates active (pre-tech + int-gate). User confirms IN/OUT boundaries. Tech approval uses Auto (no Plannotator for tech plan).
 - **Full Product + Tech:** Everything in Full Product + tech plan goes through Plannotator gate + user answers technical questions.
@@ -166,8 +166,8 @@ Appetite controls HOW DEEP it runs     →  PoC vs Focused vs Comprehensive
 | **Full Product** | 2 gates (Gate + Int.Gate). User confirms IN/OUT. | 2 gates + IN/OUT confirmation. Full workflow. | 2 gates + all questions. No shortcuts. |
 
 **Examples:**
-- `PoC + Auto` → Fastest path: no gates, no questions, no Plannotator. LLM decides scope. Just shape + execute. (~4 stages)
-- `Focused + Light` → Standard feature: 1 Plannotator gate (pre-tech), interface = LLM recommendation. (~8 stages)
+- `PoC + Auto` → Fastest path: no gates, no questions, no Plannotator. LLM decides scope. Interface runs automatically (5 proposals + hybrid). (~6 stages)
+- `Focused + Light` → Standard feature: 1 Plannotator gate (pre-tech), interface runs automatically. (~10 stages)
 - `Focused + Moderate` → Feature where interface matters: 1 Plannotator gate + user chooses interface. (~8 stages)
 - `Comprehensive + Full Product` → Critical feature: 2 Plannotator gates + all questions. No shortcuts. (~13 stages)
 
