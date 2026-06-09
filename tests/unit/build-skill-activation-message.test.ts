@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildSkillActivationMessage } from '../../extensions/cali-product-workflow/start';
+import { buildSkillActivationMessage } from '../../extensions/cali-product-workflow/start-message';
 
 describe('buildSkillActivationMessage', () => {
   it('emits the skill activation header with workflow label', () => {
