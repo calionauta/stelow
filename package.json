@@ -80,7 +80,7 @@
     "mutate": "stryker run",
     "test:mutation": "stryker run",
     "version:sync": "node scripts/version-sync.mjs",
-    "version": "npm run version:sync && git add .claude-plugin/plugin.json .claude-plugin/marketplace.json .codex-plugin/plugin.json .codex-plugin/marketplace.json .opencode-plugin/plugin.json"
+    "version": "npm run version:sync && git add -f .claude-plugin/plugin.json .claude-plugin/marketplace.json .codex-plugin/plugin.json .codex-plugin/marketplace.json .opencode-plugin/plugin.json"
   },
   "devDependencies": {
     "@marcfargas/pi-test-harness": "^0.5.0",
