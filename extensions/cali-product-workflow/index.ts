@@ -4,7 +4,7 @@ import { execSync } from "node:child_process";
 import { existsSync, mkdirSync, writeFileSync, readFileSync, readdirSync, cpSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
-import { WORKFLOW_DIR, TRACKING_FILE, SCHEMA_URL } from "./types";
+import { WORKFLOW_DIR, TRACKING_FILE, SCHEMA_URL, PHASE_NAMES } from "./types";
 import { getRetiredSkillNames } from "./sync-skills";
 
 // Stage guard imports
@@ -21,9 +21,11 @@ import {
   readTracking,
   writeTracking,
   readGlobalTracking,
+  writeGlobalTracking,
   getActiveWorkflow,
   resolveProjectDir,
   parseInputForWorkflow,
+  updateWorkflowIndexJson,
 } from "./state";
 import { updateFooter, notifyPhase } from "./ui";
 import { registerCommands, executeCommand } from "./commands";
@@ -61,6 +63,11 @@ export type {
 } from "./adapters";
 
 const registered = new Set<string>();
+
+// ── Track last-synced phase per workflow for secondary state sync ──
+// Prevents unnecessary writes to global tracking and index.json on
+// turn_end when the phase hasn't changed.
+const _lastSyncedPhase: Map<string, number> = new Map();
 
 // ── Stages guard — re-reads tracking file on every tool call ──
 // Bug fix: the guard previously cached state at session start and never
@@ -349,6 +356,38 @@ export default function (pi: ExtensionAPI) {
       const oldPhase = wf.currentPhase;
       wf.currentPhase = current.currentPhase;
       notifyPhase(ctx, wf, oldPhase);
+    }
+
+    // ── Secondary state sync ─────────────────────────────────────
+    // When LLM self-advances by writing directly to cali-product-workflow.json,
+    // the global tracking (~/.cali-pw-global.json) and index.json
+    // (.cali-product-workflow/<date>/<hash>/index.json) become stale.
+    // This sync brings them up-to-date on every turn_end when phase changed.
+    const syncWf = getActiveWorkflow(wd);
+    if (syncWf?.dirHash) {
+      const syncId = `${wd}:${syncWf.name}`;
+      const lastPhase = _lastSyncedPhase.get(syncId);
+      if (lastPhase !== syncWf.currentPhase) {
+        // Sync global tracking
+        const gt = readGlobalTracking();
+        if (gt) {
+          const gIdx = gt.workflows.findIndex(w => w.name === syncWf.name);
+          if (gIdx !== -1) {
+            gt.workflows[gIdx].currentPhase = syncWf.currentPhase;
+            gt.workflows[gIdx].phases = syncWf.phases;
+            gt.workflows[gIdx].stage = syncWf.stage;
+            gt.workflows[gIdx].updated = syncWf.updated;
+            writeGlobalTracking(gt);
+          }
+        }
+        // Sync index.json
+        updateWorkflowIndexJson(wd, syncWf, {
+          current_phase: PHASE_NAMES[syncWf.currentPhase]?.toLowerCase() || "setup",
+          current_phase_index: syncWf.currentPhase,
+          workflow_status: "in-progress",
+        });
+        _lastSyncedPhase.set(syncId, syncWf.currentPhase);
+      }
     }
   });
 
