@@ -8,7 +8,7 @@ stages:
   - name: triage
     order: 10
     description: Initial assessment. Determine if this is a valid request.
-    blocked_tools: [edit, write, bash, subagent, agent_browser]
+    blocked_tools: []
     allowed_tools: [ask, read, grep, ls]
     preferred_tools: [ask]
     primary_actions: [ask]
@@ -20,7 +20,7 @@ stages:
   - name: select
     order: 15
     description: Item selection. Rank accepted items, user picks one.
-    blocked_tools: [edit, write, bash, subagent, agent_browser]
+    blocked_tools: []
     allowed_tools: [ask, read, grep, ls]
     preferred_tools: [ask, read]
     primary_actions: [ask]
@@ -32,7 +32,7 @@ stages:
   - name: setup
     order: 20
     description: Setup context. Explore codebase, gather requirements.
-    blocked_tools: [bash, write, agent_browser]
+    blocked_tools: []
     allowed_tools: [ask, read, grep, ls, subagent]
     preferred_tools: [read, grep]
     primary_actions: [read, grep]
@@ -44,7 +44,7 @@ stages:
   - name: context
     order: 25
     description: "Strategic context. Market analysis, JTBD, domain detection. Gated by `context:5` (appetite/mode): PoC+Auto skips; PoC+non-Auto uses reduced ask. See `stages/context.md#context:5`."
-    blocked_tools: [bash, agent_browser]
+    blocked_tools: []
     allowed_tools: [ask, read, grep, ls, write, subagent]
     preferred_tools: [read, write]
     primary_actions: [read, write]
@@ -56,7 +56,7 @@ stages:
   - name: shape
     order: 40
     description: Shape stage. Define appetite, hill chart, rabbit holes.
-    blocked_tools: [bash, agent_browser]
+    blocked_tools: []
     allowed_tools: [ask, read, grep, ls, write, subagent]
     preferred_tools: [read, write]
     primary_actions: [read, write]
@@ -69,7 +69,7 @@ stages:
   - name: critique
     order: 45
     description: Plan critique. Pre-flight check before gate.
-    blocked_tools: [bash, agent_browser]
+    blocked_tools: []
     allowed_tools: [ask, read, grep, ls, write, subagent]
     preferred_tools: [read, write]
     primary_actions: [read, write]
@@ -81,7 +81,7 @@ stages:
   - name: gate
     order: 60
     description: Gate review. Visual approval via Plannotator required.
-    blocked_tools: [edit, write, bash, subagent, agent_browser]
+    blocked_tools: [edit, write, bash]
     allowed_tools: [read, ls, grep, ask]
     preferred_tools: [read]
     primary_actions: [read]
@@ -95,7 +95,7 @@ stages:
   - name: scope
     order: 70
     description: Scope adjustment. Add/remove from IN/OUT after gate approval.
-    blocked_tools: [bash, agent_browser]
+    blocked_tools: []
     allowed_tools: [ask, read, grep, ls, write, subagent]
     preferred_tools: [read, write]
     primary_actions: [read, write]
@@ -107,7 +107,7 @@ stages:
   - name: interface
     order: 80
     description: Interface alternatives. 5 proposals + hybrid.
-    blocked_tools: [bash, agent_browser]
+    blocked_tools: []
     allowed_tools: [ask, read, grep, ls, write, subagent]
     preferred_tools: [read, write]
     primary_actions: [read, write]
@@ -119,7 +119,7 @@ stages:
   - name: int-gate
     order: 90
     description: Interface gate. Visual review of all interface proposals.
-    blocked_tools: [edit, write, bash, subagent, agent_browser]
+    blocked_tools: [edit, write, bash]
     allowed_tools: [read, ls, grep, ask]
     preferred_tools: [read]
     primary_actions: [read]
@@ -133,7 +133,7 @@ stages:
   - name: selection
     order: 100
     description: Interface selection. User picks via structured question.
-    blocked_tools: [bash, write, agent_browser]
+    blocked_tools: [bash, write]
     allowed_tools: [ask, read, grep, ls, subagent]
     preferred_tools: [ask, read]
     primary_actions: [ask]
@@ -145,7 +145,7 @@ stages:
   - name: planning
     order: 110
     description: Tech planning. Typed scopes + sequencing.
-    blocked_tools: [bash, agent_browser]
+    blocked_tools: []
     allowed_tools: [ask, read, grep, ls, write, subagent]
     preferred_tools: [read, write]
     primary_actions: [read, write]
@@ -182,7 +182,7 @@ stages:
   - name: audit
     order: 200
     description: Final audit. Verify all requirements met.
-    blocked_tools: [bash]
+    blocked_tools: []
     allowed_tools: [ask, read, grep, ls, write]
     preferred_tools: [read, grep]
     primary_actions: [read, grep]

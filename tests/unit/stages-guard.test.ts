@@ -84,24 +84,12 @@ describe('Stages Guard', () => {
   describe('Triage stage', () => {
     const guard = createStagesGuard(stages, triageState);
 
-    it('blocks edit in triage', () => {
-      expect(guard('edit').allowed).toBe(false);
-    });
-
-    it('blocks write in triage', () => {
-      expect(guard('write').allowed).toBe(false);
-    });
-
-    it('blocks bash in triage', () => {
-      expect(guard('bash').allowed).toBe(false);
-    });
-
-    it('blocks subagent in triage', () => {
-      expect(guard('subagent').allowed).toBe(false);
-    });
-
-    it('blocks agent_browser in triage', () => {
-      expect(guard('agent_browser').allowed).toBe(false);
+    it('allows all tools in triage (no longer blocked)', () => {
+      expect(guard('edit').allowed).toBe(true);
+      expect(guard('write').allowed).toBe(true);
+      expect(guard('bash').allowed).toBe(true);
+      expect(guard('subagent').allowed).toBe(true);
+      expect(guard('agent_browser').allowed).toBe(true);
     });
 
     it('allows ask in triage', () => {
@@ -114,13 +102,6 @@ describe('Stages Guard', () => {
 
     it('allows grep in triage', () => {
       expect(guard('grep').allowed).toBe(true);
-    });
-
-    it('returns allowedTools in rejection reason', () => {
-      const result = guard('bash');
-      expect(result.allowed).toBe(false);
-      expect(result.reason).toMatch(/Tool 'bash' is blocked in 'triage' stage/);
-      expect(result.allowedTools).toEqual(['ask', 'read', 'grep', 'ls']);
     });
   });
 
@@ -176,15 +157,10 @@ describe('Stages Guard', () => {
   describe('Setup stage', () => {
     const guard = createStagesGuard(stages, setupState);
 
-    it('blocks bash in setup', () => {
-      expect(guard('bash').allowed).toBe(false);
-    });
-
-    it('blocks agent_browser in setup', () => {
-      expect(guard('agent_browser').allowed).toBe(false);
-    });
-
-    it('allows subagent in setup', () => {
+    it('allows all tools in setup (no longer blocked)', () => {
+      expect(guard('bash').allowed).toBe(true);
+      expect(guard('agent_browser').allowed).toBe(true);
+      expect(guard('write').allowed).toBe(true);
       expect(guard('subagent').allowed).toBe(true);
     });
 
@@ -228,18 +204,18 @@ describe('Stages Guard', () => {
   // ── onBlocked Callback ─────────────────────────────────────────
 
   describe('onBlocked callback', () => {
-    it('calls onBlocked when tool is blocked', () => {
+    it('calls onBlocked when tool is blocked in gate', () => {
       let called = false;
       let captured: { tool: string; stage: string; allowed: string[] } | null = null;
-      const guard = createStagesGuard(stages, triageState, (tool, stage, allowed) => {
+      const guard = createStagesGuard(stages, gateState, (tool, stage, allowed) => {
         called = true;
         captured = { tool, stage, allowed };
       });
       guard('edit');
       expect(called).toBe(true);
       expect(captured?.tool).toBe('edit');
-      expect(captured?.stage).toBe('triage');
-      expect(captured?.allowed).toContain('ask');
+      expect(captured?.stage).toBe('gate');
+      expect(captured?.allowed).toContain('read');
     });
 
     it('does not call onBlocked when tool is allowed', () => {

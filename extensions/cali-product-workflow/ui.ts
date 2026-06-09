@@ -28,17 +28,6 @@ import {
 
 // ── Singleton UI Adapter ───────────────────────────────────────────────
 
-// Track if agent bypassed the workflow to implement early
-let _bypassed = false;
-
-export function setBypassed(v: boolean): void {
-  _bypassed = v;
-}
-
-export function isBypassed(): boolean {
-  return _bypassed;
-}
-
 let _uiAdapter: UIAdapter | null = null;
 
 /**
@@ -102,8 +91,7 @@ function buildCompactStatus(workflow: Workflow, capabilityLevel: string): string
     icon = isActive ? "◆" : "●";
   }
   
-  const bypassText = _bypassed ? `  ⚠️ bypassed (${phaseName} ${phaseNum} — /pw-next resume)` : "";
-  return `${prefix} ${name}  │  ${icon} ${phaseName} ${phaseNum}${bypassText}`;
+  return `${prefix} ${name}  │  ${icon} ${phaseName} ${phaseNum}`;
 }
 
 // =============================================================================

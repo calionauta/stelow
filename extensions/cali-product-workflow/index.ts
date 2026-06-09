@@ -4,10 +4,11 @@ import { execSync } from "node:child_process";
 import { existsSync, mkdirSync, writeFileSync, readFileSync, readdirSync, cpSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
-import { WORKFLOW_DIR, TRACKING_FILE, SCHEMA_URL, STAGE } from "./types";
+import { WORKFLOW_DIR, TRACKING_FILE, SCHEMA_URL } from "./types";
 import { getRetiredSkillNames } from "./sync-skills";
 
 // Stage guard imports
+import { PHASE_TO_STAGE } from "./stages-guard";
 import {
   createStagesGuardFromPaths,
   hasActiveWorkflow,
@@ -24,8 +25,8 @@ import {
   resolveProjectDir,
   parseInputForWorkflow,
 } from "./state";
-import { updateFooter, notifyPhase, setBypassed, isBypassed } from "./ui";
-import { registerCommands } from "./commands";
+import { updateFooter, notifyPhase } from "./ui";
+import { registerCommands, executeCommand } from "./commands";
 import {
   createAdapter,
   createEventDispatcher,
@@ -311,18 +312,8 @@ export default function (pi: ExtensionAPI) {
         return { block: true, reason: hint };
       }
     }
-    // Detect implementation tools during early phases (before Selection)
-    const isImplTool = ["write", "edit", "bash"].includes(tool);
-    if (isImplTool && ctx.ui) {
-      const wd = resolveProjectDir(ctx.cwd);
-      const wf = getActiveWorkflow(wd);
-      if (wf && wf.currentPhase < STAGE.SELECTION()) {
-        setBypassed(true);
-        updateFooter(ctx, wd);
-      }
-    }
-    
-    // Tracking file write detection
+    // Tracking file write detection — refresh footer when LLM
+    // self-advances by writing directly to cali-product-workflow.json
     if (input?.path?.includes?.(TRACKING_FILE) && ctx.ui) {
       const wd = resolveProjectDir(ctx.cwd);
       const wf = getActiveWorkflow(wd);
@@ -330,22 +321,26 @@ export default function (pi: ExtensionAPI) {
     }
   });
 
-  // ── Phase change detection ✓ ─────────────────────────────────────
+  // ── Phase change detection + Gate auto-advance ✓ ───────────────
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   pi.on("turn_end", async (_event: any, ctx: any) => {
     if (!ctx.ui) return;
     const wd = resolveProjectDir(ctx.cwd);
 
-    // Clear bypass flag if agent advanced phase via /pw-next
-    if (isBypassed()) {
-      const wf = getActiveWorkflow(wd);
-      if (wf && wf.currentPhase >= STAGE.SELECTION()) setBypassed(false);
-    }
-
     // Always refresh footer so tracking updates from commands are picked up
     updateFooter(ctx, wd);
 
-    // Also check for phase changes to show notification
+    // Auto-advance from Gate/Int.Gate when Plannotator marks gates_passed
+    const activeWf = getActiveWorkflow(wd);
+    if (activeWf?.stage) {
+      const stageName = PHASE_TO_STAGE[activeWf.currentPhase];
+      const isGateStage = stageName === "gate" || stageName === "int-gate";
+      if (isGateStage && activeWf.stage.gates_passed.includes(stageName)) {
+        executeCommand(pi, "pw-next", "", ctx);
+      }
+    }
+
+    // Check for phase changes to show notification
     const tracking = readTracking(wd);
     const wf = getActiveWorkflow(wd);
     if (!wf || !tracking) return;
