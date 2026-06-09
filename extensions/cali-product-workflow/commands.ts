@@ -893,6 +893,18 @@ function cmdArchive(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
   reply(ctx, `📦 Workflow '${wf.name}' archived.`);
 }
 
+// ── UNLOCK ───────────────────────────────────────────────────────────
+
+/**
+ * Disable the stage guard for this session by setting the env escape hatch.
+ * Reopen pi to re-enable. Useful for debugging or when the user wants to
+ * keep the workflow metadata but work freely.
+ */
+function cmdUnlock(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
+  process.env.CALI_PW_GUARD = "off";
+  reply(ctx, "🔓 Stages guard disabled for this session. Reopen pi to re-enable.");
+}
+
 // ── UNARCHIVE ────────────────────────────────────────────────────────
 
 function cmdUnarchive(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
@@ -976,6 +988,7 @@ const HANDLER_BY_NAME: Record<string, CmdHandler> = {
   "pw-menu":       cmdMenu,
   "pw-archive":    cmdArchive,
   "pw-unarchive":  cmdUnarchive,
+  "pw-unlock":     cmdUnlock,
   "pw-todo":       cmdTodo,
   "pw-inbox":      cmdInbox,
 };

@@ -94,6 +94,12 @@ export const WORKFLOW_COMMANDS: CommandDescriptor[] = [
     usage: "/pw-unarchive name=<workflow>",
   },
   {
+    name: "pw-unlock",
+    description: "Disable stage guard for this session (debug/emergency)",
+    usage: "/pw-unlock",
+    piOnly: true,
+  },
+  {
     name: "pw-todo",
     description: "Manage phase todos",
     usage: "/pw-todo | add <task> | complete <id>",

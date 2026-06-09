@@ -8,7 +8,12 @@ import { WORKFLOW_DIR, TRACKING_FILE, SCHEMA_URL, STAGE } from "./types";
 import { getRetiredSkillNames } from "./sync-skills";
 
 // Stage guard imports
-import { createStagesGuardFromPaths } from "./adapters/stages-guard";
+import {
+  createStagesGuardFromPaths,
+  hasActiveWorkflow,
+  getActiveWorkflowCwd,
+  isAncestorOrSame,
+} from "./adapters/stages-guard";
 import type { TrackingData } from "./types";
 import {
   parsedInputStore,
@@ -56,24 +61,60 @@ export type {
 
 const registered = new Set<string>();
 
-// ── Stages guard — re-reads current-stage.json on every tool call ──
+// ── Stages guard — re-reads tracking file on every tool call ──
 // Bug fix: the guard previously cached state at session start and never
 // re-read, so /pw-next and /pw-setphase had no effect within a session.
-// Now it always re-reads the state file. The stages.yaml is imported once.
+// Now it always re-reads the tracking file. The stages.yaml is imported once.
 
 let guardCheckTool: ((tool: string) => import("./adapters/stages-guard").StagesGuardResult) | null = null;
 
-function getStageGuard(projectDir: string) {
+/**
+ * Resolve the active stage guard for a given project dir and current cwd.
+ *
+ * Guard is created only when ALL of the following hold:
+ * - Env escape hatch `CALI_PW_GUARD !== "off"`
+ * - Tracking file `cali-product-workflow.json` exists
+ * - Tracking file has at least one in-progress workflow
+ * - Active workflow's `cwd` is ancestor (or equal) to `cwd`
+ *
+ * Otherwise returns null and all tools are free. This keeps the cali-product-workflow
+ * project itself unblocked when there is no active workflow targeting it, and
+ * prevents cross-project locks.
+ */
+function getStageGuard(projectDir: string, cwd: string) {
   try {
+    // Env escape hatch — debug / emergency unlock
+    if (process.env.CALI_PW_GUARD === "off") {
+      guardCheckTool = null;
+      return guardCheckTool;
+    }
+
     const stagesPath = join(projectDir, "skills", "cali-product-workflow", "stages.yaml");
-    // Read stage from cali-product-workflow.json (single source of truth).
-    // The adapter's loadState() auto-detects tracking file format.
     const trackingPath = join(projectDir, TRACKING_FILE);
-    const statePath = existsSync(trackingPath)
-      ? trackingPath
-      : join(projectDir, ".cali-product-workflow", "state", "current-stage.json");
+
+    // No tracking file → no workflow possible → no guard
+    if (!existsSync(trackingPath)) {
+      guardCheckTool = null;
+      return guardCheckTool;
+    }
+
+    // No in-progress workflow → guard is dormant
+    if (!hasActiveWorkflow(trackingPath)) {
+      guardCheckTool = null;
+      return guardCheckTool;
+    }
+
+    // Active workflow must target the current cwd (or ancestor of it).
+    // Cross-project lock is hostile: don't enforce in dir Y because of a
+    // workflow running in dir X.
+    const activeCwd = getActiveWorkflowCwd(trackingPath);
+    if (activeCwd && !isAncestorOrSame(activeCwd, cwd)) {
+      guardCheckTool = null;
+      return guardCheckTool;
+    }
+
     // Always re-create to pick up phase changes from /pw-next /pw-setphase
-    guardCheckTool = createStagesGuardFromPaths(stagesPath, statePath);
+    guardCheckTool = createStagesGuardFromPaths(stagesPath, trackingPath);
   } catch {
     guardCheckTool = null;
   }
@@ -257,13 +298,17 @@ export default function (pi: ExtensionAPI) {
     const input = event.input as any;
     
     // Stage guard check (blocked tools per stages.yaml)
-    const checker = getStageGuard(resolveProjectDir(ctx.cwd));
+    const checker = getStageGuard(resolveProjectDir(ctx.cwd), ctx.cwd);
     if (checker) {
       const result = checker(tool);
       if (!result.allowed) {
+        const hint = `🔒 Tool '${tool}' blocked in '${result.reason || "current"}'. Use /pw-pause (keep), /pw-next (advance), /pw-archive (soft delete), /pw-stop (delete), or /pw-unlock (session only) to lift the lock.`;
         console.warn(`[StagesGuard] ${result.reason}`);
-        // Block the tool call — Pi hooks support { block: true, reason }
-        return { block: true, reason: result.reason || `Tool '${tool}' blocked in current stage` };
+        // Surface a TUI warning so the user sees the lock + how to lift it
+        ctx.ui?.notify(hint, "warning");
+        // Block the tool call — Pi hooks support { block: true, reason }.
+        // The reason includes the hint so the LLM can guide the user.
+        return { block: true, reason: hint };
       }
     }
     // Detect implementation tools during early phases (before Selection)

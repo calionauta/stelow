@@ -16,9 +16,13 @@ import {
   createStagesGuard,
   loadStages,
   loadState,
+  hasActiveWorkflow,
+  getActiveWorkflowCwd,
+  isAncestorOrSame,
   type StagesConfig,
   type StageState,
 } from '../../extensions/cali-product-workflow/adapters/stages-guard';
+import { WORKFLOW_COMMANDS } from '../../extensions/cali-product-workflow/adapters/commands/dispatcher';
 
 const __filename = fileURLToPath(import.meta.url);
 const __testDir = dirname(__filename);
@@ -264,6 +268,233 @@ describe('Stages Guard', () => {
 
     it('loadStage throws on invalid path', () => {
       expect(() => loadStages('/nonexistent/stages.yaml')).toThrow();
+    });
+  });
+
+  // ── hasActiveWorkflow (dogfooding guard) ───────────────────────
+
+  describe('hasActiveWorkflow', () => {
+    it('returns false for nonexistent path', () => {
+      expect(hasActiveWorkflow('/nonexistent/tracking.json')).toBe(false);
+    });
+
+    it('returns false for empty tracking (no workflows array)', () => {
+      const tmp = join(PROJECT_ROOT, '.tmp-tracking-empty.json');
+      require('node:fs').writeFileSync(tmp, JSON.stringify({ version: "1.0", workflows: [] }));
+      try {
+        expect(hasActiveWorkflow(tmp)).toBe(false);
+      } finally {
+        require('node:fs').rmSync(tmp, { force: true });
+      }
+    });
+
+    it('returns false when all workflows are archived (dogfooding bug fix)', () => {
+      const tmp = join(PROJECT_ROOT, '.tmp-tracking-archived.json');
+      require('node:fs').writeFileSync(tmp, JSON.stringify({
+        version: "1.0",
+        workflows: [
+          { name: "old-wf", status: "archived", currentPhase: 0 },
+          { name: "completed-wf", status: "completed", currentPhase: 12 },
+        ],
+      }));
+      try {
+        expect(hasActiveWorkflow(tmp)).toBe(false);
+      } finally {
+        require('node:fs').rmSync(tmp, { force: true });
+      }
+    });
+
+    it('returns true when at least one workflow is in-progress', () => {
+      const tmp = join(PROJECT_ROOT, '.tmp-tracking-active.json');
+      require('node:fs').writeFileSync(tmp, JSON.stringify({
+        version: "1.0",
+        workflows: [
+          { name: "old-wf", status: "archived", currentPhase: 0 },
+          { name: "active-wf", status: "in-progress", currentPhase: 2 },
+        ],
+      }));
+      try {
+        expect(hasActiveWorkflow(tmp)).toBe(true);
+      } finally {
+        require('node:fs').rmSync(tmp, { force: true });
+      }
+    });
+
+    it('returns false for corrupt JSON', () => {
+      const tmp = join(PROJECT_ROOT, '.tmp-tracking-corrupt.json');
+      require('node:fs').writeFileSync(tmp, "{not valid json");
+      try {
+        expect(hasActiveWorkflow(tmp)).toBe(false);
+      } finally {
+        require('node:fs').rmSync(tmp, { force: true });
+      }
+    });
+  });
+
+  // ── getActiveWorkflowCwd ───────────────────────────────────────
+
+  describe('getActiveWorkflowCwd', () => {
+    it('returns cwd of in-progress workflow', () => {
+      const tmp = join(PROJECT_ROOT, '.tmp-cwd-active.json');
+      require('node:fs').writeFileSync(tmp, JSON.stringify({
+        version: "1.0",
+        workflows: [
+          { name: "old", status: "archived", cwd: "/old" },
+          { name: "active", status: "in-progress", cwd: "/foo/bar" },
+        ],
+      }));
+      try {
+        expect(getActiveWorkflowCwd(tmp)).toBe("/foo/bar");
+      } finally {
+        require('node:fs').rmSync(tmp, { force: true });
+      }
+    });
+
+    it('returns null when no in-progress workflow', () => {
+      const tmp = join(PROJECT_ROOT, '.tmp-cwd-none.json');
+      require('node:fs').writeFileSync(tmp, JSON.stringify({
+        version: "1.0",
+        workflows: [
+          { name: "old", status: "archived", cwd: "/old" },
+          { name: "done", status: "completed", cwd: "/done" },
+        ],
+      }));
+      try {
+        expect(getActiveWorkflowCwd(tmp)).toBe(null);
+      } finally {
+        require('node:fs').rmSync(tmp, { force: true });
+      }
+    });
+
+    it('returns null when active workflow has no cwd field', () => {
+      const tmp = join(PROJECT_ROOT, '.tmp-cwd-missing.json');
+      require('node:fs').writeFileSync(tmp, JSON.stringify({
+        version: "1.0",
+        workflows: [{ name: "active", status: "in-progress" }],
+      }));
+      try {
+        expect(getActiveWorkflowCwd(tmp)).toBe(null);
+      } finally {
+        require('node:fs').rmSync(tmp, { force: true });
+      }
+    });
+
+    it('returns null for missing file', () => {
+      expect(getActiveWorkflowCwd('/nonexistent/tracking.json')).toBe(null);
+    });
+
+    it('returns null for corrupt JSON', () => {
+      const tmp = join(PROJECT_ROOT, '.tmp-cwd-corrupt.json');
+      require('node:fs').writeFileSync(tmp, "{ bad");
+      try {
+        expect(getActiveWorkflowCwd(tmp)).toBe(null);
+      } finally {
+        require('node:fs').rmSync(tmp, { force: true });
+      }
+    });
+
+    it('returns null for file without workflows array', () => {
+      const tmp = join(PROJECT_ROOT, '.tmp-cwd-empty.json');
+      require('node:fs').writeFileSync(tmp, JSON.stringify({ version: "1.0" }));
+      try {
+        expect(getActiveWorkflowCwd(tmp)).toBe(null);
+      } finally {
+        require('node:fs').rmSync(tmp, { force: true });
+      }
+    });
+
+    it('returns first in-progress cwd when multiple in-progress exist', () => {
+      const tmp = join(PROJECT_ROOT, '.tmp-cwd-multi.json');
+      require('node:fs').writeFileSync(tmp, JSON.stringify({
+        version: "1.0",
+        workflows: [
+          { name: "first", status: "in-progress", cwd: "/first" },
+          { name: "second", status: "in-progress", cwd: "/second" },
+        ],
+      }));
+      try {
+        expect(getActiveWorkflowCwd(tmp)).toBe("/first");
+      } finally {
+        require('node:fs').rmSync(tmp, { force: true });
+      }
+    });
+
+    it('returns null when workflows is null', () => {
+      const tmp = join(PROJECT_ROOT, '.tmp-cwd-null.json');
+      require('node:fs').writeFileSync(tmp, JSON.stringify({ version: "1.0", workflows: null }));
+      try {
+        expect(getActiveWorkflowCwd(tmp)).toBe(null);
+      } finally {
+        require('node:fs').rmSync(tmp, { force: true });
+      }
+    });
+  });
+
+  // ── isAncestorOrSame ────────────────────────────────────────────
+
+  describe('isAncestorOrSame', () => {
+    it('returns true for exact match', () => {
+      expect(isAncestorOrSame('/a/b', '/a/b')).toBe(true);
+    });
+
+    it('returns true for descendant', () => {
+      expect(isAncestorOrSame('/a', '/a/b/c')).toBe(true);
+    });
+
+    it('returns true for immediate child', () => {
+      expect(isAncestorOrSame('/a/b', '/a/b/c')).toBe(true);
+    });
+
+    it('returns false for sibling', () => {
+      expect(isAncestorOrSame('/a/b', '/a/c')).toBe(false);
+    });
+
+    it('returns false for parent (reversed direction)', () => {
+      expect(isAncestorOrSame('/a/b/c', '/a/b')).toBe(false);
+    });
+
+    it('returns false for partial prefix that is not a path boundary', () => {
+      // /a/bb is a sibling of /a/b, not a child
+      expect(isAncestorOrSame('/a/b', '/a/bb/c')).toBe(false);
+    });
+
+    it('strips trailing slash from parent', () => {
+      expect(isAncestorOrSame('/a/b/', '/a/b/c')).toBe(true);
+    });
+
+    it('strips trailing slash from child', () => {
+      expect(isAncestorOrSame('/a/b', '/a/b/c/')).toBe(true);
+    });
+
+    it('handles root', () => {
+      expect(isAncestorOrSame('/', '/anywhere')).toBe(true);
+      expect(isAncestorOrSame('/', '/')).toBe(true);
+    });
+
+    it('resolves .. segments in parent', () => {
+      expect(isAncestorOrSame('/a/b/../b/c', '/a/b/c/d')).toBe(true);
+    });
+
+    it('resolves .. segments in child', () => {
+      expect(isAncestorOrSame('/a/b', '/a/b/../b/c')).toBe(true);
+    });
+
+    it('treats . as current dir', () => {
+      expect(isAncestorOrSame('/a/b/./c', '/a/b/c/d')).toBe(true);
+    });
+  });
+
+  // ── Dispatcher integration (regression) ─────────────────────────
+
+  describe('WORKFLOW_COMMANDS dispatcher', () => {
+    it('includes pw-unlock (so it gets registered with pi)', () => {
+      const names = WORKFLOW_COMMANDS.map(c => c.name);
+      expect(names).toContain("pw-unlock");
+    });
+
+    it('pw-unlock is marked piOnly', () => {
+      const cmd = WORKFLOW_COMMANDS.find(c => c.name === "pw-unlock");
+      expect(cmd?.piOnly).toBe(true);
     });
   });
 });

@@ -4,6 +4,7 @@
 
 import { parse as parseYAML } from 'yaml';
 import { readFileSync, existsSync } from 'fs';
+import { resolve as resolvePath } from 'node:path';
 
 // ── Tipos (espelha types/stages.ts) ──────────────────────────────
 
@@ -129,6 +130,61 @@ export function createStagesGuard(
 }
 
 // ── Factory ──────────────────────────────────────────────────────
+
+/**
+ * Check if a tracking file has at least one in-progress (active) workflow.
+ * Used by the dogfooding guard to skip enforcement when no workflow is active
+ * — the guard's job is to enforce stages of an ACTIVE workflow, not to block
+ * dev in any directory that happens to have a tracking file from past work.
+ *
+ * Returns false when:
+ * - file missing
+ * - file is corrupt
+ * - file has no `workflows` array
+ * - no workflow has `status: "in-progress"`
+ */
+export function hasActiveWorkflow(trackingPath: string): boolean {
+  if (!existsSync(trackingPath)) return false;
+  try {
+    const tracking = JSON.parse(readFileSync(trackingPath, "utf-8"));
+    if (!Array.isArray(tracking?.workflows)) return false;
+    return tracking.workflows.some((w: any) => w && w.status === "in-progress");
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Return the `cwd` of the in-progress workflow, or null if none exists.
+ * Used by the guard to verify the active workflow targets the current cwd
+ * before enforcing stage locks (avoids cross-project lock).
+ */
+export function getActiveWorkflowCwd(trackingPath: string): string | null {
+  if (!existsSync(trackingPath)) return null;
+  try {
+    const tracking = JSON.parse(readFileSync(trackingPath, "utf-8"));
+    if (!Array.isArray(tracking?.workflows)) return null;
+    const active = tracking.workflows.find(
+      (w: any) => w && w.status === "in-progress"
+    );
+    return active?.cwd ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Return true if `child` equals `parent` or is a descendant of `parent`.
+ * Resolves `..` and `.` segments via `path.resolve` so that paths written
+ * with `..` (e.g. from a symlink) compare correctly. Trailing slashes
+ * are stripped. Pure utility, exported for testing.
+ */
+export function isAncestorOrSame(parent: string, child: string): boolean {
+  const norm = (p: string) => resolvePath(p).replace(/\/+$/, "");
+  const a = norm(parent);
+  const c = norm(child);
+  return c === a || c.startsWith(a + "/");
+}
 
 export function createStagesGuardFromPaths(
   stagesPath: string,
