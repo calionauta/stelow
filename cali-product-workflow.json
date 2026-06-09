@@ -215,7 +215,7 @@
       "name": "vamos-planejar-detalhado-os-passos-1-e-2",
       "description": "vamos planejar detalhado os passos 1 e 2 acima q vc recomendou.",
       "draftContent": "### Initial Draft\n\nvamos planejar detalhado os passos 1 e 2 acima q vc recomendou.\n\n",
-      "status": "in-progress",
+      "status": "archived",
       "currentPhase": 10,
       "phases": [
         {
@@ -275,7 +275,7 @@
         }
       ],
       "created": "2026-05-22T13:38:27.337Z",
-      "updated": "2026-05-26T22:21:42.014Z",
+      "updated": "2026-06-08T20:39:04.310Z",
       "cwd": "/Users/cali/Development/cali-product-workflow",
       "dirHash": "pw-tfgp-8wssb5",
       "detectedCLI": "pi",
