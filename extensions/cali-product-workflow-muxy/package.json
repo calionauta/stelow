@@ -18,6 +18,22 @@
       {
         "id": "refresh-pipeline",
         "title": "Cali Product Workflow: Refresh"
+      },
+      {
+        "id": "pw-next-cmd",
+        "title": "Workflow: Copy /pw-next to Clipboard"
+      },
+      {
+        "id": "pw-stop-cmd",
+        "title": "Workflow: Copy /pw-stop to Clipboard"
+      },
+      {
+        "id": "pw-complete-cmd",
+        "title": "Workflow: Copy /pw-complete to Clipboard"
+      },
+      {
+        "id": "pw-archive-cmd",
+        "title": "Workflow: Copy /pw-archive to Clipboard"
       }
     ],
     "panels": [

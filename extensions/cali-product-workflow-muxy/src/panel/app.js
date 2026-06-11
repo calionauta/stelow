@@ -44,6 +44,11 @@ export class PipelinePanel {
 
   start() {
     muxy.events.subscribe('command.refresh-pipeline', () => this.refresh(true));
+    // Workflow commands — copy to clipboard
+    muxy.events.subscribe('command.pw-next-cmd',     () => this.copyToClipboardToast('/pw-next'));
+    muxy.events.subscribe('command.pw-stop-cmd',     () => this.copyToClipboardToast('/pw-stop'));
+    muxy.events.subscribe('command.pw-complete-cmd', () => this.copyToClipboardToast('/pw-complete'));
+    muxy.events.subscribe('command.pw-archive-cmd',  () => this.copyToClipboardToast('/pw-archive'));
     // Switch events need small delay — Muxy doesn't scope muxy.files
     // to the new worktree until after the event handler returns.
     muxy.events.subscribe('project.switched', () => this.delayedRefresh());
@@ -528,15 +533,39 @@ export class PipelinePanel {
               : `${next.name} already in progress`,
           ),
         ),
-        // Action: copy to clipboard
+        // Actions: copy workflow commands to clipboard
         h('div', { class: 'handoff-action' },
           h('button', {
             class: 'handoff-btn',
             onclick: () => this.copyToClipboardToast('/pw-next'),
-            title: 'Copy /pw-next to clipboard (Cmd+V to paste)',
+            title: 'Advance to next phase',
           },
-            icon('copy', 10),
-            'Copy /pw-next',
+            icon('refresh', 10),
+            'Next',
+          ),
+          h('button', {
+            class: 'handoff-btn',
+            onclick: () => this.copyToClipboardToast('/pw-stop'),
+            title: 'Pause and stop workflow',
+          },
+            icon('x', 10),
+            'Stop',
+          ),
+          h('button', {
+            class: 'handoff-btn',
+            onclick: () => this.copyToClipboardToast('/pw-complete'),
+            title: 'Mark workflow as complete',
+          },
+            icon('check', 10),
+            'Complete',
+          ),
+          h('button', {
+            class: 'handoff-btn',
+            onclick: () => this.copyToClipboardToast('/pw-archive'),
+            title: 'Archive workflow',
+          },
+            icon('archive', 10),
+            'Archive',
           ),
         ),
       ),
