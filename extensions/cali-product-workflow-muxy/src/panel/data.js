@@ -356,7 +356,7 @@ async function resolvePreferredPane(panes) {
   const workspacePanes = workspacePath
     ? panes.filter(pane => pane.workingDirectory && pathIsInside(pane.workingDirectory, workspacePath))
     : panes;
-  const focused = panes.find(p => p.isFocused);
+  const focused = panes.find(isFocusedPane);
   const focusedInWorkspace = workspacePanes.find(p => focused && p.id === focused.id);
   const candidates = workspacePanes.length > 0 ? workspacePanes : panes;
 
@@ -424,7 +424,7 @@ async function selectTerminalPane(panes) {
     return null;
   }
   const candidates = workspacePanes.length > 0 ? workspacePanes : panes;
-  const focused = panes.find(p => p.isFocused);
+  const focused = panes.find(isFocusedPane);
   const focusedInCandidates = candidates.find(p => focused && p.id === focused.id);
 
   if (focusedInCandidates) {
@@ -455,6 +455,10 @@ async function getActiveWorkspacePath() {
   return activeWorktree?.path ?? activeProject.path;
 }
 
+function isFocusedPane(pane) {
+  return Boolean(pane?.isFocused || pane?.focused);
+}
+
 function pathIsInside(candidatePath, parentPath) {
   const normalizedCandidate = normalizePath(candidatePath);
   const normalizedParent = normalizePath(parentPath);
@@ -476,7 +480,7 @@ function paneToItem(pane) {
     title: pane.title || 'Untitled pane',
     subtitle: [
       pane.workingDirectory || 'No working directory',
-      pane.isFocused ? 'focused' : null,
+      isFocusedPane(pane) ? 'focused' : null,
     ].filter(Boolean).join(' · '),
   };
 }
