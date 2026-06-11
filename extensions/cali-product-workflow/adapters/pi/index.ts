@@ -104,7 +104,7 @@ export class PiAdapter extends BaseAdapter {
     // This will be connected to the actual command handlers in commands.ts
     const handlers: Record<string, (pi: unknown, args: string, ctx: unknown) => void> = {
       "pw-start": this.handleStart.bind(this),
-      "pw-stop": this.handleStop.bind(this),
+      "pw-abort": this.handleAbort.bind(this),
       "pw-pause": this.handlePause.bind(this),
       "pw-resume": this.handleResume.bind(this),
       "pw-status": this.handleStatus.bind(this),
@@ -136,10 +136,10 @@ export class PiAdapter extends BaseAdapter {
     }
   }
   
-  private handleStop(_pi: unknown, _args: string, _ctx: unknown): void {
-    // Commands.ts handles stop - this is a placeholder
+  private handleAbort(_pi: unknown, _args: string, _ctx: unknown): void {
+    // Commands.ts handles abort - this is a placeholder
     // The actual command handlers are in commands.ts
-    console.log("[PiAdapter] Stop command delegated to commands.ts");
+    console.log("[PiAdapter] Abort command delegated to commands.ts");
   }
   
   private handlePause(_pi: unknown, _args: string, _ctx: unknown): void {

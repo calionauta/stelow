@@ -24,8 +24,8 @@
         "title": "Workflow: Copy /pw-next to Clipboard"
       },
       {
-        "id": "pw-stop-cmd",
-        "title": "Workflow: Copy /pw-stop to Clipboard"
+        "id": "pw-abort-cmd",
+        "title": "Workflow: Copy /pw-abort to Clipboard"
       },
       {
         "id": "pw-complete-cmd",

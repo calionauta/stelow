@@ -49,7 +49,7 @@ adapters/
 // 15 workflow commands defined
 export const WORKFLOW_COMMANDS: CommandDescriptor[] = [
   { name: "pw-start", canonicalName: "pw-start", ... },
-  { name: "pw-stop", canonicalName: "pw-stop", ... },
+  { name: "pw-abort", canonicalName: "pw-abort", ... },
   { name: "pw-pause", canonicalName: "pw-pause", ... },
   // ... 12 more commands
 ];

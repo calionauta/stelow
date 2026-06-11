@@ -128,7 +128,7 @@ Phase 14: Execution Critique    → Post-execution verification
 | Command | Alias | Purpose |
 |---------|-------|---------|
 | `/pw-start` | `/pw-start` | Start new workflow |
-| `/pw-stop` | `/pw-stop` | Stop workflow(s) |
+| `/pw-abort` | `/pw-abort` | Abort and archive workflow(s) — kill active, keep disk copy |
 | `/pw-pause` | `/pw-pause` | Pause active workflow |
 | `/pw-resume` | `/pw-resume` | Resume paused workflow |
 | `/pw-next` | `/pw-next` | Advance to next phase |
@@ -500,7 +500,7 @@ This is a local agent tool — no external API. Commands are processed via CLI e
 - Auto-generates dirHash for untitled workflows
 - Stores in local cali-product-workflow.json
 
-### `/pw-stop`
+### `/pw-abort`
 **Purpose:** Stop active workflow(s)
 **Auth:** Any authenticated agent session
 **Args:** `all` | `name=<workflow>` | positional names

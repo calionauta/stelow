@@ -46,7 +46,7 @@ export class PipelinePanel {
     muxy.events.subscribe('command.refresh-pipeline', () => this.refresh(true));
     // Workflow commands — copy to clipboard
     muxy.events.subscribe('command.pw-next-cmd',     () => this.copyToClipboardToast('/pw-next'));
-    muxy.events.subscribe('command.pw-stop-cmd',     () => this.copyToClipboardToast('/pw-stop'));
+    muxy.events.subscribe('command.pw-abort-cmd',     () => this.copyToClipboardToast('/pw-abort'));
     muxy.events.subscribe('command.pw-complete-cmd', () => this.copyToClipboardToast('/pw-complete'));
     muxy.events.subscribe('command.pw-archive-cmd',  () => this.copyToClipboardToast('/pw-archive'));
     // Switch events need small delay — Muxy doesn't scope muxy.files
@@ -545,11 +545,11 @@ export class PipelinePanel {
           ),
           h('button', {
             class: 'handoff-btn',
-            onclick: () => this.copyToClipboardToast('/pw-stop'),
-            title: 'Pause and stop workflow',
+            onclick: () => this.copyToClipboardToast('/pw-abort'),
+            title: 'Abort and archive workflow',
           },
             icon('x', 10),
-            'Stop',
+            'Abort',
           ),
           h('button', {
             class: 'handoff-btn',

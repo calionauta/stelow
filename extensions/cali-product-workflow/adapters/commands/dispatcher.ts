@@ -29,9 +29,9 @@ export const WORKFLOW_COMMANDS: CommandDescriptor[] = [
     usage: "/pw-start [name=...] [description=...] [@file]",
   },
   {
-    name: "pw-stop",
-    description: "Stop workflow(s)",
-    usage: "/pw-stop | all | name1 name2",
+    name: "pw-abort",
+    description: "Abort and archive workflow(s) — kill active, keep disk copy",
+    usage: "/pw-abort | all | name1 name2",
   },
   {
     name: "pw-pause",
@@ -97,12 +97,6 @@ export const WORKFLOW_COMMANDS: CommandDescriptor[] = [
     name: "pw-unlock",
     description: "Disable stage guard for this session (debug/emergency)",
     usage: "/pw-unlock",
-    piOnly: true,
-  },
-  {
-    name: "pw-todo",
-    description: "Manage phase todos",
-    usage: "/pw-todo | add <task> | complete <id>",
     piOnly: true,
   },
   {

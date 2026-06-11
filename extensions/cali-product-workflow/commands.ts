@@ -9,9 +9,7 @@ import {
   readTracking, writeTracking, readGlobalTracking, writeGlobalTracking,
   getActiveWorkflow, renameWorkflow, toSafeName, reconcileTracking, scanWorkflowDirs,
   archiveWorkflowOnDisk, updateWorkflowIndexJson, resolveProjectDir,
-  writePhaseTodos, getPhaseTodos, getPhaseTodosFromCache, setPhaseTodos, type PhaseTodo,
   readInbox, addToInbox, removeFromInbox, clearInbox,
-  TASK_ICONS,
 } from "./state";
 import { updateFooter, notifyPhase, showOverlay, getUIAdapter } from "./ui";
 import cmdStart from "./start";
@@ -98,7 +96,7 @@ function removeWorkflowFromTracking(cwd: string, workflowName: string): void {
 
 // ── STOP ─────────────────────────────────────────────────────────────
 
-function cmdStop(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
+function cmdAbort(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
   const wd = resolveProjectDir(ctx.cwd);
   const parsed = parseArgs(args);
 
@@ -116,7 +114,7 @@ function cmdStop(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
     return;
   }
 
-  // ── /pw-stop all ───────────────────────────────────────────────
+  // ── /pw-abort all ───────────────────────────────────────────────
   if (parsed._.includes("all") || parsed.all !== undefined) {
     for (const w of stoppable) {
       removeWorkflowFromTracking(wd, w.name);
@@ -126,7 +124,7 @@ function cmdStop(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
     return;
   }
 
-  // ── /pw-stop <name1> <name2> ───────────────────────────────────
+  // ── /pw-abort <name1> <name2> ───────────────────────────────────
   if (parsed._.length > 0) {
     let count = 0;
     for (const wfName of parsed._) {
@@ -147,7 +145,7 @@ function cmdStop(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
     return;
   }
 
-  // ── /pw-stop (no args) — picker se >1, direto se for 1 ──────
+  // ── /pw-abort (no args) — picker se >1, direto se for 1 ──────
   if (stoppable.length === 1) {
     const wfName = stoppable[0].name;
     removeWorkflowFromTracking(wd, wfName);
@@ -174,7 +172,7 @@ async function showStopPicker(
     ...workflows.map(w => ({
       value: w.name,
       label: `☐ ${w.name}`,
-      description: `${PHASE_NAMES[w.currentPhase]} — /pw-stop ${w.name}`
+      description: `${PHASE_NAMES[w.currentPhase]} — /pw-abort ${w.name}`
     })),
     {
       value: "__cancel__",
@@ -332,7 +330,7 @@ function cmdStatus(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
       return `${i === wf.currentPhase ? "→ " : "  "}${icon} ${i + 1}. ${p.name}`;
     }),
     "",
-    "/pw-next  /pw-stop  /pw-menu"
+    "/pw-next  /pw-abort  /pw-menu"
   ].join("\n"));
 }
 
@@ -746,66 +744,6 @@ function cmdInbox(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
 
 // ── TODO ──────────────────────────────────────────────────────────────
 
-function cmdTodo(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
-  const wd = resolveProjectDir(ctx.cwd);
-  const wf = getActiveWorkflow(wd);
-  if (!wf) { noActive(ctx); return; }
-
-  const parsed = parseArgs(args);
-  const todos = getPhaseTodosFromCache(wd, wf);
-
-  // /pw-todo add <task>
-  if (parsed.add !== undefined) {
-    const task = parsed.add || parsed._.join(" ");
-    if (!task) {
-      replyWarn(ctx, "Usage: /pw-todo add <task text>");
-      return;
-    }
-    const phasePrefix = PHASE_NAMES[wf.currentPhase].toUpperCase().slice(0, 4);
-    const newId = `${phasePrefix}-${todos.length + 1}`;
-    const newTodo: PhaseTodo = {
-      id: newId,
-      content: task,
-      status: "pending",
-      createdAt: new Date().toISOString(),
-    };
-    todos.push(newTodo);
-    setPhaseTodos(todos);
-    writePhaseTodos(wd, wf, todos);
-    ctx.ui?.notify(`✓ Added ${newId}: ${task.slice(0, 40)}`, "info");
-    return;
-  }
-
-  // /pw-todo complete <id>
-  if (parsed.complete || parsed.done) {
-    const id = parsed.complete || parsed.done;
-    const todo = todos.find(t => t.id === id);
-    if (!todo) {
-      replyWarn(ctx, `Todo not found: ${id}`);
-      return;
-    }
-    todo.status = "completed";
-    todo.completedAt = new Date().toISOString();
-    setPhaseTodos(todos);
-    writePhaseTodos(wd, wf, todos);
-    ctx.ui?.notify(`✓ Completed ${id}`, "info");
-    return;
-  }
-
-  // /pw-todo (show)
-  if (todos.length === 0) {
-    const phaseName = PHASE_NAMES[wf.currentPhase];
-    reply(ctx, `${phaseName} phase — no todos yet. Use /pw-todo add <task>`);
-  } else {
-    const lines = [`${PHASE_NAMES[wf.currentPhase]} todos:`, ""];
-    for (const todo of todos) {
-      const icon = TASK_ICONS[todo.status];
-      lines.push(`${icon} [${todo.id}] ${todo.content}`);
-    }
-    reply(ctx, lines.join("\n"));
-  }
-}
-
 // ── ARCHIVE ──────────────────────────────────────────────────────────
 
 function cmdArchive(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
@@ -975,7 +913,7 @@ export type { CommandDescriptor } from "./adapters/commands/dispatcher";
 
 const HANDLER_BY_NAME: Record<string, CmdHandler> = {
   "pw-start":      cmdStart,
-  "pw-stop":       cmdStop,
+  "pw-abort":      cmdAbort,
   "pw-pause":      cmdPause,
   "pw-resume":     cmdResume,
   "pw-status":     cmdStatus,
@@ -989,7 +927,6 @@ const HANDLER_BY_NAME: Record<string, CmdHandler> = {
   "pw-archive":    cmdArchive,
   "pw-unarchive":  cmdUnarchive,
   "pw-unlock":     cmdUnlock,
-  "pw-todo":       cmdTodo,
   "pw-inbox":      cmdInbox,
 };
 

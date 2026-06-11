@@ -310,7 +310,7 @@ export default function (pi: ExtensionAPI) {
     if (checker) {
       const result = checker(tool);
       if (!result.allowed) {
-        const hint = `🔒 Tool '${tool}' blocked in '${result.reason || "current"}'. Use /pw-pause (keep), /pw-next (advance), /pw-archive (soft delete), /pw-stop (delete), or /pw-unlock (session only) to lift the lock.`;
+        const hint = `🔒 Tool '${tool}' blocked in '${result.reason || "current"}'. Use /pw-pause (keep), /pw-next (advance), /pw-archive (soft delete), /pw-abort (delete), or /pw-unlock (session only) to lift the lock.`;
         console.warn(`[StagesGuard] ${result.reason}`);
         // Surface a TUI warning so the user sees the lock + how to lift it
         ctx.ui?.notify(hint, "warning");

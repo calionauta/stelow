@@ -28,7 +28,7 @@ Display help information about the cali-product-workflow system.
 | Command | Description |
 |---------|-------------|
 | `/pw-start` | Start a new workflow |
-| `/pw-stop` | Stop workflow(s) |
+| `/pw-abort` | Abort and archive workflow(s) |
 | `/pw-pause` | Pause active workflow |
 | `/pw-resume` | Resume paused workflow |
 | `/pw-status` | Check workflow status |

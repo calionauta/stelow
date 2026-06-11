@@ -164,7 +164,7 @@ const pwHelp = tool({
 | /pw-next | Advance to next phase |
 | /pw-pause | Pause the workflow |
 | /pw-resume | Resume paused workflow |
-| /pw-stop | Stop the workflow |
+| /pw-abort | Abort and archive the workflow |
 
 ## Workflow Phases
 

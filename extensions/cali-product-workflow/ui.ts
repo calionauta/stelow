@@ -232,7 +232,7 @@ export function showOverlay(ctx: ExtensionContext, cwd: string): void {
     if (result === "next") {
       adapter.notify("Use /pw-next", "info");
     } else if (result === "stop") {
-      adapter.notify("Use /pw-stop", "info");
+      adapter.notify("Use /pw-abort", "info");
     }
   });
 }

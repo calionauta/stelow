@@ -12,7 +12,7 @@
 | Command | Pi | OpenCode | Claude Code | Codex | Limitations |
 |---------|----|----------|-------------|-------|-------------|
 | `/pw-start` | ✅ Native | ✅ Skill | ✅ Skill | ✅ Skill | — |
-| `/pw-stop` | ✅ Native | ✅ Skill | ✅ Skill | ✅ Skill | — |
+| `/pw-abort` | ✅ Native | ✅ Skill | ✅ Skill | ✅ Skill | — |
 | `/pw-pause` | ✅ Native | ✅ Skill | ✅ Skill | ✅ Skill | — |
 | `/pw-resume` | ✅ Native | ✅ Skill | ✅ Skill | ✅ Skill | — |
 | `/pw-status` | ✅ Native | ✅ Skill | ✅ Skill | ✅ Skill | — |
@@ -25,7 +25,6 @@
 | `/pw-menu` | ✅ Native | ✅ Skill | ✅ Skill | ✅ Skill | — |
 | `/pw-archive` | ✅ Native | ✅ Skill | ✅ Skill | ✅ Skill | — |
 | `/pw-unarchive` | ✅ Native | ✅ Skill | ✅ Skill | ✅ Skill | — |
-| `/pw-todo` | ✅ Native | ✅ Skill * | ✅ Skill * | ✅ Skill * | Pi extension required for full TUI |
 | `/pw-inbox` | ✅ Native | ✅ Skill * | ✅ Skill * | ✅ Skill * | Pi extension required for full TUI |
 
 - **✅ Native** — Registered via `pi.registerCommand()`. Full TUI overlays, state hooks, interactive pickers.
@@ -34,13 +33,13 @@
 
 ## Per-CLI Architecture
 
-### Pi — 16 commands (Native extension)
+### Pi — 15 commands (Native extension)
 - Extension: `extensions/cali-product-workflow/` (loaded via `pi` config or `install.sh`)
 - Skills: `~/.agents/skills/` (20 flat skills via `install.sh`) or `~/.pi/agent/git/.../skills/` (via `pi install git:...`)
 - Command registration: `registerCommands()` iterates `WORKFLOW_COMMANDS` → `HANDLER_BY_NAME` → `pi.registerCommand()`
 - Script: `scripts/generate-cli-commands.ts` is NOT needed for Pi (extension handles registration natively)
 
-### OpenCode, Claude Code, Codex — 16 commands each (Skill delegation)
+### OpenCode, Claude Code, Codex — 15 commands each (Skill delegation)
 - Markdown files generated from dispatcher into `cli-agents/{cli}/commands/pw-*.md`
 - Each file contains frontmatter (`name`, `description`) and body that invokes `/skill:cali-product-workflow <command>`
 - `install.sh` copies them to: `~/.config/opencode/commands/`, `~/.claude/commands/`, `~/.codex/commands/`
@@ -60,7 +59,7 @@
 | Problem | Cause | Fix |
 |---------|-------|-----|
 | `/pw-start` not found in OpenCode | Command files not installed | `cp cli-agents/opencode/commands/pw-*.md ~/.config/opencode/commands/` |
-| `/pw-todo` says "Pi only" | Expected — marked `piOnly` in dispatcher | Use `pw-todo` in Pi or `/skill:cali-product-workflow` in other CLIs |
+| `/pw-inbox` not responding | CLI doesn't support `piOnly` commands | Use Pi CLI or `/skill:cali-product-workflow` in other CLIs |
 | Pi footer shows wrong phase number | `PHASE_NAMES` has 14 entries, `stages.yaml` has 7 | See [stages-mismatch](#stages-mismatch) below |
 | Tools blocked after advancing phase | `stages-guard` caches state at session start | Restart Pi session |
 

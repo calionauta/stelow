@@ -58,7 +58,7 @@ describe('Command Dispatcher Integration Tests', () => {
       const commandNames = WORKFLOW_COMMANDS.map(cmd => cmd.name);
       
       expect(commandNames).toContain('pw-start');
-      expect(commandNames).toContain('pw-stop');
+      expect(commandNames).toContain('pw-abort');
       expect(commandNames).toContain('pw-pause');
       expect(commandNames).toContain('pw-resume');
       expect(commandNames).toContain('pw-status');
@@ -69,14 +69,14 @@ describe('Command Dispatcher Integration Tests', () => {
       expect(commandNames).toContain('pw-goto');
       expect(commandNames).toContain('pw-rename');
       expect(commandNames).toContain('pw-menu');
-      expect(commandNames).toContain('pw-todo');
+      expect(commandNames).not.toContain('pw-todo');
       expect(commandNames).toContain('pw-inbox');
       expect(commandNames).toContain('pw-archive');
       expect(commandNames).toContain('pw-unarchive');
     });
 
-    it('has 17 commands defined', () => {
-      expect(WORKFLOW_COMMANDS).toHaveLength(17);
+    it('has 16 commands defined', () => {
+      expect(WORKFLOW_COMMANDS).toHaveLength(16);
     });
 
     it('each command has a unique name', () => {
@@ -320,12 +320,12 @@ describe('Command Dispatcher Integration Tests', () => {
       expect(files.length).toBe(0);
     });
 
-    it('opencode generates 17 command files', () => {
+    it('opencode generates 16 command files', () => {
       const system = getCommandSystem('opencode');
       const files = system.generateCommandFiles();
       
       expect(Array.isArray(files)).toBe(true);
-      expect(files.length).toBe(17);
+      expect(files.length).toBe(16);
     });
 
     it('opencode skill files have skills/ path prefix', () => {
@@ -346,12 +346,12 @@ describe('Command Dispatcher Integration Tests', () => {
       expect(startFile?.content).toContain('pw-start');
     });
 
-    it('claude-code generates 17 command files', () => {
+    it('claude-code generates 16 command files', () => {
       const system = getCommandSystem('claude-code');
       const files = system.generateCommandFiles();
       
       expect(Array.isArray(files)).toBe(true);
-      expect(files.length).toBe(17);
+      expect(files.length).toBe(16);
     });
 
     it('claude-code skill files have skills/ path prefix', () => {
@@ -363,12 +363,12 @@ describe('Command Dispatcher Integration Tests', () => {
       }
     });
 
-    it('codex generates 17 command files', () => {
+    it('codex generates 16 command files', () => {
       const system = getCommandSystem('codex');
       const files = system.generateCommandFiles();
       
       expect(Array.isArray(files)).toBe(true);
-      expect(files.length).toBe(17);
+      expect(files.length).toBe(16);
     });
 
     it('codex command files have commands/ path prefix', () => {
@@ -492,9 +492,9 @@ describe('Command Dispatcher Integration Tests', () => {
       const claudeCodeSystem = getCommandSystem('claude-code');
       const codexSystem = getCommandSystem('codex');
 
-      expect(opencodeSystem.generateCommandFiles().length).toBe(17);
-      expect(claudeCodeSystem.generateCommandFiles().length).toBe(17);
-      expect(codexSystem.generateCommandFiles().length).toBe(17);
+      expect(opencodeSystem.generateCommandFiles().length).toBe(16);
+      expect(claudeCodeSystem.generateCommandFiles().length).toBe(16);
+      expect(codexSystem.generateCommandFiles().length).toBe(16);
     });
 
     it('pi and generic generate no command files', () => {

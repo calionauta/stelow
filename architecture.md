@@ -9,7 +9,7 @@ Product planning workflow system for AI coding agents (Pi, Claude Code, OpenCode
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  SKILL (cali-product-workflow)                             │
-│  - /pw-start, /pw-next, /pw-inbox, /pw-todo               │
+│  - /pw-start, /pw-next, /pw-inbox                        │
 │  - Phase instructions (triage, shape, gate, etc.)         │
 └─────────────────────────────────────────────────────────────┘
                               │
@@ -17,7 +17,7 @@ Product planning workflow system for AI coding agents (Pi, Claude Code, OpenCode
 ┌─────────────────────────────────────────────────────────────┐
 │  EXTENSION (extensions/cali-product-workflow)               │
 │  - State management                                        │
-│  - Commands (/pw-inbox, /pw-todo)                          │
+│  - Commands (/pw-inbox)                                     │
 │  - UI (footer, overlays)                                   │
 │  - Lifecycle hooks (onTurnEnd, resume)                     │
 └─────────────────────────────────────────────────────────────┘
@@ -113,16 +113,14 @@ addToInbox(cwd, item) [state.ts]
 readInbox(cwd) → MarkdownFileStore → inbox/items.md
 ```
 
-### Todo Flow
+### Todo Flow (LLM internal — see `todo` tool reference)
+
+The LLM manages phase todos via the `todo` tool internally.
+No CLI command needed.
 
 ```
-/pw-todo add <task>
-    ↓
-cmdTodo() [commands.ts]
-    ↓
-setPhaseTodos([...]) [state.ts - memory]
-    ↓
-onTurnEnd hook [index.ts]
+todo tool → setPhaseTodos([...]) [state.ts]
+```
     ↓
 writePhaseTodos() [state.ts]
     ↓
@@ -258,10 +256,7 @@ No config files needed. Structure IS the configuration.
 | `/pw-inbox` | Show inbox items |
 | `/pw-inbox add <item>` | Add to inbox |
 | `/pw-inbox remove <item>` | Remove from inbox |
-| `/pw-todo` | Show phase todos |
-| `/pw-todo add <task>` | Add todo |
-| `/pw-todo complete <id>` | Mark complete |
-| `/pw-stop` | Stop workflow |
+| `/pw-abort` | Abort and archive workflow |
 | `/pw-archive` | Archive workflow |
 
 ## Phases
