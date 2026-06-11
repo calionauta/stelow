@@ -21,19 +21,19 @@
       },
       {
         "id": "pw-next-cmd",
-        "title": "Workflow: Copy /pw-next to Clipboard"
+        "title": "Workflow: Execute /pw-next"
       },
       {
         "id": "pw-abort-cmd",
-        "title": "Workflow: Copy /pw-abort to Clipboard"
+        "title": "Workflow: Execute /pw-abort"
       },
       {
         "id": "pw-complete-cmd",
-        "title": "Workflow: Copy /pw-complete to Clipboard"
+        "title": "Workflow: Execute /pw-complete"
       },
       {
         "id": "pw-archive-cmd",
-        "title": "Workflow: Copy /pw-archive to Clipboard"
+        "title": "Workflow: Execute /pw-archive"
       }
     ],
     "panels": [
@@ -63,7 +63,8 @@
       "panels:write",
       "files:read",
       "files:write",
-      "commands:exec"
+      "commands:exec",
+      "panes:write"
     ],
     "topbarItems": [
       {
@@ -82,5 +83,5 @@
     "update-skill" : "node -e \"const fs=require('fs'),p=require('path');const url='https:\/\/raw.githubusercontent.com\/muxy-app\/muxy\/main\/Muxy\/Resources\/skills\/muxy-extension\/SKILL.md';fetch(url).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.text()}).then(t=>{for(const d of ['.claude\/skills\/muxy-extension','.agents\/skills\/muxy-extension']){fs.mkdirSync(d,{recursive:true});fs.writeFileSync(p.join(d,'SKILL.md'),t);console.log('Updated '+p.join(d,'SKILL.md'))}}).catch(e=>{console.error('Failed to update skill:',e.message);process.exit(1)})\""
   },
   "type" : "module",
-  "version" : "0.1.0"
+  "version" : "0.2.0-alpha"
 }

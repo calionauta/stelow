@@ -289,22 +289,100 @@ export async function readArtifactFile(artifactData, dir, filename) {
 }
 
 /**
- * Send text to focused Muxy terminal pane (types it, doesn't execute).
- * Returns { ok, paneTitle? } or { ok: false, reason }.
+ * Workflow commands are Pi TUI input. Execute them by typing into a Muxy
+ * terminal pane and pressing Enter.
  */
-export async function sendToPane(text) {
+const WORKFLOW_COMMAND_LABELS = {
+  '/pw-next': 'Run /pw-next?',
+  '/pw-abort': 'Run /pw-abort?',
+  '/pw-complete': 'Run /pw-complete?',
+  '/pw-archive': 'Run /pw-archive?',
+};
+
+const WORKFLOW_COMMAND_MESSAGES = {
+  '/pw-next': 'This will send `/pw-next` to the selected Pi terminal pane and press Enter.',
+  '/pw-abort': 'This will send `/pw-abort` to the selected Pi terminal pane and press Enter. This aborts the active workflow.',
+  '/pw-complete': 'This will send `/pw-complete` to the selected Pi terminal pane and press Enter. This marks the active workflow complete.',
+  '/pw-archive': 'This will send `/pw-archive` to the selected Pi terminal pane and press Enter. This archives the active workflow.',
+};
+
+export async function runWorkflowCommand(command) {
+  const title = WORKFLOW_COMMAND_LABELS[command] ?? `Run ${command}?`;
+  const message = WORKFLOW_COMMAND_MESSAGES[command]
+    ?? `This will send \`${command}\` to the selected Pi terminal pane and press Enter.`;
+
   try {
-    const panes = await muxy.panes.list();
-    if (!panes || panes.length === 0) {
-      return { ok: false, reason: 'No terminal panes open' };
+    const choice = await muxy.dialog.confirm({
+      title,
+      message,
+      buttons: ['Run', 'Cancel'],
+      default: 'Cancel',
+      cancel: 'Cancel',
+      style: 'warning',
+    });
+
+    if (choice !== 'Run') {
+      return { ok: false, reason: 'cancelled', copied: false };
     }
-    // Prefer focused pane, fall back to first
-    const target = panes.find(p => p.focused) || panes[0];
-    await muxy.panes.send(target.id, text);
-    return { ok: true, paneTitle: target.title || target.id };
-  } catch (e) {
-    return { ok: false, reason: String(e) };
+
+    const pane = await selectTerminalPane();
+    if (!pane) {
+      return { ok: false, reason: 'No terminal panes open', copied: false };
+    }
+
+    await muxy.panes.send(pane.id, command);
+    await muxy.panes.sendKeys(pane.id, 'Enter');
+    return { ok: true, paneTitle: pane.title || pane.id, copied: false };
+  } catch (error) {
+    const copied = await copyToClipboard(command).catch(() => false);
+    return {
+      ok: false,
+      reason: error?.message ?? String(error),
+      copied,
+    };
   }
+}
+
+async function selectTerminalPane() {
+  const panes = await muxy.panes.list();
+  if (!panes || panes.length === 0) {
+    return null;
+  }
+
+  if (panes.length === 1) {
+    return panes[0];
+  }
+
+  const focused = panes.find(p => p.isFocused);
+  const items = panes.map(p => ({
+    id: p.id,
+    title: p.title || 'Untitled pane',
+    subtitle: [
+      p.workingDirectory || 'No working directory',
+      p.isFocused ? 'focused' : null,
+    ].filter(Boolean).join(' · '),
+  }));
+
+  const choice = await muxy.modal.open({
+    placeholder: 'Select Pi pane',
+    emptyLabel: 'No terminal panes',
+    noMatchLabel: 'No matching panes',
+    items: focused ? [paneToItem(focused), ...items.filter(item => item.id !== focused.id)] : items,
+  });
+
+  if (!choice) return null;
+  return panes.find(p => p.id === choice.id) ?? null;
+}
+
+function paneToItem(pane) {
+  return {
+    id: pane.id,
+    title: pane.title || 'Untitled pane',
+    subtitle: [
+      pane.workingDirectory || 'No working directory',
+      pane.isFocused ? 'focused' : null,
+    ].filter(Boolean).join(' · '),
+  };
 }
 
 /**

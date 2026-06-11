@@ -16,7 +16,7 @@ import {
   getArtifactsForPhase,
   getCurrentPhaseInfo,
   getNextPhaseInfo,
-  copyToClipboard,
+  runWorkflowCommand,
   readArtifactFile,
   PHASE_TO_ARTIFACT_DIR,
   ARTIFACT_DIR_ICONS,
@@ -44,11 +44,11 @@ export class PipelinePanel {
 
   start() {
     muxy.events.subscribe('command.refresh-pipeline', () => this.refresh(true));
-    // Workflow commands — copy to clipboard
-    muxy.events.subscribe('command.pw-next-cmd',     () => this.copyToClipboardToast('/pw-next'));
-    muxy.events.subscribe('command.pw-abort-cmd',     () => this.copyToClipboardToast('/pw-abort'));
-    muxy.events.subscribe('command.pw-complete-cmd', () => this.copyToClipboardToast('/pw-complete'));
-    muxy.events.subscribe('command.pw-archive-cmd',  () => this.copyToClipboardToast('/pw-archive'));
+    // Workflow commands — execute in selected Pi pane
+    muxy.events.subscribe('command.pw-next-cmd',     () => this.runCommandToast('/pw-next'));
+    muxy.events.subscribe('command.pw-abort-cmd',     () => this.runCommandToast('/pw-abort'));
+    muxy.events.subscribe('command.pw-complete-cmd', () => this.runCommandToast('/pw-complete'));
+    muxy.events.subscribe('command.pw-archive-cmd',  () => this.runCommandToast('/pw-archive'));
     // Switch events need small delay — Muxy doesn't scope muxy.files
     // to the new worktree until after the event handler returns.
     muxy.events.subscribe('project.switched', () => this.delayedRefresh());
@@ -189,23 +189,23 @@ export class PipelinePanel {
     return h('div', { class: 'command-bar' },
       h('button', {
         class: 'command-btn',
-        onclick: () => this.copyToClipboardToast('/pw-next'),
-        title: 'Advance to next phase',
+        onclick: () => this.runCommandToast('/pw-next'),
+        title: 'Execute /pw-next in the selected Pi pane',
       }, icon('refresh', 10), 'Next'),
       h('button', {
         class: 'command-btn',
-        onclick: () => this.copyToClipboardToast('/pw-abort'),
-        title: 'Abort and archive workflow',
+        onclick: () => this.runCommandToast('/pw-abort'),
+        title: 'Execute /pw-abort in the selected Pi pane',
       }, icon('x', 10), 'Abort'),
       h('button', {
         class: 'command-btn',
-        onclick: () => this.copyToClipboardToast('/pw-complete'),
-        title: 'Mark workflow as complete',
+        onclick: () => this.runCommandToast('/pw-complete'),
+        title: 'Execute /pw-complete in the selected Pi pane',
       }, icon('check', 10), 'Complete'),
       h('button', {
         class: 'command-btn',
-        onclick: () => this.copyToClipboardToast('/pw-archive'),
-        title: 'Archive workflow',
+        onclick: () => this.runCommandToast('/pw-archive'),
+        title: 'Execute /pw-archive in the selected Pi pane',
       }, icon('archive', 10), 'Archive'),
     );
   }
@@ -559,36 +559,36 @@ export class PipelinePanel {
               : `${next.name} already in progress`,
           ),
         ),
-        // Actions: copy workflow commands to clipboard
+        // Actions: execute workflow commands in the selected Pi pane
         h('div', { class: 'handoff-action' },
           h('button', {
             class: 'handoff-btn',
-            onclick: () => this.copyToClipboardToast('/pw-next'),
-            title: 'Advance to next phase',
+            onclick: () => this.runCommandToast('/pw-next'),
+            title: 'Execute /pw-next in the selected Pi pane',
           },
             icon('refresh', 10),
             'Next',
           ),
           h('button', {
             class: 'handoff-btn',
-            onclick: () => this.copyToClipboardToast('/pw-abort'),
-            title: 'Abort and archive workflow',
+            onclick: () => this.runCommandToast('/pw-abort'),
+            title: 'Execute /pw-abort in the selected Pi pane',
           },
             icon('x', 10),
             'Abort',
           ),
           h('button', {
             class: 'handoff-btn',
-            onclick: () => this.copyToClipboardToast('/pw-complete'),
-            title: 'Mark workflow as complete',
+            onclick: () => this.runCommandToast('/pw-complete'),
+            title: 'Execute /pw-complete in the selected Pi pane',
           },
             icon('check', 10),
             'Complete',
           ),
           h('button', {
             class: 'handoff-btn',
-            onclick: () => this.copyToClipboardToast('/pw-archive'),
-            title: 'Archive workflow',
+            onclick: () => this.runCommandToast('/pw-archive'),
+            title: 'Execute /pw-archive in the selected Pi pane',
           },
             icon('archive', 10),
             'Archive',
@@ -598,16 +598,26 @@ export class PipelinePanel {
     );
   }
 
-  async copyToClipboardToast(text) {
-    const ok = await copyToClipboard(text);
+  async runCommandToast(command) {
+    const result = await runWorkflowCommand(command);
     const toast = document.createElement('div');
     toast.className = 'handoff-toast';
-    toast.textContent = ok
-      ? `Copied: ${text} (Cmd+V to paste)`
-      : `Failed to copy`;
-    if (!ok) toast.style.background = 'var(--muxy-diff-remove)';
+
+    if (result.ok) {
+      toast.textContent = `Executed: ${command} in ${result.paneTitle}`;
+    } else if (result.reason === 'cancelled') {
+      toast.textContent = `Cancelled: ${command}`;
+      toast.style.background = 'var(--muxy-foreground-muted)';
+    } else if (result.copied) {
+      toast.textContent = `Run failed: ${result.reason}. Copied: ${command}`;
+      toast.style.background = 'var(--muxy-diff-remove)';
+    } else {
+      toast.textContent = result.reason || `Failed to run: ${command}`;
+      toast.style.background = 'var(--muxy-diff-remove)';
+    }
+
     document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 2500);
+    setTimeout(() => toast.remove(), 3500);
   }
 
   // ── Artifacts ─────────────────────────────────────────────────────
