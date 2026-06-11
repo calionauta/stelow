@@ -306,27 +306,60 @@ The file contains a `workflows[]` array. Each active workflow has:
 
 When completing a stage and moving to the next:
 
-**For Pi extension:** Use `/pw-next` or `/pw-setphase phasename=<stage>`.
-The extension handles all three tracking mechanisms (TUI, resume, tool restrictions).
+**Auto-advance is the default.** Do NOT ask the user for permission or wait for `/pw-next`.
+Update the tracking file directly via bash, then continue to the next stage in the same response.
 
-**For non-Pi CLIs (Claude Code, OpenCode, Codex):**
-1. Call `state-manager.transition()` from `adapters/state-manager.ts` to update stage state
-   - Pass `statePath` pointing to the legacy `current-stage.json`
-   - Pass `trackingPath` pointing to `cali-product-workflow.json` (ensures sync)
-2. Also update `cali-product-workflow.json` fields directly:
-   ```javascript
-   const tracking = JSON.parse(readFileSync('cali-product-workflow.json', 'utf-8'));
-   const idx = tracking.workflows.findIndex(w => w.status === 'in-progress');
-   tracking.workflows[idx].currentPhase = newPhaseIndex;
-   tracking.workflows[idx].phases.forEach((p, i) => {
-     p.status = i < newPhaseIndex ? 'completed' : i === newPhaseIndex ? 'in-progress' : 'pending';
+**Mechanism (all CLIs):** Update `cali-product-workflow.json` + sync `index.json` via bash:
+   ```bash
+   node -e "
+   const fs = require('fs');
+
+   // 1. Update main tracking file
+   const file = 'cali-product-workflow.json';
+   const raw = fs.readFileSync(file, 'utf-8');
+   const t = JSON.parse(raw);
+   const idx = t.workflows.findIndex(w => w.status === 'in-progress');
+   if (idx === -1) { console.log('No active workflow'); process.exit(1); }
+
+   const NEW = NEW_PHASE_INDEX;  // set this (e.g. 3 for Context)
+   const NEW_SLUG = 'new-stage-slug';  // set this (e.g. 'context')
+   const wf = t.workflows[idx];
+
+   wf.currentPhase = NEW;
+   wf.phases.forEach((p, i) => {
+     p.status = i < NEW ? 'completed' : i === NEW ? 'in-progress' : 'pending';
    });
-   tracking.workflows[idx].stage.current_stage = newStageSlug;
-   tracking.workflows[idx].updated = new Date().toISOString();
-   tracking.updated = tracking.workflows[idx].updated;
-   writeFileSync('cali-product-workflow.json', JSON.stringify(tracking, null, 2));
+   wf.stage.previous_stage = wf.stage.current_stage;
+   wf.stage.current_stage = NEW_SLUG;
+   wf.stage.transitioned_at = new Date().toISOString();
+   wf.stage.history.push({ stage: NEW_SLUG, entered_at: new Date().toISOString(), exited_at: null });
+   wf.updated = new Date().toISOString();
+   t.updated = wf.updated;
+   fs.writeFileSync(file, JSON.stringify(t, null, 2));
+   console.log('Main tracking updated:', NEW_SLUG);
+
+   // 2. Sync index.json (secondary source for TUI display)
+   const { execSync } = require('child_process');
+   const dirHash = wf.dirHash;
+   if (dirHash) {
+     const find = execSync('find .cali-product-workflow -name index.json | head -5', { encoding: 'utf-8' });
+     const matches = find.trim().split('\\n').filter(Boolean);
+     for (const ixPath of matches) {
+       const ix = JSON.parse(fs.readFileSync(ixPath, 'utf-8'));
+       if (ix._dir === dirHash) {
+         ix.current_phase = NEW_SLUG;
+         ix.current_phase_index = NEW;
+         ix.updated_at = new Date().toISOString();
+         fs.writeFileSync(ixPath, JSON.stringify(ix, null, 2));
+         console.log('index.json synced:', ixPath);
+       }
+     }
+   }
+   "
    ```
-3. Verify the update by reading `cali-product-workflow.json` back
+
+**For paused workflows only:** Use `/pw-next` or `/pw-setphase phasename=<stage>`.
+The extension handles all three tracking mechanisms (TUI, resume, tool restrictions).
 
 ### Cross-CLI Portability
 
@@ -335,7 +368,7 @@ The single file works on ALL harnesses:
 - **Claude Code / OpenCode / Codex** adapters read `cali-product-workflow.json`
   via `adapters/stages-guard.ts` (auto-detects tracking file format)
 - **Resume** reads the active workflow's `currentPhase` from this file
-- **LLM auto-advance** writes to this file via `/pw-next` or direct file write
+- **LLM auto-advance** updates this file via bash (node -e) and proceeds without /pw-next
 
 ## Tool Restrictions
 

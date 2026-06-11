@@ -189,7 +189,7 @@ export default async function cmdStart(
   const lines = [
     `[OK] Workflow '${displayLabel}' started!`,
     `[DIR] ${folderPath}`,
-    `Stage: ${PHASE_NAMES[0]}`,
+    `Stage: ${PHASE_NAMES[wf.currentPhase]}`,
   ];
   if (draftText) {
     lines.push(`\n[DRAFT]:\n${draftText.slice(0, 300)}${draftText.length > 300 ? "..." : ""}`);

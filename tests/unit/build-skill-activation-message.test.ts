@@ -6,7 +6,8 @@ describe('buildSkillActivationMessage', () => {
     const msg = buildSkillActivationMessage('my-workflow', '', '');
     expect(msg).toContain('/skill:cali-product-workflow');
     expect(msg).toContain(">>> WORKFLOW STARTED: 'my-workflow' <<<");
-    expect(msg).toContain('Phase 1: Setup/Clarify');
+    expect(msg).toContain('Current stage: Setup');
+    expect(msg).toContain('Auto-advance mode: ON');
   });
 
   it('emits USER BRIEF section when draftText present', () => {

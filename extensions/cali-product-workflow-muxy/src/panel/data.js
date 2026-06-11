@@ -1,0 +1,322 @@
+// ── Macro-stage definitions ──────────────────────────────────────────
+
+export const MACRO_STAGES = [
+  {
+    id: 'shape',
+    name: 'Shape',
+    phaseRange: [0, 7],
+    phases: ['Triage','ItemSelect','Setup','Context','Shape','Critique','Gate','Scope'],
+  },
+  {
+    id: 'build',
+    name: 'Build',
+    phaseRange: [8, 12],
+    phases: ['Interface','Int.Gate','Selection','Planning','Execution'],
+  },
+  {
+    id: 'verify',
+    name: 'Verify',
+    phaseRange: [13, 14],
+    phases: ['Verification','Audit'],
+  },
+];
+
+export const PHASE_NAMES = [
+  'Triage','ItemSelect','Setup','Context','Shape','Critique','Gate','Scope',
+  'Interface','Int.Gate','Selection','Planning','Execution',
+  'Verification','Audit',
+];
+
+// ── Data fetching ────────────────────────────────────────────────────
+
+/**
+ * Try to read cali-product-workflow.json from the active worktree.
+ * Returns null if the file doesn't exist or can't be parsed.
+ */
+export async function loadTrackingData() {
+  try {
+    const res = await muxy.files.read('cali-product-workflow.json');
+    if (!res || !res.content) return null;
+    return JSON.parse(res.content);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Try to read inbox items from .cali-product-workflow/inbox/items.md.
+ * Returns an array of item strings (empty array if none).
+ */
+export async function loadInbox() {
+  try {
+    const res = await muxy.files.read('.cali-product-workflow/inbox/items.md');
+    if (!res || !res.content) return [];
+    return res.content
+      .split('\n')
+      .map(l => l.trim())
+      .filter(l => l.length > 0 && !l.startsWith('#'));
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Write inbox items back to .cali-product-workflow/inbox/items.md.
+ */
+export async function saveInbox(items) {
+  const header = '# Inbox\n\n';
+  const body = items.length > 0 ? items.join('\n') + '\n' : '\n';
+  await muxy.files.write('.cali-product-workflow/inbox/items.md', header + body);
+}
+
+/**
+ * Try to load phase-todos for a workflow by scanning session dirs.
+ * Returns null if none found.
+ * Also returns the project name (dir name) for display.
+ */
+export async function loadProjectName() {
+  try {
+    // Try reading package.json for project name
+    const res = await muxy.files.read('package.json');
+    if (res && res.content) {
+      const pkg = JSON.parse(res.content);
+      return pkg.name || pkg.displayName || null;
+    }
+  } catch { /* ignore */ }
+  return null;
+}
+
+/**
+ * Group workflows into macro-stage buckets.
+ * Returns [{ stage, workflows: [...] }, ...]
+ */
+export function groupWorkflowsByMacroStage(workflows) {
+  const buckets = MACRO_STAGES.map(s => ({ ...s, workflows: [] }));
+
+  for (const wf of workflows) {
+    // Skip archived workflows for the main view
+    if (wf.status === 'archived') continue;
+
+    const phaseIdx = wf.currentPhase ?? 0;
+    const bucket = buckets.find(
+      b => phaseIdx >= b.phaseRange[0] && phaseIdx <= b.phaseRange[1]
+    );
+    if (bucket) {
+      bucket.workflows.push(wf);
+    } else {
+      // Unknown phase → put in Shape bucket
+      buckets[0].workflows.push(wf);
+    }
+  }
+
+  return buckets;
+}
+
+/**
+ * Get the precise phase name for a workflow.
+ */
+export function getPhaseName(workflow) {
+  const idx = workflow.currentPhase ?? 0;
+  return PHASE_NAMES[idx] || `Phase ${idx}`;
+}
+
+/**
+ * Get overall progress of a workflow (0-1).
+ */
+export function getWorkflowProgress(workflow) {
+  const total = PHASE_NAMES.length;
+  const current = workflow.currentPhase ?? 0;
+  return Math.min(current / (total - 1), 1);
+}
+
+/**
+ * Get status badge info for a workflow.
+ */
+export function getStatusBadge(workflow) {
+  switch (workflow.status) {
+    case 'in-progress': return { label: 'Active', class: 'badge-in-progress' };
+    case 'paused': return { label: 'Paused', class: 'badge-paused' };
+    case 'completed': return { label: 'Done', class: 'badge-completed' };
+    case 'archived': return { label: 'Archived', class: 'badge-archived' };
+    default: return { label: workflow.status, class: 'badge-in-progress' };
+  }
+}
+
+// ── Artifact scanning ────────────────────────────────────────────────
+
+const ARTIFACT_DIRS = ['specs', 'interfaces', 'plans', 'critiques', 'approvals'];
+const ARTIFACT_DIR_ICONS = {
+  specs: 'fileText',
+  interfaces: 'columnShape',
+  plans: 'fileText',
+  critiques: 'alertCircle',
+  approvals: 'circleCheck',
+};
+const ARTIFACT_DIR_LABELS = {
+  specs: 'Specs',
+  interfaces: 'Interfaces',
+  plans: 'Plans',
+  critiques: 'Critiques',
+  approvals: 'Approvals',
+};
+
+export { ARTIFACT_DIRS, ARTIFACT_DIR_ICONS, ARTIFACT_DIR_LABELS };
+
+/**
+ * Scan session directories and build a map of workflow name → artifacts.
+ * Returns Map<wfName, { artifacts: { specs: [], ... }, path: string }>
+ */
+export async function scanArtifactDirs() {
+  const result = new Map();
+  try {
+    const dateDirs = await muxy.files.list('.cali-product-workflow/');
+    const dateDirPromises = dateDirs
+      .filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d))
+      .map(async dateDir => {
+        try {
+          const sessionDirs = await muxy.files.list(`.cali-product-workflow/${dateDir}/`);
+          const sessionPromises = sessionDirs.map(async sessionDir => {
+            try {
+              const idxRes = await muxy.files.read(
+                `.cali-product-workflow/${dateDir}/${sessionDir}/index.json`
+              );
+              if (!idxRes?.content) return;
+              const data = JSON.parse(idxRes.content);
+              if (!data.name) return;
+              const base = `.cali-product-workflow/${dateDir}/${sessionDir}`;
+              const artifacts = {};
+              for (const dir of ARTIFACT_DIRS) {
+                try {
+                  const files = await muxy.files.list(`${base}/${dir}/`);
+                  artifacts[dir] = files.filter(f => f.endsWith('.md'));
+                } catch {
+                  artifacts[dir] = [];
+                }
+              }
+              // Only store if this name hasn't been seen, or this is newer
+              if (!result.has(data.name)) {
+                result.set(data.name, { artifacts, path: base, date: dateDir });
+              }
+            } catch { /* skip corrupt session */ }
+          });
+          await Promise.all(sessionPromises);
+        } catch { /* skip unreadable date dir */ }
+      });
+    await Promise.all(dateDirPromises);
+  } catch { /* no .cali-product-workflow dir */ }
+  return result;
+}
+
+/**
+ * Get total artifact count for display on a card badge.
+ */
+export function getArtifactCount(artifactData) {
+  if (!artifactData) return 0;
+  return Object.values(artifactData.artifacts).reduce(
+    (sum, files) => sum + files.length, 0
+  );
+}
+
+// ── Phase ↔ artifact mapping ──────────────────────────────────────────
+
+/** Rough mapping: which artifact dir a phase produces */
+const PHASE_TO_ARTIFACT_DIR = {
+  Shape: 'specs',
+  Scope: 'specs',
+  Critique: 'critiques',
+  Gate: 'approvals',
+  'Int.Gate': 'approvals',
+  Interface: 'interfaces',
+  Planning: 'plans',
+  Execution: 'specs',
+};
+export { PHASE_TO_ARTIFACT_DIR };
+
+/**
+ * Get artifacts relevant to a specific phase.
+ */
+export function getArtifactsForPhase(artifactData, phaseName) {
+  if (!artifactData) return [];
+  const dir = PHASE_TO_ARTIFACT_DIR[phaseName];
+  if (!dir) return [];
+  return artifactData.artifacts[dir] || [];
+}
+
+/**
+ * Get the next pending or upcoming phase after current.
+ * Returns { name, index, status } or null if workflow is complete.
+ */
+export function getNextPhaseInfo(workflow) {
+  const phases = workflow.phases || [];
+  const current = workflow.currentPhase ?? 0;
+  // Look for first non-completed phase at or after current
+  for (let i = current; i < phases.length; i++) {
+    if (phases[i]?.status !== 'completed') {
+      return { name: phases[i]?.name || PHASE_NAMES[i], index: i, status: phases[i]?.status || 'pending' };
+    }
+  }
+  return null;
+}
+
+/**
+ * Get the active/in-progress phase name.
+ * Returns { name, index } or null.
+ */
+export function getCurrentPhaseInfo(workflow) {
+  const phases = workflow.phases || [];
+  const current = workflow.currentPhase ?? 0;
+  const phase = phases[current];
+  return phase
+    ? { name: phase.name, index: current, status: phase.status }
+    : { name: PHASE_NAMES[current] || 'Unknown', index: current, status: 'in-progress' };
+}
+
+/**
+ * Read the content of an artifact file.
+ * artifactData — from artifactMap.get(wfName)
+ * dir — 'specs' | 'interfaces' | 'plans' | 'critiques' | 'approvals'
+ * filename — e.g. 'spec-auth-passkeys.md'
+ */
+export async function readArtifactFile(artifactData, dir, filename) {
+  if (!artifactData) return null;
+  try {
+    const fullPath = `${artifactData.path}/${dir}/${filename}`;
+    const res = await muxy.files.read(fullPath);
+    return res?.content || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Send text to focused Muxy terminal pane (types it, doesn't execute).
+ * Returns { ok, paneTitle? } or { ok: false, reason }.
+ */
+export async function sendToPane(text) {
+  try {
+    const panes = await muxy.panes.list();
+    if (!panes || panes.length === 0) {
+      return { ok: false, reason: 'No terminal panes open' };
+    }
+    // Prefer focused pane, fall back to first
+    const target = panes.find(p => p.focused) || panes[0];
+    await muxy.panes.send(target.id, text);
+    return { ok: true, paneTitle: target.title || target.id };
+  } catch (e) {
+    return { ok: false, reason: String(e) };
+  }
+}
+
+/**
+ * Copy text to clipboard using muxy.exec + pbcopy.
+ * Uses base64 to avoid shell quoting issues with special chars.
+ */
+export async function copyToClipboard(text) {
+  try {
+    const b64 = btoa(text);
+    await muxy.exec({ shell: `echo ${b64} | base64 -d | pbcopy` });
+    return true;
+  } catch {
+    return false;
+  }
+}

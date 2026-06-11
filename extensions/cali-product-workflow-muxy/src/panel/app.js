@@ -1,0 +1,664 @@
+import { clear, h, cls } from '@/lib/dom';
+import { icon } from '@/lib/icons';
+import {
+  MACRO_STAGES,
+  PHASE_NAMES,
+  loadTrackingData,
+  loadInbox,
+  saveInbox,
+  loadProjectName,
+  groupWorkflowsByMacroStage,
+  getPhaseName,
+  getWorkflowProgress,
+  getStatusBadge,
+  scanArtifactDirs,
+  getArtifactCount,
+  getArtifactsForPhase,
+  getCurrentPhaseInfo,
+  getNextPhaseInfo,
+  copyToClipboard,
+  readArtifactFile,
+  PHASE_TO_ARTIFACT_DIR,
+  ARTIFACT_DIR_ICONS,
+  ARTIFACT_DIR_LABELS,
+  ARTIFACT_DIRS,
+} from './data';
+
+export class PipelinePanel {
+  constructor(root) {
+    this.root = root;
+    this.state = 'loading';
+    this.workflows = [];
+    this.inboxItems = [];
+    this.projectName = null;
+    this.selectedWf = null;
+    this.artifactMap = new Map();
+    this.inboxOpen = true;
+    this.inboxEditIdx = -1;
+    this.filterText = '';
+    this.pollTimer = null;
+    this.refreshing = false;
+    this.previewFile = null;
+    this.previewContent = null;
+  }
+
+  start() {
+    muxy.events.subscribe('command.refresh-pipeline', () => this.refresh(true));
+    // Switch events need small delay — Muxy doesn't scope muxy.files
+    // to the new worktree until after the event handler returns.
+    muxy.events.subscribe('project.switched', () => this.delayedRefresh());
+    muxy.events.subscribe('worktree.switched', () => this.delayedRefresh());
+    this.refresh(true);
+    this.pollTimer = setInterval(() => this.refresh(false), 15000);
+  }
+
+  destroy() {
+    if (this.pollTimer) clearInterval(this.pollTimer);
+  }
+
+  // ── Data ──────────────────────────────────────────────────────────
+
+  delayedRefresh() {
+    // Clear stale artifact cache immediately
+    this.artifactMap = new Map();
+    setTimeout(() => this.refresh(true), 300);
+  }
+
+  async refresh(clearCache) {
+    if (this.refreshing) return;
+    this.refreshing = true;
+    if (clearCache) this.artifactMap = new Map();
+    try {
+      const [tracking, inbox, projectName] = await Promise.all([
+        loadTrackingData(),
+        loadInbox(),
+        loadProjectName(),
+      ]);
+      this.projectName = projectName;
+      this.workflows = tracking?.workflows ?? [];
+      this.inboxItems = inbox ?? [];
+      this.updateTopbar();
+      // Scan artifacts only when cache cleared (workspace switch, manual refresh)
+      if (!this.artifactMap.size) {
+        scanArtifactDirs().then(m => { this.artifactMap = m; this.render(); }).catch(() => {});
+      }
+      this.render();
+    } catch (err) {
+      console.error('[Pipeline] refresh error:', err);
+      this.render();
+    } finally {
+      this.refreshing = false;
+    }
+  }
+
+  updateTopbar() {
+    const active = this.workflows.filter(w => w.status === 'in-progress').length;
+    try {
+      muxy.topbar.set('pipeline', { badge: String(active) });
+    } catch { /* not in Muxy */ }
+  }
+
+  // ── Render ────────────────────────────────────────────────────────
+
+  render() {
+    clear(this.root);
+
+    if (this.state === 'artifact-preview' && this.previewFile) {
+      this.root.appendChild(this.renderArtifactPreview());
+      return;
+    }
+
+    if (this.state === 'detail' && this.selectedWf) {
+      this.root.appendChild(this.renderDetail());
+      return;
+    }
+
+    const hasData = this.workflows.length > 0 || this.inboxItems.length > 0;
+    if (!hasData) {
+      this.root.appendChild(this.renderEmpty());
+      return;
+    }
+
+    this.root.appendChild(this.renderPipeline());
+  }
+
+  // ── Empty ─────────────────────────────────────────────────────────
+
+  renderEmpty() {
+    return h('div', { class: 'empty-state' },
+      icon('rectangle3group', 28, 'text-muted-foreground opacity-40'),
+      h('div', { class: 'empty-state-title' }, 'No workflow data'),
+      h('div', { class: 'empty-state-desc' },
+        'Open a project that uses cali-product-workflow.\n' +
+        'This panel shows workflows and their progress\n' +
+        'through Shape → Build → Verify pipeline.'
+      ),
+    );
+  }
+
+  // ── Pipeline ──────────────────────────────────────────────────────
+
+  renderPipeline() {
+    // Apply filter
+    let wfs = this.workflows;
+    if (this.filterText) {
+      const q = this.filterText.toLowerCase();
+      wfs = wfs.filter(w => w.name.toLowerCase().includes(q));
+    }
+    const buckets = groupWorkflowsByMacroStage(wfs);
+
+    return h('div', { class: 'pipeline' },
+      this.renderFilter(),
+      h('div', { class: 'pipeline-scroll' },
+        ...buckets.map(b => this.renderColumn(b)),
+      ),
+      this.renderInbox(),
+      this.renderDock(),
+    );
+  }
+
+  renderFilter() {
+    return h('div', { class: 'filter-bar' },
+      icon('search', 11, 'text-muted-foreground'),
+      h('input', {
+        class: 'filter-input',
+        placeholder: 'Filter workflows...',
+        value: this.filterText,
+        oninput: (e) => { this.filterText = e.target.value; this.render(); },
+        onkeydown: (e) => {
+          if (e.key === 'Escape') { this.filterText = ''; this.render(); }
+        },
+      }),
+      this.filterText
+        ? h('button', {
+            class: 'inbox-item-btn',
+            onclick: () => { this.filterText = ''; this.render(); },
+            title: 'Clear filter',
+          }, icon('x', 10))
+        : null,
+    );
+  }
+
+  renderColumn(bucket) {
+    const wfs = bucket.workflows;
+    return h('div', { class: 'column' },
+      h('div', { class: 'column-header' },
+        h('span', null, bucket.name),
+        h('span', { class: 'column-count' }, String(wfs.length)),
+      ),
+      h('div', { class: 'column-body' },
+        ...(wfs.length === 0
+          ? [h('div', {
+              style: 'color:var(--muxy-foreground-muted);font-size:10px;padding:12px 4px;text-align:center;',
+            }, '—')]
+          : wfs.map(wf => this.renderCard(wf))
+        ),
+      ),
+    );
+  }
+
+  renderCard(wf) {
+    const phaseName = getPhaseName(wf);
+    const badge = getStatusBadge(wf);
+    const progress = getWorkflowProgress(wf);
+    const pct = Math.round(progress * 100);
+
+    let dotColor;
+    if (wf.status === 'paused') dotColor = 'var(--muxy-diff-hunk, #b8860b)';
+    else if (wf.status === 'in-progress') dotColor = 'var(--muxy-accent)';
+    else if (wf.status === 'completed') dotColor = 'var(--muxy-diff-add)';
+    else dotColor = 'var(--muxy-foreground-muted)';
+
+    let barColor;
+    if (wf.status === 'paused') barColor = 'var(--muxy-diff-hunk, #b8860b)';
+    else if (wf.status === 'in-progress') barColor = 'var(--muxy-accent)';
+    else if (wf.status === 'completed') barColor = 'var(--muxy-diff-add)';
+    else barColor = 'var(--muxy-foreground-muted)';
+
+    return h('div', {
+        class: 'card',
+        onclick: () => this.openDetail(wf),
+        title: `Click to see details for "${wf.name}"`,
+      },
+      h('div', { class: 'card-title' }, wf.name),
+      h('div', { class: 'card-phase' },
+        h('span', { style: `color:${dotColor}` }, '●'),
+        ` ${phaseName}`,
+        h('span', { style: 'color:var(--muxy-foreground-muted);margin-left:auto;font-size:9px' }, `${pct}%`),
+      ),
+      // Progress bar
+      h('div', { class: 'card-progress' },
+        h('div', { class: 'card-progress-fill', style: `width:${pct}%;background:${barColor};` }),
+      ),
+      h('div', { class: 'card-badges' },
+        h('span', { class: cls('badge', badge.class) }, badge.label),
+        this.renderArtifactBadge(wf.name),
+      ),
+    );
+  }
+
+  // ── Detail ────────────────────────────────────────────────────────
+
+  openDetail(wf) {
+    this.selectedWf = wf;
+    this.state = 'detail';
+    this.render();
+  }
+
+  closeDetail() {
+    this.selectedWf = null;
+    this.state = 'pipeline';
+    this.render();
+  }
+
+  renderDetail() {
+    const wf = this.selectedWf;
+    if (!wf) return this.renderPipeline();
+
+    const phaseName = getPhaseName(wf);
+    const badge = getStatusBadge(wf);
+    const progress = getWorkflowProgress(wf);
+    const pct = Math.round(progress * 100);
+
+    const macroInfo = MACRO_STAGES.find(
+      m => (wf.currentPhase ?? 0) >= m.phaseRange[0] && (wf.currentPhase ?? 0) <= m.phaseRange[1]
+    );
+
+    return h('div', { class: 'detail' },
+      h('div', { class: 'detail-header' },
+        h('button', {
+          class: 'detail-back',
+          onclick: () => this.closeDetail(),
+          title: 'Back to pipeline',
+        }, icon('chevronLeft', 14)),
+        h('span', { style: 'flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap' }, wf.name),
+        h('span', { class: cls('badge', badge.class) }, badge.label),
+      ),
+      h('div', { class: 'detail-body' },
+        h('div', { class: 'detail-info' },
+          h('div', { class: 'detail-row' },
+            h('span', { class: 'detail-label' }, 'Phase'),
+            h('span', { class: 'detail-value' }, `${phaseName} (${pct}%)`),
+          ),
+          h('div', { class: 'detail-row' },
+            h('span', { class: 'detail-label' }, 'Macro'),
+            h('span', { class: 'detail-value' }, macroInfo?.name || '—'),
+          ),
+          h('div', { class: 'detail-row' },
+            h('span', { class: 'detail-label' }, 'Status'),
+            h('span', { class: 'detail-value' }, wf.status),
+          ),
+          h('div', { class: 'detail-row' },
+            h('span', { class: 'detail-label' }, 'Created'),
+            h('span', { class: 'detail-value' },
+              wf.created ? new Date(wf.created).toLocaleDateString() : '—'
+            ),
+          ),
+        ),
+        h('div', { style: 'font-size:11px;font-weight:600;margin-bottom:4px;' }, 'Progress'),
+        h('div', { class: 'phase-list' },
+          ...(wf.phases || []).map((ph, i) => {
+            let itemClass = 'phase-item';
+            if (ph.status === 'completed') itemClass += ' phase-item-completed';
+            else if (ph.status === 'in-progress') itemClass += ' phase-item-active';
+            else itemClass += ' phase-item-pending';
+
+            let phIcon;
+            if (ph.status === 'completed') phIcon = icon('circleCheck', 12, 'text-success');
+            else if (ph.status === 'in-progress') phIcon = icon('circleDot', 12, 'text-primary');
+            else phIcon = icon('circleEllipsis', 12, 'text-muted-foreground');
+
+            return h('div', { class: itemClass },
+              phIcon,
+              h('span', null, ph.name || `Phase ${i}`),
+            );
+          }),
+        ),
+        // Handoff Station
+        this.renderHandoff(wf),
+        // Artifacts section
+        this.renderArtifactDetail(wf.name),
+      ),
+    );
+  }
+
+  // ── Inbox ─────────────────────────────────────────────────────────
+
+  renderInbox() {
+    const items = this.inboxItems;
+    return h('div', { class: 'inbox' },
+      h('div', {
+        class: 'inbox-header',
+        onclick: () => { this.inboxOpen = !this.inboxOpen; this.render(); },
+      },
+        h('div', { style: 'display:flex;align-items:center;gap:4px;' },
+          icon('inbox', 13),
+          'Inbox',
+        ),
+        h('div', { style: 'display:flex;align-items:center;gap:4px;' },
+          h('span', { class: 'column-count' }, String(items.length)),
+          this.inboxOpen
+            ? h('span', { style: 'display:flex;transform:rotate(90deg);' }, icon('chevronLeft', 10))
+            : icon('chevronLeft', 10),
+        ),
+      ),
+      this.inboxOpen
+        ? h('div', { class: 'inbox-body' },
+            ...items.length === 0
+              ? [h('div', { style: 'color:var(--muxy-foreground-muted);font-size:10px;padding:4px 0;' }, 'Empty')]
+              : items.map((item, i) => this.renderInboxItem(item, i)),
+          )
+        : null,
+      this.inboxOpen ? this.renderInboxAdd() : null,
+    );
+  }
+
+  renderInboxItem(item, idx) {
+    const isEditing = this.inboxEditIdx === idx;
+
+    if (isEditing) {
+      return h('div', { class: 'inbox-item', style: 'gap:4px;' },
+        h('input', {
+          class: 'inbox-add-input',
+          id: 'inbox-edit-input-' + idx,
+          style: 'flex:1;',
+          value: item,
+          onkeydown: (e) => {
+            if (e.key === 'Enter') this.saveInboxEdit(idx, e.target.value);
+            if (e.key === 'Escape') { this.inboxEditIdx = -1; this.render(); }
+          },
+          onmount: (el) => el.focus(),
+        }),
+        h('button', {
+          class: 'inbox-item-btn',
+          onclick: () => this.saveInboxEdit(
+            idx,
+            document.getElementById('inbox-edit-input-' + idx)?.value || item
+          ),
+          title: 'Save',
+        }, icon('check', 12)),
+        h('button', {
+          class: 'inbox-item-btn',
+          onclick: () => { this.inboxEditIdx = -1; this.render(); },
+          title: 'Cancel',
+        }, icon('x', 12)),
+      );
+    }
+
+    return h('div', { class: 'inbox-item' },
+      h('span', { class: 'inbox-item-text', title: item }, item),
+      h('button', {
+        class: 'inbox-item-btn',
+        onclick: () => { this.inboxEditIdx = idx; this.render(); },
+        title: 'Edit',
+      }, icon('pencil', 10)),
+      h('button', {
+        class: 'inbox-item-btn',
+        onclick: () => this.removeInboxItem(idx),
+        title: 'Remove',
+      }, icon('x', 10)),
+    );
+  }
+
+  renderInboxAdd() {
+    return h('div', { class: 'inbox-add' },
+      h('input', {
+        class: 'inbox-add-input',
+        placeholder: 'Add task...',
+        onkeydown: (e) => {
+          if (e.key === 'Enter') this.addInboxItem(e.target.value, e.target);
+        },
+        onmount: (el) => el.focus(),
+      }),
+      h('button', {
+        class: 'inbox-add-btn',
+        onclick: () => this.addInboxItem(
+          document.querySelector('.inbox-add-input')?.value || '',
+        ),
+        title: 'Add',
+      }, icon('plus', 12)),
+    );
+  }
+
+  addInboxItem(text, inputEl) {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+
+    // Optimistic — add to local array immediately
+    this.inboxItems.push(trimmed);
+    this.render();
+
+    // Save async — fire & forget
+    saveInbox(this.inboxItems).catch(e =>
+      console.error('[Pipeline] inbox save failed:', e)
+    );
+
+    // Keep focus on the add input after re-render
+    setTimeout(() => {
+      const el = document.querySelector('.inbox-add-input');
+      if (el) el.focus();
+    }, 0);
+  }
+
+  removeInboxItem(idx) {
+    this.inboxItems.splice(idx, 1);
+    if (this.inboxEditIdx === idx) this.inboxEditIdx = -1;
+    this.render();
+
+    saveInbox(this.inboxItems).catch(e =>
+      console.error('[Pipeline] inbox save failed:', e)
+    );
+  }
+
+  saveInboxEdit(idx, newText) {
+    const trimmed = newText.trim();
+    if (!trimmed) {
+      this.removeInboxItem(idx);
+      return;
+    }
+    this.inboxItems[idx] = trimmed;
+    this.inboxEditIdx = -1;
+    this.render();
+
+    saveInbox(this.inboxItems).catch(e =>
+      console.error('[Pipeline] inbox save failed:', e)
+    );
+  }
+
+  // ── Handoff Station ───────────────────────────────────────────────
+
+  renderHandoff(wf) {
+    const current = getCurrentPhaseInfo(wf);
+    const next = getNextPhaseInfo(wf);
+    const artifactData = this.artifactMap.get(wf.name);
+    if (!next) return null; // workflow complete or archived
+
+    // Artifacts produced by completed phases relevant to current phase
+    const currentArtifacts = getArtifactsForPhase(artifactData, current.name);
+    const totalArtifacts = getArtifactCount(artifactData);
+
+    const isCurrentActive = current.status === 'in-progress';
+    const isCurrentDone = current.status === 'completed';
+    const completionEmoji = isCurrentDone ? '✅' : isCurrentActive ? '🔄' : '⏳';
+
+    return h('div', { class: 'handoff' },
+      h('div', { class: 'handoff-header' },
+        icon('circleCheck', 12),
+        isCurrentDone
+          ? `${current.name} completed`
+          : isCurrentActive
+            ? `${current.name} in progress`
+            : `${current.name} pending`,
+      ),
+      h('div', { class: 'handoff-body' },
+        // Next phase arrow
+        h('div', { class: 'handoff-row' },
+          h('span', { class: 'handoff-row-label' }, 'Next'),
+          h('span', { class: 'handoff-arrow' }, `${current.name} → ${next.name}`),
+        ),
+        // Artifacts produced
+        totalArtifacts > 0
+          ? h('div', { class: 'handoff-row' },
+              h('span', { class: 'handoff-row-label' }, 'Docs'),
+              h('div', { class: 'handoff-artifact-list' },
+                ...(currentArtifacts.length > 0
+                  ? currentArtifacts.slice(0, 4).map(f => {
+                      const phDir = PHASE_TO_ARTIFACT_DIR[current.name];
+                      return h('div', {
+                        class: 'handoff-artifact',
+                        onclick: (e) => { e.stopPropagation(); this.openFilePreview(artifactData, phDir, f); },
+                      },
+                        icon('fileText', 9, 'text-muted-foreground'),
+                        f,
+                      );
+                    })
+                  : [h('div', { class: 'handoff-artifact', style: 'color:var(--muxy-foreground-muted)' },
+                      `${totalArtifacts} total in workflow`,
+                    )]
+                ),
+              ),
+            )
+          : null,
+        // Next phase needs
+        h('div', { class: 'handoff-row' },
+          h('span', { class: 'handoff-row-label' }, 'Needs'),
+          h('span', { style: 'color:var(--muxy-foreground-muted)' },
+            next.status === 'pending'
+              ? `Ready to start ${next.name}`
+              : `${next.name} already in progress`,
+          ),
+        ),
+        // Action: copy to clipboard
+        h('div', { class: 'handoff-action' },
+          h('button', {
+            class: 'handoff-btn',
+            onclick: () => this.copyToClipboardToast('/pw-next'),
+            title: 'Copy /pw-next to clipboard (Cmd+V to paste)',
+          },
+            icon('copy', 10),
+            'Copy /pw-next',
+          ),
+        ),
+      ),
+    );
+  }
+
+  async copyToClipboardToast(text) {
+    const ok = await copyToClipboard(text);
+    const toast = document.createElement('div');
+    toast.className = 'handoff-toast';
+    toast.textContent = ok
+      ? `Copied: ${text} (Cmd+V to paste)`
+      : `Failed to copy`;
+    if (!ok) toast.style.background = 'var(--muxy-diff-remove)';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2500);
+  }
+
+  // ── Artifacts ─────────────────────────────────────────────────────
+
+  renderArtifactBadge(wfName) {
+    const data = this.artifactMap.get(wfName);
+    const count = getArtifactCount(data);
+    if (count === 0) return null;
+    return h('span', { class: 'badge badge-artifact' },
+      icon('fileText', 8),
+      String(count),
+    );
+  }
+
+  renderArtifactDetail(wfName) {
+    const data = this.artifactMap.get(wfName);
+    if (!data) return null;
+    const { artifacts } = data;
+    const total = getArtifactCount(data);
+    if (total === 0) return null;
+
+    return h('div', { class: 'artifact-section' },
+      h('div', { class: 'artifact-section-title' },
+        `Artifacts (${total})`,
+      ),
+      ...ARTIFACT_DIRS
+        .filter(dir => artifacts[dir]?.length > 0)
+        .map(dir => h('div', { class: 'artifact-group' },
+          h('div', { class: 'artifact-group-header' },
+            icon(ARTIFACT_DIR_ICONS[dir] || 'fileText', 10),
+            ARTIFACT_DIR_LABELS[dir] || dir,
+          ),
+          ...artifacts[dir].map(file =>
+            h('div', {
+              class: 'artifact-file',
+              title: `${dir}/${file}`,
+              onclick: (e) => { e.stopPropagation(); this.openFilePreview(data, dir, file); },
+            },
+              icon('fileText', 9, 'text-muted-foreground'),
+              file,
+            ),
+          ),
+        )),
+    );
+  }
+
+  // ── Artifact Preview ──────────────────────────────────────────────
+
+  openFilePreview(artifactData, dir, filename) {
+    this.previewFile = { artifactData, dir, filename };
+    this.previewContent = null; // null = loading
+    this.state = 'artifact-preview';
+    this.render(); // render with loading state
+    // Read async — will re-render when done
+    readArtifactFile(artifactData, dir, filename).then(content => {
+      this.previewContent = content || '(empty or unreadable)';
+      this.render();
+    });
+  }
+
+  closeFilePreview() {
+    this.previewFile = null;
+    this.previewContent = null;
+    this.state = 'pipeline';
+    this.render();
+  }
+
+  renderArtifactPreview() {
+    const pf = this.previewFile;
+    if (!pf) return h('div', null, 'No file');
+    const { dir, filename } = pf;
+    const label = `${dir}/${filename}`;
+
+    return h('div', { class: 'detail' },
+      h('div', { class: 'detail-header' },
+        h('button', {
+          class: 'detail-back',
+          onclick: () => this.closeFilePreview(),
+        }, icon('chevronLeft', 14)),
+        h('span', { style: 'flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap' }, label),
+      ),
+      h('div', { class: 'preview-body' },
+        this.previewContent === null
+          ? h('div', { style: 'display:flex;align-items:center;justify-content:center;height:100%;font-size:11px;color:var(--muxy-foreground-muted)' },
+              'Loading...',
+            )
+          : h('pre', { class: 'preview-content' }, this.previewContent),
+      ),
+    );
+  }
+
+  // ── Dock ──────────────────────────────────────────────────────────
+
+  renderDock() {
+    const active = this.workflows.filter(w => w.status === 'in-progress').length;
+    const total = this.workflows.length;
+
+    return h('div', { class: 'dock' },
+      h('div', { class: 'dock-projects' },
+        this.projectName
+          ? [icon('fileText', 10), h('span', null, this.projectName)]
+          : [icon('search', 10), h('span', null, 'No project detected')],
+      ),
+      h('div', { style: 'display:flex;align-items:center;gap:4px;' },
+        h('span', null, `${active}/${total} active`),
+      ),
+    );
+  }
+}

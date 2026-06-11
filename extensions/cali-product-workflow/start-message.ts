@@ -14,7 +14,25 @@ export function buildSkillActivationMessage(
   draftText: string,
   allSrc: string
 ): string {
-  let msg = "/skill:cali-product-workflow\n\n>>> WORKFLOW STARTED: '" + displayLabel + "' <<<\nALL prior work is PAUSED. Do NOT continue previous tasks.\nFollow the workflow one phase at a time via /pw-next.\nPhase 1: Setup/Clarify — ask questions, gather context.\nDo NOT implement anything until Phase 10 (Planning).";
+  let msg =
+    "/skill:cali-product-workflow" +
+    "\n\n>>> WORKFLOW STARTED: '" + displayLabel + "' <<<" +
+    "\nALL prior work is PAUSED. Do NOT continue previous tasks." +
+    "\nAuto-advance mode: ON. Proceed to the next stage when current one completes." +
+    "\nUse /pw-next only if the workflow was explicitly paused or after an error." +
+    "\n" +
+    "\nCurrent stage: Setup (phase 2/14)" +
+    "\nFollow `stages/setup.md` in order:" +
+    "\n  1. Inbox check — deferred items from prior sessions" +
+    "\n  2. Lessons learned — reflect on past cycle patterns" +
+    "\n  3. Session knowledge — passive context notes" +
+    "\n  4. Auto-discovery — existing in-progress workflows" +
+    "\n  5. Appetite & Mode declaration (Patterns 7, 8 — fixed for the cycle)" +
+    "\n  6. Stage selection (Pattern 5, mode-dependent)" +
+    "\n" +
+    "\nAfter setup, auto-advance through context → shape → critique → gate → scope → interface → int.gate → selection → planning → execution → verification → audit." +
+    "\nDo NOT implement anything until the Execution stage." +
+    "\nDo NOT ask the user what to do next — the workflow is automatic.";
   if (draftText) {
     msg += "\n\n=== USER BRIEF ===\n\n" + draftText;
   }
