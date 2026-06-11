@@ -358,7 +358,13 @@ async function resolvePreferredPane(panes) {
     : panes;
   const focused = panes.find(isFocusedPane);
   const focusedInWorkspace = workspacePanes.find(p => focused && p.id === focused.id);
+  const projectName = workspacePath ? pathBasename(workspacePath) : null;
+  const focusedMatchesProject = focused && projectName && paneMatchesProjectName(focused, projectName);
   const candidates = workspacePanes.length > 0 ? workspacePanes : panes;
+
+  if (workspacePath && workspacePanes.length === 0 && focusedMatchesProject) {
+    return { pane: focused, workspacePath, workspacePanes, focusedOutsideWorkspace: false };
+  }
 
   if (workspacePath && workspacePanes.length === 0) {
     return { pane: null, workspacePath, workspacePanes, focusedOutsideWorkspace: true };
@@ -421,7 +427,11 @@ async function selectTerminalPane(panes) {
     ? panes.filter(pane => pane.workingDirectory && pathIsInside(pane.workingDirectory, workspacePath))
     : panes;
   if (workspacePath && workspacePanes.length === 0) {
-    return null;
+    const focused = panes.find(isFocusedPane);
+    const projectName = pathBasename(workspacePath);
+    if (focused && paneMatchesProjectName(focused, projectName)) {
+      return focused;
+    }
   }
   const candidates = workspacePanes.length > 0 ? workspacePanes : panes;
   const focused = panes.find(isFocusedPane);
@@ -455,13 +465,23 @@ async function getActiveWorkspacePath() {
   return activeWorktree?.path ?? activeProject.path;
 }
 
+function paneMatchesProjectName(pane, projectName) {
+  if (!projectName) return false;
+  const haystack = `${pane.title ?? ''} ${pane.workingDirectory ?? ''}`.toLowerCase();
+  return haystack.includes(projectName.toLowerCase());
+}
+
+function pathBasename(path) {
+  return normalizePath(path).split('/').filter(Boolean).pop() ?? '';
+}
+
 function isFocusedPane(pane) {
   return Boolean(pane?.isFocused || pane?.focused);
 }
 
 function pathIsInside(candidatePath, parentPath) {
-  const normalizedCandidate = normalizePath(candidatePath);
-  const normalizedParent = normalizePath(parentPath);
+  const normalizedCandidate = normalizePath(candidatePath).toLowerCase();
+  const normalizedParent = normalizePath(parentPath).toLowerCase();
   return normalizedCandidate === normalizedParent
     || normalizedCandidate.startsWith(`${normalizedParent}/`);
 }
