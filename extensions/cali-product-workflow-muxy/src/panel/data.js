@@ -308,10 +308,15 @@ const WORKFLOW_COMMAND_MESSAGES = {
 
 export async function runWorkflowCommand(command) {
   const title = WORKFLOW_COMMAND_LABELS[command] ?? `Run ${command}?`;
-  const message = WORKFLOW_COMMAND_MESSAGES[command]
-    ?? `This will send \`${command}\` to the selected Pi terminal pane and press Enter.`;
+  const baseMessage = WORKFLOW_COMMAND_MESSAGES[command]
+    ?? `This will send \`${command}\` to a Pi terminal pane and press Enter.`;
 
   try {
+    const focusedPane = await getFocusedPane().catch(() => null);
+    const message = focusedPane
+      ? `${baseMessage} Target: ${formatPaneForDialog(focusedPane)}.`
+      : `${baseMessage} If multiple panes are open, you will pick the target pane.`;
+
     const choice = await muxy.dialog.confirm({
       title,
       message,
@@ -325,7 +330,7 @@ export async function runWorkflowCommand(command) {
       return { ok: false, reason: 'cancelled', copied: false };
     }
 
-    const pane = await selectTerminalPane();
+    const pane = await selectTerminalPane(focusedPane);
     if (!pane) {
       return { ok: false, reason: 'No terminal panes open', copied: false };
     }
@@ -343,10 +348,25 @@ export async function runWorkflowCommand(command) {
   }
 }
 
-async function selectTerminalPane() {
+async function getFocusedPane() {
+  const panes = await muxy.panes.list();
+  return panes?.find(p => p.isFocused) ?? null;
+}
+
+function formatPaneForDialog(pane) {
+  const title = pane.title || 'Untitled pane';
+  const cwd = pane.workingDirectory ? ` (${pane.workingDirectory})` : '';
+  return `${title}${cwd}`;
+}
+
+async function selectTerminalPane(focusedPane) {
   const panes = await muxy.panes.list();
   if (!panes || panes.length === 0) {
     return null;
+  }
+
+  if (focusedPane) {
+    return panes.find(p => p.id === focusedPane.id) ?? focusedPane;
   }
 
   if (panes.length === 1) {
