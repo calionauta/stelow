@@ -191,6 +191,37 @@ button:disabled { cursor: default; }
   background: var(--muxy-surface);
 }
 
+.command-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--muxy-border);
+  background: var(--muxy-surface);
+}
+
+.command-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 4px;
+  border: 1px solid var(--muxy-border);
+  background: var(--muxy-background);
+  color: var(--muxy-foreground);
+  font-size: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.command-btn:hover {
+  background: var(--muxy-accent);
+  color: var(--muxy-background);
+  border-color: var(--muxy-accent);
+}
+
 .filter-input {
   flex: 1;
   height: 22px;

@@ -23,9 +23,9 @@ After Triage completes with one or more accepted items. If the user had a single
   3. [Debt] API response caching — medium effort, high impact
 ```
 
-3. **User picks one** — Let the user choose which item to model in Shape Up. Do NOT proceed with multiple items.
+3. **User picks one** — Let the user choose which item to model in Shape Up. Remove the selected item from `.cali-product-workflow/inbox/items.md`. Do NOT proceed with multiple items.
 
-4. **Route remainder** — Unselected items return to `.cali-product-workflow/inbox/items.md` as deferred.
+4. **Route remainder** — Unselected items remain in `.cali-product-workflow/inbox/items.md` as deferred.
 
 ### Do NOT
 - Start implementing any item

@@ -16,7 +16,38 @@ if [ -f "$INBOX" ]; then
 fi
 ```
 
-If deferred items exist, offer the user to review them: "You have N deferred items from a previous session. Review them now?" If yes, proceed to Triage. If no, continue to setup.
+If deferred items exist, show the full list to the user (from the inbox file above) and ask how to proceed. Use **Pattern 4** from `stages/ask-patterns.md`:
+
+```
+ask_user_question({
+  questions: [{
+    question: `📥 Inbox has ${N} deferred items from previous sessions:\n\n${PASTE_INBOX_ITEMS_HERE}\n\nWhat would you like to do?`,
+    header: "Inbox",
+    options: [
+      {
+        label: "Review all now",
+        description: "Triage each item: accept into this cycle, defer again, or reject. Accepted/rejected items are removed from the inbox file."
+      },
+      {
+        label: "Skip this cycle",
+        description: "Inbox unchanged. Items remain for a future /pw-start."
+      },
+      {
+        label: "Clear inbox",
+        description: "⚠️ Permanently delete all ${N} items. Cannot be undone."
+      }
+    ]
+  }]
+})
+```
+
+Based on the choice:
+
+- **Review all now** → proceed to Triage (each item gets accept/group/defer/reject; non-deferred items are removed from `.cali-product-workflow/inbox/items.md`)
+- **Skip this cycle** → continue to setup:0.20, inbox file unchanged
+- **Clear inbox** → confirm with the user first (use Pattern 4 again: "Delete all N items? Cannot be undone." with Yes/No). If confirmed, empty `.cali-product-workflow/inbox/items.md` (keep the `# Inbox` header), then continue to setup:0.20. If declined, return to the previous question.
+
+**Why no "Pick specific items" option:** Review All + defer in Triage is equivalent — Triage lets you accept some, defer the rest. No need for a second mechanism.
 
 ### setup:0.20 — Lessons Learned Injection
 

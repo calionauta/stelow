@@ -13,10 +13,10 @@ Triggered when the user's initial request contains multiple items (bullets, numb
 2. **Present list** — Show the extracted items for confirmation. Ask the user to verify and adjust.
 
 3. **For each item, offer:** 
-   - **Accept** — enters the candidate pool for Selection stage
-   - **Group** — merge with similar items (same domain/component/theme)
+   - **Accept** — enters the candidate pool for Selection stage. Remove item from `.cali-product-workflow/inbox/items.md`.
+   - **Group** — merge with similar items (same domain/component/theme). Remove grouped items from `.cali-product-workflow/inbox/items.md`.
    - **Defer** — saved to `.cali-product-workflow/inbox/items.md` for later review via `/pw-inbox`
-   - **Reject** — discarded with reason recorded
+   - **Reject** — discarded with reason recorded. Remove item from `.cali-product-workflow/inbox/items.md`.
 
 4. **Persist deferred** — Items marked as "defer" are saved to `.cali-product-workflow/inbox/items.md`.
 

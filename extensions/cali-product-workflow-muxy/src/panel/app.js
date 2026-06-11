@@ -154,10 +154,11 @@ export class PipelinePanel {
 
     return h('div', { class: 'pipeline' },
       this.renderFilter(),
+      this.renderCommandBar(),
+      this.renderInbox(),
       h('div', { class: 'pipeline-scroll' },
         ...buckets.map(b => this.renderColumn(b)),
       ),
-      this.renderInbox(),
       this.renderDock(),
     );
   }
@@ -181,6 +182,31 @@ export class PipelinePanel {
             title: 'Clear filter',
           }, icon('x', 10))
         : null,
+    );
+  }
+
+  renderCommandBar() {
+    return h('div', { class: 'command-bar' },
+      h('button', {
+        class: 'command-btn',
+        onclick: () => this.copyToClipboardToast('/pw-next'),
+        title: 'Advance to next phase',
+      }, icon('refresh', 10), 'Next'),
+      h('button', {
+        class: 'command-btn',
+        onclick: () => this.copyToClipboardToast('/pw-abort'),
+        title: 'Abort and archive workflow',
+      }, icon('x', 10), 'Abort'),
+      h('button', {
+        class: 'command-btn',
+        onclick: () => this.copyToClipboardToast('/pw-complete'),
+        title: 'Mark workflow as complete',
+      }, icon('check', 10), 'Complete'),
+      h('button', {
+        class: 'command-btn',
+        onclick: () => this.copyToClipboardToast('/pw-archive'),
+        title: 'Archive workflow',
+      }, icon('archive', 10), 'Archive'),
     );
   }
 
@@ -338,7 +364,7 @@ export class PipelinePanel {
       },
         h('div', { style: 'display:flex;align-items:center;gap:4px;' },
           icon('inbox', 13),
-          'Inbox',
+          h('span', null, 'Inbox — items for the next cycle (/pw-start)'),
         ),
         h('div', { style: 'display:flex;align-items:center;gap:4px;' },
           h('span', { class: 'column-count' }, String(items.length)),
@@ -676,17 +702,17 @@ export class PipelinePanel {
   // ── Dock ──────────────────────────────────────────────────────────
 
   renderDock() {
-    const active = this.workflows.filter(w => w.status === 'in-progress').length;
-    const total = this.workflows.length;
+    const visibleWfs = groupWorkflowsByMacroStage(this.workflows);
+    const visibleCount = visibleWfs.reduce((sum, b) => sum + b.workflows.length, 0);
 
     return h('div', { class: 'dock' },
       h('div', { class: 'dock-projects' },
         this.projectName
-          ? [icon('fileText', 10), h('span', null, this.projectName)]
+          ? [icon('rectangle3group', 10), h('span', null, this.projectName)]
           : [icon('search', 10), h('span', null, 'No project detected')],
       ),
       h('div', { style: 'display:flex;align-items:center;gap:4px;' },
-        h('span', null, `${active}/${total} active`),
+        h('span', null, visibleCount === 0 ? 'No active workflows' : `${visibleCount} active`),
       ),
     );
   }
