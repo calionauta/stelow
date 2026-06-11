@@ -312,10 +312,9 @@ export async function runWorkflowCommand(command) {
     ?? `This will send \`${command}\` to a Pi terminal pane and press Enter.`;
 
   try {
-    const focusedPane = await getFocusedPane().catch(() => null);
-    const message = focusedPane
-      ? `${baseMessage} Target: ${formatPaneForDialog(focusedPane)}.`
-      : `${baseMessage} If multiple panes are open, you will pick the target pane.`;
+    const panes = await muxy.panes.list();
+    const resolution = await resolvePreferredPane(panes);
+    const message = buildConfirmMessage(baseMessage, resolution);
 
     const choice = await muxy.dialog.confirm({
       title,
@@ -330,7 +329,7 @@ export async function runWorkflowCommand(command) {
       return { ok: false, reason: 'cancelled', copied: false };
     }
 
-    const pane = await selectTerminalPane(focusedPane);
+    const pane = resolution.pane ?? await selectTerminalPane(panes);
     if (!pane) {
       return { ok: false, reason: 'No terminal panes open', copied: false };
     }
@@ -348,9 +347,58 @@ export async function runWorkflowCommand(command) {
   }
 }
 
-async function getFocusedPane() {
-  const panes = await muxy.panes.list();
-  return panes?.find(p => p.isFocused) ?? null;
+async function resolvePreferredPane(panes) {
+  if (!panes || panes.length === 0) {
+    return { pane: null, workspacePath: null, workspacePanes: [], focusedOutsideWorkspace: false };
+  }
+
+  const workspacePath = await getActiveWorkspacePath().catch(() => null);
+  const workspacePanes = workspacePath
+    ? panes.filter(pane => pane.workingDirectory && pathIsInside(pane.workingDirectory, workspacePath))
+    : panes;
+  const focused = panes.find(p => p.isFocused);
+  const focusedInWorkspace = workspacePanes.find(p => focused && p.id === focused.id);
+  const candidates = workspacePanes.length > 0 ? workspacePanes : panes;
+
+  if (workspacePath && workspacePanes.length === 0) {
+    return { pane: null, workspacePath, workspacePanes, focusedOutsideWorkspace: true };
+  }
+
+  if (workspacePanes.length === 1) {
+    return { pane: workspacePanes[0], workspacePath, workspacePanes, focusedOutsideWorkspace: false };
+  }
+
+  if (focusedInWorkspace) {
+    return { pane: focusedInWorkspace, workspacePath, workspacePanes, focusedOutsideWorkspace: false };
+  }
+
+  const titleMatch = candidates.find(p => /(^|\s)pi(\s|$)/i.test(p.title ?? ''));
+  if (titleMatch) {
+    return { pane: titleMatch, workspacePath, workspacePanes, focusedOutsideWorkspace: Boolean(focused && !focusedInWorkspace) };
+  }
+
+  const cwdMatch = candidates.find(p => /(^|\s)pi(\s|$)/i.test(p.workingDirectory ?? ''));
+  if (cwdMatch) {
+    return { pane: cwdMatch, workspacePath, workspacePanes, focusedOutsideWorkspace: Boolean(focused && !focusedInWorkspace) };
+  }
+
+  return { pane: null, workspacePath, workspacePanes, focusedOutsideWorkspace: Boolean(focused && !focusedInWorkspace) };
+}
+
+function buildConfirmMessage(baseMessage, resolution) {
+  if (resolution.pane) {
+    return `${baseMessage} Target: ${formatPaneForDialog(resolution.pane)}. Active workspace: ${resolution.workspacePath ?? 'unknown'}.`;
+  }
+
+  if (resolution.focusedOutsideWorkspace) {
+    return `${baseMessage} Focused pane is outside the active workspace/project. You will pick a pane from the active workspace/project.`;
+  }
+
+  if (resolution.workspacePanes.length > 1) {
+    return `${baseMessage} Multiple terminal panes are open in the active workspace/project. You will pick the target pane.`;
+  }
+
+  return `${baseMessage} If multiple panes are open, you will pick the target pane.`;
 }
 
 function formatPaneForDialog(pane) {
@@ -359,14 +407,9 @@ function formatPaneForDialog(pane) {
   return `${title}${cwd}`;
 }
 
-async function selectTerminalPane(focusedPane) {
-  const panes = await muxy.panes.list();
+async function selectTerminalPane(panes) {
   if (!panes || panes.length === 0) {
     return null;
-  }
-
-  if (focusedPane) {
-    return panes.find(p => p.id === focusedPane.id) ?? focusedPane;
   }
 
   if (panes.length === 1) {
@@ -377,16 +420,15 @@ async function selectTerminalPane(focusedPane) {
   const workspacePanes = workspacePath
     ? panes.filter(pane => pane.workingDirectory && pathIsInside(pane.workingDirectory, workspacePath))
     : panes;
-
-  if (workspacePanes.length === 1) {
-    return workspacePanes[0];
+  if (workspacePath && workspacePanes.length === 0) {
+    return null;
   }
-
-  const focused = panes.find(p => p.isFocused);
   const candidates = workspacePanes.length > 0 ? workspacePanes : panes;
-  const preferred = pickBestPane(candidates, focused);
-  if (preferred) {
-    return preferred;
+  const focused = panes.find(p => p.isFocused);
+  const focusedInCandidates = candidates.find(p => focused && p.id === focused.id);
+
+  if (focusedInCandidates) {
+    return focusedInCandidates;
   }
 
   const items = paneItems(candidates);
@@ -394,8 +436,8 @@ async function selectTerminalPane(focusedPane) {
     placeholder: 'Select Pi pane',
     emptyLabel: 'No terminal panes',
     noMatchLabel: 'No matching panes',
-    items: focused && candidates.some(p => p.id === focused.id)
-      ? [paneToItem(focused), ...items.filter(item => item.id !== focused.id)]
+    items: focusedInCandidates
+      ? [paneToItem(focusedInCandidates), ...items.filter(item => item.id !== focusedInCandidates.id)]
       : items,
   });
 
@@ -411,19 +453,6 @@ async function getActiveWorkspacePath() {
   const worktrees = await muxy.worktrees.list(activeProject.id).catch(() => []);
   const activeWorktree = worktrees.find(worktree => worktree.isActive);
   return activeWorktree?.path ?? activeProject.path;
-}
-
-function pickBestPane(candidates, focusedPane) {
-  const focused = candidates.find(p => focusedPane && p.id === focusedPane.id);
-  if (focused) return focused;
-
-  const titleMatch = candidates.find(p => /(^|\s)pi(\s|$)/i.test(p.title ?? ''));
-  if (titleMatch) return titleMatch;
-
-  const cwdMatch = candidates.find(p => /(^|\s)pi(\s|$)/i.test(p.workingDirectory ?? ''));
-  if (cwdMatch) return cwdMatch;
-
-  return null;
 }
 
 function pathIsInside(candidatePath, parentPath) {
