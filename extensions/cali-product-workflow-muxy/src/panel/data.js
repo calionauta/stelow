@@ -353,25 +353,72 @@ async function selectTerminalPane() {
     return panes[0];
   }
 
-  const focused = panes.find(p => p.isFocused);
-  const items = panes.map(p => ({
-    id: p.id,
-    title: p.title || 'Untitled pane',
-    subtitle: [
-      p.workingDirectory || 'No working directory',
-      p.isFocused ? 'focused' : null,
-    ].filter(Boolean).join(' · '),
-  }));
+  const workspacePath = await getActiveWorkspacePath().catch(() => null);
+  const workspacePanes = workspacePath
+    ? panes.filter(pane => pane.workingDirectory && pathIsInside(pane.workingDirectory, workspacePath))
+    : panes;
 
+  if (workspacePanes.length === 1) {
+    return workspacePanes[0];
+  }
+
+  const focused = panes.find(p => p.isFocused);
+  const candidates = workspacePanes.length > 0 ? workspacePanes : panes;
+  const preferred = pickBestPane(candidates, focused);
+  if (preferred) {
+    return preferred;
+  }
+
+  const items = paneItems(candidates);
   const choice = await muxy.modal.open({
     placeholder: 'Select Pi pane',
     emptyLabel: 'No terminal panes',
     noMatchLabel: 'No matching panes',
-    items: focused ? [paneToItem(focused), ...items.filter(item => item.id !== focused.id)] : items,
+    items: focused && candidates.some(p => p.id === focused.id)
+      ? [paneToItem(focused), ...items.filter(item => item.id !== focused.id)]
+      : items,
   });
 
   if (!choice) return null;
   return panes.find(p => p.id === choice.id) ?? null;
+}
+
+async function getActiveWorkspacePath() {
+  const projects = await muxy.projects.list();
+  const activeProject = projects.find(project => project.isActive);
+  if (!activeProject) return null;
+
+  const worktrees = await muxy.worktrees.list(activeProject.id).catch(() => []);
+  const activeWorktree = worktrees.find(worktree => worktree.isActive);
+  return activeWorktree?.path ?? activeProject.path;
+}
+
+function pickBestPane(candidates, focusedPane) {
+  const focused = candidates.find(p => focusedPane && p.id === focusedPane.id);
+  if (focused) return focused;
+
+  const titleMatch = candidates.find(p => /(^|\s)pi(\s|$)/i.test(p.title ?? ''));
+  if (titleMatch) return titleMatch;
+
+  const cwdMatch = candidates.find(p => /(^|\s)pi(\s|$)/i.test(p.workingDirectory ?? ''));
+  if (cwdMatch) return cwdMatch;
+
+  return null;
+}
+
+function pathIsInside(candidatePath, parentPath) {
+  const normalizedCandidate = normalizePath(candidatePath);
+  const normalizedParent = normalizePath(parentPath);
+  return normalizedCandidate === normalizedParent
+    || normalizedCandidate.startsWith(`${normalizedParent}/`);
+}
+
+function normalizePath(path) {
+  return path.replace(/\/+/g, '/').replace(/\/$/, '');
+}
+
+function paneItems(panes) {
+  return panes.map(paneToItem);
 }
 
 function paneToItem(pane) {
