@@ -4,6 +4,8 @@
     "tailwindcss" : "^4.3.0",
     "vite" : "^7.3.5"
   },
+  "displayName": "Cali Product Workflow",
+  "description": "Product planning workflow panel (Shape Up → critique → gate → interface → planning → execution)",
   "muxy": {
     "$schema": "https://raw.githubusercontent.com/muxy-app/muxy/main/docs/extensions/schema/manifest.schema.json",
     "commands": [
@@ -11,11 +13,11 @@
         "action": { "kind": "togglePanel", "panel": "pipeline" },
         "defaultShortcut": "cmd+shift+p",
         "id": "toggle-pipeline",
-        "title": "Pipeline: Toggle Panel"
+        "title": "Cali Product Workflow: Toggle Panel"
       },
       {
         "id": "refresh-pipeline",
-        "title": "Pipeline: Refresh"
+        "title": "Cali Product Workflow: Refresh"
       }
     ],
     "panels": [
@@ -33,7 +35,7 @@
         "id": "pipeline",
         "mode": "pinned",
         "position": "right",
-        "title": "Pipeline",
+        "title": "Cali Product Workflow",
         "width": 420
       }
     ],
