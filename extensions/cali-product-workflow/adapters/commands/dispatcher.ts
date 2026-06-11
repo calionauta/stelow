@@ -84,6 +84,11 @@ export const WORKFLOW_COMMANDS: CommandDescriptor[] = [
     usage: "/pw-menu",
   },
   {
+    name: "pw-doctor",
+    description: "Diagnose workflow tracking health",
+    usage: "/pw-doctor",
+  },
+  {
     name: "pw-archive",
     description: "Archive workflows",
     usage: "/pw-archive | /pw-archive name=X | /pw-archive purge",

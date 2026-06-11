@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, writeFileSync, statSync, readdirSync, mkdirSync } from "node:fs";
-import { join, basename, dirname, extname } from "node:path";
+import { join, basename, dirname, extname, resolve as resolvePath } from "node:path";
 import { homedir } from "node:os";
 import type { Workflow, TrackingData, ParsedInput, CLI } from "./types";
 import { TASK_ICONS } from "./modules/task";
@@ -225,11 +225,148 @@ export function readGlobalTracking(): TrackingData | null {
 }
 
 export function writeTracking(cwd: string, data: TrackingData): void {
+  data.updated = new Date().toISOString();
   writeFileSync(getTrackingPath(cwd), JSON.stringify(data, null, 2));
 }
 
 export function writeGlobalTracking(data: TrackingData): void {
+  data.updated = new Date().toISOString();
   writeFileSync(getGlobalTrackingPath(), JSON.stringify(data, null, 2));
+}
+
+// ── Workflow identity / project scoping ─────────────────────────────
+
+export function normalizePathForCompare(path: string): string {
+  return resolvePath(path).replace(/\/+$/, "") || "/";
+}
+
+export function isSamePath(a: string | undefined, b: string | undefined): boolean {
+  if (!a?.trim() || !b?.trim()) return false;
+  return normalizePathForCompare(a) === normalizePathForCompare(b);
+}
+
+export function isWorkflowFromProject(workflow: Workflow, cwd: string): boolean {
+  const workflowCwd = workflow.cwd?.trim();
+  return !workflowCwd || isSamePath(workflowCwd, cwd);
+}
+
+export function getWorkflowProjectCwd(workflow: Workflow, fallbackCwd: string): string {
+  return workflow.cwd?.trim() || fallbackCwd;
+}
+
+export function findWorkflowIndexByName(workflows: Workflow[], name: string): number {
+  return workflows.findIndex(w => w.name === name);
+}
+
+export function findWorkflowIndicesForProject(
+  workflows: Workflow[],
+  cwd: string,
+  name: string
+): number[] {
+  const exact: number[] = [];
+  const legacy: number[] = [];
+  for (let i = 0; i < workflows.length; i++) {
+    const workflow = workflows[i];
+    if (workflow.name !== name) continue;
+    if (isSamePath(workflow.cwd, cwd)) exact.push(i);
+    else if (!workflow.cwd?.trim()) legacy.push(i);
+  }
+  return exact.length > 0 ? exact : legacy;
+}
+
+export function findWorkflowIndexForProject(
+  workflows: Workflow[],
+  cwd: string,
+  name: string
+): number {
+  return findWorkflowIndicesForProject(workflows, cwd, name)[0] ?? -1;
+}
+
+export function findGlobalWorkflowIndex(cwd: string, name: string): number {
+  const gt = readGlobalTracking();
+  if (!gt) return -1;
+  return findWorkflowIndexForProject(gt.workflows, cwd, name);
+}
+
+function findGlobalWorkflowIndicesForLocal(cwd: string, workflow: Workflow): number[] {
+  const gt = readGlobalTracking();
+  if (!gt) return [];
+
+  const targetCwd = getWorkflowProjectCwd(workflow, cwd);
+  const exact: number[] = [];
+  for (let i = 0; i < gt.workflows.length; i++) {
+    if (gt.workflows[i].name === workflow.name && isSamePath(gt.workflows[i].cwd, targetCwd)) {
+      exact.push(i);
+    }
+  }
+  if (exact.length > 0) return exact;
+
+  // Legacy global entries may not have cwd. Match only when safe.
+  if (!workflow.cwd?.trim()) {
+    return findWorkflowIndicesForProject(gt.workflows, cwd, workflow.name);
+  }
+
+  const sameNameWithCwd = gt.workflows.some(w =>
+    w.name === workflow.name && w.cwd?.trim()
+  );
+  if (!sameNameWithCwd) {
+    return findWorkflowIndicesForProject(gt.workflows, cwd, workflow.name);
+  }
+
+  return [];
+}
+
+export function findGlobalWorkflowIndexForLocal(cwd: string, workflow: Workflow): number {
+  return findGlobalWorkflowIndicesForLocal(cwd, workflow)[0] ?? -1;
+}
+
+export function updateGlobalWorkflowForLocal(
+  cwd: string,
+  workflow: Workflow,
+  mutator: (wf: Workflow) => void
+): boolean {
+  const gt = readGlobalTracking();
+  if (!gt) return false;
+
+  const indices = findGlobalWorkflowIndicesForLocal(cwd, workflow);
+  if (indices.length === 0) return false;
+
+  for (const idx of indices) {
+    mutator(gt.workflows[idx]);
+  }
+  gt.updated = new Date().toISOString();
+  writeGlobalTracking(gt);
+  return true;
+}
+
+export function removeGlobalWorkflowForLocal(cwd: string, workflow: Workflow): boolean {
+  const gt = readGlobalTracking();
+  if (!gt) return false;
+
+  const indices = findGlobalWorkflowIndicesForLocal(cwd, workflow);
+  if (indices.length === 0) return false;
+
+  for (let i = indices.length - 1; i >= 0; i--) {
+    gt.workflows.splice(indices[i], 1);
+  }
+  gt.updated = new Date().toISOString();
+  writeGlobalTracking(gt);
+  return true;
+}
+
+export function removeGlobalWorkflow(cwd: string, name: string): boolean {
+  const gt = readGlobalTracking();
+  if (!gt) return false;
+
+  const indices = findWorkflowIndicesForProject(gt.workflows, cwd, name);
+  if (indices.length === 0) return false;
+
+  for (let i = indices.length - 1; i >= 0; i--) {
+    gt.workflows.splice(indices[i], 1);
+  }
+  gt.updated = new Date().toISOString();
+  writeGlobalTracking(gt);
+  return true;
 }
 
 // ── Query ────────────────────────────────────────────────────────────
@@ -329,15 +466,10 @@ export function renameWorkflow(
   writeTracking(cwd, tracking);
 
   // 2. Global tracking
-  const globalTracking = readGlobalTracking();
-  if (globalTracking) {
-    const gwf = globalTracking.workflows.find(w => w.name === oldName);
-    if (gwf) {
-      gwf.name = finalName;
-      gwf.updated = new Date().toISOString();
-    }
-    writeGlobalTracking(globalTracking);
-  }
+  updateGlobalWorkflowForLocal(cwd, wf, gwf => {
+    gwf.name = finalName;
+    gwf.updated = new Date().toISOString();
+  });
 
   // 3. index.json — use dirHash (NOT name) for filesystem path
   const ds = getDateStamp(new Date(wf.created));

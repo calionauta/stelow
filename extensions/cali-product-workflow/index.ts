@@ -26,6 +26,8 @@ import {
   resolveProjectDir,
   parseInputForWorkflow,
   updateWorkflowIndexJson,
+  isWorkflowFromProject,
+  updateGlobalWorkflowForLocal,
 } from "./state";
 import { updateFooter, notifyPhase } from "./ui";
 import { registerCommands, executeCommand } from "./commands";
@@ -286,7 +288,7 @@ export default function (pi: ExtensionAPI) {
     const gt = readGlobalTracking();
     if (!gt) return;
     const projectWf = gt.workflows.find(
-      w => w.cwd === wd && w.status !== "completed"
+      w => isWorkflowFromProject(w, wd) && w.status !== "completed"
     );
     if (!projectWf) return;
 
@@ -369,17 +371,12 @@ export default function (pi: ExtensionAPI) {
       const lastPhase = _lastSyncedPhase.get(syncId);
       if (lastPhase !== syncWf.currentPhase) {
         // Sync global tracking
-        const gt = readGlobalTracking();
-        if (gt) {
-          const gIdx = gt.workflows.findIndex(w => w.name === syncWf.name);
-          if (gIdx !== -1) {
-            gt.workflows[gIdx].currentPhase = syncWf.currentPhase;
-            gt.workflows[gIdx].phases = syncWf.phases;
-            gt.workflows[gIdx].stage = syncWf.stage;
-            gt.workflows[gIdx].updated = syncWf.updated;
-            writeGlobalTracking(gt);
-          }
-        }
+        updateGlobalWorkflowForLocal(wd, syncWf, gw => {
+          gw.currentPhase = syncWf.currentPhase;
+          gw.phases = syncWf.phases;
+          gw.stage = syncWf.stage;
+          gw.updated = syncWf.updated;
+        });
         // Sync index.json
         updateWorkflowIndexJson(wd, syncWf, {
           current_phase: PHASE_NAMES[syncWf.currentPhase]?.toLowerCase() || "setup",

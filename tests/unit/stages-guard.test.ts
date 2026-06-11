@@ -342,14 +342,14 @@ describe('Stages Guard', () => {
       }
     });
 
-    it('returns null when active workflow has no cwd field', () => {
+    it('returns project dir when active workflow has no cwd field', () => {
       const tmp = join(PROJECT_ROOT, '.tmp-cwd-missing.json');
       require('node:fs').writeFileSync(tmp, JSON.stringify({
         version: "1.0",
         workflows: [{ name: "active", status: "in-progress" }],
       }));
       try {
-        expect(getActiveWorkflowCwd(tmp)).toBe(null);
+        expect(getActiveWorkflowCwd(tmp)).toBe(dirname(tmp));
       } finally {
         require('node:fs').rmSync(tmp, { force: true });
       }

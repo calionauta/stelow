@@ -4,7 +4,7 @@
 
 import { parse as parseYAML } from 'yaml';
 import { readFileSync, existsSync } from 'fs';
-import { resolve as resolvePath } from 'node:path';
+import { dirname, resolve as resolvePath } from 'node:path';
 
 // ── Tipos (espelha types/stages.ts) ──────────────────────────────
 
@@ -167,7 +167,8 @@ export function getActiveWorkflowCwd(trackingPath: string): string | null {
     const active = tracking.workflows.find(
       (w: any) => w && w.status === "in-progress"
     );
-    return active?.cwd ?? null;
+    if (!active) return null;
+    return active.cwd ?? dirname(trackingPath);
   } catch {
     return null;
   }

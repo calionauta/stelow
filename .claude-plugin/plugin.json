@@ -1,6 +1,6 @@
 {
   "name": "@renatocaliari/cali-product-workflow",
-  "version": "0.22.6-alpha",
+  "version": "0.22.7-alpha",
   "description": "Product workflow for AI coding agents: Shape Up + Interface + Tech Planning + Critique + Gate.",
   "author": {
     "name": "Cali",

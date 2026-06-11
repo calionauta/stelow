@@ -33,6 +33,13 @@ import {
   suggestNameFromDraft,
   readSourceFile,
   truncateText,
+  isWorkflowFromProject,
+  findWorkflowIndexForProject,
+  updateGlobalWorkflowForLocal,
+  removeGlobalWorkflowForLocal,
+  removeGlobalWorkflow,
+  writeGlobalTracking,
+  readGlobalTracking,
 } from '../../extensions/cali-product-workflow/state';
 import type { Workflow, TrackingData } from '../../extensions/cali-product-workflow/types';
 
@@ -478,6 +485,170 @@ describe('Utility Functions', () => {
     it('leaves room for truncation marker', () => {
       const result = truncateText('Hello World', 5);
       expect(result).toMatch(/\.\.\. truncated \.\.\./);
+    });
+  });
+
+  describe('workflow project scoping', () => {
+    const oldHome = process.env.HOME;
+
+    beforeEach(() => {
+      process.env.HOME = tempDir;
+    });
+
+    afterEach(() => {
+      if (oldHome === undefined) {
+        delete process.env.HOME;
+      } else {
+        process.env.HOME = oldHome;
+      }
+    });
+
+    it('matches global workflows by cwd, not name alone', () => {
+      const projectA = join(tempDir, 'project-a');
+      const projectB = join(tempDir, 'project-b');
+      const global: TrackingData = {
+        $schema: '',
+        version: '1.0',
+        created: '',
+        updated: '',
+        workflows: [
+          workflow('same-name', 'in-progress', 1),
+          { ...workflow('same-name', 'paused', 2), cwd: projectB },
+        ],
+      };
+      writeGlobalTracking(global);
+
+      expect(findWorkflowIndexForProject(global.workflows, projectA, 'same-name')).toBe(0);
+      expect(findWorkflowIndexForProject(global.workflows, projectB, 'same-name')).toBe(1);
+    });
+
+    it('updates global workflow for local workflow with stale cwd', () => {
+      const localProject = join(tempDir, 'local-project');
+      const staleCwd = join(tempDir, 'stale-project');
+      const localWorkflow: Workflow = {
+        ...workflow('stale-cwd-workflow', 'in-progress', 2),
+        cwd: staleCwd,
+      };
+      const global: TrackingData = {
+        $schema: '',
+        version: '1.0',
+        created: '',
+        updated: '',
+        workflows: [{ ...localWorkflow, status: 'paused' }],
+      };
+      writeGlobalTracking(global);
+
+      const updated = updateGlobalWorkflowForLocal(localProject, localWorkflow, wf => {
+        wf.status = 'archived';
+      });
+
+      expect(updated).toBe(true);
+      const read = readGlobalTracking();
+      expect(read?.workflows).toHaveLength(1);
+      expect(read?.workflows[0].cwd).toBe(staleCwd);
+      expect(read?.workflows[0].status).toBe('archived');
+    });
+
+    it('does not remove global workflow from another project by name', () => {
+      const localProject = join(tempDir, 'local-project');
+      const otherProject = join(tempDir, 'other-project');
+      const global: TrackingData = {
+        $schema: '',
+        version: '1.0',
+        created: '',
+        updated: '',
+        workflows: [
+          { ...workflow('other-workflow', 'in-progress', 1), cwd: otherProject },
+        ],
+      };
+      writeGlobalTracking(global);
+
+      const removed = removeGlobalWorkflow(localProject, 'other-workflow');
+
+      expect(removed).toBe(false);
+      expect(readGlobalTracking()?.workflows).toHaveLength(1);
+    });
+
+    it('removes global workflow for local workflow with stale cwd', () => {
+      const localProject = join(tempDir, 'local-project');
+      const staleCwd = join(tempDir, 'stale-project');
+      const localWorkflow: Workflow = {
+        ...workflow('remove-stale', 'in-progress', 1),
+        cwd: staleCwd,
+      };
+      const global: TrackingData = {
+        $schema: '',
+        version: '1.0',
+        created: '',
+        updated: '',
+        workflows: [localWorkflow],
+      };
+      writeGlobalTracking(global);
+
+      const removed = removeGlobalWorkflowForLocal(localProject, localWorkflow);
+
+      expect(removed).toBe(true);
+      expect(readGlobalTracking()?.workflows).toHaveLength(0);
+    });
+
+    it('removes all duplicate global matches for local workflow with stale cwd', () => {
+      const localProject = join(tempDir, 'local-project');
+      const staleCwd = join(tempDir, 'stale-project');
+      const localWorkflow: Workflow = {
+        ...workflow('duplicate-stale', 'in-progress', 1),
+        cwd: staleCwd,
+      };
+      const global: TrackingData = {
+        $schema: '',
+        version: '1.0',
+        created: '',
+        updated: '',
+        workflows: [
+          { ...localWorkflow, status: 'archived' },
+          { ...localWorkflow, status: 'archived', updated: 'older' },
+        ],
+      };
+      writeGlobalTracking(global);
+
+      const removed = removeGlobalWorkflowForLocal(localProject, localWorkflow);
+
+      expect(removed).toBe(true);
+      expect(readGlobalTracking()?.workflows).toHaveLength(0);
+    });
+
+    it('updates all duplicate exact global matches', () => {
+      const localProject = join(tempDir, 'local-project');
+      const staleCwd = join(tempDir, 'stale-project');
+      const localWorkflow: Workflow = {
+        ...workflow('duplicate-update', 'in-progress', 1),
+        cwd: staleCwd,
+      };
+      const global: TrackingData = {
+        $schema: '',
+        version: '1.0',
+        created: '',
+        updated: '',
+        workflows: [
+          { ...localWorkflow, status: 'paused' },
+          { ...localWorkflow, status: 'paused', updated: 'older' },
+        ],
+      };
+      writeGlobalTracking(global);
+
+      const updated = updateGlobalWorkflowForLocal(localProject, localWorkflow, wf => {
+        wf.status = 'completed';
+      });
+
+      expect(updated).toBe(true);
+      expect(readGlobalTracking()?.workflows.every(w => w.status === 'completed')).toBe(true);
+    });
+
+    it('treats workflows without cwd as belonging to current project', () => {
+      const project = join(tempDir, 'project');
+      const wf = workflow('legacy-workflow', 'in-progress', 1);
+
+      expect(isWorkflowFromProject(wf, project)).toBe(true);
+      expect(findWorkflowIndexForProject([wf], project, 'legacy-workflow')).toBe(0);
     });
   });
 });

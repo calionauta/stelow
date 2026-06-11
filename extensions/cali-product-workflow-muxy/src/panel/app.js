@@ -11,6 +11,11 @@ import {
   getPhaseName,
   getWorkflowProgress,
   getStatusBadge,
+  getActiveWorkflow,
+  getWorkflowCommand,
+  isWorkflowCommandEnabled,
+  getWorkflowCommandLabel,
+  getWorkflowCommandTitle,
   scanArtifactDirs,
   getArtifactCount,
   getArtifactsForPhase,
@@ -97,7 +102,7 @@ export class PipelinePanel {
   }
 
   updateTopbar() {
-    const active = this.workflows.filter(w => w.status === 'in-progress').length;
+    const active = this.workflows.filter(w => w.status === 'in-progress' && !w.staleCwd).length;
     try {
       muxy.topbar.set('pipeline', { badge: String(active) });
     } catch { /* not in Muxy */ }
@@ -154,7 +159,7 @@ export class PipelinePanel {
 
     return h('div', { class: 'pipeline' },
       this.renderFilter(),
-      this.renderCommandBar(),
+      this.renderCommandBar(this.selectedWf),
       this.renderInbox(),
       h('div', { class: 'pipeline-scroll' },
         ...buckets.map(b => this.renderColumn(b)),
@@ -185,29 +190,34 @@ export class PipelinePanel {
     );
   }
 
-  renderCommandBar() {
+  renderCommandBar(selectedWorkflow = null) {
     return h('div', { class: 'command-bar' },
-      h('button', {
-        class: 'command-btn',
-        onclick: () => this.runCommandToast('/pw-next'),
-        title: 'Execute /pw-next in the selected Pi pane',
-      }, icon('refresh', 10), 'Next'),
-      h('button', {
-        class: 'command-btn',
-        onclick: () => this.runCommandToast('/pw-abort'),
-        title: 'Execute /pw-abort in the selected Pi pane',
-      }, icon('x', 10), 'Abort'),
-      h('button', {
-        class: 'command-btn',
-        onclick: () => this.runCommandToast('/pw-complete'),
-        title: 'Execute /pw-complete in the selected Pi pane',
-      }, icon('check', 10), 'Complete'),
-      h('button', {
-        class: 'command-btn',
-        onclick: () => this.runCommandToast('/pw-archive'),
-        title: 'Execute /pw-archive in the selected Pi pane',
-      }, icon('archive', 10), 'Archive'),
+      ...this.renderWorkflowCommandButtons(selectedWorkflow, 'command-btn'),
     );
+  }
+
+  renderWorkflowCommandButtons(selectedWorkflow = null, buttonClass = 'command-btn') {
+    const activeWorkflow = getActiveWorkflow(this.workflows);
+    const icons = {
+      '/pw-next': 'refresh',
+      '/pw-abort': 'x',
+      '/pw-complete': 'check',
+      '/pw-archive': 'archive',
+    };
+
+    return ['/pw-next', '/pw-abort', '/pw-complete', '/pw-archive'].map(command => {
+      const actualCommand = getWorkflowCommand(command, selectedWorkflow, activeWorkflow);
+      const enabled = actualCommand !== null && isWorkflowCommandEnabled(command, selectedWorkflow);
+      const label = getWorkflowCommandLabel(command, selectedWorkflow, activeWorkflow);
+      const title = getWorkflowCommandTitle(command, selectedWorkflow, activeWorkflow);
+
+      return h('button', {
+        class: buttonClass,
+        disabled: !enabled,
+        onclick: () => this.runCommandToast(actualCommand),
+        title,
+      }, icon(icons[command], 10), label);
+    });
   }
 
   renderColumn(bucket) {
@@ -233,6 +243,9 @@ export class PipelinePanel {
     const badge = getStatusBadge(wf);
     const progress = getWorkflowProgress(wf);
     const pct = Math.round(progress * 100);
+    const staleNote = wf.staleCwd
+      ? h('div', { class: 'card-stale-note', style: 'color:var(--muxy-diff-hunk,#b8860b);font-size:10px;margin-top:6px;' }, `cwd outside project: ${wf.cwd}`)
+      : null;
 
     let dotColor;
     if (wf.status === 'paused') dotColor = 'var(--muxy-diff-hunk, #b8860b)';
@@ -265,6 +278,7 @@ export class PipelinePanel {
         h('span', { class: cls('badge', badge.class) }, badge.label),
         this.renderArtifactBadge(wf.name),
       ),
+      staleNote,
     );
   }
 
@@ -319,6 +333,10 @@ export class PipelinePanel {
             h('span', { class: 'detail-label' }, 'Status'),
             h('span', { class: 'detail-value' }, wf.status),
           ),
+          wf.staleCwd ? h('div', { class: 'detail-row', style: 'color:var(--muxy-diff-hunk,#b8860b)' },
+            h('span', { class: 'detail-label' }, 'Cwd'),
+            h('span', { class: 'detail-value' }, `${wf.cwd} (outside project)`),
+          ) : null,
           h('div', { class: 'detail-row' },
             h('span', { class: 'detail-label' }, 'Created'),
             h('span', { class: 'detail-value' },
@@ -561,50 +579,21 @@ export class PipelinePanel {
         ),
         // Actions: execute workflow commands in the selected Pi pane
         h('div', { class: 'handoff-action' },
-          h('button', {
-            class: 'handoff-btn',
-            onclick: () => this.runCommandToast('/pw-next'),
-            title: 'Execute /pw-next in the selected Pi pane',
-          },
-            icon('refresh', 10),
-            'Next',
-          ),
-          h('button', {
-            class: 'handoff-btn',
-            onclick: () => this.runCommandToast('/pw-abort'),
-            title: 'Execute /pw-abort in the selected Pi pane',
-          },
-            icon('x', 10),
-            'Abort',
-          ),
-          h('button', {
-            class: 'handoff-btn',
-            onclick: () => this.runCommandToast('/pw-complete'),
-            title: 'Execute /pw-complete in the selected Pi pane',
-          },
-            icon('check', 10),
-            'Complete',
-          ),
-          h('button', {
-            class: 'handoff-btn',
-            onclick: () => this.runCommandToast('/pw-archive'),
-            title: 'Execute /pw-archive in the selected Pi pane',
-          },
-            icon('archive', 10),
-            'Archive',
-          ),
+          ...this.renderWorkflowCommandButtons(this.selectedWf, 'handoff-btn'),
         ),
       ),
     );
   }
 
   async runCommandToast(command) {
+    if (!command) return;
+
     const result = await runWorkflowCommand(command);
     const toast = document.createElement('div');
     toast.className = 'handoff-toast';
 
     if (result.ok) {
-      toast.textContent = `Executed: ${command} in ${result.paneTitle}`;
+      toast.textContent = `Sent: ${command} to ${result.paneTitle}. Verify pane ran it.`;
     } else if (result.reason === 'cancelled') {
       toast.textContent = `Cancelled: ${command}`;
       toast.style.background = 'var(--muxy-foreground-muted)';

@@ -1,6 +1,6 @@
 {
   "name": "@renatocaliari/cali-product-workflow",
-  "version": "0.22.6-alpha",
+  "version": "0.22.7-alpha",
   "description": "Product workflow for AI coding agents: Shape Up + Interface + Tech Planning + Critique + Gate. Includes 25 product skills.",
   "keywords": [
     "pi-skill",
@@ -66,7 +66,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "prepublishOnly": "npm run build && npm run generate-cli-commands && ./scripts/sync-cli-tools.sh",
-    "generate-cli-commands": "node --import tsx scripts/generate-cli-commands.ts",
+    "generate-cli-commands": "npm exec -- tsx scripts/generate-cli-commands.ts",
     "test": "vitest run",
     "test:unit": "vitest run tests/unit",
     "test:integration": "vitest run tests/integration",

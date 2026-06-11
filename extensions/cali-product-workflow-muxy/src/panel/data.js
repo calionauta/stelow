@@ -37,7 +37,9 @@ export async function loadTrackingData() {
   try {
     const res = await muxy.files.read('cali-product-workflow.json');
     if (!res || !res.content) return null;
-    return JSON.parse(res.content);
+    const tracking = JSON.parse(res.content);
+    const projectPath = await getActiveWorkspacePath().catch(() => null);
+    return normalizeTrackingDataForProject(tracking, projectPath);
   } catch {
     return null;
   }
@@ -86,6 +88,30 @@ export async function loadProjectName() {
   return null;
 }
 
+function isHiddenWorkflowStatus(status) {
+  return ['archived', 'aborted', 'stopped', 'cancelled', 'canceled'].includes(status);
+}
+
+export function normalizeTrackingDataForProject(tracking, projectPath) {
+  if (!tracking) return null;
+  if (!projectPath) return tracking;
+  return {
+    ...tracking,
+    workflows: (tracking.workflows || []).map(wf => ({
+      ...wf,
+      staleCwd: Boolean(wf.cwd && !isWorkflowCwdCompatible(wf.cwd, projectPath)),
+    })),
+  };
+}
+
+function isWorkflowCwdCompatible(workflowCwd, projectPath) {
+  const normalizedWorkflowCwd = normalizePath(workflowCwd);
+  const normalizedProjectPath = normalizePath(projectPath);
+  return normalizedWorkflowCwd === normalizedProjectPath
+    || normalizedWorkflowCwd.startsWith(`${normalizedProjectPath}/`)
+    || normalizedProjectPath.startsWith(`${normalizedWorkflowCwd}/`);
+}
+
 /**
  * Group workflows into macro-stage buckets.
  * Returns [{ stage, workflows: [...] }, ...]
@@ -94,8 +120,10 @@ export function groupWorkflowsByMacroStage(workflows) {
   const buckets = MACRO_STAGES.map(s => ({ ...s, workflows: [] }));
 
   for (const wf of workflows) {
-    // Skip archived workflows for the main view
-    if (wf.status === 'archived') continue;
+    // Skip archived/aborted/stopped workflows and workflows whose cwd points
+    // outside the active project. Stale cwd data usually means a copied or
+    // orphaned tracking file, and showing it as active creates false progress.
+    if (isHiddenWorkflowStatus(wf.status) || wf.staleCwd) continue;
 
     const phaseIdx = wf.currentPhase ?? 0;
     const bucket = buckets.find(
@@ -133,6 +161,7 @@ export function getWorkflowProgress(workflow) {
  * Get status badge info for a workflow.
  */
 export function getStatusBadge(workflow) {
+  if (workflow.staleCwd) return { label: 'Stale cwd', class: 'badge-archived' };
   switch (workflow.status) {
     case 'in-progress': return { label: 'Active', class: 'badge-in-progress' };
     case 'paused': return { label: 'Paused', class: 'badge-paused' };
@@ -140,6 +169,85 @@ export function getStatusBadge(workflow) {
     case 'archived': return { label: 'Archived', class: 'badge-archived' };
     default: return { label: workflow.status, class: 'badge-in-progress' };
   }
+}
+
+/**
+ * Return the active workflow for a project. Used by Muxy to avoid showing
+ * workflow-scoped actions as if they applied to the clicked card when they
+ * actually advance/complete the active workflow.
+ */
+export function getActiveWorkflow(workflows) {
+  return (workflows || []).find(wf => wf.status === 'in-progress' && !wf.staleCwd) ?? null;
+}
+
+function quoteWorkflowName(name) {
+  return `"${String(name ?? '').replace(/"/g, '\\"')}"`;
+}
+
+export function getWorkflowCommand(command, selectedWorkflow, activeWorkflow) {
+  if (command === '/pw-abort') {
+    return selectedWorkflow ? `/pw-abort ${quoteWorkflowName(selectedWorkflow.name)}` : '/pw-abort';
+  }
+
+  if (command === '/pw-archive') {
+    return selectedWorkflow ? `/pw-archive name=${quoteWorkflowName(selectedWorkflow.name)}` : '/pw-archive';
+  }
+
+  if (selectedWorkflow && activeWorkflow?.name !== selectedWorkflow.name) {
+    return null;
+  }
+
+  return command;
+}
+
+export function isWorkflowCommandEnabled(command, selectedWorkflow) {
+  if (!selectedWorkflow) return true;
+  if (selectedWorkflow.staleCwd) return false;
+  if (command === '/pw-abort') {
+    return selectedWorkflow.status === 'in-progress' || selectedWorkflow.status === 'paused';
+  }
+  if (command === '/pw-archive') {
+    return selectedWorkflow.status !== 'archived';
+  }
+  return true;
+}
+
+export function getWorkflowCommandLabel(command, selectedWorkflow, activeWorkflow) {
+  if (command === '/pw-next' && selectedWorkflow && activeWorkflow?.name !== selectedWorkflow.name) return 'Next active';
+  if (command === '/pw-complete' && selectedWorkflow && activeWorkflow?.name !== selectedWorkflow.name) return 'Complete active';
+  if (command === '/pw-abort' && selectedWorkflow?.staleCwd) return 'Stale cwd';
+  if (command === '/pw-abort' && selectedWorkflow) return 'Abort selected';
+  if (command === '/pw-archive' && selectedWorkflow) return 'Archive selected';
+  return {
+    '/pw-next': 'Next',
+    '/pw-abort': 'Abort',
+    '/pw-complete': 'Complete',
+    '/pw-archive': 'Archive',
+  }[command] ?? command;
+}
+
+export function getWorkflowCommandTitle(command, selectedWorkflow, activeWorkflow) {
+  if (command === '/pw-next' && selectedWorkflow && activeWorkflow?.name !== selectedWorkflow.name) {
+    return 'Only the active workflow can advance. Click the active workflow or run /pw-next in its project.';
+  }
+  if (command === '/pw-complete' && selectedWorkflow && activeWorkflow?.name !== selectedWorkflow.name) {
+    return 'Only the active workflow can be completed. Click the active workflow or run /pw-complete in its project.';
+  }
+  if (command === '/pw-abort' && selectedWorkflow?.staleCwd) {
+    return 'Workflow cwd points outside the active project. Run a sync/repair before executing commands.';
+  }
+  if (command === '/pw-abort' && selectedWorkflow) {
+    return `Execute /pw-abort for "${selectedWorkflow.name}" in the selected Pi pane.`;
+  }
+  if (command === '/pw-archive' && selectedWorkflow) {
+    return `Execute /pw-archive for "${selectedWorkflow.name}" in the selected Pi pane.`;
+  }
+  return {
+    '/pw-next': 'Execute /pw-next for the active workflow in the selected Pi pane.',
+    '/pw-abort': 'Execute /pw-abort for the active workflow in the selected Pi pane.',
+    '/pw-complete': 'Execute /pw-complete for the active workflow in the selected Pi pane.',
+    '/pw-archive': 'Execute /pw-archive for the active workflow in the selected Pi pane.',
+  }[command] ?? '';
 }
 
 // ── Artifact scanning ────────────────────────────────────────────────
@@ -300,10 +408,10 @@ const WORKFLOW_COMMAND_LABELS = {
 };
 
 const WORKFLOW_COMMAND_MESSAGES = {
-  '/pw-next': 'This will send `/pw-next` to the selected Pi terminal pane and press Enter.',
-  '/pw-abort': 'This will send `/pw-abort` to the selected Pi terminal pane and press Enter. This aborts the active workflow.',
+  '/pw-next': 'This will send `/pw-next` to the selected Pi terminal pane and press Enter. This advances the active workflow.',
+  '/pw-abort': 'This will send `/pw-abort` to the selected Pi terminal pane and press Enter. With a workflow name, it stops that workflow; otherwise it stops the active workflow.',
   '/pw-complete': 'This will send `/pw-complete` to the selected Pi terminal pane and press Enter. This marks the active workflow complete.',
-  '/pw-archive': 'This will send `/pw-archive` to the selected Pi terminal pane and press Enter. This archives the active workflow.',
+  '/pw-archive': 'This will send `/pw-archive` to the selected Pi terminal pane and press Enter. With a workflow name, it archives that workflow; otherwise it archives the active workflow.',
 };
 
 export async function runWorkflowCommand(command) {

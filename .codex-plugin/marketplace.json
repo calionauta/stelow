@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Product workflow plugins by Cali",
-    "version": "0.17.0"
+    "version": "0.22.7-alpha"
   },
   "plugins": [
     {

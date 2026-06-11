@@ -4,6 +4,24 @@ All notable changes to `@renatocaliari/cali-product-workflow` will be documented
 
 ## [Unreleased]
 
+### Added
+- **`/pw-doctor`** diagnoses local/global/index workflow tracking health, stale `cwd`,
+  duplicate global entries, and status/phase mismatches.
+
+### Fixed
+- **Global tracking scope**: workflow commands now match global entries by `(name, cwd)`
+  instead of name alone, preventing cross-project state mutations.
+- **Stale project cwd**: local workflows whose `cwd` points outside the active project no
+  longer silently update the wrong global workflow.
+- **Muxy display**: stale-cwd workflows are hidden from macro-stage buckets and command
+  actions are disabled with a clear stale-cwd badge.
+- **Command honesty**: Muxy command toast now says the command was sent to the pane, not
+  that it was executed.
+- **Duplicate global entries**: abort/archive/sync paths remove or update all exact
+  `(name, cwd)` matches.
+- **CLI command generation script** now works without a local `tsx` package by using
+  `npm exec -- tsx`.
+
 ## [0.16.1-alpha] - 2026-06-06
 
 ### Fixed
