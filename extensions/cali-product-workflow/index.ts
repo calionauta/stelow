@@ -198,8 +198,6 @@ export default function (pi: ExtensionAPI) {
       const agentsDir = join(HOME, ".agents/skills");
       mkdirSync(agentsDir, { recursive: true });
 
-      const knownPrefixes = ["cali-product-", "cali-ops-", "cali-coding-", "cali-questions-"];
-
       // 1. Collect project skills (directories with SKILL.md)
       const projectSkills = new Set<string>();
       for (const entry of readdirSync(cloneSkillsDir, { withFileTypes: true })) {
@@ -218,20 +216,17 @@ export default function (pi: ExtensionAPI) {
         cpSync(join(cloneSkillsDir, skill), join(agentsDir, skill), { recursive: true });
       }
 
-      // 3. Remove orphaned/retired skills from ~/.agents/skills/.
-      //    Removes skills that match a managed prefix AND that are
-      //    not active (not in projectSkills). Skills listed in
-      //    retired-skills.yaml are also removed — they are explicitly
-      //    retired, even if they somehow appear as active (the YAML
-      //    overrides the active check).
+      // 3. Remove only skills explicitly retired in retired-skills.yaml.
+      //    The project's `skills/` directory IS the source of truth for
+      //    which skills belong here. We never delete skills managed by
+      //    other tools (agent-sync, etc). Only skills listed in
+      //    retired-skills.yaml are removed — they were intentionally
+      //    deleted/renamed from the project and stale copies should go.
       const retiredNames = getRetiredSkillNames(cloneSkillsDir);
-      if (existsSync(agentsDir)) {
+      if (retiredNames.size > 0 && existsSync(agentsDir)) {
         for (const entry of readdirSync(agentsDir, { withFileTypes: true })) {
           if (!entry.isDirectory()) continue;
-          const isOurs = knownPrefixes.some(p => entry.name.startsWith(p));
-          const isActive = projectSkills.has(entry.name);
-          const isRetired = retiredNames.has(entry.name);
-          if (isOurs && (!isActive || isRetired)) {
+          if (retiredNames.has(entry.name)) {
             rmSync(join(agentsDir, entry.name), { recursive: true, force: true });
           }
         }
