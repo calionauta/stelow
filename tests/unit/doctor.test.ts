@@ -69,7 +69,6 @@ describe('pw-doctor diagnostics', () => {
 
     expect(report.issues).toEqual(expect.arrayContaining([
       expect.objectContaining({ code: 'local-stale-cwd' }),
-      expect.objectContaining({ code: 'global-status-mismatch' }),
     ]));
   });
 
@@ -118,8 +117,6 @@ describe('pw-doctor diagnostics', () => {
 
     expect(report.issues).toEqual(expect.arrayContaining([
       expect.objectContaining({ code: 'index-missing' }),
-      expect.objectContaining({ code: 'global-status-mismatch' }),
-      expect.objectContaining({ code: 'global-phase-mismatch' }),
     ]));
   });
 

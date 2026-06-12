@@ -260,11 +260,18 @@ export function removeGlobalIndexEntry(cwd: string, name: string): boolean {
 
 /**
  * Add an entry to the global index (if not already present).
+ * Prevents duplicate entries by key (name + cwd).
  */
 export function addToGlobalIndex(wf: Workflow): void {
   let gt = readGlobalTracking();
   if (!gt) {
     gt = { $schema: SCHEMA_URL, version: "1.0", created: new Date().toISOString(), updated: new Date().toISOString(), workflows: [] };
+  }
+  const existing = findWorkflowIndexForProject(gt.workflows, wf.cwd || process.cwd(), wf.name);
+  if (existing !== -1) {
+    gt.workflows[existing].updated = new Date().toISOString();
+    writeGlobalTracking(gt);
+    return;
   }
   gt.workflows.push(wf);
   writeGlobalTracking(gt);

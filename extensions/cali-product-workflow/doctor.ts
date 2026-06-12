@@ -107,18 +107,6 @@ export function diagnoseWorkflowProject(cwd: string): DoctorReport {
   diagnoseLocalWorkflows(projectDir, localWorkflows, globalWorkflows, issues);
   diagnoseGlobalWorkflows(projectDir, localWorkflows, globalWorkflows, issues);
 
-  const globalActive = globalWorkflows.find(
-    w => w.status === "in-progress" && isWorkflowFromProject(w, projectDir)
-  );
-  if (!activeWorkflow && globalActive) {
-    issues.push({
-      severity: "info",
-      code: "global-active-not-local",
-      message: `Global active workflow is not imported locally: ${globalActive.name}`,
-      detail: "Restart session, run /pw-goto, or re-run project import.",
-    });
-  }
-
   return {
     projectDir,
     trackingPath,
@@ -202,22 +190,7 @@ function diagnoseLocalWorkflows(
       });
     } else {
       for (const gw of globalMatches) {
-        if (gw.status !== wf.status) {
-          issues.push({
-            severity: "warn",
-            code: "global-status-mismatch",
-            message: `Global status differs from local workflow: ${wf.name}`,
-            detail: `global=${gw.status}; local=${wf.status}`,
-          });
-        }
-        if (gw.currentPhase !== wf.currentPhase) {
-          issues.push({
-            severity: "warn",
-            code: "global-phase-mismatch",
-            message: `Global phase differs from local workflow: ${wf.name}`,
-            detail: `global=${gw.currentPhase}; local=${wf.currentPhase}`,
-          });
-        }
+        // Global index no longer stores mutable state; skip status/phase comparison.
       }
     }
   }
@@ -252,7 +225,7 @@ function diagnoseGlobalWorkflows(
         severity: "info",
         code: "global-only-current-project",
         message: `Global workflow is not present in local tracking: ${gw.name}`,
-        detail: `status=${gw.status}; cwd=${gw.cwd || projectDir}`,
+        detail: `cwd=${gw.cwd || projectDir}`,
       });
     }
 
