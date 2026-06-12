@@ -16,7 +16,7 @@ import {
   suggestNameFromDraft,
   readTracking,
   writeTracking,
-  updateGlobalWorkflowForLocal,
+  removeGlobalIndexEntry,
 } from "./state";
 import { detectCLI } from "./state";
 import { 
@@ -285,9 +285,6 @@ function archiveWorkflows(cwd: string, orphans: Workflow[]): void {
   }
   
   for (const o of orphans) {
-    updateGlobalWorkflowForLocal(cwd, o, w => {
-      w.status = "archived";
-      w.updated = new Date().toISOString();
-    });
+    removeGlobalIndexEntry(cwd, o.name);
   }
 }

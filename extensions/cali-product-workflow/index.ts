@@ -26,8 +26,6 @@ import {
   resolveProjectDir,
   parseInputForWorkflow,
   updateWorkflowIndexJson,
-  isWorkflowFromProject,
-  updateGlobalWorkflowForLocal,
 } from "./state";
 import { updateFooter, notifyPhase } from "./ui";
 import { registerCommands, executeCommand } from "./commands";
@@ -284,21 +282,7 @@ export default function (pi: ExtensionAPI) {
       return;
     }
 
-    // Check global tracking for project workflows
-    const gt = readGlobalTracking();
-    if (!gt) return;
-    const projectWf = gt.workflows.find(
-      w => isWorkflowFromProject(w, wd) && w.status !== "completed"
-    );
-    if (!projectWf) return;
-
-    const tracking = readTracking(wd);
-    if (tracking && !tracking.workflows.some(w => w.name === projectWf.name)) {
-      tracking.workflows.push(projectWf);
-      writeTracking(wd, tracking);
-    }
     updateFooter(ctx, wd);
-    ctx.ui.notify(`◆ ${projectWf.name} (${projectWf.currentPhase + 1}/${projectWf.phases.length})`, "info");
   });
 
   // ── Tool call: stages guard + detection ───────────────────────
@@ -362,21 +346,13 @@ export default function (pi: ExtensionAPI) {
 
     // ── Secondary state sync ─────────────────────────────────────
     // When LLM self-advances by writing directly to cali-product-workflow.json,
-    // the global tracking (~/.cali-pw-global.json) and index.json
-    // (.cali-product-workflow/<date>/<hash>/index.json) become stale.
-    // This sync brings them up-to-date on every turn_end when phase changed.
+    // the index.json (.cali-product-workflow/<date>/<hash>/index.json)
+    // becomes stale. This sync brings it up-to-date on every turn_end.
     const syncWf = getActiveWorkflow(wd);
     if (syncWf?.dirHash) {
       const syncId = `${wd}:${syncWf.name}`;
       const lastPhase = _lastSyncedPhase.get(syncId);
       if (lastPhase !== syncWf.currentPhase) {
-        // Sync global tracking
-        updateGlobalWorkflowForLocal(wd, syncWf, gw => {
-          gw.currentPhase = syncWf.currentPhase;
-          gw.phases = syncWf.phases;
-          gw.stage = syncWf.stage;
-          gw.updated = syncWf.updated;
-        });
         // Sync index.json
         updateWorkflowIndexJson(wd, syncWf, {
           current_phase: PHASE_NAMES[syncWf.currentPhase]?.toLowerCase() || "setup",

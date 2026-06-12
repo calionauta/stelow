@@ -230,8 +230,59 @@ export function writeTracking(cwd: string, data: TrackingData): void {
 }
 
 export function writeGlobalTracking(data: TrackingData): void {
+  // Prune to index-only fields to prevent state desync.
+  // Global is a catalog; canonical state lives in local tracking.
+  data.workflows = data.workflows.map(w => ({
+    name: w.name,
+    cwd: w.cwd,
+    dirHash: w.dirHash,
+    created: w.created,
+    updated: new Date().toISOString(),
+  })) as Workflow[];
   data.updated = new Date().toISOString();
   writeFileSync(getGlobalTrackingPath(), JSON.stringify(data, null, 2));
+}
+
+/**
+ * Remove an entry from the global index by project (cwd) and name.
+ * Returns true if an entry was removed.
+ */
+export function removeGlobalIndexEntry(cwd: string, name: string): boolean {
+  const gt = readGlobalTracking();
+  if (!gt) return false;
+  const idx = findWorkflowIndexForProject(gt.workflows, cwd, name);
+  if (idx === -1) return false;
+  gt.workflows.splice(idx, 1);
+  gt.updated = new Date().toISOString();
+  writeGlobalTracking(gt);
+  return true;
+}
+
+/**
+ * Add an entry to the global index (if not already present).
+ */
+export function addToGlobalIndex(wf: Workflow): void {
+  let gt = readGlobalTracking();
+  if (!gt) {
+    gt = { $schema: SCHEMA_URL, version: "1.0", created: new Date().toISOString(), updated: new Date().toISOString(), workflows: [] };
+  }
+  gt.workflows.push(wf);
+  writeGlobalTracking(gt);
+}
+
+/**
+ * Update (or add) a workflow entry in the global index.
+ * Only the indexed fields (name, cwd, dirHash, created, updated) are persisted.
+ */
+export function updateGlobalIndexName(oldName: string, newName: string, cwd: string): boolean {
+  const gt = readGlobalTracking();
+  if (!gt) return false;
+  const idx = findWorkflowIndexForProject(gt.workflows, cwd, oldName);
+  if (idx === -1) return false;
+  gt.workflows[idx].name = newName;
+  gt.updated = new Date().toISOString();
+  writeGlobalTracking(gt);
+  return true;
 }
 
 // ── Workflow identity / project scoping ─────────────────────────────
@@ -280,93 +331,6 @@ export function findWorkflowIndexForProject(
   name: string
 ): number {
   return findWorkflowIndicesForProject(workflows, cwd, name)[0] ?? -1;
-}
-
-export function findGlobalWorkflowIndex(cwd: string, name: string): number {
-  const gt = readGlobalTracking();
-  if (!gt) return -1;
-  return findWorkflowIndexForProject(gt.workflows, cwd, name);
-}
-
-function findGlobalWorkflowIndicesForLocal(cwd: string, workflow: Workflow): number[] {
-  const gt = readGlobalTracking();
-  if (!gt) return [];
-
-  const targetCwd = getWorkflowProjectCwd(workflow, cwd);
-  const exact: number[] = [];
-  for (let i = 0; i < gt.workflows.length; i++) {
-    if (gt.workflows[i].name === workflow.name && isSamePath(gt.workflows[i].cwd, targetCwd)) {
-      exact.push(i);
-    }
-  }
-  if (exact.length > 0) return exact;
-
-  // Legacy global entries may not have cwd. Match only when safe.
-  if (!workflow.cwd?.trim()) {
-    return findWorkflowIndicesForProject(gt.workflows, cwd, workflow.name);
-  }
-
-  const sameNameWithCwd = gt.workflows.some(w =>
-    w.name === workflow.name && w.cwd?.trim()
-  );
-  if (!sameNameWithCwd) {
-    return findWorkflowIndicesForProject(gt.workflows, cwd, workflow.name);
-  }
-
-  return [];
-}
-
-export function findGlobalWorkflowIndexForLocal(cwd: string, workflow: Workflow): number {
-  return findGlobalWorkflowIndicesForLocal(cwd, workflow)[0] ?? -1;
-}
-
-export function updateGlobalWorkflowForLocal(
-  cwd: string,
-  workflow: Workflow,
-  mutator: (wf: Workflow) => void
-): boolean {
-  const gt = readGlobalTracking();
-  if (!gt) return false;
-
-  const indices = findGlobalWorkflowIndicesForLocal(cwd, workflow);
-  if (indices.length === 0) return false;
-
-  for (const idx of indices) {
-    mutator(gt.workflows[idx]);
-  }
-  gt.updated = new Date().toISOString();
-  writeGlobalTracking(gt);
-  return true;
-}
-
-export function removeGlobalWorkflowForLocal(cwd: string, workflow: Workflow): boolean {
-  const gt = readGlobalTracking();
-  if (!gt) return false;
-
-  const indices = findGlobalWorkflowIndicesForLocal(cwd, workflow);
-  if (indices.length === 0) return false;
-
-  for (let i = indices.length - 1; i >= 0; i--) {
-    gt.workflows.splice(indices[i], 1);
-  }
-  gt.updated = new Date().toISOString();
-  writeGlobalTracking(gt);
-  return true;
-}
-
-export function removeGlobalWorkflow(cwd: string, name: string): boolean {
-  const gt = readGlobalTracking();
-  if (!gt) return false;
-
-  const indices = findWorkflowIndicesForProject(gt.workflows, cwd, name);
-  if (indices.length === 0) return false;
-
-  for (let i = indices.length - 1; i >= 0; i--) {
-    gt.workflows.splice(indices[i], 1);
-  }
-  gt.updated = new Date().toISOString();
-  writeGlobalTracking(gt);
-  return true;
 }
 
 // ── Query ────────────────────────────────────────────────────────────
@@ -465,11 +429,8 @@ export function renameWorkflow(
   wf.updated = new Date().toISOString();
   writeTracking(cwd, tracking);
 
-  // 2. Global tracking
-  updateGlobalWorkflowForLocal(cwd, wf, gwf => {
-    gwf.name = finalName;
-    gwf.updated = new Date().toISOString();
-  });
+  // 2. Global index
+  updateGlobalIndexName(oldName, finalName, cwd);
 
   // 3. index.json — use dirHash (NOT name) for filesystem path
   const ds = getDateStamp(new Date(wf.created));

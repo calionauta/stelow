@@ -11,9 +11,8 @@ import {
   getActiveWorkflow, renameWorkflow, toSafeName, reconcileTracking, scanWorkflowDirs,
   archiveWorkflowOnDisk, updateWorkflowIndexJson, resolveProjectDir,
   readInbox, addToInbox, removeFromInbox, clearInbox,
-  findWorkflowIndexByName,
-  findWorkflowIndexForProject, isWorkflowFromProject,
-  updateGlobalWorkflowForLocal, removeGlobalWorkflowForLocal, removeGlobalWorkflow,
+  findWorkflowIndexByName, findWorkflowIndexForProject, isWorkflowFromProject, isSamePath,
+  removeGlobalIndexEntry, addToGlobalIndex,
 } from "./state";
 import { updateFooter, notifyPhase, showOverlay, getUIAdapter } from "./ui";
 import { diagnoseWorkflowProject, formatDoctorReport } from "./doctor";
@@ -86,17 +85,12 @@ function removeWorkflowFromTracking(cwd: string, workflowName: string): void {
   archiveWorkflowOnDisk(cwd, workflowName);
 
   const t = readTracking(cwd);
-  const localWorkflow = t?.workflows.find(w => w.name === workflowName);
   if (t) {
     t.workflows = t.workflows.filter(w => w.name !== workflowName);
     writeTracking(cwd, t);
   }
 
-  if (localWorkflow) {
-    removeGlobalWorkflowForLocal(cwd, localWorkflow);
-  } else {
-    removeGlobalWorkflow(cwd, workflowName);
-  }
+  removeGlobalIndexEntry(cwd, workflowName);
 }
 
 // ── STOP ─────────────────────────────────────────────────────────────
@@ -225,11 +219,6 @@ function cmdPause(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
       writeTracking(wd, t);
     }
   }
-  updateGlobalWorkflowForLocal(wd, wf, w => {
-    w.status = "paused";
-    w.updated = new Date().toISOString();
-  });
-
   // Sync index.json on disk (write-through)
   updateWorkflowIndexJson(wd, wf, {
     workflow_status: "paused",
@@ -287,11 +276,6 @@ function cmdResume(pi: ExtensionAPI, args: string, ctx: CmdCtx) {
     if (idx !== -1) t.workflows[idx].status = "in-progress";
     writeTracking(wd, t);
   }
-  updateGlobalWorkflowForLocal(wd, paused, w => {
-    w.status = "in-progress";
-    w.updated = new Date().toISOString();
-  });
-
   // Sync index.json on disk (write-through)
   updateWorkflowIndexJson(wd, paused, {
     workflow_status: "in-progress",
@@ -310,20 +294,7 @@ function cmdStatus(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
   const wd = resolveProjectDir(ctx.cwd);
   const wf = getActiveWorkflow(wd);
   if (!wf) {
-    const gt = readGlobalTracking();
-    const g = gt?.workflows.find(w =>
-      w.status === "in-progress" && isWorkflowFromProject(w, wd)
-    ) ?? gt?.workflows.find(w => w.status === "in-progress");
-    if (g) {
-      reply(ctx, [
-        `▶️ ${g.name}`,
-        `   ${PHASE_NAMES[g.currentPhase]}`,
-        `   Project: ${g.cwd}`,
-        `   cd ${g.cwd}`
-      ].join("\n"));
-      return;
-    }
-    replyWarn(ctx, "No active Workflow.\n\n/pw-start\n/pw-start @brief.md\n/pw-start \"desc\"");
+    replyWarn(ctx, "No active Workflow.\n\n/pw-start /pw-start @brief.md /pw-start \"desc\"");
     return;
   }
 
@@ -525,11 +496,6 @@ function cmdSetPhase(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
       writeTracking(wd, t);
     }
   }
-  updateGlobalWorkflowForLocal(wd, wf, w => {
-    w.currentPhase = phase;
-    w.updated = new Date().toISOString();
-  });
-
   // Sync index.json on disk (write-through)
   updateWorkflowIndexJson(wd, wf, {
     current_phase: PHASE_NAMES[phase].toLowerCase(),
@@ -589,11 +555,6 @@ function cmdNext(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
       writeTracking(wd, t);
     }
   }
-  updateGlobalWorkflowForLocal(wd, wf, w => {
-    w.currentPhase = next;
-    w.updated = new Date().toISOString();
-  });
-
   // Sync index.json on disk (write-through — third state source)
   updateWorkflowIndexJson(wd, wf, {
     current_phase: PHASE_NAMES[next].toLowerCase(),
@@ -627,11 +588,6 @@ function cmdComplete(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
       writeTracking(wd, t);
     }
   }
-  updateGlobalWorkflowForLocal(wd, wf, w => {
-    w.status = "completed";
-    w.updated = new Date().toISOString();
-  });
-
   // Sync index.json on disk
   updateWorkflowIndexJson(wd, wf, {
     workflow_status: "completed",
@@ -657,8 +613,8 @@ function cmdGoto(_pi: ExtensionAPI, args: string, _ctx: CmdCtx) {
   const wf = name
     ? (gt.workflows.find(w => w.name === name && isWorkflowFromProject(w, wd))
         ?? gt.workflows.find(w => w.name === name))
-    : (gt.workflows.find(w => w.status === "in-progress" && isWorkflowFromProject(w, wd))
-        ?? gt.workflows.find(w => w.status === "in-progress"));
+    : (gt.workflows.find(w => isWorkflowFromProject(w, wd))
+        ?? gt.workflows[0]);
 
   if (!wf) {
     replyWarn(_ctx, `'${name || "active"}' not found. /pw-ls`);
@@ -806,13 +762,9 @@ function cmdArchive(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
     }
 
     if (localWorkflow) {
-      updateGlobalWorkflowForLocal(wd, localWorkflow, w => {
-        w.status = "archived";
-        w.updated = new Date().toISOString();
-      });
+      removeGlobalIndexEntry(wd, localWorkflow.name);
     } else if (gt && globalIdx !== -1) {
-      gt.workflows[globalIdx].status = "archived";
-      writeGlobalTracking(gt);
+      removeGlobalIndexEntry(wd, name);
     }
 
     reply(ctx, `📦 Workflow '${name}' archived.`);
@@ -835,10 +787,7 @@ function cmdArchive(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
       writeTracking(wd, t);
     }
   }
-  updateGlobalWorkflowForLocal(wd, wf, w => {
-    w.status = "archived";
-    w.updated = new Date().toISOString();
-  });
+  removeGlobalIndexEntry(wd, wf.name);
   archiveWorkflowOnDisk(wd, wf.name);
 
   ctx.ui?.setStatus("workflow", undefined);
@@ -920,10 +869,7 @@ function cmdUnarchive(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
     } satisfies StageState,
     cwd: wd,
   };
-  updateGlobalWorkflowForLocal(wd, archivedWorkflow, w => {
-    w.status = "paused";
-    w.updated = new Date().toISOString();
-  });
+  addToGlobalIndex(archivedWorkflow);
 
   reply(ctx, `📦 Workflow '${name}' unarchived. Use /pw-resume name=${name} to continue.`);
 }

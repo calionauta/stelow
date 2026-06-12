@@ -238,6 +238,20 @@ export interface StageState {
   supervisor_active: boolean;
 }
 
+/**
+ * Global index entry — catalog only, no mutable state.
+ * The canonical workflow state is always read from the project's
+ * own cali-product-workflow.json (or index files in
+ * .cali-product-workflow directories).
+ */
+export interface GlobalIndexEntry {
+  name: string;
+  cwd?: string;
+  dirHash?: string;
+  created: string;
+  updated: string;
+}
+
 export interface Phase {
   id: string;
   name: string;
