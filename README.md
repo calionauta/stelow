@@ -363,6 +363,7 @@ This installs all 25 skills to `~/.agents/skills/` — works on any CLI.
 | `/pw-continue` | Continue to next phase |
 | `/pw-help` | Show available commands |
 | `/pw-status` | Display current phase and progress |
+| `/pw-next` | Advance to next phase. Auto-completes the workflow on the last phase (no manual `/pw-complete` needed). |
 | `/pw-reset` | Reset workflow state |
 
 ### Phase Commands
@@ -385,6 +386,7 @@ This installs all 25 skills to `~/.agents/skills/` — works on any CLI.
 | `/pw-review` | Open Plannotator for review |
 | `/pw-scope <name>` | Create typed scope |
 | `/pw-goals` | Manage execution goals |
+| `/pw-doctor` | Diagnose workflow project health. Detects zombie workflows (stuck `in-progress` >24h), index mismatches, and orphaned entries. |
 
 ---
 

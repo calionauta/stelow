@@ -80,9 +80,15 @@ function noActive(ctx: CmdCtx): void {
 }
 
 // ── Helper: remove workflow from both local and global tracking ─────
-function removeWorkflowFromTracking(cwd: string, workflowName: string): void {
+function removeWorkflowFromTracking(cwd: string, workflowName: string, wf?: Pick<Workflow, "name" | "dirHash">): void {
   // Mark archived on disk so reconcileTracking doesn't re-import it
   archiveWorkflowOnDisk(cwd, workflowName);
+  // Fallback direto via dirHash (mais robusto que busca por nome)
+  if (wf?.dirHash) {
+    updateWorkflowIndexJson(cwd, wf as Workflow, {
+      workflow_status: "archived",
+    });
+  }
 
   const t = readTracking(cwd);
   if (t) {
@@ -116,7 +122,7 @@ function cmdAbort(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
   // ── /pw-abort all ───────────────────────────────────────────────
   if (parsed._.includes("all") || parsed.all !== undefined) {
     for (const w of stoppable) {
-      removeWorkflowFromTracking(wd, w.name);
+      removeWorkflowFromTracking(wd, w.name, w);
     }
     ctx.ui?.notify(`❌ Stopped ${stoppable.length} workflow(s).`, "info");
     ctx.ui?.setStatus("workflow", undefined);
@@ -129,7 +135,7 @@ function cmdAbort(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
     for (const wfName of parsed._) {
       const found = stoppable.find(w => w.name === wfName);
       if (found) {
-        removeWorkflowFromTracking(wd, wfName);
+        removeWorkflowFromTracking(wd, wfName, found);
         count++;
       }
     }
@@ -147,7 +153,7 @@ function cmdAbort(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
   // ── /pw-abort (no args) — picker se >1, direto se for 1 ──────
   if (stoppable.length === 1) {
     const wfName = stoppable[0].name;
-    removeWorkflowFromTracking(wd, wfName);
+    removeWorkflowFromTracking(wd, wfName, stoppable[0]);
     ctx.ui?.notify(`❌ Workflow '${wfName}' stopped.`, "info");
     ctx.ui?.setStatus("workflow", undefined);
     return;
@@ -190,12 +196,15 @@ async function showStopPicker(
       w.status === "in-progress" || w.status === "paused"
     );
     for (const w of allWfs) {
-      removeWorkflowFromTracking(cwd, w.name);
+      removeWorkflowFromTracking(cwd, w.name, w);
     }
     adapter.notify(`❌ Stopped ${allWfs.length} workflow(s).`, "info");
     adapter.clearStatus();
   } else if (selection && selection !== "__cancel__") {
-    removeWorkflowFromTracking(cwd, selection);
+    // Find workflow in context for dirHash fallback
+    const selWf = reconcileTracking(cwd).find(w => w.name === selection)
+      ?? getActiveWorkflow(cwd);
+    removeWorkflowFromTracking(cwd, selection, selWf ?? undefined);
     adapter.notify(`❌ Workflow '${selection}' stopped.`, "info");
     if (!getActiveWorkflow(cwd)) {
       adapter.clearStatus();
@@ -754,7 +763,7 @@ function cmdArchive(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
         rmSync(dirPath, { recursive: true, force: true });
         deleted++;
       } catch { /* skip if can't delete */ }
-      removeWorkflowFromTracking(wd, dw.name);
+      removeWorkflowFromTracking(wd, dw.name, dw);
     }
     reply(ctx, `🗑️ Purged ${deleted} archived workflow(s) from disk.`);
     return;

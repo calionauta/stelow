@@ -100,6 +100,9 @@ export function normalizeTrackingDataForProject(tracking, projectPath) {
     workflows: (tracking.workflows || []).map(wf => ({
       ...wf,
       staleCwd: Boolean(wf.cwd && !isWorkflowCwdCompatible(wf.cwd, projectPath)),
+      staleAt: wf.status === 'in-progress' && wf.updated
+        ? (Date.now() - new Date(wf.updated).getTime() > 24 * 60 * 60 * 1000)
+        : false,
     })),
   };
 }

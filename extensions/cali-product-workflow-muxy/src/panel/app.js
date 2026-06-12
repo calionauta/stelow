@@ -284,6 +284,9 @@ export class PipelinePanel {
         this.renderArtifactBadge(wf.name),
       ),
       staleNote,
+      wf.staleAt && !wf.staleCwd
+        ? h('div', { style: 'color:var(--muxy-diff-hunk,#b8860b);font-size:10px;margin-top:2px;' }, '⚠ Stale (>24h without update)')
+        : null,
     );
   }
 
@@ -339,6 +342,10 @@ export class PipelinePanel {
           wf.staleCwd ? h('div', { class: 'detail-row', style: 'color:var(--muxy-diff-hunk,#b8860b)' },
             h('span', { class: 'detail-label' }, 'Cwd'),
             h('span', { class: 'detail-value' }, `${wf.cwd} (outside project)`),
+          ) : null,
+          wf.staleAt ? h('div', { class: 'detail-row', style: 'color:var(--muxy-diff-hunk,#b8860b)' },
+            h('span', { class: 'detail-label' }, 'Stale'),
+            h('span', { class: 'detail-value' }, '>24h without update'),
           ) : null,
           h('div', { class: 'detail-row' },
             h('span', { class: 'detail-label' }, 'Created'),
