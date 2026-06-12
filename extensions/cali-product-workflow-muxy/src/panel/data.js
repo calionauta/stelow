@@ -652,6 +652,42 @@ function paneToItem(pane) {
 }
 
 /**
+ * Load workflows from global tracking that belong to other worktrees.
+ * This gives a multi-worktree view of all workflows in the project.
+ * Muxy may not support absolute paths; if it fails, returns empty.
+ */
+export async function loadExtraWorkflows() {
+  try {
+    const home = typeof process !== 'undefined' && process.env?.HOME ? process.env.HOME : '';
+    if (!home) return [];
+    const globalPath = `${home}/.cali-pw-global.json`;
+    const res = await muxy.files.read(globalPath);
+    if (!res || !res.content) return [];
+    const global = JSON.parse(res.content);
+    const projectPath = await getActiveWorkspacePath().catch(() => null);
+    if (!projectPath) return [];
+    return global.workflows
+      .filter(w => !isHiddenWorkflowStatus(w.status) && w.cwd && !isWorkflowCwdCompatible(w.cwd, projectPath))
+      .map(w => ({
+        ...w,
+        staleCwd: false,
+        worktreeName: guessWorktreeName(w.cwd, projectPath),
+        fromGlobal: true,
+      }));
+  } catch {
+    return [];
+  }
+}
+
+function guessWorktreeName(workflowCwd, projectPath) {
+  const normalized = normalizePath(workflowCwd);
+  const parts = normalized.split('/');
+  const wtIdx = parts.findIndex(p => p === 'worktree-checkouts');
+  if (wtIdx !== -1 && wtIdx + 2 < parts.length) return parts[wtIdx + 2];
+  return parts[parts.length - 1] || pathBasename(workflowCwd);
+}
+
+/**
  * Copy text to clipboard using muxy.exec + pbcopy.
  * Uses base64 to avoid shell quoting issues with special chars.
  */

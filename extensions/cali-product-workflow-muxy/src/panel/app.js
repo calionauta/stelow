@@ -24,6 +24,7 @@ import {
   getNextPhaseInfo,
   runWorkflowCommand,
   readArtifactFile,
+  loadExtraWorkflows,
   PHASE_TO_ARTIFACT_DIR,
   ARTIFACT_DIR_ICONS,
   ARTIFACT_DIR_LABELS,
@@ -80,13 +81,14 @@ export class PipelinePanel {
     this.refreshing = true;
     if (clearCache) this.artifactMap = new Map();
     try {
-      const [tracking, inbox, projectName] = await Promise.all([
+      const [tracking, inbox, projectName, extra] = await Promise.all([
         loadTrackingData(),
         loadInbox(),
         loadProjectName(),
+        loadExtraWorkflows(),
       ]);
       this.projectName = projectName;
-      this.workflows = tracking?.workflows ?? [];
+      this.workflows = [...(tracking?.workflows ?? []), ...extra];
       this.inboxItems = inbox ?? [];
       this.updateTopbar();
       // Scan artifacts only when cache cleared (workspace switch, manual refresh)
@@ -244,9 +246,11 @@ export class PipelinePanel {
     const badge = getStatusBadge(wf);
     const progress = getWorkflowProgress(wf);
     const pct = Math.round(progress * 100);
-    const staleNote = wf.staleCwd
+      const staleNote = wf.staleCwd
       ? h('div', { class: 'card-stale-note', style: 'color:var(--muxy-diff-hunk,#b8860b);font-size:10px;margin-top:6px;' }, `cwd outside project: ${wf.cwd}`)
-      : null;
+      : wf.worktreeName
+        ? h('div', { class: 'card-worktree', style: 'color:var(--muxy-foreground-muted);font-size:9px;margin-top:2px;' }, `🌿 ${wf.worktreeName}`)
+        : null;
 
     let dotColor;
     if (wf.status === 'paused') dotColor = 'var(--muxy-diff-hunk, #b8860b)';

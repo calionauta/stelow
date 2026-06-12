@@ -7,11 +7,11 @@ import type { Workflow } from "./types";
 import {
   parsedInputStore, readTracking, writeTracking,
   readGlobalTracking, writeGlobalTracking,
-  getAllActiveWorkflows, resolveProjectDir,
+  getActiveWorkflow, resolveProjectDir,
   toSafeName, generateDirHash, hashToWorkflowId, getDateStamp,
   readSourceFile, truncateText, detectCLI
 } from "./state";
-import { updateFooter, showOrphanOverlay } from "./ui";
+import { updateFooter } from "./ui";
 import { buildSkillActivationMessage } from "./start-message";
 
 // Quick key=value parser for the args string
@@ -64,14 +64,17 @@ export default async function cmdStart(
   const sources = parsed.source ? [parsed.source] : storeParsed.sources;
   const userGivenName = parsed.name || null;
 
-  // 1. Check for orphans
-  const active = getAllActiveWorkflows(wd);
-  if (active.length > 0) {
-    const decision = await showOrphanOverlay(ctx, wd, active);
-    if (decision === "cancelled") {
-      ctx.ui?.notify("Start cancelled", "info");
-      return;
-    }
+  // 1. Block if an active workflow already exists in this project.
+  //    Multiple in-progress in the same worktree causes ambiguous state
+  //    and potential file conflicts between workflows.
+  const active = getActiveWorkflow(wd);
+  if (active) {
+    ctx.ui?.notify(
+      `⚠️ There is already an active workflow in this project: "${active.name}". ` +
+      `Pause, archive, complete or abort it before starting another.`,
+      "warning"
+    );
+    return;
   }
 
   // 2. Generate dirHash FIRST (used for untitled ID and directory)

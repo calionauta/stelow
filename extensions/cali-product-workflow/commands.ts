@@ -275,6 +275,13 @@ function cmdResume(pi: ExtensionAPI, args: string, ctx: CmdCtx) {
     return;
   }
 
+  // Block if resuming a different workflow while another is already active
+  const active = getActiveWorkflow(wd);
+  if (active && active.name !== paused.name) {
+    replyWarn(ctx, `Cannot resume "${paused.name}" — workflow "${active.name}" is already active. Pause, archive, complete or abort it first.`);
+    return;
+  }
+
   if (t) {
     const idx = t.workflows.findIndex(w => w.name === paused.name);
     if (idx !== -1) t.workflows[idx].status = "in-progress";
