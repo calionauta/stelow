@@ -776,8 +776,14 @@ function cmdArchive(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
       return;
     }
 
-    // Mark archived on disk when the workflow exists in this project.
+    // Mark archived: nome-based search + fallback direto via dirHash
     archiveWorkflowOnDisk(wd, name);
+    if (wf.dirHash) {
+      // Sync via dirHash (mais robusto que busca por nome)
+      updateWorkflowIndexJson(wd, wf, {
+        workflow_status: "archived",
+      });
+    }
 
     if (t && localIdx !== -1) {
       t.workflows[localIdx].status = "archived";
@@ -812,6 +818,12 @@ function cmdArchive(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
   }
   removeGlobalIndexEntry(wd, wf.name);
   archiveWorkflowOnDisk(wd, wf.name);
+  if (wf.dirHash) {
+    // Sync via dirHash (mais robusto — cobertura extra)
+    updateWorkflowIndexJson(wd, wf, {
+      workflow_status: "archived",
+    });
+  }
 
   ctx.ui?.setStatus("workflow", undefined);
   reply(ctx, `📦 Workflow '${wf.name}' archived.`);
