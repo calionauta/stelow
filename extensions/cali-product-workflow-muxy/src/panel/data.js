@@ -666,8 +666,18 @@ export async function loadExtraWorkflows() {
     const global = JSON.parse(res.content);
     const projectPath = await getActiveWorkspacePath().catch(() => null);
     if (!projectPath) return [];
+
+    // Scope to same git repository (not same project directory).
+    // This avoids showing unrelated workflows from other repos
+    // while still showing worktrees and sibling branches.
+    const repoRoot = await getGitRoot(projectPath).catch(() => null);
+    if (!repoRoot) return [];
+
     return global.workflows
-      .filter(w => !isHiddenWorkflowStatus(w.status) && w.cwd && !isWorkflowCwdCompatible(w.cwd, projectPath))
+      .filter(w => !isHiddenWorkflowStatus(w.status) && w.cwd
+        && normalizePath(w.cwd).startsWith(`${normalizePath(repoRoot)}/`)
+        && !isWorkflowCwdCompatible(w.cwd, projectPath)
+      )
       .map(w => ({
         ...w,
         staleCwd: false,
@@ -685,6 +695,27 @@ function guessWorktreeName(workflowCwd, projectPath) {
   const wtIdx = parts.findIndex(p => p === 'worktree-checkouts');
   if (wtIdx !== -1 && wtIdx + 2 < parts.length) return parts[wtIdx + 2];
   return parts[parts.length - 1] || pathBasename(workflowCwd);
+}
+
+/**
+ * Find the git repository root for a given directory.
+ * Walks up until it finds .git or HEAD marker.
+ * Returns null if not determined.
+ */
+async function getGitRoot(startDir) {
+  let dir = normalizePath(startDir);
+  while (dir) {
+    try {
+      const entries = await muxy.files.list(dir);
+      if (entries.some(e => e === '.git' || e === 'HEAD')) return dir;
+    } catch {
+      // Permission denied or not a directory
+    }
+    const parent = dir.split('/').slice(0, -1).join('/');
+    if (!parent || parent === dir) break;
+    dir = parent;
+  }
+  return null;
 }
 
 /**
