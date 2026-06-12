@@ -673,17 +673,32 @@ export async function loadExtraWorkflows() {
     const repoRoot = await getGitRoot(projectPath).catch(() => null);
     if (!repoRoot) return [];
 
-    return global.workflows
-      .filter(w => !isHiddenWorkflowStatus(w.status) && w.cwd
+    return (await Promise.all(global.workflows
+      .filter(w => w.cwd
         && normalizePath(w.cwd).startsWith(`${normalizePath(repoRoot)}/`)
         && !isWorkflowCwdCompatible(w.cwd, projectPath)
       )
-      .map(w => ({
-        ...w,
-        staleCwd: false,
-        worktreeName: guessWorktreeName(w.cwd, projectPath),
-        fromGlobal: true,
-      }));
+      .map(async w => {
+        // Fetch real status from the project's local tracking file
+        try {
+          const localPath = `${normalizePath(w.cwd)}/cali-product-workflow.json`;
+          const localRes = await muxy.files.read(localPath);
+          if (!localRes || !localRes.content) return null;
+          const local = JSON.parse(localRes.content);
+          const live = local.workflows?.find(lw => lw.name === w.name);
+          if (!live || isHiddenWorkflowStatus(live.status)) return null;
+          return {
+            ...live,
+            cwd: w.cwd,
+            dirHash: w.dirHash,
+            staleCwd: false,
+            worktreeName: guessWorktreeName(w.cwd, projectPath),
+            fromGlobal: true,
+          };
+        } catch {
+          return null;
+        }
+      }))).filter(Boolean);
   } catch {
     return [];
   }
