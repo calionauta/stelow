@@ -1,7 +1,7 @@
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { GLOBAL_TRACKING_FILE, TRACKING_FILE, WORKFLOW_DIR, type Workflow } from "./types";
+import { GLOBAL_TRACKING_FILE, TRACKING_FILE, WORKFLOW_DIR, PHASE_NAMES, type Workflow } from "./types";
 import {
   getActiveWorkflow,
   isSamePath,
@@ -278,6 +278,99 @@ function readWorkflowIndexSnapshot(projectDir: string, wf: Workflow): WorkflowIn
   } catch {
     return { path: indexPath };
   }
+}
+
+// ── Repair ───────────────────────────────────────────────────────
+
+const FIXABLE_CODES = new Set(["zombie-workflow", "index-status-mismatch", "index-phase-mismatch"]);
+
+/**
+ * Return true if a doctor issue can be auto-fixed.
+ */
+export function isFixable(issue: DoctorIssue): boolean {
+  return FIXABLE_CODES.has(issue.code);
+}
+
+/**
+ * Count how many issues in a report are fixable.
+ */
+export function countFixable(report: DoctorReport): number {
+  return report.issues.filter(isFixable).length;
+}
+
+/**
+ * Apply auto-fixes for all fixable issues in the report.
+ * Returns a summary string of what was fixed.
+ *
+ * Fixes applied:
+ * - zombie-workflow: set workflow_status="archived" in index.json
+ * - index-status-mismatch: sync index.json workflow_status to local tracking
+ * - index-phase-mismatch: sync index.json current_phase_index to local tracking
+ */
+export function repairWorkflowProject(cwd: string, report: DoctorReport): string[] {
+  const fixes: string[] = [];
+  const projectDir = report.projectDir;
+
+  for (const issue of report.issues) {
+    if (!isFixable(issue)) continue;
+
+    if (issue.code === "zombie-workflow") {
+      // Extract path from detail: "last updated=... | path=.cali-product-workflow/<date>/<hash>/index.json"
+      const pathMatch = issue.detail?.match(/path=(\.cali-product-workflow\/[^\s]+)/);
+      if (!pathMatch) continue;
+      const indexPath = join(projectDir, pathMatch[1]);
+      try {
+        const raw = JSON.parse(readFileSync(indexPath, "utf8"));
+        raw.workflow_status = "archived";
+        raw.updated_at = new Date().toISOString();
+        writeFileSync(indexPath, JSON.stringify(raw, null, 2));
+        fixes.push(`Archived zombie: ${issue.message}`);
+      } catch { /* skip if can't read */ }
+    }
+  }
+
+  // For index-status-mismatch and index-phase-mismatch, read local tracking
+  // and sync each workflow's index.json to match.
+  const tracking = readTracking(projectDir);
+  if (tracking?.workflows) {
+    for (const wf of tracking.workflows) {
+      if (!wf.dirHash || !wf.created) continue;
+      const date = wf.created.slice(0, 10);
+      const indexPath = join(projectDir, WORKFLOW_DIR, date, wf.dirHash, "index.json");
+      if (!existsSync(indexPath)) continue;
+
+      let changed = false;
+      try {
+        const raw = JSON.parse(readFileSync(indexPath, "utf8"));
+
+        // index-status-mismatch: sync index.json to local tracking status
+        if (raw.workflow_status !== wf.status) {
+          const oldStatus = raw.workflow_status;
+          raw.workflow_status = wf.status;
+          changed = true;
+          fixes.push(`Synced status for "${wf.name}": ${oldStatus} → ${wf.status}`);
+        }
+
+        // index-phase-mismatch: sync index.json to local tracking phase
+        if ((raw.current_phase_index ?? 0) !== wf.currentPhase) {
+          const oldPhase = raw.current_phase_index ?? 0;
+          raw.current_phase_index = wf.currentPhase;
+          raw.current_phase = wf.phases?.[wf.currentPhase]?.name?.toLowerCase()
+            ?? PHASE_NAMES[wf.currentPhase]?.toLowerCase()
+            ?? "setup";
+          changed = true;
+          fixes.push(`Synced phase for "${wf.name}": ${oldPhase} → ${wf.currentPhase}`);
+        }
+
+        if (changed) {
+          raw.updated_at = new Date().toISOString();
+          writeFileSync(indexPath, JSON.stringify(raw, null, 2));
+        }
+      } catch { /* skip corrupt */ }
+    }
+  }
+
+  return fixes;
 }
 
 // ── Zombie Detection ────────────────────────────────────────────

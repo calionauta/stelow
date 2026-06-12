@@ -4,6 +4,26 @@ All notable changes to `@renatocaliari/cali-product-workflow` will be documented
 
 ## [Unreleased]
 
+## [0.23.2-alpha] - 2026-06-12
+
+### Added
+- **`/pw-doctor --fix`**: auto-corrige zombie workflows, index-status-mismatch,
+  e index-phase-mismatch. Suporta flag `--fix` (silencioso) e prompt interativo
+  via TUI select quando issues corrigíveis são detectadas.
+- **Muxy stale indicator**: kanban cards mostram aviso "⚠ Stale (>24h without
+  update)" para workflows travados em `in-progress`.
+
+### Fixed
+- **`cmdArchive`/`cmdAbort`/`cmdArchive purge`**: agora sincronizam index.json
+  via `updateWorkflowIndexJson` direto por `dirHash`, além da busca por nome
+  em `archiveWorkflowOnDisk`. Garante que index.json nunca fique inconsistente.
+- **`removeWorkflowFromTracking`**: aceita parâmetro `wf` opcional com `dirHash`
+  para fallback direto. Todos os 6 call sites atualizados.
+
+### Documentation
+- **README**: `/pw-next` documentado com auto-complete; `/pw-doctor` documentado
+  com detecção de zumbis.
+
 ## [0.23.1-alpha] - 2026-06-12
 
 ### Fixed

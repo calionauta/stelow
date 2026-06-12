@@ -15,7 +15,7 @@ import {
   removeGlobalIndexEntry, addToGlobalIndex,
 } from "./state";
 import { updateFooter, notifyPhase, showOverlay, getUIAdapter } from "./ui";
-import { diagnoseWorkflowProject, formatDoctorReport } from "./doctor";
+import { diagnoseWorkflowProject, formatDoctorReport, repairWorkflowProject, countFixable } from "./doctor";
 import cmdStart from "./start";
 
 // ── Stages Guard (pure file-state management) ────────────────────────
@@ -693,9 +693,49 @@ function cmdMenu(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
 
 // ── DOCTOR ───────────────────────────────────────────────────────────
 
-function cmdDoctor(_pi: ExtensionAPI, _args: string, ctx: CmdCtx): void {
-  const report = diagnoseWorkflowProject(ctx.cwd);
-  reply(ctx, formatDoctorReport(report));
+async function cmdDoctor(_pi: ExtensionAPI, _args: string, ctx: CmdCtx): Promise<void> {
+  const wd = resolveProjectDir(ctx.cwd);
+  const report = diagnoseWorkflowProject(wd);
+  const fixable = countFixable(report);
+  const output = formatDoctorReport(report);
+  const parsed = parseArgs(_args);
+
+  // ── /pw-doctor --fix: auto-apply without asking ──────────────
+  if (parsed.fix !== undefined || parsed._.includes("fix")) {
+    if (fixable === 0) {
+      reply(ctx, output + "\n\nNo fixable issues found. Nothing to fix.");
+      return;
+    }
+    const fixes = repairWorkflowProject(wd, report);
+    // Re-run diagnostics after fixes
+    const updated = diagnoseWorkflowProject(wd);
+    reply(ctx, formatDoctorReport(updated)
+      + `\n\n✅ Applied ${fixes.length} auto-fix(es):\n`
+      + fixes.map(f => `  • ${f}`).join("\n")
+    );
+    return;
+  }
+
+  reply(ctx, output);
+
+  // ── Interactive: if fixable issues exist, offer to fix ───────
+  if (fixable > 0) {
+    const adapter = getUIAdapter();
+    const choice = await adapter.select([
+      { value: "fix", label: `✅ Fix ${fixable} issue(s)` },
+      { value: "skip", label: "Skip" },
+    ], `🩺 ${fixable} fixable issue(s) detected. Apply auto-fixes?`);
+
+    if (choice === "fix") {
+      const fixes = repairWorkflowProject(wd, report);
+      const updated = diagnoseWorkflowProject(wd);
+      ctx.ui?.notify(`✅ Applied ${fixes.length} auto-fix(es)`, "success");
+      reply(ctx, formatDoctorReport(updated)
+        + `\n\n✅ Applied ${fixes.length} auto-fix(es):\n`
+        + fixes.map(f => `  • ${f}`).join("\n")
+      );
+    }
+  }
 }
 
 // ── INBOX ─────────────────────────────────────────────────────────────
