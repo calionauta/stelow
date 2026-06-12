@@ -4,6 +4,21 @@ All notable changes to `@renatocaliari/cali-product-workflow` will be documented
 
 ## [Unreleased]
 
+## [0.23.1-alpha] - 2026-06-12
+
+### Fixed
+- **Auto-complete workflow on last `/pw-next`**: `cmdNext` agora finaliza o workflow
+  automaticamente quando `next >= PHASE_NAMES.length`, sem depender de `/pw-complete`
+  manual. Marca todas as fases como "completed", sincroniza index.json e stages guard,
+  e limpa o status da UI.
+- **`turn_end` sync detecta workflow completo**: não hardcoda mais
+  `workflow_status: "in-progress"` no index.json. Se todas as fases estão concluídas,
+  escreve `"completed"`. Inclui guard defensivo `Array.isArray(phases)`.
+- **Zombie workflow detection**: `diagnoseZombieIndexes()` varre todos os
+  `.cali-product-workflow/<date>/<hash>/index.json` e flagra workflows com
+  `workflow_status: "in-progress"` que não foram atualizados em >24h e não
+  correspondem a nenhum workflow ativo local. Reportado via `/pw-doctor`.
+
 ## [0.23.0-alpha] - 2026-06-11
 
 ### Changed

@@ -538,7 +538,30 @@ function cmdNext(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
   }
 
   if (next >= PHASE_NAMES.length) {
-    reply(ctx, "All phases complete. /pw-complete");
+    // Auto-complete — não depende de comando manual /pw-complete
+    ctx.ui?.setStatus("workflow", undefined);
+    const tComplete = readTracking(wd);
+    if (tComplete) {
+      const idxComplete = tComplete.workflows.findIndex(w => w.name === wf.name);
+      if (idxComplete !== -1) {
+        tComplete.workflows[idxComplete].status = "completed";
+        tComplete.workflows[idxComplete].phases.forEach(p => { p.status = "completed"; });
+        tComplete.workflows[idxComplete].updated = new Date().toISOString();
+        writeTracking(wd, tComplete);
+      }
+    }
+    // Sync wf in-memory state
+    wf.phases.forEach(p => { p.status = "completed"; });
+    wf.status = "completed";
+    updateWorkflowIndexJson(wd, wf, {
+      workflow_status: "completed",
+      current_phase_index: PHASE_NAMES.length - 1,
+      current_phase: PHASE_NAMES[PHASE_NAMES.length - 1].toLowerCase(),
+    });
+    syncStagesGuardState(wd, PHASE_NAMES.length - 1);
+    updateFooter(ctx, wd);
+    ctx.ui?.notify(`🎉 ${wf.name} completed!`, "info");
+    reply(ctx, "✅ Workflow completo!");
     return;
   }
 

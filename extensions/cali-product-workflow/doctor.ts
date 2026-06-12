@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { GLOBAL_TRACKING_FILE, TRACKING_FILE, WORKFLOW_DIR, type Workflow } from "./types";
@@ -106,6 +106,7 @@ export function diagnoseWorkflowProject(cwd: string): DoctorReport {
 
   diagnoseLocalWorkflows(projectDir, localWorkflows, globalWorkflows, issues);
   diagnoseGlobalWorkflows(projectDir, localWorkflows, globalWorkflows, issues);
+  diagnoseZombieIndexes(projectDir, localWorkflows, issues);
 
   return {
     projectDir,
@@ -276,6 +277,75 @@ function readWorkflowIndexSnapshot(projectDir: string, wf: Workflow): WorkflowIn
     };
   } catch {
     return { path: indexPath };
+  }
+}
+
+// ── Zombie Detection ────────────────────────────────────────────
+
+const ZOMBIE_STALE_MS = 24 * 60 * 60 * 1000; // 24h sem update = zumbi
+
+/**
+ * Scan all index.json files under .cali-product-workflow/<date>/<hash>/
+ * and flag workflows with workflow_status "in-progress" that haven't been
+ * updated in >24h. These are workflows that were never finalized (e.g.
+ * the session timed out before /pw-complete was typed).
+ *
+ * Skips index entries that match an active local workflow (those are
+ * legitimately in-progress).
+ */
+function diagnoseZombieIndexes(
+  projectDir: string,
+  localWorkflows: Workflow[],
+  issues: DoctorIssue[]
+): void {
+  const workflowDir = join(projectDir, WORKFLOW_DIR);
+  if (!existsSync(workflowDir)) return;
+
+  const now = Date.now();
+
+  // Build set of active local dirHashes (legitimately in-progress)
+  const activeLocalHashes = new Set<string>();
+  for (const wf of localWorkflows) {
+    if (wf.dirHash && wf.status === "in-progress") {
+      activeLocalHashes.add(wf.dirHash);
+    }
+  }
+
+  try {
+    const dates = readdirSync(workflowDir);
+    for (const date of dates) {
+      const dateDir = join(workflowDir, date);
+      if (!statSync(dateDir).isDirectory()) continue;
+
+      const hashes = readdirSync(dateDir);
+      for (const hash of hashes) {
+        const idxPath = join(dateDir, hash, "index.json");
+        if (!existsSync(idxPath)) continue;
+
+        // Skip if this hash belongs to a currently active workflow
+        if (activeLocalHashes.has(hash)) continue;
+
+        try {
+          const idx = JSON.parse(readFileSync(idxPath, "utf8"));
+          if (idx.workflow_status === "in-progress") {
+            const updated = new Date(idx.updated_at || idx.created_at).getTime();
+            if (isNaN(updated) || now - updated > ZOMBIE_STALE_MS) {
+              issues.push({
+                severity: "error",
+                code: "zombie-workflow",
+                message: `Stale workflow stuck as "in-progress": ${idx.name || hash}`,
+                detail: `last updated=${idx.updated_at || "unknown"} | path=.cali-product-workflow/${date}/${hash}/index.json` +
+                  `\n  Fix: edit index.json and set workflow_status to "completed" or "archived"`,
+              });
+            }
+          }
+        } catch {
+          // Corrupt index.json, skip silently
+        }
+      }
+    }
+  } catch {
+    // Directory unreadable, skip
   }
 }
 

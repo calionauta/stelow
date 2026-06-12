@@ -357,7 +357,10 @@ export default function (pi: ExtensionAPI) {
         updateWorkflowIndexJson(wd, syncWf, {
           current_phase: PHASE_NAMES[syncWf.currentPhase]?.toLowerCase() || "setup",
           current_phase_index: syncWf.currentPhase,
-          workflow_status: "in-progress",
+          workflow_status: syncWf.currentPhase >= (PHASE_NAMES.length - 1)
+            && Array.isArray(syncWf.phases)
+            && syncWf.phases.every(p => p.status === "completed")
+            ? "completed" : "in-progress",
         });
         _lastSyncedPhase.set(syncId, syncWf.currentPhase);
       }
