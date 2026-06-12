@@ -64,7 +64,7 @@ For **Datastar, HTMX, or Alpine.js frontend**: behavior lives in the HTML that u
 - Zero custom JavaScript: use native attributes (`data-*`, `@get`, `@post`, `data-on`, `data-bind`, `data-signal`)
 - Inline JS only when framework doesn't offer native behavior
 - Frontend is a dumb reactive terminal — minimum possible logic on the client
-- For Datastar depth (backend source of truth, SSE-First, HATEOAS), see `cali-coding-go-stack`
+- Datastar depth: backend source of truth, SSE-First, HATEOAS
 
 ### 7. Separation of Concerns (SoC)
 For **backend** (Go handlers, services, repos) and **non-Datastar frameworks** (React, Vue, Svelte).
