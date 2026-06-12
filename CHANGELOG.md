@@ -4,23 +4,35 @@ All notable changes to `@renatocaliari/cali-product-workflow` will be documented
 
 ## [Unreleased]
 
+## [0.23.0-alpha] - 2026-06-11
+
+### Changed
+- **Global ~/.cali-pw-global.json é índice read-only**: não armazena mais `status`,
+  `currentPhase`, `phases`, `stage`. Estado real sempre lido do arquivo local.
+  Removeu 337 linhas de código de sincronização.
+- **Comandos não escrevem mais estado no global**: pause, resume, setphase, next,
+  complete só alteram tracking local.
+- **Multiple active workflows bloqueado**: `/pw-start` recusa se já existe in-progress;
+  `/pw-resume` recusa se outro workflow já está ativo.
+- **Muxy Done column**: board agora tem coluna `Done` para workflows completed;
+  removed from Verify/Shape.
+- **Muxy multi-worktree**: board opcionalmente mostra workflows de outros worktrees
+  do mesmo repositório, com card identificando o worktree de origem.
+
 ### Added
-- **`/pw-doctor`** diagnoses local/global/index workflow tracking health, stale `cwd`,
-  duplicate global entries, and status/phase mismatches.
+- **`/pw-doctor`** command: diagnóstico de tracking health, stale cwd, duplicates,
+  index mismatches, global/missing/local.
+- **Muxy extra workflows**: carrega do global tracking + busca estado real local
+  para exibir multi-worktree.
+- **Helpers de catálogo**: `addToGlobalIndex`, `removeGlobalIndexEntry`,
+  `updateGlobalIndexName`.
 
 ### Fixed
-- **Global tracking scope**: workflow commands now match global entries by `(name, cwd)`
-  instead of name alone, preventing cross-project state mutations.
-- **Stale project cwd**: local workflows whose `cwd` points outside the active project no
-  longer silently update the wrong global workflow.
-- **Muxy display**: stale-cwd workflows are hidden from macro-stage buckets and command
-  actions are disabled with a clear stale-cwd badge.
-- **Command honesty**: Muxy command toast now says the command was sent to the pane, not
-  that it was executed.
-- **Duplicate global entries**: abort/archive/sync paths remove or update all exact
-  `(name, cwd)` matches.
-- **CLI command generation script** now works without a local `tsx` package by using
-  `npm exec -- tsx`.
+- **session_start** não importa mais do global (que não tem status).
+- **turn_end** não sincroniza global; só index.json.
+- **cmdStatus/cmdGoto** não usam mais status do global.
+- **doctor.ts** adaptado para global index-only.
+- **Muxy stale cwd**: workflow com cwd de outro projeto é escondido e desabilitado.
 
 ## [0.16.1-alpha] - 2026-06-06
 
