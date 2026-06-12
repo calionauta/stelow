@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   groupWorkflowsByMacroStage,
+  getMacroStage,
   getStatusBadge,
+  getWorkflowProgress,
   getActiveWorkflow,
   getWorkflowCommandLabel,
   isWorkflowCommandEnabled,
@@ -42,6 +44,27 @@ describe('Muxy workflow data normalization', () => {
     ]);
 
     expect(buckets.find(b => b.id === 'shape')?.workflows.map(w => w.name)).toEqual(['active']);
+  });
+
+  it('puts completed workflows in a Done bucket', () => {
+    const buckets = groupWorkflowsByMacroStage([
+      wf('verify-active', 14, 'in-progress'),
+      wf('done', 14, 'completed'),
+    ]);
+
+    expect(buckets.find(b => b.id === 'verify')?.workflows.map(w => w.name)).toEqual(['verify-active']);
+    expect(buckets.find(b => b.id === 'done')?.workflows.map(w => w.name)).toEqual(['done']);
+    expect(getMacroStage({ ...wf('done', 2, 'completed') })?.name).toBe('Done');
+    expect(getWorkflowProgress({ ...wf('done', 2, 'completed') })).toBe(1);
+  });
+
+  it('disables active commands for completed workflows but keeps archive enabled', () => {
+    const done = wf('done', 14, 'completed');
+
+    expect(isWorkflowCommandEnabled('/pw-next', done)).toBe(false);
+    expect(isWorkflowCommandEnabled('/pw-complete', done)).toBe(false);
+    expect(isWorkflowCommandEnabled('/pw-abort', done)).toBe(false);
+    expect(isWorkflowCommandEnabled('/pw-archive', done)).toBe(true);
   });
 
   it('marks stale-cwd workflow as stale badge and disables commands', () => {

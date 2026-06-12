@@ -8,6 +8,7 @@ import {
   saveInbox,
   loadProjectName,
   groupWorkflowsByMacroStage,
+  getMacroStage,
   getPhaseName,
   getWorkflowProgress,
   getStatusBadge,
@@ -141,7 +142,7 @@ export class PipelinePanel {
       h('div', { class: 'empty-state-desc' },
         'Open a project that uses cali-product-workflow.\n' +
         'This panel shows workflows and their progress\n' +
-        'through Shape → Build → Verify pipeline.'
+        'through Shape → Build → Verify → Done pipeline.'
       ),
     );
   }
@@ -305,9 +306,7 @@ export class PipelinePanel {
     const progress = getWorkflowProgress(wf);
     const pct = Math.round(progress * 100);
 
-    const macroInfo = MACRO_STAGES.find(
-      m => (wf.currentPhase ?? 0) >= m.phaseRange[0] && (wf.currentPhase ?? 0) <= m.phaseRange[1]
-    );
+    const macroInfo = getMacroStage(wf);
 
     return h('div', { class: 'detail' },
       h('div', { class: 'detail-header' },

@@ -118,12 +118,23 @@ function isWorkflowCwdCompatible(workflowCwd, projectPath) {
  */
 export function groupWorkflowsByMacroStage(workflows) {
   const buckets = MACRO_STAGES.map(s => ({ ...s, workflows: [] }));
+  const doneBucket = {
+    id: 'done',
+    name: 'Done',
+    phaseRange: [0, PHASE_NAMES.length - 1],
+    workflows: [],
+  };
 
   for (const wf of workflows) {
     // Skip archived/aborted/stopped workflows and workflows whose cwd points
     // outside the active project. Stale cwd data usually means a copied or
     // orphaned tracking file, and showing it as active creates false progress.
     if (isHiddenWorkflowStatus(wf.status) || wf.staleCwd) continue;
+
+    if (wf.status === 'completed') {
+      doneBucket.workflows.push(wf);
+      continue;
+    }
 
     const phaseIdx = wf.currentPhase ?? 0;
     const bucket = buckets.find(
@@ -137,7 +148,21 @@ export function groupWorkflowsByMacroStage(workflows) {
     }
   }
 
-  return buckets;
+  return [...buckets, doneBucket];
+}
+
+export function getMacroStage(workflow) {
+  if (workflow.status === 'completed') {
+    return {
+      id: 'done',
+      name: 'Done',
+      phaseRange: [0, PHASE_NAMES.length - 1],
+    };
+  }
+  const phaseIdx = workflow.currentPhase ?? 0;
+  return MACRO_STAGES.find(
+    m => phaseIdx >= m.phaseRange[0] && phaseIdx <= m.phaseRange[1]
+  ) ?? null;
 }
 
 /**
@@ -152,6 +177,7 @@ export function getPhaseName(workflow) {
  * Get overall progress of a workflow (0-1).
  */
 export function getWorkflowProgress(workflow) {
+  if (workflow.status === 'completed') return 1;
   const total = PHASE_NAMES.length;
   const current = workflow.currentPhase ?? 0;
   return Math.min(current / (total - 1), 1);
@@ -203,6 +229,7 @@ export function getWorkflowCommand(command, selectedWorkflow, activeWorkflow) {
 export function isWorkflowCommandEnabled(command, selectedWorkflow) {
   if (!selectedWorkflow) return true;
   if (selectedWorkflow.staleCwd) return false;
+  if (selectedWorkflow?.status === 'completed' && command !== '/pw-archive') return false;
   if (command === '/pw-abort') {
     return selectedWorkflow.status === 'in-progress' || selectedWorkflow.status === 'paused';
   }
@@ -214,7 +241,9 @@ export function isWorkflowCommandEnabled(command, selectedWorkflow) {
 
 export function getWorkflowCommandLabel(command, selectedWorkflow, activeWorkflow) {
   if (command === '/pw-next' && selectedWorkflow && activeWorkflow?.name !== selectedWorkflow.name) return 'Next active';
-  if (command === '/pw-complete' && selectedWorkflow && activeWorkflow?.name !== selectedWorkflow.name) return 'Complete active';
+  if (command === '/pw-complete' && selectedWorkflow?.status === 'completed') return 'Done';
+  if (command === '/pw-next' && selectedWorkflow?.status === 'completed') return 'Done';
+  if (command === '/pw-abort' && selectedWorkflow?.status === 'completed') return 'Done';
   if (command === '/pw-abort' && selectedWorkflow?.staleCwd) return 'Stale cwd';
   if (command === '/pw-abort' && selectedWorkflow) return 'Abort selected';
   if (command === '/pw-archive' && selectedWorkflow) return 'Archive selected';
@@ -229,6 +258,15 @@ export function getWorkflowCommandLabel(command, selectedWorkflow, activeWorkflo
 export function getWorkflowCommandTitle(command, selectedWorkflow, activeWorkflow) {
   if (command === '/pw-next' && selectedWorkflow && activeWorkflow?.name !== selectedWorkflow.name) {
     return 'Only the active workflow can advance. Click the active workflow or run /pw-next in its project.';
+  }
+  if (command === '/pw-complete' && selectedWorkflow?.status === 'completed') {
+    return 'Completed workflows belong in Done. Archive to hide/remove from the board.';
+  }
+  if (command === '/pw-next' && selectedWorkflow?.status === 'completed') {
+    return 'Completed workflows belong in Done. Use /pw-unarchive if this was archived by mistake.';
+  }
+  if (command === '/pw-abort' && selectedWorkflow?.status === 'completed') {
+    return 'Completed workflows do not need abort. Archive if you want to hide them.';
   }
   if (command === '/pw-complete' && selectedWorkflow && activeWorkflow?.name !== selectedWorkflow.name) {
     return 'Only the active workflow can be completed. Click the active workflow or run /pw-complete in its project.';
