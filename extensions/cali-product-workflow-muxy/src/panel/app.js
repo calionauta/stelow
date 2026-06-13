@@ -71,8 +71,12 @@ export class PipelinePanel {
   // ── Data ──────────────────────────────────────────────────────────
 
   delayedRefresh() {
-    // Clear stale artifact cache immediately
+    // Clear stale artifact cache and selection when switching projects
     this.artifactMap = new Map();
+    this.selectedWf = null;
+    this.state = 'pipeline';
+    this.phaseFilter = null;
+    this.phaseSearch = '';
     setTimeout(() => this.refresh(true), 300);
   }
 
@@ -356,22 +360,45 @@ export class PipelinePanel {
         ),
         h('div', { style: 'font-size:11px;font-weight:600;margin-bottom:4px;' }, 'Progress'),
         h('div', { class: 'phase-list' },
-          ...(wf.phases || []).map((ph, i) => {
-            let itemClass = 'phase-item';
-            if (ph.status === 'completed') itemClass += ' phase-item-completed';
-            else if (ph.status === 'in-progress') itemClass += ' phase-item-active';
-            else itemClass += ' phase-item-pending';
+          ...(() => {
+            // Group phases by macro-stage
+            const groups = [];
+            for (const ms of MACRO_STAGES) {
+              const stagePhases = (wf.phases || []).slice(ms.phaseRange[0], ms.phaseRange[1] + 1);
+              if (stagePhases.length === 0) continue;
+              const stageDone = stagePhases.every(p => p.status === 'completed');
+              const stageActive = stagePhases.some(p => p.status === 'in-progress');
+              groups.push({ macro: ms, phases: stagePhases, stageDone, stageActive });
+            }
+            return groups.flatMap(g => [
+              // Macro-stage header
+              h('div', {
+                class: 'phase-macro-header',
+                style: `font-size:10px;font-weight:600;text-transform:uppercase;`
+                  + `letter-spacing:0.5px;padding:6px 6px 2px;`
+                  + `color:${g.stageDone ? 'var(--muxy-foreground-muted)' : g.stageActive ? 'var(--muxy-accent)' : 'var(--muxy-foreground-muted)'};`
+                  + `opacity:${g.stageDone ? '0.5' : '1'}`,
+              }, `${g.macro.name} (${g.phases.filter(p => p.status === 'completed').length}/${g.phases.length})`),
+              // Individual phases
+              ...g.phases.map((ph, j) => {
+                const absIdx = g.macro.phaseRange[0] + j;
+                let itemClass = 'phase-item';
+                if (ph.status === 'completed') itemClass += ' phase-item-completed';
+                else if (ph.status === 'in-progress') itemClass += ' phase-item-active';
+                else itemClass += ' phase-item-pending';
 
-            let phIcon;
-            if (ph.status === 'completed') phIcon = icon('circleCheck', 12, 'text-success');
-            else if (ph.status === 'in-progress') phIcon = icon('circleDot', 12, 'text-primary');
-            else phIcon = icon('circleEllipsis', 12, 'text-muted-foreground');
+                let phIcon;
+                if (ph.status === 'completed') phIcon = icon('circleCheck', 12, 'text-success');
+                else if (ph.status === 'in-progress') phIcon = icon('circleDot', 12, 'text-primary');
+                else phIcon = icon('circleEllipsis', 12, 'text-muted-foreground');
 
-            return h('div', { class: itemClass },
-              phIcon,
-              h('span', null, ph.name || `Phase ${i}`),
-            );
-          }),
+                return h('div', { class: itemClass, style: 'padding-left:16px;' },
+                  phIcon,
+                  h('span', null, ph.name || `Phase ${absIdx}`),
+                );
+              }),
+            ]);
+          })(),
         ),
         // Handoff Station
         this.renderHandoff(wf),
