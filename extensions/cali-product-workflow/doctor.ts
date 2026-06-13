@@ -8,6 +8,7 @@ import {
   isWorkflowFromProject,
   readGlobalTracking,
   readTracking,
+  writeTracking,
   resolveProjectDir,
 } from "./state";
 
@@ -282,7 +283,12 @@ function readWorkflowIndexSnapshot(projectDir: string, wf: Workflow): WorkflowIn
 
 // ── Repair ───────────────────────────────────────────────────────
 
-const FIXABLE_CODES = new Set(["zombie-workflow", "index-status-mismatch", "index-phase-mismatch"]);
+const FIXABLE_CODES = new Set([
+  "zombie-workflow",
+  "index-status-mismatch",
+  "index-phase-mismatch",
+  "local-stale-cwd",
+]);
 
 /**
  * Return true if a doctor issue can be auto-fixed.
@@ -311,6 +317,8 @@ export function repairWorkflowProject(cwd: string, report: DoctorReport): string
   const fixes: string[] = [];
   const projectDir = report.projectDir;
 
+  const tracking = readTracking(projectDir);
+
   for (const issue of report.issues) {
     if (!isFixable(issue)) continue;
 
@@ -326,12 +334,36 @@ export function repairWorkflowProject(cwd: string, report: DoctorReport): string
         writeFileSync(indexPath, JSON.stringify(raw, null, 2));
         fixes.push(`Archived zombie: ${issue.message}`);
       } catch { /* skip if can't read */ }
+      continue;
+    }
+
+    if (issue.code === "local-stale-cwd") {
+      // Extract workflow name from message: "Local workflow points outside this project: <name>"
+      const nameMatch = issue.message.match(/:\s*(.+)$/);
+      if (!nameMatch) continue;
+      const wfName = nameMatch[1].trim();
+      const wf = tracking?.workflows?.find(w => w.name === wfName);
+      if (!wf) continue;
+      // Archive in local tracking
+      wf.status = "archived";
+      // Sync index.json on disk if it exists
+      if (wf.dirHash && wf.created) {
+        const date = wf.created.slice(0, 10);
+        const indexPath = join(projectDir, WORKFLOW_DIR, date, wf.dirHash, "index.json");
+        if (existsSync(indexPath)) {
+          try {
+            const raw = JSON.parse(readFileSync(indexPath, "utf8"));
+            raw.workflow_status = "archived";
+            raw.updated_at = new Date().toISOString();
+            writeFileSync(indexPath, JSON.stringify(raw, null, 2));
+          } catch { /* skip corrupt */ }
+        }
+      }
+      fixes.push(`Archived stale-cwd workflow: ${wfName}`);
     }
   }
 
-  // For index-status-mismatch and index-phase-mismatch, read local tracking
-  // and sync each workflow's index.json to match.
-  const tracking = readTracking(projectDir);
+  // Sync index.json to local tracking for every workflow with a dirHash
   if (tracking?.workflows) {
     for (const wf of tracking.workflows) {
       if (!wf.dirHash || !wf.created) continue;
@@ -368,6 +400,11 @@ export function repairWorkflowProject(cwd: string, report: DoctorReport): string
         }
       } catch { /* skip corrupt */ }
     }
+  }
+
+  // Persist tracking changes (local-stale-cwd may have archived workflows)
+  if (tracking) {
+    writeTracking(projectDir, tracking);
   }
 
   return fixes;
