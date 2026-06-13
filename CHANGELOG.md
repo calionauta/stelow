@@ -4,6 +4,16 @@ All notable changes to `@renatocaliari/cali-product-workflow` will be documented
 
 ## [Unreleased]
 
+## [0.23.4-alpha] - 2026-06-13
+
+### Fixed
+- **Skip "Continue?" on fresh workflows**: auto-discovery em `setup.md` agora
+  verifica se `created_at` < 60s atrás. Workflows recém-criados por `/pw-start`
+  pulam a pergunta redundante.
+- **Nota `status` vs `workflow_status` no SKILL.md**: LLMs confundiam os campos
+  do tracking file (`status`) com index.json (`workflow_status`). Template bash
+  agora tem aviso explícito.
+
 ## [0.23.3-alpha] - 2026-06-13
 
 ### Fixed
