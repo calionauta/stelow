@@ -4,6 +4,16 @@ All notable changes to `@renatocaliari/cali-product-workflow` will be documented
 
 ## [Unreleased]
 
+## [0.23.3-alpha] - 2026-06-13
+
+### Fixed
+- **`getActiveWorkflow` per-worktree isolation**: filtra workflows por `cwd`
+  via `isWorkflowFromProject`. Stale entries de outros Muxy worktrees não
+  bloqueiam mais `/pw-start`. `getAllActiveWorkflows` também filtrado.
+- **`/pw-doctor` agora corrige `local-stale-cwd`**: workflows com `cwd` fora
+  do projeto são arquivados (tracking + index.json) via `--fix` ou prompt
+  interativo.
+
 ## [0.23.2-alpha] - 2026-06-12
 
 ### Added
