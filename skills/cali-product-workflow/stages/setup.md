@@ -140,20 +140,36 @@ fi
 
 **If 1 or more in-progress workflows exist**:
 1. Read the found `index.json` files
-2. If **only 1**: ask using the ask tool (see `references/cli-tools/structured-question.md`):
 
-```
-ask tool: 'Workflow "{name}" in progress at stage {current_stage}. Continue?'
-Options: Continue (Recommended), View status, Cancel workflow
-```
-3. If **multiple active workflows**: show the list and recommend `/pw-clean`:
+2. **Freshness check:** extract `created_at` from the index.json.
+   If the workflow was created less than 60 seconds ago (compare against
+   current time), it was just started by `/pw-start` — skip the
+   "Continue?" question and proceed directly to setup:20.
 
-Use the ask tool (see `references/cli-tools/structured-question.md`):
+   ```bash
+   CREATED=$(grep -oP '"created_at":\s*"([^"]+)"' "$INDEX" | head -1 | grep -oP '"[^"]+"$' | tr -d '"')
+   NOW=$(date -u +%s)
+   CREATED_TS=$(date -j -f "%Y-%m-%dT%H:%M:%S" "${CREATED%.*}" +%s 2>/dev/null || echo 0)
+   if [ -n "$CREATED_TS" ] && [ "$(( NOW - CREATED_TS ))" -lt 60 ]; then
+     echo "FRESH_WORKFLOW"
+   fi
+   ```
 
-```
-ask tool: 'There are {count} active workflows. Use /pw-clean to organize.'
-Options: Continue "{name}", List all, Run /pw-clean
-```
+3. **If only 1 (not fresh):** ask using the ask tool
+   (see `references/cli-tools/structured-question.md`):
+
+   ```
+   ask tool: 'Workflow "{name}" in progress at stage {current_stage}. Continue?'
+   Options: Continue (Recommended), View status, Cancel workflow
+   ```
+
+4. **If multiple:** show the list and recommend `/pw-clean`
+   (see `references/cli-tools/structured-question.md`):
+
+   ```
+   ask tool: 'There are {count} active workflows. Use /pw-clean to organize.'
+   Options: Continue "{name}", List all, Run /pw-clean
+   ```
 
 **If new workflow**:
 1. Continue to setup:20 (Stage Selection) normally
