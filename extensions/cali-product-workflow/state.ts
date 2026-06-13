@@ -345,14 +345,19 @@ export function findWorkflowIndexForProject(
 export function getActiveWorkflow(cwd: string): Workflow | null {
   const tracking = readTracking(cwd);
   if (!tracking) return null;
-  return tracking.workflows.find(w => w.status === "in-progress") || null;
+  // Filter by project cwd so stale entries from other worktrees don't
+  // block /pw-start. Workflows without a cwd field (legacy) still match.
+  return tracking.workflows.find(
+    w => w.status === "in-progress" && isWorkflowFromProject(w, cwd)
+  ) || null;
 }
 
 export function getAllActiveWorkflows(cwd: string): Workflow[] {
   const tracking = readTracking(cwd);
   if (!tracking) return [];
   return tracking.workflows.filter(
-    w => w.status === "in-progress" || w.status === "paused"
+    w => (w.status === "in-progress" || w.status === "paused")
+      && isWorkflowFromProject(w, cwd)
   );
 }
 
