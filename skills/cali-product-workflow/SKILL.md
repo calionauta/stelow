@@ -339,6 +339,10 @@ Update the tracking file directly via bash, then continue to the next stage in t
    console.log('Main tracking updated:', NEW_SLUG);
 
    // 2. Sync index.json (secondary source for TUI display)
+   // ⚠️ NOTE: Tracking file uses 'status'. Index.json uses 'workflow_status'.
+   //    They are DIFFERENT fields. When completing a workflow, set:
+   //    - tracking: wf.status = 'completed'
+   //    - index.json: ix.workflow_status = 'completed'
    const { execSync } = require('child_process');
    const dirHash = wf.dirHash;
    if (dirHash) {
