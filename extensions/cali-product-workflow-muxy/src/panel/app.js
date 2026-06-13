@@ -75,8 +75,7 @@ export class PipelinePanel {
     this.artifactMap = new Map();
     this.selectedWf = null;
     this.state = 'pipeline';
-    this.phaseFilter = null;
-    this.phaseSearch = '';
+    this.filterText = '';
     setTimeout(() => this.refresh(true), 300);
   }
 
