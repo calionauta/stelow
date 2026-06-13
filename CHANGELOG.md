@@ -4,6 +4,15 @@ All notable changes to `@renatocaliari/cali-product-workflow` will be documented
 
 ## [Unreleased]
 
+## [0.23.5-alpha] - 2026-06-13
+
+### Changed
+- **`status` field normalized across tracking + index.json**: `updateWorkflowIndexJson`
+  agora sincroniza `status` e `workflow_status`. LLMs podem usar `status` em
+  ambos os arquivos sem confundir. Writers diretos (`start.ts`, `archiveWorkflowOnDisk`,
+  `cmdUnarchive`) também escrevem ambos os campos. Readers preferem `status`
+  com fallback para `workflow_status` (backward compat).
+
 ## [0.23.4-alpha] - 2026-06-13
 
 ### Fixed

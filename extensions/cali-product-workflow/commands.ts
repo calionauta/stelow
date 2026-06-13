@@ -916,6 +916,7 @@ function cmdUnarchive(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
   try {
     const raw = JSON.parse(readFileSync(indexPath, "utf-8"));
     raw.workflow_status = "paused";
+    raw.status = "paused";
     raw.updated_at = new Date().toISOString();
     writeFileSync(indexPath, JSON.stringify(raw, null, 2));
   } catch {

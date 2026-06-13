@@ -1,6 +1,6 @@
 {
   "name": "@renatocaliari/cali-product-workflow",
-  "version": "0.23.4-alpha",
+  "version": "0.23.5-alpha",
   "description": "Product workflow for AI coding agents: Shape Up + Interface + Tech Planning + Critique + Gate. Includes 25 product skills.",
   "keywords": [
     "pi-skill",

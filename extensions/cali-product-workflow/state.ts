@@ -498,7 +498,7 @@ export function scanWorkflowDirs(cwd: string): DiskWorkflow[] {
           const raw = JSON.parse(readFileSync(indexPath, "utf-8"));
           result.push({
             name: raw.name || raw.slug || wfDir,
-            status: raw.workflow_status || "unknown",
+            status: raw.status || raw.workflow_status || "unknown",
             // Backward compatibility: old workflows had current_phase_index: 0 for Setup
             // (the bug that was just fixed). If phase name says "setup" but index is 0,
             // normalize to 2 (correct index for Setup in PHASE_NAMES).
@@ -606,6 +606,7 @@ export function archiveWorkflowOnDisk(cwd: string, workflowName: string): boolea
           const rawName = raw.name || raw.slug;
           if (rawName === workflowName) {
             raw.workflow_status = "archived";
+            raw.status = "archived";
             raw.updated_at = new Date().toISOString();
             writeFileSync(indexPath, JSON.stringify(raw, null, 2));
             return true;
@@ -658,6 +659,13 @@ export function updateWorkflowIndexJson(
   }
 
   Object.assign(idx, updates);
+  // Normalize status field: LLMs prefer 'status' (tracking file convention),
+  // legacy readers/auto-discovery use 'workflow_status'. Keep both in sync.
+  if (idx.status !== undefined) {
+    idx.workflow_status = idx.status;
+  } else if (idx.workflow_status !== undefined) {
+    idx.status = idx.workflow_status;
+  }
   idx.updated_at = new Date().toISOString();
 
   mkdirSync(dirname(idxPath), { recursive: true });
