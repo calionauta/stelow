@@ -52,6 +52,9 @@ Before entering any mode, check what's available:
 # Check sem
 command -v sem && HAS_SEM=1 || HAS_SEM=0
 
+# Check cymbal (structural overview: entry points, hotspots)
+command -v cymbal && HAS_CYMBAL=1 || HAS_CYMBAL=0
+
 # Check if HEAD~1 exists (new repos, first commit)
 git rev-parse HEAD~1 >/dev/null 2>&1 && HAS_PREV=1 || HAS_PREV=0
 
@@ -66,6 +69,8 @@ If `sem` is absent, fall back to git:
 - `sem diff` (working tree) → `git diff --stat -- .`
 - `sem stats` → `git diff --stat HEAD~1`
 - `sem entities` → `find ./ -name '*.go' -o -name '*.ts' -o -name '*.py' | head -50`
+- `sem verify --diff` → fallback: manual check of changed function signatures vs callers
+- `sem graph --json` → fallback: `find ./ -name '*.go' | head -20` (no graph data)
 
 **Never block** an audit on `sem` being absent. The audit quality drops
 (structural analysis lost) but the remaining criteria (implementation
@@ -196,10 +201,20 @@ if command -v sem &>/dev/null; then
   sem diff HEAD~1   # entities modified in last commit
   sem diff          # working tree changes
   sem stats
-else
-  echo "⚠️  sem not installed — using git fallback"
-  git diff --stat HEAD~1
-  git log --name-only HEAD~1..HEAD
+  sem verify --diff # catch broken callers from signature changes
+  echo "--- dead code candidates (entities with no callers) ---"
+  sem graph --json 2>/dev/null | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+caller_ids = set()
+for e in data.get('edges', []):
+    caller_ids.add(e[0])
+orphans = [e for e in data.get('entities', []) if e.get('id') not in caller_ids and e.get('kind') in ('function','method')]
+for o in orphans[:20]:
+    print(f"  {o.get('name','?')} ({o.get('file','?')})")
+if len(orphans) > 20:
+    print(f"  ... and {len(orphans)-20} more")
+" 2>/dev/null || echo "  (could not compute)
 fi
 ```
 
@@ -221,6 +236,7 @@ Check all changed files for:
 - Missing imports
 - Broken references
 - Anti-patterns: secrets in code, global mutable state, god functions (>100 lines)
+- **Dead code candidates**: see `references/cli-tools/dead-code-candidates.md`
 
 **Invisible 20% (criteria 3):**
 | Dimension | Check |
@@ -308,6 +324,7 @@ if command -v sem &>/dev/null; then
   sem diff HEAD~1
   sem diff
   sem entities
+  sem verify --diff
 else
   echo "⚠️  sem not installed — using git fallback"
   git diff --stat HEAD~1
@@ -334,11 +351,15 @@ is the current state of the codebase or site.
 # Quick structural overview
 find {INPUT_PATH} -maxdepth 3 -type f | head -100
 
+# Cymbal structural overview (if available)
+command -v cymbal &>/dev/null && cymbal structure {INPUT_PATH} 2>/dev/null || echo "⚠️  cymbal not available"
+
 # Entity-level changes (sem fallback to git)
 if command -v sem &>/dev/null; then
   sem diff HEAD~1
   sem diff
   sem entities
+  sem verify --diff
 else
   echo "⚠️  sem not installed — using git fallback"
   git diff --stat HEAD~1
@@ -382,10 +403,14 @@ auto-discovers what changed.
 # Entities changed since last commit
 if command -v sem &>/dev/null; then
   sem diff HEAD~1 && sem diff && sem stats
+  sem verify --diff
 else
   echo "⚠️  sem not installed — git fallback"
   git diff --stat HEAD~1 && git diff --stat -- .
 fi
+
+# Cymbal structural overview (entry points, most-referenced symbols)
+command -v cymbal &>/dev/null && cymbal structure 2>/dev/null || true
 
 git log --oneline -10
 ```
@@ -492,6 +517,7 @@ Always save or display in this format. The Lessons Learned section also writes t
 | [Tool Availability & Fallbacks](#-tool-availability--fallbacks) | sem/git fallback strategy | Before any mode |
 | `references/cli-tools/subagents.md` | Subagent patterns for parallel audit | Workflow mode with many scopes |
 | `references/cli-tools/context-mode.md` | Processing large codebase outputs | Output exceeds viewport |
+| `references/cli-tools/dead-code-candidates.md` | Dead code detection via `sem graph --json` | Implementation Quality check (criteria 2) |
 
 ## Environment Adaptation
 
