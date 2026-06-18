@@ -1,212 +1,210 @@
 # Tool: Goal System
 
-> **Built-in:** pi-subagents `subagent()` tool supports acceptance-based goals natively
-> (see `acceptance` parameter with `criteria`, `evidence`, `verify`, `review`, `stopRules`)
-> **Fallback:** Other CLIs use `/sisyphus`, `/goals` commands when native is unavailable
+> **Strategy:** Every scope becomes a delegation with an acceptance contract.
+> The child implements, self-corrects against the contract, and returns a result.
+> The parent evaluates the final result.
+> **Implementation varies by harness** — see patterns below.
 
 ---
 
-## Core Concept: Goals = acceptance contracts
+## Core Concept: Acceptance Contract
 
-Every scope type becomes a `subagent()` call with an acceptance contract.
-No separate extensions needed — pi-subagents acceptance handles it all.
+An acceptance contract is a data structure that defines:
+- **Criteria** — what must be true for the scope to be done
+- **Verify** — commands that prove criteria are met
+- **Evidence** — what the child should report back
+- **StopRules** — constraints the child must not violate
+- **SelfCorrectionBudget** — how many times the child can self-correct
 
-| Scope Type | How it becomes a goal |
-|------------|----------------------|
-| \`feature\` | worker + iteration loop (see scope-executor Step 3) |
-| \`spike\` | scout + researcher (see subagents.md) |
-| `optimization` | subagent + acceptance with **benchmark verify** commands (see Optimization Goals below) |
-| `test-*` | subagent + acceptance with mutation/security gates |
+This is harness-agnostic. Every delegation mechanism can express these fields.
+
+| Scope Type | Contract shape |
+|------------|---------------|
+| `feature` | criteria from ACs + verify from plan + stopRules from type |
+| `optimization` | criteria from metric target + verify from benchmark commands |
+| `spike` | criteria from research question + evidence from findings |
+| `test-*` | criteria from mutation/security gates + verify from test runners |
 
 ---
 
-## Subagent with acceptance (preferred for pi)
+## Delegation Patterns by Harness
 
-Pass an acceptance contract directly to `subagent()`:
+### Pattern A: Acceptance-native (child self-corrects)
+
+**When:** Harness supports acceptance contracts on delegation calls.
+**Advantage:** Child self-corrects in the SAME context (no context loss between iterations).
+**Parent role:** Evaluate final acceptance report.
+
+```
+PARENT                          CHILD
+──────                          ─────
+1. Build contract
+2. Delegate with contract ──────→ 3. Implement
+                                4. Runtime reopens session
+                                5. Child checks criteria, fixes gaps
+                                6. Repeat up to budget
+                                7. Return acceptance report
+8. Evaluate report ←────────────
+```
+
+**Example (pi-subagents):**
 
 ```typescript
 subagent({
   agent: "worker",
-  task: "Implement X from the approved scope",
+  task: `Implement scope {SCOPE-ID}: {scope-name}
+
+Objective: {dod}
+
+Acceptance Criteria:
+- AC-1: {ac_1}
+- AC-2: {ac_2}
+
+Verify: {verifyCommands}
+Stop rules: {stopRules}`,
   acceptance: {
     criteria: [
-      { id: "SC-1", must: "Feature X works", severity: "required" },
-      { id: "SC-2", must: "Tests pass", severity: "required" }
+      { id: "AC-1", must: "{ac_1}", severity: "required" },
+      { id: "AC-2", must: "{ac_2}", severity: "required" }
+    ],
+    verify: [
+      { id: "V-1", command: "{verifyCmd1}" },
+      { id: "V-2", command: "{verifyCmd2}" }
     ],
     evidence: ["changed-files", "tests-added", "commands-run"],
-    verify: [
-      { id: "V-1", command: "go test ./..." }
-    ]
+    stopRules: ["{stopRule1}", "{stopRule2}"],
+    maxFinalizationTurns: 3
   }
 })
 ```
 
-This replaces the need for external goal packages *and* autoresearch extensions.
+The runtime handles the self-correction loop. Parent gets the final report.
 
----
+### Pattern B: Parent-controlled loop (re-delegate on failure)
 
-## Command Variants (Fallback for other CLIs)
-
-When the native goal system is not available, four CLI modes exist:
-
-| Semantic name | Command | Discussion | Preserves order | Best for |
-|---------------|---------|-------------|-----------------|----------|
-| **ordered-execution-goal** | `/sisyphus-set` | No | ✅ | Post-approval execution, automatic workflow |
-| **ordered-discussion-goal** | `/sisyphus` | Yes | ✅ | Discuss before executing, blocked needs clarification |
-| **flexible-execution-goal** | `/goals-set` | No | ❌ | Open-ended work without fixed sequence |
-| **flexible-discussion-goal** | `/goals` | Yes | ❌ | Vague objectives needing research/grill |
-
-### When to use each
+**When:** Harness does NOT support acceptance natively.
+**Advantage:** Works everywhere.
+**Disadvantage:** Each iteration is a fresh context (child doesn't remember prior attempts). Feedback must be explicit in task description.
 
 ```
-After Tech Planning approval:
-  → ordered-execution-goal (/sisyphus-set) — no discussion, starts immediately
-
-During execution, blocked:
-  → ordered-discussion-goal (/sisyphus) — stop and ask
-
-Exploratory work:
-  → flexible-discussion-goal (/goals) or flexible-execution-goal (/goals-set)
+PARENT                          CHILD
+──────                          ─────
+1. Build contract
+2. Delegate ────────────────────→ 3. Implement
+                                4. Return result
+5. Evaluate ←───────────────────
+6. If failed: collect feedback
+7. Re-delegate with feedback ───→ 8. Implement (new context)
+                                9. Return result
+10. Evaluate ←──────────────────
+...up to max_iterations
 ```
 
----
-
-## Optimization Goals (replaces autoresearch/experiment-loop)
-
-**Optimization scopes are goals with benchmark `verify` commands.**
-The same `subagent() + acceptance` pattern handles optimization — no separate
-experiment-loop extension needed.
-
-### How it works
-
-```
-1. Baseline → subagent runs benchmark via acceptance verify
-2. Mutate → subagent tries an improvement
-3. Measure → acceptance verify runs benchmark again
-4. Compare → parent agent decides keep/revert based on metric
-5. Repeat → if target not met, launch next iteration with updated context
-```
-
-### Pattern
+**Example (opencode, claude-code, codex):**
 
 ```typescript
-subagent({
-  agent: "worker",
-  task: "Optimize function F for speed. Current baseline: 200µs.",
-  acceptance: {
-    criteria: [
-      { id: "OPT-1", must: "Function F performance improves measurably", severity: "required" },
-      { id: "OPT-2", must: "Tests still pass", severity: "required" }
-    ],
-    evidence: ["changed-files", "commands-run", "validation-output"],
-    verify: [
-      { id: "benchmark", command: "go test -bench=. -benchtime=100x ./pkg/" },
-      { id: "tests", command: "go test ./..." }
-    ],
-    stopRules: ["Do not change public API signatures"]
-  }
-})
-```
-
-### Iteration loop in the parent agent
-
-The parent orchestrator runs the iteration loop:
-
-```typescript
-// Iteration 1: try an improvement
+// Iteration 1
 const result = subagent({
   agent: "worker",
-  task: `Optimize ${metric}. Baseline: ${baseline}. Try: pool goroutines.`,
-  acceptance: { ... }  // with benchmark verify
-})
+  task: `Implement scope {SCOPE-ID}: {scope-name}
 
-// Compare metric from result output
-if (result.metric < baseline) {
-  // KEEP — commit accepted
-} else {
-  // REVERT — discard the change
+Objective: {dod}
+
+Acceptance Criteria:
+- AC-1: {ac_1}
+- AC-2: {ac_2}
+
+Verify commands: {verifyCommands}
+Stop rules: {stopRules}`
+})
+// → Run verify commands → Evaluate
+
+// Iteration 2 (if needed) — feedback in task
+subagent({
+  agent: "worker",
+  task: `Implement scope {SCOPE-ID}: {scope-name}
+
+Objective: {dod}
+
+Acceptance Criteria:
+- AC-1: {ac_1}
+- AC-2: {ac_2}
+
+Previous attempt failed:
+{feedback_log}
+
+Try a different approach. Do not repeat the same fix.`
+})
+```
+
+### Pattern C: File-based handoff (generic fallback)
+
+**When:** No subagent system available.
+**Advantage:** Works with any tool that has file read/write.
+**Disadvantage:** Manual, slow, no self-correction.
+
+```
+1. Write task to task.md
+2. Execute directly (or via basic delegation)
+3. Write result to result.md
+4. Evaluate result.md
+5. If failed: update task.md with feedback, repeat
+```
+
+---
+
+## Building the Contract from Scope Definition
+
+From spec-tech.md, extract:
+
+| Contract Field | Source | How to build |
+|----------------|--------|-------------|
+| `criteria` | Acceptance Criteria + DoD | Each AC becomes one criterion. Mark critical ones `severity: required`. |
+| `verify` | Verify commands section | Test runner + linter + type checker + scope-specific commands |
+| `evidence` | Inferred from scope type | feature: `changed-files, tests-added`; test-*, `validation-output` |
+| `stopRules` | Inferred from scope type | See table below |
+| `selfCorrectionBudget` | `[MAX_ITERATIONS]` or default 3 | Max times child can self-correct |
+
+**StopRules by scope type:**
+
+| Scope Type | StopRules |
+|------------|-----------|
+| feature | Do not change public API signatures. Do not edit files outside scope. |
+| optimization | Do not break existing tests. Do not change public API. |
+| spike | Produce recommendation document. Do not edit production code. |
+| test-* | Do not modify production code. Only add/modify test files. |
+
+---
+
+## Optimization Goals
+
+Optimization scopes use the same contract with benchmark verify commands.
+
+**Contract for optimization:**
+
+```typescript
+{
+  criteria: [
+    { id: "OPT-1", must: "Metric improves measurably", severity: "required" },
+    { id: "OPT-2", must: "Existing tests still pass", severity: "required" }
+  ],
+  verify: [
+    { id: "baseline", command: "{benchmarkCmd}" },
+    { id: "tests", command: "{testCmd}" }
+  ],
+  stopRules: ["Do not change public API signatures"]
 }
-
-// If target not met, iterate with context memory
-subagent({
-  agent: "worker",
-  task: `Optimize ${metric}. Previous attempt did not meet target. Try: different approach.`,
-  acceptance: { ... }
-})
 ```
 
-### Self-contained optimization agent
+**Parent-controlled optimization loop:**
 
-The pattern above can be packaged as a project agent (`optimizer`) that runs the
-full mutate → measure → compare loop autonomously. It accepts the objective,
-metric command, and stopping condition as task parameters.
-
----
-
-## When to Use
-
-| Stage | Purpose |
-|-------|---------|
-| Execution stage | Scoped implementation per scope |
-| Verification stage | Run full test suite, code review, UI/browser testing |
-| Execution Critique stage | Verify implementation, gap analysis |
-| After Tech Planning | Each scope becomes a goal |
-
----
-
-## Scope Types
-
-| Type | Description | Executor |
-|------|-------------|----------|
-| \`feature\` | New functionality | worker + iteration loop (see scope-executor Step 3) |
-| `optimization` | Measurable metric improvement | subagent + acceptance (benchmark verify + iteration loop) |
-| `spike` | Research/prototype | subagent + acceptance |
-| `test-unit` | Unit tests with mutation validation | subagent + acceptance + testing gates |
-| `test-integration` | Integration tests with real dependencies | subagent + acceptance + testing gates |
-| `test-security` | SAST and security gates | subagent + acceptance + testing gates |
-| `test-behavior` | Behavioral testing for agent workflows | subagent + acceptance + testing gates |
-
----
-
-## Pattern for feature/spike goals
-
-```typescript
-subagent({
-  agent: "worker",
-  task: `Scope: login
-Objective: implement email/password login
-DoD: login flow works with valid credentials, rejects invalid`,
-  acceptance: {
-    criteria: [
-      { id: "SC-1", must: "Login with valid credentials works", severity: "required" },
-      { id: "SC-2", must: "Invalid credentials rejected with error", severity: "required" }
-    ],
-    evidence: ["changed-files", "tests-added", "commands-run", "residual-risks"],
-    verify: [{ id: "tests", command: "go test ./..." }]
-  }
-})
 ```
-
-### Test Scope Goals (test-* scopes)
-
-```typescript
-subagent({
-  agent: "worker",
-  task: `Scope: test-unit-login
-Objective: Generate unit tests with mutation validation
-DoD: mutation_score >= 70%`,
-  acceptance: {
-    criteria: [
-      { id: "TG-1", must: "Mutation score >= 70% (critical) or 50% (standard)", severity: "required" },
-      { id: "TG-2", must: "Security findings == 0 on critical paths", severity: "required" }
-    ],
-    evidence: ["changed-files", "tests-added", "commands-run", "validation-output"],
-    verify: [
-      { id: "mutation", command: "stryker run" },
-      { id: "security", command: "gosec ./..." }
-    ]
-  }
-})
+1. Run baseline benchmark
+2. Delegate improvement to child
+3. Run benchmark again
+4. If metric improved → KEEP, commit
+5. If not → REVERT, re-delegate with different approach
+6. Repeat up to max_iterations or until target met
 ```
 
 ---
@@ -215,28 +213,24 @@ DoD: mutation_score >= 70%`,
 
 | Gate | Condition | Action |
 |------|-----------|--------|
-| Mutation Score | < target | 🔴 BLOCK |
-| Security | > 0 critical | 🔴 BLOCK |
-| Flaky Rate | > 5% | 🟡 WARN |
+| Mutation Score | < target | 🔴 BLOCK — do not mark scope done |
+| Security | > 0 critical | 🔴 BLOCK — escalate to human |
+| Flaky Rate | > 5% | 🟡 WARN — note in scope report |
 
 ---
 
-## Fallback (Other Harnesses)
+## When to Use
 
-If both subagent acceptance and goal system are unavailable:
-- Use todo tool for progress tracking
-- Create checkpoint files for resume
-- Mark `[DONE:n]` in responses
-
-**Abstraction:** "Goal with typed scopes and acceptance criteria"
+| Stage | Purpose |
+|-------|---------|
+| Execution stage | Each scope → one acceptance contract |
+| Verification stage | Full test suite + review (no acceptance needed) |
+| Execution Critique | Gap analysis → new scopes (see Gap-to-Scope) |
 
 ---
 
 ## Related
 
-- Execution stage (see `stages/execution.md`)
-- Verification stage (see `stages/verification.md`)
-- spec-tech scopes
-- Testing strategy (see the `cali-product-testing-ai-code` skill)
-- Testing protocol (see the `cali-product-testing-execution` skill)
-
+- Scope executor Step 3 (acceptance-based delegation)
+- subagents.md (delegation patterns)
+- Testing gates from cali-product-testing-ai-code

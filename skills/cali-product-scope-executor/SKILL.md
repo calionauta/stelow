@@ -189,9 +189,65 @@ Rationale: OWASP LLM06 (Excessive Agency) — architectural changes with high
 regression risk require human authorization. This is a security measure,
 not overhead.
 
-### Step 3: Execute feature scopes (feature → iteration loop)
+### Step 3: Execute feature scopes (acceptance-based delegation)
 
 For each scope with `[TYPE] feature`:
+
+---
+
+#### 3a. Strategy: Acceptance Contract
+
+**Core pattern:** Delegate with an acceptance contract. The child agent implements, self-corrects against the contract, and returns a final result. The parent evaluates the final result — it does NOT control per-iteration loops.
+
+```
+PARENT                          CHILD
+──────                          ─────
+1. Build acceptance contract
+2. Delegate with contract ──────→ 3. Implement
+                                4. Self-correct against contract
+                                5. Return acceptance report
+6. Evaluate final result ←──────
+7. Quality checks + review
+8. DONE or ESCALATED
+```
+
+**Why this works across harnesses:** The acceptance contract is a data structure, not a specific API. Every harness can express: "here are the criteria, here are the verify commands, here's how many self-correction turns you get."
+
+---
+
+#### 3b. Build the acceptance contract
+
+From the scope definition in spec-tech.md, extract:
+
+| Field | Source | Description |
+|-------|--------|-------------|
+| `criteria` | Acceptance Criteria (ACs) | What must be true for the scope to be done |
+| `verify` | Verify commands from plan | Commands that prove criteria are met |
+| `evidence` | Inferred from scope type | What the child should report (files changed, tests added, etc.) |
+| `stopRules` | Inferred from scope type | Constraints the child must not violate |
+| `maxSelfCorrectionTurns` | `[MAX_ITERATIONS]` or default 3 | How many times the child can self-correct |
+
+**Criterion construction:**
+- Each AC from spec-tech.md becomes one criterion
+- Each DoD item becomes one criterion
+- Mark critical criteria as `severity: required`
+- Keep criteria concrete and verifiable ("Login returns 200 on valid credentials", not "Login works")
+
+**Verify commands:**
+- From spec-tech.md verify section
+- Always include: test runner, linter, type checker
+- Add scope-specific commands (e.g., benchmark for optimization)
+
+**StopRules (inferred by scope type):**
+| Scope Type | StopRules |
+|------------|-----------|
+| feature | Do not change public API signatures. Do not edit files outside scope. |
+| optimization | Do not break existing tests. Do not change public API. |
+| test-* | Do not modify production code. Only add test files. |
+
+---
+
+#### 3c. Delegate with contract
 
 **Mark scope as in-progress:**
 ```bash
@@ -208,89 +264,147 @@ if (wf?.scopes) {
 "
 ```
 
-**Read iteration config:**
-- Check for `[MAX_ITERATIONS] N` in the scope definition (default: 3)
-- The plan file path (`docs/{YYYY-MM-DD}/{slug}/plans/spec-tech_{v}.md`) determines the state file base directory:
-  - State file: `docs/{YYYY-MM-DD}/{slug}/iteration-state-{SCOPE-ID}.md`
-  - This is CLI-agnostic — works on any platform with file system access
-- Try to read the existing state file (resumes after compaction/crash)
-  - If file exists → rehydrate `current_iteration`, `plateau_counter`, `feedback_log` from it
-  - If file doesn't exist → initialize fresh: `current_iteration = 1`, `feedback_log = []`, `plateau_counter = 0`
+**Read existing iteration state** (for crash recovery):
+- State file: `docs/{YYYY-MM-DD}/{slug}/iteration-state-{SCOPE-ID}.md`
+- If exists → rehydrate context. If not → fresh start.
 
-**Auto-iteration loop:**
+**Delegate to child agent** with the acceptance contract. The task description must include:
+1. The scope objective and DoD from spec-tech.md
+2. The acceptance criteria (concrete, verifiable)
+3. The verify commands
+4. The stop rules
+5. If resuming from a prior iteration: the feedback log of what failed
 
-While `current_iteration <= max_iterations`:
+**Harness-specific delegation patterns:**
 
-  1. **Create a goal** using the goals tool (see `references/cli-tools/goals.md`) with the scope's DoD, ACs, and accumulated `feedback_log`.
-     - Pass `feedback_log` in the task description so the worker knows what failed previously
-     - If `current_iteration > 1`, include: "Previous attempt(s) failed with: {feedback_log}. Try a different approach — do not repeat the same fix."
+The delegation mechanism varies by harness. The contract data stays the same; only the API changes.
 
-  2. **Activate supervision** (see `references/cli-tools/supervise.md`) — verify it's still active.
+| Harness | Delegation pattern | Self-correction mechanism |
+|---------|-------------------|--------------------------|
+| **pi** (pi-subagents) | `subagent({ agent, task, acceptance })` | `acceptance.maxFinalizationTurns` — runtime reopens child session for self-correction |
+| **opencode** | `subagent({ agent, task })` | Parent controls loop — re-delegate with feedback on failure |
+| **claude-code** | `subagent({ agent, task })` | Parent controls loop — re-delegate with feedback on failure |
+| **codex** | `subagent({ agent, task })` | Parent controls loop — re-delegate with feedback on failure |
+| **generic** | Execute directly, save to files | Manual iteration in parent context |
 
-  3. **Execute via worker subagent** (see `references/cli-tools/subagents.md`):
-     - Agent: worker
-     - Delegates implementation to a fresh subagent each iteration (prevents context pollution)
+**Example: pi-subagents (acceptance-native)**
 
-  4. **Run verify commands** (tests, lint, typecheck — whatever the plan specifies):
-     - From the scope's acceptance criteria and spec-tech verify commands
+When the harness supports acceptance contracts natively, delegate once and let the runtime handle self-correction:
 
-  5. **Run quality checks:**
-     - **If UI/visual scope:** Use `cali-product-ux-critique` — accessibility (WCAG POUR), Nielsen heuristics, visual hierarchy, cognitive load, consistency, mobile/responsive.
-     - **If codebase-only scope:** Use `cali-product-codebase-critique` — architecture, data flow, API contracts, performance.
-     - **If both or unclear:** Run both.
+```typescript
+subagent({
+  agent: "worker",
+  task: `Implement scope {SCOPE-ID}: {scope-name}
 
-  6. **Run parallel code review** (correctness + simplicity reviewers):
-     - One reviewer for correctness and regressions
-     - One reviewer for simplicity and code quality — **load `cali-product-coding-standards` skill**
-       and verify every principle (KISS, DRY, LoB/SoC, Fail Fast, YAGNI, file/function limits)
+Objective: {dod}
+Acceptance Criteria:
+{acs.map((ac, i) => `- AC-${i+1}: ${ac}`).join('\n')}
 
-  7. **Evaluate all results against scope criteria:**
-     a. **DoD/AC verification:** read the scope's DoD and Acceptance Criteria from spec-tech.md
-        and verify each one with concrete evidence from the iteration output
-     b. **Verify commands:** all passed?
-     c. **Quality checks:** all approved?
-     d. **Review:** both reviewers approved?
-     - ✅ **All pass** (DoD/AC + verify + review + quality) → scope **DONE**, exit loop
-     - ❌ **Any failure:**
-       a. Collect errors into `feedback_log`
-       b. **Plateau detection:** if the same error appeared in the previous iteration, increment `plateau_counter`
-       c. If `plateau_counter >= 2` AND `current_iteration < max_iterations`:
-          - Log: "Plateau detected (same failure persisted for 2 iterations). Forcing different approach."
-          - Add explicit instruction to feedback: "The previous approach did not work. Try a fundamentally different solution."
-          - Reset `plateau_counter`
-       d. `current_iteration++`
+Verify commands: {verifyCommands.join(', ')}
+Stop rules: {stopRules.join(', ')}`,
+  acceptance: {
+    criteria: acs.map((ac, i) => ({
+      id: `AC-${i+1}`,
+      must: ac,
+      severity: "required"
+    })),
+    verify: verifyCommands.map((cmd, i) => ({
+      id: `V-${i+1}`,
+      command: cmd
+    })),
+    evidence: ["changed-files", "tests-added", "commands-run"],
+    stopRules: stopRules,
+    maxFinalizationTurns: maxIterations  // child self-corrects N times
+  }
+})
+```
 
-  8. **Persist state to file** (after every iteration — survives compaction and crash):
-     - Write/overwrite `docs/{YYYY-MM-DD}/{slug}/iteration-state-{SCOPE-ID}.md`:
-     ```markdown
-     # Iteration State: {SCOPE-ID}
+The runtime automatically:
+1. Sends the contract to the child
+2. Child implements
+3. Runtime reopens child session: "Check each criterion. Fix omissions."
+4. Child self-corrects in the SAME context (no context loss)
+5. Repeats up to `maxFinalizationTurns`
+6. Returns final acceptance report
 
-     scope: {SCOPE-ID}
-     max_iterations: {N}
-     current_iteration: {M}
-     plateau_counter: {P}
-     status: {running | done | escalated}
+Parent evaluates the acceptance report — no manual iteration loop needed.
 
-     ## Iteration Log
+**Example: other CLIs (parent-controlled loop)**
 
-     ### Iteration 1 — {status}
-     - **Errors:** {error summary}
-     - **Files changed:** {file list}
-     - **Feedback:** {feedback_text}
+When the harness does NOT support acceptance natively, the parent controls the iteration loop:
 
-     ### Iteration 2 — {status}
-     ...
-     ```
-     - This file is the **source of truth** — always write before advancing the loop
+```typescript
+// Iteration 1
+subagent({
+  agent: "worker",
+  task: `Implement scope {SCOPE-ID}: {scope-name}
 
-  9. **Check exit condition:**
-     - If `current_iteration > max_iterations`:
-       → Update state file: `status: escalated`
-       → **ESCALATE to human** with full report including all attempts, errors per iteration, and files changed
+Objective: {dod}
+Acceptance Criteria:
+{acs.map((ac, i) => `- AC-${i+1}: ${ac}`).join('\n')}
 
-**On successful completion** (all pass): update state file `status: done`, then clean up (delete state file or mark as final).
+Verify commands: {verifyCommands.join(', ')}`
+})
+// → run verify commands → evaluate
+// If failed: collect feedback
 
-**Update scope tracking in `cali-product-workflow.json`:**
+// Iteration 2 (if needed)
+subagent({
+  agent: "worker",
+  task: `Implement scope {SCOPE-ID}: {scope-name}
+
+Objective: {dod}
+Acceptance Criteria:
+{acs.map((ac, i) => `- AC-${i+1}: ${ac}`).join('\n')}
+
+Previous attempt failed:
+{feedback}
+Try a different approach — do not repeat the same fix.`
+})
+// → run verify commands → evaluate
+// Repeat up to max_iterations
+```
+
+Key difference: each iteration is a **new context** (child doesn't remember prior attempt). The feedback must be explicit in the task description.
+
+---
+
+#### 3d. Parent evaluation (after child returns)
+
+After the child returns its final result (acceptance report or iteration output), the parent evaluates:
+
+1. **Acceptance criteria:** Read each AC from spec-tech.md. Verify with concrete evidence from the child's output.
+2. **Verify commands:** Run them (if the child didn't already). Check exit codes.
+3. **Quality checks:**
+   - **UI/visual scope:** `cali-product-ux-critique` — accessibility (WCAG POUR), Nielsen heuristics, visual hierarchy, cognitive load.
+   - **Codebase-only scope:** `cali-product-codebase-critique` — architecture, data flow, API contracts, performance.
+   - **Both or unclear:** Run both.
+4. **Parallel code review:**
+   - Correctness reviewer (regressions, edge cases)
+   - Simplicity reviewer (load `cali-product-coding-standards` — KISS, DRY, LoB/SoC, Fail Fast, YAGNI)
+
+**Evaluation outcome:**
+| Result | Action |
+|--------|--------|
+| All pass (criteria + verify + review + quality) | ✅ Scope DONE |
+| Child returned with fixes needed | 🔄 Re-delegate with feedback (parent-controlled loop only) |
+| max_iterations exhausted | ⚠️ ESCALATE to human with full report |
+
+**Plateau detection** (parent-controlled loop only):
+- If the same error appears in 2 consecutive iterations → force different approach in feedback
+- If plateau persists after 3 iterations → escalate (don't waste compute)
+
+---
+
+#### 3e. Persist state and update tracking
+
+**Persist iteration state** (survives compaction/crash):
+```bash
+# Write to docs/{YYYY-MM-DD}/{slug}/iteration-state-{SCOPE-ID}.md
+# Include: scope, iteration, status, errors, files changed, feedback
+```
+
+**Update scope tracking:**
 ```bash
 node -e "
 const fs = require('fs');
@@ -310,8 +424,8 @@ if (wf?.scopes) {
 
 **Report per scope:**
 ```
-✅ [SCOPE-1] Login — DONE (2/3 iterations, 3 files, 2 reviews passed)
-⚠️ [SCOPE-2] Dashboard — ESCALATED (3/3 iterations, last error: e2e test timeout)
+✅ [SCOPE-1] Login — DONE (acceptance verified, 3 files, 2 reviews passed)
+⚠️ [SCOPE-2] Dashboard — ESCALATED (3 iterations, last error: e2e test timeout)
 ```
 
 > **Why file persistence?** LLM context can be compacted (pi's `/compact`, `/clear`, or tool-level resets). The state file ensures the iteration loop resumes correctly after any context loss. This pattern is CLI-agnostic — any agent with file system access can read/write the same format.

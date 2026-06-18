@@ -242,26 +242,31 @@ describe('Per-Skill Implementation', () => {
         });
       }
 
-      // ── Scope-executor specific: iteration loop ──────────────
+      // ── Scope-executor specific: acceptance-based delegation ──
       if (skill.name === 'cali-product-scope-executor') {
-        it('should have auto-iteration loop in Step 3', () => {
-          expect(content).toMatch(/iteration loop/i);
-          expect(content).toMatch(/MAX_ITERATIONS/);
-          expect(content).toMatch(/feedback_log/);
-          expect(content).toMatch(/plateau_counter/);
+        it('should use acceptance-based delegation in Step 3', () => {
+          expect(content).toMatch(/acceptance/i);
+          expect(content).toMatch(/criteria/i);
+          expect(content).toMatch(/verify/i);
+          expect(content).toMatch(/MAX_ITERATIONS|selfCorrectionBudget|maxFinalizationTurns/i);
+        });
+
+        it('should support parent-controlled loop fallback', () => {
+          expect(content).toMatch(/feedback_log|feedback/i);
+          expect(content).toMatch(/plateau|different approach/i);
         });
 
         it('should persist state to iteration-state file', () => {
           expect(content).toMatch(/iteration-state-/);
-          expect(content).toMatch(/Persist state to file/);
+          expect(content).toMatch(/Persist state/);
         });
 
         it('should handle resume after compaction', () => {
           expect(content).toMatch(/resume|rehydrate/i);
         });
 
-        it('should escalate to human after max_iterations', () => {
-          expect(content).toMatch(/ESCALATE/);
+        it('should escalate to human after max iterations', () => {
+          expect(content).toMatch(/ESCALATE/i);
         });
       }
 
@@ -308,14 +313,14 @@ describe('Iteration Loop Consistency', () => {
     expect(content).toMatch(/MAX_ITERATIONS/);
   });
 
-  it('execution.md routing table should show iteration loop for features', () => {
+  it('execution.md routing table should reference acceptance or iteration for features', () => {
     const execContent = readFileSync(
       join(PROJECT_ROOT, 'skills/cali-product-workflow/stages/execution.md'), 'utf8'
     );
-    expect(execContent).toMatch(/iteration loop/);
+    expect(execContent).toMatch(/iteration|acceptance/i);
   });
 
-  it('core goals.md files should reference iteration loop for feature type', () => {
+  it('core goals.md files should reference acceptance contract pattern', () => {
     const goalsFiles = [
       join(PROJECT_ROOT, 'skills/cali-product-workflow/references/cli-tools/goals.md'),
       join(PROJECT_ROOT, 'skills/cali-product-scope-executor/references/cli-tools/goals.md'),
@@ -324,25 +329,21 @@ describe('Iteration Loop Consistency', () => {
     ];
     goalsFiles.forEach(f => {
       const content = readFileSync(f, 'utf8');
-      expect(content).toMatch(/iteration loop/);
+      expect(content).toMatch(/acceptance|iteration loop/i);
     });
   });
 
-  it('no goals.md file should reference subagent + acceptance for features', () => {
-    const skillsDir = join(PROJECT_ROOT, 'skills');
-    const entries = readdirSync(skillsDir, { withFileTypes: true });
-    entries.forEach(entry => {
-      if (!entry.isDirectory()) return;
-      const goalsPath = join(skillsDir, entry.name, 'references/cli-tools/goals.md');
-      if (!existsSync(goalsPath)) return;
-      const content = readFileSync(goalsPath, 'utf8');
-      const escaped = content.includes('\\`feature\\`');
-      const pattern = escaped ? /^\| \\`feature\\` .*$/gm : /^\| `feature` .*$/gm;
-      const featureRows = content.match(pattern) || [];
-      featureRows.forEach(row => {
-        expect(row).not.toMatch(/subagent \+ acceptance/);
-      });
-    });
+  it('scope-executor goals.md should use acceptance-based pattern', () => {
+    const goalsPath = join(PROJECT_ROOT, 'skills/cali-product-scope-executor/references/cli-tools/goals.md');
+    const content = readFileSync(goalsPath, 'utf8');
+    // Should reference criteria, verify, stopRules (acceptance contract fields)
+    expect(content).toMatch(/criteria/i);
+    expect(content).toMatch(/verify/i);
+    expect(content).toMatch(/stopRules/i);
+    // Feature row should mention criteria from ACs
+    const featureRow = content.match(/\| `feature` \|[^|]+\|/);
+    expect(featureRow).toBeTruthy();
+    expect(featureRow?.[0]).toMatch(/criteria/);
   });
 });
 
