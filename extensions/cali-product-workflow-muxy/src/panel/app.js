@@ -390,7 +390,7 @@ export class PipelinePanel {
   renderDraftSection(wf) {
     const content = wf._fullDraft || wf.draftContent;
     if (!content) return null;
-    const firstLine = wf.displayName || summarizeDisplayName(wf.draftContent || content) || 'Brief';
+    const firstLine = summarizeDisplayName(content) || 'Brief';
     return h('div', { class: 'draft-section' },
       h('div', { class: 'draft-section-header',
         onclick: () => { wf._draftOpen = !wf._draftOpen; this.render(); },

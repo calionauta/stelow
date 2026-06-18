@@ -77,12 +77,28 @@ export async function saveInbox(items) {
  * Also returns the project name (dir name) for display.
  */
 export async function loadProjectName() {
+  // Try package.json first (Node/npm projects)
   try {
-    // Try reading package.json for project name
     const res = await muxy.files.read('package.json');
     if (res && res.content) {
       const pkg = JSON.parse(res.content);
       return pkg.name || pkg.displayName || null;
+    }
+  } catch { /* ignore */ }
+  // Try go.mod (Go projects)
+  try {
+    const res = await muxy.files.read('go.mod');
+    if (res && res.content) {
+      const match = res.content.match(/^module\s+(.+)$/m);
+      if (match) return match[1].trim();
+    }
+  } catch { /* ignore */ }
+  // Fallback: workspace directory name
+  try {
+    const projects = await muxy.projects.list();
+    const active = projects.find(p => p.isActive);
+    if (active?.path) {
+      return active.path.split('/').filter(Boolean).pop() || null;
     }
   } catch { /* ignore */ }
   return null;
