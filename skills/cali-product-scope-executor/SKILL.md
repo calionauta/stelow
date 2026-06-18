@@ -143,6 +143,35 @@ Shall I proceed with autonomous execution? I'll report back when all scopes are 
 
 If the user says yes, proceed autonomously. If no, ask what they'd like to adjust.
 
+### Step 2e: Initialize scope tracking in `cali-product-workflow.json`
+
+Before executing scopes, **write the initial scope list** to the workflow's tracking file. This enables the Muxy extension to display scope progress on the kanban card.
+
+```bash
+# Read current tracking file
+TRACKING_FILE='cali-product-workflow.json'
+
+# Build scopes array from parsed plan
+node -e "
+const fs = require('fs');
+const tracking = JSON.parse(fs.readFileSync('$TRACKING_FILE', 'utf8'));
+const wf = tracking.workflows.find(w => w.status === 'in-progress');
+if (!wf) { console.error('No active workflow found'); process.exit(1); }
+
+// Initialize scopes from parsed plan (build this array from Step 1)
+wf.scopes = [
+  { id: 'scope-1', name: 'Auth Foundation', type: 'feature', status: 'pending' },
+  { id: 'scope-2', name: 'Token Refresh', type: 'feature', status: 'pending' },
+  // ... one entry per scope from spec-tech.md
+];
+wf.updated = new Date().toISOString();
+fs.writeFileSync('$TRACKING_FILE', JSON.stringify(tracking, null, 2));
+console.log('Scope tracking initialized: ' + wf.scopes.length + ' scopes');
+"
+```
+
+**Key:** All scopes start as `status: 'pending'`. Update each scope's status as execution progresses.
+
 ### Step 2d: Comprehensive Human-in-loop execution mode
 
 If appetite is `Comprehensive`, **modify execution flow** for each scope:
@@ -163,6 +192,21 @@ not overhead.
 ### Step 3: Execute feature scopes (feature → iteration loop)
 
 For each scope with `[TYPE] feature`:
+
+**Mark scope as in-progress:**
+```bash
+node -e "
+const fs = require('fs');
+const tracking = JSON.parse(fs.readFileSync('cali-product-workflow.json', 'utf8'));
+const wf = tracking.workflows.find(w => w.status === 'in-progress');
+if (wf?.scopes) {
+  const scope = wf.scopes.find(s => s.id === '{SCOPE-ID}');
+  if (scope) scope.status = 'in-progress';
+  wf.updated = new Date().toISOString();
+  fs.writeFileSync('cali-product-workflow.json', JSON.stringify(tracking, null, 2));
+}
+"
+```
 
 **Read iteration config:**
 - Check for `[MAX_ITERATIONS] N` in the scope definition (default: 3)
@@ -246,6 +290,24 @@ While `current_iteration <= max_iterations`:
 
 **On successful completion** (all pass): update state file `status: done`, then clean up (delete state file or mark as final).
 
+**Update scope tracking in `cali-product-workflow.json`:**
+```bash
+node -e "
+const fs = require('fs');
+const tracking = JSON.parse(fs.readFileSync('cali-product-workflow.json', 'utf8'));
+const wf = tracking.workflows.find(w => w.status === 'in-progress');
+if (wf?.scopes) {
+  const scope = wf.scopes.find(s => s.id === '{SCOPE-ID}');
+  if (scope) {
+    scope.status = 'completed';  // or 'escalated' on failure
+    scope.iteration = {M};       // final iteration count
+  }
+  wf.updated = new Date().toISOString();
+  fs.writeFileSync('cali-product-workflow.json', JSON.stringify(tracking, null, 2));
+}
+"
+```
+
 **Report per scope:**
 ```
 ✅ [SCOPE-1] Login — DONE (2/3 iterations, 3 files, 2 reviews passed)
@@ -258,6 +320,8 @@ While `current_iteration <= max_iterations`:
 
 For each scope with `[TYPE] optimization`:
 
+**Mark scope as in-progress:** (same bash pattern as Step 3 — update scope status to `'in-progress'`)
+
 1. **Create an optimization goal** using the goals tool (see `references/cli-tools/goals.md` → Optimization Goals). The goals reference documents acceptance patterns, benchmark verify commands, and iteration loops.
 
 2. **Set a stopping condition:**
@@ -266,10 +330,13 @@ For each scope with `[TYPE] optimization`:
 
 3. **When optimization completes**, run parallel code review (see `references/cli-tools/subagents.md`)
 4. **DoD verification** (see Step 7)
+5. **Update scope tracking** — set scope status to `'completed'` (or `'escalated'` on failure) in `cali-product-workflow.json` (same bash pattern as Step 3)
 
 ### Step 5: Execute spike scopes (spike → scout + researcher)
 
 For each scope with `[TYPE] spike`:
+
+**Mark scope as in-progress:** (same bash pattern as Step 3 — update scope status to `'in-progress'`)
 
 1. **Run parallel investigation via subagents** (see `references/cli-tools/subagents.md`):
    - **scout**: investigate existing codebase for the objective — find relevant files, patterns, constraints

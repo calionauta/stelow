@@ -320,6 +320,17 @@ function cmdStatus(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
         p.status === "in-progress" ? "◆" : "○";
       return `${i === wf.currentPhase ? "→ " : "  "}${icon} ${i + 1}. ${p.name}`;
     }),
+    // Show scope progress during Execution phase
+    ...(wf.scopes && wf.scopes.length > 0 && wf.currentPhase === STAGE.EXECUTION() ? [
+      "",
+      `Scopes: ${wf.scopes.filter(s => s.status === 'completed').length}/${wf.scopes.length} completed`,
+      ...wf.scopes.map(s => {
+        const icon = s.status === 'completed' ? '✓' :
+          s.status === 'in-progress' ? '◆' :
+          s.status === 'escalated' || s.status === 'failed' ? '✗' : '○';
+        return `  ${icon} ${s.name} [${s.type}]`;
+      }),
+    ] : []),
     "",
     "/pw-next  /pw-abort  /pw-menu"
   ].join("\n"));
@@ -544,6 +555,55 @@ function cmdNext(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
     }
   } else {
     next = wf.currentPhase + 1;
+  }
+
+  // ── Scope completion gate: block advance from Execution if scopes incomplete ──
+  if (wf.currentPhase === STAGE.EXECUTION() && next === STAGE.VERIFICATION()) {
+    const scopes = wf.scopes;
+    if (scopes && scopes.length > 0) {
+      const incomplete = scopes.filter(s => s.status !== 'completed');
+      if (incomplete.length > 0) {
+        const summary = incomplete.map(s => `  • ${s.name} [${s.status}]`).join('\n');
+        replyWarn(ctx, [
+          `⚠️ Cannot advance to Verification — ${incomplete.length}/${scopes.length} scope(s) not completed:`,
+          summary,
+          '',
+          'Complete or escalate all scopes before advancing. Use /pw-abort to stop.',
+        ].join('\n'));
+        return;
+      }
+    }
+  }
+
+  // ── Audit re-injection loop: if pending scopes exist, loop back to Execution ──
+  if (wf.currentPhase === STAGE.AUDIT() && next >= PHASE_NAMES.length) {
+    const pendingScopes = wf.scopes?.filter(s => s.status === 'pending' || s.status === 'in-progress') ?? [];
+    if (pendingScopes.length > 0) {
+      // Loop back to Execution — scope executor will pick up pending scopes
+      const tLoop = readTracking(wd);
+      if (tLoop) {
+        const idxLoop = tLoop.workflows.findIndex(w => w.name === wf.name);
+        if (idxLoop !== -1) {
+          tLoop.workflows[idxLoop].currentPhase = STAGE.EXECUTION();
+          tLoop.workflows[idxLoop].phases.forEach((p, i) => {
+            p.status = i < STAGE.EXECUTION() ? 'completed' : i === STAGE.EXECUTION() ? 'in-progress' : 'pending';
+          });
+          tLoop.workflows[idxLoop].updated = new Date().toISOString();
+          writeTracking(wd, tLoop);
+        }
+      }
+      wf.currentPhase = STAGE.EXECUTION();
+      updateFooter(ctx, wd);
+      syncStagesGuardState(wd, STAGE.EXECUTION());
+      const summary = pendingScopes.map(s => `  • ${s.name} [${s.status}]`).join('\n');
+      reply(ctx, [
+        `🔄 Audit found ${pendingScopes.length} open scope(s) — looping back to Execution:`,
+        summary,
+        '',
+        'Scope executor will handle these automatically.',
+      ].join('\n'));
+      return;
+    }
   }
 
   if (next >= PHASE_NAMES.length) {

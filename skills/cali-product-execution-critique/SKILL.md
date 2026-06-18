@@ -115,11 +115,12 @@ but can also be used standalone when you say:
 | 5 | **Doc & Test Update Check** | README, AGENTS.md, CHANGELOG, test coverage |
 | 6 | **Gap Registry** | Missing, partial, new scope, quality, debt |
 | 7 | **Lessons Learned** | What went well, what could improve |
-| 8 | **Decision Matrix** | Close, document, follow-up, human review |
+| 8 | **Gap-to-Scope** | Convert ESCALATED gaps to new scopes for re-execution |
+| 9 | **Decision Matrix** | Close, document, follow-up, human review |
 
-> All 8 criteria run in every mode. Only the **source of truth** differs.
+> All 9 criteria run in every mode. Only the **source of truth** differs.
 
-> **Appetite-aware depth:** All 8 criteria always run. For PoC/Focused, report is
+> **Appetite-aware depth:** All 9 criteria always run. For PoC/Focused, report is
 > concise (summary + gap registry). For Comprehensive, full recommendations + lessons.
 > Coverage is identical regardless of appetite.
 
@@ -222,7 +223,7 @@ Each modified entity maps to one or more plan scopes. Entities with no matching
 scope are flagged as **scope creep**. Plan scopes with no matching entities are
 flagged as **missing scope**.
 
-### 3. Run all 8 criteria
+### 3. Run all 9 criteria
 
 For each scope, evaluate:
 
@@ -297,13 +298,99 @@ Lessons are saved to `.cali-product-workflow/lessons-learned/` so future workflo
 sessions can read them during setup. The `setup.md` stage will automatically
 check for and inject prior lessons at workflow start.
 
-**Decision Matrix (criteria 8):**
+### Gap-to-Scope Conversion (criteria 8)
+
+After the Gap Registry is complete, **convert ESCALATED gaps into new scopes**.
+This creates a self-healing loop: the workflow re-enters Execution to fix gaps
+automatically, then re-audits until clean.
+
+**Classification rules:**
+| Impact | Effort to Fix | Action |
+|--------|---------------|--------|
+| low | any | ✅ **FIXED** — apply inline fix now |
+| medium | trivial (< 5 min) | ✅ **FIXED** — apply inline fix now |
+| medium | moderate | 📝 **DOCUMENTED** — note for next cycle |
+| high | any | 🔄 **ESCALATED** — becomes new scope |
+| critical | any | 🔄 **ESCALATED** — becomes new scope |
+
+**What to fix inline (FIXED):**
+- Missing imports, unused imports, typo in identifiers
+- Missing error handling (empty catch, no fallback)
+- Missing null/undefined checks on public APIs
+- Inconsistent naming (one-offs, not architectural)
+- Unused variables, dead code in changed files
+- Formatting inconsistencies in changed code
+
+**What to document (DOCUMENTED):**
+- Medium-impact items that need architectural consideration
+- Nice-to-haves that don't block delivery
+- Tech debt acknowledged for next iteration
+
+**What becomes a new scope (ESCALATED):**
+- Missing tests for critical logic
+- Security gaps (auth, input validation, rate limiting)
+- Performance issues identified by audit
+- Missing NFR coverage (observability, error handling)
+- Scope items from plan that were not implemented
+
+**Process:**
+```
+1. For each gap in Gap Registry:
+   - Classify: Impact × Effort
+   - Decision: FIXED / DOCUMENTED / ESCALATED
+
+2. FIXED gaps:
+   - Apply fix now
+   - Re-run relevant tests
+   - If tests pass → mark FIXED
+   - If tests fail → revert, mark DOCUMENTED
+
+3. ESCALATED gaps → write as new scopes:
+```
+
+**Writing ESCALATED gaps to tracking file:**
+```bash
+# Add ESCALATED gaps as new scopes in cali-product-workflow.json
+node -e "
+const fs = require('fs');
+const tracking = JSON.parse(fs.readFileSync('cali-product-workflow.json', 'utf8'));
+const wf = tracking.workflows.find(w => w.status === 'in-progress');
+if (!wf) process.exit(0);
+
+// ESCALATED gaps from audit (build this list from criteria 6)
+const escalatedGaps = [
+  // { description: 'Missing rate limiter on login', impact: 'high' }
+];
+
+if (escalatedGaps.length > 0) {
+  const maxId = wf.scopes?.reduce((max, s) => {
+    const num = parseInt(s.id.replace('scope-', ''));
+    return num > max ? num : max;
+  }, 0) || 0;
+
+  if (!wf.scopes) wf.scopes = [];
+  escalatedGaps.forEach((gap, i) => {
+    wf.scopes.push({
+      id: 'scope-' + (maxId + i + 1),
+      name: gap.description.slice(0, 50),
+      type: 'feature',
+      status: 'pending',
+      source: 'audit-gap',
+    });
+  });
+  wf.updated = new Date().toISOString();
+  fs.writeFileSync('cali-product-workflow.json', JSON.stringify(tracking, null, 2));
+  console.log('Added ' + escalatedGaps.length + ' gap(s) as new scopes');
+}
+"
+```
+
+**Decision Matrix (criteria 9):**
 | Situation | Action |
 |-----------|--------|
-| All scopes complete, no gaps | ✅ Close cycle |
-| Minor gaps, low impact | 📝 Document gaps, close cycle |
-| Significant gaps, medium impact | ⚠️ Create follow-up plan? |
-| Critical gaps, high impact | 🚨 Human review required |
+| All FIXED or DOCUMENTED, no ESCALATED | ✅ Close cycle |
+| ESCALATED gaps exist | 🔄 Workflow loops back to Execution |
+| Critical gaps, high impact | 🔄 Workflow loops — scope executor handles |
 
 ---
 
@@ -332,7 +419,7 @@ else
 fi
 ```
 
-### 3. Run all 8 criteria
+### 3. Run all 9 criteria
 
 Same evaluation as Workflow mode, but source of truth is product requirements
 rather than technical scopes. The gap registry compares what was specified vs
@@ -383,7 +470,7 @@ Visit:
 
 Capture before/after snapshots for evidence.
 
-### Run all 8 criteria
+### Run all 9 criteria
 
 Same evaluation, adapted for context. Scope completeness is inferred from:
 - What files changed (git)
@@ -421,7 +508,7 @@ If none of the above produce results, ask the user:
 > "No plan file or recent changes detected. What was this implementation about?
 > Describe the expected scope or what should be checked."
 
-### Run all 8 criteria
+### Run all 9 criteria
 
 Same evaluation as Workflow mode. Inferred scopes replace planned scopes.
 
@@ -476,26 +563,34 @@ Always save or display in this format. The Lessons Learned section also writes t
 |------|--------|
 
 ### 6. Gap Registry
-| Gap Type | Description | Impact | Resolution |
-|----------|-------------|--------|------------|
+| Gap Type | Description | Impact | Effort | Action | Status |
+|----------|-------------|--------|--------|--------|--------|
+| | | | | FIX/DOC/ESCALATE | FIXED/DOCUMENTED/ESCALATED |
 
 ### 7. Lessons Learned
 - What went well:
 - What could improve:
 - Issues to watch:
 
+### 8. Gap Conversion Summary
+| Fixed | Documented | Escalated (new scopes) |
+|-------|------------|------------------------|
+| N | N | N |
+
 ## Decision
 
 | Situation | Action Taken |
 |-----------|-------------|
-| [All OK | Minor gaps | Significant gaps | Critical] | [✅ Close | 📝 Document | ⚠️ Follow-up | 🚨 Human Review] |
+| All FIXED or DOCUMENTED, no ESCALATED | ✅ Close cycle |
+| ESCALATED gaps exist | 🔄 Loops back to Execution |
+| New scopes added to tracking file | 🔄 Workflow re-enters Execution → Verification → Audit |
 ```
 
 ---
 
 ## ⚠️ Audit Warnings
 
-- **Don't skip criteria** — Each of the 8 criteria catches different issues.
+- **Don't skip criteria** — Each of the 9 criteria catches different issues.
 - **Don't assume** — Verify against the source of truth, don't guess.
 - **Don't rush** — A thorough audit saves hours of debugging later.
 - **Don't ignore warnings** — Even minor gaps compound over multiple cycles.

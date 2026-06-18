@@ -252,6 +252,18 @@ export interface GlobalIndexEntry {
   updated: string;
 }
 
+export type ScopeStatus = 'pending' | 'in-progress' | 'completed' | 'escalated' | 'failed';
+
+export interface Scope {
+  id: string;           // e.g. "scope-1", "scope-2"
+  name: string;         // e.g. "Auth Foundation"
+  type: string;         // e.g. "feature", "optimization", "spike", "test-unit"
+  status: ScopeStatus;
+  iteration?: number;   // current iteration count (for feature scopes)
+  maxIterations?: number; // from [MAX_ITERATIONS]
+  source?: string;      // e.g. "spec-tech" | "audit-gap" — where this scope originated
+}
+
 export interface Phase {
   id: string;
   name: string;
@@ -276,6 +288,7 @@ export interface Workflow {
   worktreePath?: string;  // Path to git worktree if created for execution
   dirHash?: string;       // Stable directory name (e.g., pw-ollc-whkaxv) — REQUIRED for rename/archive operations
   detectedCLI?: string;   // CLI harness detected at workflow creation
+  scopes?: Scope[];       // Tech plan scopes — populated during Execution phase
 }
 
 export interface TrackingData {

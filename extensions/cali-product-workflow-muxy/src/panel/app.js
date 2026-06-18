@@ -12,6 +12,8 @@ import {
   getPhaseName,
   getWorkflowProgress,
   getStatusBadge,
+  getScopeProgress,
+  getScopeBadge,
   getActiveWorkflow,
   getWorkflowCommand,
   isWorkflowCommandEnabled,
@@ -255,6 +257,7 @@ export class PipelinePanel {
   renderCard(wf) {
     const phaseName = getPhaseName(wf);
     const badge = getStatusBadge(wf);
+    const scopeBadge = getScopeBadge(wf);
     const progress = getWorkflowProgress(wf);
     const pct = Math.round(progress * 100);
       const staleNote = wf.staleCwd
@@ -292,6 +295,7 @@ export class PipelinePanel {
       ),
       h('div', { class: 'card-badges' },
         h('span', { class: cls('badge', badge.class) }, badge.label),
+        scopeBadge ? h('span', { class: cls('badge', scopeBadge.class) }, scopeBadge.label) : null,
         this.renderArtifactBadge(wf.name),
       ),
       staleNote,
@@ -386,6 +390,55 @@ export class PipelinePanel {
   }
 
   // ── Draft Section ─────────────────────────────────────────────────
+
+  // ── Scopes ────────────────────────────────────────────────────────
+
+  renderScopes(wf) {
+    const scopes = wf.scopes;
+    if (!scopes || scopes.length === 0) return null;
+    const progress = getScopeProgress(wf);
+
+    const statusIcon = (status) => {
+      switch (status) {
+        case 'completed': return icon('circleCheck', 12, 'text-success');
+        case 'in-progress': return icon('circleDot', 12, 'text-primary');
+        case 'escalated':
+        case 'failed': return icon('alertCircle', 12, 'text-error');
+        default: return icon('circleEllipsis', 12, 'text-muted-foreground');
+      }
+    };
+
+    const typeLabel = (type) => {
+      const labels = { feature: 'F', optimization: 'O', spike: 'S', 'test-unit': 'TU', 'test-integration': 'TI', 'test-security': 'TS', 'test-behavior': 'TB' };
+      return labels[type] || type?.slice(0, 2) || '?';
+    };
+
+    return h('div', { class: 'draft-section' },
+      h('div', { class: 'draft-section-header',
+        onclick: () => { wf._scopesOpen = !wf._scopesOpen; this.render(); },
+      },
+        icon('rectangle3group', 11),
+        h('span', null, `Scopes (${progress.completed}/${progress.total})`),
+        h('span', { style: 'margin-left:auto;font-size:9px;color:var(--muxy-foreground-muted);display:flex;' },
+          h('span', { style: `display:flex;transform:rotate(${wf._scopesOpen ? -90 : 90}deg);transition:transform 0.15s;` }, icon('chevronLeft', 9)),
+        ),
+      ),
+      wf._scopesOpen
+        ? h('div', { class: 'draft-content', style: 'padding:4px 8px;' },
+            ...scopes.map(s =>
+              h('div', { style: 'display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;' },
+                statusIcon(s.status),
+                h('span', { style: 'flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;' }, s.name),
+                h('span', { style: 'font-size:9px;color:var(--muxy-foreground-muted);background:var(--muxy-secondary);padding:1px 4px;border-radius:3px;' }, typeLabel(s.type)),
+              ),
+            ),
+          )
+        : h('div', { class: 'draft-preview' },
+            `${progress.completed} done, ${progress.inProgress} active, ${progress.total - progress.completed - progress.inProgress - progress.failed} pending` +
+            (progress.failed > 0 ? `, ${progress.failed} failed` : ''),
+          ),
+    );
+  }
 
   renderDraftSection(wf) {
     const content = wf._fullDraft || wf.draftContent;
@@ -527,6 +580,8 @@ export class PipelinePanel {
             ]);
           })(),
         ),
+        // Scopes section
+        this.renderScopes(wf),
         // Draft / Brief section
         this.renderDraftSection(wf),
         // Handoff Station

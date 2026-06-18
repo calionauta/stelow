@@ -4,6 +4,8 @@ import {
   getMacroStage,
   getStatusBadge,
   getWorkflowProgress,
+  getScopeProgress,
+  getScopeBadge,
   getActiveWorkflow,
   getWorkflowCommandLabel,
   isWorkflowCommandEnabled,
@@ -80,5 +82,67 @@ describe('Muxy workflow data normalization', () => {
       { ...wf('stale', 2), staleCwd: true },
       { ...wf('active', 2), staleCwd: false },
     ])?.name).toBe('active');
+  });
+});
+
+describe('Scope progress helpers', () => {
+  const wfWithScopes = (scopes: Array<{ id: string; name: string; type: string; status: string }>) => ({
+    name: 'test-wf',
+    status: 'in-progress',
+    currentPhase: 12,
+    cwd: '/tmp/test',
+    phases: [],
+    scopes,
+  });
+
+  it('returns null when no scopes exist', () => {
+    expect(getScopeProgress(wfWithScopes([]))).toBeNull();
+    expect(getScopeProgress({ name: 'no-scopes', status: 'in-progress', currentPhase: 0, phases: [] })).toBeNull();
+  });
+
+  it('counts scope statuses correctly', () => {
+    const progress = getScopeProgress(wfWithScopes([
+      { id: 's1', name: 'Auth', type: 'feature', status: 'completed' },
+      { id: 's2', name: 'Token', type: 'feature', status: 'in-progress' },
+      { id: 's3', name: 'Cache', type: 'optimization', status: 'pending' },
+    ]));
+    expect(progress).toEqual({ total: 3, completed: 1, inProgress: 1, failed: 0 });
+  });
+
+  it('counts escalated as failed', () => {
+    const progress = getScopeProgress(wfWithScopes([
+      { id: 's1', name: 'A', type: 'feature', status: 'completed' },
+      { id: 's2', name: 'B', type: 'feature', status: 'escalated' },
+    ]));
+    expect(progress?.failed).toBe(1);
+  });
+
+  it('returns null badge when no scopes', () => {
+    expect(getScopeBadge(wfWithScopes([]))).toBeNull();
+  });
+
+  it('returns done badge when all scopes completed', () => {
+    const badge = getScopeBadge(wfWithScopes([
+      { id: 's1', name: 'A', type: 'feature', status: 'completed' },
+      { id: 's2', name: 'B', type: 'spike', status: 'completed' },
+    ]));
+    expect(badge).toEqual({ label: '2/2', class: 'badge-scope-done' });
+  });
+
+  it('returns failed badge when any scope escalated', () => {
+    const badge = getScopeBadge(wfWithScopes([
+      { id: 's1', name: 'A', type: 'feature', status: 'completed' },
+      { id: 's2', name: 'B', type: 'feature', status: 'escalated' },
+    ]));
+    expect(badge?.class).toBe('badge-scope-failed');
+  });
+
+  it('returns neutral badge when mix of pending/in-progress', () => {
+    const badge = getScopeBadge(wfWithScopes([
+      { id: 's1', name: 'A', type: 'feature', status: 'completed' },
+      { id: 's2', name: 'B', type: 'feature', status: 'in-progress' },
+      { id: 's3', name: 'C', type: 'spike', status: 'pending' },
+    ]));
+    expect(badge).toEqual({ label: '1/3', class: 'badge-scope' });
   });
 });

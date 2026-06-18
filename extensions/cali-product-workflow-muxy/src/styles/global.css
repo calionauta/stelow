@@ -181,6 +181,21 @@ button:disabled { cursor: default; }
   gap: 2px;
 }
 
+.badge-scope {
+  background: var(--muxy-secondary);
+  color: var(--muxy-foreground);
+}
+
+.badge-scope-done {
+  background: color-mix(in srgb, var(--muxy-diff-add) 20%, transparent);
+  color: var(--muxy-diff-add);
+}
+
+.badge-scope-failed {
+  background: color-mix(in srgb, var(--muxy-diff-remove) 20%, transparent);
+  color: var(--muxy-diff-remove);
+}
+
 /* ── Filter bar ── */
 .filter-bar {
   display: flex;

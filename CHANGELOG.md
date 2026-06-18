@@ -4,6 +4,18 @@ All notable changes to `@renatocaliari/cali-product-workflow` will be documented
 
 ## [Unreleased]
 
+### Added
+- **Scope tracking in `cali-product-workflow.json`**: New `Scope` type and `scopes[]`
+  field on `Workflow`. Scopes are initialized by the scope executor, updated per-scope
+  on start/complete/escalate, and displayed on the Muxy kanban card (badge) and
+  detail view (collapsible list with status icons).
+- **Scope completion gate on `/pw-next`**: Blocks Execution→Verification if any scopes
+  are not `completed`. Shows which scopes remain.
+- **Audit re-injection loop**: When advancing from Audit phase, pending scopes loop
+  the workflow back to Execution automatically. Scope executor picks them up.
+- **Audit criteria 8 (Gap-to-Scope)**: `cali-product-execution-critique` now converts
+  ESCALATED gaps into new scopes in the tracking file, creating a self-healing cycle.
+
 ## [0.23.5-alpha] - 2026-06-13
 
 ### Changed

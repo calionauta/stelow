@@ -216,6 +216,37 @@ export function getStatusBadge(workflow) {
   }
 }
 
+// ── Scope helpers ─────────────────────────────────────────────────────
+
+/**
+ * Get scope progress summary for a workflow.
+ * Returns null if no scopes exist.
+ */
+export function getScopeProgress(workflow) {
+  const scopes = workflow.scopes;
+  if (!scopes || scopes.length === 0) return null;
+  const total = scopes.length;
+  const completed = scopes.filter(s => s.status === 'completed').length;
+  const inProgress = scopes.filter(s => s.status === 'in-progress').length;
+  const failed = scopes.filter(s => s.status === 'escalated' || s.status === 'failed').length;
+  return { total, completed, inProgress, failed };
+}
+
+/**
+ * Get scope badge info for display on kanban card.
+ * Returns null if no scopes exist.
+ */
+export function getScopeBadge(workflow) {
+  const progress = getScopeProgress(workflow);
+  if (!progress) return null;
+  const { total, completed, failed } = progress;
+  if (total === 0) return null;
+  let cls = 'badge-scope';
+  if (completed === total) cls = 'badge-scope-done';
+  else if (failed > 0) cls = 'badge-scope-failed';
+  return { label: `${completed}/${total}`, class: cls };
+}
+
 /**
  * Return the active workflow for a project. Used by Muxy to avoid showing
  * workflow-scoped actions as if they applied to the clicked card when they
