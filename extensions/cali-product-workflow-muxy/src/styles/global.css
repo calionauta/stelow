@@ -658,6 +658,69 @@ button:disabled { cursor: default; }
   color: var(--muxy-foreground);
 }
 
+/* ── Rename Input ── */
+.rename-input {
+  height: 22px;
+  border: 1px solid var(--muxy-accent);
+  border-radius: 4px;
+  background: var(--muxy-background);
+  color: var(--muxy-foreground);
+  padding: 0 6px;
+  font-size: 11px;
+  font-weight: 600;
+  outline: none;
+  box-shadow: 0 0 0 1px var(--muxy-accent-soft);
+}
+
+/* ── Draft / Brief Section ── */
+.draft-section {
+  margin-top: 12px;
+  border: 1px solid var(--muxy-border);
+  border-radius: 6px;
+  background: var(--muxy-surface);
+  overflow: hidden;
+}
+
+.draft-section-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+}
+
+.draft-section-header:hover {
+  background: var(--muxy-hover);
+}
+
+.draft-section-header svg {
+  transition: transform 0.15s ease;
+}
+
+.draft-preview {
+  padding: 4px 8px 8px;
+  font-size: 10px;
+  color: var(--muxy-foreground-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.draft-content {
+  margin: 0;
+  padding: 8px;
+  font: 11px/1.5 "SF Mono", Menlo, monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--muxy-foreground);
+  border-top: 1px solid var(--muxy-border);
+  max-height: 300px;
+  overflow-y: auto;
+}
+
 /* ── Dock bottom ── */
 .dock {
   display: flex;

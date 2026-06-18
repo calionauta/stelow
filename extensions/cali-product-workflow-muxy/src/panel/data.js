@@ -749,3 +749,118 @@ export async function copyToClipboard(text) {
     return false;
   }
 }
+
+// ── Name & Display helpers ────────────────────────────────────────────
+
+/**
+ * Generate a safe kebab-case name from text.
+ */
+export function toSafeName(text) {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, ' ')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 40);
+}
+
+/**
+ * Get a YYYY-MM-DD date stamp.
+ */
+export function getDateStamp(date) {
+  return (date || new Date()).toISOString().slice(0, 10);
+}
+
+/**
+ * Derive a representative display name from draft content.
+ * Extracts the first meaningful sentence or phrase.
+ */
+export function summarizeDisplayName(draftContent) {
+  if (!draftContent) return null;
+  let clean = draftContent
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/=== FILE:.*?===/g, '')
+    .replace(/### Initial Draft\n\n/, '')
+    .trim();
+  // First non-empty line under 80 chars
+  const firstLine = clean.split('\n')[0]?.trim();
+  if (firstLine && firstLine.length > 3 && firstLine.length < 80) {
+    return firstLine;
+  }
+  // First 5 significant words
+  const words = clean.split(/\s+/).filter(w => w.length > 2).slice(0, 5);
+  if (words.length >= 2) return words.join(' ');
+  return null;
+}
+
+/**
+ * Persist workflow metadata fields to both tracking file and index.json.
+ * wf: workflow object (needs name for lookup, dirHash + created for index.json path)
+ * updates: partial fields to merge (e.g. { displayName: '...' })
+ */
+export async function persistWorkflowMeta(wf, updates) {
+  const res = await muxy.files.read('cali-product-workflow.json');
+  if (!res?.content) return false;
+  const tracking = JSON.parse(res.content);
+  const entry = tracking.workflows.find(w => w.name === wf.name);
+  if (!entry) return false;
+  Object.assign(entry, updates, { updated: new Date().toISOString() });
+  await muxy.files.write('cali-product-workflow.json', JSON.stringify(tracking, null, 2));
+
+  // Also persist to index.json
+  if (wf.dirHash && wf.created) {
+    const ds = getDateStamp(new Date(wf.created));
+    const idxPath = `.cali-product-workflow/${ds}/${wf.dirHash}/index.json`;
+    try {
+      const idxRes = await muxy.files.read(idxPath);
+      if (idxRes?.content) {
+        const idx = JSON.parse(idxRes.content);
+        Object.assign(idx, updates, { updated_at: new Date().toISOString() });
+        await muxy.files.write(idxPath, JSON.stringify(idx, null, 2));
+      }
+    } catch { /* skip unreadable index */ }
+  }
+
+  return true;
+}
+
+/**
+ * Rename a workflow: set a new display name and kebab-safe name.
+ * oldName: current name for lookup in the tracking file
+ * newDisplayName: new human-readable name
+ * Returns the new safe name, or null on failure.
+ */
+export async function renameWorkflowInFiles(oldName, newDisplayName, wf) {
+  const safeName = toSafeName(newDisplayName);
+  if (!safeName || safeName.length < 2) return null;
+
+  const res = await muxy.files.read('cali-product-workflow.json');
+  if (!res?.content) return null;
+  const tracking = JSON.parse(res.content);
+  const entry = tracking.workflows.find(w => w.name === oldName);
+  if (!entry) return null;
+  entry.name = safeName;
+  entry.displayName = newDisplayName;
+  entry.updated = new Date().toISOString();
+  await muxy.files.write('cali-product-workflow.json', JSON.stringify(tracking, null, 2));
+
+  // Update index.json
+  if (wf.dirHash && wf.created) {
+    const ds = getDateStamp(new Date(wf.created));
+    const idxPath = `.cali-product-workflow/${ds}/${wf.dirHash}/index.json`;
+    try {
+      const idxRes = await muxy.files.read(idxPath);
+      if (idxRes?.content) {
+        const idx = JSON.parse(idxRes.content);
+        idx.name = safeName;
+        idx.displayName = newDisplayName;
+        idx.updated_at = new Date().toISOString();
+        await muxy.files.write(idxPath, JSON.stringify(idx, null, 2));
+      }
+    } catch { /* skip unreadable index */ }
+  }
+
+  return safeName;
+}

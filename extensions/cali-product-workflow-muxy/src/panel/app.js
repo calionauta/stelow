@@ -29,6 +29,9 @@ import {
   ARTIFACT_DIR_ICONS,
   ARTIFACT_DIR_LABELS,
   ARTIFACT_DIRS,
+  summarizeDisplayName,
+  persistWorkflowMeta,
+  renameWorkflowInFiles,
 } from './data';
 
 export class PipelinePanel {
@@ -47,6 +50,7 @@ export class PipelinePanel {
     this.refreshing = false;
     this.previewFile = null;
     this.previewContent = null;
+    this.renameState = null;
   }
 
   start() {
@@ -76,6 +80,9 @@ export class PipelinePanel {
     this.selectedWf = null;
     this.state = 'pipeline';
     this.filterText = '';
+    this.renameState = null;
+    // Switch to pipeline view immediately, then async-refresh data
+    this.render();
     setTimeout(() => this.refresh(true), 300);
   }
 
@@ -272,7 +279,7 @@ export class PipelinePanel {
         onclick: () => this.openDetail(wf),
         title: `Click to see details for "${wf.name}"`,
       },
-      h('div', { class: 'card-title' }, wf.name),
+      h('div', { class: 'card-title' }, wf.displayName || wf.name),
       h('div', { class: 'card-phase' },
         h('span', { style: `color:${dotColor}` }, '●'),
         ` ${phaseName}`,
@@ -295,16 +302,82 @@ export class PipelinePanel {
 
   // ── Detail ────────────────────────────────────────────────────────
 
-  openDetail(wf) {
+  async openDetail(wf) {
     this.selectedWf = wf;
     this.state = 'detail';
+    this.renameState = null;
+    // Auto-generate display name from draft if missing
+    if (!wf.displayName && wf.draftContent) {
+      const summary = summarizeDisplayName(wf.draftContent);
+      if (summary) {
+        wf.displayName = summary;
+        // Persist asynchronously — no need to await for render
+        persistWorkflowMeta(wf, { displayName: summary }).catch(() => {});
+      }
+    }
     this.render();
   }
 
   closeDetail() {
     this.selectedWf = null;
     this.state = 'pipeline';
+    this.renameState = null;
     this.render();
+  }
+
+  // ── Rename ─────────────────────────────────────────────────────────
+
+  startRename() {
+    const wf = this.selectedWf;
+    if (!wf) return;
+    this.renameState = { name: wf.displayName || wf.name };
+    this.render();
+  }
+
+  async saveRename() {
+    const wf = this.selectedWf;
+    if (!wf || !this.renameState?.name?.trim()) return;
+    const newName = this.renameState.name.trim();
+    const oldName = wf.name;
+    this.renameState = null;
+
+    if (newName === (wf.displayName || wf.name)) {
+      this.render();
+      return;
+    }
+
+    const safeName = await renameWorkflowInFiles(oldName, newName, wf);
+    if (safeName) {
+      wf.name = safeName;
+      wf.displayName = newName;
+    }
+    this.render();
+  }
+
+  cancelRename() {
+    this.renameState = null;
+    this.render();
+  }
+
+  // ── Draft Section ─────────────────────────────────────────────────
+
+  renderDraftSection(wf) {
+    if (!wf.draftContent) return null;
+    const firstLine = wf.displayName || summarizeDisplayName(wf.draftContent) || 'Brief';
+    return h('div', { class: 'draft-section' },
+      h('div', { class: 'draft-section-header',
+        onclick: () => { wf._draftOpen = !wf._draftOpen; this.render(); },
+      },
+        icon('fileText', 11),
+        h('span', null, 'Brief'),
+        h('span', { style: 'margin-left:auto;font-size:9px;color:var(--muxy-foreground-muted);display:flex;' },
+          h('span', { style: `display:flex;transform:rotate(${wf._draftOpen ? -90 : 90}deg);transition:transform 0.15s;` }, icon('chevronLeft', 9)),
+        ),
+      ),
+      wf._draftOpen
+        ? h('pre', { class: 'draft-content' }, wf.draftContent)
+        : h('div', { class: 'draft-preview' }, firstLine),
+    );
   }
 
   renderDetail() {
@@ -325,7 +398,35 @@ export class PipelinePanel {
           onclick: () => this.closeDetail(),
           title: 'Back to pipeline',
         }, icon('chevronLeft', 14)),
-        h('span', { style: 'flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap' }, wf.name),
+        this.renameState
+          ? h('div', { style: 'flex:1;display:flex;gap:4px;align-items:center;' },
+              h('input', {
+                class: 'rename-input',
+                value: this.renameState.name,
+                oninput: (e) => { this.renameState.name = e.target.value; },
+                onkeydown: (e) => {
+                  if (e.key === 'Enter') this.saveRename();
+                  if (e.key === 'Escape') this.cancelRename();
+                },
+                onmount: (el) => el.focus(),
+                style: 'flex:1;',
+              }),
+              h('button', {
+                class: 'inbox-item-btn',
+                onclick: () => this.saveRename(),
+                title: 'Save name',
+              }, icon('check', 12)),
+              h('button', {
+                class: 'inbox-item-btn',
+                onclick: () => this.cancelRename(),
+                title: 'Cancel',
+              }, icon('x', 12)),
+            )
+          : h('span', {
+              style: 'flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;',
+              title: 'Click to rename',
+              onclick: () => this.startRename(),
+            }, wf.displayName || wf.name),
         h('span', { class: cls('badge', badge.class) }, badge.label),
       ),
       h('div', { class: 'detail-body' },
@@ -399,6 +500,8 @@ export class PipelinePanel {
             ]);
           })(),
         ),
+        // Draft / Brief section
+        this.renderDraftSection(wf),
         // Handoff Station
         this.renderHandoff(wf),
         // Artifacts section
