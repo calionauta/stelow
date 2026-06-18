@@ -119,7 +119,7 @@ export default async function cmdStart(
   const wf: Workflow = {
     name: finalName,
     description: truncateText(draftText, 500) || "",
-    draftContent: fullDraft ? truncateText(fullDraft, 5000) : undefined,
+    draftContent: fullDraft ? truncateText(fullDraft, 50000) : undefined,
     source: sources.length > 0 ? sources[0] : undefined,
     status: "in-progress",
     currentPhase: 2,
@@ -163,7 +163,7 @@ export default async function cmdStart(
     status: "in-progress",
     current_phase: "setup", current_phase_index: 2,
     artifacts: {}, approved: false, approved_at: null,
-    draft: fullDraft ? truncateText(fullDraft, 10000) : undefined,
+    draft: fullDraft ? truncateText(fullDraft, 50000) : undefined,
     sources,
     detected_cli: detectCLI(),
   }, null, 2));

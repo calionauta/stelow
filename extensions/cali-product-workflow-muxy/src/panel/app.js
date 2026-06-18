@@ -29,6 +29,7 @@ import {
   ARTIFACT_DIR_ICONS,
   ARTIFACT_DIR_LABELS,
   ARTIFACT_DIRS,
+  getDateStamp,
   summarizeDisplayName,
   persistWorkflowMeta,
   renameWorkflowInFiles,
@@ -306,16 +307,36 @@ export class PipelinePanel {
     this.selectedWf = wf;
     this.state = 'detail';
     this.renameState = null;
+
     // Auto-generate display name from draft if missing
     if (!wf.displayName && wf.draftContent) {
       const summary = summarizeDisplayName(wf.draftContent);
       if (summary) {
         wf.displayName = summary;
-        // Persist asynchronously — no need to await for render
         persistWorkflowMeta(wf, { displayName: summary }).catch(() => {});
       }
     }
+
     this.render();
+
+    // Load full draft from index.json (larger limit) — async enhancement
+    if (wf.dirHash && wf.created && !wf._fullDraft) {
+      try {
+        const ds = getDateStamp(new Date(wf.created));
+        const idxPath = `.cali-product-workflow/${ds}/${wf.dirHash}/index.json`;
+        const idxRes = await muxy.files.read(idxPath);
+        if (idxRes?.content) {
+          const idx = JSON.parse(idxRes.content);
+          if (idx.draft) {
+            wf._fullDraft = idx.draft;
+            // Re-render if still on the same card
+            if (this.selectedWf === wf && this.state === 'detail') {
+              this.render();
+            }
+          }
+        }
+      } catch { /* fall back to wf.draftContent */ }
+    }
   }
 
   closeDetail() {
@@ -348,8 +369,13 @@ export class PipelinePanel {
 
     const safeName = await renameWorkflowInFiles(oldName, newName, wf);
     if (safeName) {
-      wf.name = safeName;
-      wf.displayName = newName;
+      // Update workflow in the active workflows array (survives background refresh)
+      const existing = this.workflows.find(w => w === wf || w.name === oldName);
+      if (existing) {
+        existing.name = safeName;
+        existing.displayName = newName;
+      }
+      this.selectedWf = existing || this.selectedWf;
     }
     this.render();
   }
@@ -362,8 +388,9 @@ export class PipelinePanel {
   // ── Draft Section ─────────────────────────────────────────────────
 
   renderDraftSection(wf) {
-    if (!wf.draftContent) return null;
-    const firstLine = wf.displayName || summarizeDisplayName(wf.draftContent) || 'Brief';
+    const content = wf._fullDraft || wf.draftContent;
+    if (!content) return null;
+    const firstLine = wf.displayName || summarizeDisplayName(wf.draftContent || content) || 'Brief';
     return h('div', { class: 'draft-section' },
       h('div', { class: 'draft-section-header',
         onclick: () => { wf._draftOpen = !wf._draftOpen; this.render(); },
@@ -375,7 +402,7 @@ export class PipelinePanel {
         ),
       ),
       wf._draftOpen
-        ? h('pre', { class: 'draft-content' }, wf.draftContent)
+        ? h('pre', { class: 'draft-content' }, content)
         : h('div', { class: 'draft-preview' }, firstLine),
     );
   }
