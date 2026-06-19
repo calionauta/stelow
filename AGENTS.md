@@ -19,6 +19,8 @@ See [architecture.md](architecture.md) for module layout, data flow, and how to 
 | `/sw-start` | Begin planning |
 | `/sw-menu` | Show workflow status |
 
+> **Command aliases:** `/stelow-*` names are registered alongside `/sw-*` for readability. Both prefixes work.
+
 > **Source of Truth:** Stage/skill counts derive from `stages.yaml` and `ls skills/*/SKILL.md | wc -l`. Never update counts here without verifying.
 
 ```bash
