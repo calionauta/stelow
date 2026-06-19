@@ -7,12 +7,12 @@ based_on: spec-product_v1.md
 
 ### Scope 1: Inbox CLI Command
 [TYPE: feature]
-**Objective:** Implement `/pw-inbox add` CLI command with 3 structured prompts.
+**Objective:** Implement `/sw-inbox add` CLI command with 3 structured prompts.
 **DoD:** Command runs, prompts user, saves to inbox.json
 **AC:** 
-  - `/pw-inbox add` shows 3 sequential prompts
+  - `/sw-inbox add` shows 3 sequential prompts
   - Input is validated (non-empty required fields)
-  - Output is saved to .cali-product-workflow/inbox.json
+  - Output is saved to .stelow/inbox.json
   - Help text explains the command
 **Dependencies:** None
 **Effort:** 2 days
@@ -31,7 +31,7 @@ based_on: spec-product_v1.md
 
 ### Scope 3: Inbox List Command
 [TYPE: feature]
-**Objective:** Implement `/pw-inbox list` to display stored ideas.
+**Objective:** Implement `/sw-inbox list` to display stored ideas.
 **DoD:** Lists all inbox items with status, urgency, and preview
 **AC:**
   - Shows empty state when no items

@@ -10,13 +10,13 @@
  * Reference: docs/2026-05-20/multi-cli-plan/plans/spec-tech_multi-cli-impl-v1.md
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { CLI } from '../../extensions/cali-product-workflow/types';
+import { CLI } from '../../extensions/stelow/types';
 import {
   WORKFLOW_COMMANDS,
   getCommandSystem,
   type CommandDescriptor,
   type CommandRegistrationSystem,
-} from '../../extensions/cali-product-workflow/adapters/commands';
+} from '../../extensions/stelow/adapters/commands';
 
 describe('Command Dispatcher Integration Tests', () => {
   // Store original env
@@ -48,32 +48,32 @@ describe('Command Dispatcher Integration Tests', () => {
       }
     });
 
-    it('all commands start with "pw-" prefix', () => {
+    it('all commands start with "sw-" prefix', () => {
       for (const cmd of WORKFLOW_COMMANDS) {
-        expect(cmd.name.startsWith('pw-')).toBe(true);
+        expect(cmd.name.startsWith('sw-')).toBe(true);
       }
     });
 
     it('contains expected commands', () => {
       const commandNames = WORKFLOW_COMMANDS.map(cmd => cmd.name);
       
-      expect(commandNames).toContain('pw-start');
-      expect(commandNames).toContain('pw-abort');
-      expect(commandNames).toContain('pw-pause');
-      expect(commandNames).toContain('pw-resume');
-      expect(commandNames).toContain('pw-status');
-      expect(commandNames).toContain('pw-ls');
-      expect(commandNames).toContain('pw-setphase');
-      expect(commandNames).toContain('pw-next');
-      expect(commandNames).toContain('pw-complete');
-      expect(commandNames).toContain('pw-goto');
-      expect(commandNames).toContain('pw-rename');
-      expect(commandNames).toContain('pw-menu');
-      expect(commandNames).toContain('pw-doctor');
-      expect(commandNames).not.toContain('pw-todo');
-      expect(commandNames).toContain('pw-inbox');
-      expect(commandNames).toContain('pw-archive');
-      expect(commandNames).toContain('pw-unarchive');
+      expect(commandNames).toContain('sw-start');
+      expect(commandNames).toContain('sw-abort');
+      expect(commandNames).toContain('sw-pause');
+      expect(commandNames).toContain('sw-resume');
+      expect(commandNames).toContain('sw-status');
+      expect(commandNames).toContain('sw-ls');
+      expect(commandNames).toContain('sw-setphase');
+      expect(commandNames).toContain('sw-next');
+      expect(commandNames).toContain('sw-complete');
+      expect(commandNames).toContain('sw-goto');
+      expect(commandNames).toContain('sw-rename');
+      expect(commandNames).toContain('sw-menu');
+      expect(commandNames).toContain('sw-doctor');
+      expect(commandNames).not.toContain('sw-todo');
+      expect(commandNames).toContain('sw-inbox');
+      expect(commandNames).toContain('sw-archive');
+      expect(commandNames).toContain('sw-unarchive');
     });
 
     it('has 17 commands defined', () => {
@@ -342,13 +342,13 @@ describe('Command Dispatcher Integration Tests', () => {
       const system = getCommandSystem('opencode');
       const files = system.generateCommandFiles();
       
-      const startFile = files.find(f => f.path.includes('pw-start'));
+      const startFile = files.find(f => f.path.includes('sw-start'));
       expect(startFile).toBeDefined();
-      expect(startFile?.content).toContain('pw-start');
+      expect(startFile?.content).toContain('sw-start');
 
-      const doctorFile = files.find(f => f.path.includes('pw-doctor'));
+      const doctorFile = files.find(f => f.path.includes('sw-doctor'));
       expect(doctorFile).toBeDefined();
-      expect(doctorFile?.content).toContain('pw-doctor');
+      expect(doctorFile?.content).toContain('sw-doctor');
     });
 
     it('claude-code generates 17 command files', () => {

@@ -1,5 +1,5 @@
 ---
-source: cali-product-workflow (consolidated)
+source: stelow (consolidated)
 original_files: risk-analysis.md, persistence.md, output-expectations.md, output-format.md
 date: 2026-05-15
 ---

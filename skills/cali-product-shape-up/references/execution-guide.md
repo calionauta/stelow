@@ -1,5 +1,5 @@
 ---
-source: cali-product-workflow (consolidated)
+source: stelow (consolidated)
 original_files: sequencing-and-persistence.md, cross-domain-adaptation.md, evolutionary-exploration.md
 date: 2026-05-15
 ---

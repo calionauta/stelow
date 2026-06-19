@@ -22,7 +22,7 @@ const PROJECT_ROOT = join(__dirname, "..");
 
 // ── Ensure build exists ─────────────────────────────────────────────
 
-const buildDir = join(PROJECT_ROOT, "build", "extensions", "cali-product-workflow", "adapters", "commands");
+const buildDir = join(PROJECT_ROOT, "build", "extensions", "stelow", "adapters", "commands");
 const dispatcherJs = join(buildDir, "dispatcher.js");
 
 if (!existsSync(dispatcherJs)) {
@@ -73,11 +73,11 @@ description: ${c.piOnly ? "[Pi only] " : ""}${c.description}
 `,
     fileBody: (c) => c.piOnly
       ? `> ⚠️ This command requires the Pi extension for full functionality.
-> Use /skill:cali-product-workflow and ask to ${c.name}.
+> Use /skill:stelow and ask to ${c.name}.
 
-/skill:cali-product-workflow ${c.name}
+/skill:stelow ${c.name}
 `
-      : `/skill:cali-product-workflow
+      : `/skill:stelow
 
 ${c.name} {args}
 `,
@@ -94,11 +94,11 @@ description: ${c.piOnly ? "[Pi only] " : ""}${c.description}
 `,
     fileBody: (c) => c.piOnly
       ? `> ⚠️ This command requires the Pi extension for full functionality.
-> Use /skill:cali-product-workflow and ask to ${c.name}.
+> Use /skill:stelow and ask to ${c.name}.
 
-/skill:cali-product-workflow ${c.name}
+/skill:stelow ${c.name}
 `
-      : `/skill:cali-product-workflow
+      : `/skill:stelow
 
 ${c.name} {args}
 `,
@@ -116,7 +116,7 @@ description: ${c.piOnly ? "[Pi only] " : ""}${c.description}
 `,
     fileBody: (c) => c.piOnly
       ? `> ⚠️ This command requires the Pi extension. Use the skill instead.
-/skill:cali-product-workflow ${c.name}
+/skill:stelow ${c.name}
 `
       : `${c.name} {args}
 `,

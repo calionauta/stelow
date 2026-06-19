@@ -53,7 +53,7 @@ From Tech Planning context:
 
 | Artifact | Path |
 |----------|------|
-| `testing-strategy.md` | `.cali-product-workflow/{date}/{_dir}/plans/` |
+| `testing-strategy.md` | `.stelow/{date}/{_dir}/plans/` |
 
 ---
 

@@ -1,4 +1,4 @@
-# cali-product-workflow Architecture
+# stelow Architecture
 
 ## Overview
 
@@ -8,16 +8,16 @@ Product planning workflow system for AI coding agents (Pi, Claude Code, OpenCode
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  SKILL (cali-product-workflow)                             │
-│  - /pw-start, /pw-next, /pw-inbox                        │
+│  SKILL (stelow)                             │
+│  - /sw-start, /sw-next, /sw-inbox                        │
 │  - Phase instructions (triage, shape, gate, etc.)         │
 └─────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  EXTENSION (extensions/cali-product-workflow)               │
+│  EXTENSION (extensions/stelow)               │
 │  - State management                                        │
-│  - Commands (/pw-inbox)                                     │
+│  - Commands (/sw-inbox)                                     │
 │  - UI (footer, overlays)                                   │
 │  - Lifecycle hooks (onTurnEnd, resume)                     │
 └─────────────────────────────────────────────────────────────┘
@@ -33,13 +33,13 @@ Product planning workflow system for AI coding agents (Pi, Claude Code, OpenCode
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
 │  FILESYSTEM                                                │
-│  .cali-product-workflow/                                   │
+│  .stelow/                                   │
 │  ├── inbox/items.md          # Deferred items              │
 │  ├── {date}/{hash}/                                          │
 │  │   ├── phase-todos.json    # Current phase tasks         │
 │  │   ├── index.json          # Workflow metadata          │
 │  │   └── tracking.json       # Local tracking             │
-│  └── cali-product-workflow.json  # Global tracking         │
+│  └── stelow.json  # Global tracking         │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -104,7 +104,7 @@ const todos = cache.get();  // from memory or file
 ### Inbox Flow
 
 ```
-/pw-inbox add <item>
+/sw-inbox add <item>
     ↓
 cmdInbox() [commands.ts]
     ↓
@@ -166,7 +166,7 @@ No config files needed. Structure IS the configuration.
 2. **Create instance:**
    ```typescript
    const store = new MarkdownFileStore(
-     '.cali-product-workflow/my-feature/items.md',
+     '.stelow/my-feature/items.md',
      '# My Feature'
    );
    ```
@@ -219,7 +219,7 @@ No config files needed. Structure IS the configuration.
 ## File Locations
 
 ```
-.cali-product-workflow/
+.stelow/
 ├── inbox/                   # User's deferred items
 │   └── items.md            # Markdown, one item per line
 ├── {date}-{hash}/          # Workflow-specific
@@ -229,7 +229,7 @@ No config files needed. Structure IS the configuration.
 │   ├── interfaces/         # Interface explorations
 │   ├── plans/              # Technical plans
 │   └── critiques/          # Review outputs
-├── cali-product-workflow.json   # Local tracking
+├── stelow.json   # Local tracking
 └── cali-pw-global.json      # Global tracking (home)
 ```
 
@@ -238,7 +238,7 @@ No config files needed. Structure IS the configuration.
 | File | Purpose |
 |------|---------|
 | `index.ts` | Lifecycle hooks (onTurnEnd, resume, etc.) |
-| `commands.ts` | Command handlers (/pw-start, /pw-inbox, etc.) |
+| `commands.ts` | Command handlers (/sw-start, /sw-inbox, etc.) |
 | `state.ts` | State management, uses modules |
 | `ui.ts` | TUI components (footer, overlays) |
 | `start.ts` | Workflow initialization |
@@ -248,20 +248,20 @@ No config files needed. Structure IS the configuration.
 
 | Command | Description |
 |---------|-------------|
-| `/pw-start [idea]` | Start new workflow |
-| `/pw-next` | Advance to next phase |
-| `/pw-prev` | Go back to previous phase |
-| `/pw-goto [phase]` | Jump to specific phase |
-| `/pw-menu` | Show workflow overlay |
-| `/pw-inbox` | Show inbox items |
-| `/pw-inbox add <item>` | Add to inbox |
-| `/pw-inbox remove <item>` | Remove from inbox |
-| `/pw-abort` | Abort and archive workflow |
-| `/pw-archive` | Archive workflow |
+| `/sw-start [idea]` | Start new workflow |
+| `/sw-next` | Advance to next phase |
+| `/sw-prev` | Go back to previous phase |
+| `/sw-goto [phase]` | Jump to specific phase |
+| `/sw-menu` | Show workflow overlay |
+| `/sw-inbox` | Show inbox items |
+| `/sw-inbox add <item>` | Add to inbox |
+| `/sw-inbox remove <item>` | Remove from inbox |
+| `/sw-abort` | Abort and archive workflow |
+| `/sw-archive` | Archive workflow |
 
 ## Phases
 
-> **Source of truth:** `extensions/cali-product-workflow/types.ts` — the `PHASE_NAMES` array.
+> **Source of truth:** `extensions/stelow/types.ts` — the `PHASE_NAMES` array.
 > All other files reference this; never hardcode phase lists elsewhere.
 
 | Index | Phase Name | Description |
@@ -283,13 +283,13 @@ No config files needed. Structure IS the configuration.
 | 14 | `Audit` | Execution critique (scope, quality, NFRs, docs) |
 
 For code, use `PHASE_NAMES` from `types.ts` and the `STAGE` enum — no hardcoded indices.
-For the orchestrator skill, the complete Stage Index is in `skills/cali-product-workflow/SKILL.md`.
+For the orchestrator skill, the complete Stage Index is in `skills/stelow/SKILL.md`.
 
 ## See Also
 
 - `AGENTS.md` — Agent instructions
-- `skills/cali-product-workflow/references/cli-tools/todo.md` — Todo system docs
-- `skills/cali-product-workflow/SKILL.md` — Workflow instructions
+- `skills/stelow/references/cli-tools/todo.md` — Todo system docs
+- `skills/stelow/SKILL.md` — Workflow instructions
 ---
 
 ## Future Refactor Path

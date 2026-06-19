@@ -1,5 +1,5 @@
 ---
-source: cali-product-workflow (consolidated)
+source: stelow (consolidated)
 original_files: core-principles.md, shaping-principles.md
 date: 2026-05-15
 ---

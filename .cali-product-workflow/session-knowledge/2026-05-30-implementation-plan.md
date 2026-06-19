@@ -223,7 +223,7 @@ Delegates to standalone skill `cali-product-delivery-audit`:
 
 1. Read `skills/cali-product-delivery-audit/SKILL.md` for full instructions
 2. Pass path to the most recent `spec-tech_v{N}.md` as input (find by glob:
-   `.cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_v*.md`, pick highest N)
+   `.stelow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_v*.md`, pick highest N)
 3. The skill runs all 8 criteria against the tech plan
 
 **Standalone usage:** This skill can be invoked outside the workflow
@@ -300,7 +300,7 @@ to ensure you're working with the correct version, not conversation memory.
 
 ```bash
 # Always read from disk
-cat .cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_v{N}.md
+cat .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_v{N}.md
 ```
 
 If the plan seems inconsistent with what you remember, **trust the file**,
@@ -454,7 +454,7 @@ replaced_by: cali-product-delivery-audit
 Add:
 ```bash
 # Delivery Audit skill
-install_skill "cali-product-delivery-audit" "skills/cali-product-delivery-audit" "github:renatocaliari/cali-product-workflow"
+install_skill "cali-product-delivery-audit" "skills/cali-product-delivery-audit" "github:renatocaliari/stelow"
 ```
 
 ### File: `install.sh`

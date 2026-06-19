@@ -16,7 +16,7 @@
 Also updated: `~/.pi/agent/settings.json` — fixed extension from `-` to `+` prefix, kept `skills: []`.
 
 ### Refinement plan items addressed:
-- 4c: /pw-next phase fix (CRITICAL) ✅
+- 4c: /sw-next phase fix (CRITICAL) ✅
 - 1: Remove External Context Pre-Load ✅
 - 3: Remove Capabilities ✅
 - 4a: Auto/Light skip stage selection ✅

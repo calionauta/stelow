@@ -13,15 +13,15 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtempSync, writeFileSync, mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { getRetiredSkillNames } from "../../extensions/cali-product-workflow/sync-skills";
+import { getRetiredSkillNames } from "../../extensions/stelow/sync-skills";
 
 let tmpRoot: string;
 let cloneSkillsDir: string;
 
 beforeEach(() => {
-  tmpRoot = mkdtempSync(join(tmpdir(), "cali-pw-sync-test-"));
+  tmpRoot = mkdtempSync(join(tmpdir(), "stelow-pw-sync-test-"));
   cloneSkillsDir = join(tmpRoot, "skills");
-  mkdirSync(join(cloneSkillsDir, "cali-product-workflow"), { recursive: true });
+  mkdirSync(join(cloneSkillsDir, "stelow"), { recursive: true });
 });
 
 afterEach(() => {
@@ -29,7 +29,7 @@ afterEach(() => {
 });
 
 const retiredFilePath = () =>
-  join(cloneSkillsDir, "cali-product-workflow", "retired-skills.yaml");
+  join(cloneSkillsDir, "stelow", "retired-skills.yaml");
 
 describe("getRetiredSkillNames", () => {
   it("returns empty set when retired-skills.yaml is missing", () => {

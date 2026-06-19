@@ -1,4 +1,4 @@
-# Pi CLI — cali-product-workflow
+# Pi CLI — stelow
 
 This directory follows the standard `cli-agents/` pattern for all CLI harnesses.
 All commands are documented in `COMMANDS.md` (single source of truth).
@@ -11,7 +11,7 @@ All commands are documented in `COMMANDS.md` (single source of truth).
 ```
 
 The install script:
-- Builds the Pi extension (`extensions/cali-pw-pi/`)
+- Builds the Pi extension (`extensions/stelow-pi/`)
 - Installs the extension to Pi
 - Installs required npm packages (`pi-subagents`, `pi-intercom`, etc.)
 - Installs all 25 skills to `~/.agents/skills/`
@@ -21,10 +21,10 @@ The install script:
 
 | Command | Description |
 |---------|-------------|
-| `/pw-start` | Start a new workflow |
-| `/pw-menu` | Show workflow menu |
-| `/pw-status` | Show current status |
-| `/pw-help` | Get help |
+| `/sw-start` | Start a new workflow |
+| `/sw-menu` | Show workflow menu |
+| `/sw-status` | Show current status |
+| `/sw-help` | Get help |
 
 Full command matrix: `../COMMANDS.md`
 
@@ -32,15 +32,15 @@ Full command matrix: `../COMMANDS.md`
 
 | Component | Location |
 |-----------|----------|
-| Extension | `~/.pi/agent/extensions/cali-pw-pi/` |
+| Extension | `~/.pi/agent/extensions/stelow-pi/` |
 | Skills | `~/.agents/skills/` (25 skills flat) |
 | Commands | Via extension (slash commands with TUI) |
 
 ## Extension Architecture
 
 ```
-extensions/cali-pw-pi/           # Stub (re-exports from build)
-extensions/cali-product-workflow/  # Source (TypeScript)
+extensions/stelow-pi/           # Stub (re-exports from build)
+extensions/stelow/  # Source (TypeScript)
   ├── adapters/pi/                 # Pi-specific adapter
   ├── commands.ts                  # Slash command registration
   ├── ui.ts                        # TUI overlay

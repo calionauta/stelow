@@ -21,15 +21,15 @@ import {
   isAncestorOrSame,
   type StagesConfig,
   type StageState,
-} from '../../extensions/cali-product-workflow/adapters/stages-guard';
-import { WORKFLOW_COMMANDS } from '../../extensions/cali-product-workflow/adapters/commands/dispatcher';
+} from '../../extensions/stelow/adapters/stages-guard';
+import { WORKFLOW_COMMANDS } from '../../extensions/stelow/adapters/commands/dispatcher';
 
 const __filename = fileURLToPath(import.meta.url);
 const __testDir = dirname(__filename);
 const PROJECT_ROOT = join(__testDir, '..', '..');
 
 // Load the REAL stages.yaml
-const STAGES_YAML_PATH = join(PROJECT_ROOT, 'skills/cali-product-workflow/stages.yaml');
+const STAGES_YAML_PATH = join(PROJECT_ROOT, 'skills/stelow/stages.yaml');
 const stagesContent = readFileSync(STAGES_YAML_PATH, 'utf-8');
 const stages: StagesConfig = parseYAML(stagesContent) as StagesConfig;
 
@@ -463,13 +463,13 @@ describe('Stages Guard', () => {
   // ── Dispatcher integration (regression) ─────────────────────────
 
   describe('WORKFLOW_COMMANDS dispatcher', () => {
-    it('includes pw-unlock (so it gets registered with pi)', () => {
+    it('includes sw-unlock (so it gets registered with pi)', () => {
       const names = WORKFLOW_COMMANDS.map(c => c.name);
-      expect(names).toContain("pw-unlock");
+      expect(names).toContain("sw-unlock");
     });
 
-    it('pw-unlock is marked piOnly', () => {
-      const cmd = WORKFLOW_COMMANDS.find(c => c.name === "pw-unlock");
+    it('sw-unlock is marked piOnly', () => {
+      const cmd = WORKFLOW_COMMANDS.find(c => c.name === "sw-unlock");
       expect(cmd?.piOnly).toBe(true);
     });
   });

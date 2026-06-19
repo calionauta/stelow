@@ -1,5 +1,5 @@
 ---
-source: cali-product-workflow (consolidated)
+source: stelow (consolidated)
 original_files: role.md, when-to-use.md, workflow-position.md, cross-domain.md, output-expectations.md
 date: 2026-05-15
 applies_to: [plan]

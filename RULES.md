@@ -1,4 +1,4 @@
-# cali-product-workflow Rules
+# stelow Rules
 
 ## Hard Constraints (NEVER violate)
 
@@ -15,7 +15,7 @@
 
 ## Tool Restrictions Per Stage
 
-See `skills/cali-product-workflow/stages.yaml` for current tool restrictions.
+See `skills/stelow/stages.yaml` for current tool restrictions.
 
 | Stage | Blocked Tools |
 |-------|---------------|
@@ -30,4 +30,4 @@ See `skills/cali-product-workflow/stages.yaml` for current tool restrictions.
 ## Enforcement
 
 - **All CLIs:** This file + stages.yaml define behavioral constraints
-- **Pi only:** `extensions/cali-product-workflow/adapters/stages-guard.ts` enforces programmatically
+- **Pi only:** `extensions/stelow/adapters/stages-guard.ts` enforces programmatically

@@ -1,8 +1,8 @@
 /**
- * cali-product-workflow OpenCode Plugin
+ * stelow OpenCode Plugin
  * 
  * Provides:
- * - /pw-start, /pw-menu, /pw-status, /pw-help commands
+ * - /sw-start, /sw-menu, /sw-status, /sw-help commands
  * - Workflow lifecycle hooks
  * - TUI status overlay
  */
@@ -26,7 +26,7 @@ import { PHASE_NAMES, MAX_PHASE } from "./phase-names.generated";
  * Start a new product workflow
  */
 const pwStart = tool({
-  description: "Start a new cali-product-workflow planning session",
+  description: "Start a new stelow planning session",
   args: {
     name: tool.schema.string().optional().describe("Workflow name"),
     description: tool.schema.string().optional().describe("Workflow description"),
@@ -60,7 +60,7 @@ const pwStart = tool({
 
     return {
       title: "Workflow Started",
-      output: `Started "${workflowName}" at Phase 1 (Setup)\n\nThe workflow will guide you through:\nSetup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Execution → Verification → Audit\n\nUse /pw-status to check progress, /pw-menu for actions.`,
+      output: `Started "${workflowName}" at Phase 1 (Setup)\n\nThe workflow will guide you through:\nSetup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Execution → Verification → Audit\n\nUse /sw-status to check progress, /sw-menu for actions.`,
       metadata: {
         workflowName,
         phase: 1,
@@ -74,7 +74,7 @@ const pwStart = tool({
  * Show workflow status
  */
 const pwStatus = tool({
-  description: "Show the current cali-product-workflow status",
+  description: "Show the current stelow workflow status",
   args: {},
   async execute(_args, ctx) {
     const sessionID = ctx.sessionID;
@@ -83,7 +83,7 @@ const pwStatus = tool({
     if (!workflow) {
       return {
         title: "No Active Workflow",
-        output: "No workflow is active. Use /pw-start to begin.",
+        output: "No workflow is active. Use /sw-start to begin.",
         metadata: {},
       };
     }
@@ -113,7 +113,7 @@ const pwNext = tool({
     if (!workflow) {
       return {
         title: "No Active Workflow",
-        output: "No workflow is active. Use /pw-start to begin.",
+        output: "No workflow is active. Use /sw-start to begin.",
         metadata: {},
       };
     }
@@ -148,23 +148,23 @@ const pwNext = tool({
  * Get workflow help
  */
 const pwHelp = tool({
-  description: "Get help about cali-product-workflow",
+  description: "Get help about stelow",
   args: {},
   async execute(_args, _ctx) {
     return {
-      title: "cali-product-workflow Help",
-      output: `# cali-product-workflow Commands
+      title: "stelow Help",
+      output: `# stelow Commands
 
 | Command | Description |
 |---------|-------------|
-| /pw-start | Start a new workflow |
-| /pw-menu | Show workflow menu |
-| /pw-status | Show current status |
-| /pw-help | Show this help |
-| /pw-next | Advance to next phase |
-| /pw-pause | Pause the workflow |
-| /pw-resume | Resume paused workflow |
-| /pw-abort | Abort and archive the workflow |
+| /sw-start | Start a new workflow |
+| /sw-menu | Show workflow menu |
+| /sw-status | Show current status |
+| /sw-help | Show this help |
+| /sw-next | Advance to next phase |
+| /sw-pause | Pause the workflow |
+| /sw-resume | Resume paused workflow |
+| /sw-abort | Abort and archive the workflow |
 
 ## Workflow Phases
 
@@ -192,19 +192,19 @@ const pwHelp = tool({
 export default async (input: Parameters<Plugin>[0]) => {
   return {
     tool: {
-      "pw-start": pwStart,
-      "pw-status": pwStatus,
-      "pw-next": pwNext,
-      "pw-help": pwHelp,
+      "sw-start": pwStart,
+      "sw-status": pwStatus,
+      "sw-next": pwNext,
+      "sw-help": pwHelp,
     },
     hooks: {
       // Track session start
       "chat.message": async (input, output) => {
-        console.log("[cali-product-workflow] Message in session:", input.sessionID);
+        console.log("[stelow] Message in session:", input.sessionID);
       },
       // Log tool execution
       "tool.execute.after": async (input, output) => {
-        console.log("[cali-product-workflow] Tool executed:", input.tool);
+        console.log("[stelow] Tool executed:", input.tool);
       },
     },
   };

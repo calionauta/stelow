@@ -1,6 +1,6 @@
-# OpenCode Plugin for cali-product-workflow
+# OpenCode Plugin for stelow
 
-This plugin provides cali-product-workflow commands and TUI integration for OpenCode.
+This plugin provides stelow commands and TUI integration for OpenCode.
 
 ## Installation
 
@@ -15,7 +15,7 @@ Then add to your `opencode.json`:
 ```json
 {
   "plugin": [
-    "@cali/cali-pw-opencode"
+    "@cali/stelow-pw-opencode"
   ]
 }
 ```
@@ -24,10 +24,10 @@ Then add to your `opencode.json`:
 
 | Command | Description |
 |---------|-------------|
-| `/pw-start` | Start a new workflow |
-| `/pw-menu` | Show workflow menu |
-| `/pw-status` | Show current status |
-| `/pw-help` | Get help |
+| `/sw-start` | Start a new workflow |
+| `/sw-menu` | Show workflow menu |
+| `/sw-status` | Show current status |
+| `/sw-help` | Get help |
 
 ## TUI Features
 

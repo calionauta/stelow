@@ -1,9 +1,9 @@
-# Refinement Plan: setup.md, ask-patterns.md, and /pw-next bug
+# Refinement Plan: setup.md, ask-patterns.md, and /sw-next bug
 
 > Status: For review
 > Author: Cali
 > Created: 2026-06-03
-> Updated: 2026-06-03 (added detailed root cause analysis of /pw-next phase miscount)
+> Updated: 2026-06-03 (added detailed root cause analysis of /sw-next phase miscount)
 
 ---
 
@@ -11,7 +11,7 @@
 
 ### The chain of errors
 
-> *You saw: `/pw-next` → `ItemSelect (2/15)`, then `/pw-next` → `Setup (3/15)`. Expected: directly to Shape.*
+> *You saw: `/sw-next` → `ItemSelect (2/15)`, then `/sw-next` → `Setup (3/15)`. Expected: directly to Shape.*
 
 **`start.ts:121`** cria o workflow com `currentPhase: 0`:
 ```typescript
@@ -42,9 +42,9 @@ const next = wf.currentPhase + 1;
 
 | Ação | `currentPhase` | Display | O que deveria ser |
 |------|----------------|---------|-------------------|
-| `pw-start` (skill starts at Setup) | 0 | Triage (1/15) | Setup (3/15) |
-| LLM says "proceed" → `/pw-next` | 0 + 1 = **1** | **ItemSelect (2/15)** | Shape (4/15) |
-| `/pw-next` again | 1 + 1 = **2** | **Setup (3/15)** | Shape (4/15) |
+| `sw-start` (skill starts at Setup) | 0 | Triage (1/15) | Setup (3/15) |
+| LLM says "proceed" → `/sw-next` | 0 + 1 = **1** | **ItemSelect (2/15)** | Shape (4/15) |
+| `/sw-next` again | 1 + 1 = **2** | **Setup (3/15)** | Shape (4/15) |
 
 ### Por que 2/5 vs 3/15?
 
@@ -79,7 +79,7 @@ E em `cmdNext`, após Setup, pular automaticamente Context (3) se não foi solic
 | `skills/.../stages/setup.md` | Remove section `setup:0.40` entirely (~15 lines) | Low |
 | `skills/.../stages/ask-patterns.md` | Pattern 7 trigger comment: remove "after context pre-load" or rephrase | Low |
 
-**Rationale:** The `ask_user_question` TUI only returns the choice (yes/no/tell me). There's no `wait_for_user_input` tool — the LLM proceeds without the files. User can provide context naturally in chat or via `/pw-start @file.md`.
+**Rationale:** The `ask_user_question` TUI only returns the choice (yes/no/tell me). There's no `wait_for_user_input` tool — the LLM proceeds without the files. User can provide context naturally in chat or via `/sw-start @file.md`.
 
 ## 2. Keep Moderate mode — clarify its position between Light and Product
 
@@ -129,7 +129,7 @@ E em `cmdNext`, após Setup, pular automaticamente Context (3) se não foi solic
 | Product | Ask user but default = skip (user can opt in) |
 | Product + Tech | Auto-run `npm test` + safe-change (if available) |
 
-### 4c. Fix `/pw-next` phase counter (ROOT CAUSE)
+### 4c. Fix `/sw-next` phase counter (ROOT CAUSE)
 
 **The fix is in 3 places:**
 

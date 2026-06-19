@@ -24,6 +24,6 @@
     "node_modules",
     "dist",
     "tests/**/*",
-    "extensions/cali-pw-pi/**/*"
+    "extensions/stelow-pi/**/*"
   ]
 }

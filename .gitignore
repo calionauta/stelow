@@ -1,4 +1,4 @@
-# ==== cali-product-workflow cleanup ====
+# ==== stelow cleanup ====
 
 # Session checkpoints and research (local only)
 research/
@@ -20,17 +20,18 @@ docs/2026-05-20/next-steps/
 # Test results (CI output)
 test-results/
 stryker-reports/
+.stryker-tmp/
 
 # Local workflow artifacts (auto-generated at runtime)
 .pi/
 .pi-*
-# .cali-product-workflow/ — version state/ (templates), ignore runtime artifacts
-.cali-product-workflow/2026-0*
-.cali-product-workflow/2025-*
-.cali-product-workflow/.gitkeep
-!.cali-product-workflow/state/
-!.cali-product-workflow/state/
-.cali-pw-global.json
+# .stelow/ — version state/ (templates), ignore runtime artifacts
+.stelow/2026-0*
+.stelow/2025-*
+.stelow/.gitkeep
+!.stelow/state/
+!.stelow/state/
+.stelow-global.json
 
 # OpenCode session plans
 .opencode/plans/

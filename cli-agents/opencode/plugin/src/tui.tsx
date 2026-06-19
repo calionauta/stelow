@@ -1,5 +1,5 @@
 /**
- * cali-product-workflow TUI Plugin
+ * stelow TUI Plugin
  * 
  * Provides:
  * - Workflow status in sidebar
@@ -62,9 +62,9 @@ export const tui: TuiPluginModule["tui"] = async (api, options, meta) => {
 
   // Register keyboard shortcut for workflow menu
   api.keymap.registerLayer({
-    commands: ["pw-menu", "pw-status"],
+    commands: ["sw-menu", "sw-status"],
     bindings: [
-      { key: "ctrl+w", command: "pw-menu" },
+      { key: "ctrl+w", command: "sw-menu" },
     ],
   });
 

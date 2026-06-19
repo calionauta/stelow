@@ -10,7 +10,7 @@ import {
   getWorkflowCommandLabel,
   isWorkflowCommandEnabled,
   normalizeTrackingDataForProject,
-} from '../../extensions/cali-product-workflow-muxy/src/panel/data';
+} from '../../extensions/stelow-muxy/src/panel/data';
 
 const wf = (name: string, currentPhase = 2, status = 'in-progress') => ({
   name,
@@ -63,18 +63,18 @@ describe('Muxy workflow data normalization', () => {
   it('disables active commands for completed workflows but keeps archive enabled', () => {
     const done = wf('done', 14, 'completed');
 
-    expect(isWorkflowCommandEnabled('/pw-next', done)).toBe(false);
-    expect(isWorkflowCommandEnabled('/pw-complete', done)).toBe(false);
-    expect(isWorkflowCommandEnabled('/pw-abort', done)).toBe(false);
-    expect(isWorkflowCommandEnabled('/pw-archive', done)).toBe(true);
+    expect(isWorkflowCommandEnabled('/sw-next', done)).toBe(false);
+    expect(isWorkflowCommandEnabled('/sw-complete', done)).toBe(false);
+    expect(isWorkflowCommandEnabled('/sw-abort', done)).toBe(false);
+    expect(isWorkflowCommandEnabled('/sw-archive', done)).toBe(true);
   });
 
   it('marks stale-cwd workflow as stale badge and disables commands', () => {
     const stale = { ...wf('stale', 2), staleCwd: true };
 
     expect(getStatusBadge(stale)).toEqual({ label: 'Stale cwd', class: 'badge-archived' });
-    expect(isWorkflowCommandEnabled('/pw-abort', stale)).toBe(false);
-    expect(getWorkflowCommandLabel('/pw-abort', stale, stale)).toBe('Stale cwd');
+    expect(isWorkflowCommandEnabled('/sw-abort', stale)).toBe(false);
+    expect(getWorkflowCommandLabel('/sw-abort', stale, stale)).toBe('Stale cwd');
   });
 
   it('finds active workflow only when cwd is not stale', () => {

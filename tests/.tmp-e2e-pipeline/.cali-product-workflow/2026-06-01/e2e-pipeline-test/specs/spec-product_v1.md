@@ -11,17 +11,17 @@ Current flow requires opening Slack, Notion, or email — all friction.
 
 ## Solution
 A lightweight triage system integrated into the workflow CLI.
-When user types `/pw-inbox add "idea"`, it prompts 3 structured
+When user types `/sw-inbox add "idea"`, it prompts 3 structured
 questions and saves to a local inbox file.
 
 ## Scope
 
 ### IN
-- CLI command: `/pw-inbox add`
+- CLI command: `/sw-inbox add`
 - 3 triage questions: problem, audience, urgency
-- Local inbox file at .cali-product-workflow/inbox.json
-- List inbox: `/pw-inbox list`
-- Clear inbox: `/pw-inbox clear`
+- Local inbox file at .stelow/inbox.json
+- List inbox: `/sw-inbox list`
+- Clear inbox: `/sw-inbox clear`
 
 ### OUT
 - Multi-user inbox sharing

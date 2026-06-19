@@ -1,5 +1,5 @@
 {
-  "name": "cali-product-workflow",
+  "name": "stelow",
   "owner": {
     "name": "Cali",
     "email": "contact@example.com"
@@ -10,7 +10,7 @@
   },
   "plugins": [
     {
-      "name": "cali-product-workflow",
+      "name": "stelow",
       "source": "./",
       "description": "Product workflow for AI coding agents: Shape Up + Interface + Tech Planning + Critique + Gate.",
       "version": "0.2.0-alpha",
@@ -25,6 +25,6 @@
       ]
     }
   ],
-  "version": "0.26.0-alpha",
+  "version": "0.26.1-alpha",
   "plugin_version": "0.12.1-alpha"
 }

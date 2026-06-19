@@ -20,7 +20,7 @@ const PROJECT_ROOT = join(__testDir, '..');
 // ── Paths ───────────────────────────────────────────────────────────
 
 const SKILLS_DIR = join(PROJECT_ROOT, 'skills');
-const WORKFLOW_DIR = join(SKILLS_DIR, 'cali-product-workflow');
+const WORKFLOW_DIR = join(SKILLS_DIR, 'stelow');
 const STAGES_DIR = join(WORKFLOW_DIR, 'stages');
 
 function readStage(name: string): string {
@@ -88,18 +88,18 @@ describe('No stale old appetite labels', () => {
 describe('Glob pattern consistency', () => {
   it('setup.md uses find with **/*/*/index.json pattern', () => {
     const content = readStage('setup.md');
-    expect(content).toMatch(/\.cali-product-workflow\/\*\/\*\/index\.json/);
+    expect(content).toMatch(/\.stelow\/\*\/\*\/index\.json/);
   });
 
   it('gate.md uses consistent double-wildcard glob pattern', () => {
     const content = readStage('gate.md');
-    expect(content).toMatch(/\.cali-product-workflow\/\*\/\*\/\$_DIR\/index\.json/);
+    expect(content).toMatch(/\.stelow\/\*\/\*\/\$_DIR\/index\.json/);
   });
 
   it('scope-executor uses correct path with {_dir} level (not broken single-wildcard)', () => {
     const content = readSkill('cali-product-scope-executor');
-    expect(content).toMatch(/\.cali-product-workflow\/\*\/\*\/plans/);
-    expect(content).not.toMatch(/\.cali-product-workflow\/\*\/plans/);
+    expect(content).toMatch(/\.stelow\/\*\/\*\/plans/);
+    expect(content).not.toMatch(/\.stelow\/\*\/plans/);
   });
 
   it('execution.md uses {YYYY-MM-DD}/{_dir}/plans/ pattern', () => {
@@ -451,7 +451,7 @@ describe('context:5 appetite/mode gate', () => {
   });
 
   test('lists all 5 strategic approaches (5-option rule)', () => {
-    const skillMd = readSkill('cali-product-workflow');
+    const skillMd = readSkill('stelow');
     expect(skillMd).toContain('Jobs To Be Done');
     expect(skillMd).toContain('Evolutionary Principles');
     expect(skillMd).toContain('Opportunity Mapping');
@@ -460,7 +460,7 @@ describe('context:5 appetite/mode gate', () => {
   });
 
   test('lists all 8 domain libraries (8-option rule)', () => {
-    const skillMd = readSkill('cali-product-workflow');
+    const skillMd = readSkill('stelow');
     expect(skillMd).toContain('Pricing');
     expect(skillMd).toContain('Trust');
     expect(skillMd).toContain('Ads');
@@ -495,7 +495,7 @@ describe('context:5 appetite/mode gate', () => {
   });
 
   test('SKILL.md uses :10/:20 labels (not 2a/2b)', () => {
-    const skillMd = readSkill('cali-product-workflow');
+    const skillMd = readSkill('stelow');
     expect(skillMd).toMatch(/Context stage — :10/);
     expect(skillMd).toMatch(/Context stage — :20/);
     expect(skillMd).not.toMatch(/Context stage — 2a/);

@@ -1,9 +1,9 @@
-# @renatocaliari/cali-product-workflow
+# stelow — opinionated product workflow. stellar clarity. low friction.
 
-[![CI](https://github.com/renatocaliari/cali-product-workflow/actions/workflows/ci.yml/badge.svg)](https://github.com/renatocaliari/cali-product-workflow/actions/workflows/ci.yml)
-[![Mutation Testing](https://github.com/renatocaliari/cali-product-workflow/actions/workflows/mutation.yml/badge.svg)](https://github.com/renatocaliari/cali-product-workflow/actions/workflows/mutation.yml)
-[![Coverage](https://img.shields.io/badge/coverage-70%25-brightgreen)](https://github.com/renatocaliari/cali-product-workflow/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/github/v/release/renatocaliari/cali-product-workflow?logo=github&label=release)](https://github.com/renatocaliari/cali-product-workflow/releases)
+[![CI](https://github.com/renatocaliari/stelow/actions/workflows/ci.yml/badge.svg)](https://github.com/renatocaliari/stelow/actions/workflows/ci.yml)
+[![Mutation Testing](https://github.com/renatocaliari/stelow/actions/workflows/mutation.yml/badge.svg)](https://github.com/renatocaliari/stelow/actions/workflows/mutation.yml)
+[![Coverage](https://img.shields.io/badge/coverage-70%25-brightgreen)](https://github.com/renatocaliari/stelow/actions/workflows/ci.yml)
+[![Version](https://img.shields.io/github/v/release/renatocaliari/stelow?logo=github&label=release)](https://github.com/renatocaliari/stelow/releases)
 
 **Transform product ideas into approved, testable plans - systematically.**
 
@@ -23,7 +23,7 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 - **Product domain libraries** - 8 domains auto-detected from your language (Pricing, Trust, Ads, Promotions, Open Source, Health, Marketplace, Business Models).
 - **Typed technical scopes** - feature, spike, optimize, test-* with dependency mapping and sequencing for autonomous execution.
 - **Acceptance-based scope execution** - each scope is delegated with a contract (criteria, verify commands, stop rules). On acceptance-native harnesses (e.g. pi-subagents), the child self-corrects in the same context before returning. On other harnesses, the parent re-delegates with feedback until criteria pass or max iterations exhaust.
-- **Audit gap-to-scope loop** — post-execution audit classifies gaps (FIXED / DOCUMENTED / ESCALATED). ESCALATED gaps become new scopes in the tracking file. `/pw-next` enforces the loop: when pending scopes exist at the Audit phase, it blocks completion and resets to Execution. The cycle repeats until no scopes remain pending.
+- **Audit gap-to-scope loop** — post-execution audit classifies gaps (FIXED / DOCUMENTED / ESCALATED). ESCALATED gaps become new scopes in the tracking file. `/sw-next` enforces the loop: when pending scopes exist at the Audit phase, it blocks completion and resets to Execution. The cycle repeats until no scopes remain pending.
 - **Stack-matched skills + fresh docs** — during execution setup, the workflow discovers skills (via `npx skills`) optimized for the chosen tech stack and fetches current library docs (via `ctx7`). Both skip if already installed or unavailable. Skills install in project scope only, after user confirmation.
 - **Real-time TUI tracking** - see workflow state as it progresses through all stages.
 
@@ -43,7 +43,7 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 - [📁 Artifact Directory](#-artifact-directory)
 - [How We Differ](#how-we-differ)
 - [📖 Evidence & Limitations](#-evidence--limitations)
-- [cali-product-workflow Integration](#cali-product-workflow-integration)
+- [stelow Integration](#stelow-integration)
 - [🔧 Dependencies](#-dependencies)
 - [About the Author](#about-the-author)
 - [License](#license)
@@ -57,10 +57,10 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 
 **Traditional AI development:** "Here's what I want. Start coding."
 
-**With cali-product-workflow:** The user just says:
+**With stelow:** The user just says:
 
 ```
-/pw-start "Here's what I want to build"
+/sw-start "Here's what I want to build"
 ```
 
 And the workflow begins asking questions, exploring scope, shaping the proposal, reviewing for gaps, getting visual approval, and only then generating typed technical scopes for execution.
@@ -93,7 +93,7 @@ And the workflow begins asking questions, exploring scope, shaping the proposal,
 
 - **24 sub-skills** organized into 4 layers - orchestrator + strategies + workflow stages + tactics
 - Part of a broader ecosystem of **25 skills within the project** (plus additional skills from other packages in the user's agent environment)
-- Real-time TUI tracking with visual overlay (`/pw-menu`)
+- Real-time TUI tracking with visual overlay (`/sw-menu`)
 - Gate approval via Plannotator - review, comment, approve or reject before implementation
 - Typed scopes for autonomous execution (feature, spike, test-*, optimize)
 
@@ -197,11 +197,11 @@ The workflow has **3 conceptual phases** (15 stages total), from idea triage to 
 
 ### 2. ⚡ Execution
 
-**Stages 12-13** - Autonomous scope execution via acceptance contracts: each scope is delegated with criteria, verify commands, and stop rules. Self-correction is harness-dependent - native acceptance loops (pi-subagents) let the child fix gaps in the same context; other harnesses use parent-controlled re-delegation. Optimization scopes use benchmark-driven iteration. Scope completion is gated - `/pw-next` blocks advance to Verification if any scopes remain incomplete.
+**Stages 12-13** - Autonomous scope execution via acceptance contracts: each scope is delegated with criteria, verify commands, and stop rules. Self-correction is harness-dependent - native acceptance loops (pi-subagents) let the child fix gaps in the same context; other harnesses use parent-controlled re-delegation. Optimization scopes use benchmark-driven iteration. Scope completion is gated - `/sw-next` blocks advance to Verification if any scopes remain incomplete.
 
 ### 3. ✅ Verification & Audit
 
-**Stage 14** — Full test suite, parallel code review, UI quality audit, and execution critique (scope fidelity, NFR coverage, edge cases, docs, test quality). The audit classifies gaps as FIXED / DOCUMENTED / ESCALATED. ESCALATED gaps become new scopes. `/pw-next` detects pending scopes at the Audit phase and loops back to Execution.
+**Stage 14** — Full test suite, parallel code review, UI quality audit, and execution critique (scope fidelity, NFR coverage, edge cases, docs, test quality). The audit classifies gaps as FIXED / DOCUMENTED / ESCALATED. ESCALATED gaps become new scopes. `/sw-next` detects pending scopes at the Audit phase and loops back to Execution.
 
 ---
 
@@ -213,13 +213,13 @@ All 25 skills are flat in `skills/` directory, ready for `~/.agents/skills/`. Th
 - ✅ **Skills work standalone** - invoke any sub-skill (e.g., `cali-product-shape-up`, `cali-product-plan-critique`) independently of the orchestrator
 - ✅ **Portable across CLIs** - Pi, Claude Code, Codex, OpenCode all reference skills by name (`~/.agents/skills/`)
 - ✅ **References resolve locally** - every `references/cli-tools/*.md` path is relative to the skill's own directory
-- ❌ **Not in `~/.agents/skills/`?** Use `./install.sh` or `npx skills add renatocaliari/cali-product-workflow -g`
+- ❌ **Not in `~/.agents/skills/`?** Use `./install.sh` or `npx skills add renatocaliari/stelow -g`
 
 ### 🎛️ Orchestrator (1)
 
 | Skill | Purpose |
 |-------|---------|
-| `cali-product-workflow` | Coordinates the multi-stage workflow (Setup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Execution → Verification → Audit) |
+| `stelow` | Coordinates the multi-stage workflow (Setup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Execution → Verification → Audit) |
 
 ### 🧠 Product Strategies (5)
 
@@ -276,7 +276,7 @@ This package works across **multiple coding agents** - not just pi.dev. See the 
 | **New to CLIs** (no Node, no agent) | `curl -fsSL https://raw.githubusercontent.com/.../setup.sh \| sh` | Node.js + pi.dev + all extensions + 25 skills |
 | **Already use pi.dev** | `git clone ... && ./install.sh` | 25 skills + TUI overlay + slash commands |
 | **Use OpenCode / Claude Code / Codex** | `git clone ... && ./install.sh` | 25 skills + command files (no TUI) |
-| **Any CLI (skills only)** | `npx skills add renatocaliari/cali-product-workflow -g` | 25 skills + cross-CLI support |
+| **Any CLI (skills only)** | `npx skills add renatocaliari/stelow -g` | 25 skills + cross-CLI support |
 
 See [docs/INSTALLATION.md](docs/INSTALLATION.md) for detailed options.
 Per-agent configuration files (commands, install scripts) are in [`cli-agents/`](cli-agents/).
@@ -292,7 +292,7 @@ Not every feature works on every CLI. Here's what to expect:
 | Feature | pi.dev | OpenCode | Claude Code | Codex |
 |---------|--------|----------|-------------|-------|
 | **Skills (all 25)** | ✅ | ✅ | ✅ | ✅ |
-| **`/pw-start`, `/pw-menu` commands** | ✅ Slash commands | ✅ Via `pw-*.md` files | ✅ Via command files | ✅ Via command files |
+| **`/sw-start`, `/sw-menu` commands** | ✅ Slash commands | ✅ Via `sw-*.md` files | ✅ Via command files | ✅ Via command files |
 | **TUI overlay (real-time status)** | ✅ Native | ❌ | ❌ | ❌ |
 | **Plannotator visual gate** | ✅ Extension | ⚠️ Manual | ⚠️ Manual | ⚠️ Manual |
 | **Deep hooks (events, gates)** | ✅ Extension | ❌ | ❌ | ❌ |
@@ -306,7 +306,7 @@ Not every feature works on every CLI. Here's what to expect:
 **One command, everything included.** Pick this if you don't have pi.dev yet.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/renatocaliari/cali-product-workflow/main/setup.sh | sh
+curl -fsSL https://raw.githubusercontent.com/renatocaliari/stelow/main/setup.sh | sh
 ```
 
 **What gets installed:**
@@ -324,8 +324,8 @@ curl -fsSL https://raw.githubusercontent.com/renatocaliari/cali-product-workflow
 ### 📋 Path B: Existing pi.dev User
 
 ```bash
-git clone https://github.com/renatocaliari/cali-product-workflow.git
-cd cali-product-workflow
+git clone https://github.com/renatocaliari/stelow.git
+cd stelow
 ./install.sh
 ```
 
@@ -336,8 +336,8 @@ The installer auto-detects your CLIs and installs skills + extensions + slash co
 The **skills** are the core of this project - they work on **any** agent (Pi, OpenCode, Claude Code, Codex).
 
 ```bash
-git clone https://github.com/renatocaliari/cali-product-workflow.git
-cd cali-product-workflow
+git clone https://github.com/renatocaliari/stelow.git
+cd stelow
 ./install.sh
 ```
 
@@ -346,7 +346,7 @@ The installer detects your CLI and installs **skills + command files**. No exten
 **Or, with npx (no clone needed):**
 
 ```bash
-npx skills add renatocaliari/cali-product-workflow -g
+npx skills add renatocaliari/stelow -g
 ```
 
 This installs all 25 skills to `~/.agents/skills/` - works on any CLI.
@@ -361,35 +361,35 @@ This installs all 25 skills to `~/.agents/skills/` - works on any CLI.
 
 | Command | Description |
 |---------|-------------|
-| `/pw-start` or `/pw-begin` | Start the workflow |
-| `/pw-menu` | Show workflow state and controls |
-| `/pw-continue` | Continue to next phase |
-| `/pw-help` | Show available commands |
-| `/pw-status` | Display current phase and progress |
-| `/pw-next` | Advance to next phase. Auto-completes the workflow on the last phase (no manual `/pw-complete` needed). |
-| `/pw-reset` | Reset workflow state |
+| `/sw-start` or `/sw-begin` | Start the workflow |
+| `/sw-menu` | Show workflow state and controls |
+| `/sw-continue` | Continue to next phase |
+| `/sw-help` | Show available commands |
+| `/sw-status` | Display current phase and progress |
+| `/sw-next` | Advance to next phase. Auto-completes the workflow on the last phase (no manual `/sw-complete` needed). |
+| `/sw-reset` | Reset workflow state |
 
 ### Phase Commands
 
 | Command | Description |
 |---------|-------------|
-| `/pw-jtbd` | Run Job To Be Done phase |
-| `/pw-shape` | Run Shape Up phase |
-| `/pw-interface` | Run Interface phase |
-| `/pw-critique` | Run Critique phase |
-| `/pw-tech` | Run Tech Planning phase |
+| `/sw-jtbd` | Run Job To Be Done phase |
+| `/sw-shape` | Run Shape Up phase |
+| `/sw-interface` | Run Interface phase |
+| `/sw-critique` | Run Critique phase |
+| `/sw-tech` | Run Tech Planning phase |
 
 ### Utility Commands
 
 | Command | Description |
 |---------|-------------|
-| `/pw-export <phase>` | Export phase output |
-| `/pw-import <file>` | Import saved workflow |
-| `/pw-log` | Show workflow execution log |
-| `/pw-review` | Open Plannotator for review |
-| `/pw-scope <name>` | Create typed scope |
-| `/pw-goals` | Manage execution goals |
-| `/pw-doctor` | Diagnose workflow project health. Detects zombie workflows (stuck `in-progress` >24h), index mismatches, and orphaned entries. |
+| `/sw-export <phase>` | Export phase output |
+| `/sw-import <file>` | Import saved workflow |
+| `/sw-log` | Show workflow execution log |
+| `/sw-review` | Open Plannotator for review |
+| `/sw-scope <name>` | Create typed scope |
+| `/sw-goals` | Manage execution goals |
+| `/sw-doctor` | Diagnose workflow project health. Detects zombie workflows (stuck `in-progress` >24h), index mismatches, and orphaned entries. |
 
 ---
 
@@ -402,7 +402,7 @@ The workflow includes a real-time TUI overlay showing:
 - Upcoming tasks
 - Quick actions
 
-Toggle with `/pw-menu`.
+Toggle with `/sw-menu`.
 
 ---
 
@@ -434,7 +434,7 @@ This workflow combines product planning, domain knowledge, and technical executi
 | **Scope** | Open-ended | Full lifecycle | Shaped proposals with IN/OUT |
 | **Review** | Manual chat | Configured | Adversarial critique + Gate |
 | **Execution** | One-shot | Manual iteration | Acceptance contract + self-correction (harness-dependent) |
-| **Post-execution** | Done | Manual QA | Audit classifies gaps → ESCALATED become scopes → `/pw-next` enforces loop |
+| **Post-execution** | Done | Manual QA | Audit classifies gaps → ESCALATED become scopes → `/sw-next` enforces loop |
 | **Domain Skills** | None | Generic | 8 product-specific (auto-detected) |
 | **Testing** | Ad-hoc | Configured | AI-aware mutation coverage |
 | **Interface** | None | Coded mockups | ASCII art + tradeoffs + hybrid |
@@ -466,14 +466,14 @@ This workflow is grounded in empirical evidence from the 2025-2026 AI agent rese
 | Practice | Source | Evidence | Where We Implement |
 |----------|--------|----------|-------------------|
 | **Parallel orchestration** | [CAID](https://arxiv.org/abs/2603.21489) (Geng & Neubig, CMU, 2026) | +26.7% accuracy using git-worktree isolation + dependency DAG | `critique:30` - 5 parallel reviewers + consolidator |
-| **Cross-session learning** | [Cat](https://arxiv.org/abs/2512.22087) (Liu et al., Beihang, 2025); [Memory Transfer](https://arxiv.org/abs/2604.14004) (Kim et al., KAIST, 2026) | Context as callable tool; +3.7% via abstract memory pools | `setup:0.30` - Session Knowledge from `.cali-product-workflow/session-knowledge/` |
+| **Cross-session learning** | [Cat](https://arxiv.org/abs/2512.22087) (Liu et al., Beihang, 2025); [Memory Transfer](https://arxiv.org/abs/2604.14004) (Kim et al., KAIST, 2026) | Context as callable tool; +3.7% via abstract memory pools | `setup:0.30` - Session Knowledge from `.stelow/session-knowledge/` |
 | **Output validation guards** | [Stage-Gate Agentic](https://community.pdma.org/knowledgehub/bok/product-innovation-process/stage-gate-agentic-the-coming-revolution-in-the-new-product-process) (PDMA, 2026); [Phaselock](https://github.com/infinri/Phaselock) (2026) | AI agents with gates reduce execution failures; 80 enforceable rules | `shape:20` - Shape Up guard; `planning:10.10` - Tech Planning guard |
 | **Context isolation** | [Clean Context Pattern](https://agentfactory.panaversity.org/docs/General-Agents-Foundations/context-engineering/context-isolation) (Agent Factory, 2026); [GAM](https://arxiv.org/abs/2604.12285) (Zhejiang U., 2026) | Fresh context per agent outperforms shared pipelines; write isolation prevents contamination | `subagents.md` - `context:"fresh"` per subagent; disk-based artifacts |
 | **Visual review gate** | [Plannotator](https://plannotator.ai/) (backnotprop, 2025); [Placement Theory](https://tianpan.co/blog/2026-04-17-hitl-placement-theory-approval-gates) (Tian Pan, 2026) | Browser-based plan annotation with structured feedback loop | `gate:5` - Mandatory Plannotator visual review before execution |
 | **Intra-step recovery** | [Try-Heal-Retry](https://adriennevermorel.com/notes/try-heal-retry-pattern/) (Nweke, 2026); [PALADIN](https://arxiv.org/abs/2509.25238) (Chaudhary et al., 2025) | 89.68% recovery rate via annotated failure trajectories | `subagents.md` - Retry 1× + skip with logged error per subagent |
 | **Metric-driven optimization** | [ReflexGrad](https://arxiv.org/abs/2511.14584) (Kadu et al., 2025); [ReliabilityBench](https://arxiv.org/abs/2601.06112) (Gupta et al., 2026) | +40pp lift via dual-process routing; standardized reliability measurement | `optimization` scopes routed to optimization goals (subagent + acceptance) |
 | **Acceptance-based execution** | Pattern inspired by [Try-Heal-Retry](https://adriennevermorel.com/notes/try-heal-retry-pattern/) (Nweke, 2026) and [PALADIN](https://arxiv.org/abs/2509.25238) (Chaudhary et al., 2025) | Self-correction in same context outperforms fresh re-delegation | Scope executor delegates with acceptance contract - child self-corrects (harness-dependent) before parent evaluates |
-| **Audit gap-to-scope loop** | Pattern inspired by [Agentic Debugging](https://arxiv.org/abs/2504.18032) (Zhang et al., 2025) | Multi-agent feedback loops improve fix rate | Audit classifies gaps → ESCALATED become new scopes → `/pw-next` enforces loop back to Execution |
+| **Audit gap-to-scope loop** | Pattern inspired by [Agentic Debugging](https://arxiv.org/abs/2504.18032) (Zhang et al., 2025) | Multi-agent feedback loops improve fix rate | Audit classifies gaps → ESCALATED become new scopes → `/sw-next` enforces loop back to Execution |
 
 ### ⚠️ Known Limitations & Radical Transparency
 
@@ -495,7 +495,7 @@ Even with these guardrails, the AI agent still exhibits predictable failure mode
 | 10 | **Shallow review trap** - same LLM that wrote the code also reviews it | [Ox Security 2025](https://www.ox.security/wp-content/uploads/2025/10/Army-of-Juniors-The-AI-Code-Security-Crisis.pdf) - 300+ repos, 10 anti-patterns, AI code in production with critical flaws | Verification uses `context: "fresh"` subagent reviewers - same model but fresh session context. | **Automatic via `context: "fresh"`** - fresh context restores full rule awareness lost to context rot (~33% rule adherence at turn 16 vs ~73% at turn 5). True cross-model independence offers marginal additional benefit. |
 | 11 | **Expertise cliff** - AI fails in mature codebases with implicit conventions, undocumented architecture | [Tian Pan Mai 2026](https://tianpan.co/blog/2026-05-04-expertise-cliff-tacit-knowledge-ai-coding-agents); [METR 2025 RCT](https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/) - experienced devs 19% slower with AI | Domain libraries and structured specs help surface some conventions. Execution Critique checks for broken refs and anti-patterns. | **Not addressed.** This workflow was designed for greenfield or well-documented features. If your codebase has 10 years of undocumented architecture decisions, the AI will violate them. |
 | 12 | **Plan staleness** - plans generated against one snapshot; by execution time, target has changed | [Superpowers Issue #989](https://github.com/obra/superpowers/issues/989) - parallel sessions cause spec/plan staleness | Git diff check before scope execution detects if target files changed since plan creation. | **Staleness detected but not auto-resolved.** Only detects file-level changes, not semantic staleness. LLM decides whether staleness matters - no forced re-plan. |
-| 13 | **Pipeline memory loss** - no cross-session memory of own failure patterns | [Flamehaven 2026](https://flamehaven.space/writing/the-two-problems-no-one-talks-about-in-ai-agent-coding-pipelines/) - cross-session memory, MICA governance schema | Execution Critique saves lessons to `.cali-product-workflow/lessons-learned/`. Setup stage automatically reads past lessons with forced reflection. | **Captured and injected, but not verified.** Same model that made mistakes reads the lessons. Context rot can still cause mid-session forgetting. Cannot auto-verify lesson adherence. |
+| 13 | **Pipeline memory loss** - no cross-session memory of own failure patterns | [Flamehaven 2026](https://flamehaven.space/writing/the-two-problems-no-one-talks-about-in-ai-agent-coding-pipelines/) - cross-session memory, MICA governance schema | Execution Critique saves lessons to `.stelow/lessons-learned/`. Setup stage automatically reads past lessons with forced reflection. | **Captured and injected, but not verified.** Same model that made mistakes reads the lessons. Context rot can still cause mid-session forgetting. Cannot auto-verify lesson adherence. |
 | 14 | **Code complexity growth** - AI-generated code increases complexity over time | [Cursor Study (MSR 2026)](https://arxiv.org/abs/2511.04427) - static analysis warnings +30%, code complexity +41% after month 2 | Execution Critique includes anti-pattern detection (god functions >100 lines, global mutable state). Optional Code Quality Gate with static analysis. | **Caught too late.** Complexity analysis happens after code is written. No mechanism to prevent complexity during generation - only flag it after. |
 | 15 | **Activity ≠ productivity** - more PRs, more commits does not mean more value delivered | [METR 2025 RCT](https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/) - 19% slower for experienced devs; [Faros AI 2025](https://www.faros.ai/ai-productivity-paradox) - 9% more tasks, 0% DORA improvement | Appetite system anchors scope size to human attention budget. OUT/IN scoping keeps proposals focused. Execution Critique includes "close without follow-up" as valid outcome. | **Honest assessment:** Appetite system mitigates scope bloat, but requires human to set appetite honestly. Trust in the LLM's self-assessment (`appetite_fit`) is still required. The appetite system is new - its real-world effectiveness is not yet measured. |
 
@@ -512,11 +512,11 @@ Even with these guardrails, the AI agent still exhibits predictable failure mode
 
 ---
 
-## cali-product-workflow Integration
+## stelow Integration
 
 When working on software projects, trigger the product workflow:
 
-1. **Trigger:** Use `/skill cali-product-workflow`
+1. **Trigger:** Use `/skill stelow`
 2. **Execute:** Only after visual review gate (Plannotator approval)
 
 | CLI | File |
@@ -586,5 +586,5 @@ MIT
 ## 📞 Support
 
 - [Documentation](docs/)
-- [Issues](https://github.com/renatocaliari/cali-product-workflow/issues)
-- [Discussions](https://github.com/renatocaliari/cali-product-workflow/discussions)
+- [Issues](https://github.com/renatocaliari/stelow/issues)
+- [Discussions](https://github.com/renatocaliari/stelow/discussions)

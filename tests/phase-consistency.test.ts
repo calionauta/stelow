@@ -15,10 +15,10 @@ import { resolve } from "node:path";
 
 // ── Source of Truth ──────────────────────────────────────────────────
 
-const TYPES_PATH = resolve(__dirname, "../extensions/cali-product-workflow/types.ts");
-const STAGES_YAML_PATH = resolve(__dirname, "../skills/cali-product-workflow/stages.yaml");
-const STAGES_DIR = resolve(__dirname, "../skills/cali-product-workflow/stages");
-const SKILL_MD_PATH = resolve(__dirname, "../skills/cali-product-workflow/SKILL.md");
+const TYPES_PATH = resolve(__dirname, "../extensions/stelow/types.ts");
+const STAGES_YAML_PATH = resolve(__dirname, "../skills/stelow/stages.yaml");
+const STAGES_DIR = resolve(__dirname, "../skills/stelow/stages");
+const SKILL_MD_PATH = resolve(__dirname, "../skills/stelow/SKILL.md");
 const PLUGIN_GENERATED_PATH = resolve(__dirname, "../cli-agents/opencode/plugin/src/phase-names.generated.ts");
 
 // ── Helpers ──────────────────────────────────────────────────────────

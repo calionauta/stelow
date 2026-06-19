@@ -5,7 +5,7 @@ version: 1.0
 
 ## Proposal A — CLI Prompts
 ```
-$ /pw-inbox add
+$ /sw-inbox add
 What problem does this solve?
 > Users forget ideas before triage
 Who is the target audience?
@@ -28,7 +28,7 @@ Urgency (1-5)?
 
 ## Proposal C — File-based
 ```
-.cali-product-workflow/inbox/
+.stelow/inbox/
 ├── 2026-06-01-triage.md
 ├── 2026-06-01-export.md
 └── README.md
@@ -36,7 +36,7 @@ Urgency (1-5)?
 
 ## Proposal D — Interactive Session
 ```
-> /pw-inbox start
+> /sw-inbox start
 ────────────────────
 Step 1/3: Problem
 ────────────────────
@@ -47,7 +47,7 @@ Users forget ideas before triage
 ## Proposal E — Notifications
 ```
 [Inbox] Reminder: 3 ideas waiting for triage
-Run /pw-inbox to review them now.
+Run /sw-inbox to review them now.
 ```
 
 ## Hybrid Recommendation

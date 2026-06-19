@@ -7,11 +7,11 @@
  * Reference: docs/2026-05-20/multi-cli-plan/plans/spec-tech_multi-cli-impl-v1.md
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { CLI } from '../../extensions/cali-product-workflow/types';
+import { CLI } from '../../extensions/stelow/types';
 
 // Import the functions under test
-import { detectCLI, getCLICapabilites } from '../../extensions/cali-product-workflow/state';
-import { getCLICapabilities } from '../../extensions/cali-product-workflow/types';
+import { detectCLI, getCLICapabilites } from '../../extensions/stelow/state';
+import { getCLICapabilities } from '../../extensions/stelow/types';
 
 describe('CLI Detection Integration Tests', () => {
   // Store original env

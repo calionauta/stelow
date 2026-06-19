@@ -30,14 +30,14 @@ Gap E (subagents.md foundation - no deps)
   3. Affordances + UX
   4. Feasibility
 - Add Step 3b: consolidation subagent (reads 4 reports, produces unified report)
-- Use `.cali-product-workflow/{date}/{_dir}/critiques/` (not `.cali-plan-critique/`)
+- Use `.stelow/{date}/{_dir}/critiques/` (not `.cali-plan-critique/`)
 - Verify: critique stage allows `subagent` ✅ and `write` ✅
 
 ### Gap A: Session Knowledge Injection in Setup
 **File:** `skills/cali-product-workflow/stages/setup.md`
 **Changes:**
 - Add "0c. Session Knowledge Injection" after "0b. Lessons Learned Injection"
-- Read `.cali-product-workflow/session-knowledge/*.md` files
+- Read `.stelow/session-knowledge/*.md` files
 - Passive context (no forced reflection, unlike lessons learned)
 
 ### Gap B: External Context Pre-Load (MOVED from context to setup per reviewer)
@@ -51,7 +51,7 @@ Gap E (subagents.md foundation - no deps)
 ### Gap F: Shape Up Output Validation
 **File:** `skills/cali-product-shape-up/SKILL.md`
 **Changes (insert after real save, not after Output doc section):**
-- After `.cali-product-workflow/.../plans/spec-product_{v}.md` is saved:
+- After `.stelow/.../plans/spec-product_{v}.md` is saved:
   - Validate required sections: Appetite, IN/OUT, Risks
   - If missing → regenerate once with validation error as feedback
   - Then proceed normally

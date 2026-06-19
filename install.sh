@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# cali-product-workflow Installer
+# stelow Installer
 # Flattens 25 skills to ~/.agents/skills/ (DotAgents Protocol).
 # Distribution to each harness via agent-sync (or manual config).
 #
@@ -10,7 +10,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GITHUB_REPO="https://github.com/renatocaliari/cali-product-workflow"
+GITHUB_REPO="https://github.com/renatocaliari/stelow"
 SKILLS_DIR="$HOME/.agents/skills"
 
 # Colors
@@ -73,12 +73,12 @@ print_agents_setup() {
   echo ""
   cat << 'EOF'
 \`\`\`
-## cali-product-workflow Integration
+## stelow Integration
 
 When working on software projects, trigger the product workflow:
 
-1. **Trigger:** Use `/skill cali-product-workflow`
-2. **Process:** Follow the 15-stage workflow (see Stage Index in `skills/cali-product-workflow/SKILL.md`)
+1. **Trigger:** Use `/skill stelow`
+2. **Process:** Follow the 15-stage workflow (see Stage Index in `skills/stelow/SKILL.md`)
 3. **Execute:** Only after visual review gate (Plannotator approval)
 \`\`\`
 EOF
@@ -144,7 +144,7 @@ install_skills_flat() {
   #   2. Skills explicitamente listadas em retired-skills.yaml (retirements)
   #
   # Só mexe em skills com prefixo gerenciado.
-  local retired_list="$SCRIPT_DIR/skills/cali-product-workflow/retired-skills.yaml"
+  local retired_list="$SCRIPT_DIR/skills/stelow/retired-skills.yaml"
   local pruned=0
   for entry in "$SKILLS_DIR"/*/; do
     local name="$(basename "$entry")"
@@ -211,7 +211,7 @@ _configure_pi_skills_filter() {
   local tmp=$(mktemp)
   jq '
     (.packages // []) |= map(
-      if type == "object" and .source == "git:github.com/renatocaliari/cali-product-workflow" then
+      if type == "object" and .source == "git:github.com/renatocaliari/stelow" then
         .skills = []
       else
         .
@@ -232,8 +232,8 @@ install_pi() {
   # and kept fresh by the extension's syncSkillsFromClone() on session_start.
 
   log_info "    Installing Pi extension (git package)..."
-  pi remove "$SCRIPT_DIR/extensions/cali-product-workflow" 2>/dev/null || true
-  pi install "git:github.com/renatocaliari/cali-product-workflow" 2>/dev/null || true
+  pi remove "$SCRIPT_DIR/extensions/stelow" 2>/dev/null || true
+  pi install "git:github.com/renatocaliari/stelow" 2>/dev/null || true
 
   # Configure Pi to ignore skills/ from the git clone via native package filter.
   # Skills are served from ~/.agents/skills/ (kept fresh by extension sync).
@@ -257,7 +257,7 @@ install_pi() {
   fi
 
   # Clean up project-level duplicates
-  rm -rf "$SCRIPT_DIR/.pi/skills/cali-product-workflow" 2>/dev/null || true
+  rm -rf "$SCRIPT_DIR/.pi/skills/stelow" 2>/dev/null || true
 
   log_success "  v Pi done"
 }
@@ -275,8 +275,8 @@ install_opencode() {
   local cmd_dst="$HOME/.config/opencode/commands"
   if [[ -d "$cmd_src" ]]; then
     mkdir -p "$cmd_dst"
-    cp "$cmd_src"/pw-*.md "$cmd_dst/" 2>/dev/null || true
-    log_success "    Installed $(ls "$cmd_dst"/pw-*.md 2>/dev/null | wc -l | tr -d ' ') command files"
+    cp "$cmd_src"/sw-*.md "$cmd_dst/" 2>/dev/null || true
+    log_success "    Installed $(ls "$cmd_dst"/sw-*.md 2>/dev/null | wc -l | tr -d ' ') command files"
   fi
 
   # Configure OpenCode to use ~/.agents/skills/
@@ -305,8 +305,8 @@ install_claude_code() {
   local cmd_dst="$HOME/.claude/commands"
   if [[ -d "$cmd_src" ]]; then
     mkdir -p "$cmd_dst"
-    cp "$cmd_src"/pw-*.md "$cmd_dst/" 2>/dev/null || true
-    log_success "    Installed $(ls "$cmd_dst"/pw-*.md 2>/dev/null | wc -l | tr -d ' ') command files"
+    cp "$cmd_src"/sw-*.md "$cmd_dst/" 2>/dev/null || true
+    log_success "    Installed $(ls "$cmd_dst"/sw-*.md 2>/dev/null | wc -l | tr -d ' ') command files"
   fi
 
   # Configure Claude Code to use ~/.agents/skills/
@@ -322,14 +322,14 @@ install_claude_code() {
   log_info "    Adding plugin marketplace..."
   if claude plugin marketplace add "$SCRIPT_DIR" 2>/dev/null; then
     log_info "    Plugin marketplace added. Install:"
-    log_info "      claude plugin install cali-product-workflow@marketplace-name"
+    log_info "      claude plugin install stelow@marketplace-name"
   elif claude plugin marketplace add "$GITHUB_REPO" 2>/dev/null; then
     log_info "    Plugin marketplace added from GitHub. Install:"
-    log_info "      claude plugin install cali-product-workflow@marketplace-name"
+    log_info "      claude plugin install stelow@marketplace-name"
   else
     log_info "    Add marketplace manually:"
     log_info "      claude plugin marketplace add $GITHUB_REPO"
-    log_info "      claude plugin install cali-product-workflow@marketplace-name"
+    log_info "      claude plugin install stelow@marketplace-name"
   fi
 
   log_success "  v Claude Code done"
@@ -348,8 +348,8 @@ install_codex() {
   local cmd_dst="$HOME/.codex/commands"
   if [[ -d "$cmd_src" ]]; then
     mkdir -p "$cmd_dst"
-    cp "$cmd_src"/pw-*.md "$cmd_dst/" 2>/dev/null || true
-    log_success "    Installed $(ls "$cmd_dst"/pw-*.md 2>/dev/null | wc -l | tr -d ' ') command files"
+    cp "$cmd_src"/sw-*.md "$cmd_dst/" 2>/dev/null || true
+    log_success "    Installed $(ls "$cmd_dst"/sw-*.md 2>/dev/null | wc -l | tr -d ' ') command files"
   fi
 
   # Configure Codex to use ~/.agents/skills/
@@ -365,14 +365,14 @@ install_codex() {
   log_info "    Adding plugin marketplace..."
   if codex plugin marketplace add "$SCRIPT_DIR" 2>/dev/null; then
     log_info "    Plugin marketplace added. Install:"
-    log_info "      codex plugin add cali-product-workflow@marketplace-name"
+    log_info "      codex plugin add stelow@marketplace-name"
   elif codex plugin marketplace add "$GITHUB_REPO" 2>/dev/null; then
     log_info "    Plugin marketplace added from GitHub. Install:"
-    log_info "      codex plugin add cali-product-workflow@marketplace-name"
+    log_info "      codex plugin add stelow@marketplace-name"
   else
     log_info "    Add marketplace manually (plugins feature required):"
     log_info "      codex plugin marketplace add $GITHUB_REPO"
-    log_info "      codex plugin add cali-product-workflow@marketplace-name"
+    log_info "      codex plugin add stelow@marketplace-name"
   fi
 
   log_success "  v Codex done"
@@ -416,15 +416,15 @@ update_all() {
         local cmd_src="$SCRIPT_DIR/cli-agents/$cli/commands"
         if [[ -d "$cmd_src" ]]; then
           mkdir -p "$cmd_dir"
-          cp "$cmd_src"/pw-*.md "$cmd_dir/" 2>/dev/null || true
-          log_success "  - $cli: $(ls "$cmd_dir"/pw-*.md 2>/dev/null | wc -l | tr -d ' ') command files"
+          cp "$cmd_src"/sw-*.md "$cmd_dir/" 2>/dev/null || true
+          log_success "  - $cli: $(ls "$cmd_dir"/sw-*.md 2>/dev/null | wc -l | tr -d ' ') command files"
         fi
         ;;
       pi)
         if command -v pi &>/dev/null; then
           log_info "  Reinstalling Pi extension (git package)..."
-          pi remove "$SCRIPT_DIR/extensions/cali-product-workflow" 2>/dev/null || true
-          pi install "git:github.com/renatocaliari/cali-product-workflow" 2>/dev/null || true
+          pi remove "$SCRIPT_DIR/extensions/stelow" 2>/dev/null || true
+          pi install "git:github.com/renatocaliari/stelow" 2>/dev/null || true
           # Re-apply package filter (pi update re-clones repo with skills/)
           _configure_pi_skills_filter
         fi
@@ -454,8 +454,8 @@ uninstall_all() {
   for cli in $clis; do
     case "$cli" in
       pi)
-        pi remove "git:github.com/renatocaliari/cali-product-workflow" 2>/dev/null || true
-        rm -rf "$HOME/.pi/agent/skills/cali-product-workflow" 2>/dev/null || true
+        pi remove "git:github.com/renatocaliari/stelow" 2>/dev/null || true
+        rm -rf "$HOME/.pi/agent/skills/stelow" 2>/dev/null || true
         # Clean package filter from settings.json
         if command -v jq &>/dev/null; then
           local pi_settings="$HOME/.pi/agent/settings.json"
@@ -463,7 +463,7 @@ uninstall_all() {
             local tmp=$(mktemp)
             jq '
               (.packages // []) |= map(
-                if type == "object" and .source == "git:github.com/renatocaliari/cali-product-workflow" then
+                if type == "object" and .source == "git:github.com/renatocaliari/stelow" then
                   del(.skills)
                 else
                   .
@@ -480,10 +480,10 @@ uninstall_all() {
         fi
         log_success "  v OpenCode" ;;
       claude-code)
-        claude plugin uninstall "cali-product-workflow" 2>/dev/null || true
+        claude plugin uninstall "stelow" 2>/dev/null || true
         log_success "  v Claude Code" ;;
       codex)
-        codex plugin remove "cali-product-workflow" 2>/dev/null || true
+        codex plugin remove "stelow" 2>/dev/null || true
         log_success "  v Codex" ;;
     esac
   done
@@ -496,7 +496,7 @@ uninstall_all() {
 # Main
 show_help() {
   cat << 'EOF'
-cali-product-workflow Installer
+stelow Installer
 
 Flattens 25 skills to ~/.agents/skills/ (DotAgents Protocol).
 Distribution to each harness via agent-sync or manual config.
@@ -514,7 +514,7 @@ Environment:
   PRODUCT_WORKFLOW_CLI  Limit to one CLI (pi|opencode|claude-code|codex)
 
 Skills installed (25 total):
-  - cali-product-workflow (orchestrator)
+  - stelow (orchestrator)
   - 6 critique skills (plan-critique, codebase-critique, ux-critique, shape-up, interface-alternatives, tech-planning)
   - 5 strategic analysis skills
   - 8 domain library skills

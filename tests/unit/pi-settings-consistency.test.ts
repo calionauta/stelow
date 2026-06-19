@@ -1,12 +1,12 @@
 /**
  * pi-settings-consistency.test.ts — Validate Pi settings.json for this project.
  *
- * The extension registers /pw- commands; skills live in ~/.agents/skills/
+ * The extension registers /sw- commands; skills live in ~/.agents/skills/
  * (kept fresh by syncSkillsFromClone()). To avoid duplication, the Pi package
  * entry in settings.json MUST have:
- *   - "extensions": ["+extensions/cali-product-workflow/index.ts"]
+ *   - "extensions": ["+extensions/stelow/index.ts"]
  *   - "skills": []
- *   - "source": "git:github.com/renatocaliari/cali-product-workflow"
+ *   - "source": "git:github.com/renatocaliari/stelow"
  *
  * Tests use tempdir fixtures to validate the parser/validator logic, then
  * optionally check the real ~/.pi/agent/settings.json as integration check.
@@ -36,7 +36,7 @@ interface ValidationResult {
   errors: string[];
 }
 
-const PACKAGE_SOURCE = "git:github.com/renatocaliari/cali-product-workflow";
+const PACKAGE_SOURCE = "git:github.com/renatocaliari/stelow";
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -99,13 +99,13 @@ function validatePackageEntry(
       if (ext.startsWith("-")) {
         errors.push(
           `Extension '${ext}' has '-' prefix (force-exclude). ` +
-            `Commands /pw-start, /pw-menu, etc. will not register. ` +
+            `Commands /sw-start, /sw-menu, etc. will not register. ` +
             `Change to '+' or remove the '-' prefix.`,
         );
       }
-      if (!ext.includes("cali-product-workflow")) {
+      if (!ext.includes("stelow")) {
         errors.push(
-          `Extension '${ext}' does not reference cali-product-workflow.`,
+          `Extension '${ext}' does not reference stelow.`,
         );
       }
     }
@@ -137,7 +137,7 @@ describe("pi settings — entry detection", () => {
       { source: "git:github.com/some/other", extensions: ["./extras"] },
       {
         source: PACKAGE_SOURCE,
-        extensions: ["+extensions/cali-product-workflow/index.ts"],
+        extensions: ["+extensions/stelow/index.ts"],
         skills: [],
       },
     ]);
@@ -188,7 +188,7 @@ describe("pi settings — validatePackageEntry", () => {
   it("passes a correct entry", () => {
     const entry: PiPackageEntry = {
       source: PACKAGE_SOURCE,
-      extensions: ["+extensions/cali-product-workflow/index.ts"],
+      extensions: ["+extensions/stelow/index.ts"],
       skills: [],
     };
     const result = validatePackageEntry(entry);
@@ -199,7 +199,7 @@ describe("pi settings — validatePackageEntry", () => {
   it("accepts no prefix on extensions (default = load)", () => {
     const entry: PiPackageEntry = {
       source: PACKAGE_SOURCE,
-      extensions: ["extensions/cali-product-workflow/index.ts"],
+      extensions: ["extensions/stelow/index.ts"],
       skills: [],
     };
     const result = validatePackageEntry(entry);
@@ -217,7 +217,7 @@ describe("pi settings — validatePackageEntry", () => {
   it("rejects force-excluded extension (- prefix)", () => {
     const entry: PiPackageEntry = {
       source: PACKAGE_SOURCE,
-      extensions: ["-extensions/cali-product-workflow/index.ts"],
+      extensions: ["-extensions/stelow/index.ts"],
       skills: [],
     };
     const result = validatePackageEntry(entry);
@@ -228,7 +228,7 @@ describe("pi settings — validatePackageEntry", () => {
   it("rejects missing skills field", () => {
     const entry: PiPackageEntry = {
       source: PACKAGE_SOURCE,
-      extensions: ["+extensions/cali-product-workflow/index.ts"],
+      extensions: ["+extensions/stelow/index.ts"],
     };
     const result = validatePackageEntry(entry);
     expect(result.valid).toBe(false);
@@ -240,8 +240,8 @@ describe("pi settings — validatePackageEntry", () => {
   it("rejects non-empty skills array", () => {
     const entry: PiPackageEntry = {
       source: PACKAGE_SOURCE,
-      extensions: ["+extensions/cali-product-workflow/index.ts"],
-      skills: ["cali-product-workflow"],
+      extensions: ["+extensions/stelow/index.ts"],
+      skills: ["stelow"],
     };
     const result = validatePackageEntry(entry);
     expect(result.valid).toBe(false);
@@ -277,7 +277,7 @@ describe("pi settings — file integration", () => {
     const { path, cleanup } = withTempSettings([
       {
         source: PACKAGE_SOURCE,
-        extensions: ["+extensions/cali-product-workflow/index.ts"],
+        extensions: ["+extensions/stelow/index.ts"],
         skills: [],
       },
     ]);
@@ -294,7 +294,7 @@ describe("pi settings — file integration", () => {
     const { path, cleanup } = withTempSettings([
       {
         source: PACKAGE_SOURCE,
-        extensions: ["-extensions/cali-product-workflow/index.ts"],
+        extensions: ["-extensions/stelow/index.ts"],
         skills: [],
       },
     ]);
@@ -314,7 +314,7 @@ describe("pi settings — file integration", () => {
     const { path, cleanup } = withTempSettings([
       {
         source: PACKAGE_SOURCE,
-        extensions: ["+extensions/cali-product-workflow/index.ts"],
+        extensions: ["+extensions/stelow/index.ts"],
       },
     ]);
     try {
@@ -333,8 +333,8 @@ describe("pi settings — file integration", () => {
     const { path, cleanup } = withTempSettings([
       {
         source: PACKAGE_SOURCE,
-        extensions: ["+extensions/cali-product-workflow/index.ts"],
-        skills: ["cali-product-workflow"],
+        extensions: ["+extensions/stelow/index.ts"],
+        skills: ["stelow"],
       },
     ]);
     try {
@@ -363,7 +363,7 @@ describe("pi settings — real ~/.pi/agent/settings.json", () => {
   });
 
   (fileExists ? it : it.skip)(
-    "has a valid cali-product-workflow entry",
+    "has a valid stelow entry",
     () => {
       const entry = readPackageEntry(realPath);
       const result = validatePackageEntry(entry);

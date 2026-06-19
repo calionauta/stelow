@@ -16,13 +16,13 @@ import {
   JsonFileStore, 
   MarkdownFileStore,
   ensureDir 
-} from '../../extensions/cali-product-workflow/modules/file-store';
+} from '../../extensions/stelow/modules/file-store';
 
 describe('TextFileStore', () => {
   let tempDir: string;
 
   beforeEach(() => {
-    tempDir = mkdtempSync(join(tmpdir(), 'pw-text-'));
+    tempDir = mkdtempSync(join(tmpdir(), 'sw-text-'));
   });
 
   afterEach(() => {
@@ -80,7 +80,7 @@ describe('JsonFileStore', () => {
   let tempDir: string;
 
   beforeEach(() => {
-    tempDir = mkdtempSync(join(tmpdir(), 'pw-json-'));
+    tempDir = mkdtempSync(join(tmpdir(), 'sw-json-'));
   });
 
   afterEach(() => {
@@ -168,7 +168,7 @@ describe('MarkdownFileStore', () => {
   let tempDir: string;
 
   beforeEach(() => {
-    tempDir = mkdtempSync(join(tmpdir(), 'pw-markdown-'));
+    tempDir = mkdtempSync(join(tmpdir(), 'sw-markdown-'));
   });
 
   afterEach(() => {
@@ -270,7 +270,7 @@ describe('ensureDir', () => {
   let tempDir: string;
 
   beforeEach(() => {
-    tempDir = mkdtempSync(join(tmpdir(), 'pw-ensure-'));
+    tempDir = mkdtempSync(join(tmpdir(), 'sw-ensure-'));
   });
 
   afterEach(() => {

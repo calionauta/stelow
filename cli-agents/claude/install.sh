@@ -1,9 +1,9 @@
 #!/bin/bash
-# Install cali-product-workflow commands for Claude
+# Install stelow commands for Claude
 
 set -e
 
-echo "Installing cali-product-workflow for Claude..."
+echo "Installing stelow for Claude..."
 
 # Copy commands to Claude commands directory
 CLAUDE_COMMANDS_DIR="${HOME}/.claude/commands"

@@ -1,5 +1,5 @@
 ---
-source: cali-product-workflow (consolidated)
+source: stelow (consolidated)
 original_files: strategies.md, when-to-use.md, cross-domain.md
 date: 2026-05-15
 ---

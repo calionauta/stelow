@@ -1,8 +1,8 @@
-# Code Context: cali-product-workflow Structure Analysis
+# Code Context: stelow Structure Analysis
 
 ## Files Retrieved
 
-### 1. `extensions/cali-product-workflow/` (Directory)
+### 1. `extensions/stelow/` (Directory)
 
 **Key files that need to move to `cli-agents/pi/extensions/`:**
 - `commands.ts` (978 lines) - Command handlers for Pi
@@ -13,7 +13,7 @@
 - `index.ts` - Extension entry point
 - `adapters/` - CLI adapter implementations
 
-### 2. `extensions/cali-product-workflow/adapters/` (Directory)
+### 2. `extensions/stelow/adapters/` (Directory)
 
 ```
 adapters/
@@ -97,7 +97,7 @@ export interface CLICapabilities {
 ## Architecture
 
 ```
-extensions/cali-product-workflow/
+extensions/stelow/
 ├── commands.ts          # Pi command handlers (registerCommands, cmdStart, etc)
 ├── start.ts            # Workflow start logic
 ├── state.ts           # Tracking, workflow dirs, state management
@@ -126,7 +126,7 @@ extensions/cali-product-workflow/
 
 | Current Path | New Path | Notes |
 |--------------|----------|-------|
-| `extensions/cali-product-workflow/` | `cli-agents/pi/extensions/` | Entire extension moves |
+| `extensions/stelow/` | `cli-agents/pi/extensions/` | Entire extension moves |
 
 ### Files to Move to `cli-agents/opencode/plugin/`
 
@@ -166,11 +166,11 @@ These files are shared across all CLIs and should probably move to `shared/`:
 
 ## Start Here
 
-1. **`extensions/cali-product-workflow/adapters/commands/dispatcher.ts`** - Review WORKFLOW_COMMANDS array and CLI-specific command systems. This is the source of truth for all commands.
+1. **`extensions/stelow/adapters/commands/dispatcher.ts`** - Review WORKFLOW_COMMANDS array and CLI-specific command systems. This is the source of truth for all commands.
 
-2. **`extensions/cali-product-workflow/commands.ts`** - Understand Pi command handlers (cmdStart, cmdStop, etc.) that need to be ported to the new structure.
+2. **`extensions/stelow/commands.ts`** - Understand Pi command handlers (cmdStart, cmdStop, etc.) that need to be ported to the new structure.
 
-3. **`extensions/cali-product-workflow/adapters/opencode/index.ts`** - Reference implementation for OpenCode plugin hooks.
+3. **`extensions/stelow/adapters/opencode/index.ts`** - Reference implementation for OpenCode plugin hooks.
 
 ---
 

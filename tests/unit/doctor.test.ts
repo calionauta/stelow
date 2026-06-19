@@ -2,10 +2,10 @@ import { describe, expect, it, beforeEach, afterEach } from 'vitest';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { diagnoseWorkflowProject, formatDoctorReport } from '../../extensions/cali-product-workflow/doctor';
-import { WORKFLOW_COMMANDS } from '../../extensions/cali-product-workflow/adapters/commands/dispatcher';
-import { writeTracking, writeGlobalTracking } from '../../extensions/cali-product-workflow/state';
-import type { TrackingData, Workflow } from '../../extensions/cali-product-workflow/types';
+import { diagnoseWorkflowProject, formatDoctorReport } from '../../extensions/stelow/doctor';
+import { WORKFLOW_COMMANDS } from '../../extensions/stelow/adapters/commands/dispatcher';
+import { writeTracking, writeGlobalTracking } from '../../extensions/stelow/state';
+import type { TrackingData, Workflow } from '../../extensions/stelow/types';
 
 const wf = (name: string, status = 'in-progress', phase = 2, extra: Partial<Workflow> = {}): Workflow => ({
   name,
@@ -16,7 +16,7 @@ const wf = (name: string, status = 'in-progress', phase = 2, extra: Partial<Work
   phases: [],
   created: '2026-06-11T00:00:00.000Z',
   updated: '2026-06-11T00:00:00.000Z',
-  dirHash: `pw-${name}`,
+  dirHash: `sw-${name}`,
   stage: {
     current_stage: 'shape',
     previous_stage: null,
@@ -28,12 +28,12 @@ const wf = (name: string, status = 'in-progress', phase = 2, extra: Partial<Work
   ...extra,
 });
 
-describe('pw-doctor diagnostics', () => {
+describe('sw-doctor diagnostics', () => {
   const oldHome = process.env.HOME;
   let projectDir: string;
 
   beforeEach(() => {
-    projectDir = mkdtempSync(join(tmpdir(), 'pw-doctor-'));
+    projectDir = mkdtempSync(join(tmpdir(), 'sw-doctor-'));
     process.env.HOME = projectDir;
   });
 
@@ -121,7 +121,7 @@ describe('pw-doctor diagnostics', () => {
   });
 
   it('is registered as a workflow command', () => {
-    expect(WORKFLOW_COMMANDS.some(cmd => cmd.name === 'pw-doctor')).toBe(true);
+    expect(WORKFLOW_COMMANDS.some(cmd => cmd.name === 'sw-doctor')).toBe(true);
   });
 
   it('formats a useful report with summary first', () => {

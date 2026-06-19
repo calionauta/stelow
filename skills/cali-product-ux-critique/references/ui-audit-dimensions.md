@@ -1,6 +1,6 @@
 ---
 source: cali-product-ui-critique
-author: cali-product-workflow
+author: stelow
 date: 2026-05-30
 ---
 

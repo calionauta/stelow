@@ -1,0 +1,7 @@
+---
+name: sw-setphase
+description: Jump to phase
+---
+
+@agent
+pw-setphase {args}

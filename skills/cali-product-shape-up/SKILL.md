@@ -4,7 +4,7 @@ description: >
   [Cali] Shape Up product planning skill. Use when the user wants to shape
   a product proposal using the Shape Up method. Produces a shaped proposal
   with problem, solution, scope (IN/OUT), and risks. Part of the
-  cali-product-workflow but can be used standalone.
+  stelow but can be used standalone.
 metadata:
   frequency: weekly
   category: product
@@ -49,7 +49,7 @@ before assumptions get baked into a full spec.
 
 **Read mode:**
 ```bash
-WF_DIR="$(ls -td .cali-product-workflow/*/*/ 2>/dev/null | head -1)"
+WF_DIR="$(ls -td .stelow/*/*/ 2>/dev/null | head -1)"
 MODE="Full Product"
 [ -n "$WF_DIR" ] && MODE=$(grep -oP '"mode":\s*"([^"]+)"' "${WF_DIR}index.json" 2>/dev/null | grep -oP '"([^"]+)"$' | tr -d '"' )
 ```
@@ -98,7 +98,7 @@ Read the `references/` files to guide the process:
 Use the ask tool (see `references/cli-tools/structured-question.md`) for strategic questions when needed.
 
 After shaping:
-- Save to `.cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md`
+- Save to `.stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md`
 
 ### Product-Level DoD and Acceptance Criteria
 
@@ -127,7 +127,7 @@ Include in `spec-product.md`:
 After saving, validate the shaped proposal has all required sections:
 
 ```bash
-SPEC=".cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md"
+SPEC=".stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md"
 VALID=true
 
 
@@ -203,14 +203,14 @@ Show the IN/OUT scope table. Ask:
 
 The shaped proposal is saved to:
 ```
-.cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md
+.stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md
 ```
 
 See `references/proposal-structure.md` for the expected output format.
 
 ## Related Skills
 
-- **cali-product-workflow**: Coordinates this skill with other phases
+- **stelow**: Coordinates this skill with other phases
 - **cali-product-interface-alternatives**: Interface exploration after shaping
 - **cali-product-plan-critique**: Plan review after shaping
 

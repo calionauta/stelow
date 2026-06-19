@@ -112,7 +112,7 @@ When CLI not detected or tool unavailable:
 | `intercom.md` | Cross-session messaging |
 | `supervise.md` | Outcome steering |
 | `safe-change.md` | Git-safe changes |
-| `stage-status.md` | Workflow status commands (`/pw-setphase`, `/pw-next`, `/pw-status`) |
+| `stage-status.md` | Workflow status commands (`/sw-setphase`, `/sw-next`, `/sw-status`) |
 | `context-mode.md` | Context Mode integration |
 | `codequality-review.md` | Ultra-strict code quality review |
 | `todo.md` | Phase task management with CLI-specific commands |

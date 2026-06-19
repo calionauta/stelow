@@ -68,7 +68,7 @@ Memory Cache ←→ phase-todos.json
 All CLIs MUST write phase todos to file for cross-CLI persistence:
 
 ```
-.cali-product-workflow/{date}/{dir}/phase-todos.json
+.stelow/{date}/{dir}/phase-todos.json
 ```
 
 | CLI | Tool | Persistence | Strategy |
@@ -145,7 +145,7 @@ TodoWrite({
 ```typescript
 // Write todo state to file
 write({
-  path: ".cali-product-workflow/{date}/{dir}/phase-todos.json",
+  path: ".stelow/{date}/{dir}/phase-todos.json",
   content: JSON.stringify({
     phase: "SHAPE",
     phaseIndex: 3,
@@ -157,7 +157,7 @@ write({
 })
 
 // Read on session start to restore context
-read({ path: ".cali-product-workflow/{date}/{dir}/phase-todos.json" })
+read({ path: ".stelow/{date}/{dir}/phase-todos.json" })
 ```
 
 ### generic (Fallback)
@@ -175,7 +175,7 @@ When no native todo tool is available, track tasks in the response:
 
 ## Inbox Format
 
-The inbox (`.cali-product-workflow/inbox/items.md`) stores items deferred by the user.
+The inbox (`.stelow/inbox/items.md`) stores items deferred by the user.
 
 
 ```markdown
@@ -213,7 +213,7 @@ Add AI summarization
 
 1. **Every response**: Start with phase indicator, show todo list
 2. **Before calling todo tool**: Read current workflow state from tracking file
-3. **After phase completion**: Call `/pw-next` to advance and create new todo set
+3. **After phase completion**: Call `/sw-next` to advance and create new todo set
 4. **On session resume**: Reconstruct todo list from current phase tracking data
 5. **Never mix phases**: Each todo set belongs to one phase only
 6. **File persistence**: Always write todos to `phase-todos.json` (see Source of Truth)
@@ -244,6 +244,6 @@ Add AI summarization
 When no native todo tool is available in the current CLI:
 
 1. Track todos as markdown in response
-2. Persist to `.cali-product-workflow/{date}/{dir}/phase-todos.json`
+2. Persist to `.stelow/{date}/{dir}/phase-todos.json`
 3. Read on session resume to reconstruct context
 4. User sees todos in chat, not in sidebar

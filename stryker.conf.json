@@ -13,8 +13,8 @@
     "break": null
   },
   "mutate": [
-    "extensions/cali-product-workflow/modules/file-store.ts",
-    "extensions/cali-product-workflow/adapters/stages-guard.ts"
+    "extensions/stelow/modules/file-store.ts",
+    "extensions/stelow/adapters/stages-guard.ts"
   ],
   "ignorePatterns": [
     ".opencode",

@@ -1,9 +1,9 @@
 #!/bin/bash
-# Install cali-product-workflow for OpenCode
+# Install stelow for OpenCode
 
 set -e
 
-echo "Installing cali-product-workflow for OpenCode..."
+echo "Installing stelow for OpenCode..."
 
 # Build the plugin
 cd "$(dirname "$0")/plugin"
@@ -23,4 +23,4 @@ fi
 echo "Installation complete!"
 echo ""
 echo "Add to your opencode.json:"
-echo '{"plugin": ["@cali/cali-pw-opencode"]}'
+echo '{"plugin": ["@cali/stelow-pw-opencode"]}'

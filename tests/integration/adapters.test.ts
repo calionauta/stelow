@@ -9,9 +9,9 @@
  * Reference: docs/2026-05-20/multi-cli-plan/plans/spec-tech_multi-cli-impl-v1.md
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { CLI, CLIAdapter } from '../../extensions/cali-product-workflow/adapters/cli-adapter';
-import { getCLICapabilities, CLICapabilities } from '../../extensions/cali-product-workflow/types';
-import { GenericAdapter } from '../../extensions/cali-product-workflow/adapters/base';
+import { CLI, CLIAdapter } from '../../extensions/stelow/adapters/cli-adapter';
+import { getCLICapabilities, CLICapabilities } from '../../extensions/stelow/types';
+import { GenericAdapter } from '../../extensions/stelow/adapters/base';
 
 // Helper to create a mock adapter with specific capabilities
 function createMockAdapter(cli: CLI): CLIAdapter {

@@ -4,7 +4,7 @@ description: >
   [Cali] Structural critique for codebases. Accepts a directory of source code and
   evaluates architecture, data flow, API contracts, performance, theming, responsive
   patterns, and AI slop in code — then generates a classified gap report.
-  Part of cali-product-workflow (pre-implementation codebase review) but usable standalone.
+  Part of stelow (pre-implementation codebase review) but usable standalone.
   For codebases with visual UI, use cali-product-ux-critique instead.
 metadata:
   frequency: weekly
@@ -77,7 +77,7 @@ Recebi um diretório de código e quero revisar a arquitetura.
 ### Via cali-product-scope-executor
 Quando um scope técnico é executado e precisa de revisão de código-fonte.
 
-### Via cali-product-workflow (Stage Verification)
+### Via stelow (Stage Verification)
 O stage `code-review` delega para esta skill.
 
 ---
@@ -163,7 +163,7 @@ Save to .cali-codebase-critique/critique-report.md.
 Quando um scope técnico é executado, o executor pode delegar a verificação
 de código para esta skill.
 
-### cali-product-workflow (Stage Verification)
+### stelow (Stage Verification)
 
 O stage `code-review` delega para esta skill quando o input é um código-fonte
 não-visual.

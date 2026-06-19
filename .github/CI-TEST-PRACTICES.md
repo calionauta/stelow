@@ -9,7 +9,7 @@ Tests broke in CI because they used hardcoded paths. This file documents best pr
 
 ### ❌ Wrong: Hardcoded absolute paths
 ```typescript
-const PROJECT_ROOT = '/Users/cali/Development/cali-product-workflow';
+const PROJECT_ROOT = '/Users/cali/Development/stelow';
 ```
 
 **Why it fails:** GitHub CI clones to `/home/runner/work/` — completely different path.
@@ -46,7 +46,7 @@ const PROJECT_ROOT = join(__testDir, '..', '..');
 
 ```typescript
 // ❌ Wrong
-const path = '/Users/cali/Development/cali-product-workflow/skills/...';
+const path = '/Users/cali/Development/stelow/skills/...';
 
 // ✅ Correct
 const path = join(PROJECT_ROOT, 'skills/...');

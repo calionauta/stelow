@@ -6,11 +6,11 @@
 #   1. Node.js (if needed)
 #   2. pi.dev coding agent
 #   3. All extensions
-#   4. cali-product-workflow (25 skills)
+#   4. stelow (25 skills)
 #   5. Configures settings.json with optimized defaults
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/renatocaliari/cali-product-workflow/main/setup.sh | sh
+#   curl -fsSL https://raw.githubusercontent.com/renatocaliari/stelow/main/setup.sh | sh
 #
 # Or download and run:
 #   ./setup.sh
@@ -23,7 +23,7 @@ set -euo pipefail
 # ─── Configuration ───────────────────────────────────────────────────────────
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GITHUB_REPO="https://github.com/renatocaliari/cali-product-workflow"
+GITHUB_REPO="https://github.com/renatocaliari/stelow"
 MIN_NODE_VERSION=20
 
 # All Pi packages to install
@@ -59,12 +59,12 @@ PI_PACKAGES=(
   "https://github.com/dbachelder/pi-btw"
   "git:github.com/PriNova/pi-agent-codebase-workflows"
   "git:github.com/renatocaliari/pi-tool-repair-layer"
-  "git:github.com/renatocaliari/cali-product-workflow"
+  "git:github.com/renatocaliari/stelow"
 )
 
-# Skills to install from cali-product-workflow
+# Skills to install from stelow
 ALL_SKILLS=(
-  "cali-product-workflow"
+  "stelow"
   "cali-product-shape-up"
   "cali-product-interface-alternatives"
   "cali-product-plan-critique"
@@ -127,7 +127,7 @@ for arg in "$@"; do
       echo "  • Node.js >= 20 (if not installed)"
       echo "  • pi.dev coding agent"
       echo "  • Pi extensions and packages"
-      echo "  • 24 cali-product-workflow skills"
+      echo "  • 24 stelow skills"
       echo "  • Optimized settings.json configuration"
       exit 0
       ;;
@@ -312,7 +312,7 @@ install_extensions() {
 # ─── Skills ──────────────────────────────────────────────────────────────────
 
 install_skills() {
-  log_step "Step 5/5: Installing cali-product-workflow Skills (25 skills)"
+  log_step "Step 5/5: Installing stelow Skills (25 skills)"
 
   local skills_dir="$HOME/.agents/skills"
   if [[ "$DRY_RUN" == "false" ]]; then
@@ -328,11 +328,11 @@ install_skills() {
   if [[ -d "$SCRIPT_DIR/skills" ]]; then
     skills_source="$SCRIPT_DIR/skills"
   # Check if installed via pi
-  elif [[ -d "$HOME/.pi/agent/npm/node_modules/cali-product-workflow/skills" ]]; then
-    skills_source="$HOME/.pi/agent/npm/node_modules/cali-product-workflow/skills"
+  elif [[ -d "$HOME/.pi/agent/npm/node_modules/stelow/skills" ]]; then
+    skills_source="$HOME/.pi/agent/npm/node_modules/stelow/skills"
   # Check git clone location
-  elif [[ -d "$HOME/.pi/extensions/cali-product-workflow/skills" ]]; then
-    skills_source="$HOME/.pi/extensions/cali-product-workflow/skills"
+  elif [[ -d "$HOME/.pi/extensions/stelow/skills" ]]; then
+    skills_source="$HOME/.pi/extensions/stelow/skills"
   fi
 
   if [[ -z "$skills_source" ]]; then
@@ -418,7 +418,7 @@ configure_settings() {
       .treeFilterMode //= "default" |
       .skillful.hiddenSkills //= [] |
       .skillful.toggleSlots //= {
-        "1": "cali-product-workflow",
+        "1": "stelow",
         "2": "cali-go-stack",
         "3": "cali-product-coding-standards",
         "4": "cali-product-testing-execution",
@@ -457,7 +457,7 @@ configure_settings() {
   "skillful": {
     "hiddenSkills": [],
     "toggleSlots": {
-      "1": "cali-product-workflow",
+      "1": "stelow",
       "2": "cali-go-stack",
       "3": "cali-product-coding-standards",
       "4": "cali-product-testing-execution",
@@ -499,16 +499,16 @@ print_summary() {
   echo "       pi /login"
   echo ""
   echo "  3. ${BOLD}Test the workflow:${RESET}"
-  echo "       /pw-start \"Build a landing page\""
+  echo "       /sw-start \"Build a landing page\""
   echo ""
   echo "  ${BOLD}Useful commands:${RESET}"
   echo ""
-  echo "       /pw-menu          Show workflow status"
-  echo "       /pw-start         Begin product planning"
+  echo "       /sw-menu          Show workflow status"
+  echo "       /sw-start         Begin product planning"
   echo "       /skills           List all installed skills"
   echo "       alt+1-5           Toggle skill quick-access"
   echo ""
-  echo "  ${BOLD}Docs:${RESET} https://github.com/renatocaliari/cali-product-workflow"
+  echo "  ${BOLD}Docs:${RESET} https://github.com/renatocaliari/stelow"
   echo ""
 }
 

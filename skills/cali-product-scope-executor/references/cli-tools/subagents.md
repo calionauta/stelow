@@ -104,7 +104,7 @@ subagent({
 subagent({
   agent: "worker",
   task: "Read proposals A-E from interfaces_v{N}.md. Generate Hybrid combining best elements.",
-  reads: [".cali-product-workflow/.../interfaces/interfaces_v{N}.md"]
+  reads: [".stelow/.../interfaces/interfaces_v{N}.md"]
 })
 ```
 
@@ -164,8 +164,8 @@ This is the **mental model** — what the LLM should *desire* and *document*, re
 For tasks that save output, use meaningful paths:
 
 ```
-.cali-product-workflow/{YYYY-MM-DD}/{_dir}/interfaces/interfaces_v{N}.md
-.cali-product-workflow/.../strategic/{name}.md
+.stelow/{YYYY-MM-DD}/{_dir}/interfaces/interfaces_v{N}.md
+.stelow/.../strategic/{name}.md
 ```
 
 ---
@@ -190,7 +190,7 @@ subagent({
 // Step 2: Consolidate all 4 reports
 subagent({
   agent: "worker",
-  task: `Read 4 critique reports and consolidate:\n1. critiques/critique-flows-states.md\n2. critiques/critique-data-system.md\n3. critiques/critique-affordances-ux.md\n4. critiques/critique-feasibility.md\n\nRules: merge, deduplicate (keep specific), classify (BLOCKER/QUESTION/MINOR).\nSave to .cali-product-workflow/{date}/{slug}/critiques/critique-report.md`,
+  task: `Read 4 critique reports and consolidate:\n1. critiques/critique-flows-states.md\n2. critiques/critique-data-system.md\n3. critiques/critique-affordances-ux.md\n4. critiques/critique-feasibility.md\n\nRules: merge, deduplicate (keep specific), classify (BLOCKER/QUESTION/MINOR).\nSave to .stelow/{date}/{slug}/critiques/critique-report.md`,
   reads: ["critiques/critique-flows-states.md", "critiques/critique-data-system.md", "critiques/critique-affordances-ux.md", "critiques/critique-feasibility.md"]
 })
 ```

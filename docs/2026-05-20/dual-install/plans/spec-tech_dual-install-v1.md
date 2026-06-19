@@ -27,8 +27,8 @@ date: 2026-05-20
 
 ### Solution (Context Mode Pattern)
 ```
-npm install -g @renatocaliari/cali-product-workflow  → Core (skills, adapters)
-pi install npm:@renatocaliari/cali-pw-pi  → Lightweight Pi extension
+npm install -g @renatocaliari/stelow  → Core (skills, adapters)
+pi install npm:@renatocaliari/stelow-pw-pi  → Lightweight Pi extension
 ```
 
 ---
@@ -110,7 +110,7 @@ pi install npm:@renatocaliari/cali-pw-pi  → Lightweight Pi extension
 **Objective:** Create lightweight Pi extension package
 
 ### Tasks
-1. Create `extensions/cali-pw-pi/package.json`
+1. Create `extensions/stelow-pw-pi/package.json`
 2. Move Pi-specific dependencies to extension package.json
 3. Create `index.ts` that imports from main package
 4. Update main package.json to point to extension
@@ -118,7 +118,7 @@ pi install npm:@renatocaliari/cali-pw-pi  → Lightweight Pi extension
 
 ### New File Structure
 ```
-extensions/cali-pw-pi/
+extensions/stelow-pw-pi/
 ├── package.json
 ├── index.ts
 ├── tsconfig.json
@@ -148,8 +148,8 @@ extensions/cali-pw-pi/
 
 ### Tasks
 1. Update install.sh to do dual-install:
-   - `npm install -g @renatocaliari/cali-product-workflow` (core)
-   - `pi install npm:@renatocaliari/cali-pw-pi` (extension)
+   - `npm install -g @renatocaliari/stelow` (core)
+   - `pi install npm:@renatocaliari/stelow-pw-pi` (extension)
 2. Add separation message between installs
 3. Test on Pi system
 4. Test on non-Pi (should only install core)

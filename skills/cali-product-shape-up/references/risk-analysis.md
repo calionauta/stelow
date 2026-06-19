@@ -1,5 +1,5 @@
 ---
-source: cali-product-workflow (consolidated)
+source: stelow (consolidated)
 original_files: risk-analysis-framework.md, strategic-alternatives.md
 date: 2026-05-15
 ---

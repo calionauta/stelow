@@ -5,7 +5,7 @@
  * - reconcileTracking (auto-imports orphan workflows from disk)
  * - archiveWorkflowOnDisk (marks workflows as archived)
  * 
- * This function reads .cali-product-workflow/<date>/<dirHash>/index.json
+ * This function reads .stelow/<date>/<dirHash>/index.json
  * and extracts metadata for workflow management.
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -14,15 +14,15 @@ import {
 } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { scanWorkflowDirs } from '../../extensions/cali-product-workflow/state';
+import { scanWorkflowDirs } from '../../extensions/stelow/state';
 
 describe('scanWorkflowDirs', () => {
   let tempDir: string;
   let workflowDir: string;
 
   beforeEach(() => {
-    tempDir = mkdtempSync(join(tmpdir(), 'pw-scan-'));
-    workflowDir = join(tempDir, '.cali-product-workflow');
+    tempDir = mkdtempSync(join(tmpdir(), 'sw-scan-'));
+    workflowDir = join(tempDir, '.stelow');
   });
 
   afterEach(() => {
@@ -72,8 +72,8 @@ describe('scanWorkflowDirs', () => {
   });
 
   it('scans and returns workflows from date-stamped directories', () => {
-    createFullWorkflow('2026-05-20', 'pw-test-abc1', { name: 'workflow-one' });
-    createFullWorkflow('2026-05-20', 'pw-test-abc2', { name: 'workflow-two' });
+    createFullWorkflow('2026-05-20', 'sw-test-abc1', { name: 'workflow-one' });
+    createFullWorkflow('2026-05-20', 'sw-test-abc2', { name: 'workflow-two' });
 
     const result = scanWorkflowDirs(tempDir);
 
@@ -82,18 +82,18 @@ describe('scanWorkflowDirs', () => {
   });
 
   it('extracts name from index.json', () => {
-    createFullWorkflow('2026-05-20', 'pw-test-abc1', { name: 'my-workflow' });
+    createFullWorkflow('2026-05-20', 'sw-test-abc1', { name: 'my-workflow' });
     
     const result = scanWorkflowDirs(tempDir);
     
     expect(result[0].name).toBe('my-workflow');
-    expect(result[0].dirHash).toBe('pw-test-abc1');
+    expect(result[0].dirHash).toBe('sw-test-abc1');
     expect(result[0].dateStamp).toBe('2026-05-20');
   });
 
   it('extracts name from legacy slug field', () => {
     // Only slug, no name - tests backward compatibility
-    createWorkflow('2026-05-20', 'pw-test-legacy', { slug: 'legacy-workflow' });
+    createWorkflow('2026-05-20', 'sw-test-legacy', { slug: 'legacy-workflow' });
 
     const result = scanWorkflowDirs(tempDir);
 
@@ -102,17 +102,17 @@ describe('scanWorkflowDirs', () => {
 
   it('falls back to dirHash when index has no name or slug', () => {
     // Minimal index with no name/slug fields
-    createWorkflow('2026-05-20', 'pw-fallback-dir', {});
+    createWorkflow('2026-05-20', 'sw-fallback-dir', {});
 
     const result = scanWorkflowDirs(tempDir);
 
-    expect(result[0].name).toBe('pw-fallback-dir');
+    expect(result[0].name).toBe('sw-fallback-dir');
   });
 
   // ── Metadata extraction ─────────────────────────────────────────────
 
   it('extracts workflow_status', () => {
-    createFullWorkflow('2026-05-20', 'pw-test-paused', { 
+    createFullWorkflow('2026-05-20', 'sw-test-paused', { 
       name: 'paused-workflow',
       workflow_status: 'paused' 
     });
@@ -124,7 +124,7 @@ describe('scanWorkflowDirs', () => {
 
   it('defaults status to unknown when workflow_status is missing', () => {
     // Minimal index without workflow_status field
-    createWorkflow('2026-05-20', 'pw-no-status', { name: 'no-status-workflow' });
+    createWorkflow('2026-05-20', 'sw-no-status', { name: 'no-status-workflow' });
 
     const result = scanWorkflowDirs(tempDir);
 
@@ -132,7 +132,7 @@ describe('scanWorkflowDirs', () => {
   });
 
   it('extracts current_phase_index', () => {
-    createFullWorkflow('2026-05-20', 'pw-phase-3', { 
+    createFullWorkflow('2026-05-20', 'sw-phase-3', { 
       name: 'phase-workflow',
       current_phase_index: 3 
     });
@@ -144,7 +144,7 @@ describe('scanWorkflowDirs', () => {
 
   it('defaults currentPhase to 0 when current_phase_index is missing', () => {
     // Minimal index without current_phase_index
-    createWorkflow('2026-05-20', 'pw-no-phase', { name: 'no-phase-workflow' });
+    createWorkflow('2026-05-20', 'sw-no-phase', { name: 'no-phase-workflow' });
 
     const result = scanWorkflowDirs(tempDir);
 
@@ -152,7 +152,7 @@ describe('scanWorkflowDirs', () => {
   });
 
   it('extracts draft content', () => {
-    createFullWorkflow('2026-05-20', 'pw-draft-test', {
+    createFullWorkflow('2026-05-20', 'sw-draft-test', {
       name: 'draft-workflow',
       draft: '# My Draft Content\n\nSome text.'
     });
@@ -163,7 +163,7 @@ describe('scanWorkflowDirs', () => {
   });
 
   it('extracts artifacts', () => {
-    createFullWorkflow('2026-05-20', 'pw-artifacts-test', {
+    createFullWorkflow('2026-05-20', 'sw-artifacts-test', {
       name: 'artifacts-workflow',
       artifacts: { spec: '/path/to/spec.md', schema: '/path/to/schema.json' }
     });
@@ -178,7 +178,7 @@ describe('scanWorkflowDirs', () => {
 
   it('extracts created_at and updated_at timestamps', () => {
     const now = new Date().toISOString();
-    createFullWorkflow('2026-05-20', 'pw-timestamps', {
+    createFullWorkflow('2026-05-20', 'sw-timestamps', {
       name: 'timestamp-workflow',
       created_at: now,
       updated_at: now,
@@ -193,9 +193,9 @@ describe('scanWorkflowDirs', () => {
   // ── Date directory handling ───────────────────────────────────────────
 
   it('scans across multiple date directories', () => {
-    createFullWorkflow('2026-05-10', 'pw-old-001', { name: 'old-workflow' });
-    createFullWorkflow('2026-05-20', 'pw-mid-002', { name: 'mid-workflow' });
-    createFullWorkflow('2026-05-30', 'pw-new-003', { name: 'new-workflow' });
+    createFullWorkflow('2026-05-10', 'sw-old-001', { name: 'old-workflow' });
+    createFullWorkflow('2026-05-20', 'sw-mid-002', { name: 'mid-workflow' });
+    createFullWorkflow('2026-05-30', 'sw-new-003', { name: 'new-workflow' });
 
     const result = scanWorkflowDirs(tempDir);
 
@@ -204,7 +204,7 @@ describe('scanWorkflowDirs', () => {
   });
 
   it('ignores non-date directories in workflow root', () => {
-    createFullWorkflow('2026-05-20', 'pw-test-abc1', { name: 'valid-workflow' });
+    createFullWorkflow('2026-05-20', 'sw-test-abc1', { name: 'valid-workflow' });
     mkdirSync(join(workflowDir, 'not-a-date'), { recursive: true });
     
     const result = scanWorkflowDirs(tempDir);
@@ -214,7 +214,7 @@ describe('scanWorkflowDirs', () => {
   });
 
   it('ignores directories that do not match YYYY-MM-DD pattern', () => {
-    createFullWorkflow('2026-05-20', 'pw-test-abc1', { name: 'valid' });
+    createFullWorkflow('2026-05-20', 'sw-test-abc1', { name: 'valid' });
     mkdirSync(join(workflowDir, '2026-13-40'), { recursive: true });
     mkdirSync(join(workflowDir, 'May-2026'), { recursive: true });
     
@@ -227,9 +227,9 @@ describe('scanWorkflowDirs', () => {
   // ── Error handling ──────────────────────────────────────────────────
 
   it('skips corrupt index.json files', () => {
-    createFullWorkflow('2026-05-20', 'pw-valid-001', { name: 'valid-workflow' });
+    createFullWorkflow('2026-05-20', 'sw-valid-001', { name: 'valid-workflow' });
     
-    const corruptDir = join(workflowDir, '2026-05-20', 'pw-corrupt-002');
+    const corruptDir = join(workflowDir, '2026-05-20', 'sw-corrupt-002');
     mkdirSync(corruptDir, { recursive: true });
     writeFileSync(join(corruptDir, 'index.json'), 'not valid json {{{');
 
@@ -240,9 +240,9 @@ describe('scanWorkflowDirs', () => {
   });
 
   it('skips directories without index.json', () => {
-    createFullWorkflow('2026-05-20', 'pw-has-index', { name: 'has-index' });
+    createFullWorkflow('2026-05-20', 'sw-has-index', { name: 'has-index' });
     
-    const noIndexDir = join(workflowDir, '2026-05-20', 'pw-no-index');
+    const noIndexDir = join(workflowDir, '2026-05-20', 'sw-no-index');
     mkdirSync(noIndexDir, { recursive: true });
 
     const result = scanWorkflowDirs(tempDir);
@@ -259,7 +259,7 @@ describe('scanWorkflowDirs', () => {
   // ── Integration with reconcileTracking ──────────────────────────────
 
   it('provides data format compatible with reconcileTracking', () => {
-    createFullWorkflow('2026-05-20', 'pw-reconcile-001', { 
+    createFullWorkflow('2026-05-20', 'sw-reconcile-001', { 
       name: 'orphan-workflow',
       workflow_status: 'in-progress',
       current_phase_index: 2,
@@ -279,19 +279,19 @@ describe('scanWorkflowDirs', () => {
   });
 
   it('returns all workflow statuses (reconcileTracking filters them)', () => {
-    createWorkflow('2026-05-20', 'pw-active', { 
+    createWorkflow('2026-05-20', 'sw-active', { 
       name: 'active-workflow',
       workflow_status: 'in-progress' 
     });
-    createWorkflow('2026-05-20', 'pw-paused', { 
+    createWorkflow('2026-05-20', 'sw-paused', { 
       name: 'paused-workflow',
       workflow_status: 'paused' 
     });
-    createWorkflow('2026-05-20', 'pw-completed', { 
+    createWorkflow('2026-05-20', 'sw-completed', { 
       name: 'completed-workflow',
       workflow_status: 'completed' 
     });
-    createWorkflow('2026-05-20', 'pw-archived', { 
+    createWorkflow('2026-05-20', 'sw-archived', { 
       name: 'archived-workflow',
       workflow_status: 'archived' 
     });

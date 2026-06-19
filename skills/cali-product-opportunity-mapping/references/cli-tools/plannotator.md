@@ -29,7 +29,7 @@ plannotator annotate <file>.md --gate
 | Info | Value |
 |------|-------|
 | Package | @plannotator/pi-extension |
-| Example | `plannotator annotate .cali-product-workflow/.../spec-product_v1.md --gate` |
+| Example | `plannotator annotate .stelow/.../spec-product_v1.md --gate` |
 
 ### opencode
 

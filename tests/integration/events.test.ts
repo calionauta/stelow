@@ -11,14 +11,14 @@
  * Reference: docs/2026-05-20/multi-cli-plan/plans/spec-tech_multi-cli-impl-v1.md
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { getCLICapabilities } from '../../extensions/cali-product-workflow/types';
-import { EventDispatcher, type EventType } from '../../extensions/cali-product-workflow/adapters/event-dispatcher';
+import { getCLICapabilities } from '../../extensions/stelow/types';
+import { EventDispatcher, type EventType } from '../../extensions/stelow/adapters/event-dispatcher';
 import {
   createGenericAdapter,
   type CLIAdapter as GenericCLIAdapter,
   type NotificationType,
-} from '../../extensions/cali-product-workflow/adapters/generic.js';
-import type { CLIAdapter } from '../../extensions/cali-product-workflow/adapters/cli-adapter';
+} from '../../extensions/stelow/adapters/generic.js';
+import type { CLIAdapter } from '../../extensions/stelow/adapters/cli-adapter';
 
 // Helper to create a mock adapter for testing EventDispatcher
 function createMockAdapter(cli: string): CLIAdapter {

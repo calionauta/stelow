@@ -19,8 +19,8 @@ import { homedir } from 'node:os';
 import { 
   detectCLI, 
   getCLICapabilites 
-} from '../extensions/cali-product-workflow/state';
-import { getCLICapabilities, CLI, CLICapabilities } from '../extensions/cali-product-workflow/types';
+} from '../extensions/stelow/state';
+import { getCLICapabilities, CLI, CLICapabilities } from '../extensions/stelow/types';
 
 describe('CLI Detection', () => {
   // Store original env

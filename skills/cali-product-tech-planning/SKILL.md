@@ -4,7 +4,7 @@ description: >
   [Cali] Technical planning and scope sequencing skill. Generates typed scopes
   (feature/optimization/spike + test-*), sequences them, and creates goals (see references/cli-tools/goals.md).
   For software products, also generates testing-strategy.md via cali-product-testing-ai-code.
-  Part of cali-product-workflow but can be used standalone.
+  Part of stelow but can be used standalone.
 metadata:
   frequency: weekly
   category: product
@@ -139,15 +139,15 @@ Delegate to a planner subagent (see `references/cli-tools/subagents.md`):
 - Agent: `planner`
 - Task: generate typed scopes (feature/optimization/spike) from the approved spec-product.md
 - Follow steps: strategic stability check → codebase awareness → risk analysis → spike identification → scope definition → sequencing → DoD + ACs → formatting
-- Output: `.cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_{v}.md`
-- Input: `.cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md`
+- Output: `.stelow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_{v}.md`
+- Input: `.stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md`
 
 #### planning:10.10 — Output Validation Guard
 
 After the subagent writes spec-tech.md, validate every scope has required fields:
 
 ```bash
-SPEC_TECH=".cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_{v}.md"
+SPEC_TECH=".stelow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_{v}.md"
 VALID=true
 
 # Check each scope for required fields
@@ -175,7 +175,7 @@ if [ "$VALID" = false ]; then
 fi
 
 # Check appetite violation: scope count vs appetite
-APPETITE=$(grep -oP '^appetite:\s*\K\S+' .cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "Focused")
+APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "Focused")
 SCOPE_COUNT=$(grep -c "^### " "$SPEC_TECH")
 
 # Appetite boundary check: scope count should stay within appetite
@@ -205,7 +205,7 @@ then produce the spec-tech artifact directly in the current context.
    Delegate to a testing-strategy subagent (see `references/cli-tools/subagents.md`):
    - Agent: `cali-product-testing-ai-code` or equivalent
    - Input: spec-product.md frontmatter with `product_type: software`
-   - Output: `.cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/testing-strategy.md`
+   - Output: `.stelow/{YYYY-MM-DD}/{_dir}/plans/testing-strategy.md`
    - Content: mutation score targets (70/50/30%), tech stack detection, CI/CD gates, anti-patterns
 
    **⚠️ FALLBACK — if subagent fails or is unavailable (API key missing, agent not found):**
@@ -284,7 +284,7 @@ These become optimization goals using the goals tool
 
 Tech plan is saved to:
 ```
-.cali-product-workflow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_{v}.md
+.stelow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_{v}.md
 ```
 
 ## After Tech Planning — EXECUTE AUTOMATICALLY
@@ -339,7 +339,7 @@ See the `cali-product-testing-ai-code` skill
 
 - **cali-product-shape-up**: Produces the shaped proposal
 - **cali-product-plan-critique**: Reviews the proposal before tech planning
-- **cali-product-workflow** (orchestrator): Coordinates this skill with execution
+- **stelow** (orchestrator): Coordinates this skill with execution
 
 ## Input Detection (Standalone Mode)
 

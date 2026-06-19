@@ -1,0 +1,108 @@
+{
+  "$schema": "https://raw.githubusercontent.com/renatocaliari/stelow/main/stelow.schema.json",
+  "version": "1.0",
+  "created": "2026-06-08T13:00:00.000Z",
+  "updated": "2026-06-08T13:00:00.000Z",
+  "workflows": [
+    {
+      "name": "auth-refactor",
+      "description": "Refactor auth to use passkeys",
+      "status": "in-progress",
+      "currentPhase": 4,
+      "phases": [
+        { "id": "0-triage", "name": "Triage", "status": "completed" },
+        { "id": "1-itemselect", "name": "ItemSelect", "status": "completed" },
+        { "id": "2-setup", "name": "Setup", "status": "completed" },
+        { "id": "3-context", "name": "Context", "status": "completed" },
+        { "id": "4-shape", "name": "Shape", "status": "in-progress" },
+        { "id": "5-critique", "name": "Critique", "status": "pending" },
+        { "id": "6-gate", "name": "Gate", "status": "pending" },
+        { "id": "7-scope", "name": "Scope", "status": "pending" },
+        { "id": "8-interface", "name": "Interface", "status": "pending" },
+        { "id": "9-intgate", "name": "Int.Gate", "status": "pending" },
+        { "id": "10-selection", "name": "Selection", "status": "pending" },
+        { "id": "11-planning", "name": "Planning", "status": "pending" },
+        { "id": "12-execution", "name": "Execution", "status": "pending" },
+        { "id": "13-verification", "name": "Verification", "status": "pending" },
+        { "id": "14-audit", "name": "Audit", "status": "pending" }
+      ],
+      "created": "2026-06-01T10:00:00.000Z",
+      "updated": "2026-06-08T13:00:00.000Z"
+    },
+    {
+      "name": "api-docs-v2",
+      "description": "Generate OpenAPI docs from source",
+      "status": "in-progress",
+      "currentPhase": 11,
+      "phases": [
+        { "id": "0-triage", "name": "Triage", "status": "completed" },
+        { "id": "1-itemselect", "name": "ItemSelect", "status": "completed" },
+        { "id": "2-setup", "name": "Setup", "status": "completed" },
+        { "id": "3-context", "name": "Context", "status": "completed" },
+        { "id": "4-shape", "name": "Shape", "status": "completed" },
+        { "id": "5-critique", "name": "Critique", "status": "completed" },
+        { "id": "6-gate", "name": "Gate", "status": "completed" },
+        { "id": "7-scope", "name": "Scope", "status": "completed" },
+        { "id": "8-interface", "name": "Interface", "status": "completed" },
+        { "id": "9-intgate", "name": "Int.Gate", "status": "completed" },
+        { "id": "10-selection", "name": "Selection", "status": "completed" },
+        { "id": "11-planning", "name": "Planning", "status": "in-progress" },
+        { "id": "12-execution", "name": "Execution", "status": "pending" },
+        { "id": "13-verification", "name": "Verification", "status": "pending" },
+        { "id": "14-audit", "name": "Audit", "status": "pending" }
+      ],
+      "created": "2026-05-20T08:00:00.000Z",
+      "updated": "2026-06-07T16:00:00.000Z"
+    },
+    {
+      "name": "db-migration-tool",
+      "description": "Zero-downtime migration CLI",
+      "status": "paused",
+      "currentPhase": 7,
+      "phases": [
+        { "id": "0-triage", "name": "Triage", "status": "completed" },
+        { "id": "1-itemselect", "name": "ItemSelect", "status": "completed" },
+        { "id": "2-setup", "name": "Setup", "status": "completed" },
+        { "id": "3-context", "name": "Context", "status": "completed" },
+        { "id": "4-shape", "name": "Shape", "status": "completed" },
+        { "id": "5-critique", "name": "Critique", "status": "completed" },
+        { "id": "6-gate", "name": "Gate", "status": "completed" },
+        { "id": "7-scope", "name": "Scope", "status": "in-progress" },
+        { "id": "8-interface", "name": "Interface", "status": "pending" },
+        { "id": "9-intgate", "name": "Int.Gate", "status": "pending" },
+        { "id": "10-selection", "name": "Selection", "status": "pending" },
+        { "id": "11-planning", "name": "Planning", "status": "pending" },
+        { "id": "12-execution", "name": "Execution", "status": "pending" },
+        { "id": "13-verification", "name": "Verification", "status": "pending" },
+        { "id": "14-audit", "name": "Audit", "status": "pending" }
+      ],
+      "created": "2026-05-10T09:00:00.000Z",
+      "updated": "2026-06-05T11:00:00.000Z"
+    },
+    {
+      "name": "dark-mode-support",
+      "description": "Add dark mode to all panels",
+      "status": "completed",
+      "currentPhase": 14,
+      "phases": [
+        { "id": "0-triage", "name": "Triage", "status": "completed" },
+        { "id": "1-itemselect", "name": "ItemSelect", "status": "completed" },
+        { "id": "2-setup", "name": "Setup", "status": "completed" },
+        { "id": "3-context", "name": "Context", "status": "completed" },
+        { "id": "4-shape", "name": "Shape", "status": "completed" },
+        { "id": "5-critique", "name": "Critique", "status": "completed" },
+        { "id": "6-gate", "name": "Gate", "status": "completed" },
+        { "id": "7-scope", "name": "Scope", "status": "completed" },
+        { "id": "8-interface", "name": "Interface", "status": "completed" },
+        { "id": "9-intgate", "name": "Int.Gate", "status": "completed" },
+        { "id": "10-selection", "name": "Selection", "status": "completed" },
+        { "id": "11-planning", "name": "Planning", "status": "completed" },
+        { "id": "12-execution", "name": "Execution", "status": "completed" },
+        { "id": "13-verification", "name": "Verification", "status": "completed" },
+        { "id": "14-audit", "name": "Audit", "status": "completed" }
+      ],
+      "created": "2026-04-01T08:00:00.000Z",
+      "updated": "2026-05-30T17:00:00.000Z"
+    }
+  ]
+}

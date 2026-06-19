@@ -1,5 +1,5 @@
 ---
-source: cali-product-workflow (consolidated)
+source: stelow (consolidated)
 original_files: separation-rule.md, tradeoff-rule.md, output-expectations.md
 date: 2026-05-15
 ---

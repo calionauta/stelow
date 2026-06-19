@@ -1,5 +1,5 @@
 ---
-source: cali-product-workflow (consolidated)
+source: stelow (consolidated)
 original_files: checklist-flows.md, checklist-states.md, checklist-affordances.md, checklist-data.md, checklist-system.md, checklist-feasibility.md
 date: 2026-05-15
 applies_to: [plan, codebase]

@@ -77,4 +77,4 @@ npx skills add vercel-labs/agent-skills
 If `npx skills` does not work:
 1. Skip — stack-skills are an optional optimization
 2. Proceed with standard workflow tools
-3. The cali-product-workflow skills already cover general patterns
+3. The stelow skills already cover general patterns

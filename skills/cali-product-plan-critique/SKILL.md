@@ -5,7 +5,7 @@ description: >
   evaluates flows, states, affordances+design quality, data handling, system contracts,
   compositional quality (purpose-layout alignment), and feasibility
   — then generates a classified gap report with actionable questions.
-  Part of cali-product-workflow (`critique` stage) but usable standalone.
+  Part of stelow (`critique` stage) but usable standalone.
 metadata:
   frequency: weekly
   category: product
@@ -54,7 +54,7 @@ never a vague criticism. The goal is to unblock the implementation team, not del
 Received a spec-product.md and want to review before implementation.
 ```
 
-### Via cali-product-workflow (`critique` stage)
+### Via stelow (`critique` stage)
 The workflow loads this skill automatically after Tech Planning, before Plannotator.
 
 ### Via cali-product-tech-planning
@@ -102,8 +102,8 @@ When standalone, scan for the most recent workflow.
 WF_DIR=""
 if [ -f "index.json" ] && grep -q '"workflow_status":' index.json 2>/dev/null; then
   WF_DIR="."
-elif ls .cali-product-workflow/*/*/index.json 2>/dev/null; then
-  WF_DIR="$(ls -td .cali-product-workflow/*/*/ 2>/dev/null | head -1)"
+elif ls .stelow/*/*/index.json 2>/dev/null; then
+  WF_DIR="$(ls -td .stelow/*/*/ 2>/dev/null | head -1)"
 fi
 
 WF_DIR="${WF_DIR%/}"  # Strip trailing slash
@@ -280,7 +280,7 @@ and prepare it for the Plannotator Gate:
 ## Output
 
 ```
-.cali-product-workflow/{YYYY-MM-DD}/{_dir}/critiques/
+.stelow/{YYYY-MM-DD}/{_dir}/critiques/
   critique-flows-states.md     ← parallel reviewer 1
   critique-data-system.md      ← parallel reviewer 2
   critique-affordances-ux.md   ← parallel reviewer 3
@@ -298,7 +298,7 @@ and prepare it for the Plannotator Gate:
 
 ## Integration with other skills
 
-### cali-product-workflow (`critique` stage)
+### stelow (`critique` stage)
 
 ```
 critique: Critique Gate

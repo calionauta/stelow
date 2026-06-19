@@ -16,13 +16,13 @@ shopt -s nullglob
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
-SOURCE="$PROJECT_ROOT/skills/cali-product-workflow/references/cli-tools"
+SOURCE="$PROJECT_ROOT/skills/stelow/references/cli-tools"
 
 # All skills except the orchestrator itself (source)
 TARGET_SKILLS=()
 for SKILL_DIR in "$PROJECT_ROOT/skills"/*/; do
   SKILL=$(basename "$SKILL_DIR")
-  [ "$SKILL" = "cali-product-workflow" ] && continue
+  [ "$SKILL" = "stelow" ] && continue
   TARGET_SKILLS+=("$SKILL")
 done
 

@@ -7,24 +7,24 @@
 
 **Cenários problemáticos (achados):**
 
-1. `cali-product-workflow.json` existe, `hasActiveWorkflow()` retorna false (todos
+1. `stelow.json` existe, `hasActiveWorkflow()` retorna false (todos
    `archived`) → guard null. **Funciona.**
-2. Mas legacy `.cali-product-workflow/state/current-stage.json` existe com
+2. Mas legacy `.stelow/state/current-stage.json` existe com
    `current_stage: "triage"` → branch `statePath.endsWith(TRACKING_FILE)` é
    FALSE → cai no `else if (!existsSync(statePath))` que também é FALSE →
    cria guard com default `triage` → **lock fantasma**.
-3. Global tracking `~/.cali-pw-global.json` (15KB) pode ter workflow
+3. Global tracking `~/.stelow-global.json` (15KB) pode ter workflow
    `in-progress` em outro projeto, mas guard local nem olha. **Decisão:** não
    ler global no guard (cross-project lock é hostil).
 
 **Clean code:** sem legacy, sem backward compat. Deletar
-`.cali-product-workflow/state/current-stage.json` órfão.
+`.stelow/state/current-stage.json` órfão.
 
 ## Decisão de design
 
 Guard fires **só** quando:
 
-- Tracking file `cali-product-workflow.json` existe **E**
+- Tracking file `stelow.json` existe **E**
 - Tem workflow com `status: "in-progress"` **E**
 - `Workflow.cwd` do workflow ativo é ancestor (ou igual) ao `ctx.cwd`
   (valida que a trava é para ESTE dir, não outro projeto) **E**
@@ -32,7 +32,7 @@ Guard fires **só** quando:
 
 Caso contrário: guard null, todas tools livres.
 
-Comandos `/pw-pause` / `/pw-stop` / `/pw-archive` já mudam status para
+Comandos `/sw-pause` / `/sw-stop` / `/sw-archive` já mudam status para
 `paused`/`archived`/`stopped` → `hasActiveWorkflow` retorna false → guard
 null automaticamente. Não precisa wiring extra.
 
@@ -110,7 +110,7 @@ function getStageGuard(projectDir: string, cwd: string) {
       return guardCheckTool;
     }
 
-    // Always re-create to pick up phase changes from /pw-next /pw-setphase
+    // Always re-create to pick up phase changes from /sw-next /sw-setphase
     guardCheckTool = createStagesGuardFromPaths(stagesPath, trackingPath);
   } catch {
     guardCheckTool = null;
@@ -150,14 +150,14 @@ No mesmo hook, dentro do `if (!result.allowed)`:
 
 ```ts
 if (!result.allowed) {
-  const hint = `🔒 Tool '${tool}' blocked by workflow stage. Use /pw-pause to unlock, /pw-next to advance, or /pw-stop to end.`;
+  const hint = `🔒 Tool '${tool}' blocked by workflow stage. Use /sw-pause to unlock, /sw-next to advance, or /sw-stop to end.`;
   console.warn(`[StagesGuard] ${result.reason}`);
   ctx.ui?.notify(hint, "warning");
   return { block: true, reason: result.reason || hint };
 }
 ```
 
-### 6. `extensions/cali-product-workflow/commands.ts` — `/pw-unlock`
+### 6. `extensions/cali-product-workflow/commands.ts` — `/sw-unlock`
 
 Adicionar handler + registro:
 
@@ -236,7 +236,7 @@ describe('getActiveWorkflowCwd', () => {
 ### 8. Deletar legacy
 
 ```bash
-rm /Users/cali/Development/cali-product-workflow/.cali-product-workflow/state/current-stage.json
+rm /Users/cali/Development/cali-product-workflow/.stelow/state/current-stage.json
 ```
 
 ## Comportamento final
@@ -248,10 +248,10 @@ rm /Users/cali/Development/cali-product-workflow/.cali-product-workflow/state/cu
 | Tracking com `in-progress` mas `Workflow.cwd` ≠ este dir | ❌ livre |
 | Tracking com `in-progress` e `Workflow.cwd` = este dir | ✅ bloqueia + notify |
 | `CALI_PW_GUARD=off` no env | ❌ livre (sessão) |
-| `/pw-pause` | ❌ livre (workflow pausa) |
-| `/pw-stop` | ❌ livre (workflow some) |
-| `/pw-archive` | ❌ livre (status=archived) |
-| `/pw-unlock` | ❌ livre (env off) |
+| `/sw-pause` | ❌ livre (workflow pausa) |
+| `/sw-stop` | ❌ livre (workflow some) |
+| `/sw-archive` | ❌ livre (status=archived) |
+| `/sw-unlock` | ❌ livre (env off) |
 
 ## Validação
 
@@ -265,5 +265,5 @@ npm run build
 Teste manual depois:
 
 1. Abrir pi neste dir → `bash` deve passar (todos workflows archived)
-2. `/pw-start` num dir filho → `bash` deve passar até planning
+2. `/sw-start` num dir filho → `bash` deve passar até planning
 3. Em outro dir sem workflow → `bash` livre sempre

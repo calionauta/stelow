@@ -48,7 +48,7 @@
 **Criar:** `skills/cali-product-delivery-audit/SKILL.md` — skill standalone com 2 modos:
 
 ```
-Passo 1: Existe .cali-product-workflow/state/ + spec-tech.md?
+Passo 1: Existe .stelow/state/ + spec-tech.md?
   ├── SIM → Modo "Workflow Audit" (profundo)
   │   • Lê spec-tech.md (scopes planejados)
   │   • Scope-by-scope completeness

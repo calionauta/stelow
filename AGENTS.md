@@ -1,4 +1,4 @@
-# cali-product-workflow
+# stelow
 
 **Transform product ideas into approved, testable plans — systematically.**
 
@@ -16,8 +16,8 @@ See [architecture.md](architecture.md) for module layout, data flow, and how to 
 
 | Command | Description |
 |---------|-------------|
-| `/pw-start` | Begin planning |
-| `/pw-menu` | Show workflow status |
+| `/sw-start` | Begin planning |
+| `/sw-menu` | Show workflow status |
 
 > **Source of Truth:** Stage/skill counts derive from `stages.yaml` and `ls skills/*/SKILL.md | wc -l`. Never update counts here without verifying.
 

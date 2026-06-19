@@ -1,8 +1,8 @@
 {
-  "name": "@cali/cali-pw-opencode",
+  "name": "@cali/stelow-pw-opencode",
   "version": "1.0.0-alpha",
   "type": "module",
-  "description": "cali-product-workflow plugin for OpenCode",
+  "description": "stelow plugin for OpenCode",
   "exports": {
     ".": {
       "import": "./dist/index.js",

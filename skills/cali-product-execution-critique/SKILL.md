@@ -16,7 +16,7 @@ metadata:
 ## Overview
 
 Run a structured audit after any implementation — whether it followed the full
-`cali-product-workflow` or was done ad-hoc. Every evaluation criterion runs in
+`stelow` or was done ad-hoc. Every evaluation criterion runs in
 every mode; only the **source of truth** differs based on what input is available.
 
 > **Tools:** See `references/cli-tools/subagents.md` for subagent patterns.
@@ -58,8 +58,8 @@ command -v cymbal && HAS_CYMBAL=1 || HAS_CYMBAL=0
 # Check if HEAD~1 exists (new repos, first commit)
 git rev-parse HEAD~1 >/dev/null 2>&1 && HAS_PREV=1 || HAS_PREV=0
 
-# Check if .cali-product-workflow/ exists
-[ -d ".cali-product-workflow/" ] && HAS_WORKFLOW_DIR=1 || HAS_WORKFLOW_DIR=0
+# Check if .stelow/ exists
+[ -d ".stelow/" ] && HAS_WORKFLOW_DIR=1 || HAS_WORKFLOW_DIR=0
 ```
 
 ### sem not installed
@@ -83,18 +83,18 @@ New repo or first commit. Fall back:
 - Use `git diff --staged` for staged changes
 - Show: "This is the first commit — auditing working tree and staged changes."
 
-### `.cali-product-workflow/` doesn't exist
+### `.stelow/` doesn't exist
 
 If this directory is missing:
 - In Workflow mode: show "No workflow directory found. The project may not
-  have run through `cali-product-workflow`. Switching to Standalone mode."
+  have run through `stelow`. Switching to Standalone mode."
 - In other modes: no impact (they don't depend on this directory)
 
 ---
 
 ## 🔄 When to Use
 
-This skill activates automatically at the `audit` stage in `cali-product-workflow`,
+This skill activates automatically at the `audit` stage in `stelow`,
 but can also be used standalone when you say:
 
 - "done", "finished", "completed"
@@ -130,7 +130,7 @@ but can also be used standalone when you say:
 
 ### Example 1: Workflow mode (spec-tech.md path)
 
-**Input:** "@.cali-product-workflow/teste/plans/spec-tech_v1.md — audit implementation"
+**Input:** "@.stelow/teste/plans/spec-tech_v1.md — audit implementation"
 
 **Output:**
 ```markdown
@@ -182,7 +182,7 @@ but can also be used standalone when you say:
 
 ## 🗺️ Mode: Workflow Audit
 
-For use after a `cali-product-workflow` cycle. Requires a path to `spec-tech_v{N}.md`.
+For use after a `stelow` cycle. Requires a path to `spec-tech_v{N}.md`.
 
 ### 1. Read the plan
 
@@ -190,7 +190,7 @@ Read the most recent spec-tech.md from the provided path:
 
 ```bash
 # Find latest version
-ls -t .cali-product-workflow/*/plans/spec-tech_v*.md 2>/dev/null | head -1
+ls -t .stelow/*/plans/spec-tech_v*.md 2>/dev/null | head -1
 ```
 
 Parse all scopes — each has type, DoD, acceptance criteria, and (if present) NFRs.
@@ -272,15 +272,15 @@ Check all changed files for:
 
 **Save lessons to disk for future cycles:**
 ```bash
-mkdir -p .cali-product-workflow/lessons-learned/
-cat >> .cali-product-workflow/lessons-learned/{date}-{workflow-name}.md << 'EOF'
+mkdir -p .stelow/lessons-learned/
+cat >> .stelow/lessons-learned/{date}-{workflow-name}.md << 'EOF'
 ---
 date: {timestamp}
 workflow: {workflow-name}
 model: {model_name}
-spec: .cali-product-workflow/{date}/{_dir}/specs/spec-product_v{N}.md
-plan: .cali-product-workflow/{date}/{_dir}/plans/spec-tech_v{N}.md
-critique: .cali-product-workflow/{date}/{_dir}/critiques/critique-report_v{N}.md
+spec: .stelow/{date}/{_dir}/specs/spec-product_v{N}.md
+plan: .stelow/{date}/{_dir}/plans/spec-tech_v{N}.md
+critique: .stelow/{date}/{_dir}/critiques/critique-report_v{N}.md
 ---
 
 ## What went well
@@ -294,7 +294,7 @@ critique: .cali-product-workflow/{date}/{_dir}/critiques/critique-report_v{N}.md
 EOF
 ```
 
-Lessons are saved to `.cali-product-workflow/lessons-learned/` so future workflow
+Lessons are saved to `.stelow/lessons-learned/` so future workflow
 sessions can read them during setup. The `setup.md` stage will automatically
 check for and inject prior lessons at workflow start.
 
@@ -350,10 +350,10 @@ automatically, then re-audits until clean.
 
 **Writing ESCALATED gaps to tracking file:**
 ```bash
-# Add ESCALATED gaps as new scopes in cali-product-workflow.json
+# Add ESCALATED gaps as new scopes in stelow.json
 node -e "
 const fs = require('fs');
-const tracking = JSON.parse(fs.readFileSync('cali-product-workflow.json', 'utf8'));
+const tracking = JSON.parse(fs.readFileSync('stelow.json', 'utf8'));
 const wf = tracking.workflows.find(w => w.status === 'in-progress');
 if (!wf) process.exit(0);
 
@@ -379,7 +379,7 @@ if (escalatedGaps.length > 0) {
     });
   });
   wf.updated = new Date().toISOString();
-  fs.writeFileSync('cali-product-workflow.json', JSON.stringify(tracking, null, 2));
+  fs.writeFileSync('stelow.json', JSON.stringify(tracking, null, 2));
   console.log('Added ' + escalatedGaps.length + ' gap(s) as new scopes');
 }
 "
@@ -517,7 +517,7 @@ Same evaluation as Workflow mode. Inferred scopes replace planned scopes.
 ## 📤 Output
 
 Always save or display in this format. The Lessons Learned section also writes to
-`.cali-product-workflow/lessons-learned/{date}-{name}.md` for cross-session injection.
+`.stelow/lessons-learned/{date}-{name}.md` for cross-session injection.
 
 ```markdown
 # Execution Critique Report
@@ -600,7 +600,7 @@ Always save or display in this format. The Lessons Learned section also writes t
 
 ## Related Skills
 
-- **cali-product-workflow**: Coordinates this skill as the `audit` stage
+- **stelow**: Coordinates this skill as the `audit` stage
 - **cali-product-plan-critique**: Pre-implementation critique (use before coding, complements this post-implementation audit)
 - **cali-product-testing-execution**: Post-implementation testing protocol (runs before this audit)
 - **cali-product-scope-executor**: Routes plan scopes to execution (feeds this audit's input)

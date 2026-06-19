@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { buildSkillActivationMessage } from '../../extensions/cali-product-workflow/start-message';
+import { buildSkillActivationMessage } from '../../extensions/stelow/start-message';
 
 describe('buildSkillActivationMessage', () => {
   it('emits the skill activation header with workflow label', () => {
     const msg = buildSkillActivationMessage('my-workflow', '', '');
-    expect(msg).toContain('/skill:cali-product-workflow');
+    expect(msg).toContain('/skill:stelow');
     expect(msg).toContain(">>> WORKFLOW STARTED: 'my-workflow' <<<");
     expect(msg).toContain('Current stage: Setup');
     expect(msg).toContain('Auto-advance mode: ON');

@@ -36,7 +36,7 @@ The plan must contain scopes with type annotations:
 - `[TYPE] test-security` — SAST and security gates
 - `[TYPE] test-behavior` — behavioral testing for agent workflows
 
-If the plan has the optional **"Execution routing"** section (from cali-product-workflow), use it directly. Otherwise, infer routing from `[TYPE]` tags.
+If the plan has the optional **"Execution routing"** section (from stelow), use it directly. Otherwise, infer routing from `[TYPE]` tags.
 
 ---
 
@@ -129,7 +129,7 @@ Phase 2 (after SCOPE-1):
 
 ```bash
 # Try precise path first, then fallback to glob
-APPETITE=$(grep -oP '^appetite:\s*\K\S+' .cali-product-workflow/*/*/plans/spec-product_*.md 2>/dev/null || echo "Focused")
+APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/*/*/plans/spec-product_*.md 2>/dev/null || echo "Focused")
 if [ "$APPETITE" = "Comprehensive" ]; then
   echo "⚠️ COMPREHENSIVE APPETITE: Human-in-loop mode may be needed for architectural changes."
   echo "Check the workflow's 'mode' setting in index.json."
@@ -143,13 +143,13 @@ Shall I proceed with autonomous execution? I'll report back when all scopes are 
 
 If the user says yes, proceed autonomously. If no, ask what they'd like to adjust.
 
-### Step 2e: Initialize scope tracking in `cali-product-workflow.json`
+### Step 2e: Initialize scope tracking in `stelow.json`
 
 Before executing scopes, **write the initial scope list** to the workflow's tracking file. This enables the Muxy extension to display scope progress on the kanban card.
 
 ```bash
 # Read current tracking file
-TRACKING_FILE='cali-product-workflow.json'
+TRACKING_FILE='stelow.json'
 
 # Build scopes array from parsed plan
 node -e "
@@ -253,13 +253,13 @@ From the scope definition in spec-tech.md, extract:
 ```bash
 node -e "
 const fs = require('fs');
-const tracking = JSON.parse(fs.readFileSync('cali-product-workflow.json', 'utf8'));
+const tracking = JSON.parse(fs.readFileSync('stelow.json', 'utf8'));
 const wf = tracking.workflows.find(w => w.status === 'in-progress');
 if (wf?.scopes) {
   const scope = wf.scopes.find(s => s.id === '{SCOPE-ID}');
   if (scope) scope.status = 'in-progress';
   wf.updated = new Date().toISOString();
-  fs.writeFileSync('cali-product-workflow.json', JSON.stringify(tracking, null, 2));
+  fs.writeFileSync('stelow.json', JSON.stringify(tracking, null, 2));
 }
 "
 ```
@@ -408,7 +408,7 @@ After the child returns its final result (acceptance report or iteration output)
 ```bash
 node -e "
 const fs = require('fs');
-const tracking = JSON.parse(fs.readFileSync('cali-product-workflow.json', 'utf8'));
+const tracking = JSON.parse(fs.readFileSync('stelow.json', 'utf8'));
 const wf = tracking.workflows.find(w => w.status === 'in-progress');
 if (wf?.scopes) {
   const scope = wf.scopes.find(s => s.id === '{SCOPE-ID}');
@@ -417,7 +417,7 @@ if (wf?.scopes) {
     scope.iteration = {M};       // final iteration count
   }
   wf.updated = new Date().toISOString();
-  fs.writeFileSync('cali-product-workflow.json', JSON.stringify(tracking, null, 2));
+  fs.writeFileSync('stelow.json', JSON.stringify(tracking, null, 2));
 }
 "
 ```
@@ -444,7 +444,7 @@ For each scope with `[TYPE] optimization`:
 
 3. **When optimization completes**, run parallel code review (see `references/cli-tools/subagents.md`)
 4. **DoD verification** (see Step 7)
-5. **Update scope tracking** — set scope status to `'completed'` (or `'escalated'` on failure) in `cali-product-workflow.json` (same bash pattern as Step 3)
+5. **Update scope tracking** — set scope status to `'completed'` (or `'escalated'` on failure) in `stelow.json` (same bash pattern as Step 3)
 
 ### Step 5: Execute spike scopes (spike → scout + researcher)
 

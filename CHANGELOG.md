@@ -1,15 +1,15 @@
 # Changelog
 
-All notable changes to `@renatocaliari/cali-product-workflow` will be documented in this file.
+All notable changes to `@renatocaliari/stelow` will be documented in this file.
 
 ## [Unreleased]
 
 ### Added
-- **Scope tracking in `cali-product-workflow.json`**: New `Scope` type and `scopes[]`
+- **Scope tracking in `stelow.json`**: New `Scope` type and `scopes[]`
   field on `Workflow`. Scopes are initialized by the scope executor, updated per-scope
   on start/complete/escalate, and displayed on the Muxy kanban card (badge) and
   detail view (collapsible list with status icons).
-- **Scope completion gate on `/pw-next`**: Blocks Execution→Verification if any scopes
+- **Scope completion gate on `/sw-next`**: Blocks Execution→Verification if any scopes
   are not `completed`. Shows which scopes remain.
 - **Audit re-injection loop**: When advancing from Audit phase, pending scopes loop
   the workflow back to Execution automatically. Scope executor picks them up.
@@ -29,7 +29,7 @@ All notable changes to `@renatocaliari/cali-product-workflow` will be documented
 
 ### Fixed
 - **Skip "Continue?" on fresh workflows**: auto-discovery em `setup.md` agora
-  verifica se `created_at` < 60s atrás. Workflows recém-criados por `/pw-start`
+  verifica se `created_at` < 60s atrás. Workflows recém-criados por `/sw-start`
   pulam a pergunta redundante.
 - **Nota `status` vs `workflow_status` no SKILL.md**: LLMs confundiam os campos
   do tracking file (`status`) com index.json (`workflow_status`). Template bash
@@ -40,15 +40,15 @@ All notable changes to `@renatocaliari/cali-product-workflow` will be documented
 ### Fixed
 - **`getActiveWorkflow` per-worktree isolation**: filtra workflows por `cwd`
   via `isWorkflowFromProject`. Stale entries de outros Muxy worktrees não
-  bloqueiam mais `/pw-start`. `getAllActiveWorkflows` também filtrado.
-- **`/pw-doctor` agora corrige `local-stale-cwd`**: workflows com `cwd` fora
+  bloqueiam mais `/sw-start`. `getAllActiveWorkflows` também filtrado.
+- **`/sw-doctor` agora corrige `local-stale-cwd`**: workflows com `cwd` fora
   do projeto são arquivados (tracking + index.json) via `--fix` ou prompt
   interativo.
 
 ## [0.23.2-alpha] - 2026-06-12
 
 ### Added
-- **`/pw-doctor --fix`**: auto-corrige zombie workflows, index-status-mismatch,
+- **`/sw-doctor --fix`**: auto-corrige zombie workflows, index-status-mismatch,
   e index-phase-mismatch. Suporta flag `--fix` (silencioso) e prompt interativo
   via TUI select quando issues corrigíveis são detectadas.
 - **Muxy stale indicator**: kanban cards mostram aviso "⚠ Stale (>24h without
@@ -62,41 +62,41 @@ All notable changes to `@renatocaliari/cali-product-workflow` will be documented
   para fallback direto. Todos os 6 call sites atualizados.
 
 ### Documentation
-- **README**: `/pw-next` documentado com auto-complete; `/pw-doctor` documentado
+- **README**: `/sw-next` documentado com auto-complete; `/sw-doctor` documentado
   com detecção de zumbis.
 
 ## [0.23.1-alpha] - 2026-06-12
 
 ### Fixed
-- **Auto-complete workflow on last `/pw-next`**: `cmdNext` agora finaliza o workflow
-  automaticamente quando `next >= PHASE_NAMES.length`, sem depender de `/pw-complete`
+- **Auto-complete workflow on last `/sw-next`**: `cmdNext` agora finaliza o workflow
+  automaticamente quando `next >= PHASE_NAMES.length`, sem depender de `/sw-complete`
   manual. Marca todas as fases como "completed", sincroniza index.json e stages guard,
   e limpa o status da UI.
 - **`turn_end` sync detecta workflow completo**: não hardcoda mais
   `workflow_status: "in-progress"` no index.json. Se todas as fases estão concluídas,
   escreve `"completed"`. Inclui guard defensivo `Array.isArray(phases)`.
 - **Zombie workflow detection**: `diagnoseZombieIndexes()` varre todos os
-  `.cali-product-workflow/<date>/<hash>/index.json` e flagra workflows com
+  `.stelow/<date>/<hash>/index.json` e flagra workflows com
   `workflow_status: "in-progress"` que não foram atualizados em >24h e não
-  correspondem a nenhum workflow ativo local. Reportado via `/pw-doctor`.
+  correspondem a nenhum workflow ativo local. Reportado via `/sw-doctor`.
 
 ## [0.23.0-alpha] - 2026-06-11
 
 ### Changed
-- **Global ~/.cali-pw-global.json é índice read-only**: não armazena mais `status`,
+- **Global ~/.stelow-global.json é índice read-only**: não armazena mais `status`,
   `currentPhase`, `phases`, `stage`. Estado real sempre lido do arquivo local.
   Removeu 337 linhas de código de sincronização.
 - **Comandos não escrevem mais estado no global**: pause, resume, setphase, next,
   complete só alteram tracking local.
-- **Multiple active workflows bloqueado**: `/pw-start` recusa se já existe in-progress;
-  `/pw-resume` recusa se outro workflow já está ativo.
+- **Multiple active workflows bloqueado**: `/sw-start` recusa se já existe in-progress;
+  `/sw-resume` recusa se outro workflow já está ativo.
 - **Muxy Done column**: board agora tem coluna `Done` para workflows completed;
   removed from Verify/Shape.
 - **Muxy multi-worktree**: board opcionalmente mostra workflows de outros worktrees
   do mesmo repositório, com card identificando o worktree de origem.
 
 ### Added
-- **`/pw-doctor`** command: diagnóstico de tracking health, stale cwd, duplicates,
+- **`/sw-doctor`** command: diagnóstico de tracking health, stale cwd, duplicates,
   index mismatches, global/missing/local.
 - **Muxy extra workflows**: carrega do global tracking + busca estado real local
   para exibir multi-worktree.
@@ -114,7 +114,7 @@ All notable changes to `@renatocaliari/cali-product-workflow` will be documented
 
 ### Fixed
 - **syncStagesGuardState crash** when tracking file has no active workflow.
-- **Tool restrictions stale**: `getStageGuard()` now reads from `cali-product-workflow.json`
+- **Tool restrictions stale**: `getStageGuard()` now reads from `stelow.json`
   instead of orphaned `current-stage.json`.
 - **Tracking file overwrite**: no longer nullifies `trackingData` when no active workflow.
 - **4 new edge case tests** for re-transition, no active workflow, corrupt file,
@@ -124,15 +124,15 @@ All notable changes to `@renatocaliari/cali-product-workflow` will be documented
 
 ### Changed
 - **Single source of truth for stage state**: merged `current-stage.json` into
-  `cali-product-workflow.json`. The `stage` field on each workflow now holds
+  `stelow.json`. The `stage` field on each workflow now holds
   transition history, gates_passed, and supervisor_active. Eliminates drift
   between LLM state and TUI display.
-- **syncStagesGuardState** writes to `cali-product-workflow.json` (reads legacy
+- **syncStagesGuardState** writes to `stelow.json` (reads legacy
   `current-stage.json` as migration fallback).
 - **adapters/stages-guard.ts** auto-detects tracking vs stage-state file format.
 - **adapters/state-manager.ts** `transition()` accepts optional `trackingPath`
-  to sync stage state into `cali-product-workflow.json`.
-- **SKILL.md** state management section now points to `cali-product-workflow.json`.
+  to sync stage state into `stelow.json`.
+- **SKILL.md** state management section now points to `stelow.json`.
 - **Tests updated**: all 639 pass.
 
 ## [0.15.1-alpha] - 2026-06-06
@@ -210,7 +210,7 @@ All notable changes to `@renatocaliari/cali-product-workflow` will be documented
 ## [0.8.4-alpha] - 2026-06-01
 
 ### Fixed
-- **Approach name mismatch**: `stages/ask-patterns.md` and `cali-product-workflow-spec.md` now use the canonical name `Multi-Method Market Analysis` (matching `SKILL.md`), instead of the truncated `Market Analysis`.
+- **Approach name mismatch**: `stages/ask-patterns.md` and `stelow-spec.md` now use the canonical name `Multi-Method Market Analysis` (matching `SKILL.md`), instead of the truncated `Market Analysis`.
 - **`stages.yaml` awareness**: `context` stage description now references the `context:5` gate (previously silent on the new gate mechanism).
 - **Gate matrix clarity**: `stages/context.md` `context:5` matrix row for `Comprehensive | any` now notes that `Auto` is unreachable (Comprehensive appetite forces `Full Product` or `Full Product + Tech` per `README.md`).
 
@@ -302,16 +302,16 @@ All notable changes to `@renatocaliari/cali-product-workflow` will be documented
   - Growth: ads, business-models, health, marketplace-playbook, open-source, pricing, promotions, trust-building
 
 - **Extension** with workflow commands:
-  - `/pw-start` - Start workflow (auto-parses @filename and text)
-  - `/pw-stop` - Stop immediately and clear UI
-  - `/pw-pause` - Pause (keeps state)
-  - `/pw-resume` - Resume paused workflow
-  - `/pw-status` - Show current status
-  - `/pw-list` - List all workflows
-  - `/pw-setphase` - Set current phase
-  - `/pw-next` - Advance to next phase
-  - `/pw-complete` - Mark as completed
-  - `/pw-goto` - Navigate to workflow in another project
+  - `/sw-start` - Start workflow (auto-parses @filename and text)
+  - `/sw-stop` - Stop immediately and clear UI
+  - `/sw-pause` - Pause (keeps state)
+  - `/sw-resume` - Resume paused workflow
+  - `/sw-status` - Show current status
+  - `/sw-list` - List all workflows
+  - `/sw-setphase` - Set current phase
+  - `/sw-next` - Advance to next phase
+  - `/sw-complete` - Mark as completed
+  - `/sw-goto` - Navigate to workflow in another project
 
 - **TUI integration**:
   - Footer status shows current workflow + stage
@@ -341,7 +341,7 @@ All notable changes to `@renatocaliari/cali-product-workflow` will be documented
 
 ### Changed
 
-- Commands renamed from `/workflow-*` to `/pw-*`
+- Commands renamed from `/workflow-*` to `/sw-*`
 - Phase names updated to match skill exactly
 - TUI elements now use clear user-facing labels
 

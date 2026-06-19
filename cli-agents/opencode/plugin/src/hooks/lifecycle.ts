@@ -1,5 +1,5 @@
 /**
- * cali-product-workflow OpenCode Plugin - Hooks
+ * stelow OpenCode Plugin - Hooks
  * 
  * Session lifecycle hooks for workflow tracking
  */
@@ -9,7 +9,7 @@
  * Called when a new chat session starts
  */
 export async function onSessionStart(input: { sessionID: string }, output: any) {
-  console.log("[cali-product-workflow] Session started:", input.sessionID);
+  console.log("[stelow] Session started:", input.sessionID);
 }
 
 /**
@@ -17,7 +17,7 @@ export async function onSessionStart(input: { sessionID: string }, output: any) 
  * Called when a new message is received
  */
 export async function onChatMessage(input: { sessionID: string; messageID: string }, output: any) {
-  console.log("[cali-product-workflow] Message in session:", input.sessionID);
+  console.log("[stelow] Message in session:", input.sessionID);
 }
 
 /**
@@ -25,7 +25,7 @@ export async function onChatMessage(input: { sessionID: string; messageID: strin
  * Called before a tool is executed
  */
 export async function onToolExecuteBefore(input: { tool: string; sessionID: string }, output: any) {
-  console.log("[cali-product-workflow] Tool about to execute:", input.tool);
+  console.log("[stelow] Tool about to execute:", input.tool);
 }
 
 /**
@@ -33,7 +33,7 @@ export async function onToolExecuteBefore(input: { tool: string; sessionID: stri
  * Called after a tool has been executed
  */
 export async function onToolExecuteAfter(input: { tool: string; sessionID: string }, output: any) {
-  console.log("[cali-product-workflow] Tool executed:", input.tool);
+  console.log("[stelow] Tool executed:", input.tool);
 }
 
 /**
@@ -41,7 +41,7 @@ export async function onToolExecuteAfter(input: { tool: string; sessionID: strin
  * Called before session context is compacted
  */
 export async function onSessionCompacting(input: { sessionID: string }, output: any) {
-  console.log("[cali-product-workflow] Session compacting:", input.sessionID);
+  console.log("[stelow] Session compacting:", input.sessionID);
 }
 
 /**
@@ -52,5 +52,5 @@ export async function onCompactionAutoContinue(
   input: { sessionID: string; overflow: string },
   output: any
 ) {
-  console.log("[cali-product-workflow] Session compacted with overflow");
+  console.log("[stelow] Session compacted with overflow");
 }

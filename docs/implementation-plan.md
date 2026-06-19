@@ -5,7 +5,7 @@
 Based on deep investigation of the cali-product-workflow codebase, the following issues were identified:
 
 ### Gap 1: Phase Transitions via LLM (without command)
-**Problem**: When LLM advances phase via skill conversation (not via `/pw-next`), `currentPhase` in tracking file is NOT updated.
+**Problem**: When LLM advances phase via skill conversation (not via `/sw-next`), `currentPhase` in tracking file is NOT updated.
 
 ### Gap 2: Index.json Desynchronized
 **Problem**: `index.json` is written only in `cmdStart`. Never updated during workflow.
@@ -38,7 +38,7 @@ Add auto-sync logic to `turn_end` handler:
 const tracking = readTracking(wd);
 const current = tracking?.workflows.find(w => w.name === wf.name);
 if (current && current.currentPhase !== wf.currentPhase) {
-  // Phase was advanced by /pw-next - sync in-memory object
+  // Phase was advanced by /sw-next - sync in-memory object
   wf.currentPhase = current.currentPhase;
   // Write index.json with updated phase
   writeIndexJson(wd, wf);
@@ -134,15 +134,15 @@ Consolidate phase status display into a single reference file.
 ## Testing Plan
 
 1. **Tracking Sync Test**:
-   - Start workflow with `/pw-start`
-   - Advance phase with `/pw-next`
+   - Start workflow with `/sw-start`
+   - Advance phase with `/sw-next`
    - Verify `index.json` has updated `current_phase_index`
-   - Verify `cali-product-workflow.json` has updated `currentPhase`
+   - Verify `stelow.json` has updated `currentPhase`
 
 2. **Resume Test**:
    - Start workflow, advance to Phase 4 (Shape)
    - Kill session (simulate crash)
-   - Resume with `/pw-resume`
+   - Resume with `/sw-resume`
    - Verify LLM shows correct phase and todos
 
 3. **Cross-CLI Test**:
@@ -155,7 +155,7 @@ Consolidate phase status display into a single reference file.
    - Start workflow
    - Verify LLM creates phase-specific todos with `[PHASE-N]` naming
    - Verify status indicators (✓ ◐ ○) displayed correctly
-   - Verify todos reset on `/pw-next`
+   - Verify todos reset on `/sw-next`
 
 ---
 

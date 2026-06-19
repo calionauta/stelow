@@ -3,7 +3,7 @@
 ## Quick Start
 
 ```bash
-git clone https://github.com/renatocaliari/cali-product-workflow.git
+git clone https://github.com/renatocaliari/stelow.git
 cd cali-product-workflow
 ./install.sh
 ```
@@ -84,7 +84,7 @@ agent-sync push
 Para instalar skills sem o installer:
 
 ```bash
-npx skills add renatocaliari/cali-product-workflow -g
+npx skills add renatocaliari/stelow -g
 ```
 
 Instala skills para `~/.agents/skills/` — funciona em qualquer CLI.
@@ -117,7 +117,7 @@ INSTALL_SKILLS_ONLY=1 ./install.sh
 
 ```bash
 # Instala skills
-npx skills add renatocaliari/cali-product-workflow -a opencode -g
+npx skills add renatocaliari/stelow -a opencode -g
 
 # Configura ~/.agents/skills/
 # Adicionar em ~/.config/opencode/opencode.json:
@@ -131,11 +131,11 @@ npx skills add renatocaliari/cali-product-workflow -a opencode -g
 
 ```bash
 # Plugin marketplace
-claude plugin marketplace add https://github.com/renatocaliari/cali-product-workflow
+claude plugin marketplace add https://github.com/renatocaliari/stelow
 claude plugin install cali-product-workflow@marketplace-name
 
 # Ou apenas skills
-npx skills add renatocaliari/cali-product-workflow -a claude-code -g
+npx skills add renatocaliari/stelow -a claude-code -g
 ```
 
 </details>
@@ -145,11 +145,11 @@ npx skills add renatocaliari/cali-product-workflow -a claude-code -g
 
 ```bash
 # Plugin marketplace
-codex plugin marketplace add https://github.com/renatocaliari/cali-product-workflow
+codex plugin marketplace add https://github.com/renatocaliari/stelow
 codex plugin add cali-product-workflow@marketplace-name
 
 # Ou apenas skills
-npx skills add renatocaliari/cali-product-workflow -a codex -g
+npx skills add renatocaliari/stelow -a codex -g
 ```
 
 </details>

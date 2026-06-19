@@ -38,17 +38,17 @@ import {
   TRACKING_FILE,
   STAGE,
   type Workflow,
-} from "../../extensions/cali-product-workflow/types";
+} from "../../extensions/stelow/types";
 import {
   updateWorkflowIndexJson,
   scanWorkflowDirs,
   getDateStamp,
   generateDirHash,
-} from "../../extensions/cali-product-workflow/state";
+} from "../../extensions/stelow/state";
 import {
   PHASE_TO_STAGE,
   syncStagesGuardState,
-} from "../../extensions/cali-product-workflow/stages-guard";
+} from "../../extensions/stelow/stages-guard";
 
 // ══════════════════════════════════════════════════════════════════════
 // Helpers
@@ -316,7 +316,7 @@ describe("updateWorkflowIndexJson — corrupt index recovery", () => {
 });
 
 // ══════════════════════════════════════════════════════════════════════
-// 5. syncStagesGuardState — writes stage INTO cali-product-workflow.json (single source of truth)
+// 5. syncStagesGuardState — writes stage INTO stelow.json (single source of truth)
 // ══════════════════════════════════════════════════════════════════════
 
 /** Creates a minimal tracking file with an in-progress workflow so syncStagesGuardState can find it */
@@ -356,7 +356,7 @@ describe("syncStagesGuardState", () => {
     env.cleanup();
   });
 
-  it("writes stage into cali-product-workflow.json with correct initial state", () => {
+  it("writes stage into stelow.json with correct initial state", () => {
     writeTrackingWithWorkflow(env.root, STAGE.SETUP());
     syncStagesGuardState(env.root, STAGE.SHAPE());
 

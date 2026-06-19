@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# cali-product-workflow setup script
+# stelow setup script
 # Installs all required dependencies for this package
 # Handles dual-install pattern: core + stub extension
 #
@@ -10,7 +10,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PACKAGE_DIR="$(dirname "$SCRIPT_DIR")"
 
 echo "╔════════════════════════════════════════════════════════════╗"
-echo "║  cali-product-workflow Setup                                  ║"
+echo "║  stelow Setup                                  ║"
 echo "╚════════════════════════════════════════════════════════════╝"
 echo ""
 
@@ -50,15 +50,15 @@ echo ""
 
 echo "📦 Installing packages (Git-based distribution)..."
 # 1. Core package (skills, adapters, etc.)
-echo "   → cali-product-workflow (core)"
-pi install "git:github.com/renatocaliari/cali-product-workflow" 2>/dev/null || {
+echo "   → stelow (core)"
+pi install "git:github.com/renatocaliari/stelow" 2>/dev/null || {
   echo "   Note: Installing from local source instead"
   pi install "$PACKAGE_DIR" 2>/dev/null || true
 }
 
 # 2. Stub extension (lightweight Pi integration)
-echo "   → cali-pw-pi (stub extension)"
-pi install "$PACKAGE_DIR/extensions/cali-pw-pi" 2>/dev/null || true
+echo "   → stelow-pi (stub extension)"
+pi install "$PACKAGE_DIR/extensions/stelow-pi" 2>/dev/null || true
 echo ""
 
 # Sync cli-tools to all sub-skills
@@ -73,15 +73,15 @@ echo "║  Setup Complete!                                           ║"
 echo "╚════════════════════════════════════════════════════════════╝"
 echo ""
 echo "Installed packages:"
-echo "  • @renatocaliari/cali-product-workflow (core - skills, adapters)"
-echo "  • @renatocaliari/cali-pw-pi (stub extension)"
+echo "  • @renatocaliari/stelow (core - skills, adapters)"
+echo "  • @renatocaliari/stelow-pi (stub extension)"
 echo ""
 echo "Next steps:"
 echo "  1. Run: pi"
-echo "  2. Use: /skill:cali-product-workflow"
+echo "  2. Use: /skill:stelow"
 echo ""
 echo "Optional: Enable auto-trigger (adds context to ALL projects):"
-echo "  cp ~/cali-product-workflow/AGENTS.md ~/.pi/agent/AGENTS.md"
+echo "  cp ~/stelow/AGENTS.md ~/.pi/agent/AGENTS.md"
 echo ""
 echo "  To disable: rm ~/.pi/agent/AGENTS.md"
 echo ""

@@ -17,14 +17,14 @@ Skills must NOT call tools directly with implementation details. Instead, they r
 ## Structure
 
 ```
-cali-product-workflow/
+stelow/
 ├── references/
 │   └── cli-tools/
 │       ├── ask.md           # Tool: ask_user_question
 │       ├── subagents.md     # Tool: subagent
 │       ├── goals.md         # Tool: Goal System (ordered/flexible modes)
 │       ├── plannotator.md   # Tool: plannotator
-│       ├── phase-status.md  # Tool: /pw-*
+│       ├── phase-status.md  # Tool: /sw-*
 │       ├── safe-change.md   # Tool: safe-change
 │       ├── intercom.md      # Tool: intercom
 │       ├── supervise.md     # Tool: start_supervision

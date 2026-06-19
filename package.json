@@ -1,7 +1,7 @@
 {
-  "name": "@renatocaliari/cali-product-workflow",
+  "name": "@renatocaliari/stelow",
   "version": "0.27.0-alpha",
-  "description": "Product workflow for AI coding agents: Shape Up + Interface + Tech Planning + Critique + Gate. Includes 25 product skills.",
+  "description": "stelow — opinionated product workflow. stellar clarity. low friction.",
   "keywords": [
     "pi-skill",
     "pi-extension",
@@ -26,11 +26,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/renatocaliari/cali-product-workflow.git"
+    "url": "git+https://github.com/renatocaliari/stelow.git"
   },
-  "homepage": "https://github.com/renatocaliari/cali-product-workflow#readme",
+  "homepage": "https://github.com/renatocaliari/stelow#readme",
   "bugs": {
-    "url": "https://github.com/renatocaliari/cali-product-workflow/issues"
+    "url": "https://github.com/renatocaliari/stelow/issues"
   },
   "peerDependencies": {
     "typebox": "*"
@@ -54,11 +54,12 @@
   "files": [
     "build/",
     "skills/",
-    "extensions/cali-product-workflow/",
-    "extensions/cali-pw-pi/",
+    "extensions/stelow/",
+    "extensions/stelow-pi/",
+    "extensions/stelow-muxy/",
     "scripts/",
     "install.sh",
-    "cali-product-workflow.schema.json",
+    "stelow.schema.json",
     "README.md",
     "LICENSE",
     "CHANGELOG.md"
@@ -92,7 +93,7 @@
   },
   "pi": {
     "extensions": [
-      "./extensions/cali-product-workflow/index.ts"
+      "./extensions/stelow/index.ts"
     ]
   },
   "dependencies": {

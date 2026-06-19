@@ -5,7 +5,7 @@ description: >
   or screenshot image. Evaluates accessibility (WCAG AA), Nielsen's 10 heuristics, visual
   hierarchy, cognitive load, consistency, mobile responsiveness, AI slop, emotional journey,
   and design personas — then generates a classified gap report.
-  Standalone or integrated into cali-product-workflow and cali-product-testing-execution.
+  Standalone or integrated into stelow and cali-product-testing-execution.
 metadata:
   frequency: weekly
   category: product
@@ -83,7 +83,7 @@ Leia este arquivo e pule para o modo relevante.
 ### Via cali-product-testing-execution (Phase 3)
 O orchestrator do testing-execution carrega esta skill automaticamente quando `Tem interface visual? → SIM`.
 
-### Via cali-product-workflow (Stage Verification)
+### Via stelow (Stage Verification)
 O stage `ui-quality` em `stages/verification.md` delega para esta skill.
 
 ---
@@ -261,7 +261,7 @@ Phase 3: UI/UX Quality
        └── AI Slop Detection
 ```
 
-### cali-product-workflow (Stage Verification)
+### stelow (Stage Verification)
 
 The `ui-quality` stage in `stages/verification.md` delegates to this skill on tiers
 Quick (codebase mode) e Full (live site mode).

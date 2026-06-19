@@ -727,7 +727,7 @@ Recommend:
 
 This skill pairs especially well with:
 
-- `cali-product-workflow`
+- `stelow`
   for the complete product definition workflow (shaping, critique, planning, execution routing)
 
 - `cali-product-scope-executor`

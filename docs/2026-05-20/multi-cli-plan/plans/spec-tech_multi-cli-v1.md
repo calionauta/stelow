@@ -103,7 +103,7 @@ cali-product-workflow/
 
 ```json
 {
-  "name": "@renatocaliari/cali-product-workflow",
+  "name": "@renatocaliari/stelow",
   "exports": {
     ".": "./index.js",
     "./skills": "./skills/",
@@ -134,9 +134,9 @@ CLI=$(detect_cli)
 echo "Detected CLI: $CLI"
 
 # Install base package (works on all CLIs)
-pi install npm:@renatocaliari/cali-product-workflow 2>/dev/null || \
-opencode install npm:@renatocaliari/cali-product-workflow 2>/dev/null || \
-npm install -g @renatocaliari/cali-product-workflow
+pi install npm:@renatocaliari/stelow 2>/dev/null || \
+opencode install npm:@renatocaliari/stelow 2>/dev/null || \
+npm install -g @renatocaliari/stelow
 
 # Install CLI-specific packages
 case "$CLI" in
@@ -152,11 +152,11 @@ case "$CLI" in
     ;;
   claude-code)
     echo "Claude Code detected - adding plugin..."
-    claude /plugin marketplace add renatocaliari/cali-product-workflow
+    claude /plugin marketplace add renatocaliari/stelow
     ;;
   codex)
     echo "Codex detected - adding plugin..."
-    codex /plugins install renatocaliari/cali-product-workflow
+    codex /plugins install renatocaliari/stelow
     ;;
   generic)
     echo "Generic CLI - base package installed"

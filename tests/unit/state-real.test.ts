@@ -38,14 +38,14 @@ import {
   addToGlobalIndex,
   removeGlobalIndexEntry,
   updateGlobalIndexName,
-} from '../../extensions/cali-product-workflow/state';
-import type { Workflow, TrackingData } from '../../extensions/cali-product-workflow/types';
+} from '../../extensions/stelow/state';
+import type { Workflow, TrackingData } from '../../extensions/stelow/types';
 
 describe('REAL State Functions', () => {
   let tempDir: string;
 
   beforeEach(() => {
-    tempDir = mkdtempSync(join(tmpdir(), 'pw-real-state-'));
+    tempDir = mkdtempSync(join(tmpdir(), 'sw-real-state-'));
   });
 
   afterEach(() => {
@@ -64,7 +64,7 @@ describe('REAL State Functions', () => {
     phases: [],
     created: new Date().toISOString(),
     updated: new Date().toISOString(),
-    dirHash: `pw-${name.replace(/\s+/g, '-').toLowerCase().slice(0, 8)}`,
+    dirHash: `sw-${name.replace(/\s+/g, '-').toLowerCase().slice(0, 8)}`,
   });
 
   // ── readTracking / writeTracking ──────────────────────────────────────
@@ -76,7 +76,7 @@ describe('REAL State Functions', () => {
     });
 
     it('readTracking reads what writeTracking wrote', () => {
-      mkdirSync(join(tempDir, '.cali-product-workflow'), { recursive: true });
+      mkdirSync(join(tempDir, '.stelow'), { recursive: true });
       
       const data: TrackingData = {
         $schema: 'https://example.com/schema',
@@ -95,7 +95,7 @@ describe('REAL State Functions', () => {
     });
 
     it('writeTracking persists data across calls', () => {
-      mkdirSync(join(tempDir, '.cali-product-workflow'), { recursive: true });
+      mkdirSync(join(tempDir, '.stelow'), { recursive: true });
       
       const data: TrackingData = {
         $schema: '',
@@ -113,7 +113,7 @@ describe('REAL State Functions', () => {
     });
 
     it('handles empty workflows array', () => {
-      mkdirSync(join(tempDir, '.cali-product-workflow'), { recursive: true });
+      mkdirSync(join(tempDir, '.stelow'), { recursive: true });
       
       const data: TrackingData = {
         $schema: '',
@@ -134,7 +134,7 @@ describe('REAL State Functions', () => {
 
   describe('getActiveWorkflow', () => {
     it('returns null when no workflows', () => {
-      mkdirSync(join(tempDir, '.cali-product-workflow'), { recursive: true });
+      mkdirSync(join(tempDir, '.stelow'), { recursive: true });
       writeTracking(tempDir, {
         $schema: '', version: '1.0', created: '', updated: '', workflows: []
       } as TrackingData);
@@ -144,7 +144,7 @@ describe('REAL State Functions', () => {
     });
 
     it('returns the in-progress workflow', () => {
-      mkdirSync(join(tempDir, '.cali-product-workflow'), { recursive: true });
+      mkdirSync(join(tempDir, '.stelow'), { recursive: true });
       writeTracking(tempDir, {
         $schema: '',
         version: '1.0',
@@ -161,7 +161,7 @@ describe('REAL State Functions', () => {
     });
 
     it('returns null when no in-progress workflow', () => {
-      mkdirSync(join(tempDir, '.cali-product-workflow'), { recursive: true });
+      mkdirSync(join(tempDir, '.stelow'), { recursive: true });
       writeTracking(tempDir, {
         $schema: '',
         version: '1.0',
@@ -178,7 +178,7 @@ describe('REAL State Functions', () => {
     });
 
     it('returns first in-progress when multiple', () => {
-      mkdirSync(join(tempDir, '.cali-product-workflow'), { recursive: true });
+      mkdirSync(join(tempDir, '.stelow'), { recursive: true });
       writeTracking(tempDir, {
         $schema: '',
         version: '1.0',
@@ -199,7 +199,7 @@ describe('REAL State Functions', () => {
 
   describe('getAllActiveWorkflows', () => {
     it('returns empty when no workflows', () => {
-      mkdirSync(join(tempDir, '.cali-product-workflow'), { recursive: true });
+      mkdirSync(join(tempDir, '.stelow'), { recursive: true });
       writeTracking(tempDir, {
         $schema: '', version: '1.0', created: '', updated: '', workflows: []
       } as TrackingData);
@@ -209,7 +209,7 @@ describe('REAL State Functions', () => {
     });
 
     it('returns all in-progress workflows', () => {
-      mkdirSync(join(tempDir, '.cali-product-workflow'), { recursive: true });
+      mkdirSync(join(tempDir, '.stelow'), { recursive: true });
       writeTracking(tempDir, {
         $schema: '',
         version: '1.0',
@@ -231,7 +231,7 @@ describe('REAL State Functions', () => {
 
   describe('renameWorkflow', () => {
     it('renames existing workflow', () => {
-      mkdirSync(join(tempDir, '.cali-product-workflow'), { recursive: true });
+      mkdirSync(join(tempDir, '.stelow'), { recursive: true });
       writeTracking(tempDir, {
         $schema: '',
         version: '1.0',
@@ -249,7 +249,7 @@ describe('REAL State Functions', () => {
     });
 
     it('fails when workflow not found', () => {
-      mkdirSync(join(tempDir, '.cali-product-workflow'), { recursive: true });
+      mkdirSync(join(tempDir, '.stelow'), { recursive: true });
       writeTracking(tempDir, {
         $schema: '',
         version: '1.0',
@@ -263,7 +263,7 @@ describe('REAL State Functions', () => {
     });
 
     it('fails with short name', () => {
-      mkdirSync(join(tempDir, '.cali-product-workflow'), { recursive: true });
+      mkdirSync(join(tempDir, '.stelow'), { recursive: true });
       writeTracking(tempDir, {
         $schema: '',
         version: '1.0',
@@ -283,11 +283,11 @@ describe('REAL State Functions', () => {
   describe('reconcileTracking', () => {
     it('detects workflows on disk not in tracking', () => {
       // Create workflow on disk
-      const wfDir = join(tempDir, '.cali-product-workflow', '2026-05-19', 'pw-disk-workflow');
+      const wfDir = join(tempDir, '.stelow', '2026-05-19', 'sw-disk-workflow');
       mkdirSync(wfDir, { recursive: true });
       writeFileSync(join(wfDir, 'index.json'), JSON.stringify({
         name: 'disk-workflow',
-        _dir: 'pw-disk-workflow',
+        _dir: 'sw-disk-workflow',
         workflow_status: 'in-progress',
         current_phase_index: 2,
       }));
@@ -314,11 +314,11 @@ describe('REAL State Functions', () => {
 
   describe('archiveWorkflowOnDisk', () => {
     it('archives workflow in index.json', () => {
-      const wfDir = join(tempDir, '.cali-product-workflow', '2026-05-19', 'pw-archive-test');
+      const wfDir = join(tempDir, '.stelow', '2026-05-19', 'sw-archive-test');
       mkdirSync(wfDir, { recursive: true });
       writeFileSync(join(wfDir, 'index.json'), JSON.stringify({
         name: 'test-workflow',
-        _dir: 'pw-archive-test',
+        _dir: 'sw-archive-test',
         workflow_status: 'in-progress',
         current_phase_index: 5,
       }));
@@ -337,26 +337,26 @@ describe('REAL State Functions', () => {
     });
 
     it('returns false when no workflows directory exists', () => {
-      mkdirSync(join(tempDir, '.cali-product-workflow'), { recursive: true });
+      mkdirSync(join(tempDir, '.stelow'), { recursive: true });
 
       const result = archiveWorkflowOnDisk(tempDir, 'any-workflow');
       expect(result).toBe(false);
     });
 
     it('updates only target workflow in date directory', () => {
-      const wf1 = join(tempDir, '.cali-product-workflow', '2026-05-19', 'pw-workflow-1');
-      const wf2 = join(tempDir, '.cali-product-workflow', '2026-05-19', 'pw-workflow-2');
+      const wf1 = join(tempDir, '.stelow', '2026-05-19', 'sw-workflow-1');
+      const wf2 = join(tempDir, '.stelow', '2026-05-19', 'sw-workflow-2');
       mkdirSync(wf1, { recursive: true });
       mkdirSync(wf2, { recursive: true });
       
       writeFileSync(join(wf1, 'index.json'), JSON.stringify({
         name: 'workflow-1',
-        _dir: 'pw-workflow-1',
+        _dir: 'sw-workflow-1',
         workflow_status: 'in-progress',
       }));
       writeFileSync(join(wf2, 'index.json'), JSON.stringify({
         name: 'workflow-2',
-        _dir: 'pw-workflow-2',
+        _dir: 'sw-workflow-2',
         workflow_status: 'in-progress',
       }));
 
@@ -400,18 +400,18 @@ describe('REAL State Functions', () => {
   // ── Utility Functions ──────────────────────────────────────────────
 
 describe('Utility Functions', () => {
-    it('generateDirHash creates pw- prefixed hash', () => {
+    it('generateDirHash creates sw- prefixed hash', () => {
       const hash1 = generateDirHash();
       const hash2 = generateDirHash();
 
-      expect(hash1.startsWith('pw-')).toBe(true);
-      expect(hash2.startsWith('pw-')).toBe(true);
+      expect(hash1.startsWith('sw-')).toBe(true);
+      expect(hash2.startsWith('sw-')).toBe(true);
       expect(hash1).not.toBe(hash2);
     });
 
     it('hashToWorkflowId extracts last segment of hash', () => {
-      expect(hashToWorkflowId('pw-ollc-whkaxv')).toBe('wf-whkaxv');
-      expect(hashToWorkflowId('pw-test-abc')).toBe('wf-abc');
+      expect(hashToWorkflowId('sw-ollc-whkaxv')).toBe('wf-whkaxv');
+      expect(hashToWorkflowId('sw-test-abc')).toBe('wf-abc');
     });
 
     it('toSafeName converts to lowercase with dashes', () => {

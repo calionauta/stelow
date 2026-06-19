@@ -15,8 +15,8 @@ import {
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
-const WORKFLOW_DIR = '.cali-product-workflow';
-const TRACKING_FILE = 'cali-product-workflow.json';
+const WORKFLOW_DIR = '.stelow';
+const TRACKING_FILE = 'stelow.json';
 
 // ── Test Helpers ────────────────────────────────────────────────────
 

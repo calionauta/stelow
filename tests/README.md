@@ -125,7 +125,7 @@ tests/
 
 ### tests/unit/state-real.test.ts
 
-Imports real functions from `extensions/cali-product-workflow/state.ts` and tests them:
+Imports real functions from `extensions/stelow/state.ts` and tests them:
 
 - ✅ `readTracking` / `writeTracking` — JSON persistence
 - ✅ `getActiveWorkflow` / `getAllActiveWorkflows` — Filtering
@@ -204,11 +204,11 @@ import { createTestSession, when, calls, says } from '@marcfargas/pi-test-harnes
 
 it('starts workflow and advances to shape phase', async () => {
   const t = await createTestSession({
-    extensions: ['./extensions/cali-product-workflow'],
+    extensions: ['./extensions/stelow'],
   });
 
   await t.run(
-    when('/skill:cali-product-workflow', [
+    when('/skill:stelow', [
       calls('write', { path: expect.stringContaining('index.json') }),
       says(expect.stringContaining('Setup')),
     ]),

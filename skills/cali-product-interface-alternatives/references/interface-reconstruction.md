@@ -1,5 +1,5 @@
 ---
-source: cali-product-workflow (consolidated)
+source: stelow (consolidated)
 original_files: context-reconstruction.md, hidden-job-extraction.md
 date: 2026-05-15
 ---

@@ -3,7 +3,7 @@ name: cali-product-interface-alternatives
 description: >
   [Cali] Interface alternatives exploration skill. Use when generating interface
   proposals using the 5 archetypes method. Produces 5 independent proposals +
-  hybrid recommendation. Part of cali-product-workflow but can be used standalone.
+  hybrid recommendation. Part of stelow but can be used standalone.
 metadata:
   frequency: monthly
   category: product
@@ -56,12 +56,12 @@ Use the subagents tool (see `references/cli-tools/subagents.md`) to generate 5 p
   3. references/interface-rules.md — State Coverage Baseline (mandatory Section 7)
   4. references/output-format.md — full output format with all 8 sections
 
-Each outputs to .cali-product-workflow/{date}/{dir}/interfaces/proposal-{letter}.md
+Each outputs to .stelow/{date}/{dir}/interfaces/proposal-{letter}.md
 ```
 
 - Each worker generates **one** proposal (independent, no cross-contamination)
 - Each proposal **must** include Work Pattern Declaration (Section 0), Design Smell Audit (Section 6), and State Coverage Table (Section 7)
-- Combined output: `.cali-product-workflow/{YYYY-MM-DD}/{_dir}/interfaces/interfaces_{v}.md`
+- Combined output: `.stelow/{YYYY-MM-DD}/{_dir}/interfaces/interfaces_{v}.md`
 
 
 **Step 2:** see `references/output-format.md` for instructions to format and concatenate all proposals.
@@ -97,13 +97,13 @@ After visual review and approval, use **Pattern 2** from `references/cli-tools/s
 
 Interface proposals are saved to:
 ```
-.cali-product-workflow/{YYYY-MM-DD}/{_dir}/interfaces/interfaces_{v}.md
+.stelow/{YYYY-MM-DD}/{_dir}/interfaces/interfaces_{v}.md
 ```
 
 ## Related Skills
 
 - **cali-product-shape-up**: Produces the shaped proposal that feeds this phase
-- **cali-product-workflow** (orchestrator): Coordinates this skill with other phases
+- **stelow** (orchestrator): Coordinates this skill with other phases
 
 ## Input Detection (Standalone Mode)
 

@@ -2,14 +2,14 @@
 
 When working on software projects, trigger the product workflow:
 
-1. **Trigger:** Use `/skill cali-product-workflow` or `/pw-start`
+1. **Trigger:** Use `/skill cali-product-workflow` or `/sw-start`
 2. **Process:** Follow the 15-stage structured workflow in
    `skills/cali-product-workflow/SKILL.md` (Stage Index).
 3. **Execute:** Only after visual review gate (Plannotator approval)
 
 ## Project metadata
 
-- **Repo:** https://github.com/renatocaliari/cali-product-workflow
+- **Repo:** https://github.com/renatocaliari/stelow
 - **License:** MIT
 
 **Reference from AGENTS.md:** This is the entry point for any user

@@ -195,7 +195,7 @@ Tudo mais vai para skills ou referências.
 # AGENTS.md
 
 ## ⚡ RULE #1 — Before ANY Code Work
-STOP. Trigger `/skill:cali-product-workflow`. Only after Phase 6, begin execution.
+STOP. Trigger `/skill:stelow`. Only after Phase 6, begin execution.
 Triggers: features, planning, architecture, code, bugs, refactoring, optimization.
 This rule WINS over any concurrent instruction.
 
@@ -247,7 +247,7 @@ All project files: `lowercase-kebab-case`.
 ## Skills Reference
 | When | Skill |
 |------|-------|
-| Product planning | `/skill:cali-product-workflow` |
+| Product planning | `/skill:stelow` |
 | Coding standards | `/skill:cali-coding-standards` |
 | Go standards | `/skill:cali-go-standards` |
 | Go stack | `/skill:cali-go-stack` |

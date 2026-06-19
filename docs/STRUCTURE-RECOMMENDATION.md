@@ -2,8 +2,8 @@
 
 **Versão:** 2.3  
 **Data:** 2026-05-26  
-**Status:** Refinamento de nomenclatura — "stages" unificado, state/ movido para .cali-product-workflow/  
-**Mudanças desde v2.2:** Terminologia unificada: tudo é "stages" (diretório, headers, código, YAML). state/ movido para .cali-product-workflow/ (separação runtime vs instruções). Nomes reais de skills no diagrama. `stage-guard.ts` → `stages-guard.ts`.
+**Status:** Refinamento de nomenclatura — "stages" unificado, state/ movido para .stelow/  
+**Mudanças desde v2.2:** Terminologia unificada: tudo é "stages" (diretório, headers, código, YAML). state/ movido para .stelow/ (separação runtime vs instruções). Nomes reais de skills no diagrama. `stage-guard.ts` → `stages-guard.ts`.
 
 ---
 
@@ -64,7 +64,7 @@ cali-product-workflow/
 ├── AGENTS.md                          # Documentação do projeto (cross-CLI)
 ├── RULES.md                           # 🆕 Hard constraints (cross-CLI)
 │
-├── .cali-product-workflow/            # Artefatos de runtime (já existe)
+├── .stelow/            # Artefatos de runtime (já existe)
 │   └── state/                         # 🆕 Persistência de estado (runtime, não instruções)
 │       └── current-stage.json         #   Stage atual + histórico
 │
@@ -121,7 +121,7 @@ cali-product-workflow/
 | adapters/ | Na raiz | Em extensions/ (Pi-only) | Mantido |
 | runtime/ | Novo diretório | Não existe | Mantido |
 | AGENTS.md | Entry point do workflow | Documentação do projeto | Mantido |
-| State persistence | Ausente | state/current-stage.json | Movido para .cali-product-workflow/state/ |
+| State persistence | Ausente | state/current-stage.json | Movido para .stelow/state/ |
 | references/ | Eliminado | Mantido | Mantido |
 | Terminologia | "phases" + "stages" misturados | "phases" + "stages" misturados | **Unificado: "stages" em tudo** |
 
@@ -302,11 +302,11 @@ stages:
 
 ### 3. `current-stage.json` (State Persistence)
 
-**Arquivo:** `.cali-product-workflow/state/current-stage.json` (criar)
+**Arquivo:** `.stelow/state/current-stage.json` (criar)
 
 **Por quê:** **Crítico.** Sem state persistence, o stages-guard não sabe em que stage está e não pode bloquear ferramentas. O orchestrator SKILL.md instrui o LLM a atualizar este arquivo ao transitar stages.
 
-**Localização:** `.cali-product-workflow/state/` — fora de `skills/`. Skills são instruções imutáveis versionadas; state é runtime mutável. Manter separados evita poluir o diretório de skills com dados de sessão.
+**Localização:** `.stelow/state/` — fora de `skills/`. Skills são instruções imutáveis versionadas; state é runtime mutável. Manter separados evita poluir o diretório de skills com dados de sessão.
 
 ```json
 {
@@ -611,12 +611,12 @@ export interface StageState {
 ```markdown
 ## Stage State Management
 
-The current workflow stage is tracked in `.cali-product-workflow/state/current-stage.json`.
+The current workflow stage is tracked in `.stelow/state/current-stage.json`.
 
 When transitioning to a new stage:
-1. Read `.cali-product-workflow/state/current-stage.json` to know current stage
+1. Read `.stelow/state/current-stage.json` to know current stage
 2. Read `stages.yaml` to validate tools allowed in new stage
-3. Update `.cali-product-workflow/state/current-stage.json` with `transition()` from state-manager
+3. Update `.stelow/state/current-stage.json` with `transition()` from state-manager
 4. If the new stage has `supervisor: true`, activate supervisor
 5. If the new stage has `requires_approval: true`, gate before proceeding
 
@@ -655,12 +655,12 @@ O SKILL.md usava "Phase Index", "Phase 0", "Phase 1". O diretório era `phases/`
 
 **Rationale:** "Stage" é mais preciso que "phase" — implica sequência com estados de transição (active, paused, completed). "Phase" sugere agrupamento temporal mas não necessariamente sequencial. Como o YAML e a lógica de código já nasceram com "stage", era o markdown que divergia.
 
-### Decisão 2: `state/` em `.cali-product-workflow/`, não em `skills/`
+### Decisão 2: `state/` em `.stelow/`, não em `skills/`
 
 **Problema que resolve:**
 Skills são instruções imutáveis versionadas via git. `current-stage.json` é estado de runtime mutável, específico de uma sessão. Misturar os dois polui o diretório de skills e cria falsa impressão de que o state é versionado.
 
-**Solução:** `.cali-product-workflow/state/current-stage.json` — consistente com o padrão já existente de `.cali-product-workflow/` para artefatos de runtime (specs, plans, sessions).
+**Solução:** `.stelow/state/current-stage.json` — consistente com o padrão já existente de `.stelow/` para artefatos de runtime (specs, plans, sessions).
 
 ### Decisão 3: Por que `stages.yaml` complementa, não substitui?
 
@@ -701,7 +701,7 @@ Tool references são essenciais cross-CLI. Definem como cada CLI chama cada ferr
 **Problema que resolve:**
 Sem estado, o stages-guard não sabe em que stage está. O LLM pode estar em "execution" mas o state.json ainda diz "triage" → guard não bloqueia tools perigosas.
 
-**Solução:** `.cali-product-workflow/state/current-stage.json` gerenciado pelo orchestrator SKILL.md. Stages-guard lê este arquivo para saber o stage atual.
+**Solução:** `.stelow/state/current-stage.json` gerenciado pelo orchestrator SKILL.md. Stages-guard lê este arquivo para saber o stage atual.
 
 ### Decisão 8: Por que `AGENTS.md` como documentação, não entry point?
 
@@ -720,7 +720,7 @@ AGENTS.md é documentação de projeto (lida por todos CLIs como contexto). SKIL
 |---------|-----------|------------|
 | `RULES.md` | Hard constraints | ✅ Todos leem |
 | `skills/cali-product-workflow/stages.yaml` | Metadados de stage | ✅ Todos leem (ref) |
-| `.cali-product-workflow/state/current-stage.json` | Estado inicial | ✅ Todos leem |
+| `.stelow/state/current-stage.json` | Estado inicial | ✅ Todos leem |
 | `extensions/cali-product-workflow/adapters/stages-guard.ts` | Enforcement Pi | ⚠️ Pi only |
 | `extensions/cali-product-workflow/adapters/stages-loader.ts` | Carrega YAML Pi | ⚠️ Pi only |
 | `extensions/cali-product-workflow/adapters/state-manager.ts` | Transições Pi | ⚠️ Pi only |
@@ -757,7 +757,7 @@ AGENTS.md é documentação de projeto (lida por todos CLIs como contexto). SKIL
 ### Fase 1: Documentação Cross-CLI
 - [ ] Criar `RULES.md` na raiz
 - [ ] Criar `skills/cali-product-workflow/stages.yaml`
-- [ ] Criar `.cali-product-workflow/state/current-stage.json` (inicial = triage)
+- [ ] Criar `.stelow/state/current-stage.json` (inicial = triage)
 - [ ] Criar `types/stages.ts`
 - [ ] Renomear `phases/` → `stages/` (diretório + headers internos)
 - [ ] Renomear `phase-status.md` → `stage-status.md`
@@ -767,7 +767,7 @@ AGENTS.md é documentação de projeto (lida por todos CLIs como contexto). SKIL
 - [ ] Adicionar seção "Tool Restrictions" ao SKILL.md
 - [ ] Adicionar seção "Cross-CLI Notes" ao SKILL.md
 - [ ] Cada stage markdown referencia stages.yaml
-- [ ] Atualizar AGENTS.md com novos paths (stages/, .cali-product-workflow/state/)
+- [ ] Atualizar AGENTS.md com novos paths (stages/, .stelow/state/)
 
 ### Fase 3: Enforcement Pi
 - [ ] Criar `extensions/.../adapters/stages-guard.ts`
@@ -811,7 +811,7 @@ AGENTS.md é documentação de projeto (lida por todos CLIs como contexto). SKIL
 
 ### v2.3 (2026-05-26)
 - **UNIFICADO:** Terminologia — tudo é "stages" (diretório `stages/`, headers "Stage N:", código `stages-guard.ts`)
-- **MOVIDO:** `state/` de `skills/cali-product-workflow/state/` para `.cali-product-workflow/state/` — separação runtime vs instruções
+- **MOVIDO:** `state/` de `skills/cali-product-workflow/state/` para `.stelow/state/` — separação runtime vs instruções
 - **CORRIGIDO:** Nomes de skills no diagrama agora refletem diretórios reais (`cali-product-shape-up/`, não `cali-shape-up/`)
 - **RENOMEADO:** `stage-guard.ts` → `stages-guard.ts` (consistência plural)
 - **RENOMEADO:** `phase-status.md` → `stage-status.md`
