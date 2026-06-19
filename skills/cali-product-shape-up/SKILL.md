@@ -41,6 +41,47 @@ Use the subagents tool (see `references/cli-tools/subagents.md`) in parallel for
 
 Read the outputs before proceeding.
 
+## shape:15 — Assumption Check
+
+**Before shaping**, surface assumptions that could materially change direction.
+This catches generic requests ("jogo de descoberta", "saas de psicologo")
+before assumptions get baked into a full spec.
+
+**Read mode:**
+```bash
+WF_DIR="$(ls -td .cali-product-workflow/*/*/ 2>/dev/null | head -1)"
+MODE="Full Product"
+[ -n "$WF_DIR" ] && MODE=$(grep -oP '"mode":\s*"([^"]+)"' "${WF_DIR}index.json" 2>/dev/null | grep -oP '"([^"]+)"$' | tr -d '"' )
+```
+
+**Generate assumption list internally** — check these categories:
+
+| Category | What to check |
+|----------|---------------|
+| 🎯 **Core flow** | Main flow? Trigger? Who acts? |
+| 🧑 **Target user** | B2B/B2C? Size? Role? |
+| 💰 **Business rules** | Payment? Multi-tenancy? Invites? |
+| ⚠️ **Risk domain** | Regulatory? Sensitive data? Compliance? |
+| 🛠️ **Tech hints** (light) | Mobile/web/API? (final decision in tech planning) |
+
+**Apply mode:**
+
+| Mode | Behavior |
+|------|----------|
+| **Auto/Light** | Auto-resolve. AI fills assumptions in spec as notes. No questions. |
+| **Moderate** | Top-3 most critical assumptions. Each presented with AI recommendation.
+  Use `ask_user_question` (see `references/cli-tools/structured-question.md`).
+  Option format: "{assumption}. Recom: {resolution}" with "(Recommended)" marker. |
+| **Full/Full+Tech** | Top-5 assumptions. User responds to each.
+  AI recommendation marked as "(Recommended)". |
+
+After resolving, note in spec frontmatter:
+```yaml
+assumptions_resolved:
+  - core_flow: confirmed (user reports bug, not describes)
+  - target_user: devs
+```
+
 ## shape:20 — Shaping
 
 Read the `references/` files to guide the process:

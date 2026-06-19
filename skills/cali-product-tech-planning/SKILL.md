@@ -58,6 +58,87 @@ Read the `references/` files to guide the process:
 
 ## Process
 
+### tech:5 — Discover Stack
+
+**Before any scopes are generated**, determine the tech stack.
+Stack is a technical decision — owned by Tech Planning, not Shape Up.
+Shape Up only takes "tech hints" (mobile/web/API), final stack is here.
+
+**Detect from existing project:**
+```bash
+STACK_SOURCE=""
+if [ -f "go.mod" ]; then
+  STACK_SOURCE="existing:go"
+  MODULE=$(head -1 go.mod | awk '{print $2}')
+elif [ -f "package.json" ]; then
+  STACK_SOURCE="existing:node"
+  NODE_DEPS=$(jq -r '.dependencies? // {} | keys[]' package.json 2>/dev/null | head -10)
+  HAS_NEXT=$(echo "$NODE_DEPS" | grep -i next || echo "")
+  HAS_REACT=$(echo "$NODE_DEPS" | grep -i react || echo "")
+elif [ -f "Cargo.toml" ]; then
+  STACK_SOURCE="existing:rust"
+elif [ -f "Gemfile" ]; then
+  STACK_SOURCE="existing:ruby"
+elif [ -f "requirements.txt" ] || [ -f "pyproject.toml" ]; then
+  STACK_SOURCE="existing:python"
+elif [ -f "composer.json" ]; then
+  STACK_SOURCE="existing:php"
+elif [ -f "pubspec.yaml" ]; then
+  STACK_SOURCE="existing:flutter"
+elif [ -f "CMakeLists.txt" ]; then
+  STACK_SOURCE="existing:cpp"
+fi
+```
+
+**If existing project detected (`$STACK_SOURCE` is set):**
+- Stack is inferred. No questions asked.
+- To get updated docs for the established stack, `ctx7` (see below) is available
+  during execution. Not required now — noted for reference.
+
+**If new project (no existing source):**
+
+Use `web_search` in parallel to research current best options:
+```
+Parallel queries:
+  A: "best web tech stack 2026 production ready"
+  B: "supabase vs pocketbase 2026 comparison pricing"
+  C: "react vs svelte vs solid 2026 production adoption"
+  D: "[derived from context] best stack for {domain}"
+```
+
+Consolidate into a recommendation with alternatives. Use `ask_user_question`
+(see `references/cli-tools/structured-question.md`) to present:
+
+> **Recommendation:** {chosen stack} (Recommended)
+> **Alternatives:** {alt1} | {alt2}
+> **Justification:** {why this fits the product}
+
+**If user confirms:** proceed.
+**If user picks alternative:** use their choice.
+**If user customizes:** note their choice, proceed.
+
+**Save stack to spec-tech frontmatter:**
+```yaml
+tech_stack:
+  primary: "go 1.26 + templ + datastar"
+  database: "sqlite (turso)"
+  deployment: "docker"
+  stack_source: "$(STACK_SOURCE:-"new:web_search")"
+```
+
+> **ctx7 — doc lookup during execution:** After stack is confirmed,
+> `npx ctx7 library <library>` resolves lib to ctx7 ID, then
+> `npx ctx7 docs <id> "<query>"` fetches version-specific docs.
+> Use during `execution` when writing code against specific APIs.
+> Not needed during planning.
+>
+> **npx skills find — prompt templates during execution:**
+> `npx skills find {stack}` discovers skills/prompts for the chosen tech.
+> `npx skills use <package>@<skill>` generates a prompt inline.
+> Use during `execution` phase, not planning phase.
+
+---
+
 ### planning:10 — Scope Generation
 
 Use the references above to generate technical scopes.
