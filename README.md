@@ -41,7 +41,7 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 - [🚀 Quick Start](#-quick-start)
 - [📦 Installation](#-installation)
 - [🎮 Commands](#-commands)
-- [🖥️ TUI Visual (Muxy.app extension)](#️-tui-visual-muxyapp-extension)
+- [🖥️ Muxy.app Visual Panel](#️-muxyapp-visual-panel)
 - [📁 Artifact Directory](#-artifact-directory)
 - [How We Differ](#how-we-differ)
 - [📖 Evidence & Limitations](#-evidence--limitations)
@@ -364,7 +364,7 @@ This installs all 25 skills to `~/.agents/skills/` - works on any CLI.
 | Command | Description |
 |---------|-------------|
 | `/sw-start` or `/sw-begin` | Start the workflow |
-| `/sw-menu` | Show workflow state and controls |
+| `/sw-menu` | Show terminal quick menu (phase list + next/abort hints). Works without Muxy.app. |
 | `/sw-continue` | Continue to next phase |
 | `/sw-help` | Show available commands |
 | `/sw-status` | Display current phase and progress |
@@ -395,9 +395,9 @@ This installs all 25 skills to `~/.agents/skills/` - works on any CLI.
 
 ---
 
-## 🖥️ TUI Visual (Muxy.app extension)
+## 🖥️ Muxy.app Visual Panel
 
-> **Requires [Muxy.app](https://muxy.app/) + the stelow Muxy extension loaded.** Muxy is a macOS terminal multiplexer — think project-based terminal workspaces, tabs, and splits. The visual overlay is a native Muxy panel, not a standalone web app.
+> **Requires [Muxy.app](https://muxy.app/) + the stelow Muxy extension loaded.** Muxy is a macOS terminal multiplexer — think project-based terminal workspaces, tabs, and splits. The visual panel is a native Muxy surface, not a standalone web app.
 
 The Muxy panel shows:
 
@@ -405,8 +405,6 @@ The Muxy panel shows:
 - Phase artifacts and outputs
 - Upcoming tasks
 - Quick actions
-
-> **Note:** `/sw-menu` is a separate terminal overlay command (works in Pi without Muxy). The Muxy panel is the richer visual surface when you have Muxy.app installed.
 
 ---
 
