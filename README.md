@@ -67,7 +67,7 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 
 And the workflow begins asking questions, exploring scope, shaping the proposal, reviewing for gaps, getting visual approval, and only then generating typed technical scopes for execution.
 
-**By design, stelow prevents coding until three checks pass:** adversarial critique has surfaced hidden assumptions, the visual gate has approved the shaped proposal, and the tech plan has mapped dependencies and scope sequencing. Execution is stage 12 — it only runs after all prior stages complete. In lighter modes (Auto/Light) some gates skip, but the full discipline is there when you need it.
+**Critique → Gate → Scope sequencing.** Execution (stage 12) only runs after all three pass. Lighter modes (Auto/Light) skip some gates; the full path is there when you need it.
 
 ## Why This Exists
 
@@ -133,8 +133,8 @@ This is **not an estimate**. The LLM does not estimate effort - it checks whethe
 |-------|-----|---------|---------------|
 | **Critique** | 5 reviewers + consolidation; gap resolution: AI decides | 5 reviewers + consolidation; gap resolution: by mode | 5 reviewers + consolidation; gap resolution: by mode |
 | **Gate** | Skip Plannotator on Auto mode | Plannotator encouraged | **Mandatory** Plannotator visual review |
-| **Execution** | Skip supervisor | Low supervisor sensitivity | Normal supervisor sensitivity |
-| **Verification** | Build + unit + code-quality + invisible-20% only | Build + unit + lint + code-quality + invisible-20% | Build + unit + lint + a11y + mutation + code review + interactive testing |
+| **Execution** | Skip supervisor | Low supervisor sensitivity | Medium supervisor sensitivity |
+| **Verification** | Build + unit + code-quality + invisible-20% only | Build + unit + lint + code-quality + invisible-20% + **code review (3+ files)** + **a11y audit (1+ UI files)** | Build + unit + lint + a11y + mutation + code review + interactive testing + live site audit |
 
 ### Mode
 
