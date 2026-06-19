@@ -1,8 +1,8 @@
 # Tool: doc-search
 
 > Fetch up-to-date, version-specific documentation for any library.
-> Prefer before writing code against specific APIs — knowledge cutoff
-> may be stale for recent library versions.
+> Use before writing code against specific APIs — LLM training data may be
+> stale for recent library versions.
 
 ## Tool: ctx7 (Recommended)
 
@@ -12,11 +12,11 @@ npx ctx7 docs <id> "<query>"     # Query docs for that library
 ```
 
 | Info | Value |
-|------|-------|
+|-------|------|
 | Command | `npx ctx7` (auto-install if missing) |
 | Source | https://context7.com |
 
-`npx` automatically downloads and runs the latest version. No `npm install -g` needed.
+`npx` auto-installs. No `npm install -g` needed.
 
 ## When to Use
 
@@ -30,9 +30,9 @@ npx ctx7 docs <id> "<query>"     # Query docs for that library
 
 ```bash
 # Detection (auto-installs if missing via npx)
-npx ctx7 library next 2>&1
+npx ctx7 --version 2>&1
 
-# If explicitly needed later (rare):
+# Install globally if desired (optional, not needed for npx):
 npm install -g ctx7
 ```
 
@@ -42,8 +42,11 @@ npm install -g ctx7
 # Step 1: Resolve library name to ctx7 ID
 npx ctx7 library next
 
-# Step 2: Query docs for specific API
+# Step 2: Query docs for specific API or pattern
 npx ctx7 docs /vercel/next.js "app router server components v15"
+
+# Query during execution, before writing code
+npx ctx7 docs /tanstack/query "useMutation optimistic update"
 ```
 
 ## Fallback (ctx7 unavailable)

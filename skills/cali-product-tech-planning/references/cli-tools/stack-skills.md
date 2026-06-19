@@ -8,8 +8,8 @@
 
 ```bash
 npx skills find <query>                   # Search for skills interactively
-npx skills use <package>@<skill>          # Generate a prompt for one skill inline
-npx skills add <package>                  # Install a skill package globally
+npx skills use <package>@<skill>          # Generate inline prompt (no install)
+npx skills add <package>                  # Install skill package (project scope)
 npx skills list                           # List installed skills
 ```
 
@@ -18,36 +18,57 @@ npx skills list                           # List installed skills
 | Command | `npx skills` (auto-install if missing) |
 | Source | Vercel Labs — https://github.com/vercel-labs/agent-skills |
 
-`npx` automatically downloads and runs the latest version. No `npm install -g` needed.
+`npx` auto-installs. No `npm install -g` needed.
 
 ## When to Use
 
 | Phase | Use? | Why |
 |-------|------|-----|
-| Tech Planning — stack choice | ❌ | Skills are prompt templates, not planning artifacts. |
-| Execution — setup | ✅ | After stack is confirmed, `npx skills find {stack}` loads prompts optimized for that tech. |
-| Execution — per scope | 🟡 | `npx skills use <package>@<skill>` generates inline prompt. Useful for auth, payments, testing. |
+| Tech Planning — stack choice | ❌ | Skills are prompt templates for agents, not planning artifacts. |
+| Execution — setup | ✅ | After stack is confirmed, discover skills matched to the tech. |
+| Execution — per scope | 🟡 | `npx skills use` generates inline prompt per scope. Useful for auth, payments, testing. |
 
-## Detection + Install
+## Detection-First (Never Override Installed)
+
+**Before discovering or installing, check what's already installed:**
 
 ```bash
-# Detection (auto-installs if missing via npx)
-npx skills --version 2>&1
-
-# If needed later (rare):
-npm install -g skills
+npx skills list 2>/dev/null | grep -i "{chosen_stack}" | head -5
 ```
+
+**If skills for this stack already exist:**
+- Do NOT install new ones. Use existing ones.
+- If a specific skill seems relevant, `npx skills use` generates the prompt without installing:
+  ```bash
+  npx skills use <package>@<skill>
+  ```
+
+**If no skills found for this stack:**
+- `npx skills find {chosen_stack}` to discover available packages
+- Present top results to user via `ask_user_question`:
+  ```
+  question: "Skills found for {stack}: {list}. Install?"
+  options: [Yes (Recommended): Add {N} skills, project scope | No: Skip]
+  ```
+- Default: **ask first, never auto-install.**
+- Install in project scope only:
+  ```bash
+  npx skills add <package>         # project scope (default, no -g needed)
+  ```
 
 ## Examples
 
 ```bash
-# Find skills for Next.js
+# Discover what's already installed
+npx skills list
+
+# Search for stack-matched skills (no install)
 npx skills find nextjs
 
-# Use a specific skill inline
+# Use a skill inline without installing
 npx skills use vercel-labs/agent-skills@nextjs
 
-# Add a skill package for recurring use
+# Install (project scope, only after user confirms)
 npx skills add vercel-labs/agent-skills
 ```
 
