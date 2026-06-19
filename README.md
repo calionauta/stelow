@@ -110,9 +110,9 @@ Appetite is the **review budget** - how much time and attention the human is wil
 
 | Appetite | What it means | Critique depth | Supervisor | Verification | Best for |
 |----------|---------------|----------------|------------|-------------|----------|
-| **PoC** | Validate an idea fast. Minimal ceremony. | 5 parallel reviewers (appetite_fit gate may skip) | 🚫 Skip | Build + unit + code-quality + invisible-20% only | Idea validation, spike, throwaway prototype |
-| **Focused (default)** | Standard review. Balance of depth and speed. | 5 parallel reviewers | Low sensitivity | Build + unit + lint + code-quality + invisible-20% | Most features, bug fixes, small improvements |
-| **Comprehensive** | Full pipeline. No shortcuts. | 5 parallel reviewers + consolidator | Normal sensitivity | Build + unit + lint + a11y + mutation + code review + interactive testing | Critical features, high-risk changes, production releases |
+| **PoC** | Validate an idea fast. Minimal ceremony. | 5 reviewers + consolidation; gap resolution: AI decides | 🚫 Skip | Build + unit + code-quality + invisible-20% only | Idea validation, spike, throwaway prototype |
+| **Focused (default)** | Standard review. Balance of depth and speed. | 5 reviewers + consolidation; gap resolution: by mode | Low sensitivity | Build + unit + lint + code-quality + invisible-20% | Most features, bug fixes, small improvements |
+| **Comprehensive** | Full pipeline. No shortcuts. | 5 reviewers + consolidation; gap resolution: by mode | Normal sensitivity | Build + unit + lint + a11y + mutation + code review + interactive testing | Critical features, high-risk changes, production releases |
 
 After shaping, the LLM assesses **`appetite_fit`**: does the shaped proposal fit within the declared appetite?
 
@@ -128,7 +128,7 @@ This is **not an estimate**. The LLM does not estimate effort - it checks whethe
 
 | Stage | PoC | Focused | Comprehensive |
 |-------|-----|---------|---------------|
-| **Critique** | 5 parallel reviewers (appetite_fit gate may skip) | 5 parallel reviewers | 5 parallel reviewers + consolidator |
+| **Critique** | 5 reviewers + consolidation; gap resolution: AI decides | 5 reviewers + consolidation; gap resolution: by mode | 5 reviewers + consolidation; gap resolution: by mode |
 | **Gate** | Skip Plannotator on Auto mode | Plannotator encouraged | **Mandatory** Plannotator visual review |
 | **Execution** | Skip supervisor | Low supervisor sensitivity | Normal supervisor sensitivity |
 | **Verification** | Build + unit + code-quality + invisible-20% only | Build + unit + lint + code-quality + invisible-20% | Build + unit + lint + a11y + mutation + code review + interactive testing |
@@ -236,7 +236,7 @@ All 25 skills are flat in `skills/` directory, ready for `~/.agents/skills/`. Th
 |-------|---------|
 | `cali-product-shape-up` | Shape Up planning - IN/OUT boundaries, risk analysis, focused scoping |
 | `cali-product-interface-alternatives` | Interface alternatives exploration (5 archetypes) |
-| `cali-product-plan-critique` | Product plan gap analysis (flows, states, data, feasibility) |
+| `cali-product-plan-critique` | Product plan gap analysis (flows, states, affordances, data, system, compositional quality, feasibility); mode-dependent resolution |
 | `cali-product-codebase-critique` | Codebase structural critique (architecture, performance, AI slop) |
 | `cali-product-ux-critique` | Full UX/UI audit (accessibility, Nielsen heuristics, personas, AI slop) |
 | `cali-product-tech-planning` | Technical scope generation with dependency mapping |
@@ -464,7 +464,7 @@ This workflow is grounded in empirical evidence from the 2025-2026 AI agent rese
 
 | Practice | Source | Evidence | Where We Implement |
 |----------|--------|----------|-------------------|
-| **Parallel orchestration** | [CAID](https://arxiv.org/abs/2603.21489) (Geng & Neubig, CMU, 2026) | +26.7% accuracy using git-worktree isolation + dependency DAG | `critique:30` - 4 parallel reviewers + consolidator |
+| **Parallel orchestration** | [CAID](https://arxiv.org/abs/2603.21489) (Geng & Neubig, CMU, 2026) | +26.7% accuracy using git-worktree isolation + dependency DAG | `critique:30` - 5 parallel reviewers + consolidator |
 | **Cross-session learning** | [Cat](https://arxiv.org/abs/2512.22087) (Liu et al., Beihang, 2025); [Memory Transfer](https://arxiv.org/abs/2604.14004) (Kim et al., KAIST, 2026) | Context as callable tool; +3.7% via abstract memory pools | `setup:0.30` - Session Knowledge from `.cali-product-workflow/session-knowledge/` |
 | **Output validation guards** | [Stage-Gate Agentic](https://community.pdma.org/knowledgehub/bok/product-innovation-process/stage-gate-agentic-the-coming-revolution-in-the-new-product-process) (PDMA, 2026); [Phaselock](https://github.com/infinri/Phaselock) (2026) | AI agents with gates reduce execution failures; 80 enforceable rules | `shape:20` - Shape Up guard; `planning:10.10` - Tech Planning guard |
 | **Context isolation** | [Clean Context Pattern](https://agentfactory.panaversity.org/docs/General-Agents-Foundations/context-engineering/context-isolation) (Agent Factory, 2026); [GAM](https://arxiv.org/abs/2604.12285) (Zhejiang U., 2026) | Fresh context per agent outperforms shared pipelines; write isolation prevents contamination | `subagents.md` - `context:"fresh"` per subagent; disk-based artifacts |
