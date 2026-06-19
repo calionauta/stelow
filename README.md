@@ -22,8 +22,8 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 - **Interface exploration in ASCII art** - 5 archetypes with trade-offs in seconds - no coded mockups wasted - then LLM creates a hybrid combining the best points for your context.
 - **Product domain libraries** - 8 domains auto-detected from your language (Pricing, Trust, Ads, Promotions, Open Source, Health, Marketplace, Business Models).
 - **Typed technical scopes** - feature, spike, optimize, test-* with dependency mapping and sequencing for autonomous execution.
-- **Acceptance-based scope execution** - each scope is delegated with a contract (criteria, verify commands, stop rules). The child agent self-corrects against the contract before returning. Parent evaluates the final result - no manual iteration loop needed.
-- **Audit self-healing loop** - post-execution audit converts ESCALATED gaps into new scopes, and the workflow loops back to Execution automatically. The cycle repeats until no critical gaps remain - the workflow fixes itself before marking done.
+- **Acceptance-based scope execution** - each scope is delegated with a contract (criteria, verify commands, stop rules). On acceptance-native harnesses (e.g. pi-subagents), the child self-corrects in the same context before returning. On other harnesses, the parent re-delegates with feedback until criteria pass or max iterations exhaust.
+- **Audit gap-to-scope loop** — post-execution audit classifies gaps (FIXED / DOCUMENTED / ESCALATED). ESCALATED gaps become new scopes in the tracking file. `/pw-next` enforces the loop: when pending scopes exist at the Audit phase, it blocks completion and resets to Execution. The cycle repeats until no scopes remain pending.
 - **Real-time TUI tracking** - see workflow state as it progresses through all stages.
 
 ---
@@ -196,11 +196,11 @@ The workflow has **3 conceptual phases** (15 stages total), from idea triage to 
 
 ### 2. ⚡ Execution
 
-**Stages 12-13** - Autonomous scope execution via acceptance contracts: each scope is delegated with criteria, verify commands, and stop rules. The child agent implements and self-corrects against the contract (harness-dependent: native acceptance loop or parent-controlled re-delegation). Optimization scopes use benchmark-driven iteration. All scopes include context-rot and plan-staleness checks before execution.
+**Stages 12-13** - Autonomous scope execution via acceptance contracts: each scope is delegated with criteria, verify commands, and stop rules. Self-correction is harness-dependent - native acceptance loops (pi-subagents) let the child fix gaps in the same context; other harnesses use parent-controlled re-delegation. Optimization scopes use benchmark-driven iteration. Scope completion is gated - `/pw-next` blocks advance to Verification if any scopes remain incomplete.
 
 ### 3. ✅ Verification & Audit
 
-**Stage 14** - Full test suite, parallel code review, UI quality audit, and execution critique (scope fidelity, NFR coverage, edge cases, docs, test quality). Gaps classified as ESCALATED become new scopes - the workflow loops back to Execution until clean.
+**Stage 14** — Full test suite, parallel code review, UI quality audit, and execution critique (scope fidelity, NFR coverage, edge cases, docs, test quality). The audit classifies gaps as FIXED / DOCUMENTED / ESCALATED. ESCALATED gaps become new scopes. `/pw-next` detects pending scopes at the Audit phase and loops back to Execution.
 
 ---
 
@@ -242,8 +242,8 @@ All 25 skills are flat in `skills/` directory, ready for `~/.agents/skills/`. Th
 | `cali-product-tech-planning` | Technical scope generation with dependency mapping |
 | `cali-product-testing-ai-code` | AI-aware mutation testing strategy |
 | `cali-product-testing-execution` | Post-implementation testing protocol |
-| `cali-product-scope-executor` | Autonomous scope execution via acceptance contracts - child self-corrects against criteria, parent evaluates final result |
-| `cali-product-execution-critique` | Post-execution audit with gap-to-scope conversion - ESCALATED gaps become new scopes, workflow loops until clean |
+| `cali-product-scope-executor` | Autonomous scope execution via acceptance contracts - child self-corrects (harness-dependent), parent evaluates final result |
+| `cali-product-execution-critique` | Post-execution audit - classifies gaps as FIXED/DOCUMENTED/ESCALATED; ESCALATED gaps become new scopes |
 
 ### 📘 Product Tactics (8)
 
@@ -432,8 +432,8 @@ This workflow combines product planning, domain knowledge, and technical executi
 |--------|---------------|-------------------------------|----------------------------------------|
 | **Scope** | Open-ended | Full lifecycle | Shaped proposals with IN/OUT |
 | **Review** | Manual chat | Configured | Adversarial critique + Gate |
-| **Execution** | One-shot | Manual iteration | Acceptance contract + self-correction loop |
-| **Post-execution** | Done | Manual QA | Audit → gaps become scopes → auto-loop until clean |
+| **Execution** | One-shot | Manual iteration | Acceptance contract + self-correction (harness-dependent) |
+| **Post-execution** | Done | Manual QA | Audit classifies gaps → ESCALATED become scopes → `/pw-next` enforces loop |
 | **Domain Skills** | None | Generic | 8 product-specific (auto-detected) |
 | **Testing** | Ad-hoc | Configured | AI-aware mutation coverage |
 | **Interface** | None | Coded mockups | ASCII art + tradeoffs + hybrid |
@@ -471,8 +471,8 @@ This workflow is grounded in empirical evidence from the 2025-2026 AI agent rese
 | **Visual review gate** | [Plannotator](https://plannotator.ai/) (backnotprop, 2025); [Placement Theory](https://tianpan.co/blog/2026-04-17-hitl-placement-theory-approval-gates) (Tian Pan, 2026) | Browser-based plan annotation with structured feedback loop | `gate:5` - Mandatory Plannotator visual review before execution |
 | **Intra-step recovery** | [Try-Heal-Retry](https://adriennevermorel.com/notes/try-heal-retry-pattern/) (Nweke, 2026); [PALADIN](https://arxiv.org/abs/2509.25238) (Chaudhary et al., 2025) | 89.68% recovery rate via annotated failure trajectories | `subagents.md` - Retry 1× + skip with logged error per subagent |
 | **Metric-driven optimization** | [ReflexGrad](https://arxiv.org/abs/2511.14584) (Kadu et al., 2025); [ReliabilityBench](https://arxiv.org/abs/2601.06112) (Gupta et al., 2026) | +40pp lift via dual-process routing; standardized reliability measurement | `optimization` scopes routed to optimization goals (subagent + acceptance) |
-| **Acceptance-based execution** | [Try-Heal-Retry](https://adriennevermorel.com/notes/try-heal-retry-pattern/) (Nweke, 2026); [PALADIN](https://arxiv.org/abs/2509.25238) (Chaudhary et al., 2025) | 89.68% recovery via annotated failure trajectories; self-correction in same context | Scope executor delegates with acceptance contract - child self-corrects before parent evaluates |
-| **Audit self-healing** | [Agentic Debugging](https://arxiv.org/abs/2504.18032) (Zhang et al., 2025) | +16% fix rate via multi-agent feedback loops | Audit converts ESCALATED gaps → new scopes → workflow loops to Execution until clean |
+| **Acceptance-based execution** | Pattern inspired by [Try-Heal-Retry](https://adriennevermorel.com/notes/try-heal-retry-pattern/) (Nweke, 2026) and [PALADIN](https://arxiv.org/abs/2509.25238) (Chaudhary et al., 2025) | Self-correction in same context outperforms fresh re-delegation | Scope executor delegates with acceptance contract - child self-corrects (harness-dependent) before parent evaluates |
+| **Audit gap-to-scope loop** | Pattern inspired by [Agentic Debugging](https://arxiv.org/abs/2504.18032) (Zhang et al., 2025) | Multi-agent feedback loops improve fix rate | Audit classifies gaps → ESCALATED become new scopes → `/pw-next` enforces loop back to Execution |
 
 ### ⚠️ Known Limitations & Radical Transparency
 
@@ -487,7 +487,7 @@ Even with these guardrails, the AI agent still exhibits predictable failure mode
 | 3 | **Silent wrong answers** - Cross-task state leakage produces plausible but incorrect outputs | [UCC (arXiv 2604.01350)](https://arxiv.org/abs/2604.01350), 2026 | Write isolation per subagent; clean context pattern | **Mitigated by isolation, not by detection.** No mechanism to detect when contamination happens despite isolation. |
 | 4 | **Overconfidence in estimates** - AI systematically underestimates implementation complexity | [Agentic Overconfidence (ICLR 2026)](https://openreview.net/forum?id=Ld4bvamfKj) - all tested agents exhibit agentic overconfidence | Appetite is declared by human as a **constraint**, not estimated by the LLM. The LLM only checks `appetite_fit` (fits/cuts_needed/reshape). No estimation step. | **Addressed by design - appetite is a constraint, not an estimate.** The human sets the budget before shaping. The LLM checks fit, not effort. But the human still needs to set appetite honestly. |
 | 5 | **Approval gate fatigue** - Users can desensitize to visual gates and approve without scrutiny | [Tian Pan Apr 2026](https://tianpan.co/blog/2026-04-23-hitl-queue-dynamics-approver-fatigue) - HITL queues have dynamics | Plannotator requires active annotations (deletions, comments, labels). PoC+Auto mode skips gates entirely when appropriate. | **Delayed, not prevented.** Mode selection helps reduce unnecessary gates, but if the human always picks Comprehensive+Full Product, fatigue still sets in. |
-| 6 | **80% Problem** — AI ships the happy path (CRUD, main flow) but omits error handling, observability, security, retry, rollback, edge cases | [Osmani Jan 2026](https://addyo.substack.com/p/the-80-problem-in-agentic-coding) (coined the term); [GitClear 2025](https://www.gitclear.com/ai_assistant_code_quality_2025_research) | Tech Planning requires NFRs per scope. Acceptance contracts include NFR criteria. Audit gap-to-scope loop catches omissions post-execution and creates new scopes to fix them. | **Partially mitigated.** Acceptance contracts make NFRs explicit in the delegation. Audit loop catches what the contract missed. But the same model evaluates both — blind spots can transfer across the loop. |
+| 6 | **80% Problem** - AI ships the happy path (CRUD, main flow) but omits error handling, observability, security, retry, rollback, edge cases | [Osmani Jan 2026](https://addyo.substack.com/p/the-80-problem-in-agentic-coding) (coined the term); [GitClear 2025](https://www.gitclear.com/ai_assistant_code_quality_2025_research) | Tech Planning requires NFRs per scope. Acceptance contracts can include NFR criteria (if the plan specifies them). Audit classifies omissions as gaps - ESCALATED ones become new scopes. | **Partially mitigated, not solved.** NFRs must be in the plan to appear in the contract. Audit classification depends on the LLM - misclassification means gaps slip through. Same model evaluates both stages. |
 | 7 | **Model dependency** - Claude Opus, Gemini Flash, GPT-4o produce significantly different quality | [Veracode 2025](https://www.veracode.com/wp-content/uploads/2025_GenAI_Code_Security_Report_Final.pdf) - 45% of AI-generated code contains flaws across 100+ models; [Anthropic Jan 2026](https://arxiv.org/abs/2601.20245) - RCT: AI-assisted devs score 17% lower on comprehension tests | Every artifact tracks `generated_by: {model_name}` in frontmatter. Gate stage shows provenance before Plannotator review. | **Transparency, not mitigation.** Knowing the model helps calibrate expectations, but it doesn't fix the quality gap. The comprehension penalty (Anthropic 2026) affects users regardless. |
 | 8 | **Constraint decay** - AI progressively violates its own self-imposed rules over time | [arXiv 2026 (Constraint Decay)](https://arxiv.org/abs/2605.06445) - structural constraints drift in backend code generation; [HORIZON](https://arxiv.org/abs/2604.11978) - agents break on long-horizon tasks | Context rot rules explicitly warn about this. "No patching in degraded context" rule blocks the most common decay pattern. | **Same root cause as context rot.** The warning helps, but stopping a session mid-flow is disruptive and users rarely do it. |
 | 9 | **Code hallucination** - AI invents APIs, functions, or contracts that don't exist (~20% of failures) | [CloudAPIBench](https://arxiv.org/abs/2407.09726) - 20.41% of failures are hallucinated APIs; [Code LLM failures](https://arxiv.org/abs/2407.06153) | Verification stage runs the test suite, which catches some hallucinated APIs. | **Caught by tests, not by the workflow.** If tests don't exist (or are also hallucinated), neither Verification nor Critique detects it. |
