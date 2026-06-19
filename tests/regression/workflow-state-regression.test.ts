@@ -60,7 +60,7 @@ interface TempEnv {
 }
 
 function makeTempEnv(): TempEnv {
-  const root = mkdtempSync(join(tmpdir(), "pw-regression-"));
+  const root = mkdtempSync(join(tmpdir(), "sw-regression-"));
   return {
     root,
     cleanup: () => rmSync(root, { recursive: true, force: true }),
@@ -144,7 +144,7 @@ describe("scanWorkflowDirs — backward compat", () => {
     // Old index.json: current_phase_index=0, current_phase="setup"
     // scanWorkflowDirs should detect this and normalize to 2.
     const dateStamp = getDateStamp();
-    const dirHash = "pw-oldbug-abc123";
+    const dirHash = "sw-oldbug-abc123";
     const dateDir = join(env.root, WORKFLOW_DIR, dateStamp);
     const wfDir = join(dateDir, dirHash);
     mkdirSync(wfDir, { recursive: true });
@@ -170,7 +170,7 @@ describe("scanWorkflowDirs — backward compat", () => {
   it("does NOT normalize current_phase_index:0 for non-setup phases", () => {
     // If phase is NOT "setup", index 0 should stay as-is (it's Triage)
     const dateStamp = getDateStamp();
-    const dirHash = "pw-legit-triage";
+    const dirHash = "sw-legit-triage";
     const dateDir = join(env.root, WORKFLOW_DIR, dateStamp);
     const wfDir = join(dateDir, dirHash);
     mkdirSync(wfDir, { recursive: true });
@@ -193,7 +193,7 @@ describe("scanWorkflowDirs — backward compat", () => {
 
   it("handles missing current_phase_index with default 0", () => {
     const dateStamp = getDateStamp();
-    const dirHash = "pw-noindex";
+    const dirHash = "sw-noindex";
     const dateDir = join(env.root, WORKFLOW_DIR, dateStamp);
     const wfDir = join(dateDir, dirHash);
     mkdirSync(wfDir, { recursive: true });

@@ -1,6 +1,6 @@
 # Stage Numbering Convention
 
-All stages and substeps in `cali-product-workflow` follow this pattern:
+All stages and substeps in `stelow` follow this pattern:
 
 ```
 <stage-slug>:<major>        — Major step (gaps of 10 for insertability)
@@ -51,5 +51,5 @@ If no gap fits, add a decimal level: `setup:15` fits between `setup:10`
 and `setup:20`; `setup:0.15` fits between `setup:0.10` and `setup:0.20`.
 
 **Reference from AGENTS.md:** When adding/editing stages, use this file to
-pick the right number. Stage files in `skills/cali-product-workflow/stages/`
+pick the right number. Stage files in `skills/stelow/stages/`
 must follow the `slug:major.minor` heading convention.

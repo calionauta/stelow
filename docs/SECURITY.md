@@ -168,4 +168,4 @@ Start with Trivy — it covers the most ground with zero friction. Add Socket.de
 
 ## Related
 
-- [Installation Guide](INSTALLATION.md) — how cali-product-workflow itself is distributed
+- [Installation Guide](INSTALLATION.md) — how stelow itself is distributed

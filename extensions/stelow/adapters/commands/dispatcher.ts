@@ -9,7 +9,7 @@ import type { CLI, CLICapabilities } from "../../types";
 import { detectCLI } from "../../state";
 
 export interface CommandDescriptor {
-  /** Command name with kebab-case prefix (e.g., "pw-start") */
+  /** Command name with kebab-case prefix (e.g., "sw-start") */
   name: string;
   /** Command description for help */
   description: string;
@@ -24,88 +24,88 @@ export interface CommandDescriptor {
  */
 export const WORKFLOW_COMMANDS: CommandDescriptor[] = [
   {
-    name: "pw-start",
+    name: "sw-start",
     description: "Start a new product workflow",
     usage: "/sw-start [name=...] [description=...] [@file]",
   },
   {
-    name: "pw-abort",
+    name: "sw-abort",
     description: "Abort and archive workflow(s) — kill active, keep disk copy",
     usage: "/sw-abort | all | name1 name2",
   },
   {
-    name: "pw-pause",
+    name: "sw-pause",
     description: "Pause active workflow",
     usage: "/sw-pause",
   },
   {
-    name: "pw-resume",
+    name: "sw-resume",
     description: "Resume paused workflow",
     usage: "/sw-resume [name=name]",
   },
   {
-    name: "pw-status",
+    name: "sw-status",
     description: "Show active workflow status",
     usage: "/sw-status",
   },
   {
-    name: "pw-ls",
+    name: "sw-ls",
     description: "List workflows",
     usage: "/sw-ls | all | archived | path=DIR",
   },
   {
-    name: "pw-setphase",
+    name: "sw-setphase",
     description: "Jump to phase",
     usage: "/sw-setphase phase=N | phasename=Name",
   },
   {
-    name: "pw-next",
+    name: "sw-next",
     description: "Advance to next phase",
     usage: "/sw-next",
   },
   {
-    name: "pw-complete",
+    name: "sw-complete",
     description: "Mark active workflow complete",
     usage: "/sw-complete",
   },
   {
-    name: "pw-goto",
+    name: "sw-goto",
     description: "Go to a workflow",
     usage: "/sw-goto [name=name]",
   },
   {
-    name: "pw-rename",
+    name: "sw-rename",
     description: "Rename active workflow",
     usage: "/sw-rename novo-nome | name=novo-nome",
   },
   {
-    name: "pw-menu",
+    name: "sw-menu",
     description: "Open workflow overview overlay",
     usage: "/sw-menu",
   },
   {
-    name: "pw-doctor",
+    name: "sw-doctor",
     description: "Diagnose workflow tracking health",
     usage: "/sw-doctor",
   },
   {
-    name: "pw-archive",
+    name: "sw-archive",
     description: "Archive workflows",
     usage: "/sw-archive | /sw-archive name=X | /sw-archive purge",
   },
   {
-    name: "pw-unarchive",
+    name: "sw-unarchive",
     description: "Unarchive a workflow",
     usage: "/sw-unarchive name=<workflow>",
   },
   {
-    name: "pw-unlock",
+    name: "sw-unlock",
     description: "Disable stage guard for this session (debug/emergency)",
     usage: "/sw-unlock",
     piOnly: true,
   },
   {
-    name: "pw-inbox",
+    name: "sw-inbox",
     description: "Manage workflow inbox",
     usage: "/sw-inbox | add <text> | remove <text> | clear",
     piOnly: true,

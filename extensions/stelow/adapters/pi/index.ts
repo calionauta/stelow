@@ -103,19 +103,19 @@ export class PiAdapter extends BaseAdapter {
     // Import the command handlers dynamically to avoid circular dependencies
     // This will be connected to the actual command handlers in commands.ts
     const handlers: Record<string, (pi: unknown, args: string, ctx: unknown) => void> = {
-      "pw-start": this.handleStart.bind(this),
-      "pw-abort": this.handleAbort.bind(this),
-      "pw-pause": this.handlePause.bind(this),
-      "pw-resume": this.handleResume.bind(this),
-      "pw-status": this.handleStatus.bind(this),
-      "pw-ls": this.handleList.bind(this),
-      "pw-setphase": this.handleSetPhase.bind(this),
-      "pw-next": this.handleNext.bind(this),
-      "pw-complete": this.handleComplete.bind(this),
-      "pw-goto": this.handleGoto.bind(this),
-      "pw-rename": this.handleRename.bind(this),
-      "pw-menu": this.handleMenu.bind(this),
-      "pw-clean": this.handleClean.bind(this),
+      "sw-start": this.handleStart.bind(this),
+      "sw-abort": this.handleAbort.bind(this),
+      "sw-pause": this.handlePause.bind(this),
+      "sw-resume": this.handleResume.bind(this),
+      "sw-status": this.handleStatus.bind(this),
+      "sw-ls": this.handleList.bind(this),
+      "sw-setphase": this.handleSetPhase.bind(this),
+      "sw-next": this.handleNext.bind(this),
+      "sw-complete": this.handleComplete.bind(this),
+      "sw-goto": this.handleGoto.bind(this),
+      "sw-rename": this.handleRename.bind(this),
+      "sw-menu": this.handleMenu.bind(this),
+      "sw-clean": this.handleClean.bind(this),
     };
     
     const handler = handlers[commandName];

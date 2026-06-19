@@ -1,4 +1,4 @@
-# Estrutura Recomendada para cali-product-workflow
+# Estrutura Recomendada para stelow
 
 **Versão:** 2.3  
 **Data:** 2026-05-26  
@@ -59,7 +59,7 @@ Portanto:
 ## Estrutura Final
 
 ```
-cali-product-workflow/
+stelow/
 │
 ├── AGENTS.md                          # Documentação do projeto (cross-CLI)
 ├── RULES.md                           # 🆕 Hard constraints (cross-CLI)
@@ -69,7 +69,7 @@ cali-product-workflow/
 │       └── current-stage.json         #   Stage atual + histórico
 │
 ├── skills/                            # Flat — descoberta universal por SKILL.md
-│   ├── cali-product-workflow/         # Orchestrator skill
+│   ├── stelow/         # Orchestrator skill
 │   │   ├── SKILL.md                   # Entry point do workflow
 │   │   ├── stages.yaml                # 🆕 Metadados de stage (complementa stages/)
 │   │   ├── stages/                    # Comportamento (fonte primária, manual)
@@ -92,7 +92,7 @@ cali-product-workflow/
 │   └── ... (demais skills)
 │
 ├── extensions/                        # Pi-specific (mantido)
-│   └── cali-product-workflow/
+│   └── stelow/
 │       └── adapters/
 │           ├── stages-guard.ts        # 🆕 Enforcement via hooks
 │           ├── stages-loader.ts       # 🆕 Carrega stages.yaml
@@ -138,7 +138,7 @@ cali-product-workflow/
 **Por quê:** Hard constraints em markdown puro. Todo LLM lê. Cross-CLI universal.
 
 ```markdown
-# cali-product-workflow Rules
+# stelow Rules
 
 ## Hard Constraints (NEVER violate)
 
@@ -155,7 +155,7 @@ cali-product-workflow/
 
 ## Tool Restrictions Per Stage
 
-See `skills/cali-product-workflow/stages.yaml` for current tool restrictions.
+See `skills/stelow/stages.yaml` for current tool restrictions.
 
 | Stage | Blocked Tools |
 |-------|---------------|
@@ -170,14 +170,14 @@ See `skills/cali-product-workflow/stages.yaml` for current tool restrictions.
 ## Enforcement
 
 - **All CLIs:** This file + stages.yaml define behavioral constraints
-- **Pi only:** `extensions/cali-product-workflow/adapters/stages-guard.ts` enforces programmatically
+- **Pi only:** `extensions/stelow/adapters/stages-guard.ts` enforces programmatically
 ```
 
 ---
 
 ### 2. `stages.yaml` (Metadados — complementa, não substitui)
 
-**Arquivo:** `skills/cali-product-workflow/stages.yaml` (criar)
+**Arquivo:** `skills/stelow/stages.yaml` (criar)
 
 **Por quê:** Source of truth para metadados estruturados (tools, transições, supervisor). Complementa o conteúdo comportamental em `stages/*.md`. **Não** substitui stages/ — os stages têm processos, padrões de pergunta, regras de chaining que não cabem em YAML.
 
@@ -332,16 +332,16 @@ stages:
 
 ---
 
-### 4. `extensions/cali-product-workflow/adapters/stages-guard.ts` (Pi Only)
+### 4. `extensions/stelow/adapters/stages-guard.ts` (Pi Only)
 
-**Arquivo:** `extensions/cali-product-workflow/adapters/stages-guard.ts` (criar)
+**Arquivo:** `extensions/stelow/adapters/stages-guard.ts` (criar)
 
 **Por quê:** Enforcement real via PreToolUse hooks do Pi. Só Pi executa código em hooks — outros CLIs dependem de markdown comportamental.
 
 **Dependência:** Requer `yaml` package para parse. Instalar com `npm install yaml`.
 
 ```typescript
-// extensions/cali-product-workflow/adapters/stages-guard.ts
+// extensions/stelow/adapters/stages-guard.ts
 // Pi-only enforcement via PreToolUse hooks
 // Lê stages.yaml e current-stage.json para bloquear ferramentas
 
@@ -472,14 +472,14 @@ export function createStagesGuardFromPaths(
 
 ---
 
-### 5. `extensions/cali-product-workflow/adapters/state-manager.ts` (Pi Only)
+### 5. `extensions/stelow/adapters/state-manager.ts` (Pi Only)
 
-**Arquivo:** `extensions/cali-product-workflow/adapters/state-manager.ts` (criar)
+**Arquivo:** `extensions/stelow/adapters/state-manager.ts` (criar)
 
 **Por quê:** Gerencia transições de estado. O orchestrator SKILL.md instrui o LLM a chamar `transition("shape")` ao avançar stages.
 
 ```typescript
-// extensions/cali-product-workflow/adapters/state-manager.ts
+// extensions/stelow/adapters/state-manager.ts
 // Gerencia current-stage.json — transições e histórico
 
 import { readFileSync, writeFileSync, existsSync } from 'fs';
@@ -600,9 +600,9 @@ export interface StageState {
 
 ---
 
-### 7. `skills/cali-product-workflow/SKILL.md` (Entry Point)
+### 7. `skills/stelow/SKILL.md` (Entry Point)
 
-**Arquivo:** `skills/cali-product-workflow/SKILL.md` (atualizar existente)
+**Arquivo:** `skills/stelow/SKILL.md` (atualizar existente)
 
 **Por quê:** Entry point do workflow. O SKILL.md existente já referencia stages, tool references, e sub-skills. Precisa ser atualizado para referenciar stages.yaml, RULES.md, e o mecanismo de state.
 
@@ -687,7 +687,7 @@ Pi descobre skills por SKILL.md em diretórios planos. Claude/Codex/OpenCode car
 
 **DotAgents + GitAgent confirmam:** Skills são flat em `skills/`.
 
-**Solução:** `skills/cali-product-workflow/`, `skills/cali-product-shape-up/`, `skills/cali-product-plan-critique/`, `skills/cali-product-codebase-critique/`, `skills/cali-product-ux-critique/` — todos no mesmo nível.
+**Solução:** `skills/stelow/`, `skills/cali-product-shape-up/`, `skills/cali-product-plan-critique/`, `skills/cali-product-codebase-critique/`, `skills/cali-product-ux-critique/` — todos no mesmo nível.
 
 ### Decisão 6: Por que `references/cli-tools/` mantido?
 
@@ -719,29 +719,29 @@ AGENTS.md é documentação de projeto (lida por todos CLIs como contexto). SKIL
 | Arquivo | Descrição | Cross-CLI? |
 |---------|-----------|------------|
 | `RULES.md` | Hard constraints | ✅ Todos leem |
-| `skills/cali-product-workflow/stages.yaml` | Metadados de stage | ✅ Todos leem (ref) |
+| `skills/stelow/stages.yaml` | Metadados de stage | ✅ Todos leem (ref) |
 | `.stelow/state/current-stage.json` | Estado inicial | ✅ Todos leem |
-| `extensions/cali-product-workflow/adapters/stages-guard.ts` | Enforcement Pi | ⚠️ Pi only |
-| `extensions/cali-product-workflow/adapters/stages-loader.ts` | Carrega YAML Pi | ⚠️ Pi only |
-| `extensions/cali-product-workflow/adapters/state-manager.ts` | Transições Pi | ⚠️ Pi only |
+| `extensions/stelow/adapters/stages-guard.ts` | Enforcement Pi | ⚠️ Pi only |
+| `extensions/stelow/adapters/stages-loader.ts` | Carrega YAML Pi | ⚠️ Pi only |
+| `extensions/stelow/adapters/state-manager.ts` | Transições Pi | ⚠️ Pi only |
 | `types/stages.ts` | Interface TypeScript | ⚠️ Pi/build only |
 
 ### Arquivos a Modificar
 
 | Arquivo | Mudança |
 |---------|---------|
-| `skills/cali-product-workflow/SKILL.md` | Adicionar state management, stages.yaml, cross-CLI notes |
-| `skills/cali-product-workflow/stages/*.md` | Renomear de phases/, headers "Stage N:", referenciar stages.yaml |
+| `skills/stelow/SKILL.md` | Adicionar state management, stages.yaml, cross-CLI notes |
+| `skills/stelow/stages/*.md` | Renomear de phases/, headers "Stage N:", referenciar stages.yaml |
 | `AGENTS.md` | Atualizar paths (phases/ → stages/) |
-| `skills/cali-product-workflow/references/cli-tools/phase-status.md` | Renomear para stage-status.md, atualizar conteúdo |
-| `skills/cali-product-workflow/references/cli-tools/` | Adicionar stage-capabilities.md, permissions.md |
+| `skills/stelow/references/cli-tools/phase-status.md` | Renomear para stage-status.md, atualizar conteúdo |
+| `skills/stelow/references/cli-tools/` | Adicionar stage-capabilities.md, permissions.md |
 
 ### O que NÃO muda
 
 | Diretório | Status |
 |-----------|--------|
 | `skills/` (flat) | Mantido — padrão universal |
-| `extensions/cali-product-workflow/` | Mantido — Pi-only |
+| `extensions/stelow/` | Mantido — Pi-only |
 | `cli-agents/` | Mantido — commands cross-CLI |
 | `references/cli-tools/` | Mantido — essencial |
 | `stages/` (ex-phases/) | Mantido (renomeado) — fonte primária de comportamento |
@@ -756,7 +756,7 @@ AGENTS.md é documentação de projeto (lida por todos CLIs como contexto). SKIL
 
 ### Fase 1: Documentação Cross-CLI
 - [ ] Criar `RULES.md` na raiz
-- [ ] Criar `skills/cali-product-workflow/stages.yaml`
+- [ ] Criar `skills/stelow/stages.yaml`
 - [ ] Criar `.stelow/state/current-stage.json` (inicial = triage)
 - [ ] Criar `types/stages.ts`
 - [ ] Renomear `phases/` → `stages/` (diretório + headers internos)
@@ -811,7 +811,7 @@ AGENTS.md é documentação de projeto (lida por todos CLIs como contexto). SKIL
 
 ### v2.3 (2026-05-26)
 - **UNIFICADO:** Terminologia — tudo é "stages" (diretório `stages/`, headers "Stage N:", código `stages-guard.ts`)
-- **MOVIDO:** `state/` de `skills/cali-product-workflow/state/` para `.stelow/state/` — separação runtime vs instruções
+- **MOVIDO:** `state/` de `skills/stelow/state/` para `.stelow/state/` — separação runtime vs instruções
 - **CORRIGIDO:** Nomes de skills no diagrama agora refletem diretórios reais (`cali-product-shape-up/`, não `cali-shape-up/`)
 - **RENOMEADO:** `stage-guard.ts` → `stages-guard.ts` (consistência plural)
 - **RENOMEADO:** `phase-status.md` → `stage-status.md`

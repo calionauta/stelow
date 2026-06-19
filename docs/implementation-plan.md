@@ -2,7 +2,7 @@
 
 ## Context
 
-Based on deep investigation of the cali-product-workflow codebase, the following issues were identified:
+Based on deep investigation of the stelow codebase, the following issues were identified:
 
 ### Gap 1: Phase Transitions via LLM (without command)
 **Problem**: When LLM advances phase via skill conversation (not via `/sw-next`), `currentPhase` in tracking file is NOT updated.
@@ -30,7 +30,7 @@ Based on deep investigation of the cali-product-workflow codebase, the following
 - [x] CLI-specific commands for pi, claude-code, opencode, codex
 
 ### Phase 2: Fix index.ts turn_end handler
-**File**: `extensions/cali-product-workflow/index.ts`
+**File**: `extensions/stelow/index.ts`
 
 Add auto-sync logic to `turn_end` handler:
 ```typescript
@@ -46,7 +46,7 @@ if (current && current.currentPhase !== wf.currentPhase) {
 ```
 
 ### Phase 3: Add writeIndexJson helper
-**File**: `extensions/cali-product-workflow/state.ts`
+**File**: `extensions/stelow/state.ts`
 
 Add function to update index.json on phase changes:
 ```typescript
@@ -77,8 +77,8 @@ writeIndexJson(wd, wf);
 
 ### Phase 5: Remove footer dependency
 **Files**: 
-- `extensions/cali-product-workflow/ui.ts` - Keep for backward compat but make optional
-- `extensions/cali-product-workflow/index.ts` - Remove mandatory footer updates
+- `extensions/stelow/ui.ts` - Keep for backward compat but make optional
+- `extensions/stelow/index.ts` - Remove mandatory footer updates
 - `SKILL.md` - Add todo-based status display instead
 
 **Changes**:
@@ -87,7 +87,7 @@ writeIndexJson(wd, wf);
 3. User sees phase status via LLM response, not via footer
 
 ### Phase 6: Update SKILL.md to reference todo.md
-**File**: `skills/cali-product-workflow/SKILL.md`
+**File**: `skills/stelow/SKILL.md`
 
 Add to Tools & Packages table:
 ```
@@ -118,16 +118,16 @@ Consolidate phase status display into a single reference file.
 ## Files to Modify
 
 ### Extension (TypeScript)
-1. `extensions/cali-product-workflow/state.ts` - Add `writeIndexJson()`
-2. `extensions/cali-product-workflow/index.ts` - Add auto-sync in turn_end
-3. `extensions/cali-product-workflow/commands.ts` - Call `writeIndexJson()` in phase commands
-4. `extensions/cali-product-workflow/ui.ts` - Make footer optional
+1. `extensions/stelow/state.ts` - Add `writeIndexJson()`
+2. `extensions/stelow/index.ts` - Add auto-sync in turn_end
+3. `extensions/stelow/commands.ts` - Call `writeIndexJson()` in phase commands
+4. `extensions/stelow/ui.ts` - Make footer optional
 
 ### Skills (Markdown)
-1. `skills/cali-product-workflow/SKILL.md` - Add todo reference, response format
-2. `skills/cali-product-workflow/references/cli-tools/todo.md` - Already created
-3. `skills/cali-product-workflow/references/cli-tools/README.md` - Add todo to tool list
-4. `skills/cali-product-workflow/references/cli-tools/phase-status.md` - Update to use todo
+1. `skills/stelow/SKILL.md` - Add todo reference, response format
+2. `skills/stelow/references/cli-tools/todo.md` - Already created
+3. `skills/stelow/references/cli-tools/README.md` - Add todo to tool list
+4. `skills/stelow/references/cli-tools/phase-status.md` - Update to use todo
 
 ---
 

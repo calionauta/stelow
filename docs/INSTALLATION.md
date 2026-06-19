@@ -4,7 +4,7 @@
 
 ```bash
 git clone https://github.com/renatocaliari/stelow.git
-cd cali-product-workflow
+cd stelow
 ./install.sh
 ```
 
@@ -15,20 +15,20 @@ Auto-detects ALL your CLIs and installs 25 skills to `~/.agents/skills/`.
 ## Architecture
 
 ```
-cali-product-workflow/          ← Source (versionado)
+stelow/          ← Source (versionado)
 └── skills/                     ← 25 skills flat
-    ├── cali-product-workflow/   ← Orchestrator
+    ├── stelow/   ← Orchestrator
     ├── cali-product-shape-up/
     └── ... (21 more)
 
 ~/.agents/skills/               ← Install target (home do usuário)
-├── cali-product-workflow/       ← Copied
+├── stelow/       ← Copied
 ├── cali-product-shape-up/               ← Copied
 └── ... (25 total)
 ```
 
 **Skills installed (25 total):**
-- `cali-product-workflow` — orchestrator (15 stages)
+- `stelow` — orchestrator (15 stages)
 - 10 workflow stage skills (shape-up, interface-alternatives, plan-critique, codebase-critique, ux-critique, tech-planning, testing-ai-code, testing-execution, scope-executor, execution-critique)
 - 5 strategic analysis skills (job-to-be-done, discovery, opportunity-mapping, multi-method-market-analysis, evolutionary-principles)
 - 1 code-standards skill
@@ -132,7 +132,7 @@ npx skills add renatocaliari/stelow -a opencode -g
 ```bash
 # Plugin marketplace
 claude plugin marketplace add https://github.com/renatocaliari/stelow
-claude plugin install cali-product-workflow@marketplace-name
+claude plugin install stelow@marketplace-name
 
 # Ou apenas skills
 npx skills add renatocaliari/stelow -a claude-code -g
@@ -146,7 +146,7 @@ npx skills add renatocaliari/stelow -a claude-code -g
 ```bash
 # Plugin marketplace
 codex plugin marketplace add https://github.com/renatocaliari/stelow
-codex plugin add cali-product-workflow@marketplace-name
+codex plugin add stelow@marketplace-name
 
 # Ou apenas skills
 npx skills add renatocaliari/stelow -a codex -g
@@ -161,11 +161,11 @@ npx skills add renatocaliari/stelow -a codex -g
 O installer **não modifica** seu AGENTS.md/CLAUDE.md automaticamente. Adicione manualmente:
 
 ```markdown
-## cali-product-workflow Integration
+## stelow Integration
 
 When working on software projects, trigger the product workflow:
 
-1. **Trigger:** Use `/skill cali-product-workflow`
+1. **Trigger:** Use `/skill stelow`
 2. **Process:** Follow the structured workflow (Setup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Execution → Verification → Audit)
 3. **Execute:** Only after visual review gate (Plannotator approval)
 ```

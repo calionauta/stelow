@@ -324,7 +324,7 @@ export default function (pi: ExtensionAPI) {
       const stageName = PHASE_TO_STAGE[activeWf.currentPhase];
       const isGateStage = stageName === "gate" || stageName === "int-gate";
       if (isGateStage && activeWf.stage.gates_passed.includes(stageName)) {
-        executeCommand(pi, "pw-next", "", ctx);
+        executeCommand(pi, "sw-next", "", ctx);
       }
     }
 

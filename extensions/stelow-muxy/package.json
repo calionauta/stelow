@@ -20,19 +20,19 @@
         "title": "Cali Product Workflow: Refresh"
       },
       {
-        "id": "pw-next-cmd",
+        "id": "sw-next-cmd",
         "title": "Workflow: Execute /sw-next"
       },
       {
-        "id": "pw-abort-cmd",
+        "id": "sw-abort-cmd",
         "title": "Workflow: Execute /sw-abort"
       },
       {
-        "id": "pw-complete-cmd",
+        "id": "sw-complete-cmd",
         "title": "Workflow: Execute /sw-complete"
       },
       {
-        "id": "pw-archive-cmd",
+        "id": "sw-archive-cmd",
         "title": "Workflow: Execute /sw-archive"
       }
     ],

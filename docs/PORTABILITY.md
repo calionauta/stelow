@@ -1,10 +1,10 @@
 # Portability Guide
 
-This document explains how cali-product-workflow supports multiple AI coding agent harnesses (CLI tools).
+This document explains how stelow supports multiple AI coding agent harnesses (CLI tools).
 
 ## Overview
 
-cali-product-workflow is designed to work across different AI coding agents. The workflow logic is harness-agnostic; only specific integrations (UI, commands) are platform-dependent.
+stelow is designed to work across different AI coding agents. The workflow logic is harness-agnostic; only specific integrations (UI, commands) are platform-dependent.
 
 ### Supported Harnesses
 
@@ -24,7 +24,7 @@ cali-product-workflow is designed to work across different AI coding agents. The
 
 ```
 skills/
-├── cali-product-workflow/       # Main orchestrator
+├── stelow/       # Main orchestrator
 ├── skills/            # Planning skills (agnostic)
 ├── skills/           # Execution skills (agnostic)
 ├── skills/  # Analysis skills (agnostic)

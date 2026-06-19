@@ -221,7 +221,7 @@ export class CodexAdapter extends BaseAdapter {
     // Codex uses commands/ directory for slash commands
     // Commands are markdown files with format:
     // ---
-    // name: pw-start
+    // name: sw-start
     // description: Start product workflow
     // ---
     // @agent

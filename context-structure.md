@@ -48,9 +48,9 @@ adapters/
 ```typescript
 // 15 workflow commands defined
 export const WORKFLOW_COMMANDS: CommandDescriptor[] = [
-  { name: "pw-start", canonicalName: "pw-start", ... },
-  { name: "pw-abort", canonicalName: "pw-abort", ... },
-  { name: "pw-pause", canonicalName: "pw-pause", ... },
+  { name: "sw-start", canonicalName: "sw-start", ... },
+  { name: "sw-abort", canonicalName: "sw-abort", ... },
+  { name: "sw-pause", canonicalName: "sw-pause", ... },
   // ... 12 more commands
 ];
 

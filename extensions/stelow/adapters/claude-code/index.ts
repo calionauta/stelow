@@ -220,7 +220,7 @@ export class ClaudeCodeAdapter extends BaseAdapter {
     // Claude Code uses skills in skills/ directory
     // Skills are markdown files with frontmatter:
     // ---
-    // name: pw-start
+    // name: sw-start
     // description: Start product workflow
     // ---
     // /sw-start {args}

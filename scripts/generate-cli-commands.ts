@@ -139,7 +139,7 @@ let totalGenerated = 0;
 for (const cli of CLIS) {
   // Clean existing files (remove all pw-*.md)
   if (existsSync(cli.dir)) {
-    const existing = readdirSync(cli.dir).filter(f => f.startsWith("pw-") && f.endsWith(".md"));
+    const existing = readdirSync(cli.dir).filter(f => f.startsWith("sw-") && f.endsWith(".md"));
     for (const f of existing) {
       rmSync(join(cli.dir, f));
     }
