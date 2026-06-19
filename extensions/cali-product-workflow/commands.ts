@@ -607,7 +607,7 @@ function cmdNext(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
   }
 
   if (next >= PHASE_NAMES.length) {
-    // Auto-complete — não depende de comando manual /pw-complete
+    // Auto-complete — no manual /pw-complete command needed
     ctx.ui?.setStatus("workflow", undefined);
     const tComplete = readTracking(wd);
     if (tComplete) {
