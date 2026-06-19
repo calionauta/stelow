@@ -395,7 +395,9 @@ This installs all 25 skills to `~/.agents/skills/` - works on any CLI.
 
 ---
 
-## 🖥️ TUI Visual
+## 🖥️ TUI Visual (Muxy.app extension)
+
+> **Requires [Muxy.app](https://muxy.app/) + the stelow Muxy extension loaded.** Muxy is a macOS terminal multiplexer — think project-based terminal workspaces, tabs, and splits. The visual overlay is a native Muxy panel, not a standalone web app.
 
 The workflow includes a real-time TUI overlay showing:
 
@@ -440,7 +442,7 @@ This workflow combines product planning, domain knowledge, and technical executi
 | **Domain Skills** | None | Generic | 8 product-specific (auto-detected) |
 | **Testing** | Ad-hoc | Configured | AI-aware mutation coverage |
 | **Interface** | None | Coded mockups | ASCII art + tradeoffs + hybrid |
-| **Tracking** | None | Varies | Real-time TUI + visual overlay |
+| **Tracking** | None | Varies | Real-time TUI + Muxy.app visual overlay |
 
 ### Key Differences
 
