@@ -9,6 +9,8 @@
 
 This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI coding agents. Instead of open-ended feature lists, you shape proposals with clear scope boundaries, validate them through adversarial critique, and generate typed technical scopes ready for autonomous execution.
 
+> **Built by a product manager, for AI agents.** I've spent years inside product teams — as a PM, consultant, and leader — refining how products get built. stelow is that experience, systematized for AI. No conference-room theory. Lessons from live products, shipped features, and real teams. [More about my background.](#about-the-author)
+
 ---
 
 > 🎯 *"Measure thrice, cut once"* - applies to product decisions, not just code.
@@ -65,7 +67,7 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 
 And the workflow begins asking questions, exploring scope, shaping the proposal, reviewing for gaps, getting visual approval, and only then generating typed technical scopes for execution.
 
-**"Measure thrice, cut once" isn't just a saying here - it's the design principle.** Every shaped proposal goes through adversarial critique, visual gate approval, and dependency-mapped scope sequencing before a single line of code is written.
+**By design, stelow prevents coding until three checks pass:** adversarial critique has surfaced hidden assumptions, the visual gate has approved the shaped proposal, and the tech plan has mapped dependencies and scope sequencing. Execution is stage 12 — it only runs after all prior stages complete. In lighter modes (Auto/Light) some gates skip, but the full discipline is there when you need it.
 
 ## Why This Exists
 
