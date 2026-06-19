@@ -9,7 +9,7 @@
 
 This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI coding agents. Instead of open-ended feature lists, you shape proposals with clear scope boundaries, validate them through adversarial critique, and generate typed technical scopes ready for autonomous execution.
 
-> **Built by an ex-product manager, for AI agents.** I've led product teams, taught product leadership, and advised product strategy with founders and product leaders. stelow is that experience, systematized for AI. No conference-room theory. Lessons from live products, shipped features, and real teams. [More about my background.](#about-the-author)
+> **Built by a former product manager, for AI agents.** I've led product teams, taught product leadership, and advised product strategy with founders and product leaders. stelow is that experience, systematized for AI. No conference-room theory. Lessons from live products, shipped features, and real teams. [More about my background.](#about-the-author)
 
 ---
 
