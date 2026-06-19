@@ -43,6 +43,10 @@ This skill runs 7 specialized checklists against product plans:
 **Golden rule:** Every gap becomes a **specific, actionable question** —
 never a vague criticism. The goal is to unblock the implementation team, not delay them.
 
+> **Mode caveat:** In `Auto`/`Light` modes, gaps become internal recommendations in
+> the report (no user questions). The "question" is posed to the spec, not the user.
+> In `Moderate`/`Full` modes, top-N gaps are pushed as actual user questions.
+
 ## Activation
 
 ### Standalone
@@ -87,16 +91,33 @@ and implementation constraints.
 | `references/auto-resolve-rules.md` | Rules for auto-resolving gaps with defaults |
 | `references/output-format.md` | Report format specification |
 
-### critique:20 — Appetite Fit Check
+### critique:20 — Determine Workflow Dir & Mode
 
-**Before launching parallel reviewers**, check the `appetite_fit` from spec-product.md frontmatter:
+**Before launching parallel reviewers**, determine the active workflow directory.
+When called via orchestrator, the workflow dir is available from session context.
+When standalone, scan for the most recent workflow.
 
 ```bash
-APPETITE=$(grep -oP '^appetite:\s*\K\S+' "$INPUT" 2>/dev/null || echo "Focused")
-FIT=$(grep -oP '^appetite_fit:\s*\K\S+' "$INPUT" 2>/dev/null || echo "fits")
+# Try session context first, then scan for most recent
+WF_DIR=""
+if [ -f "index.json" ] && grep -q '"workflow_status":' index.json 2>/dev/null; then
+  WF_DIR="."
+elif ls .cali-product-workflow/*/*/index.json 2>/dev/null; then
+  WF_DIR="$(ls -td .cali-product-workflow/*/*/ 2>/dev/null | head -1)"
+fi
+
+SPEC=$(ls "$WF_DIR"plans/spec-product*.md 2>/dev/null | head -1)
+MODE="Full Product"
+[ -n "$WF_DIR" ] && MODE=$(grep -oP '"mode":\s*"([^"]+)"' "$WF_DIR"index.json | grep -oP '"([^"]+)"$' | tr -d '"' )
+MODE=${MODE:-Full Product}
+APPETITE=$(grep -oP '^appetite:\s*\K\S+' "$SPEC" 2>/dev/null || echo "Focused")
+FIT=$(grep -oP '^appetite_fit:\s*\K\S+' "$SPEC" 2>/dev/null || echo "fits")
 ```
 
-**Note:** Auto-skip of critique is now controlled by **Mode** (from `index.json`), not by appetite. When the orchestrator calls plan-critique, mode has already decided whether critique runs. When standalone, plan-critique always runs in Full mode.
+**Mode is determined BEFORE parallel reviewers.** Subagents only CLASSIFY gaps
+(severity + description + AI recommendation). They do NOT auto-resolve.
+The parent applies mode-based behavior after consolidation.
+This keeps subagents pure detectors, regardless of mode.
 
 **Check appetite fit (constraint check, not estimation):**
 
@@ -138,8 +159,13 @@ Launch 5 parallel reviewers:
   D: Compositional Quality (Purpose-Layout Alignment) → critiques/critique-composition.md
   E: Feasibility      → critiques/critique-feasibility.md
 
-Each reads checklists.md from references/, outputs per output-format.md,
-and auto-resolves clear defaults per auto-resolve-rules.md.
+Each reads checklists.md from references/, outputs per output-format.md.
+Subagents CLASSIFY only — they do NOT auto-resolve:
+- Tag each gap as 🚨 / 🤔 / 🔎
+- Recommended resolution (for parent to apply)
+- One alternative per plausible trade-off
+
+The parent applies mode-based behavior (resolve / ask) after consolidation.
 ```
 
 > **Error recovery:** If any parallel subagent fails, retry once per the
@@ -147,88 +173,106 @@ and auto-resolves clear defaults per auto-resolve-rules.md.
 > log as SKIPPED and proceed with remaining dimensions. A missing dimension
 > is better than a deadlocked workflow.
 
-### critique:40 — Consolidate critique reports
+### critique:40 — Consolidate into report
 
-After all 5 parallel reviews complete, run a consolidation step using the
-subagents tool (see `references/cli-tools/subagents.md`) that merges them
-into a single unified report:
+This step runs in the **parent LLM** (not a subagent). Merge all 5 parallel
+reports into a single critique-report.md. Classify each gap per the table below.
+The report is an internal artifact — all gaps are listed with severity,
+description, AI recommendation, and alternatives.
 
-```
-Agent: worker
-Task: Consolidate critique reports
-Read: critiques/critique-{flows-states,data-system,affordances-ux,composition,feasibility}.md
-Output: critiques/critique-report.md (per output-format.md)
-```
-- Apply gap classification per table below
-
-Output: a single critique-report.md ready for the Review Gate.
-Save to .cali-product-workflow/{YYYY-MM-DD}/{_dir}/critiques/critique-report.md`,
-  reads: [
-    "critiques/critique-flows-states.md",
-    "critiques/critique-data-system.md",
-    "critiques/critique-affordances-ux.md",
-    "critiques/critique-composition.md",
-    "critiques/critique-feasibility.md"
-  ],
-  output: ".cali-product-workflow/{YYYY-MM-DD}/{_dir}/critiques/critique-report.md"
-})
-```
+Use `references/auto-resolve-rules.md` for generating AI recommendations.
+Do NOT auto-resolve yet — that depends on mode (next step).
 
 ### 4. Gap Classification
 
-| Tag | Severity | Action |
+| Tag | Severity | Effect |
 |-----|----------|--------|
-| 🚨 **Critical** | Blocking — missing essential definition | Must resolve before gate |
-| 🤔 **Important** | Significant gap or risk | Should resolve before gate |
-| 🔎 **Minor** | Polish or nice-to-have | Note for execution |
+| 🚨 **Critical** | Blocking — missing essential definition | Always shown to user in Moderate/Full |
+| 🤔 **Important** | Significant gap or risk | Shown if within top-N budget |
+| 🔎 **Minor** | Polish or nice-to-have | Auto-resolved in all modes |
 
-### 5. Resolve Gaps by Mode
+### critique:45 — Resolve Gaps by Mode
 
-The plan-critique reads the workflow `mode` from `.cali-product-workflow/*/*/index.json`
-to determine how classified gaps are handled. The mode controls interaction with the user,
-not which checklists run — all 7 checklists run regardless of mode.
+**Using `$MODE` and `$WF_DIR` determined in critique:20.**
+This step runs in the **parent LLM** (same context as critic=40).
+All 7 checklists run regardless of mode — mode only changes how gaps are resolved.
 
-```bash
-MODE=$(grep -oP '"mode":\s*"([^"]+)"' .cali-product-workflow/*/*/index.json 2>/dev/null |
-  head -1 | grep -oP '"([^"]+)"$' | tr -d '""' || echo "Full Product")
-```
+See `references/cli-tools/structured-question.md` for the `ask_user_question` tool.
 
 **If `$MODE` is `Auto` or `Light`:**
 
-All gaps (🚨 Critical, 🤔 Important, 🔎 Minor) are auto-resolved.
-For each gap, check `references/auto-resolve-rules.md`.
-If the gap has a clear best-practice default, apply it automatically
-and mark "resolved by default."
-Only flag genuinely ambiguous gaps as unresolved — these are noted
-in the audit section but do NOT block the gate.
+All gaps (🚨, 🤔, 🔎) are auto-resolved per `references/auto-resolve-rules.md`.
+If a gap has a clear best-practice default, apply it and mark "resolved by default."
+Only genuinely ambiguous gaps are noted in the report but do NOT block the gate.
 
 **If `$MODE` is `Moderate`:**
 
-- 🔎 Minor gaps → auto-resolved (same as Auto)
-- 🤔 Important gaps → batched into a single multiSelect question.
-  Each option shows the AI's recommended resolution marked as "(Recommended)."
-  User can accept or override per gap.
-- 🚨 Critical gaps → batched into a single multiSelect question.
-  Each option shows the AI's recommended resolution marked as "(Recommended)."
-  User can accept or override per gap.
+- 🔎 gaps → auto-resolved
+- 🚨 + 🤔 → sorted by severity (🚨 first), **top-5 combined** presented via
+  `ask_user_question` with multiSelect. Each option = one gap with label
+  "Accept AI: {resolution}". Description states the gap and the trade-off.
+  The AI recommendation is the first option per gap.
 
-> **Implementation:** Use `ask_user_question` with multiSelect for the batch.
-> One question for 🤔 gaps, one for 🚨 gaps (2 questions max).
-> The user selects which recommendations to accept; anything unselected
-> stays for the LLM to re-resolve with user feedback.
+  > **When >5 moderate/critical gaps exist:** "Showing top-5 (most impactful).
+  > Remaining N auto-resolved. All gaps plus AI recommendations are in the
+  > spec for review during Gate."
+
+- User selects which recommendations to accept.
+- **Unselected** → treated as **accepted** (AI recommendation stands).
+  No re-resolution needed.
 
 **If `$MODE` is `Full Product` or `Full Product + Tech`:**
 
-- 🔎 Minor gaps → auto-resolved
-- 🤔 Important gaps → batched into a single multiSelect question
-  with AI recommendations marked as "(Recommended)"
-- 🚨 Critical gaps → presented one-by-one. Each critical gap becomes
-  its own question with AI recommendation as the first option
-  labeled "(Recommended)"
+- 🔎 gaps → auto-resolved
+- 🤔 gaps → **top-5** batched into one multiSelect question
+- 🚨 gaps → **top-3** presented one-by-one (each its own question).
+  AI recommendation is the first option labeled "(Recommended)."
 
-**Mode not found in index.json (standalone usage):**
-When plan-critique runs standalone (not via workflow), default to
-`Full Product` behavior — auto-resolve minor, present moderate/critical to user.
+  > **When >5 🤔 or >3 🚨 exist:** "Showing top-{N} (most impactful).
+  > Remaining M auto-resolved but listed in the spec for Gate review."
+
+**Mode not found (standalone):** Default to `Full Product` behavior.
+
+**After resolving (all modes):** 
+
+Save the resolved report:
+```bash
+REPORT="$WF_DIR"critiques/critique-report.md"
+mkdir -p "$(dirname "$REPORT")"
+save_report_content_to "$REPORT"
+```
+
+### critique:50 — Merge into spec-product.md
+
+After gaps are resolved, update the plan document to reflect resolutions
+and prepare it for the Plannotator Gate:
+
+1. Read `$SPEC` (the original spec-product.md)
+2. Apply auto-resolved gaps as inline changes to the relevant sections
+   (e.g., fill missing states, add error handling, clarify flows)
+3. Append section **"🟢 Resolved Gaps (Product Critique)"** at the bottom
+   listing every gap found (including those asked to user) and how resolved
+4. Prepend section **"⚡ Gate Review — Critical Decisions"** at the **top**
+   (right after title/frontmatter) listing the pushed gaps with:
+   ```
+   ### ⚡ Critical Decisions for Gate Review
+
+   The questions below were answered during critique. Your selection is
+   reflected in the spec. To override, annotate on the relevant section:
+
+   1. **[Critical] Undefined empty state — User List** →
+      AI resolved as: "Illustration + CTA 'Add first user'" (Recommended)
+      Alternative: "Blank slate with loading skeleton"
+      → If you prefer the alternative, annotate on the User List section
+
+   2. **[Important] Missing error handling — Payment flow** →
+      AI resolved as: "Retry 3x, then show friendly error with support link"
+   ```
+   This section ensures the Gate reviewer sees what was decided and can override
+   via Plannotator annotations. The LLM reads annotations post-Gate and applies
+   overrides.
+
+5. Save as `$SPEC` (overwrite — this is the final version for the Gate)
 
 ---
 
@@ -239,10 +283,15 @@ When plan-critique runs standalone (not via workflow), default to
   critique-flows-states.md     ← parallel reviewer 1
   critique-data-system.md      ← parallel reviewer 2
   critique-affordances-ux.md   ← parallel reviewer 3
-  critique-composition.md      ← parallel reviewer 4 (design quality + work-pattern alignment)
+  critique-composition.md      ← parallel reviewer 4
   critique-feasibility.md      ← parallel reviewer 5
-  critique-report.md           ← consolidated (single unified report)
-```}
+  critique-report.md           ← consolidated (internal report, all gaps)
+
+{dir}/plans/spec-product.md       ← resolved version (critique:50 merge)
+  → "⚡ Gate Review — Critical Decisions" prepended at top
+  → "🟢 Resolved Gaps" appended at bottom
+  → Inline updates applied per mode resolution
+```
 
 ---
 
@@ -253,8 +302,11 @@ When plan-critique runs standalone (not via workflow), default to
 ```
 critique: Critique Gate
   └── cali-product-plan-critique (input: spec-product.md)
-       ├── 7 checklists (flows, states+interaction states, affordances+design quality, data, system, compositional quality, feasibility) → gap report
-       └── Auto-resolve → updated spec-product.md
+       ├── critique:20 — Determine mode + workflow dir
+       ├── critique:30 — 5 parallel subagents (classify only, no resolve)
+       ├── critique:40 — Consolidate into critique-report.md
+       ├── critique:45 — Resolve gaps by mode (ask user if Moderate/Full)
+       └── critique:50 — Merge resolutions → spec-product.md (with Gate sections)
 ```
 
 ### cali-product-tech-planning
