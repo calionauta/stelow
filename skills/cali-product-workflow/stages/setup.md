@@ -305,14 +305,15 @@ ask_user_question({
   questions: [{
     question: `How much interaction do you want during the workflow?
 This sets the mode — which gates, questions, and approvals are active.
+Mode also controls gap resolution — who resolves gaps the Plan Critique finds.
 Mode is orthogonal to appetite: appetite defines depth, mode defines feedback.`,
     header: "Mode",
     options: [
-      { label: "Auto", description: "No gates, no questions, no Plannotator. LLM makes the best guess." },
-      { label: "Light", description: "Product approval only: one Plannotator gate before tech planning. Interface = LLM recommendation. No IN/OUT confirmation." },
-      { label: "Moderate", description: "Product + UX approval: Light + user chooses between interface alternatives." },
-      { label: "Full Product", description: "Full flow: all gates, questions, and details. Except tech planning approval — those use Auto." },
-      { label: "Full Product + Tech", description: "Everything including tech: all gates, all questions, plus tech planning approval and technical questions." }
+      { label: "Auto", description: "No gates, no questions, no Plannotator. AI resolves all gaps (trivial, moderate, critical) without asking." },
+      { label: "Light", description: "Product approval only: one Plannotator gate before tech planning. AI resolves all gaps without asking. No IN/OUT confirmation." },
+      { label: "Moderate", description: "Product + UX approval. AI resolves trivial gaps. Moderate/critical gaps: AI asks user with its recommendation marked as recommended." },
+      { label: "Full Product", description: "Full flow: all gates, all questions. AI resolves trivial gaps. User answers each moderate/critical gap (AI recommendation marked). Except tech — those use Auto." },
+      { label: "Full Product + Tech", description: "Everything including tech: all gates, all questions. AI resolves trivial gaps. User answers each moderate/critical gap (AI recommendation marked). Plus tech approval and tech questions." }
     ]
   }]
 })

@@ -182,11 +182,53 @@ Save to .cali-product-workflow/{YYYY-MM-DD}/{_dir}/critiques/critique-report.md`
 | 🤔 **Important** | Significant gap or risk | Should resolve before gate |
 | 🔎 **Minor** | Polish or nice-to-have | Note for execution |
 
-### 5. Resolve Mode
+### 5. Resolve Gaps by Mode
 
-**Auto mode (default):** For each gap, check `auto-resolve-rules.md`. If the gap has
-a clear best-practice default, apply it automatically and mark "resolved by default."
-Only flag genuinely ambiguous gaps as unresolved.
+The plan-critique reads the workflow `mode` from `.cali-product-workflow/*/*/index.json`
+to determine how classified gaps are handled. The mode controls interaction with the user,
+not which checklists run — all 7 checklists run regardless of mode.
+
+```bash
+MODE=$(grep -oP '"mode":\s*"([^"]+)"' .cali-product-workflow/*/*/index.json 2>/dev/null |
+  head -1 | grep -oP '"([^"]+)"$' | tr -d '""' || echo "Full Product")
+```
+
+**If `$MODE` is `Auto` or `Light`:**
+
+All gaps (🚨 Critical, 🤔 Important, 🔎 Minor) are auto-resolved.
+For each gap, check `references/auto-resolve-rules.md`.
+If the gap has a clear best-practice default, apply it automatically
+and mark "resolved by default."
+Only flag genuinely ambiguous gaps as unresolved — these are noted
+in the audit section but do NOT block the gate.
+
+**If `$MODE` is `Moderate`:**
+
+- 🔎 Minor gaps → auto-resolved (same as Auto)
+- 🤔 Important gaps → batched into a single multiSelect question.
+  Each option shows the AI's recommended resolution marked as "(Recommended)."
+  User can accept or override per gap.
+- 🚨 Critical gaps → batched into a single multiSelect question.
+  Each option shows the AI's recommended resolution marked as "(Recommended)."
+  User can accept or override per gap.
+
+> **Implementation:** Use `ask_user_question` with multiSelect for the batch.
+> One question for 🤔 gaps, one for 🚨 gaps (2 questions max).
+> The user selects which recommendations to accept; anything unselected
+> stays for the LLM to re-resolve with user feedback.
+
+**If `$MODE` is `Full Product` or `Full Product + Tech`:**
+
+- 🔎 Minor gaps → auto-resolved
+- 🤔 Important gaps → batched into a single multiSelect question
+  with AI recommendations marked as "(Recommended)"
+- 🚨 Critical gaps → presented one-by-one. Each critical gap becomes
+  its own question with AI recommendation as the first option
+  labeled "(Recommended)"
+
+**Mode not found in index.json (standalone usage):**
+When plan-critique runs standalone (not via workflow), default to
+`Full Product` behavior — auto-resolve minor, present moderate/critical to user.
 
 ---
 
