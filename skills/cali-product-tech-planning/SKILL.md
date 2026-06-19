@@ -92,7 +92,7 @@ fi
 
 **If existing project detected (`$STACK_SOURCE` is set):**
 - Stack is inferred. No questions asked.
-- To get updated docs for the established stack, `ctx7` (see below) is available
+- To get updated docs for the established stack, `doc-search` (see below) is available
   during execution. Not required now — noted for reference.
 
 **If new project (no existing source):**
@@ -126,8 +126,8 @@ tech_stack:
   stack_source: "$(STACK_SOURCE:-"new:web_search")"
 ```
 
-> **ctx7 + npx skills:** See `references/cli-tools/ctx7.md` and
-> `references/cli-tools/npx-skills.md` for usage during execution phase.
+> **doc-search + stack-skills:** See `references/cli-tools/doc-search.md` and
+> `references/cli-tools/stack-skills.md` for usage during execution phase.
 
 ---
 

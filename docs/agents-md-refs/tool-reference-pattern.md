@@ -8,6 +8,11 @@ for the full pattern that ensures portability across CLIs.
 - Skills reference tools via `references/cli-tools/{tool}.md`, not direct calls
 - Question templates come from `stages/ask-patterns.md`
 - When adding a new tool, create the reference doc first following the pattern
+- **Name by purpose, not by tool name.** Use what the function solves, not the
+  binary/package name. Example: `doc-search.md` not `ctx7.md`,
+  `stack-skills.md` not `npx-skills.md`. The doc inside names the specific
+  tool and the fallback. This keeps references portable across CLIs and
+  future tool changes.
 
 ## What this means for AGENTS.md and stage files
 
