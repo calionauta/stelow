@@ -1032,6 +1032,27 @@ export type { CommandDescriptor } from "./adapters/commands/dispatcher";
 // Handlers are keyed by command name (derived from WORKFLOW_COMMANDS).
 // When you add a command to dispatcher.ts, add its handler here.
 
+// ── Command aliases: stelow-* alongside sw-* ───────────────────────
+const COMMAND_ALIASES: Record<string, string[]> = {
+  "sw-start":     ["stelow-start"],
+  "sw-abort":     ["stelow-abort"],
+  "sw-pause":     ["stelow-pause"],
+  "sw-resume":    ["stelow-resume"],
+  "sw-status":    ["stelow-status"],
+  "sw-ls":        ["stelow-ls"],
+  "sw-setphase":  ["stelow-setphase"],
+  "sw-next":      ["stelow-next"],
+  "sw-complete":  ["stelow-complete"],
+  "sw-goto":      ["stelow-goto"],
+  "sw-rename":    ["stelow-rename"],
+  "sw-menu":      ["stelow-menu"],
+  "sw-doctor":    ["stelow-doctor"],
+  "sw-archive":   ["stelow-archive"],
+  "sw-unarchive": ["stelow-unarchive"],
+  "sw-unlock":    ["stelow-unlock"],
+  "sw-inbox":     ["stelow-inbox"],
+};
+
 const HANDLER_BY_NAME: Record<string, CmdHandler> = {
   "sw-start":      cmdStart,
   "sw-abort":      cmdAbort,
@@ -1050,6 +1071,24 @@ const HANDLER_BY_NAME: Record<string, CmdHandler> = {
   "sw-unarchive":  cmdUnarchive,
   "sw-unlock":     cmdUnlock,
   "sw-inbox":      cmdInbox,
+  // Aliases
+  "stelow-start":     cmdStart,
+  "stelow-abort":     cmdAbort,
+  "stelow-pause":     cmdPause,
+  "stelow-resume":    cmdResume,
+  "stelow-status":    cmdStatus,
+  "stelow-ls":        cmdList,
+  "stelow-setphase":  cmdSetPhase,
+  "stelow-next":      cmdNext,
+  "stelow-complete":  cmdComplete,
+  "stelow-goto":      cmdGoto,
+  "stelow-rename":    cmdRename,
+  "stelow-menu":      cmdMenu,
+  "stelow-doctor":    cmdDoctor,
+  "stelow-archive":   cmdArchive,
+  "stelow-unarchive": cmdUnarchive,
+  "stelow-unlock":    cmdUnlock,
+  "stelow-inbox":     cmdInbox,
 };
 
 function getDescription(cmdName: string): string {
@@ -1100,6 +1139,14 @@ export function registerCommands(pi: ExtensionAPI): void {
     const wrapper = async (args: string, ctx: any) => handler(pi, args ?? "", ctx as CmdCtx);
     const desc = `${c.description}. Usage: ${c.usage || c.name}`;
     pi.registerCommand(c.name, { description: desc, handler: wrapper });
+
+    // Register aliases (e.g. stelow-start alongside sw-start)
+    const aliases = COMMAND_ALIASES[c.name];
+    if (aliases) {
+      for (const alias of aliases) {
+        pi.registerCommand(alias, { description: desc, handler: wrapper });
+      }
+    }
   }
 }
 
