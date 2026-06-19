@@ -91,3 +91,5 @@ edge-case-review.md
 .claude-plugin/
 .codex-plugin/
 .opencode-plugin/
+# Old runtime artifacts (pre-rename)
+.cali-product-workflow/
