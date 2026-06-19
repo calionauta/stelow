@@ -126,16 +126,8 @@ tech_stack:
   stack_source: "$(STACK_SOURCE:-"new:web_search")"
 ```
 
-> **ctx7 — doc lookup during execution:** After stack is confirmed,
-> `npx ctx7 library <library>` resolves lib to ctx7 ID, then
-> `npx ctx7 docs <id> "<query>"` fetches version-specific docs.
-> Use during `execution` when writing code against specific APIs.
-> Not needed during planning.
->
-> **npx skills find — prompt templates during execution:**
-> `npx skills find {stack}` discovers skills/prompts for the chosen tech.
-> `npx skills use <package>@<skill>` generates a prompt inline.
-> Use during `execution` phase, not planning phase.
+> **ctx7 + npx skills:** See `references/cli-tools/ctx7.md` and
+> `references/cli-tools/npx-skills.md` for usage during execution phase.
 
 ---
 
