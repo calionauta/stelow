@@ -188,7 +188,6 @@ Pi requer npm packages para deep integration (slash commands, TUI, event hooks):
 | `pi-subagents` | Parallel subagent orchestration | ✅ `git:github.com/nicobailon/pi-subagents` |
 | `pi-intercom` | Session-to-session coordination | ✅ `git:github.com/nicobailon/pi-intercom` |
 | `pi-supervisor` | Conversation supervision | ✅ `git:github.com/tintinweb/pi-supervisor` |
-| `pi-autoresearch` | *Deprecated* — optimization goals use `subagent() + acceptance` with benchmark verify | ❌ Removed. See `references/cli-tools/goals.md` |
 | `@juicesharp/rpiv-ask-user-question` | Question UI component | ✅ `git:github.com/juicesharp/rpiv-mono` |
 | `@plannotator/pi-extension` | Visual plan annotation | ✅ `git:github.com/backnotprop/plannotator` |
 
