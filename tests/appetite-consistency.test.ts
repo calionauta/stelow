@@ -502,3 +502,187 @@ describe('context:5 appetite/mode gate', () => {
     expect(skillMd).not.toMatch(/Context stage — 2b/);
   });
 });
+
+// ═════════════════════════════════════════════════════════════════════
+// 13. SHAPE-UP STEP ORDERING
+// ═════════════════════════════════════════════════════════════════════
+
+describe('shape-up step ordering', () => {
+  const content = readSkill('cali-product-shape-up');
+
+  test('shape:10 before shape:15 before shape:20', () => {
+    const idx10 = content.indexOf('shape:10');
+    const idx15 = content.indexOf('shape:15');
+    const idx20 = content.indexOf('shape:20');
+    expect(idx10).toBeGreaterThan(-1);
+    expect(idx15).toBeGreaterThan(-1);
+    expect(idx20).toBeGreaterThan(-1);
+    expect(idx10).toBeLessThan(idx15);
+    expect(idx15).toBeLessThan(idx20);
+  });
+
+  test('shape:15 mentions assumption check', () => {
+    expect(content).toMatch(/Assumption Check/i);
+  });
+
+  test('shape:15 scales by mode (Auto/Light/Moderate/Full)', () => {
+    expect(content).toMatch(/Auto.*Light.*auto-resolve|top-3.*Moderate|top-5.*Full/i);
+  });
+});
+
+// ═════════════════════════════════════════════════════════════════════
+// 14. TECH-PLANNING STEP ORDERING
+// ═════════════════════════════════════════════════════════════════════
+
+describe('tech-planning step ordering', () => {
+  const content = readSkill('cali-product-tech-planning');
+
+  test('tech:5 before planning:10', () => {
+    const idx5 = content.indexOf('### tech:5');
+    const idx10 = content.indexOf('### planning:10');
+    expect(idx5).toBeGreaterThan(-1);
+    expect(idx10).toBeGreaterThan(-1);
+    expect(idx5).toBeLessThan(idx10);
+  });
+
+  test('tech:5 mentions stack discovery', () => {
+    expect(content).toMatch(/Discover Stack/i);
+  });
+
+  test('tech:5 references doc-search and stack-skills', () => {
+    expect(content).toMatch(/doc-search/);
+    expect(content).toMatch(/stack-skills/);
+  });
+});
+
+// ═════════════════════════════════════════════════════════════════════
+// 15. CRITIQUE FLOW STEP ORDERING
+// ═════════════════════════════════════════════════════════════════════
+
+describe('plan-critique flow step ordering', () => {
+  const content = readSkill('cali-product-plan-critique');
+
+  test('critique steps in correct order: 20 → 30 → 40 → 45 → 50', () => {
+    const idx20 = content.indexOf('### critique:20');
+    const idx30 = content.indexOf('### critique:30');
+    const idx40 = content.indexOf('### critique:40');
+    const idx45 = content.indexOf('### critique:45');
+    const idx50 = content.indexOf('### critique:50');
+    expect(idx20).toBeGreaterThan(-1);
+    expect(idx30).toBeGreaterThan(-1);
+    expect(idx40).toBeGreaterThan(-1);
+    expect(idx45).toBeGreaterThan(-1);
+    expect(idx50).toBeGreaterThan(-1);
+    expect(idx20).toBeLessThan(idx30);
+    expect(idx30).toBeLessThan(idx40);
+    expect(idx40).toBeLessThan(idx45);
+    expect(idx45).toBeLessThan(idx50);
+  });
+
+  test('critique:30 subagents classify only (no auto-resolve)', () => {
+    expect(content).toMatch(/CLASSIFY only/);
+    expect(content).not.toMatch(/auto-resolve clear defaults/);
+  });
+
+  test('critique:45 references structured-question tool', () => {
+    expect(content).toMatch(/structured-question/);
+  });
+
+  test('critique:50 merges into spec-product.md', () => {
+    expect(content).toMatch(/Merge into spec-product/);
+  });
+
+  test('critique:50 mentions Gate Review — Critical Decisions section', () => {
+    expect(content).toMatch(/Critical Decisions/);
+  });
+
+  test('integration diagram matches 5-step flow', () => {
+    // The diagram in the Integration section must list all 5 steps
+    const diagramStart = content.indexOf('critique: Critique Gate');
+    if (diagramStart > -1) {
+      const diagram = content.slice(diagramStart, diagramStart + 400);
+      expect(diagram).toMatch(/critique:20/);
+      expect(diagram).toMatch(/critique:30/);
+      expect(diagram).toMatch(/critique:40/);
+      expect(diagram).toMatch(/critique:45/);
+      expect(diagram).toMatch(/critique:50/);
+    }
+  });
+});
+
+// ═════════════════════════════════════════════════════════════════════
+// 16. MODE DESCRIPTION SYNC (ask-patterns vs setup)
+// ═════════════════════════════════════════════════════════════════════
+
+describe('Mode description sync between ask-patterns and setup', () => {
+  const askPatterns = readStage('ask-patterns.md');
+  const setup = readStage('setup.md');
+
+  // Verify all 5 mode labels appear in both files
+  test.each(['Auto', 'Light', 'Moderate', 'Full Product', 'Full Product + Tech'])(
+    'mode label "%s" appears in ask-patterns.md and setup.md',
+    (label) => {
+      expect(askPatterns).toContain(label);
+      expect(setup).toContain(label);
+    }
+  );
+
+  test('ask-patterns mode effect matrix has Gap Resolution column', () => {
+    expect(askPatterns).toMatch(/Gap Resolution/);
+  });
+
+  test('ask-patterns has Gap Resolution semantics section', () => {
+    expect(askPatterns).toMatch(/Gap Resolution semantics/);
+  });
+});
+
+// ═════════════════════════════════════════════════════════════════════
+// 17. CLI TOOLS PRESENCE (PURPOSE-NAMED)
+// ═════════════════════════════════════════════════════════════════════
+
+describe('Purpose-named CLI tools exist', () => {
+  const cliDir = join(SKILLS_DIR, 'cali-product-tech-planning', 'references', 'cli-tools');
+
+  test('doc-search.md exists', () => {
+    expect(existsSync(join(cliDir, 'doc-search.md'))).toBe(true);
+  });
+
+  test('stack-skills.md exists', () => {
+    expect(existsSync(join(cliDir, 'stack-skills.md'))).toBe(true);
+  });
+
+  test('doc-search.md mentions ctx7 as recommended tool', () => {
+    const content = readFileSync(join(cliDir, 'doc-search.md'), 'utf-8');
+    expect(content).toMatch(/ctx7.*Recommended/);
+  });
+
+  test('stack-skills.md mentions npx skills as recommended tool', () => {
+    const content = readFileSync(join(cliDir, 'stack-skills.md'), 'utf-8');
+    expect(content).toMatch(/npx skills/);
+  });
+});
+
+// ═════════════════════════════════════════════════════════════════════
+// 18. GOLDEN RULE MODE CAVEAT
+// ═════════════════════════════════════════════════════════════════════
+
+describe('plan-critique golden rule has mode caveat', () => {
+  const content = readSkill('cali-product-plan-critique');
+
+  test('golden rule caveat mentions Auto/Light modes', () => {
+    expect(content).toMatch(/Mode caveat/);
+    expect(content).toMatch(/Auto.*Light.*internal recommendation/);
+  });
+});
+
+// ═════════════════════════════════════════════════════════════════════
+// 19. TOOL-REFERENCE-PATTERN NAMING CONVENTION
+// ═════════════════════════════════════════════════════════════════════
+
+describe('tool-reference-pattern naming convention', () => {
+  const content = readFileSync(join(PROJECT_ROOT, 'docs/agents-md-refs/tool-reference-pattern.md'), 'utf-8');
+
+  test('names by purpose rule exists', () => {
+    expect(content).toMatch(/Name by purpose/);
+  });
+});
