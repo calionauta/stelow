@@ -2,7 +2,13 @@
 
 All notable changes to `@renatocaliari/stelow` will be documented in this file.
 
-## [Unreleased]
+## [0.28.0-alpha] - 2026-06-19
+
+### Changed
+- **Supervisor sensitivity rebalanced**: PoC → Low, Focused → Medium, Comprehensive → High. Low sensitivity now active for all appetites (no more supervisor skip). Updated README appetite table, execution stage, supervise tool reference, and all 23 domain skill copies.
+- **README appetite table corrected**: a11y audit and code review are now explicitly listed for Focused mode (they were already conditionally active in verification stage).
+- **README short summary**: "Critique → Gate → Scope sequencing" replaces the stronger "Measure thrice" claim for accuracy.
+- **README author blurb**: Reworded to "Built by an ex-product manager" with product leadership teaching and product strategy consulting background.
 
 ### Added
 - **Scope tracking in `stelow.json`**: New `Scope` type and `scopes[]`

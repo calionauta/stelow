@@ -32,15 +32,9 @@ determines whether and how aggressively to supervise:
 
 | Appetite | Supervisor | Sensitivity | Rationale |
 |----------|-----------|-------------|----------|
-| `PoC` | **Skip** | — | 1 component, 1 scope. Zero chance of drift — no context to degrade. |
-| `Focused` | **Activate** | `low` | Short scope. Low sensitivity avoids false positives on minor detours. |
-| `Comprehensive` | **Activate** | `medium` | Multiple scopes increase drift surface area; standard supervision. |
-
-> **Rationale for PoC skip:** The supervisor's value is detecting drift over
-> multiple turns. In a 1-2 turn scope, drift cannot occur — the context has
-> not had time to degrade. Activating it adds tool call overhead (~1 extra
-> API call) with zero marginal benefit. The 19% slowdown research (METR 2025)
-> suggests minimizing unnecessary meta-tooling for small tasks.
+| `PoC` | **Activate** | `low` | Even small scopes can drift over multiple turns. Low sensitivity catches clear deviations without false-positive noise. |
+| `Focused` | **Activate** | `medium` | Standard feature scope. Medium sensitivity balances steering vs autonomy. |
+| `Comprehensive` | **Activate** | `high` | High-risk, multi-scope work. High sensitivity ensures drift is caught early. |
 
 ---
 

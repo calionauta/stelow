@@ -9,7 +9,7 @@
 
 This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI coding agents. Instead of open-ended feature lists, you shape proposals with clear scope boundaries, validate them through adversarial critique, and generate typed technical scopes ready for autonomous execution.
 
-> **Built by a product manager, for AI agents.** I've spent years inside product teams — as a PM, consultant, and leader — refining how products get built. stelow is that experience, systematized for AI. No conference-room theory. Lessons from live products, shipped features, and real teams. [More about my background.](#about-the-author)
+> **Built by an ex-product manager, for AI agents.** I've led product teams, taught product leadership, and advised product strategy with founders and product leaders. stelow is that experience, systematized for AI. No conference-room theory. Lessons from live products, shipped features, and real teams. [More about my background.](#about-the-author)
 
 ---
 
@@ -113,9 +113,9 @@ Appetite is the **review budget** - how much time and attention the human is wil
 
 | Appetite | What it means | Critique depth | Supervisor | Verification | Best for |
 |----------|---------------|----------------|------------|-------------|----------|
-| **PoC** | Validate an idea fast. Minimal ceremony. | 5 reviewers + consolidation; gap resolution: AI decides | 🚫 Skip | Build + unit + code-quality + invisible-20% only | Idea validation, spike, throwaway prototype |
-| **Focused (default)** | Standard review. Balance of depth and speed. | 5 reviewers + consolidation; gap resolution: by mode | Low sensitivity | Build + unit + lint + code-quality + invisible-20% | Most features, bug fixes, small improvements |
-| **Comprehensive** | Full pipeline. No shortcuts. | 5 reviewers + consolidation; gap resolution: by mode | Normal sensitivity | Build + unit + lint + a11y + mutation + code review + interactive testing | Critical features, high-risk changes, production releases |
+| **PoC** | Validate an idea fast. Minimal ceremony. | 5 reviewers + consolidation; gap resolution: AI decides | Low sensitivity | Build + unit + code-quality + invisible-20% only | Idea validation, spike, throwaway prototype |
+| **Focused (default)** | Standard review. Balance of depth and speed. | 5 reviewers + consolidation; gap resolution: by mode | Medium sensitivity | Build + unit + lint + code-quality + invisible-20% | Most features, bug fixes, small improvements |
+| **Comprehensive** | Full pipeline. No shortcuts. | 5 reviewers + consolidation; gap resolution: by mode | High sensitivity | Build + unit + lint + a11y + mutation + code review + interactive testing | Critical features, high-risk changes, production releases |
 
 After shaping, the LLM assesses **`appetite_fit`**: does the shaped proposal fit within the declared appetite?
 
@@ -133,7 +133,7 @@ This is **not an estimate**. The LLM does not estimate effort - it checks whethe
 |-------|-----|---------|---------------|
 | **Critique** | 5 reviewers + consolidation; gap resolution: AI decides | 5 reviewers + consolidation; gap resolution: by mode | 5 reviewers + consolidation; gap resolution: by mode |
 | **Gate** | Skip Plannotator on Auto mode | Plannotator encouraged | **Mandatory** Plannotator visual review |
-| **Execution** | Skip supervisor | Low supervisor sensitivity | Medium supervisor sensitivity |
+| **Execution** | Low supervisor sensitivity | Medium supervisor sensitivity | High supervisor sensitivity |
 | **Verification** | Build + unit + code-quality + invisible-20% only | Build + unit + lint + code-quality + invisible-20% + **code review (3+ files)** + **a11y audit (1+ UI files)** | Build + unit + lint + a11y + mutation + code review + interactive testing + live site audit |
 
 ### Mode

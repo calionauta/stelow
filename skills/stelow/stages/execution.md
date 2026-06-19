@@ -106,9 +106,9 @@ APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-
 
 | Appetite | Supervisor | Sensitivity | Human-in-loop | Rationale |
 |----------|-----------|-------------|---------------|----------|
-| `PoC` | **Skip** | — | No | Scope is 1 component. Drift is impossible — no context to degrade. |
-| `Focused` | **Activate** | `low` | No | Short scope. Low sensitivity avoids false positives on minor detours. |
-| `Comprehensive` | **Activate** | `medium` | No | Multiple scopes increase drift surface area; standard supervision. |
+| `PoC` | **Activate** | `low` | No | Even small scopes can drift over multiple turns. Low sensitivity catches clear deviations without false-positive noise. |
+| `Focused` | **Activate** | `medium` | No | Standard feature scope. Medium sensitivity balances steering vs autonomy. |
+| `Comprehensive` | **Activate** | `high` | No | High-risk, multi-scope work. High sensitivity ensures drift is caught early. |
 
 > **Human-in-loop is controlled by Mode** (from `index.json`), not by appetite.
 > Mode = Full Product or Full Product + Tech may add human approval checkpoints per PR.
@@ -141,7 +141,7 @@ APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-
      /supervise outcome="Execute scope '{scope_name}' per spec-tech.md.
      DoD: {DoD}. AC: {acceptance criteria}. Do not deviate from approved scope."
      ```
-     Add `sensitivity: "low"` if appetite = Focused.
+     Add `sensitivity: "medium"` if appetite = Focused.
    - The supervisor detects deviation and re-centers if the LLM leaves scope
 
 3. **Optimization/spike with metric → goals tool** (see `references/cli-tools/goals.md`, Optimization Goals)
