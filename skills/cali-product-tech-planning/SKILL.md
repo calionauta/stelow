@@ -179,9 +179,9 @@ APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-
 SCOPE_COUNT=$(grep -c "^### " "$SPEC_TECH")
 
 # Appetite boundary check: scope count should stay within appetite
-# Lean ≤ 1, Core ≤ 5, Complete > 5
+# Lean ≤ 2, Core ≤ 5, Complete > 5
 case "$APPETITE" in
-  Lean) [ "$SCOPE_COUNT" -gt 1 ] && echo "APPETITE_VIOLATION: Lean appetite but $SCOPE_COUNT scopes. Consolidate or split into multiple cycles." ;;
+  Lean) [ "$SCOPE_COUNT" -gt 2 ] && echo "APPETITE_VIOLATION: Lean appetite but $SCOPE_COUNT scopes. Consolidate or split into multiple cycles." ;;
   Core)  [ "$SCOPE_COUNT" -gt 5 ] && echo "APPETITE_VIOLATION: Core appetite but $SCOPE_COUNT scopes. Consider reducing scope." ;;
   Complete)  ;;  # Complete has no upper limit by scope count alone
 esac

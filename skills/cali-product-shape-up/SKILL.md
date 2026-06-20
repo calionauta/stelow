@@ -147,11 +147,40 @@ if [ "$VALID" = false ]; then
 fi
 ```
 
-> **Rationale:** Appetite é o que torna o escopo verificável. Sem appetite declarado, a LLM pode gerar escopo arbitrariamente grande — e o gargalo não é gerar, é verificar. Appetite mede atenção humana, não velocidade da LLM.
+### appetite_fit Validation — Fresh-Context Reviewer
+
+The validation guard above checks the field exists, but the **actual assessment** should not be self-assessed by the shaping LLM — anchoring bias makes self-assessment unreliable. Delegate to a fresh-context reviewer:
+
+```bash
+subagent({
+  agent: "reviewer",
+  task: `Read the shaped proposal at ${SPEC}.
+  Human-declared appetite (from spec frontmatter): {appetite}.
+  Does the shaped proposal fit within this appetite?
+  Check against appetite definitions in ../references/proposal-structure.md.
+
+  Return exactly one word: fits | cuts_needed | reshape
+
+  If cuts_needed: also list 2-3 specific cuts the LLM should make.
+  If reshape: explain why it fundamentally exceeds appetite.`,
+  context: "fresh",
+  output: "appetite_fit_report.md"
+})
+```
+
+**If `reshape`:** block execution and prompt the user: "The proposal fundamentally exceeds the declared appetite (Lean/Core/Complete). The reviewer recommends reshaping before proceeding."
+
+**If `cuts_needed`:** apply the suggested cuts to the spec, then update `appetite_fit:` to `fits` and `appetite_cuts:` to document what was cut.
+
+**If `fits`:** proceed.
+
+> **Rationale:** The rest of the workflow uses fresh-context reviewers for every evaluation (plan critique, codebase critique, UX critique, code review). `appetite_fit` was the only self-assessment. This step aligns it with the architectural pattern.
+
+
 >
 > **Appetite é constraint, não estimativa:**
 > - `appetite` — definido pelo **humano** no setup stage. Quanto investimento esse problema merece? (orçamento, não estimativa)
-> - `appetite_fit` — definido pela **LLM** pós-shaping. O proposal cabe dentro do appetite declarado?
+> - `appetite_fit` — definido por **subagent fresh-context** pós-shaping. O proposal cabe dentro do appetite declarado?
 >
 > **Se `appetite_fit = cuts_needed`:** a LLM sugere cortes específicos. O humano decide quais aceitar.
 > **Se `appetite_fit = reshape`:** o proposal não cabe de forma alguma — precisa ser remodelado.
