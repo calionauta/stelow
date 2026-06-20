@@ -259,7 +259,7 @@ Check all changed files for:
 - AGENTS.md updated? (if architecture changed)
 - CHANGELOG.md has entry?
 - Unit/integration tests exist for new code?
-- Mutation score adequate? (target from testing-strategy.md if available)
+- Critical-path coverage adequate? (target from testing-strategy.md if available)
 
 **Gap Registry (criteria 6):**
 | Gap Type | Description | Impact | Resolution |

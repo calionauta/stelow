@@ -503,6 +503,23 @@ describe('context:5 appetite/mode gate', () => {
   });
 });
 
+describe('Interface exploration is appetite-scaled', () => {
+  it('interface skill declares 1/3/5 proposal counts by appetite', () => {
+    const content = readSkill('cali-product-interface-alternatives');
+    expect(content).toMatch(/`Lean`.*1 suggested interface/);
+    expect(content).toMatch(/`Core`.*3 archetypes explored \+ 1 hybrid/);
+    expect(content).toMatch(/`Complete`.*5 archetypes explored \+ 1 hybrid/);
+  });
+
+  it('README documents appetite-scaled interface exploration', () => {
+    const content = readFileSync(join(PROJECT_ROOT, 'README.md'), 'utf-8');
+    expect(content).toMatch(/1, 3, or 5 ASCII archetypes/);
+    expect(content).toMatch(/1 suggested interface only/);
+    expect(content).toMatch(/3 interface archetypes explored/);
+    expect(content).toMatch(/5 interface archetypes explored/);
+  });
+});
+
 // ═════════════════════════════════════════════════════════════════════
 // 13. SHAPE-UP STEP ORDERING
 // ═════════════════════════════════════════════════════════════════════

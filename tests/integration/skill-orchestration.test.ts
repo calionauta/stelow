@@ -165,7 +165,7 @@ approved: false
   });
 
   describe('Interface Alternatives (cali-product-interface-alternatives)', () => {
-    it('should create interfaces.md with 5 proposals', () => {
+    it('should create interfaces.md with appetite-scaled proposals', () => {
       const interfacesContent = `# Interface Proposals v1
 
 ---

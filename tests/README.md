@@ -160,7 +160,7 @@ Defines what artifacts SHOULD look like:
 
 - `spec-product.md`: Problem, Solution, Scope, IN, OUT
 - `spec-tech.md`: TYPE, DoD, AC
-- `interfaces.md`: 5 proposals + Hybrid
+- `interfaces.md`: 1-5 proposals + Hybrid depending on appetite
 - Approval receipts, index.json
 
 ## Adding New Tests

@@ -16,14 +16,14 @@ SCOPE_COUNT=$(ls .stelow/{YYYY-MM-DD}/{_dir}/plans/scopes/*.md 2>/dev/null | wc 
 
 | Appetite | test-suite | code-review | ui-quality | interactive-testing | code-quality-gate | invisible-20% |
 |----------|-----------|-------------|------------|-------------------|-------------------|---------------|
-| `Lean` | ✅ Run | **Skip** | **Skip** | **Skip** | ✅ Run | ✅ Run |
-| `Core` | ✅ Run | **Skip (1-2 files)** | **Skip (no new UI)** | **Skip** | ✅ Run | ✅ Run |
-| `Complete` | ✅ Run | ✅ (3+ files) | ✅ Live Site | ✅ Full browser | ✅ Run | ✅ Run |
+| `Lean` | ✅ Run | Run when files warrant it | ✅ Static a11y/lint if UI files | **Skip** | ✅ Run | ✅ Run |
+| `Core` | ✅ Run | Run when files warrant it | ✅ Browserless/codebase a11y if UI files | **Skip** | ✅ Run | ✅ Run |
+| `Complete` | ✅ Run | ✅ Run | ✅ Live Site a11y if UI files | ✅ Run when applicable | ✅ Run | ✅ Run |
 
 **Rationale:**
-- **Lean code-review skip:** Codebase critique is useless for 1 file. Correctness covered by test-suite + invisible-20%.
-- **Lean ui-quality skip:** No new UI, nothing to audit.
-- **Lean interactive-testing skip:** 1 component has no complex interaction.
+- **Lean a11y baseline:** UI changes still get static a11y/lint checks; no browser/live audit unless the user upgrades appetite or mode.
+- **Core a11y baseline:** UI changes get browserless/codebase a11y review.
+- **Complete a11y baseline:** UI changes get live-site/browser audit when a URL is available.
 
 ### Auto-chain
 
@@ -49,17 +49,17 @@ pytest
 
 ### code-review (appetite-aware)
 
-Check appetite first — for Lean/Core with few files, code-review is unnecessary:
+Check appetite first — code review is quality protection, not an appetite cut. Run it when file count or risk warrants it:
 
 ```bash
 APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "Core")
 DIFF_FILES=$(git diff --name-only HEAD~1 2>/dev/null | wc -l | tr -d ' ')
 
-if [ "$APPETITE" = "Lean" ]; then
-  echo "CODE_REVIEW_SKIP: appetite Lean — minimal scope, test-suite + invisible-20% covers."
+if [ "$APPETITE" = "Lean" ] && [ "$DIFF_FILES" -le 2 ]; then
+  echo "CODE_REVIEW_SKIP: appetite Lean with $DIFF_FILES file(s) — low scope, but keep smoke/unit tests and invisible-20%."
 elif [ "$APPETITE" = "Core" ] && [ "$DIFF_FILES" -le 2 ]; then
-  echo "CODE_REVIEW_SKIP: appetite Core with $DIFF_FILES file(s) — does not justify structural review."
-elif [ "$DIFF_FILES" -ge 3 ]; then
+  echo "CODE_REVIEW_SKIP: appetite Core with $DIFF_FILES file(s) — low file count, but keep unit/integration tests and invisible-20%."
+elif [ "$APPETITE" = "Complete" ] || [ "$DIFF_FILES" -ge 3 ]; then
   echo "CODE_REVIEW_RUNNING: $DIFF_FILES files changed — launching parallel reviewer."
 fi
 ```
@@ -84,7 +84,7 @@ UI_FILES=$(git diff --name-only HEAD~1 2>/dev/null | grep -cE '\.(templ|html|tsx
 
 | Appetite | UI files | Action |
 |----------|---------|--------|
-| `Lean` | any | **Skip.** No new UI or minimal scope — lint covers basic a11y. |
+| `Lean` | any | **Static a11y/lint.** No browser/live audit unless upgraded. |
 | `Core` | 0 | **Skip.** No UI. |
 | `Core` | 1+ | **Normal.** Delegate to `cali-product-ux-critique`. Codebase mode (browserless). |
 | `Complete` | 0 | **Skip.** No UI. |
@@ -115,9 +115,9 @@ APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-
 
 | Appetite | Action |
 |----------|--------|
-| `Lean` | **Skip.** 1 component does not justify interactive testing — test-suite covers. |
-| `Core` | **Skip.** Small scope — test-suite + invisible-20% sufficient. |
-| `Complete` | **Run.** Full browser if applicable. |
+| `Lean` | **Skip interactive/browser testing.** Keep smoke/unit tests + static a11y when UI exists. |
+| `Core` | **Skip interactive/browser testing unless a complex flow is in scope.** Keep unit/integration tests. |
+| `Complete` | **Run when applicable.** Full browser for complex UI or multi-step flows. |
 
 If the feature has interactive elements (forms, clicks, inputs):
 

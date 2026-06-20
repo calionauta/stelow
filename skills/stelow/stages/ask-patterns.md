@@ -262,7 +262,7 @@ Select the desired stages:`,
         },
         {
           label: "Interface Alternatives",
-          description: "Explore 5 interface directions with ASCII wireframes, breadboarding and trade-offs. → Automatically activates Product Critique + Review Gate."
+          description: "Explore appetite-scaled interface directions with ASCII wireframes, breadboarding and trade-offs. → Automatically activates Product Critique + Review Gate."
         },
         {
           label: "Tech Planning Sequencing",
@@ -366,13 +366,13 @@ Appetite is declared first, then the mode of interaction is chosen.`,
 
 **How appetite shapes the output:**
 
-| Level | Spec size | Scopes | Implementation strategies | Edge cases |
-|-------|-----------|--------|--------------------------|------------|
-| Lean | ~1 page | 1-2 | 1 direct — no divergence | Not documented |
-| Core | ~3 pages | 3-5 | 1-2 considered with brief rationale | Only obvious ones |
-| Complete | ~8+ pages | 8-15 | 3-5 compared with trade-off analysis | Fully mapped |
+| Level | Spec size | Scopes | Implementation strategies | Interface exploration | Test scope |
+|-------|-----------|--------|--------------------------|----------------------|------------|
+| Lean | ~1 page | 1-2 | 1 direct — no divergence | 1 suggested interface; no alternatives | Smoke tests + critical-path unit tests |
+| Core | ~3 pages | 3-5 | 1-2 considered with brief rationale | 3 archetypes explored + 1 hybrid | Unit tests + integration tests for external seams |
+| Complete | ~8+ pages | 8-15 | 3-5 compared with trade-off analysis | 5 archetypes explored + 1 hybrid | Unit + integration + behavior/e2e + security tests |
 
-**Cut policy:** Lean cuts edge cases, secondary flows, alternative strategies, and non-critical integrations. Core cuts only low-value variants. Complete cuts nothing unless impossible.
+**Cut policy:** Lean cuts edge cases, secondary flows, alternative strategies, and non-critical integrations. Core cuts only low-value variants. Complete cuts nothing unless impossible. Quality gates are not cut: build/test/lint/typecheck run for every appetite, and a11y checks run whenever UI files exist; Appetite only changes interface/test exploration depth.
 
 **Storage:** Save to `index.json` as `config.appetite`, and inject into `spec-product.md` frontmatter as `appetite: {chosen_appetite}`.
 

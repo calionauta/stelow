@@ -86,9 +86,10 @@ describe('spec-tech.md schema', () => {
 // ── INTERFACES.MD ─────────────────────────────────────────────
 
 describe('interfaces.md schema', () => {
-  it('should have 5 proposals (A-E)', () => {
-    const proposals = interfacesContent.match(/##\s*Proposal\s*[A-E]/g);
-    expect(proposals).toHaveLength(5);
+  it('should have 1-5 proposals (A-E)', () => {
+    const proposals = interfacesContent.match(/##\s*Proposal\s*[A-E]/g) ?? [];
+    expect(proposals.length).toBeGreaterThanOrEqual(1);
+    expect(proposals.length).toBeLessThanOrEqual(5);
   });
 
   it('should have Hybrid Recommendation section', () => {

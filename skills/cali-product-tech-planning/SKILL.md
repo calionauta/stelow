@@ -213,12 +213,13 @@ then produce the spec-tech artifact directly in the current context.
    and produce the testing-strategy.md artifact directly in the current context.
    Do NOT skip — the testing strategy gates are required for execution.
 
-2. **Add test-* scopes to spec-tech.md:**
+2. **Add test-* scopes to spec-tech.md based on appetite:**
 
-Based on testing-strategy.md, add scopes for:
-- `test-unit`: Unit tests for critical business logic (TDD recommended)
-- `test-integration`: Integration tests for DB, APIs, external services
-- `test-security`: Security scanning gates
+| Appetite | Add test scopes |
+|----------|----------------|
+| `Lean` | `test-unit` for critical business logic; optional `test-integration` only when an external seam is in IN scope; `test-security` only for auth/payment/data in IN scope. |
+| `Core` | `test-unit` for main logic; `test-integration` for DB/API/external services; `test-security` for sensitive paths. |
+| `Complete` | `test-unit`, `test-integration`, `test-behavior` for complex flows, and `test-security` for sensitive paths. |
 
 **Note on TDD:** Research shows TDD alone is insufficient for AI-generated code.
 - Use TDD for critical business logic (isolated, deterministic)

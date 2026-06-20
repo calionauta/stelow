@@ -146,7 +146,7 @@ Do NOT use `/skill:` for internal subskills.
 | `critique` | **Product Critique** | Multi-dimensional critique (plan/codebase/site) | — |
 | `gate` | **Review Gate (Plannotator)** | Visual approval — **never skip** | — |
 | `scope` | **Scope Adjustment** | Add/remove from IN/OUT (ask) | — |
-| `interface` | **Interface Alternatives** | 5 proposals + hybrid | — |
+| `interface` | **Interface Alternatives** | Appetite-scaled interface exploration: 1, 3, or 5 proposals + hybrid | — |
 | `int-gate` | **Interface Gate (Plannotator)** | Visual review of all interfaces | — |
 | `selection` | **Interface Selection** | User picks via ask with preview | — |
 | `planning` | **Tech Planning** | Typed scopes + sequencing | — |

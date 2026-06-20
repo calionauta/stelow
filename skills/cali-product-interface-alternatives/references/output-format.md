@@ -1,6 +1,6 @@
 # Required Output Structure
 
-For EACH proposal (A–E), generate:
+For EACH generated proposal, generate:
 
 ## 0. Work Pattern Declaration
 

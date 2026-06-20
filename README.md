@@ -20,7 +20,7 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 - **Appetite × Mode stage control** - Two orthogonal dimensions control the full workflow: how deep to prepare (Appetite: Lean / Core / Complete) and which stages run (Mode: Auto / Light / Moderate / Full Product / Full Product + Tech). The cascade propagates automatically through critique depth, supervisor use, verification rigor, and gate requirements - no manual stage skipping needed.
 - **Adversarial plan critique** - Plans are reviewed for gaps, risks, and assumptions by parallel (fresh context) reviewers, not just approved in chat.
 - **Visual review gate** - Plannotator opens the full plan for point-by-point comments before implementation, not a rubber-stamp approval.
-- **Interface exploration in ASCII art** - 5 archetypes with trade-offs in seconds - no coded mockups wasted - then LLM creates a hybrid combining the best points for your context.
+- **Appetite-scaled interface exploration** - 1, 3, or 5 ASCII archetypes plus hybrid depending on scope depth - no coded mockups wasted.
 - **Product domain libraries** - 8 domains auto-detected from your language (Pricing, Trust, Ads, Promotions, Open Source, Health, Marketplace, Business Models).
 - **Typed technical scopes** - feature, spike, optimize, test-* with dependency mapping and sequencing for autonomous execution.
 - **Acceptance-based scope execution** - each scope is delegated with a contract (criteria, verify commands, stop rules). On acceptance-native harnesses (e.g. pi-subagents), the child self-corrects in the same context before returning. On other harnesses, the parent re-delegates with feedback until criteria pass or max iterations exhaust.
@@ -102,19 +102,19 @@ And the workflow begins asking questions, exploring scope, shaping the proposal,
 
 ## 🎚️ Appetite & Mode
 
-The workflow is controlled by two orthogonal dimensions: **Appetite** (declared by the human) and **Mode** (auto-detected or overridden). Together they determine which stages run, with what depth, and whether visual approval is required.
+The workflow is controlled by two orthogonal dimensions: **Appetite** (declared by the human) and **Mode** (declared by the human). Appetite controls scope/exploration depth. Mode controls gates, questions, and approvals.
 
 ### Appetite (Constraint, Not Estimate)
 
-Appetite is the **review budget** - how much time and attention the human is willing to invest in planning, critiquing, and verifying.
+Appetite is the **scope and exploration budget** - how much product depth the human wants prepared before execution.
 
 > **Appetite is a constraint, not an estimate.** Unlike traditional estimation (which asks "how long will this take?"), appetite asks "how much is this worth?" before the work is defined. This forces scope cuts to fit the budget - the budget never expands.
 
-| Appetite | What it means | Critique depth | Supervisor | Verification | Best for |
-|----------|---------------|----------------|------------|-------------|----------|
-| **Lean** | Validate an idea fast. Minimal ceremony. | 5 reviewers + consolidation; gap resolution: AI decides | Low sensitivity | Build + unit + code-quality + invisible-20% only | Idea validation, spike, throwaway prototype |
-| **Core (default)** | Standard review. Balance of depth and speed. | 5 reviewers + consolidation; gap resolution: by mode | Medium sensitivity | Build + unit + lint + code-quality + invisible-20% | Most features, bug fixes, small improvements |
-| **Complete** | Full pipeline. No shortcuts. | 5 reviewers + consolidation; gap resolution: by mode | High sensitivity | Build + unit + lint + a11y + code review + interactive testing | Critical features, high-risk changes, production releases |
+| Appetite | What it means | Scope depth | Interface exploration | Supervisor | Testing | Best for |
+|----------|---------------|-------------|----------------------|------------|---------|----------|
+| **Lean** | Validate an idea fast. Minimal scope ceremony. | 1 minimal feature, 1-2 scopes | 1 suggested interface; no alternative exploration | Low sensitivity | Smoke tests + critical-path unit tests; a11y lint/static if UI exists | Idea validation, spike, throwaway prototype |
+| **Core (default)** | Standard product feature. Enough depth to catch obvious gaps. | Main JTBD, 3-5 scopes | 3 interface archetypes explored + 1 hybrid recommendation | Medium sensitivity | Unit tests + integration tests for external seams; a11y codebase/browserless audit if UI exists | Most features, bug fixes, small improvements |
+| **Complete** | Multi-feature or high-risk product work. | 8-15 scopes, full edge mapping | 5 interface archetypes explored + 1 hybrid recommendation | High sensitivity | Unit + integration + behavior/e2e + security tests; live a11y audit if UI exists | Critical features, high-risk changes, production releases |
 
 **Cut policy implied by appetite:**
 
@@ -134,14 +134,20 @@ After shaping, the LLM assesses **`appetite_fit`**: does the shaped proposal fit
 
 This is **not an estimate**. The LLM does not estimate effort - it checks whether the shaped design fits the human's declared budget. If it doesn't fit, the LLM proposes cuts or reshaping, never an appetite extension. The final decision is always human.
 
-**How appetite cascades through stages:**
+For high-risk work, validate `appetite_fit` with a fresh-context reviewer/subagent; the same LLM can self-assess for low-risk work, but independent review is stronger.
 
-| Stage | Lean | Core | Complete |
-|-------|-----|---------|---------------|
-| **Critique** | 5 reviewers + consolidation; gap resolution: AI decides | 5 reviewers + consolidation; gap resolution: by mode | 5 reviewers + consolidation; gap resolution: by mode |
-| **Gate** | Skip Plannotator on Auto mode | Plannotator encouraged | **Mandatory** Plannotator visual review |
-| **Execution** | Low supervisor sensitivity | Medium supervisor sensitivity | High supervisor sensitivity |
-| **Verification** | Build + unit + code-quality + invisible-20% only | Build + unit + lint + code-quality + invisible-20% + **code review (3+ files)** + **a11y audit (1+ UI files)** | Build + unit + lint + a11y + code review + interactive testing + live site audit |
+**Critique and Gate are Mode controls, not Appetite controls.** Product Critique and Plannotator Gate are governed by Mode: Auto skips gates; Light/Moderate/Full modes run the configured gates. Appetite changes the depth of the shaped proposal, interface exploration, supervisor sensitivity, and test scope breadth — not whether quality gates exist.
+
+**Appetite-specific execution budget:**
+
+| Area | Lean | Core | Complete |
+|------|------|------|----------|
+| **Spec + scopes** | ~1 page; 1-2 scopes; one direct implementation path | ~3 pages; 3-5 scopes; 1-2 implementation alternatives with brief rationale | ~8+ pages; 8-15 scopes; 3-5 alternatives with trade-offs |
+| **Cut policy** | Cut edge cases, secondary flows, alternative strategies, non-critical integrations. Keep the happy path. | Cut low-value variants. Keep main JTBD, obvious edge cases, and one alternative only if it changes the core flow. | Cut nothing unless impossible. Keep full edge mapping, multiple strategies, and domain context. |
+| **Interface exploration** | 1 suggested interface only | 3 archetypes explored + 1 hybrid recommendation | 5 archetypes explored + 1 hybrid recommendation |
+| **Supervisor** | Low sensitivity | Medium sensitivity | High sensitivity |
+| **Testing** | Smoke tests + critical-path unit tests | Unit tests + integration tests for external seams | Unit + integration + behavior/e2e + security tests |
+| **Quality baseline** | Build/test/lint/typecheck always; a11y lint/static if UI exists | Build/test/lint/typecheck always; a11y codebase/browserless audit if UI exists | Build/test/lint/typecheck always; live a11y audit if UI exists |
 
 ### Mode
 
@@ -160,7 +166,7 @@ Mode is set explicitly by the user during `setup:15` via `ask_user_question`. It
 **Key rules:**
 
 - **Auto:** No gates, no Plannotator, no questions. LLM decides everything. Quickest path.
-- **Light:** One Plannotator gate (spec-product visual approval before tech planning). Interface always runs (5 proposals + hybrid, LLM chooses standard vs full depth). User does not choose between alternatives. All other gates skipped.
+- **Light:** One Plannotator gate (spec-product visual approval before tech planning). Interface depth follows Appetite. User does not choose between alternatives. All other gates skipped.
 - **Moderate:** Same as Light + user chooses between generated interface alternatives via the ask tool with preview.
 - **Full Product:** All gates active (pre-tech + int-gate). User confirms IN/OUT boundaries. Tech approval uses Auto (no Plannotator for tech plan).
 - **Full Product + Tech:** Everything in Full Product + tech plan goes through Plannotator gate + user answers technical questions.
@@ -178,17 +184,17 @@ Appetite controls HOW DEEP it runs     →  Lean vs Core vs Complete
 | **Full Product** | 2 gates (Gate + Int.Gate). User confirms IN/OUT. | 2 gates + IN/OUT confirmation. Full workflow. | 2 gates + all questions. No shortcuts. |
 
 **Examples:**
-- `Lean + Auto` → Fastest path: no gates, no questions, no Plannotator. LLM decides scope. Interface runs automatically (5 proposals + hybrid). (~6 stages)
-- `Core + Light` → Standard feature: 1 Plannotator gate (pre-tech), interface runs automatically. (~10 stages)
-- `Core + Moderate` → Feature where interface matters: 1 Plannotator gate + user chooses interface. (~8 stages)
-- `Complete + Full Product` → Critical feature: 2 Plannotator gates + all questions. No shortcuts. (~13 stages)
+- `Lean + Auto` → Fastest path: no gates, no questions, no Plannotator. LLM decides scope. Interface runs automatically with 1 suggested interface. (~6 stages)
+- `Core + Light` → Standard feature: 1 Plannotator gate (pre-tech), interface runs automatically with 3 interfaces + hybrid. (~10 stages)
+- `Core + Moderate` → Feature where interface matters: 1 Plannotator gate + user chooses among 3 interfaces + hybrid. (~8 stages)
+- `Complete + Full Product` → Critical feature: 2 Plannotator gates + all questions. Interface explores all 5 archetypes + hybrid. No shortcuts. (~13 stages)
 
 ### Motivation
 
 Product ideas vary widely in scope and risk. A throwaway prototype should not require the same planning depth as a critical production feature. The Appetite × Mode cascade system ensures:
 
-- **Lean appetite skips supervisor overhead** - no human-in-loop for throwaway prototypes
-- **Complete appetite activates deeper verification** - full test suite, code review, a11y audit, interactive testing, and live site audit run before delivery
+- **Lean appetite limits scope and exploration** - smaller spec, fewer scopes, one interface suggestion, and critical-path tests only.
+- **Complete appetite expands exploration and verification** - full edge mapping, all 5 interface archetypes + hybrid, behavior/e2e tests, security tests, and live a11y audit when UI exists.
 - **Auto mode skips Plannotator** - for lightweight validations where visual review is overkill
 - **Full Product mode enforces strategy** - JTBD, Opportunity Mapping, etc. run before shaping if product context exists
 
@@ -245,7 +251,7 @@ All 25 skills are flat in `skills/` directory, ready for `~/.agents/skills/`. Th
 | Skill | Purpose |
 |-------|---------|
 | `cali-product-shape-up` | Shape Up planning - IN/OUT boundaries, risk analysis, focused scoping |
-| `cali-product-interface-alternatives` | Interface alternatives exploration (5 archetypes) |
+| `cali-product-interface-alternatives` | Interface alternatives exploration (1/3/5 archetypes by appetite) |
 | `cali-product-plan-critique` | Product plan gap analysis (flows, states, affordances, data, system, compositional quality, feasibility); mode-dependent resolution |
 | `cali-product-codebase-critique` | Codebase structural critique (architecture, performance, AI slop) |
 | `cali-product-ux-critique` | Full UX/UI audit (accessibility, Nielsen heuristics, personas, AI slop) |
@@ -478,7 +484,7 @@ This workflow is grounded in empirical evidence from the 2025-2026 AI agent rese
 | **Cross-session learning** | [Cat](https://arxiv.org/abs/2512.22087) (Liu et al., Beihang, 2025); [Memory Transfer](https://arxiv.org/abs/2604.14004) (Kim et al., KAIST, 2026) | Context as callable tool; +3.7% via abstract memory pools | `setup:0.30` - Session Knowledge from `.stelow/session-knowledge/` |
 | **Output validation guards** | [Stage-Gate Agentic](https://community.pdma.org/knowledgehub/bok/product-innovation-process/stage-gate-agentic-the-coming-revolution-in-the-new-product-process) (PDMA, 2026); [Phaselock](https://github.com/infinri/Phaselock) (2026) | AI agents with gates reduce execution failures; 80 enforceable rules | `shape:20` - Shape Up guard; `planning:10.10` - Tech Planning guard |
 | **Context isolation** | [Clean Context Pattern](https://agentfactory.panaversity.org/docs/General-Agents-Foundations/context-engineering/context-isolation) (Agent Factory, 2026); [GAM](https://arxiv.org/abs/2604.12285) (Zhejiang U., 2026) | Fresh context per agent outperforms shared pipelines; write isolation prevents contamination | `subagents.md` - `context:"fresh"` per subagent; disk-based artifacts |
-| **Visual review gate** | [Plannotator](https://plannotator.ai/) (backnotprop, 2025); [Placement Theory](https://tianpan.co/blog/2026-04-17-hitl-placement-theory-approval-gates) (Tian Pan, 2026) | Browser-based plan annotation with structured feedback loop | `gate:5` - Mandatory Plannotator visual review before execution |
+| **Visual review gate** | [Plannotator](https://plannotator.ai/) (backnotprop, 2025); [Placement Theory](https://tianpan.co/blog/2026-04-17-hitl-placement-theory-approval-gates) (Tian Pan, 2026) | Browser-based plan annotation with structured feedback loop | `gate:5` - Plannotator visual review when Mode ≥ Light; skipped in Auto |
 | **Intra-step recovery** | [Try-Heal-Retry](https://adriennevermorel.com/notes/try-heal-retry-pattern/) (Nweke, 2026); [PALADIN](https://arxiv.org/abs/2509.25238) (Chaudhary et al., 2025) | 89.68% recovery rate via annotated failure trajectories | `subagents.md` - Retry 1× + skip with logged error per subagent |
 | **Metric-driven optimization** | [ReflexGrad](https://arxiv.org/abs/2511.14584) (Kadu et al., 2025); [ReliabilityBench](https://arxiv.org/abs/2601.06112) (Gupta et al., 2026) | +40pp lift via dual-process routing; standardized reliability measurement | `optimization` scopes routed to optimization goals (subagent + acceptance) |
 | **Acceptance-based execution** | Pattern inspired by [Try-Heal-Retry](https://adriennevermorel.com/notes/try-heal-retry-pattern/) (Nweke, 2026) and [PALADIN](https://arxiv.org/abs/2509.25238) (Chaudhary et al., 2025) | Self-correction in same context outperforms fresh re-delegation | Scope executor delegates with acceptance contract - child self-corrects (harness-dependent) before parent evaluates |

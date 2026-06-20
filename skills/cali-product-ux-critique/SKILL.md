@@ -59,7 +59,7 @@ Aceita **3 tipos de input**, cada um ativando um subset diferente das dimensões
 and if appetite warrants a full audit.
 
 ```bash
-# Read appetite from context; default M
+# Read appetite from context; default Core
 APPETITE="${APPETITE:-Core}"
 # Check if any visual files changed
 UI_FILES=$(git diff --name-only HEAD~1 2>/dev/null | grep -cE '\.(templ|html|tsx|jsx|css)$' || echo "0")
@@ -67,15 +67,13 @@ UI_FILES=$(git diff --name-only HEAD~1 2>/dev/null | grep -cE '\.(templ|html|tsx
 
 | Appetite | UI files changed | Action |
 |----------|-----------------|--------|
-| `Lean` | any | **Skip.** No new UI or minimal scope — basic a11y covered by lint. |
+| `Lean` | any | **Static a11y/lint baseline.** No browser/live audit unless upgraded. |
 | `Core` | 0 | **Skip.** |
 | `Core` | 1+ | **Codebase mode (~80%).** No browser. Syntactic a11y + AI slop only. |
 | `Complete` | 0 | **Skip** (no UI to audit) |
 | `Complete` | 1+ | **Live Site mode.** Full audit with browser + real a11y. Human reviews report in Full Product/Full Product + Tech mode. |
 
-**Rationale:** UX critique com browser é caro (abre URL, navega, tira screenshot).
-Para Lean/Core, o custo operacional supera o valor — lint de a11y + revisão de código
-já cobre os issues mais críticos.
+**Rationale:** UX critique with a browser is expensive (opens URL, navigates, captures screenshots). For Lean, keep the static a11y/lint baseline; for Core, use codebase/browserless review; for Complete, run live-site audit when UI exists. Appetite changes audit depth, not whether UI quality matters.
 
 ### Standalone (uso avulso)
 Leia este arquivo e pule para o modo relevante.

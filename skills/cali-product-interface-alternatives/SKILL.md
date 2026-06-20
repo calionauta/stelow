@@ -2,8 +2,9 @@
 name: cali-product-interface-alternatives
 description: >
   [Cali] Interface alternatives exploration skill. Use when generating interface
-  proposals using the 5 archetypes method. Produces 5 independent proposals +
-  hybrid recommendation. Part of stelow but can be used standalone.
+  proposals using the 5-archetype library. Produces 1, 3, or 5 proposals depending
+  on appetite, plus hybrid recommendation for Core/Complete. Part of stelow but can
+  be used standalone.
 metadata:
   frequency: monthly
   category: product
@@ -28,6 +29,44 @@ This skill works standalone. Use the Input Detection section below to tell the s
 
 ## Process
 
+**Step 0: Read appetite from `spec-product.md` and choose interface exploration depth.**
+
+Appetite controls how many interface alternatives are explored. Quality is not cut; the number of explored alternatives is.
+
+| Appetite | Interface exploration |
+|----------|----------------------|
+| `Lean` | 1 suggested interface only. No alternative exploration. |
+| `Core` | 3 archetypes explored + 1 hybrid recommendation. |
+| `Complete` | 5 archetypes explored + 1 hybrid recommendation. |
+
+```bash
+APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "Core")
+
+case "$APPETITE" in
+  Lean)
+    INTERFACE_COUNT=1
+    ARCHETYPES="A" # Choose the archetype that best fits the work pattern.
+    HYBRID="skip"
+    ;;
+  Core)
+    INTERFACE_COUNT=3
+    ARCHETYPES="A,D,E" # Safe baseline + simplicity + expert flow; replace one with B/C if better justified.
+    HYBRID="yes"
+    ;;
+  Complete)
+    INTERFACE_COUNT=5
+    ARCHETYPES="A,B,C,D,E"
+    HYBRID="yes"
+    ;;
+  *)
+    echo "APPETITE_UNKNOWN: '$APPETITE'. Defaulting to Core interface exploration."
+    INTERFACE_COUNT=3
+    ARCHETYPES="A,D,E"
+    HYBRID="yes"
+    ;;
+esac
+```
+
 **Step 1:** Read the `references/` files to guide the process:
 
 | File | Covers | When to read |
@@ -40,15 +79,11 @@ This skill works standalone. Use the Input Detection section below to tell the s
 
 ## Generate Proposals (Step 1-2)
 
-Use the subagents tool (see `references/cli-tools/subagents.md`) to generate 5 proposals in parallel (5 independent workers):
+Use the subagents tool (see `references/cli-tools/subagents.md`) to generate the appetite-selected proposals in parallel. For `Lean`, run one worker only. For `Core`, run 3 workers. For `Complete`, run 5 workers.
 
 ```
-5 parallel workers (fork context):
-  A: Proposal A (Archetype A — Conventional Standard)
-  B: Proposal B (Archetype B — Interaction Paradigm Shift)
-  C: Proposal C (Archetype C — Technological Vanguard)
-  D: Proposal D (Archetype D — Radical Simplicity)
-  E: Proposal E (Archetype E — Expert/Command-First)
+$INTERFACE_COUNT parallel workers (fork context):
+  Generate only the selected archetype(s) from $ARCHETYPES
 
 ⚠️ CRITICAL — Before generating, each worker MUST read:
   1. references/interface-rules.md — Work-Pattern-First Composition (mandatory Section 0)
@@ -64,20 +99,20 @@ Each outputs to .stelow/{date}/{dir}/interfaces/proposal-{letter}.md
 - Combined output: `.stelow/{YYYY-MM-DD}/{_dir}/interfaces/interfaces_{v}.md`
 
 
-**Step 2:** see `references/output-format.md` for instructions to format and concatenate all proposals.
+**Step 2:** see `references/output-format.md` for instructions to format and concatenate selected proposals.
 
 
 ## Generate Hybrid (Step 3 — AFTER proposals complete)
 
 
-**CRITICAL:** Hybrid is generated **AFTER** all 5 proposals are complete to avoid bias.
+**CRITICAL:** Hybrid is generated only when `$HYBRID = yes` (Core or Complete appetite) and **AFTER** all selected proposals are complete to avoid bias.
 
 Use the subagents tool (see `references/cli-tools/subagents.md`) to merge:
 
 ```
 Agent: worker
 Task: Generate Hybrid Proposal
-Reads: 5 proposal files
+Reads: selected proposal files
 Output: Append to interfaces.md per hybrid-recommendation.md
 ```
 ```
@@ -85,7 +120,7 @@ Output: Append to interfaces.md per hybrid-recommendation.md
 
 ## Visual Review (Interface Gate — Automatic)
 
-**After all proposals + Hybrid, use the Plannotator gate command** (see `references/cli-tools/plannotator.md` for the correct CLI command). Execute it directly — do NOT describe it to the user.
+**After all selected proposals (+ Hybrid when applicable), use the Plannotator gate command** (see `references/cli-tools/plannotator.md` for the correct CLI command). Execute it directly — do NOT describe it to the user.
 
 Wait for the `--gate` result. If approved, **automatically advance to Interface Selection** — use **Pattern 2** from `references/cli-tools/structured-question.md` to let the user pick one proposal. Do NOT just describe what comes next — execute it.
 
@@ -121,7 +156,7 @@ Input:
          existing UI patterns, brand guidelines)."
 ```
 
-Then follow the 5-archetype generation process below.
+Then follow the appetite-selected archetype generation process above.
 
 ## Environment Adaptation
 

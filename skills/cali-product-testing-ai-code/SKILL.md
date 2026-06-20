@@ -27,18 +27,30 @@ metadata:
 - **Phase:** Phase 11 (Tech Planning)
 - **Prerequisite:** approved spec-product.md with scope defined
 
-### Product Context (Greenfield vs Brownfield)
+### Step 2: Read Appetite and Product Context
+
+Read `appetite` from `spec-product.md` before generating test scopes. Appetite controls **test breadth**, not quality baseline.
+
+| Appetite | Test breadth |
+|----------|-------------|
+| `Lean` | Smoke tests + critical-path unit tests. Add integration only when an external seam is in the Lean IN scope. |
+| `Core` | Unit tests for main business logic + integration tests for DB/API/external seams. |
+| `Complete` | Unit + integration + behavior/e2e for complex flows + security tests/scans for sensitive paths. |
+
+**Quality baseline applies to every appetite:** build/test/lint/typecheck always run when available, and a11y checks run whenever UI files exist. Appetite changes exploration breadth, not whether quality gates exist.
+
+Then determine the product context:
 
 **Before generating testing strategy, determine the product context:**
 
 | Context | Description | Testing Approach |
 |---------|-------------|-----------------|
-| **Greenfield** | New product, no existing code | TDD-first, risk-based coverage targets, clean slate |
+| **Greenfield** | New product, no existing code | TDD-first, appetite-specific coverage targets, clean slate |
 | **Brownfield** | Existing product with features | TDD for critical paths, test-after for existing code, regression focus |
 | **Hybrid** | Adding features to existing product | Separate new from existing, protect invariants |
 
 **Based on context from setup or spec-product.md:**
-- `greenfield`: Full TDD recommendation, risk-based coverage targets
+- `greenfield`: TDD recommendation, appetite-specific coverage targets
 - `brownfield`: TDD for critical paths only, test-after + regression for existing code
 - `hybrid`: Add `test-regression` scopes for existing functionality
 
@@ -71,7 +83,7 @@ Auto-detect testing frameworks from project files:
 | Rust | `Cargo.toml` | cargo test | cargo-tarpaulin | cargo-audit |
 | Java | `pom.xml`, `build.gradle` | JUnit | JaCoCo | SpotBugs |
 
-### Step 2: Classify Scope Risk
+### Step 3: Classify Scope Risk
 
 Based on spec-tech.md scopes:
 
@@ -81,28 +93,49 @@ Based on spec-tech.md scopes:
 | **Standard** | CRUD, UI, API endpoints | Core paths + obvious edge cases |
 | **Experimental** | Prototypes, new features | Smoke tests + regression hooks |
 
-### Step 3: Generate Risk-Based Test Targets
+### Step 4: Generate Appetite-Specific Test Targets
 
-From research: coverage alone is insufficient. A test suite can execute every line but still miss behavioral bugs, security gaps, and non-deterministic agent failures.
+From research: coverage alone is insufficient. A test suite can execute every line but still miss behavioral bugs, security gaps, and non-deterministic agent failures. Appetite selects breadth; risk selects which paths inside that breadth are mandatory.
 
-| Path Type | Testing Depth |
-|-----------|-------------|
-| Critical paths | Branch coverage, negative cases, security gates, and deterministic regression checks |
-| Standard features | Core happy path, obvious edge cases, and integration seams |
-| Experimental | Smoke tests, acceptance checks, and regression hooks for future hardening |
+| Appetite | Path Type | Testing Depth |
+|-----------|-----------|-------------|
+| `Lean` | Critical path | Smoke test + unit test for the happy path and one negative case |
+| `Lean` | Standard/experimental | Smoke or acceptance check only; no broad integration suite |
+| `Core` | Critical path | Unit tests + negative cases + integration seams |
+| `Core` | Standard features | Unit tests for main logic + integration tests for external seams |
+| `Complete` | Critical path | Unit + integration + behavior/e2e + security gates |
+| `Complete` | Complex flows | Behavior/e2e tests for multi-step UI or agent workflows |
 
-### Step 4: Define Test Scope Types
+### Step 5: Define Test Scope Types
 
-For each IN scope in spec-product.md, add corresponding test scopes.
+For each IN scope in spec-product.md, add corresponding test scopes. Appetite controls breadth:
 
-**Greenfield (new code):**
+**Lean:**
 
-| Code Type | Test Type | When to Use | TDD? | Section |
-|----------|-----------|-------------|------|---------|
-| Business logic | `test-unit` | Core functionality | **Yes — critical paths** | [test-unit](#test-unit-core-functionality-greenfield) |
-| External APIs | `test-integration` | DB, APIs, queues | No — test-after | [test-integration](#test-integration-external-apis-greenfield) |
-| Security-sensitive | `test-security` | Auth, payment, data | No — automated | [test-security](#test-security-security-sensitive-code-greenfield) |
-| Agent workflows | `test-behavior` | Multi-step agents | No — multi-run | [test-behavior](#test-behavior-agent-workflows-greenfield) |
+| Code Type | Test Type | When to Use | TDD? |
+|----------|-----------|-------------|------|
+| Critical business logic | `test-unit` | Happy path + one negative case | Yes for deterministic logic |
+| External APIs | `test-integration` | Only if external seam is in Lean IN scope | No — test-after |
+| Security-sensitive | `test-security` | Only if auth/payment/data is in Lean IN scope | Automated SAST |
+
+**Core:**
+
+| Code Type | Test Type | When to Use | TDD? |
+|----------|-----------|-------------|------|
+| Business logic | `test-unit` | Main flows + obvious edge cases | Yes — critical paths |
+| External APIs | `test-integration` | DB, APIs, queues | No — test-after |
+| Security-sensitive | `test-security` | Auth, payment, data | Automated SAST |
+| Agent workflows | `test-behavior` | Multi-step agents | Multi-run validation |
+
+**Complete:**
+
+| Code Type | Test Type | When to Use | TDD? |
+|----------|-----------|-------------|------|
+| Business logic | `test-unit` | Full edge mapping | Yes — critical paths |
+| External APIs | `test-integration` | All external seams | No — test-after with contract checks |
+| Security-sensitive | `test-security` | Auth, payment, data, permissions | Automated SAST + targeted tests |
+| Agent workflows | `test-behavior` | Multi-step agents | Multi-run validation |
+| Complex UI/user flows | `test-behavior` | Forms, modals, multi-step flows | Browser/e2e when applicable |
 
 **Brownfield/Hybrid (existing code):**
 
@@ -331,7 +364,7 @@ impact:
 | Aspect | Strategy | Rationale |
 |--------|----------|----------|
 | **TDD adoption** | Full recommended | No legacy constraints, clean architecture |
-| **Mutation targets** | Aggressive (70/50/30%) | Establish quality culture from day one |
+| **Coverage/risk targets** | Appetite-specific: Lean critical path only; Core main logic + external seams; Complete full edge mapping + security | Establish quality baseline from day one |
 | **Coverage** | Define target upfront | 80% baseline, higher for critical |
 | **Technical debt** | None yet | Focus on clean patterns, not remediation |
 

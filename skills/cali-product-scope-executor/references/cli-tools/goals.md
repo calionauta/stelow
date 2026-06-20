@@ -23,7 +23,7 @@ This is harness-agnostic. Every delegation mechanism can express these fields.
 | `feature` | criteria from ACs + verify from plan + stopRules from type |
 | `optimization` | criteria from metric target + verify from benchmark commands |
 | `spike` | criteria from research question + evidence from findings |
-| `test-*` | criteria from mutation/security gates + verify from test runners |
+| `test-*` | criteria from testing/security gates + verify from test runners |
 
 ---
 
