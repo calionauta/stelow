@@ -25,11 +25,9 @@ stryker-reports/
 # Local workflow artifacts (auto-generated at runtime)
 .pi/
 .pi-*
-# .stelow/ — version state/ (templates), ignore runtime artifacts
-.stelow/2026-0*
-.stelow/2025-*
-.stelow/.gitkeep
-!.stelow/state/
+# .stelow/ — runtime artifacts (state, session knowledge, plans)
+.stelow/
+!.stelow/.gitkeep
 !.stelow/state/
 .stelow-global.json
 
