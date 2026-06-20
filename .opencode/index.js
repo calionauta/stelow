@@ -1,1 +1,0 @@
-../cli-agents/opencode/plugin/dist
