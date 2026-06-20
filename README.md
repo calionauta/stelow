@@ -25,6 +25,7 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 - **Typed technical scopes** - feature, spike, optimize, test-* with dependency mapping and sequencing for autonomous execution.
 - **Acceptance-based scope execution** - each scope is delegated with a contract (criteria, verify commands, stop rules). On acceptance-native harnesses (e.g. pi-subagents), the child self-corrects in the same context before returning. On other harnesses, the parent re-delegates with feedback until criteria pass or max iterations exhaust.
 - **Audit gap-to-scope loop** — post-execution audit classifies gaps (FIXED / DOCUMENTED / ESCALATED). ESCALATED gaps become new scopes in the tracking file. `/sw-next` enforces the loop: when pending scopes exist at the Audit phase, it blocks completion and resets to Execution. The cycle repeats until no scopes remain pending.
+- **Bidirectional product ↔ tech flow** — tech constraints and opportunities inform product decisions *before* execution. Tech Preview uses cymbal for appetite-gated codebase recon; Alignment Check catches product-vs-tech misalignment with mode-dependent resolution (auto or user-flagged).
 - **Stack-matched skills + fresh docs** — during execution setup, the workflow discovers skills (via `npx skills`) optimized for the chosen tech stack and fetches current library docs (via `ctx7`). Both skip if already installed or unavailable. Skills install in project scope only, after user confirmation.
 - **Real-time TUI tracking** - see workflow state as it progresses through all stages.
 
@@ -153,7 +154,7 @@ All three appetites benefit from `appetite_fit` validation by the **Plan Critiqu
 
 Mode controls the **breadth** of the workflow - how many gates and questions are active. Unlike Appetite (depth of scope), Mode determines the **level of interaction** with the human.
 
-Mode is set explicitly by the user during `setup:15` via `ask_user_question`. It is NOT auto-detected.
+Mode is set explicitly during the setup phase via `ask_user_question`. It is NOT auto-detected.
 
 | Mode | Plannotator Gates | Interface | IN/OUT Confirmation | Tech Approval | Best for |
 |------|:---:|:---:|:---:|:---:|---------|
@@ -210,6 +211,28 @@ The workflow has **3 conceptual phases** (15 stages total), from idea triage to 
 
 **Stages 0-11** - From raw idea through shaped proposal, adversarial critique, visual gate approval, interface exploration, to typed technical scopes ready for execution.
 
+#### Bidirectional Product ↔ Tech Flow
+
+Traditional planning is linear: product spec → tech spec. stelow adds **two feedback loops** that let tech constraints and opportunities inform product decisions *before* execution:
+
+- **Tech Preview** — Before shaping the product spec, a lightweight codebase analysis runs (via [cymbal](https://github.com/1broseidon/cymbal), when available) to surface existing architecture, entry points, hotspots, and constraints. This prevents shaping features that conflict with the codebase reality. Depth is appetite-gated: Core → structure overview, Complete → impact analysis. Skipped on Lean or greenfield.
+
+- **Alignment Check** — After tech planning generates typed scopes, a bidirectional check compares the tech plan against the product spec. If tech reveals constraints that change the product scope, the LLM classifies alignment and acts per Mode: Auto/Light auto-updates the product spec; Moderate/Full asks the user. This catches "tech discovered too late" before any code is written.
+
+| Appetite | Tech Preview depth | Alignment Check depth |
+|----------|-------------------|----------------------|
+| **Lean** | Skip | Quick feasibility check |
+| **Core** | Structure overview (entry points, hotspots) | Standard IN/OUT vs feasibility |
+| **Complete** | Structure + impact analysis (blast radius) | Deep: each scope's ACs vs codebase |
+
+| Mode | Alignment Check behavior |
+|------|------------------------|
+| **Auto/Light** | Auto-resolve. Updates spec-product if needed. No questions. |
+| **Moderate** | Auto-resolve if aligned; flags user if misaligned. |
+| **Full/Full+Tech** | Always shows diff, asks user to choose update/ignore/reshape. |
+
+These loops are **appetite- and mode-respecting by design** — they inherit the same two-axis control as the rest of the workflow. No new mechanism needed.
+
 ### 2. ⚡ Execution
 
 **Stages 12-13** - Autonomous scope execution via acceptance contracts: each scope is delegated with criteria, verify commands, and stop rules. Self-correction is harness-dependent - native acceptance loops (pi-subagents) let the child fix gaps in the same context; other harnesses use parent-controlled re-delegation. Optimization scopes use benchmark-driven iteration. Scope completion is gated - `/sw-next` blocks advance to Verification if any scopes remain incomplete.
@@ -250,12 +273,12 @@ All 25 skills are flat in `skills/` directory, ready for `~/.agents/skills/`. Th
 
 | Skill | Purpose |
 |-------|---------|
-| `cali-product-shape-up` | Shape Up planning - IN/OUT boundaries, risk analysis, focused scoping |
+| `cali-product-shape-up` | Shape Up planning + **Tech Preview** (appetite-gated codebase recon via cymbal) — surfaces codebase reality before product decisions |
 | `cali-product-interface-alternatives` | Interface alternatives exploration (1/3/5 archetypes by appetite) |
 | `cali-product-plan-critique` | Product plan gap analysis (flows, states, affordances, data, system, compositional quality, feasibility); mode-dependent resolution |
 | `cali-product-codebase-critique` | Codebase structural critique (architecture, performance, AI slop) |
 | `cali-product-ux-critique` | Full UX/UI audit (accessibility, Nielsen heuristics, personas, AI slop) |
-| `cali-product-tech-planning` | Technical scope generation with dependency mapping |
+| `cali-product-tech-planning` | Technical scope generation + **Alignment Check** (mode-gated bidirectional product↔tech feedback loop) |
 | `cali-product-testing-ai-code` | AI-aware testing strategy |
 | `cali-product-testing-execution` | Post-implementation testing protocol |
 | `cali-product-scope-executor` | Autonomous scope execution via acceptance contracts - child self-corrects (harness-dependent), parent evaluates final result |
@@ -481,10 +504,10 @@ This workflow is grounded in empirical evidence from the 2025-2026 AI agent rese
 | Practice | Source | Evidence | Where We Implement |
 |----------|--------|----------|-------------------|
 | **Parallel orchestration** | [CAID](https://arxiv.org/abs/2603.21489) (Geng & Neubig, CMU, 2026) | +26.7% accuracy using git-worktree isolation + dependency DAG | `critique:30` - 5 parallel reviewers + consolidator |
-| **Cross-session learning** | [Cat](https://arxiv.org/abs/2512.22087) (Liu et al., Beihang, 2025); [Memory Transfer](https://arxiv.org/abs/2604.14004) (Kim et al., KAIST, 2026) | Context as callable tool; +3.7% via abstract memory pools | `setup:0.30` - Session Knowledge from `.stelow/session-knowledge/` |
-| **Output validation guards** | [Stage-Gate Agentic](https://community.pdma.org/knowledgehub/bok/product-innovation-process/stage-gate-agentic-the-coming-revolution-in-the-new-product-process) (PDMA, 2026); [Phaselock](https://github.com/infinri/Phaselock) (2026) | AI agents with gates reduce execution failures; 80 enforceable rules | `shape:20` - Shape Up guard; `planning:10.10` - Tech Planning guard |
+| **Cross-session learning** | [Cat](https://arxiv.org/abs/2512.22087) (Liu et al., Beihang, 2025); [Memory Transfer](https://arxiv.org/abs/2604.14004) (Kim et al., KAIST, 2026) | Context as callable tool; +3.7% via abstract memory pools | Session Knowledge injection — reads `.stelow/session-knowledge/` during workflow setup |
+| **Output validation guards** | [Stage-Gate Agentic](https://community.pdma.org/knowledgehub/bok/product-innovation-process/stage-gate-agentic-the-coming-revolution-in-the-new-product-process) (PDMA, 2026); [Phaselock](https://github.com/infinri/Phaselock) (2026) | AI agents with gates reduce execution failures; 80 enforceable rules | Shape Up output guard + Tech Planning validation guard |
 | **Context isolation** | [Clean Context Pattern](https://agentfactory.panaversity.org/docs/General-Agents-Foundations/context-engineering/context-isolation) (Agent Factory, 2026); [GAM](https://arxiv.org/abs/2604.12285) (Zhejiang U., 2026) | Fresh context per agent outperforms shared pipelines; write isolation prevents contamination | `subagents.md` - `context:"fresh"` per subagent; disk-based artifacts |
-| **Visual review gate** | [Plannotator](https://plannotator.ai/) (backnotprop, 2025); [Placement Theory](https://tianpan.co/blog/2026-04-17-hitl-placement-theory-approval-gates) (Tian Pan, 2026) | Browser-based plan annotation with structured feedback loop | `gate:5` - Plannotator visual review when Mode ≥ Light; skipped in Auto |
+| **Visual review gate** | [Plannotator](https://plannotator.ai/) (backnotprop, 2025); [Placement Theory](https://tianpan.co/blog/2026-04-17-hitl-placement-theory-approval-gates) (Tian Pan, 2026) | Browser-based plan annotation with structured feedback loop | Plannotator gate active when Mode ≥ Light; skipped in Auto |
 | **Intra-step recovery** | [Try-Heal-Retry](https://adriennevermorel.com/notes/try-heal-retry-pattern/) (Nweke, 2026); [PALADIN](https://arxiv.org/abs/2509.25238) (Chaudhary et al., 2025) | 89.68% recovery rate via annotated failure trajectories | `subagents.md` - Retry 1× + skip with logged error per subagent |
 | **Metric-driven optimization** | [ReflexGrad](https://arxiv.org/abs/2511.14584) (Kadu et al., 2025); [ReliabilityBench](https://arxiv.org/abs/2601.06112) (Gupta et al., 2026) | +40pp lift via dual-process routing; standardized reliability measurement | `optimization` scopes routed to optimization goals (subagent + acceptance) |
 | **Acceptance-based execution** | Pattern inspired by [Try-Heal-Retry](https://adriennevermorel.com/notes/try-heal-retry-pattern/) (Nweke, 2026) and [PALADIN](https://arxiv.org/abs/2509.25238) (Chaudhary et al., 2025) | Self-correction in same context outperforms fresh re-delegation | Scope executor delegates with acceptance contract - child self-corrects (harness-dependent) before parent evaluates |
@@ -499,7 +522,7 @@ Even with these guardrails, the AI agent still exhibits predictable failure mode
 | # | Limitation | Impact | What the workflow tries to do | Why it's not solved |
 |---|-----------|--------|------------------------------|---------------------|
 | 1 | **Context rot** - compliance with own rules drops from ~73% (turn 5) to ~33% (turn 16) in long sessions | [Gamage 2026](https://arxiv.org/abs/2604.20911), 4,416 trials, 12 models/8 providers. Replicated by Liu et al. 2023 "Lost in the Middle". | Subagents use `context: "fresh"`. Ordered-execution-goal creates isolated scope execution. Execution stage has explicit "Context Rot Check" re-reading plan from disk. | **Reduced but not solved.** The orchestrator itself can forget its own rules in long sessions spanning multiple stages. The core transformer limitation (U-shaped attention curve) remains intrinsic. |
-| 2 | **Confabulated research references** - Agents cite nonexistent papers or books (~11-57% hallucination rate across models) | [arXiv 2604.03173](https://arxiv.org/abs/2604.03173) - 10 models/3 databases/69K citation instances | Claim verification in `setup:0.20` (Lessons Learned cross-referencing). | **Caught by structure, not guaranteed.** Multi-model consensus (≥3 LLMs citing same work) yields 95.6% accuracy, but the workflow doesn't enforce this. |
+| 2 | **Confabulated research references** - Agents cite nonexistent papers or books (~11-57% hallucination rate across models) | [arXiv 2604.03173](https://arxiv.org/abs/2604.03173) - 10 models/3 databases/69K citation instances | Claim verification via Lessons Learned cross-referencing during setup. | **Caught by structure, not guaranteed.** Multi-model consensus (≥3 LLMs citing same work) yields 95.6% accuracy, but the workflow doesn't enforce this. |
 | 3 | **Silent wrong answers** - Cross-task state leakage produces plausible but incorrect outputs | [UCC (arXiv 2604.01350)](https://arxiv.org/abs/2604.01350), 2026 | Write isolation per subagent; clean context pattern | **Mitigated by isolation, not by detection.** No mechanism to detect when contamination happens despite isolation. |
 | 4 | **Overconfidence in estimates** - AI systematically underestimates implementation complexity | [Agentic Overconfidence (ICLR 2026)](https://openreview.net/forum?id=Ld4bvamfKj) - all tested agents exhibit agentic overconfidence | Appetite is declared by human as a **constraint**, not estimated by the LLM. The LLM only checks `appetite_fit` (fits/cuts_needed/reshape). No estimation step. | **Addressed by design - appetite is a constraint, not an estimate.** The human sets the budget before shaping. The LLM checks fit, not effort. But the human still needs to set appetite honestly. |
 | 5 | **Approval gate fatigue** - Users can desensitize to visual gates and approve without scrutiny | [Tian Pan Apr 2026](https://tianpan.co/blog/2026-04-23-hitl-queue-dynamics-approver-fatigue) - HITL queues have dynamics | Plannotator requires active annotations (deletions, comments, labels). Light+Auto mode skips gates entirely when appropriate. | **Delayed, not prevented.** Mode selection helps reduce unnecessary gates, but if the human always picks Complete+Full Product, fatigue still sets in. |

@@ -142,14 +142,14 @@ Do NOT use `/skill:` for internal subskills.
 | `select` | **Item Selection** | Rank accepted items, user picks one | After triage |
 | `setup` | **Project Setup** | Stages selection, safe-change | — |
 | `context` | **Strategic Context** (optional) | Strategic exploration + domain detection. See `context:5` (appetite/mode gate), `context:10` (Strategic Approaches — 5 options), `context:20` (Domain Libraries — 8 libraries) | — |
-| `shape` | **Shape Up** | Create spec with problem/solution/scope | — |
+| `shape` | **Shape Up** | Create spec with problem/solution/scope. Includes `shape:12` — **Tech Preview** (appetite-gated cymbal recon for brownfield codebase understanding) | — |
 | `critique` | **Product Critique** | Multi-dimensional critique (plan/codebase/site) | — |
 | `gate` | **Review Gate (Plannotator)** | Visual approval — **never skip** | — |
 | `scope` | **Scope Adjustment** | Add/remove from IN/OUT (ask) | — |
 | `interface` | **Interface Alternatives** | Appetite-scaled interface exploration: 1, 3, or 5 proposals + hybrid | — |
 | `int-gate` | **Interface Gate (Plannotator)** | Visual review of all interfaces | — |
 | `selection` | **Interface Selection** | User picks via ask with preview | — |
-| `planning` | **Tech Planning** | Typed scopes + sequencing | — |
+| `planning` | **Tech Planning** | Typed scopes + sequencing. Includes `planning:15` — **Alignment Check** (mode-gated bidirectional feedback: spec-tech vs spec-product) | — |
 | `execution` | **Execution** | Goal/scope executor | — |
 | `verification` | **Verification** | Run full test suite, code review, UI audit, browser testing | After execution |
 | `audit` | **Execution Critique** | Full execution critique (scope, quality, NFRs, edge cases, docs) | After verification |
@@ -181,7 +181,8 @@ setup — Project Setup
   ↓
 context — Strategic Context (optional)
   ↓
-shape — Shape Up
+shape — Shape Up*
+  │  * shape:12 = Tech Preview (appetite-gated cymbal recon)
   ↓
 critique — Product Critique (pre-flight)
   ↓
@@ -195,7 +196,9 @@ int-gate — Plannotator Gate (interfaces) ← visual pause
   ↓
 selection — Interface Selection (ask with preview)
   ↓
-planning — Tech Planning
+planning — Tech Planning*
+  │  * planning:15 = Alignment Check (mode-gated bidirectional feedback)
+  │    ← misaligned? → reshape or update spec-product
   ↓
 execution — Execution
   ↓

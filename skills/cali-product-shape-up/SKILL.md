@@ -41,6 +41,104 @@ Use the subagents tool (see `references/cli-tools/subagents.md`) in parallel for
 
 Read the outputs before proceeding.
 
+## shape:12 — Tech Preview (appetite-gated)
+
+After recon, run a lightweight tech preview to surface constraints and
+opportunities BEFORE shaping the product spec. This feeds codebase reality
+into the product decision, not after.
+
+**Standalone awareness:** when running inside stelow, this step reads appetite
+from `.stelow/*/index.json`. When standalone, defaults to Core appetite.
+Cymbal runs if available + brownfield regardless of mode — it doesn't need
+stelow context. Both paths produce valid output.
+
+**Read appetite + stack source:**
+```bash
+WF_DIR="$(ls -td .stelow/*/*/ 2>/dev/null | head -1)"
+APPETITE="Core"
+if [ -n "$WF_DIR" ] && [ -f "${WF_DIR}index.json" ]; then
+  APPETITE=$(grep -oP '"appetite":\s*"([^"]+)"' "${WF_DIR}index.json" 2>/dev/null | grep -oP '"([^"]+)"$' | tr -d '"' )
+  STELOW_MODE=true
+else
+  STELOW_MODE=false
+fi
+
+STACK_SOURCE="new"
+if [ -f "go.mod" ] || [ -f "package.json" ] || [ -f "Cargo.toml" ] || [ -f "Gemfile" ] || [ -f "pyproject.toml" ] || [ -f "CMakeLists.txt" ]; then
+  STACK_SOURCE="existing"
+fi
+```
+
+### Tech preview depth by appetite
+
+| Appetite | Brownfield? | Tech preview |
+|----------|-------------|-------------|
+| **Lean** | any | **Skip.** No tech preview. Product spec goes direct — appetite says minimal scope. |
+| **Core** | existing | **cymbal structure** — entry points, hotspots, central packages. Quick overview. |
+| **Core** | new | **Skip** (no codebase to analyze). |
+| **Complete** | existing | **cymbal structure + cymbal impact on key domain files** — blast radius, coupling, risks. |
+| **Complete** | new | **Skip** (no codebase to analyze). |
+
+### Run cymbal (if available)
+
+```bash
+if command -v cymbal &>/dev/null; then
+  echo "CYMBAL_AVAILABLE"
+fi
+```
+
+If cymbal is available AND appetite ≥ Core AND brownfield:
+
+```bash
+# Ensure index is fresh (safe to run multiple times — incremental)
+cymbal index 2>/dev/null
+
+# cymbal requires a git repo — stelow always runs in one
+cymbal structure --json 2>/dev/null > context/cymbal-structure.json
+
+# If Complete, also run impact on key files
+if [ "$APPETITE" = "Complete" ]; then
+  # Find key entry points
+  EP=$(cymbal structure 2>/dev/null | grep "Entry points:" -A5 | grep "function main\|func main" | head -3)
+  echo "$EP" | while read -r line; do
+    FILE=$(echo "$line" | grep -oP '[^\s]+\/[^\s]+\.[a-z]+' | head -1)
+    [ -n "$FILE" ] && cymbal impact "$FILE" 2>/dev/null >> context/cymbal-impact.md
+  done
+fi
+```
+
+### Output
+
+Consolidate into `context/tech-preview.md`:
+
+```markdown
+# Tech Preview
+
+## Codebase Overview
+- Entry points: ...
+- Hotspots: ...
+- Key packages: ...
+
+## Constraints & Opportunities
+- [Constraint] Existing auth pattern must be preserved
+- [Opportunity] Codebase already has event bus — can use for X
+- [Risk] High coupling in module Y
+
+## Tech Highlights (for product)
+- Current stack enables: [...]
+- Current stack limits: [...]
+```
+
+This feeds into `shape:20 — Shaping` as context. The product spec benefits from
+knowing what the codebase already does, what it enables, and what it constrains.
+
+### Cymbal not available? Fallback
+
+If cymbal is not installed:
+- Brownfield: use `find` + `wc -l` for basic size analysis, `git log --oneline` for activity.
+- Greenfield: skip tech preview entirely.
+- Consider installing cymbal for future sessions (see `references/cli-tools/cymbal.md`).
+
 ## shape:15 — Assumption Check
 
 **Before shaping**, surface assumptions that could materially change direction.
@@ -83,6 +181,13 @@ assumptions_resolved:
 ```
 
 ## shape:20 — Shaping
+
+**Read tech preview output (if available):**
+```bash
+TP="context/tech-preview.md"
+[ -f "$TP" ] && echo "TECH_PREVIEW_FOUND" && cat "$TP"
+```
+If tech preview exists, it contains codebase constraints and opportunities that should inform shaping. Incorporate relevant findings into the proposal — especially risks and constraints that affect the IN/OUT scope.
 
 Read the `references/` files to guide the process:
 

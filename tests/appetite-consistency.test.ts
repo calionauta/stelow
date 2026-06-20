@@ -527,14 +527,17 @@ describe('Interface exploration is appetite-scaled', () => {
 describe('shape-up step ordering', () => {
   const content = readSkill('cali-product-shape-up');
 
-  test('shape:10 before shape:15 before shape:20', () => {
-    const idx10 = content.indexOf('shape:10');
-    const idx15 = content.indexOf('shape:15');
-    const idx20 = content.indexOf('shape:20');
+  test('shape:10 before shape:12 before shape:15 before shape:20', () => {
+    const idx10 = content.indexOf('## shape:10');
+    const idx12 = content.indexOf('## shape:12');
+    const idx15 = content.indexOf('## shape:15');
+    const idx20 = content.indexOf('## shape:20');
     expect(idx10).toBeGreaterThan(-1);
+    expect(idx12).toBeGreaterThan(-1); // new Tech Preview step
     expect(idx15).toBeGreaterThan(-1);
     expect(idx20).toBeGreaterThan(-1);
-    expect(idx10).toBeLessThan(idx15);
+    expect(idx10).toBeLessThan(idx12);
+    expect(idx12).toBeLessThan(idx15);
     expect(idx15).toBeLessThan(idx20);
   });
 
