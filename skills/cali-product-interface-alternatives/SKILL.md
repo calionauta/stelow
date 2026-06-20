@@ -27,6 +27,8 @@ The orchestrator reads this file directly when needed.
 ### Standalone
 This skill works standalone. Use the Input Detection section below to tell the skill what interface you want to brainstorm. Follow the instructions inline.
 
+**Standalone awareness:** when inside stelow, reads appetite from `.stelow/*/spec-product.md`. When standalone, defaults to Core appetite (3 interfaces + hybrid). If the spec-product.md is not in the expected path, pass it explicitly or let the LLM scan for `spec-product*.md` in the current directory.
+
 ## Process
 
 **Step 0: Read appetite from `spec-product.md` and choose interface exploration depth.**

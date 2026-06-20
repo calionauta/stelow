@@ -13,6 +13,8 @@ metadata:
 
 # Execution Critique
 
+**Standalone awareness:** when inside stelow, reads scope + mode from `.stelow/*/plans/spec-tech*.md` and `index.json`. When standalone, auto-detects input type (plan path, directory, URL, or nothing). The `HAS_WORKFLOW_DIR` flag gates stelow-specific features; all audit criteria work in both modes.
+
 ## Overview
 
 Run a structured audit after any implementation — whether it followed the full

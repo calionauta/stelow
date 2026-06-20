@@ -226,6 +226,18 @@ else
 fi
 ```
 
+**If both SPEC_PRODUCT and SPEC_TECH are empty (standalone + no spec files found):**
+Prompt the user for paths or skip the alignment check.
+
+```
+ask tool: {question: "No spec files found. Provide paths to spec-product.md and spec-tech.md, or skip alignment check?", options: [
+  {label: "Skip alignment check", description: "Proceed without bidirectional validation. Tech planning output is final."},
+  {label: "Provide paths", description: "Specify paths to spec-product.md and spec-tech.md for alignment check."}
+]}
+```
+
+If skipped, log: `context/alignment-skipped.md` with reason.
+
 **LLM compares spec-tech against spec-product. Classify as:**
 
 | Classification | Meaning |
@@ -281,15 +293,17 @@ What do you want to do?`,
 5. Proceed with planning:20
 
 **If user chooses "Reshape required":**
-1. Log the blocking constraint to `context/blocking-constraints.md`
-2. Save checkpoint at planning:15 with `reshape_requested: true` and `constraints_ref: context/blocking-constraints.md`
-3. **Pause workflow.** The orchestrator must reset to shape stage. Run:
-   ```bash
-   # Update stelow.json: reset currentPhase to shape index (4), mark planning as skipped
-   # The next /sw-next will resume from shape with tech constraints as context
+1. Log the blocking constraint to `context/blocking-constraints.md` — this file is consumed by `shape:10` on the next cycle.
+2. Save checkpoint at planning:15 with `reshape_requested: true` and `constraints_ref: context/blocking-constraints.md`.
+3. Reset phase via existing command:
    ```
-4. Inform user: "Tech planning found a blocking constraint. The workflow has been reset to the Shape stage. Use `/sw-next` to reshape the proposal with these tech constraints as input."
-5. ⚠️ **Limitation:** This reset is manual — the orchestrator does not auto-loop back. The user must run `/sw-next` to re-enter shape. Future improvement: auto-loop via `/sw-reshape` command.
+   /sw-setphase phasename=Shape
+   ```
+   This reuses the existing `/sw-setphase` mechanism — no new command needed.
+   The `currentPhase` in stelow.json resets to Shape (index 4) and planning stage is reopened.
+4. Inform user: "Blocking constraint saved to `context/blocking-constraints.md`. The workflow has been reset to the Shape stage. `/sw-next` will resume shaping with these tech constraints as input."
+
+**On next shape cycle:** `shape:10` checks for `context/blocking-constraints.md` automatically. If found, constraints are read and the file is removed to prevent stale context.
 
 **If user chooses "Ignore":**
 1. Log the warning to `context/deferred-constraints.md`

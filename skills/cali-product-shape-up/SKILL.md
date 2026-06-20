@@ -39,6 +39,16 @@ Use the subagents tool (see `references/cli-tools/subagents.md`) in parallel for
 2. Map technical risks → context/risks.md
 ```
 
+**Check for reshape context** (from planning:15 Alignment Check):
+```bash
+BC="context/blocking-constraints.md"
+if [ -f "$BC" ]; then
+  echo "RESHAPE_CONTEXT_FOUND"
+  cat "$BC"
+fi
+```
+If blocking constraints exist from a previous tech planning cycle, read them BEFORE shaping — the new proposal must address these constraints. After reading, remove the file to prevent stale context in future cycles.
+
 Read the outputs before proceeding.
 
 ## shape:12 — Tech Preview (appetite-gated)

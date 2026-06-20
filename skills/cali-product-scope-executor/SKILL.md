@@ -38,6 +38,8 @@ The plan must contain scopes with type annotations:
 
 If the plan has the optional **"Execution routing"** section (from stelow), use it directly. Otherwise, infer routing from `[TYPE]` tags.
 
+**Standalone awareness:** when inside stelow, reads appetite from `.stelow/*/plans/spec-product*.md` and checks mode in `index.json`. When standalone, defaults to Core appetite + Full Product mode. Scans current directory for `spec-tech*.md` files. The `[TYPE]` routing works identically in both modes — no stelow dependency for scope execution logic.
+
 ---
 
 ## Role

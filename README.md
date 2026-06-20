@@ -88,7 +88,7 @@ And the workflow begins asking questions, exploring scope, shaping the proposal,
 - ✅ **Interface exploration in ASCII art** - visualize 5 different approaches in seconds, no coding wasted, then LLM creates a hybrid version combining the best points for the context
 - ✅ **Domain libraries** - auto-detects 8 product domains (Pricing, Trust, Ads, etc.) from your language
 - ✅ **Technical scope mapping** - breaks down into typed scopes, maps dependencies, sequences execution
-- ✅ **AI-aware testing strategy** - for software products, with coverage targets and CI gates
+- ✅ **AI-aware testing strategy** - for software products, with coverage targets, CI gates, and contextual evaluation of mutation testing for critical paths
 - ✅ **Greenfield & Brownfield** - works for new products and existing product evolution
 
 **Key Features:**
@@ -279,7 +279,7 @@ All 25 skills are flat in `skills/` directory, ready for `~/.agents/skills/`. Th
 | `cali-product-codebase-critique` | Codebase structural critique (architecture, performance, AI slop) |
 | `cali-product-ux-critique` | Full UX/UI audit (accessibility, Nielsen heuristics, personas, AI slop) |
 | `cali-product-tech-planning` | Technical scope generation + **Alignment Check** (mode-gated bidirectional product↔tech feedback loop) |
-| `cali-product-testing-ai-code` | AI-aware testing strategy |
+| `cali-product-testing-ai-code` | AI-aware testing strategy with contextual mutation testing evaluation |
 | `cali-product-testing-execution` | Post-implementation testing protocol |
 | `cali-product-scope-executor` | Autonomous scope execution via acceptance contracts - child self-corrects (harness-dependent), parent evaluates final result |
 | `cali-product-execution-critique` | Post-execution audit - classifies gaps as FIXED/DOCUMENTED/ESCALATED; ESCALATED gaps become new scopes |

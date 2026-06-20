@@ -21,6 +21,8 @@ metadata:
 > - CodeRabbit 2025: AI code has 1.7x more bugs than human code
 > - CoderEval (2023): 43.1% of AI code is less robust
 
+**Standalone awareness:** when inside stelow, triggered automatically by `product_type` in spec-product.md frontmatter. When standalone, invoke directly with a spec-product.md path. Appetite defaults to Core if not found — documented in output. All test-breadth tables and quality baselines work identically in both modes.
+
 ## Activation
 
 - **Trigger:** `product_type: software` or `product_type: hybrid` in spec-product.md frontmatter
