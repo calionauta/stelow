@@ -39,6 +39,14 @@ npm run typecheck        # Type check
 - **Stage headings:** must use `slug:major.minor` format — see [docs/agents-md-refs/stage-numbering.md](docs/agents-md-refs/stage-numbering.md) for the gap-based numbering rules.
 - **Tool calls in stage files:** never call `ask_user_question`, `subagent`, or `start_supervision` directly. Use the CLI-agnostic reference in `references/cli-tools/{tool}.md` — see [docs/agents-md-refs/tool-reference-pattern.md](docs/agents-md-refs/tool-reference-pattern.md).
 
+## Versioning
+
+- **Single source:** `package.json` → `npm run version:sync` syncs plugin files.
+- **Bump before release:** `npm version <major.minor.patch> --no-git-tag-version`, then `npm run version:sync`.
+- **Tag matches package.json:** `git tag -a v$(node -p "require('./package.json').version") -m "msg"`. Never guess the version.
+- **CHANGELOG** updated in same commit as version bump.
+- **α (alpha) suffix:** keep `-alpha` suffix on non-stable releases. Drop suffix only for stable.
+
 ## Don'ts
 
 - Do NOT use `npm install` in CI — use `npm ci` with committed `package-lock.json`
@@ -46,6 +54,7 @@ npm run typecheck        # Type check
 - Do NOT use `require()` — this is ESM (`"type": "module"`)
 - Do NOT add dependencies without asking
 - Do NOT put secrets in AGENTS.md
+- Do NOT guess version numbers — always read `package.json` first
 
 ## Detailed references
 

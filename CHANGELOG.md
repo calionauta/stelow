@@ -2,6 +2,25 @@
 
 All notable changes to `@renatocaliari/stelow` will be documented in this file.
 
+## [0.30.0-alpha] - 2026-06-20
+
+### Added
+- **Standalone awareness** — 9 skills now document fallback behavior when used outside stelow orchestrator.
+- **Tech Preview** (`shape:12`) — appetite-gated codebase recon via cymbal before shaping product spec.
+- **Alignment Check** (`planning:15`) — mode-gated bidirectional feedback between spec-tech and spec-product.
+- **Reshape cycle** — blocking tech constraints trigger `/sw-setphase phasename=Shape` + `blocking-constraints.md` handoff.
+- **cymbal reference doc** — installation, commands, and fallback for codebase navigation.
+
+### Changed
+- **Appetite × Mode matrix**: 23/23 combinations covered (shape:12 3/3, planning:15 15/15, reshape 5/5).
+- **README**: zero internal stage code references in user-facing documentation.
+- **Versioning process** documented in AGENTS.md: `npm version <major.minor.patch>` then `npm run version:sync`.
+
+### Verified
+- `npm run build`
+- `npm run typecheck`
+- `npm test`
+
 ## [0.29.0-alpha] - 2026-06-19
 
 ### Breaking Changes
