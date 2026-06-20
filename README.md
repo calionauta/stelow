@@ -219,15 +219,20 @@ The workflow has **3 conceptual phases** (15 stages total), from idea triage to 
 
 Traditional planning is linear: product spec → tech spec. stelow adds **two feedback loops** that let tech constraints and opportunities inform product decisions *before* execution:
 
-- **Tech Preview** — Before shaping the product spec, a lightweight codebase analysis runs (via [cymbal](https://github.com/1broseidon/cymbal), when available) to surface existing architecture, entry points, hotspots, and constraints. This prevents shaping features that conflict with the codebase reality. Depth is appetite-gated: Core → structure overview, Complete → impact analysis. Skipped on Lean or greenfield.
+- **Tech Preview** — Before shaping the product spec, a lightweight codebase analysis runs (via [cymbal](https://github.com/1broseidon/cymbal), when available) to surface existing architecture, entry points, hotspots, and constraints. This prevents shaping features that conflict with the codebase reality. Depth is appetite-gated. Additionally searches existing features by workflow name/topic to avoid duplicating or conflicting with what already exists.
+
+- **Codebase Feature Recon** — Before tech planning generates typed scopes, a deeper cymbal investigation runs: searches for related modules, maps references (who connects to what), and analyzes impact (what breaks if changed). Depth varies by appetite — see table below.
 
 - **Alignment Check** — After tech planning generates typed scopes, a bidirectional check compares the tech plan against the product spec. If tech reveals constraints that change the product scope, the LLM classifies alignment and acts per Mode: Auto/Light auto-updates the product spec; Moderate/Full asks the user. This catches "tech discovered too late" before any code is written.
 
-| Appetite | Tech Preview depth | Alignment Check depth |
-|----------|-------------------|----------------------|
-| **Lean** | Skip | Quick feasibility check |
-| **Core** | Structure overview (entry points, hotspots) | Standard IN/OUT vs feasibility |
-| **Complete** | Structure + impact analysis (blast radius) | Deep: each scope's ACs vs codebase |
+| Appetite | Tech Preview (shaping) | Codebase Feature Recon (planning) | Alignment Check |
+|----------|----------------------|-----------------------------------|----------------|
+| **Lean** | `cymbal search --text` by workflow name | `cymbal search --text` — verify existence | Quick feasibility |
+| **Core** | Structure overview (entry points, hotspots) + feature search | `search` + `cymbal refs` — find connections | Standard IN/OUT vs feasibility |
+| **Complete** | Structure + impact analysis (blast radius) + feature search | `search` + `refs` + `cymbal impact` — blast radius | Deep: each scope's ACs vs codebase |
+
+Greenfield skips all codebase analysis (no code to inspect).
+If cymbal is not installed, falls back to `find` + `git log` — no cross-references or impact data.
 
 | Mode | Alignment Check behavior |
 |------|------------------------|

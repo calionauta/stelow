@@ -142,6 +142,67 @@ Delegate to a planner subagent (see `references/cli-tools/subagents.md`):
 - Output: `.stelow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_{v}.md`
 - Input: `.stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md`
 
+#### planning:10.5 — Codebase Feature Recon (brownfield only)
+
+**Before generating scopes**, investigate existing features the new
+scope must integrate with or might duplicate. Depth varies by appetite:
+- Lean: `cymbal search --text` — "does it exist?"
+- Core: `search` + `cymbal refs` — where is it, who connects
+- Complete: `search` + `refs` + `cymbal impact` — blast radius
+
+```bash
+# Detect brownfield
+if [ ! -f "go.mod" ] && [ ! -f "package.json" ] && \
+   [ ! -f "Cargo.toml" ] && [ ! -f "requirements.txt" ] && \
+   [ ! -f "pyproject.toml" ] && [ ! -f "Gemfile" ]; then
+  echo "Greenfield — skipping Codebase Feature Recon"
+  exit 0
+fi
+
+# Read appetite from workflow config
+APPETITE=$(grep -oP '"appetite":\s*"([^"]+)"' .stelow/*/*/index.json 2>/dev/null | head -1 | grep -oP '"[^"]+"$' | tr -d '"' || echo "Core")
+
+# Read spec-product for IN scope concepts
+SPEC_PRODUCT=$(ls .stelow/*/*/plans/spec-product*.md 2>/dev/null | head -1)
+
+if [ -n "$SPEC_PRODUCT" ]; then
+  # Extract key concepts from IN scope
+  IN_SCOPES=$(grep -A30 '## IN scope' "$SPEC_PRODUCT" 2>/dev/null | head -30)
+  
+  # 1. Search each concept (RUNS ON ANY APPETITE)
+  echo "$IN_SCOPES" | while read -r line; do
+    [ -n "$line" ] && cymbal search --text "$line" 2>/dev/null | head -10 >> context/feature-locations.md
+  done
+  
+  # 2. Search by workflow name (RUNS ON ANY APPETITE)
+  cymbal search --text "$(grep -oP '"name":\s*"([^"]+)"' .stelow/*/*/index.json 2>/dev/null | head -1 | grep -oP '"[^"]+"$' | tr -d '"')" 2>/dev/null | head -20 >> context/feature-locations.md
+  
+  # 3. refs — CORE and COMPLETE only
+  if [ "$APPETITE" = "Core" ] || [ "$APPETITE" = "Complete" ]; then
+    for symbol in $(head -20 context/feature-locations.md | grep -oP '\b[A-Z][a-zA-Z]+\b' | sort -u | head -10); do
+      cymbal refs "$symbol" 2>/dev/null >> context/feature-refs.md
+    done
+  fi
+  
+  # 4. impact — COMPLETE only
+  if [ "$APPETITE" = "Complete" ]; then
+    for module in $(cat context/feature-locations.md | grep -oP '^[^:]+?\.(go|ts|rs|py|js)' | sort -u | head -10); do
+      cymbal impact "$module" 2>/dev/null >> context/feature-impact.md
+    done
+  fi
+fi
+```
+
+**Output:** `context/feature-locations.md` (always), `context/feature-refs.md`
+(Core+Complete), `context/feature-impact.md` (Complete).
+
+**How the planner subagent uses it:** reads these files before generating scopes.
+- "Module `pricing.go` already implements similar logic — reuse instead of recreating"
+- "Feature `checkout` connects to `payment.go` and `inventory.go` — new scope must respect existing interfaces"
+- "Business rule `max_items` in `cart.go` conflicts with scope 3 proposal"
+
+Fallback: if cymbal is unavailable, skip silently.
+
 #### planning:10.10 — Output Validation Guard
 
 After the subagent writes spec-tech.md, validate every scope has required fields:

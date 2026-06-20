@@ -115,6 +115,16 @@ if [ "$APPETITE" = "Complete" ]; then
     [ -n "$FILE" ] && cymbal impact "$FILE" 2>/dev/null >> context/cymbal-impact.md
   done
 fi
+
+# Search existing features by workflow name/topic
+# Runs on any appetite (depth = search only, no refs/impact)
+# Finds existing features that could conflict or be reused
+WF_NAME=$(grep -oP '"name":\s*"([^"]+)"' .stelow/*/*/index.json 2>/dev/null | head -1 | grep -oP '"[^"]+"$' | tr -d '"')
+if [ -n "$WF_NAME" ] && [ "$WF_NAME" != "null" ]; then
+  for keyword in $WF_NAME; do
+    [ ${#keyword} -gt 3 ] && cymbal search --text "$keyword" 2>/dev/null | head -10 >> context/existing-features.md
+  done
+fi
 ```
 
 ### Output
@@ -192,12 +202,16 @@ assumptions_resolved:
 
 ## shape:20 — Shaping
 
-**Read tech preview output (if available):**
+**Read tech preview output + existing features (if available):**
 ```bash
 TP="context/tech-preview.md"
 [ -f "$TP" ] && echo "TECH_PREVIEW_FOUND" && cat "$TP"
+
+EF="context/existing-features.md"
+[ -f "$EF" ] && echo "EXISTING_FEATURES_FOUND" && cat "$EF"
 ```
-If tech preview exists, it contains codebase constraints and opportunities that should inform shaping. Incorporate relevant findings into the proposal — especially risks and constraints that affect the IN/OUT scope.
+If tech preview exists, it contains codebase constraints and opportunities that should inform shaping.
+If existing features found, they show similar code already in the codebase — avoid duplicating or conflicting. Incorporate relevant findings into the proposal — especially risks and constraints that affect the IN/OUT scope.
 
 Read the `references/` files to guide the process:
 
