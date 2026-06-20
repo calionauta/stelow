@@ -596,7 +596,7 @@ This project distributes **exclusively via GitHub** - no npm publishing. This is
 
 **[Cali (Renato Caliari)](https://www.linkedin.com/in/calirenato82/)**
 
-This workflow wasn't designed in a vacuum. It comes from years inside real teams - as a product manager, consultant, and leader across different organizations. The skills, patterns, and disciplines here were tested, broken, and rebuilt in live product environments, not conference rooms.
+This workflow wasn't designed in a vacuum. It comes from years inside real teams — as a developer, product manager, consultant, and leader across different organizations. The skills, patterns, and disciplines here were tested, broken, and rebuilt in live product environments and real codebases, not conference rooms.
 
 ### 📚 Published Work
 
@@ -605,6 +605,7 @@ This workflow wasn't designed in a vacuum. It comes from years inside real teams
 
 ### 💼 Experience
 
+- Former **Developer** — built products across the full stack before moving into product
 - Former **Product Manager** at tech companies
 - **Product Consultant** helping leaders with strategy and teams with processes
 - Creator of **Triple Track Agile** - adds an opportunity mapping track to product cycles
