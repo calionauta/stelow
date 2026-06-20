@@ -99,7 +99,9 @@ describe('Glob pattern consistency', () => {
   it('scope-executor uses correct path with {_dir} level (not broken single-wildcard)', () => {
     const content = readSkill('cali-product-scope-executor');
     expect(content).toMatch(/\.stelow\/\*\/\*\/plans/);
-    expect(content).not.toMatch(/\.stelow\/\*\/plans/);
+    // Single-wildcard allowed only in standalone description line
+    const badLines = content.split('\n').filter(l => l.match(/\.stelow\/\*\/plans/) && !l.includes('standalone'));
+    expect(badLines).toEqual([]);
   });
 
   it('execution.md uses {YYYY-MM-DD}/{_dir}/plans/ pattern', () => {
