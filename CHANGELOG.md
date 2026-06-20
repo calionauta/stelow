@@ -2,6 +2,25 @@
 
 All notable changes to `@renatocaliari/stelow` will be documented in this file.
 
+## [0.31.0-alpha] - 2026-06-20
+
+### Added
+- **Execution Loop Protocol** — deterministic checkpointed iteration loop for feature scopes.
+  - `checkpoint.ts`: `ExecutionCheckpoint` type + `JsonFileStore` wrapper for scope execution state.
+  - `verify-runner.ts`: async `runVerifyCommands()` with 120s timeout, captures stdout+stderr.
+  - `event-logger.ts`: append-only JSONL audit trail for scope execution events.
+  - `index.ts` (adapter.onTurnEnd): detects `waiting_verify` checkpoints, runs verify commands,
+    updates status to completed/escalated/in_progress, notifies LLM via adapter.
+  - `execution-loop.md`: full protocol documentation (Layer 1 generic + Layer 2 extension).
+  - Agent-agnostic: Layer 1 works on any agent (Pi, OpenCode, Claude Code, Codex, generic).
+    Layer 2 (auto-verify) integrates via the Pi adapter's turn_end hook.
+  - Zero new dependencies — only node:fs, node:child_process, node:path.
+
+### Verified
+- `npm run build`
+- `npm run typecheck`
+- `npm test` (720 passing, 21 files)
+
 ## [0.30.0-alpha] - 2026-06-20
 
 ### Added

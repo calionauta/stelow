@@ -34,6 +34,15 @@ import {
   createEventDispatcher,
 } from "./adapters";
 
+// Execution loop imports
+import {
+  getCheckpointStore,
+  getExecutionDir,
+  listScopeDirs,
+} from "./modules/checkpoint";
+import { runVerifyCommands } from "./modules/verify-runner";
+import { appendEvent } from "./modules/event-logger";
+
 // ── Re-export CLI Adapter for external use ─────────────────────────
 
 export {
@@ -387,7 +396,7 @@ export default function (pi: ExtensionAPI) {
   });
   
   // Register a handler for turn end events via the adapter
-  adapter.onTurnEnd(({ cwd }: { cwd: string }) => {
+  adapter.onTurnEnd(async ({ cwd }: { cwd: string }) => {
     // Phase change detection can be done here
     const wd = resolveProjectDir(cwd);
     const tracking = readTracking(wd);
@@ -397,6 +406,115 @@ export default function (pi: ExtensionAPI) {
     if (current && current.currentPhase !== wf.currentPhase) {
       // Phase changed - could dispatch notification
       console.log(`[stelow] Phase change: ${wf.currentPhase} -> ${current.currentPhase}`);
+    }
+
+    // ── Execution loop: check for scopes waiting verify ────────────
+    // Only runs during Execution phase (phase 12)
+    const executionPhase = PHASE_NAMES.indexOf("Execution");
+    // Use the workflow's currentPhase — wf is already loaded above
+    if (wf.currentPhase !== executionPhase) return;
+
+    try {
+      const execDir = getExecutionDir(wd);
+      if (!existsSync(execDir)) return;
+
+      for (const scopeId of listScopeDirs(execDir)) {
+        const store = getCheckpointStore(execDir, scopeId);
+        const cp = store.read();
+        if (!cp || cp.status !== "waiting_verify") continue;
+
+        console.log(`[stelow] Execution verify: ${scopeId} (iter ${cp.iteration + 1}/${cp.maxIterations})`);
+
+        // Guard: verifyCommands must be a non-empty array
+        if (!Array.isArray(cp.verifyCommands) || cp.verifyCommands.length === 0) {
+          console.warn(`[stelow] Scope ${scopeId} has no verifyCommands — marking completed`);
+          cp.status = "completed";
+          cp.updatedAt = new Date().toISOString();
+          store.write(cp);
+          appendEvent(join(execDir, scopeId, "events.jsonl"), {
+            ts: new Date().toISOString(),
+            type: "completed",
+            scopeId,
+            iteration: cp.iteration,
+            passed: true,
+            summary: "No verify commands — auto-completed",
+          });
+          adapter.showNotification(`✅ Scope ${scopeId}: completed (no verify commands)`, "success");
+          continue;
+        }
+
+        // Run verify commands (async with timeout)
+        cp.verifyResults = await runVerifyCommands(cp.verifyCommands);
+        cp.lastStep = "verify";
+
+        const allPassed = cp.verifyResults.every(r => r.passed);
+        const eventsPath = join(execDir, scopeId, "events.jsonl");
+
+        if (allPassed) {
+          // ── Completed ──────────────────────────────────────────
+          cp.status = "completed";
+          cp.updatedAt = new Date().toISOString();
+          store.write(cp);
+
+          appendEvent(eventsPath, {
+            ts: new Date().toISOString(),
+            type: "completed",
+            scopeId,
+            iteration: cp.iteration,
+            passed: true,
+            summary: "All verify commands passed",
+          });
+
+          console.log(`[stelow] ✅ Scope ${scopeId} completed`);
+          adapter.showNotification(`✅ Scope ${scopeId}: verify passed. All commands OK.`, "success");
+
+        } else if (cp.iteration >= cp.maxIterations - 1) {
+          // ── Escalated (max iterations reached) ────────────────
+          cp.status = "escalated";
+          cp.updatedAt = new Date().toISOString();
+          store.write(cp);
+
+          appendEvent(eventsPath, {
+            ts: new Date().toISOString(),
+            type: "escalated",
+            scopeId,
+            iteration: cp.iteration,
+            passed: false,
+            summary: `Max iterations (${cp.maxIterations}) reached without passing verify`,
+          });
+
+          const failList = cp.verifyResults.filter(r => !r.passed).map(r => r.command).join(", ");
+          console.log(`[stelow] ⚠️ Scope ${scopeId} escalated after ${cp.iteration + 1} iterations`);
+          adapter.showNotification(`⚠️ Scope ${scopeId}: escalated after ${cp.iteration + 1} iterations. Failing: ${failList}`, "warning");
+
+        } else {
+          // ── Failed — advance iteration, re-delegate ────────────
+          cp.iteration++;
+          cp.status = "in_progress";
+          cp.lastStep = "delegate";
+
+          const failures = cp.verifyResults.filter(r => !r.passed);
+          const failSummary = failures.map(f => `${f.command}: ${f.output.slice(0, 120)}`).join("; ");
+          cp.feedbackLog.push(`Iteration ${cp.iteration}: verify failed — ${failSummary}`);
+          cp.updatedAt = new Date().toISOString();
+          store.write(cp);
+
+          appendEvent(eventsPath, {
+            ts: new Date().toISOString(),
+            type: "verify",
+            scopeId,
+            iteration: cp.iteration,
+            passed: false,
+            summary: failSummary,
+          });
+
+          console.log(`[stelow] 🔄 Scope ${scopeId} iter ${cp.iteration}: verify failed, re-delegating`);
+          adapter.showNotification(`🔄 Scope ${scopeId} iteration ${cp.iteration}: verify failed. Re-delegate with feedback.`, "info");
+        }
+      }
+    } catch (err) {
+      // Isolated: never let execution loop errors break the turn_end handler
+      console.error("[stelow] Execution loop error:", err instanceof Error ? err.message : err);
     }
   });
 }
