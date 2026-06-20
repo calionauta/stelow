@@ -158,7 +158,7 @@ generated_by: "{model_name}"
 
 > **Who sets appetite:** The human in the setup stage, using two independent choices: Appetite (depth) + Mode (interaction level). Mode is stored separately in `index.json` and controls gates/questions/approvals.
 
-> **`appetite_fit`** is assessed by a fresh-context subagent after shaping (see `cali-product-shape-up` SKILL.md — appetite_fit Validation section). The same LLM that shaped the proposal has anchoring bias; independent review is stronger.
+> **`appetite_fit`** is validated by the Plan Critique's fresh-context feasibility reviewer (see `cali-product-plan-critique` checklists — Scope Fit dimension). The Shape Up stage writes a preliminary value based on a mechanical check (scope count, spec size). The Plan Critique evaluates it properly using the existing 5-reviewer infrastructure.
 >
 > | Value | Meaning |
 > |-------|---------|

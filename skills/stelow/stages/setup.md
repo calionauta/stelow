@@ -365,8 +365,7 @@ appetite: {chosen_appetite}
 appetite_source: setup
 ```
 The Shape Up validation guard will reject the file if `appetite:` is missing.
-A fresh-context subagent then assesses `appetite_fit` after shaping (see `cali-product-shape-up` SKILL.md — appetite_fit Validation section) — does the shaped proposal fit
-within the declared appetite? If not (cuts_needed or reshape), the scope must be
+The Shape Up stage runs a preliminary mechanical check (scope count, spec size) and writes `appetite_fit`. The **Plan Critique** stage validates it via its fresh-context feasibility reviewer — this reuses the existing 5-reviewer infrastructure. If the critique finds `cuts_needed` or `reshape`, the scope must be
 cut or reshaped. Appetite is a constraint, not a target — never extended.
 
 > **Rules:**

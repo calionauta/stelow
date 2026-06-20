@@ -229,6 +229,13 @@ Verify the proposal is technically achievable.
 - [ ] Resources are available
 - [ ] Timeline is realistic
 
+### Scope Fit (appetite_fit):
+- [ ] Scope count matches declared appetite: Lean ≤ 2, Core ≤ 5, Complete ≤ 15
+- [ ] Spec depth matches appetite (spec size, edge case coverage)
+- [ ] Interface exploration depth matches appetite (1/3/5 proposals)
+- [ ] If appetite ≠ fits, specific cuts identified or reshape recommended
+- [ ] Appetite boundary is not extended — cuts are proposed instead
+
 ---
 
 ## 7. Checklist: Compositional Quality (Purpose-Layout Alignment)

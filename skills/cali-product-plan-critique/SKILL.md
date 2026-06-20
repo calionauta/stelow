@@ -38,7 +38,7 @@ This skill runs 7 specialized checklists against product plans:
 | 📊 **Data** | Validation, defaults, null handling, persistence |
 | 🔧 **System** | API contracts, timeouts, retry, fallback, offline |
 | 📐 **Compositional Quality** | Work-pattern alignment, purpose-layout match, density strategy |
-| ⚖️ **Feasibility** | Architecture, stack, security, effort estimation |
+| ⚖️ **Feasibility** | Architecture, stack, security, effort estimation, **scope fit (appetite_fit)** |
 
 **Golden rule:** Every gap becomes a **specific, actionable question** —
 never a vague criticism. The goal is to unblock the implementation team, not delay them.

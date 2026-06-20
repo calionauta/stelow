@@ -147,40 +147,36 @@ if [ "$VALID" = false ]; then
 fi
 ```
 
-### appetite_fit Validation — Fresh-Context Reviewer
+### appetite_fit — Preliminary Mechanical Check
 
-The validation guard above checks the field exists, but the **actual assessment** should not be self-assessed by the shaping LLM — anchoring bias makes self-assessment unreliable. Delegate to a fresh-context reviewer:
+After the validation guard above, run a quick mechanical check on scope size:
 
 ```bash
-subagent({
-  agent: "reviewer",
-  task: `Read the shaped proposal at ${SPEC}.
-  Human-declared appetite (from spec frontmatter): {appetite}.
-  Does the shaped proposal fit within this appetite?
-  Check against appetite definitions in ../references/proposal-structure.md.
+SCOPE_COUNT=$(grep -c '^### ' "$SPEC")
+SPEC_LINES=$(wc -l < "$SPEC")
 
-  Return exactly one word: fits | cuts_needed | reshape
-
-  If cuts_needed: also list 2-3 specific cuts the LLM should make.
-  If reshape: explain why it fundamentally exceeds appetite.`,
-  context: "fresh",
-  output: "appetite_fit_report.md"
-})
+case "$APPETITE" in
+  Lean)
+    [ "$SCOPE_COUNT" -gt 2 ] && echo "APPETITE_WARN: Lean appetite but $SCOPE_COUNT scopes (>2). Consider consolidating."
+    [ "$SPEC_LINES" -gt 150 ] && echo "APPETITE_WARN: Lean spec >150 lines. Consider trimming."
+    ;;
+  Core)
+    [ "$SCOPE_COUNT" -gt 5 ] && echo "APPETITE_WARN: Core appetite but $SCOPE_COUNT scopes (>5). Consider reducing."
+    [ "$SPEC_LINES" -gt 350 ] && echo "APPETITE_WARN: Core spec >350 lines. Consider tightening."
+    ;;
+  Complete)
+    # No mechanical limits for Complete — appetite_fit evaluated by Plan Critique
+    ;;
+esac
 ```
 
-**If `reshape`:** block execution and prompt the user: "The proposal fundamentally exceeds the declared appetite (Lean/Core/Complete). The reviewer recommends reshaping before proceeding."
+If warnings fire, flag them in the output but do NOT block — the **Plan Critique** stage validates `appetite_fit` via its fresh-context feasibility reviewer (see `cali-product-plan-critique` checklists). The critique's gap resolution (mode-dependent) handles `cuts_needed` and `reshape`. This aligns `appetite_fit` with the existing evaluation infrastructure instead of adding a dedicated subagent.
 
-**If `cuts_needed`:** apply the suggested cuts to the spec, then update `appetite_fit:` to `fits` and `appetite_cuts:` to document what was cut.
-
-**If `fits`:** proceed.
-
-> **Rationale:** The rest of the workflow uses fresh-context reviewers for every evaluation (plan critique, codebase critique, UX critique, code review). `appetite_fit` was the only self-assessment. This step aligns it with the architectural pattern.
-
-
+The `appetite_fit` field in the spec frontmatter is the **human-readable summary**; the Plan Critique validates it.
 >
 > **Appetite é constraint, não estimativa:**
 > - `appetite` — definido pelo **humano** no setup stage. Quanto investimento esse problema merece? (orçamento, não estimativa)
-> - `appetite_fit` — definido por **subagent fresh-context** pós-shaping. O proposal cabe dentro do appetite declarado?
+> - `appetite_fit` — checagem mecânica inicial no Shape Up, validada pelo Plan Critique (feasibility reviewer fresh-context) pós-shaping. O proposal cabe dentro do appetite declarado?
 >
 > **Se `appetite_fit = cuts_needed`:** a LLM sugere cortes específicos. O humano decide quais aceitar.
 > **Se `appetite_fit = reshape`:** o proposal não cabe de forma alguma — precisa ser remodelado.
