@@ -33,7 +33,7 @@ In those situations, return to shape-up-planning or invoke interface-alternative
 
 | Context | Description | Testing Strategy Adaptation |
 |---------|-------------|----------------------------|
-| **Greenfield** | New product, no existing code | TDD-first, full mutation testing, no legacy constraints |
+| **Greenfield** | New product, no existing code | TDD-first, risk-based coverage, no legacy constraints |
 | **Brownfield** | Existing product, existing code/features | Test-after for features, TDD for critical paths, regression focus |
 | **Hybrid** | Adding features to existing product | Separate new from existing, protect invariants |
 
@@ -42,7 +42,7 @@ In those situations, return to shape-up-planning or invoke interface-alternative
 When evolving an existing product:
 
 1. **Existing tests?** → Adapt strategy based on current test coverage
-   - High coverage: Focus on regression + mutation testing
+   - High coverage: Focus on regression + characterization tests
    - Low coverage: Prioritize characterization tests + test coverage
    - No tests: Start with test-after, build momentum for TDD
 
@@ -62,7 +62,7 @@ When building a new product:
 
 1. **No legacy constraints** → Full TDD adoption possible
    - TDD for critical business logic (recommended)
-   - Mutation testing from day one
+   - Risk-based coverage from day one
    - Clean architecture, no technical debt
 
 2. **Maximum flexibility** → Choose best patterns
@@ -82,14 +82,14 @@ Use the ask tool (see `references/cli-tools/structured-question.md`):
 ```
 ask tool: "Is this a new product or an evolution of an existing one?"
 Options:
-  - Greenfield — New product: Full TDD + mutation testing. No legacy constraints.
+  - Greenfield — New product: Full TDD + risk-based coverage. No legacy constraints.
   - Brownfield — Existing product: Focus on regression + characterization tests.
   - Hybrid — Feature addition: Protect invariants, test new carefully.
 ```})
 ```
 
 **Based on answer:**
-- `greenfield`: Full TDD recommendation, aggressive mutation targets
+- `greenfield`: Full TDD recommendation, risk-based coverage targets
 - `brownfield`: TDD for critical paths only, test-after + regression for existing code
 - `hybrid`: Separate scope for new vs existing, protect existing with regression tests
 

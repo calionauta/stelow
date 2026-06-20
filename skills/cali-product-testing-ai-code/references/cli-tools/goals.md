@@ -16,7 +16,7 @@ No separate extensions needed — pi-subagents acceptance handles it all.
 | \`feature\` | worker + iteration loop (see scope-executor Step 3) |
 | \`spike\` | scout + researcher (see subagents.md) |
 | `optimization` | subagent + acceptance with **benchmark verify** commands (see Optimization Goals below) |
-| `test-*` | subagent + acceptance with mutation/security gates |
+| `test-*` | subagent + acceptance with testing/security gates |
 
 ---
 
@@ -138,7 +138,7 @@ subagent({
 ### Self-contained optimization agent
 
 The pattern above can be packaged as a project agent (`optimizer`) that runs the
-full mutate → measure → compare loop autonomously. It accepts the objective,
+full try → measure → compare loop autonomously. It accepts the objective,
 metric command, and stopping condition as task parameters.
 
 ---
@@ -161,7 +161,7 @@ metric command, and stopping condition as task parameters.
 | `feature` | New functionality | worker + iteration loop (see scope-executor Step 3) |
 | `optimization` | Measurable metric improvement | subagent + acceptance (benchmark verify + iteration loop) |
 | `spike` | Research/prototype | subagent + acceptance |
-| `test-unit` | Unit tests with mutation validation | subagent + acceptance + testing gates |
+| `test-unit` | Unit tests with coverage/risk gates | subagent + acceptance + testing gates |
 | `test-integration` | Integration tests with real dependencies | subagent + acceptance + testing gates |
 | `test-security` | SAST and security gates | subagent + acceptance + testing gates |
 | `test-behavior` | Behavioral testing for agent workflows | subagent + acceptance + testing gates |
@@ -193,16 +193,16 @@ DoD: login flow works with valid credentials, rejects invalid`,
 subagent({
   agent: "worker",
   task: `Scope: test-unit-login
-Objective: Generate unit tests with mutation validation
-DoD: mutation_score >= 70%`,
+Objective: Generate unit tests for critical paths
+DoD: critical-path tests cover happy path and negative cases`,
   acceptance: {
     criteria: [
-      { id: "TG-1", must: "Mutation score >= 70% (critical) or 50% (standard)", severity: "required" },
+      { id: "TG-1", must: "Critical-path tests cover happy path and negative cases", severity: "required" },
       { id: "TG-2", must: "Security findings == 0 on critical paths", severity: "required" }
     ],
     evidence: ["changed-files", "tests-added", "commands-run", "validation-output"],
     verify: [
-      { id: "mutation", command: "stryker run" },
+      { id: "tests", command: "npm test" },
       { id: "security", command: "gosec ./..." }
     ]
   }
@@ -215,7 +215,7 @@ DoD: mutation_score >= 70%`,
 
 | Gate | Condition | Action |
 |------|-----------|--------|
-| Mutation Score | < target | 🔴 BLOCK |
+| Critical Path Tests | missing required tests | 🔴 BLOCK |
 | Security | > 0 critical | 🔴 BLOCK |
 | Flaky Rate | > 5% | 🟡 WARN |
 

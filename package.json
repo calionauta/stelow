@@ -1,6 +1,6 @@
 {
   "name": "@renatocaliari/stelow",
-  "version": "0.28.0-alpha",
+  "version": "0.29.0-alpha",
   "description": "stelow — opinionated product workflow. stellar clarity. low friction.",
   "keywords": [
     "pi-skill",
@@ -78,15 +78,11 @@
     "test:ci": "./scripts/test-ci.sh",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",
-    "mutate": "stryker run",
-    "test:mutation": "stryker run",
     "version:sync": "node scripts/version-sync.mjs",
     "version": "npm run version:sync && git add -f .claude-plugin/plugin.json .claude-plugin/marketplace.json .codex-plugin/plugin.json .codex-plugin/marketplace.json .opencode-plugin/plugin.json"
   },
   "devDependencies": {
     "@marcfargas/pi-test-harness": "^0.5.0",
-    "@stryker-mutator/core": "^9.6.1",
-    "@stryker-mutator/vitest-runner": "^9.6.1",
     "@vitest/coverage-v8": "^4.1.6",
     "typescript": "^6.0.3",
     "vitest": "^4.1.6"

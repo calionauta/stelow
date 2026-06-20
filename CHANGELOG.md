@@ -2,11 +2,31 @@
 
 All notable changes to `@renatocaliari/stelow` will be documented in this file.
 
+## [0.29.0-alpha] - 2026-06-19
+
+### Breaking Changes
+- **Appetite labels renamed**: `Light / Balanced / Deep` → `Lean / Core / Complete`.
+  This removes the `Light` appetite vs `Light` mode naming conflict and makes the cut policy explicit.
+
+### Removed
+- **Mutation testing removed from active workflow**: deleted the Stryker workflow, `stryker.conf.json`, `vitest.mutate.config.ts`, Stryker dependencies, and mutation scripts.
+- **Mutation guidance removed from skills**: replaced mutation-score gates with risk-based coverage, critical-path tests, lint, and security gates.
+
+### Changed
+- **README and AGENTS.md updated**: removed mutation badge/references and clarified AI-aware testing strategy.
+- **Testing skill guidance updated**: `cali-product-testing-ai-code` now recommends coverage/risk targets instead of mutation targets.
+- **Appetite cut policy propagated**: setup, context, execution, verification, supervisor, and domain-skill references now use `Lean / Core / Complete`.
+
+### Verified
+- `npm run build`
+- `npm run typecheck`
+- `npm test` → 21 files, 718 tests passed
+
 ## [0.28.0-alpha] - 2026-06-19
 
 ### Changed
-- **Supervisor sensitivity rebalanced**: PoC → Low, Focused → Medium, Comprehensive → High. Low sensitivity now active for all appetites (no more supervisor skip). Updated README appetite table, execution stage, supervise tool reference, and all 23 domain skill copies.
-- **README appetite table corrected**: a11y audit and code review are now explicitly listed for Focused mode (they were already conditionally active in verification stage).
+- **Supervisor sensitivity rebalanced**: Lean → Low, Core → Medium, Complete → High. Low sensitivity now active for all appetites (no more supervisor skip). Updated README appetite table, execution stage, supervise tool reference, and all 23 domain skill copies.
+- **README appetite table corrected**: a11y audit and code review are now explicitly listed for Core appetite (they were already conditionally active in verification stage).
 - **README short summary**: "Critique → Gate → Scope sequencing" replaces the stronger "Measure thrice" claim for accuracy.
 - **README author blurb**: Reworded to "Built by a former product manager" with product leadership teaching and product strategy consulting background.
 
@@ -188,10 +208,10 @@ All notable changes to `@renatocaliari/stelow` will be documented in this file.
 
 ### Changed
 - **BREAKING**: Removed `complexity_estimate` field from proposal-structure.md — replaced with `appetite_fit` (fits/cuts_needed/reshape). Appetite is now treated as a constraint, not a target for estimation. The LLM checks whether the shaped proposal fits the declared appetite, rather than estimating effort on an ordinal scale.
-- **BREAKING**: plan-critique/SKILL.md appetite violation check now uses `appetite_fit` case-based logic instead of ordinal comparison (PoC vs XS/S/M/L/XL). `reshape` halts critique with exit 1.
+- **BREAKING**: plan-critique/SKILL.md appetite violation check now uses `appetite_fit` case-based logic instead of ordinal comparison (Light vs XS/S/M/L/XL). `reshape` halts critique with exit 1.
 - **shape-up/SKILL.md**: Validation guard updated to check `appetite_fit` field instead of `complexity_estimate`. Conceptual callout rewritten to emphasize appetite as constraint.
 - **scope-executor/SKILL.md**: Template reference updated from `Complexity Estimate` to `Appetite Fit`.
-- **execution-critique/SKILL.md**: Fixed stale XS/S/L/XL appetite labels → PoC/Focused/Comprehensive.
+- **execution-critique/SKILL.md**: Fixed stale XS/S/L/XL appetite labels → Light/Balanced/Deep.
 - **setup.md**: Comment updated to reference `appetite_fit` constraint model.
 - **README.md**: Complete restructure — new section ordering, Key Differentiators as proper heading, "Measure thrice, cut once" as blockquote, Appetite & Mode promoted, Evidence-Based Design + Radical Transparency merged into unified Evidence & Limitations section, Mode system added to differentiators, links added for all Known Limitations papers.
 - **appetite-consistency.test.ts**: Tests updated for new schema; execution-critique added to stale-label scan.
@@ -218,12 +238,12 @@ All notable changes to `@renatocaliari/stelow` will be documented in this file.
 ### Fixed
 - **Approach name mismatch**: `stages/ask-patterns.md` and `stelow-spec.md` now use the canonical name `Multi-Method Market Analysis` (matching `SKILL.md`), instead of the truncated `Market Analysis`.
 - **`stages.yaml` awareness**: `context` stage description now references the `context:5` gate (previously silent on the new gate mechanism).
-- **Gate matrix clarity**: `stages/context.md` `context:5` matrix row for `Comprehensive | any` now notes that `Auto` is unreachable (Comprehensive appetite forces `Full Product` or `Full Product + Tech` per `README.md`).
+- **Gate matrix clarity**: `stages/context.md` `context:5` matrix row for `Complete | any` now notes that `Auto` is unreachable (Complete appetite forces `Full Product` or `Full Product + Tech` per `README.md`).
 
 ## [0.8.3-alpha] - 2026-06-01
 
 ### Added
-- **`context:5` appetite/mode gate** in `stages/context.md`. PoC + Auto skips the entire Context stage; PoC + non-Auto uses a reduced ask (5 strategic approaches listed with opt-in execution, 8 domain libraries detected as reference-only). Focused and Comprehensive retain full behavior. See `stages/context.md#context:5` for the full matrix.
+- **`context:5` appetite/mode gate** in `stages/context.md`. Lean + Auto skips the entire Context stage; Light + non-Auto uses a reduced ask (5 strategic approaches listed with opt-in execution, 8 domain libraries detected as reference-only). Balanced and Deep retain full behavior. See `stages/context.md#context:5` for the full matrix.
 
 ### Changed
 - **Label standardization**: Stage references in `SKILL.md` now use `:10`/`:20` instead of `2a`/`2b`, matching the gap-based numbering convention in `AGENTS.md`.

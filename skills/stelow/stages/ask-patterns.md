@@ -38,7 +38,7 @@ Preview limits:
 
 Used in `stages/context.md` for strategic approach selection.
 
-> **Gate awareness:** Before applying this pattern, run `context:5` (appetite/mode gate). If `PoC` + `Auto`, skip the question entirely. If `PoC` + non-Auto, present this pattern with opt-in execution note (subagents not automatic). If `Focused`/`Comprehensive`, apply as-is.
+> **Gate awareness:** Before applying this pattern, run `context:5` (appetite/mode gate). If `Lean` + `Auto`, skip the question entirely. If `Lean` + non-Auto, present this pattern with opt-in execution note (subagents not automatic). If `Core`/`Complete`, apply as-is.
 
 ```typescript
 ask_user_question({
@@ -347,15 +347,15 @@ Appetite is declared first, then the mode of interaction is chosen.`,
     header: "Appetite",
     options: [
       {
-        label: "PoC",
+        label: "Lean",
         description: "Quick validation — 1 minimal feature, ~1 page spec, 1-2 scopes. No edge cases."
       },
       {
-        label: "Focused (Recommended)",
+        label: "Core (Recommended)",
         description: "One feature product, main Job To Be Done — ~3 page spec, 3-5 scopes, obvious edge cases."
       },
       {
-        label: "Comprehensive",
+        label: "Complete",
         description: "Multi-feature product — ~8+ page spec, 8-15 scopes, full edge case mapping, 3-5 implementation strategies compared with trade-offs."
       }
     ]
@@ -368,9 +368,11 @@ Appetite is declared first, then the mode of interaction is chosen.`,
 
 | Level | Spec size | Scopes | Implementation strategies | Edge cases |
 |-------|-----------|--------|--------------------------|------------|
-| PoC | ~1 page | 1-2 | 1 direct — no divergence | Not documented |
-| Focused | ~3 pages | 3-5 | 1-2 considered with brief rationale | Only obvious ones |
-| Comprehensive | ~8+ pages | 8-15 | 3-5 compared with trade-off analysis | Fully mapped |
+| Lean | ~1 page | 1-2 | 1 direct — no divergence | Not documented |
+| Core | ~3 pages | 3-5 | 1-2 considered with brief rationale | Only obvious ones |
+| Complete | ~8+ pages | 8-15 | 3-5 compared with trade-off analysis | Fully mapped |
+
+**Cut policy:** Lean cuts edge cases, secondary flows, alternative strategies, and non-critical integrations. Core cuts only low-value variants. Complete cuts nothing unless impossible.
 
 **Storage:** Save to `index.json` as `config.appetite`, and inject into `spec-product.md` frontmatter as `appetite: {chosen_appetite}`.
 

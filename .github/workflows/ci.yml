@@ -79,28 +79,3 @@ jobs:
 
       - name: Run tests
         run: npm test
-
-  # Optional: Run mutation tests periodically
-  mutation:
-    name: Mutation Tests
-    runs-on: ubuntu-latest
-    if: github.event_name == 'schedule' || contains(github.event.head_commit.message, 'mutation')
-    
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build
-        run: npm run build
-
-      - name: Run mutation tests
-        run: npm run mutate

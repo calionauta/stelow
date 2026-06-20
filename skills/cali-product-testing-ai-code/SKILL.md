@@ -2,7 +2,7 @@
 name: cali-product-testing-ai-code
 description: >
   [Cali] AI-aware testing strategy skill for software products.
-  Generates mutation-based testing plans, security gates, and coverage targets.
+  Generates AI-aware testing plans, security gates, and risk-based coverage targets.
   Activated automatically when product_type is "software" or "hybrid".
   Based on empirical research: AgentAssay (2026), MSR 2026, Veracode 2025, CodeRabbit 2025,
   LLM4TDD (2023), TDD-with-AI-Agents (2026).
@@ -33,12 +33,12 @@ metadata:
 
 | Context | Description | Testing Approach |
 |---------|-------------|-----------------|
-| **Greenfield** | New product, no existing code | TDD-first, full mutation coverage, clean slate |
+| **Greenfield** | New product, no existing code | TDD-first, risk-based coverage targets, clean slate |
 | **Brownfield** | Existing product with features | TDD for critical paths, test-after for existing code, regression focus |
 | **Hybrid** | Adding features to existing product | Separate new from existing, protect invariants |
 
 **Based on context from setup or spec-product.md:**
-- `greenfield`: Full TDD recommendation, aggressive mutation targets (70/50/30%)
+- `greenfield`: Full TDD recommendation, risk-based coverage targets
 - `brownfield`: TDD for critical paths only, test-after + regression for existing code
 - `hybrid`: Add `test-regression` scopes for existing functionality
 
@@ -63,33 +63,33 @@ From Tech Planning context:
 
 Auto-detect testing frameworks from project files:
 
-| Language | Detection File | Unit Framework | Mutation Tool | Security Tool |
+| Language | Detection File | Unit Framework | Coverage Tool | Security Tool |
 |----------|--------------|---------------|--------------|---------------|
-| Python | `requirements.txt`, `pyproject.toml` | pytest | mutmut | Bandit |
-| JavaScript/TypeScript | `package.json` | Vitest, Jest | Stryker | ESLint + SAST |
-| Go | `go.mod` | testing | go-mutate | Gosec |
-| Rust | `Cargo.toml` | cargo test | muter | cargo-audit |
-| Java | `pom.xml`, `build.gradle` | JUnit | PIT | SpotBugs |
+| Python | `requirements.txt`, `pyproject.toml` | pytest | pytest-cov | Bandit |
+| JavaScript/TypeScript | `package.json` | Vitest, Jest | c8 / V8 coverage | ESLint + SAST |
+| Go | `go.mod` | testing | `go test -cover` | Gosec |
+| Rust | `Cargo.toml` | cargo test | cargo-tarpaulin | cargo-audit |
+| Java | `pom.xml`, `build.gradle` | JUnit | JaCoCo | SpotBugs |
 
 ### Step 2: Classify Scope Risk
 
 Based on spec-tech.md scopes:
 
-| Risk Level | Examples | Mutation Target |
+| Risk Level | Examples | Testing Depth |
 |------------|----------|----------------|
-| **Critical** | Payment, auth, data persistence, security | 70% min |
-| **Standard** | CRUD, UI, API endpoints | 50% min |
-| **Experimental** | Prototypes, new features | 30% min |
+| **Critical** | Payment, auth, data persistence, security | High coverage + negative cases + security gates |
+| **Standard** | CRUD, UI, API endpoints | Core paths + obvious edge cases |
+| **Experimental** | Prototypes, new features | Smoke tests + regression hooks |
 
-### Step 3: Generate Mutation Targets
+### Step 3: Generate Risk-Based Test Targets
 
-From research: coverage alone is insufficient. A test suite with 100% coverage but 4% mutation score executes every line but misses 96% of potential bugs.
+From research: coverage alone is insufficient. A test suite can execute every line but still miss behavioral bugs, security gaps, and non-deterministic agent failures.
 
-| Path Type | Mutation Score Target | Minimum |
-|-----------|---------------------|---------|
-| Critical paths | 70% | 60% |
-| Standard features | 50% | 40% |
-| Experimental | 30% | 20% |
+| Path Type | Testing Depth |
+|-----------|-------------|
+| Critical paths | Branch coverage, negative cases, security gates, and deterministic regression checks |
+| Standard features | Core happy path, obvious edge cases, and integration seams |
+| Experimental | Smoke tests, acceptance checks, and regression hooks for future hardening |
 
 ### Step 4: Define Test Scope Types
 
@@ -127,10 +127,10 @@ Based on MSR 2026 research (agents use mocks 36% vs 26% humans):
 
 ```yaml
 GATES:
-  mutation_score:
-    condition: "< target"
+  critical_path_coverage:
+    condition: "missing required tests"
     action: BLOCK
-    rationale: "AI code has 1.7x more bugs"
+    rationale: "Critical paths need executable regression checks"
   
   security_findings:
     condition: "> 0 on critical paths"
@@ -163,8 +163,8 @@ GATES:
 | **Critical business logic** | ✅ **Yes — recommended** | TDD provides design feedback, validates understanding, and constrains AI output |
 | **Security-sensitive** | ⚠️ **TDD + automated gates** | Write tests first, then run SAST continuously (45% vulnerability rate) |
 | **External APIs** | ❌ No — test-after | Over-mocking is anti-pattern; use real dependencies |
-| **Agent workflows** | ❌ No — behavioral testing | Non-deterministic — needs multiple runs, mutation testing |
-| **Standard features** | ⚠️ **Optional** | Use TDD for clarity, but mutation testing is essential |
+| **Agent workflows** | ❌ No — behavioral testing | Non-deterministic — needs multi-run validation |
+| **Standard features** | ⚠️ **Optional** | Use TDD for clarity; risk-based tests for standard paths |
 
 ### Brownfield Testing (Existing Products)
 
@@ -175,7 +175,7 @@ GATES:
 | **Existing tests** | Adapt, don't replace | High coverage = regression focus; Low coverage = characterization tests |
 | **New features** | TDD for critical, test-after for standard | Protect existing, innovate safely |
 | **Existing invariants** | Regression + simulation/replay testing | AI agents can break invariants without detection |
-| **Technical debt** | Risk-aware mutation targets | Higher targets for risky areas |
+| **Technical debt** | Risk-aware testing targets | Higher depth for risky areas |
 
 ---
 
@@ -362,29 +362,27 @@ impact:
 Key difference from human TDD:
 - AI must see failing test BEFORE implementation
 - Tests must be written independently of implementation
-- Human validates test quality via mutation testing
+- Human validates test quality via critical-path coverage and negative cases
 ```
 
 ---
 
-## Mutation Testing Loop
+## Risk-Based Test Feedback Loop
 
-Based on research feedback loop from CMU + mutating.tech:
+Use this loop when tests miss important behavior or regressions appear after AI changes:
 
 ```
-1. Generate tests (AI)
-2. Run mutation testing (Stryker/PIT/mutmut)
-3. If mutation_score < target:
-   - Identify surviving mutants
-   - Feed surviving mutants back to AI
-   - Generate tests to kill the mutants
-4. Repeat until mutation_score >= target
+1. Identify the missed behavior or regression
+2. Add a focused test that captures the invariant
+3. Rerun the affected test suite
+4. Feed the invariant back into future test scopes
 ```
 
-**Mutation operators for AI code:**
-- Control-flow: `>` → `>=`, `+` → `-`, boolean flip
-- Context: prompt changes, tool variations
-- Security: injection patterns
+**Test quality signals:**
+- Critical-path coverage
+- Negative-case coverage
+- Security gate results
+- Flaky-rate monitoring
 
 ---
 
@@ -405,25 +403,25 @@ generated_at: {YYYY-MM-DD}
 ## Tech Stack
 - Language: {language}
 - Unit: {framework}
-- Mutation: {tool}
+- Coverage: {tool}
 - Security: {tool}
 
-## Mutation Score Targets
-| Path Type | Target | Minimum |
-|-----------|--------|---------|
-| Critical | 70% | 60% |
-| Standard | 50% | 40% |
-| Experimental | 30% | 20% |
+## Coverage and Risk Targets
+| Path Type | Required Evidence |
+|-----------|-------------------|
+| Critical | Branch coverage, negative cases, security gates |
+| Standard | Core paths and obvious edge cases |
+| Experimental | Smoke tests and regression hooks |
 
 ## Test Scopes
-| Scope | Type | Mutation Target |
+| Scope | Type | Required Evidence |
 |-------|------|----------------|
-| {feature-name} | test-unit | 70% |
-| {feature-name} | test-integration | 50% |
-| {feature-name} | test-security | 70% |
+| {feature-name} | test-unit | Critical path + negative cases |
+| {feature-name} | test-integration | External seams covered |
+| {feature-name} | test-security | SAST clean on critical paths |
 
 ## CI/CD Gates
-- BLOCK: mutation_score < target
+- BLOCK: missing required critical-path tests
 - BLOCK: security_findings > 0 on critical paths
 - WARN: flaky_rate > 5%
 
@@ -440,7 +438,7 @@ generated_at: {YYYY-MM-DD}
 
 - [ ] testing-strategy.md generated
 - [ ] test-* scopes added to spec-tech.md
-- [ ] Mutation targets calibrated per risk level
+- [ ] Coverage and risk targets calibrated per risk level
 - [ ] CI/CD gates documented
 - [ ] Anti-patterns checklist included
 
@@ -449,10 +447,10 @@ generated_at: {YYYY-MM-DD}
 ## Fallback
 
 If tech stack detection fails:
-- Python → pytest + mutmut + Bandit
-- JavaScript/TypeScript → Vitest + Stryker + ESLint
-- Go → testing + go-mutate + Gosec
-- Rust → cargo test + muter + cargo-audit
+- Python → pytest + pytest-cov + Bandit
+- JavaScript/TypeScript → Vitest + c8/V8 coverage + ESLint
+- Go → testing + `go test -cover` + Gosec
+- Rust → cargo test + cargo-tarpaulin + cargo-audit
 
 ---
 

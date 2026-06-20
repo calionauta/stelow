@@ -4,7 +4,7 @@ description: >
   [Cali] Reads an approved product plan with typed scopes (feature, optimization, spike, test-*)
   and routes each scope to its correct executor. Acts as the autonomous overnight
   "set and forget" orchestrator — the pi equivalent of /goal for approved plans.
-  For test-* scopes, enforces hard blocks (mutation score, security gates).
+  For test-* scopes, enforces hard blocks (critical-path tests, security gates).
 metadata:
   frequency: weekly
   category: product
@@ -31,7 +31,7 @@ The plan must contain scopes with type annotations:
 - `[TYPE] feature` — implement new functionality
 - `[TYPE] optimization` — improve a measurable metric (must include `[METRIC]`)
 - `[TYPE] spike` — research or prototype
-- `[TYPE] test-unit` — unit tests with mutation validation
+- `[TYPE] test-unit` — unit tests with coverage/risk gates
 - `[TYPE] test-integration` — integration tests with real dependencies
 - `[TYPE] test-security` — SAST and security gates
 - `[TYPE] test-behavior` — behavioral testing for agent workflows
@@ -101,7 +101,7 @@ For each scope in the plan:
 | `optimization` | `worker` → **worker** (override) |
 | `spike` | *absent* → scout + researcher |
 | `spike` | `research` → **research loop** (override, rare) |
-| `test-unit` | worker + mutation validation |
+| `test-unit` | worker + coverage/risk gates |
 | `test-integration` | worker + real dependencies |
 | `test-security` | worker + SAST gates |
 | `test-behavior` | worker + behavioral testing |
@@ -113,7 +113,7 @@ Before executing, present a clear execution plan to the user with the resolved e
 ```
 📋 Execution Plan for: {plan-name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Appetite: {PoC|Focused|Comprehensive} (human-set)
+Appetite: {Lean|Core|Complete} (human-set)
 Appetite Fit: {fits|cuts_needed|reshape} (LLM-set)
 Phase 1 (parallel):
   ⏩ [SCOPE-1] Login — feature → worker
@@ -125,12 +125,12 @@ Phase 2 (after SCOPE-1):
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-**Human-in-loop check for Comprehensive appetite:**
+**Human-in-loop check for Complete appetite:**
 
 ```bash
 # Try precise path first, then fallback to glob
-APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/*/*/plans/spec-product_*.md 2>/dev/null || echo "Focused")
-if [ "$APPETITE" = "Comprehensive" ]; then
+APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/*/*/plans/spec-product_*.md 2>/dev/null || echo "Core")
+if [ "$APPETITE" = "Complete" ]; then
   echo "⚠️ COMPREHENSIVE APPETITE: Human-in-loop mode may be needed for architectural changes."
   echo "Check the workflow's 'mode' setting in index.json."
   echo "In Full Product + Tech mode, each PR/fork-point requires human approval before merge."
@@ -172,9 +172,9 @@ console.log('Scope tracking initialized: ' + wf.scopes.length + ' scopes');
 
 **Key:** All scopes start as `status: 'pending'`. Update each scope's status as execution progresses.
 
-### Step 2d: Comprehensive Human-in-loop execution mode
+### Step 2d: Complete Human-in-loop execution mode
 
-If appetite is `Comprehensive`, **modify execution flow** for each scope:
+If appetite is `Complete`, **modify execution flow** for each scope:
 
 1. LLM implements changes in a working branch
 2. LLM **pauses** and presents the diff to the human

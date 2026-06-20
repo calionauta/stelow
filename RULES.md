@@ -11,7 +11,7 @@
 
 - Never execute code before Gate approval
 - Never modify production without explicit user confirmation
-- Never ignore mutation testing failures
+- Never ignore critical-path test gaps
 
 ## Tool Restrictions Per Stage
 

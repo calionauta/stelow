@@ -74,7 +74,7 @@ describe('No stale old appetite labels', () => {
     }
   });
 
-  it('scope-executor/SKILL.md has no XL heading (must be Comprehensive)', () => {
+  it('scope-executor/SKILL.md has no XL heading (must be Complete)', () => {
     const content = readSkill('cali-product-scope-executor');
     expect(content).not.toMatch(/XL.*Human-in-loop/);
     expect(content).not.toMatch(/Step 2d: XL/);
@@ -159,7 +159,7 @@ describe('No Portuguese in English sections (core stage files)', () => {
 // 4. NO DUPLICATE COMPREHENSIVE ROWS
 // ═════════════════════════════════════════════════════════════════════
 
-describe('No duplicate Comprehensive rows in appetite tables', () => {
+describe('No duplicate Complete rows in appetite tables', () => {
   const filesWithTables: { path: string; name: string }[] = [
     { path: join(STAGES_DIR, 'execution.md'), name: 'execution.md' },
     { path: join(SKILLS_DIR, 'cali-product-codebase-critique', 'SKILL.md'), name: 'codebase-critique/SKILL.md' },
@@ -168,19 +168,19 @@ describe('No duplicate Comprehensive rows in appetite tables', () => {
     { path: join(STAGES_DIR, 'verification.md'), name: 'verification.md' },
   ];
 
-  it.each(filesWithTables)('$name has no IDENTICAL consecutive Comprehensive rows', ({ path, name }) => {
+  it.each(filesWithTables)('$name has no IDENTICAL consecutive Complete rows', ({ path, name }) => {
     const content = readFileSync(path, 'utf-8');
     const lines = content.split('\n');
     let prevRow: string | null = null;
     for (const line of lines) {
-      if (line.startsWith('| `Comprehensive` |')) {
+      if (line.startsWith('| `Complete` |')) {
         if (prevRow !== null) {
           // Different table columns are OK (e.g. "0 files" vs "1+ files")
           // Only flag if the ENTIRE row content is identical
           expect(line).not.toEqual(prevRow);
         }
         prevRow = line;
-      } else if (line.startsWith('| `') && !line.startsWith('| `Comprehensive` |')) {
+      } else if (line.startsWith('| `') && !line.startsWith('| `Complete` |')) {
         prevRow = null; // reset when switching to a different appetite row
       }
     }
@@ -231,9 +231,9 @@ describe('Valid appetite values throughout', () => {
   it('ask-patterns.md contains valid appetite labels', () => {
     const content = readStage('ask-patterns.md');
     // Labels are inside TypeScript code blocks as strings
-    expect(content).toContain('"PoC"');
-    expect(content).toContain('"Focused (Recommended)"');
-    expect(content).toContain('"Comprehensive"');
+    expect(content).toContain('"Lean"');
+    expect(content).toContain('"Core (Recommended)"');
+    expect(content).toContain('"Complete"');
   });
 
   it('ask-patterns.md contains valid mode labels', () => {
@@ -250,7 +250,7 @@ describe('Valid appetite values throughout', () => {
       join(SKILLS_DIR, 'cali-product-shape-up', 'references', 'proposal-structure.md'),
       'utf-8'
     );
-    const appetiteRows = content.match(/\| `(PoC|Focused|Comprehensive)` \|/g);
+    const appetiteRows = content.match(/\| `(Lean|Core|Complete)` \|/g);
     expect(appetiteRows?.length).toBeGreaterThanOrEqual(3);
     expect(content).not.toMatch(/\| `(XS|S|M|L|XL)` \|.*Plan Critique/);
   });
@@ -292,14 +292,14 @@ describe('Supervisor table consistency', () => {
       'utf-8'
     );
 
-    const execPatterns = execContent.match(/`(PoC|Focused|Comprehensive)` \| \*\*(Skip|Activate)\*\*/g);
-    const superPatterns = superContent.match(/`(PoC|Focused|Comprehensive)` \| \*\*(Skip|Activate)\*\*/g);
+    const execPatterns = execContent.match(/`(Lean|Core|Complete)` \| \*\*(Skip|Activate)\*\*/g);
+    const superPatterns = superContent.match(/`(Lean|Core|Complete)` \| \*\*(Skip|Activate)\*\*/g);
 
     expect(execPatterns).toBeDefined();
     expect(superPatterns).toBeDefined();
-    expect(execPatterns![0]).toBe(superPatterns![0]); // PoC
-    expect(execPatterns![1]).toBe(superPatterns![1]); // Focused
-    expect(execPatterns![2]).toBe(superPatterns![2]); // Comprehensive
+    expect(execPatterns![0]).toBe(superPatterns![0]); // Lean
+    expect(execPatterns![1]).toBe(superPatterns![1]); // Core
+    expect(execPatterns![2]).toBe(superPatterns![2]); // Complete
   });
 });
 
@@ -307,34 +307,34 @@ describe('Supervisor table consistency', () => {
 // 9. DEFAULT FALLBACK VALUES
 // ═════════════════════════════════════════════════════════════════════
 
-describe('Default fallback values are Focused (not stale M)', () => {
-  it('execution.md defaults to Focused', () => {
+describe('Default fallback values are Core (not stale M)', () => {
+  it('execution.md defaults to Core', () => {
     const content = readStage('execution.md');
-    expect(content).toMatch(/echo "Focused"/);
+    expect(content).toMatch(/echo "Core"/);
     expect(content).not.toMatch(/echo "M"/);
   });
 
-  it('verification.md defaults to Focused', () => {
+  it('verification.md defaults to Core', () => {
     const content = readStage('verification.md');
-    expect(content).toMatch(/echo "Focused"/);
+    expect(content).toMatch(/echo "Core"/);
     expect(content).not.toMatch(/echo "M"/);
   });
 
-  it('tech-planning defaults to Focused', () => {
+  it('tech-planning defaults to Core', () => {
     const content = readSkill('cali-product-tech-planning');
-    expect(content).toMatch(/echo "Focused"/);
+    expect(content).toMatch(/echo "Core"/);
     expect(content).not.toMatch(/echo "M"/);
   });
 
-  it('codebase-critique defaults to Focused (APPETITE variable)', () => {
+  it('codebase-critique defaults to Core (APPETITE variable)', () => {
     const content = readSkill('cali-product-codebase-critique');
-    expect(content).toMatch(/Focused/);
+    expect(content).toMatch(/Core/);
     expect(content).not.toMatch(/APPETITE="M"|APPETITE: M/);
   });
 
-  it('scope-executor defaults to Focused', () => {
+  it('scope-executor defaults to Core', () => {
     const content = readSkill('cali-product-scope-executor');
-    expect(content).toMatch(/echo "Focused"/);
+    expect(content).toMatch(/echo "Core"/);
     expect(content).not.toMatch(/echo "M"/);
   });
 });
@@ -476,22 +476,22 @@ describe('context:5 appetite/mode gate', () => {
     expect(context).not.toContain('Full Tech');
   });
 
-  test('gate uses canonical appetite labels (PoC, Focused, Comprehensive)', () => {
-    expect(context).toContain('PoC');
-    expect(context).toContain('Focused');
-    expect(context).toContain('Comprehensive');
+  test('gate uses canonical appetite labels (Lean, Core, Complete)', () => {
+    expect(context).toContain('Lean');
+    expect(context).toContain('Core');
+    expect(context).toContain('Complete');
   });
 
-  test('gate matrix has PoC + Auto skip rule', () => {
-    expect(context).toMatch(/PoC.*Auto|skip.*PoC|skip.*Auto/i);
+  test('gate matrix has Lean + Auto skip rule', () => {
+    expect(context).toMatch(/Lean.*Auto|skip.*Lean|skip.*Auto/i);
   });
 
-  test('gate matrix has PoC + non-Auto reduced ask rule', () => {
+  test('gate matrix has Lean + non-Auto reduced ask rule', () => {
     expect(context).toMatch(/Reduced ask|reference-only|opt-in/i);
   });
 
-  test('gate matrix has Focused/Comprehensive full behavior', () => {
-    expect(context).toMatch(/Focused.*Full|full ask|Comprehensive.*Full/i);
+  test('gate matrix has Core/Complete full behavior', () => {
+    expect(context).toMatch(/Core.*Full|full ask|Complete.*Full/i);
   });
 
   test('SKILL.md uses :10/:20 labels (not 2a/2b)', () => {

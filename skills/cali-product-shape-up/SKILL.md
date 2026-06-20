@@ -157,7 +157,7 @@ fi
 > **Se `appetite_fit = reshape`:** o proposal não cabe de forma alguma — precisa ser remodelado.
 > A LLM **nunca** pode estender appetite. Appetite é fixo para o ciclo.
 >
-> **How to define appetite:** see `references/proposal-structure.md` — PoC / Focused / Comprehensive with depth of scope. Mode controls gates/questions independently (stored in `index.json`).
+> **How to define appetite:** see `references/proposal-structure.md` — Lean / Core / Complete with depth of scope. Mode controls gates/questions independently (stored in `index.json`).
 
 - Do not ask about Interface Alternatives — already decided in the `setup` stage
 - **Do NOT ask scope adjustment yet** — this happens after Product Critique and Gate approval (see workflow sequence below)

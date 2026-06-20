@@ -175,15 +175,15 @@ if [ "$VALID" = false ]; then
 fi
 
 # Check appetite violation: scope count vs appetite
-APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "Focused")
+APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "Core")
 SCOPE_COUNT=$(grep -c "^### " "$SPEC_TECH")
 
 # Appetite boundary check: scope count should stay within appetite
-# PoC ≤ 1, Focused ≤ 5, Comprehensive > 5
+# Lean ≤ 1, Core ≤ 5, Complete > 5
 case "$APPETITE" in
-  PoC) [ "$SCOPE_COUNT" -gt 1 ] && echo "APPETITE_VIOLATION: PoC appetite but $SCOPE_COUNT scopes. Consolidate or split into multiple cycles." ;;
-  Focused)  [ "$SCOPE_COUNT" -gt 5 ] && echo "APPETITE_VIOLATION: Focused appetite but $SCOPE_COUNT scopes. Consider reducing scope." ;;
-  Comprehensive)  ;;  # Comprehensive has no upper limit by scope count alone
+  Lean) [ "$SCOPE_COUNT" -gt 1 ] && echo "APPETITE_VIOLATION: Lean appetite but $SCOPE_COUNT scopes. Consolidate or split into multiple cycles." ;;
+  Core)  [ "$SCOPE_COUNT" -gt 5 ] && echo "APPETITE_VIOLATION: Core appetite but $SCOPE_COUNT scopes. Consider reducing scope." ;;
+  Complete)  ;;  # Complete has no upper limit by scope count alone
 esac
 ```
 
@@ -206,7 +206,7 @@ then produce the spec-tech artifact directly in the current context.
    - Agent: `cali-product-testing-ai-code` or equivalent
    - Input: spec-product.md frontmatter with `product_type: software`
    - Output: `.stelow/{YYYY-MM-DD}/{_dir}/plans/testing-strategy.md`
-   - Content: mutation score targets (70/50/30%), tech stack detection, CI/CD gates, anti-patterns
+   - Content: risk-based coverage targets, tech stack detection, CI/CD gates, anti-patterns
 
    **⚠️ FALLBACK — if subagent fails or is unavailable (API key missing, agent not found):**
    Generate testing-strategy.md INLINE. Read the `cali-product-testing-ai-code` skill
@@ -219,11 +219,10 @@ Based on testing-strategy.md, add scopes for:
 - `test-unit`: Unit tests for critical business logic (TDD recommended)
 - `test-integration`: Integration tests for DB, APIs, external services
 - `test-security`: Security scanning gates
-- `test-mutation`: Mutation testing validation
 
 **Note on TDD:** Research shows TDD alone is insufficient for AI-generated code.
 - Use TDD for critical business logic (isolated, deterministic)
-- Use Test-After + Mutation for standard paths
+- Use Test-After + risk-based tests for standard paths
 - Never use same AI for both code AND test generation
 
 ### planning:30 — Tech Planning Review Gate
@@ -329,7 +328,6 @@ Failure to verify DoD = scope is still in_progress. The goal system enforces thi
 ### Testing Gates (test-* scopes)
 
 For test-* scopes, the execution includes hard blocks:
-- **test-mutation**: mutation_score >= target → BLOCK if below
 - **test-security**: security_findings == 0 on critical paths → BLOCK if found
 - **test-integration**: flaky_rate < 5% → WARN if above
 

@@ -6,37 +6,37 @@
 **After Setup**, the flow enters Strategic Context to enrich planning with optional context.
 The LLM checks if the user should be offered strategic analysis and/or domain libraries.
 
-**Prerequisites:** Appetite (PoC / Focused / Comprehensive) and Mode (Auto / Light / Moderate / Full Product / Full Product + Tech) must already be declared in `setup:15` and stored in `index.json` (read via `stages.yaml` conventions).
+**Prerequisites:** Appetite (Lean / Core / Complete) and Mode (Auto / Light / Moderate / Full Product / Full Product + Tech) must already be declared in `setup:15` and stored in `index.json` (read via `stages.yaml` conventions).
 
 ### context:5 — Appetite & Mode Gate (auto-skip / reduced)
 
 Before executing `context:10` or `context:20`, check the declared appetite and mode.
 
 **Canonical values (from `tests/appetite-consistency.test.ts`):**
-- Appetite: `PoC` | `Focused` (Recommended) | `Comprehensive`
+- Appetite: `Lean` | `Core` (Recommended) | `Complete`
 - Mode: `Auto` | `Light` | `Moderate` | `Full Product` | `Full Product + Tech`
 
 **Gate matrix:**
 
 | Appetite | Mode | `context:10` (Strategic Approaches — 5 options) | `context:20` (Domain Libraries — 8 options) |
 |---|---|---|---|
-| `PoC` | `Auto` | **Skip** entire Context stage → go directly to `shape:10` | **Skip** (not reached) |
-| `PoC` | `Light` / `Moderate` / `Full Product` / `Full Product + Tech` | **Reduced ask**: present all 5 strategic approaches, but mark execution as opt-in per approach (no automatic parallel subagents) | **Reference-only**: detect domain signals and load the 8 libraries as passive context for Shape/Scope; do not execute subagents per library |
-| `Focused` | any | **Full ask** (current behavior): present all 5, execute selected in parallel, consolidate into `strategic-insights.md` | **Full detect + execute**: 1..N of the 8 libraries via parallel subagents, inject into Shape/Scope/Interface |
-| `Comprehensive` | any (note: `Auto` is unreachable here — `Comprehensive` appetite forces `Full Product` or `Full Product + Tech` per `README.md`) | **Full ask** + advisory note: "Comprehensive detected — running all 5 strategic approaches is recommended" | **Full detect + execute** of all 8 libraries detected |
+| `Lean` | `Auto` | **Skip** entire Context stage → go directly to `shape:10` | **Skip** (not reached) |
+| `Lean` | `Light` / `Moderate` / `Full Product` / `Full Product + Tech` | **Reduced ask**: present all 5 strategic approaches, but mark execution as opt-in per approach (no automatic parallel subagents) | **Reference-only**: detect domain signals and load the 8 libraries as passive context for Shape/Scope; do not execute subagents per library |
+| `Core` | any | **Full ask** (current behavior): present all 5, execute selected in parallel, consolidate into `strategic-insights.md` | **Full detect + execute**: 1..N of the 8 libraries via parallel subagents, inject into Shape/Scope/Interface |
+| `Complete` | any (note: `Auto` is unreachable here — `Complete` appetite forces `Full Product` or `Full Product + Tech` per `README.md`) | **Full ask** + advisory note: "Complete detected — running all 5 strategic approaches is recommended" | **Full detect + execute** of all 8 libraries detected |
 
-**Skip log (when `PoC` + `Auto`):**
+**Skip log (when `Lean` + `Auto`):**
 
 The LLM surfaces this message in the chat output (visible to the user) AND in the per-session log file under `.stelow/{date}/{dir}/session.log`:
 
 ```
-echo "PoC appetite + Auto mode detected — skipping Context per context:5 policy"
+echo "Lean appetite + Auto mode detected — skipping Context per context:5 policy"
 echo "Proceeding directly to shape:10"
 ```
 
-**Reference-only library handling (when `PoC` + non-Auto):** Detected domain libraries are noted in the `## Domain Signals` section of `spec-product.md` (or appended as a single-line `domains_detected: [pricing, marketplace]` field in frontmatter). They are NOT executed as subagents and no `strategic-insights.md` is produced. The downstream Shape/Scope/Interface/Planning stages load the listed libraries as passive context (their `SKILL.md` files are referenced on demand).
+**Reference-only library handling (when `Lean` + non-Auto):** Detected domain libraries are noted in the `## Domain Signals` section of `spec-product.md` (or appended as a single-line `domains_detected: [pricing, marketplace]` field in frontmatter). They are NOT executed as subagents and no `strategic-insights.md` is produced. The downstream Shape/Scope/Interface/Planning stages load the listed libraries as passive context (their `SKILL.md` files are referenced on demand).
 
-**Why this gate exists:** Appetite controls depth, Mode controls breadth (see `README.md` "Appetite & Mode"). For tiny PoCs under Auto mode, strategic analysis and domain library execution are overhead that defeats the purpose of the appetite declaration. The five Strategic Approaches and eight Domain Libraries remain available — only the *execution* is gated, not the *availability*.
+**Why this gate exists:** Appetite controls depth, Mode controls breadth (see `README.md` "Appetite & Mode"). For Lean-appetite work under Auto mode, strategic analysis and domain library execution are overhead that defeats the purpose of the appetite declaration. The five Strategic Approaches and eight Domain Libraries remain available — only the *execution* is gated, not the *availability*.
 
 ### context:10 — Strategic Exploration (always ask unless gated by `context:5`)
 

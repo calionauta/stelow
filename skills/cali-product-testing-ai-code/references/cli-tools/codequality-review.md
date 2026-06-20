@@ -10,7 +10,7 @@ Validates that implemented code meets high quality standards:
 - File/function size — flags files >1000 lines, functions >150 lines, >5 params
 - Cyclomatic complexity — flags complexity >5
 - Code judo — seeks restructurations that simplify dramatically
-- Naming standards — flags vague names, null returns, mutation, implicit deps
+- Naming standards — flags vague names, null returns, implicit state mutation, implicit deps
 - Dead code detection — unused exports, TODOs, placeholders
 
 ## Install

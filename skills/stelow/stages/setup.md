@@ -279,9 +279,9 @@ This sets the appetite — how much scope the LLM should prepare.
 Appetite is declared first, then the mode of interaction is chosen.`,
     header: "Appetite",
     options: [
-      { label: "PoC", description: "Quick validation — 1 minimal feature, ~1 page spec, 1-2 scopes. No edge cases." },
-      { label: "Focused (Recommended)", description: "One feature product, main Job To Be Done — ~3 page spec, 3-5 scopes, obvious edge cases." },
-      { label: "Comprehensive", description: "Multi-feature product — ~8+ page spec, 8-15 scopes, full edge case mapping, 3-5 implementation strategies compared with trade-offs." }
+      { label: "Lean", description: "Quick validation — 1 minimal feature, ~1 page spec, 1-2 scopes. No edge cases." },
+      { label: "Core (Recommended)", description: "One feature product, main Job To Be Done — ~3 page spec, 3-5 scopes, obvious edge cases." },
+      { label: "Complete", description: "Multi-feature product — ~8+ page spec, 8-15 scopes, full edge case mapping, 3-5 implementation strategies compared with trade-offs." }
     ]
   }]
 })
@@ -289,12 +289,20 @@ Appetite is declared first, then the mode of interaction is chosen.`,
 
 **Validate the appetite value:**
 ```bash
-VALID_APPETITES="PoC Focused Comprehensive"
+VALID_APPETITES="Lean Core Complete"
 if ! echo "$VALID_APPETITES" | grep -qw "{chosen_appetite}"; then
-  echo "INVALID_APPETITE: '{chosen_appetite}' must be one of: PoC, Focused, Comprehensive"
+  echo "INVALID_APPETITE: '{chosen_appetite}' must be one of: Lean, Core, Complete"
   exit 1
 fi
 ```
+
+**Cut policy tied to appetite:**
+
+| Appetite | Cut first |
+|----------|-----------|
+| Lean | Edge cases, secondary flows, alternative strategies, non-critical integrations. Keep only the happy path. |
+| Core | Low-value variants. Keep the main JTBD, obvious edge cases, and one alternative only if it changes the core flow. |
+| Complete | Cut nothing unless impossible. Keep full edge case mapping, multiple implementation strategies, and domain context. |
 
 #### Step 2: Ask Mode
 

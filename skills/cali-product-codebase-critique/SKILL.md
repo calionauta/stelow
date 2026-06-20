@@ -53,17 +53,17 @@ the value is minimal.
 
 ```bash
 # Read appetite from context (passed by orchestrator or inferred from scope count)
-# Default to Focused if unknown
-APPETITE="${APPETITE:-Focused}"
+# Default to Core if unknown
+APPETITE="${APPETITE:-Core}"
 DIFF_FILES=$(git diff --name-only HEAD~1 2>/dev/null | wc -l | tr -d ' ')
 ```
 
 | Appetite | Files changed | Action |
 |----------|--------------|--------|
-| `PoC` | any | **Skip.** 1 file does not need structural critique. |
-| `Focused` | 1-2 | **Skip.** Review via subagent is sufficient. |
-| `Focused` | 3+ | **Quick critique.** Single reviewer, no parallel. |
-| `Comprehensive` | any | **Normal.** One reviewer analyzes all dimensions with detailed recommendations. |
+| `Lean` | any | **Skip.** 1 file does not need structural critique. |
+| `Core` | 1-2 | **Skip.** Review via subagent is sufficient. |
+| `Core` | 3+ | **Quick critique.** Single reviewer, no parallel. |
+| `Complete` | any | **Normal.** One reviewer analyzes all dimensions with detailed recommendations. |
 
 **Rationale:** Codebase critique analyzes architecture, coupling, and data flow.
 For 1 new file or 2 changed files, the cost of structural critique

@@ -81,7 +81,7 @@ ask_user_question({
     question: "Is this a new product or an evolution of an existing one?",
     header: "Context",
     options: [
-      { label: "Greenfield — New product", description: "No existing code. Full TDD + mutation testing. No legacy constraints." },
+      { label: "Greenfield — New product", description: "No existing code. Full TDD + risk-based coverage. No legacy constraints." },
       { label: "Brownfield — Existing product", description: "Adding features to existing codebase. Focus on regression + characterization tests." },
       { label: "Hybrid — Feature addition", description: "New features in existing product. Protect invariants, test new carefully." }
     ]

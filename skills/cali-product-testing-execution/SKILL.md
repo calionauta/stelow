@@ -305,5 +305,5 @@ Final checklist → All green? Mark complete
 
 ## References
 
-- **cali-product-testing-ai-code**: Use this BEFORE implementation to generate testing strategy, mutation targets, and test scopes. This execution skill uses those targets as quality gates.
+- **cali-product-testing-ai-code**: Use this BEFORE implementation to generate testing strategy, coverage/risk targets, and test scopes. This execution skill uses those targets as quality gates.
 - `references/subagent-patterns.md` — Subagent task structure patterns

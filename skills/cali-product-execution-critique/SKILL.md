@@ -120,8 +120,8 @@ but can also be used standalone when you say:
 
 > All 9 criteria run in every mode. Only the **source of truth** differs.
 
-> **Appetite-aware depth:** All 9 criteria always run. For PoC/Focused, report is
-> concise (summary + gap registry). For Comprehensive, full recommendations + lessons.
+> **Appetite-aware depth:** All 9 criteria always run. For Lean/Core, report is
+> concise (summary + gap registry). For Complete, full recommendations + lessons.
 > Coverage is identical regardless of appetite.
 
 ---

@@ -29,7 +29,6 @@ npm test                 # Run all tests
 npm run test:unit        # Unit tests only
 npm run test:integration # Integration tests only
 npm run test:skills      # Skill structure tests
-npm run mutate           # Mutation testing
 npm run typecheck        # Type check
 ```
 

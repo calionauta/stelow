@@ -32,9 +32,9 @@ determines whether and how aggressively to supervise:
 
 | Appetite | Supervisor | Sensitivity | Rationale |
 |----------|-----------|-------------|----------|
-| `PoC` | **Activate** | `low` | Even small scopes can drift over multiple turns. Low sensitivity catches clear deviations without false-positive noise. |
-| `Focused` | **Activate** | `medium` | Standard feature scope. Medium sensitivity balances steering vs autonomy. |
-| `Comprehensive` | **Activate** | `high` | High-risk, multi-scope work. High sensitivity ensures drift is caught early. |
+| `Lean` | **Activate** | `low` | Even small scopes can drift over multiple turns. Low sensitivity catches clear deviations without false-positive noise. |
+| `Core` | **Activate** | `medium` | Standard feature scope. Medium sensitivity balances steering vs autonomy. |
+| `Complete` | **Activate** | `high` | High-risk, multi-scope work. High sensitivity ensures drift is caught early. |
 
 ---
 

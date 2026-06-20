@@ -60,21 +60,21 @@ and if appetite warrants a full audit.
 
 ```bash
 # Read appetite from context; default M
-APPETITE="${APPETITE:-Focused}"
+APPETITE="${APPETITE:-Core}"
 # Check if any visual files changed
 UI_FILES=$(git diff --name-only HEAD~1 2>/dev/null | grep -cE '\.(templ|html|tsx|jsx|css)$' || echo "0")
 ```
 
 | Appetite | UI files changed | Action |
 |----------|-----------------|--------|
-| `PoC` | any | **Skip.** No new UI or minimal scope — basic a11y covered by lint. |
-| `Focused` | 0 | **Skip.** |
-| `Focused` | 1+ | **Codebase mode (~80%).** No browser. Syntactic a11y + AI slop only. |
-| `Comprehensive` | 0 | **Skip** (no UI to audit) |
-| `Comprehensive` | 1+ | **Live Site mode.** Full audit with browser + real a11y. Human reviews report in Full Product/Full Product + Tech mode. |
+| `Lean` | any | **Skip.** No new UI or minimal scope — basic a11y covered by lint. |
+| `Core` | 0 | **Skip.** |
+| `Core` | 1+ | **Codebase mode (~80%).** No browser. Syntactic a11y + AI slop only. |
+| `Complete` | 0 | **Skip** (no UI to audit) |
+| `Complete` | 1+ | **Live Site mode.** Full audit with browser + real a11y. Human reviews report in Full Product/Full Product + Tech mode. |
 
 **Rationale:** UX critique com browser é caro (abre URL, navega, tira screenshot).
-Para PoC/Focused, o custo operacional supera o valor — lint de a11y + revisão de código
+Para Lean/Core, o custo operacional supera o valor — lint de a11y + revisão de código
 já cobre os issues mais críticos.
 
 ### Standalone (uso avulso)

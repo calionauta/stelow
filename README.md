@@ -1,7 +1,6 @@
 # stelow — opinionated product workflow. stellar clarity. low friction.
 
 [![CI](https://github.com/renatocaliari/stelow/actions/workflows/ci.yml/badge.svg)](https://github.com/renatocaliari/stelow/actions/workflows/ci.yml)
-[![Mutation Testing](https://github.com/renatocaliari/stelow/actions/workflows/mutation.yml/badge.svg)](https://github.com/renatocaliari/stelow/actions/workflows/mutation.yml)
 [![Coverage](https://img.shields.io/badge/coverage-70%25-brightgreen)](https://github.com/renatocaliari/stelow/actions/workflows/ci.yml)
 [![Version](https://img.shields.io/github/v/release/renatocaliari/stelow?logo=github&label=release)](https://github.com/renatocaliari/stelow/releases)
 
@@ -18,7 +17,7 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 **Key differentiators:**
 
 - **Shape Up methodology for AI agents** - IN/OUT scope boundaries, appetite-driven sizing, risk analysis, focused scoping. Every proposal is a shaped bet, not a wishlist.
-- **Appetite × Mode stage control** - Two orthogonal dimensions control the full workflow: how deep to prepare (Appetite: PoC / Focused / Comprehensive) and which stages run (Mode: Auto / Light / Moderate / Full Product / Full Product + Tech). The cascade propagates automatically through critique depth, supervisor use, verification rigor, and gate requirements - no manual stage skipping needed.
+- **Appetite × Mode stage control** - Two orthogonal dimensions control the full workflow: how deep to prepare (Appetite: Lean / Core / Complete) and which stages run (Mode: Auto / Light / Moderate / Full Product / Full Product + Tech). The cascade propagates automatically through critique depth, supervisor use, verification rigor, and gate requirements - no manual stage skipping needed.
 - **Adversarial plan critique** - Plans are reviewed for gaps, risks, and assumptions by parallel (fresh context) reviewers, not just approved in chat.
 - **Visual review gate** - Plannotator opens the full plan for point-by-point comments before implementation, not a rubber-stamp approval.
 - **Interface exploration in ASCII art** - 5 archetypes with trade-offs in seconds - no coded mockups wasted - then LLM creates a hybrid combining the best points for your context.
@@ -88,7 +87,7 @@ And the workflow begins asking questions, exploring scope, shaping the proposal,
 - ✅ **Interface exploration in ASCII art** - visualize 5 different approaches in seconds, no coding wasted, then LLM creates a hybrid version combining the best points for the context
 - ✅ **Domain libraries** - auto-detects 8 product domains (Pricing, Trust, Ads, etc.) from your language
 - ✅ **Technical scope mapping** - breaks down into typed scopes, maps dependencies, sequences execution
-- ✅ **AI-aware mutation testing** - for software products, with coverage targets and CI gates
+- ✅ **AI-aware testing strategy** - for software products, with coverage targets and CI gates
 - ✅ **Greenfield & Brownfield** - works for new products and existing product evolution
 
 **Key Features:**
@@ -113,9 +112,17 @@ Appetite is the **review budget** - how much time and attention the human is wil
 
 | Appetite | What it means | Critique depth | Supervisor | Verification | Best for |
 |----------|---------------|----------------|------------|-------------|----------|
-| **PoC** | Validate an idea fast. Minimal ceremony. | 5 reviewers + consolidation; gap resolution: AI decides | Low sensitivity | Build + unit + code-quality + invisible-20% only | Idea validation, spike, throwaway prototype |
-| **Focused (default)** | Standard review. Balance of depth and speed. | 5 reviewers + consolidation; gap resolution: by mode | Medium sensitivity | Build + unit + lint + code-quality + invisible-20% | Most features, bug fixes, small improvements |
-| **Comprehensive** | Full pipeline. No shortcuts. | 5 reviewers + consolidation; gap resolution: by mode | High sensitivity | Build + unit + lint + a11y + mutation + code review + interactive testing | Critical features, high-risk changes, production releases |
+| **Lean** | Validate an idea fast. Minimal ceremony. | 5 reviewers + consolidation; gap resolution: AI decides | Low sensitivity | Build + unit + code-quality + invisible-20% only | Idea validation, spike, throwaway prototype |
+| **Core (default)** | Standard review. Balance of depth and speed. | 5 reviewers + consolidation; gap resolution: by mode | Medium sensitivity | Build + unit + lint + code-quality + invisible-20% | Most features, bug fixes, small improvements |
+| **Complete** | Full pipeline. No shortcuts. | 5 reviewers + consolidation; gap resolution: by mode | High sensitivity | Build + unit + lint + a11y + code review + interactive testing | Critical features, high-risk changes, production releases |
+
+**Cut policy implied by appetite:**
+
+| Appetite | What to cut first |
+|----------|-------------------|
+| **Lean** | Edge cases, secondary flows, alternative strategies, non-critical integrations. Keep only the happy path. |
+| **Core** | Low-value variants. Keep the main JTBD, obvious edge cases, and one alternative only if it changes the core flow. |
+| **Complete** | Cut nothing unless impossible. Keep full edge case mapping, multiple implementation strategies, and domain context. |
 
 After shaping, the LLM assesses **`appetite_fit`**: does the shaped proposal fit within the declared appetite?
 
@@ -129,12 +136,12 @@ This is **not an estimate**. The LLM does not estimate effort - it checks whethe
 
 **How appetite cascades through stages:**
 
-| Stage | PoC | Focused | Comprehensive |
+| Stage | Lean | Core | Complete |
 |-------|-----|---------|---------------|
 | **Critique** | 5 reviewers + consolidation; gap resolution: AI decides | 5 reviewers + consolidation; gap resolution: by mode | 5 reviewers + consolidation; gap resolution: by mode |
 | **Gate** | Skip Plannotator on Auto mode | Plannotator encouraged | **Mandatory** Plannotator visual review |
 | **Execution** | Low supervisor sensitivity | Medium supervisor sensitivity | High supervisor sensitivity |
-| **Verification** | Build + unit + code-quality + invisible-20% only | Build + unit + lint + code-quality + invisible-20% + **code review (3+ files)** + **a11y audit (1+ UI files)** | Build + unit + lint + a11y + mutation + code review + interactive testing + live site audit |
+| **Verification** | Build + unit + code-quality + invisible-20% only | Build + unit + lint + code-quality + invisible-20% + **code review (3+ files)** + **a11y audit (1+ UI files)** | Build + unit + lint + a11y + code review + interactive testing + live site audit |
 
 ### Mode
 
@@ -162,26 +169,26 @@ Mode is set explicitly by the user during `setup:15` via `ask_user_question`. It
 
 ```
 Mode controls WHAT runs (breadth)     →  Light vs Full Product, etc.
-Appetite controls HOW DEEP it runs     →  PoC vs Focused vs Comprehensive
+Appetite controls HOW DEEP it runs     →  Lean vs Core vs Complete
 ```
 
-| | PoC | Focused | Comprehensive |
+| | Lean | Core | Complete |
 |---|---|---|---|
 | **Auto** | No gates. Fastest path: smaller spec, minimal verify. | No gates. Standard planning depth, standard verify. | No gates. Deep planning, full verify. |
 | **Full Product** | 2 gates (Gate + Int.Gate). User confirms IN/OUT. | 2 gates + IN/OUT confirmation. Full workflow. | 2 gates + all questions. No shortcuts. |
 
 **Examples:**
-- `PoC + Auto` → Fastest path: no gates, no questions, no Plannotator. LLM decides scope. Interface runs automatically (5 proposals + hybrid). (~6 stages)
-- `Focused + Light` → Standard feature: 1 Plannotator gate (pre-tech), interface runs automatically. (~10 stages)
-- `Focused + Moderate` → Feature where interface matters: 1 Plannotator gate + user chooses interface. (~8 stages)
-- `Comprehensive + Full Product` → Critical feature: 2 Plannotator gates + all questions. No shortcuts. (~13 stages)
+- `Lean + Auto` → Fastest path: no gates, no questions, no Plannotator. LLM decides scope. Interface runs automatically (5 proposals + hybrid). (~6 stages)
+- `Core + Light` → Standard feature: 1 Plannotator gate (pre-tech), interface runs automatically. (~10 stages)
+- `Core + Moderate` → Feature where interface matters: 1 Plannotator gate + user chooses interface. (~8 stages)
+- `Complete + Full Product` → Critical feature: 2 Plannotator gates + all questions. No shortcuts. (~13 stages)
 
 ### Motivation
 
 Product ideas vary widely in scope and risk. A throwaway prototype should not require the same planning depth as a critical production feature. The Appetite × Mode cascade system ensures:
 
-- **PoC appetite skips supervisor overhead** - no human-in-loop for throwaway prototypes
-- **Comprehensive appetite activates deeper verification** - full test suite, code review, a11y audit, and mutation testing run before delivery
+- **Lean appetite skips supervisor overhead** - no human-in-loop for throwaway prototypes
+- **Complete appetite activates deeper verification** - full test suite, code review, a11y audit, interactive testing, and live site audit run before delivery
 - **Auto mode skips Plannotator** - for lightweight validations where visual review is overkill
 - **Full Product mode enforces strategy** - JTBD, Opportunity Mapping, etc. run before shaping if product context exists
 
@@ -243,7 +250,7 @@ All 25 skills are flat in `skills/` directory, ready for `~/.agents/skills/`. Th
 | `cali-product-codebase-critique` | Codebase structural critique (architecture, performance, AI slop) |
 | `cali-product-ux-critique` | Full UX/UI audit (accessibility, Nielsen heuristics, personas, AI slop) |
 | `cali-product-tech-planning` | Technical scope generation with dependency mapping |
-| `cali-product-testing-ai-code` | AI-aware mutation testing strategy |
+| `cali-product-testing-ai-code` | AI-aware testing strategy |
 | `cali-product-testing-execution` | Post-implementation testing protocol |
 | `cali-product-scope-executor` | Autonomous scope execution via acceptance contracts - child self-corrects (harness-dependent), parent evaluates final result |
 | `cali-product-execution-critique` | Post-execution audit - classifies gaps as FIXED/DOCUMENTED/ESCALATED; ESCALATED gaps become new scopes |
@@ -438,7 +445,7 @@ This workflow combines product planning, domain knowledge, and technical executi
 | **Execution** | One-shot | Manual iteration | Acceptance contract + self-correction (harness-dependent) |
 | **Post-execution** | Done | Manual QA | Audit classifies gaps → ESCALATED become scopes → `/sw-next` enforces loop |
 | **Domain Skills** | None | Generic | 8 product-specific (auto-detected) |
-| **Testing** | Ad-hoc | Configured | AI-aware mutation coverage |
+| **Testing** | Ad-hoc | Configured | AI-aware test strategy |
 | **Interface** | None | Coded mockups | ASCII art + tradeoffs + hybrid |
 | **Tracking** | None | Varies | Real-time TUI + Muxy.app visual overlay |
 
@@ -489,7 +496,7 @@ Even with these guardrails, the AI agent still exhibits predictable failure mode
 | 2 | **Confabulated research references** - Agents cite nonexistent papers or books (~11-57% hallucination rate across models) | [arXiv 2604.03173](https://arxiv.org/abs/2604.03173) - 10 models/3 databases/69K citation instances | Claim verification in `setup:0.20` (Lessons Learned cross-referencing). | **Caught by structure, not guaranteed.** Multi-model consensus (≥3 LLMs citing same work) yields 95.6% accuracy, but the workflow doesn't enforce this. |
 | 3 | **Silent wrong answers** - Cross-task state leakage produces plausible but incorrect outputs | [UCC (arXiv 2604.01350)](https://arxiv.org/abs/2604.01350), 2026 | Write isolation per subagent; clean context pattern | **Mitigated by isolation, not by detection.** No mechanism to detect when contamination happens despite isolation. |
 | 4 | **Overconfidence in estimates** - AI systematically underestimates implementation complexity | [Agentic Overconfidence (ICLR 2026)](https://openreview.net/forum?id=Ld4bvamfKj) - all tested agents exhibit agentic overconfidence | Appetite is declared by human as a **constraint**, not estimated by the LLM. The LLM only checks `appetite_fit` (fits/cuts_needed/reshape). No estimation step. | **Addressed by design - appetite is a constraint, not an estimate.** The human sets the budget before shaping. The LLM checks fit, not effort. But the human still needs to set appetite honestly. |
-| 5 | **Approval gate fatigue** - Users can desensitize to visual gates and approve without scrutiny | [Tian Pan Apr 2026](https://tianpan.co/blog/2026-04-23-hitl-queue-dynamics-approver-fatigue) - HITL queues have dynamics | Plannotator requires active annotations (deletions, comments, labels). PoC+Auto mode skips gates entirely when appropriate. | **Delayed, not prevented.** Mode selection helps reduce unnecessary gates, but if the human always picks Comprehensive+Full Product, fatigue still sets in. |
+| 5 | **Approval gate fatigue** - Users can desensitize to visual gates and approve without scrutiny | [Tian Pan Apr 2026](https://tianpan.co/blog/2026-04-23-hitl-queue-dynamics-approver-fatigue) - HITL queues have dynamics | Plannotator requires active annotations (deletions, comments, labels). Light+Auto mode skips gates entirely when appropriate. | **Delayed, not prevented.** Mode selection helps reduce unnecessary gates, but if the human always picks Complete+Full Product, fatigue still sets in. |
 | 6 | **80% Problem** - AI ships the happy path (CRUD, main flow) but omits error handling, observability, security, retry, rollback, edge cases | [Osmani Jan 2026](https://addyo.substack.com/p/the-80-problem-in-agentic-coding) (coined the term); [GitClear 2025](https://www.gitclear.com/ai_assistant_code_quality_2025_research) | Tech Planning requires NFRs per scope. Acceptance contracts can include NFR criteria (if the plan specifies them). Audit classifies omissions as gaps - ESCALATED ones become new scopes. | **Partially mitigated, not solved.** NFRs must be in the plan to appear in the contract. Audit classification depends on the LLM - misclassification means gaps slip through. Same model evaluates both stages. |
 | 7 | **Model dependency** - Claude Opus, Gemini Flash, GPT-4o produce significantly different quality | [Veracode 2025](https://www.veracode.com/wp-content/uploads/2025_GenAI_Code_Security_Report_Final.pdf) - 45% of AI-generated code contains flaws across 100+ models; [Anthropic Jan 2026](https://arxiv.org/abs/2601.20245) - RCT: AI-assisted devs score 17% lower on comprehension tests | Every artifact tracks `generated_by: {model_name}` in frontmatter. Gate stage shows provenance before Plannotator review. | **Transparency, not mitigation.** Knowing the model helps calibrate expectations, but it doesn't fix the quality gap. The comprehension penalty (Anthropic 2026) affects users regardless. |
 | 8 | **Constraint decay** - AI progressively violates its own self-imposed rules over time | [arXiv 2026 (Constraint Decay)](https://arxiv.org/abs/2605.06445) - structural constraints drift in backend code generation; [HORIZON](https://arxiv.org/abs/2604.11978) - agents break on long-horizon tasks | Context rot rules explicitly warn about this. "No patching in degraded context" rule blocks the most common decay pattern. | **Same root cause as context rot.** The warning helps, but stopping a session mid-flow is disruptive and users rarely do it. |
@@ -540,7 +547,7 @@ See [docs/INSTALLATION.md#required-npm-packages](docs/INSTALLATION.md#required-n
 
 ### Development
 
-See [package.json](package.json) for toolchain dependencies (TypeScript, Vitest, Stryker).
+See [package.json](package.json) for toolchain dependencies (TypeScript, Vitest).
 
 ### Third-Party Skills (Optional)
 

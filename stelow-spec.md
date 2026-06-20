@@ -22,7 +22,7 @@
 | State | JSON files | Per-project + global tracking |
 | CLI Detection | Node.js fs/path | Dir-based + env var |
 | Security | Trivy, Socket.dev, OSV | Supply chain scanning |
-| Testing | Vitest + Stryker | Unit + mutation testing |
+| Testing | Vitest + coverage gates | Unit + integration + security testing |
 | Distribution | Git (GitHub only) | No npm — security choice |
 
 *Note: This section exists for context only. The rest of the spec is tech-agnostic.*
@@ -178,7 +178,7 @@ Phase 14: Execution Critique    → Post-execution verification
 **Rules:**
 - Sequencing: Riskiest-first or UI-first principle
 - Executor override: `[EXECUTOR] optimization-goal` optional tag
-- TDD guidance: TDD for critical paths + mutation testing for AI-generated code
+- TDD guidance: TDD for critical paths + risk-based coverage for AI-generated code
 - Worktree: Optional git worktree for isolated execution in shared repo
 
 ---

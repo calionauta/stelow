@@ -112,7 +112,7 @@ SPEC_FILE=$(ls $SPEC 2>/dev/null | head -1) || SPEC_FILE=""
 MODE="Full Product"
 [ -n "$WF_DIR" ] && MODE=$(grep -oP '"mode":\s*"([^"]+)"' "$WF_DIR/index.json" | grep -oP '"([^"]+)"$' | tr -d '"' )
 MODE=${MODE:-Full Product}
-APPETITE=$(grep -oP '^appetite:\s*\K\S+' "$SPEC_FILE" 2>/dev/null || echo "Focused")
+APPETITE=$(grep -oP '^appetite:\s*\K\S+' "$SPEC_FILE" 2>/dev/null || echo "Core")
 FIT=$(grep -oP '^appetite_fit:\s*\K\S+' "$SPEC_FILE" 2>/dev/null || echo "fits")
 ```
 

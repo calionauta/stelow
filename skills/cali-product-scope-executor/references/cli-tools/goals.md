@@ -213,7 +213,7 @@ Optimization scopes use the same contract with benchmark verify commands.
 
 | Gate | Condition | Action |
 |------|-----------|--------|
-| Mutation Score | < target | 🔴 BLOCK — do not mark scope done |
+| Critical Path Tests | missing required tests | 🔴 BLOCK — do not mark scope done |
 | Security | > 0 critical | 🔴 BLOCK — escalate to human |
 | Flaky Rate | > 5% | 🟡 WARN — note in scope report |
 

@@ -10,20 +10,20 @@ After all scopes are executed, run the testing protocol before delivery audit.
 **Before running verification steps, read appetite:**
 
 ```bash
-APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "Focused")
+APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "Core")
 SCOPE_COUNT=$(ls .stelow/{YYYY-MM-DD}/{_dir}/plans/scopes/*.md 2>/dev/null | wc -l | tr -d ' ')
 ```
 
 | Appetite | test-suite | code-review | ui-quality | interactive-testing | code-quality-gate | invisible-20% |
 |----------|-----------|-------------|------------|-------------------|-------------------|---------------|
-| `PoC` | ✅ Run | **Skip** | **Skip** | **Skip** | ✅ Run | ✅ Run |
-| `Focused` | ✅ Run | **Skip (1-2 files)** | **Skip (no new UI)** | **Skip** | ✅ Run | ✅ Run |
-| `Comprehensive` | ✅ Run | ✅ (3+ files) | ✅ Live Site | ✅ Full browser | ✅ Run | ✅ Run |
+| `Lean` | ✅ Run | **Skip** | **Skip** | **Skip** | ✅ Run | ✅ Run |
+| `Core` | ✅ Run | **Skip (1-2 files)** | **Skip (no new UI)** | **Skip** | ✅ Run | ✅ Run |
+| `Complete` | ✅ Run | ✅ (3+ files) | ✅ Live Site | ✅ Full browser | ✅ Run | ✅ Run |
 
 **Rationale:**
-- **PoC code-review skip:** Codebase critique is useless for 1 file. Correctness covered by test-suite + invisible-20%.
-- **PoC ui-quality skip:** No new UI, nothing to audit.
-- **PoC interactive-testing skip:** 1 component has no complex interaction.
+- **Lean code-review skip:** Codebase critique is useless for 1 file. Correctness covered by test-suite + invisible-20%.
+- **Lean ui-quality skip:** No new UI, nothing to audit.
+- **Lean interactive-testing skip:** 1 component has no complex interaction.
 
 ### Auto-chain
 
@@ -49,16 +49,16 @@ pytest
 
 ### code-review (appetite-aware)
 
-Check appetite first — for PoC/Focused with few files, code-review is unnecessary:
+Check appetite first — for Lean/Core with few files, code-review is unnecessary:
 
 ```bash
-APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "Focused")
+APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "Core")
 DIFF_FILES=$(git diff --name-only HEAD~1 2>/dev/null | wc -l | tr -d ' ')
 
-if [ "$APPETITE" = "PoC" ]; then
-  echo "CODE_REVIEW_SKIP: appetite PoC — minimal scope, test-suite + invisible-20% covers."
-elif [ "$APPETITE" = "Focused" ] && [ "$DIFF_FILES" -le 2 ]; then
-  echo "CODE_REVIEW_SKIP: appetite Focused with $DIFF_FILES file(s) — does not justify structural review."
+if [ "$APPETITE" = "Lean" ]; then
+  echo "CODE_REVIEW_SKIP: appetite Lean — minimal scope, test-suite + invisible-20% covers."
+elif [ "$APPETITE" = "Core" ] && [ "$DIFF_FILES" -le 2 ]; then
+  echo "CODE_REVIEW_SKIP: appetite Core with $DIFF_FILES file(s) — does not justify structural review."
 elif [ "$DIFF_FILES" -ge 3 ]; then
   echo "CODE_REVIEW_RUNNING: $DIFF_FILES files changed — launching parallel reviewer."
 fi
@@ -78,17 +78,17 @@ same model, because the issue isn't identical models but contaminated context
 Check appetite and UI scope before running:
 
 ```bash
-APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "Focused")
+APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "Core")
 UI_FILES=$(git diff --name-only HEAD~1 2>/dev/null | grep -cE '\.(templ|html|tsx|jsx|css)$' || echo "0")
 ```
 
 | Appetite | UI files | Action |
 |----------|---------|--------|
-| `PoC` | any | **Skip.** No new UI or minimal scope — lint covers basic a11y. |
-| `Focused` | 0 | **Skip.** No UI. |
-| `Focused` | 1+ | **Normal.** Delegate to `cali-product-ux-critique`. Codebase mode (browserless). |
-| `Comprehensive` | 0 | **Skip.** No UI. |
-| `Comprehensive` | 1+ | **Live Site mode.** Full browser audit. |
+| `Lean` | any | **Skip.** No new UI or minimal scope — lint covers basic a11y. |
+| `Core` | 0 | **Skip.** No UI. |
+| `Core` | 1+ | **Normal.** Delegate to `cali-product-ux-critique`. Codebase mode (browserless). |
+| `Complete` | 0 | **Skip.** No UI. |
+| `Complete` | 1+ | **Live Site mode.** Full browser audit. |
 
 If running, delegate to `cali-product-ux-critique`.
 
@@ -110,14 +110,14 @@ correctness that rule-based tools cannot assess.
 Check appetite before interactive testing:
 
 ```bash
-APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "Focused")
+APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "Core")
 ```
 
 | Appetite | Action |
 |----------|--------|
-| `PoC` | **Skip.** 1 component does not justify interactive testing — test-suite covers. |
-| `Focused` | **Skip.** Small scope — test-suite + invisible-20% sufficient. |
-| `Comprehensive` | **Run.** Full browser if applicable. |
+| `Lean` | **Skip.** 1 component does not justify interactive testing — test-suite covers. |
+| `Core` | **Skip.** Small scope — test-suite + invisible-20% sufficient. |
+| `Complete` | **Run.** Full browser if applicable. |
 
 If the feature has interactive elements (forms, clicks, inputs):
 

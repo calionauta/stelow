@@ -43,7 +43,7 @@ stages:
 
   - name: context
     order: 25
-    description: "Strategic context. Market analysis, JTBD, domain detection. Gated by `context:5` (appetite/mode): PoC+Auto skips; PoC+non-Auto uses reduced ask. See `stages/context.md#context:5`."
+    description: "Strategic context. Market analysis, JTBD, domain detection. Gated by `context:5` (appetite/mode): Light+Auto skips; Light+non-Auto uses reduced ask. See `stages/context.md#context:5`."
     blocked_tools: []
     allowed_tools: [ask, read, grep, ls, write, subagent]
     preferred_tools: [read, write]

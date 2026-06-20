@@ -99,16 +99,16 @@ Proceed directly to scope execution in the current directory.
 
 **Before routing, read appetite from spec-product.md.**
 ```bash
-APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "Focused")
+APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "Core")
 ```
 
 **Supervisor decision by appetite** (see `references/cli-tools/supervise.md` for full reference):
 
 | Appetite | Supervisor | Sensitivity | Human-in-loop | Rationale |
 |----------|-----------|-------------|---------------|----------|
-| `PoC` | **Activate** | `low` | No | Even small scopes can drift over multiple turns. Low sensitivity catches clear deviations without false-positive noise. |
-| `Focused` | **Activate** | `medium` | No | Standard feature scope. Medium sensitivity balances steering vs autonomy. |
-| `Comprehensive` | **Activate** | `high` | No | High-risk, multi-scope work. High sensitivity ensures drift is caught early. |
+| `Lean` | **Activate** | `low` | No | Even small scopes can drift over multiple turns. Low sensitivity catches clear deviations without false-positive noise. |
+| `Core` | **Activate** | `medium` | No | Standard feature scope. Medium sensitivity balances steering vs autonomy. |
+| `Complete` | **Activate** | `high` | No | High-risk, multi-scope work. High sensitivity ensures drift is caught early. |
 
 > **Human-in-loop is controlled by Mode** (from `index.json`), not by appetite.
 > Mode = Full Product or Full Product + Tech may add human approval checkpoints per PR.
@@ -131,7 +131,7 @@ APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-
 
 1. **Read appetite** from spec-product.md:
    ```bash
-   APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "Focused")
+   APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "Core")
    ```
 
 2. **Feature/refactor/spike without metric → goals tool** (see `references/cli-tools/goals.md`)
@@ -141,7 +141,7 @@ APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-
      /supervise outcome="Execute scope '{scope_name}' per spec-tech.md.
      DoD: {DoD}. AC: {acceptance criteria}. Do not deviate from approved scope."
      ```
-     Add `sensitivity: "medium"` if appetite = Focused.
+     Add `sensitivity: "medium"` if appetite = Core.
    - The supervisor detects deviation and re-centers if the LLM leaves scope
 
 3. **Optimization/spike with metric → goals tool** (see `references/cli-tools/goals.md`, Optimization Goals)
@@ -160,16 +160,10 @@ APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-
 
 | Gate | Condition | Action | Rationale |
 |------|-----------|--------|----------|
-| **Mutation Score** | mutation_score < target | 🔴 BLOCK | AI code has 1.7x more bugs; mutation testing validates test quality |
+| **Critical Path Tests** | missing required tests | 🔴 BLOCK | AI code has 1.7x more bugs; critical paths need executable regression checks |
 | **Security Findings** | security_findings > 0 on critical paths | 🔴 BLOCK | 45% of AI code contains vulnerabilities (Veracode 2025) |
 | **Flaky Tests** | flaky_rate > 5% | 🟡 WARN | Agents generate non-deterministic tests |
 | **Test Execution** | duration > 10min | 🟡 WARN | CI/CD pipeline impact |
-
-**Mutation testing loop:**
-1. Generate tests (AI)
-2. Run mutation testing (Stryker/PIT/mutmut)
-3. If mutation_score < target → feed surviving mutants back to AI
-4. Repeat until target reached
 
 **Security scanning:**
 - Run SAST on every commit for critical paths
