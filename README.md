@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="./logo.svg" alt="Stelow logo" width="400">
+</p>
+
 # stelow — opinionated product workflow. stellar clarity. low friction.
 
 [![CI](https://github.com/renatocaliari/stelow/actions/workflows/ci.yml/badge.svg)](https://github.com/renatocaliari/stelow/actions/workflows/ci.yml)
