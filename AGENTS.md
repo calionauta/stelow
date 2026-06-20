@@ -42,10 +42,16 @@ npm run typecheck        # Type check
 ## Versioning
 
 - **Single source:** `package.json` → `npm run version:sync` syncs plugin files.
-- **Bump before release:** `npm version <major.minor.patch> --no-git-tag-version`, then `npm run version:sync`.
-- **Tag matches package.json:** `git tag -a v$(node -p "require('./package.json').version") -m "msg"`. Never guess the version.
-- **CHANGELOG** updated in same commit as version bump.
-- **α (alpha) suffix:** keep `-alpha` suffix on non-stable releases. Drop suffix only for stable.
+- **Tag and Release are linked — never create one without the other.** A git tag alone does not create a GitHub Release; the landing page shows only Releases, not tags.
+- **Full release workflow (do NOT skip steps):**
+  1. `npm version <major.minor.patch> --no-git-tag-version` — bump `package.json`
+  2. `npm run version:sync` — sync plugin files
+  3. Update `CHANGELOG.md` — add entry with changes
+  4. `git add -A && git commit -m "chore: bump to v<version>"`
+  5. `git tag -a v$(node -p "require('./package.json').version") -m "v<version>: <summary>"`
+  6. `git push origin main --tags`
+  7. **`gh release create v$(node -p "require('./package.json').version") --title "v<version>" --notes "<changelog>"`** — required for GitHub landing page visibility
+- **Never guess the version** — always read `package.json` first.
 
 ## Don'ts
 
