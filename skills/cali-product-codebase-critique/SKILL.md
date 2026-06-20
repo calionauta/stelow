@@ -21,6 +21,8 @@ metadata:
 
 > **Tools:** See `references/cli-tools/subagents.md` for subagent patterns.
 
+**Standalone awareness:** inside stelow, appetite gates critique depth (Lean → skip, Core → quick, Complete → full). Standalone defaults to Core appetite (quick single-reviewer). Works with any source directory — no stelow dependency for the audit logic.
+
 ## Overview
 
 Structural codebase critique — evaluates architecture, data flow, API contracts, performance,

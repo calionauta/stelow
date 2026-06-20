@@ -301,7 +301,7 @@ What do you want to do?`,
    ```
    This reuses the existing `/sw-setphase` mechanism — no new command needed.
    The `currentPhase` in stelow.json resets to Shape (index 4) and planning stage is reopened.
-4. Inform user: "Blocking constraint saved to `context/blocking-constraints.md`. The workflow has been reset to the Shape stage. `/sw-next` will resume shaping with these tech constraints as input."
+4. Inform user: "Blocking constraint saved to `context/blocking-constraints.md`. The workflow has been reset to the Shape stage. The orchestrator will now run shape:10 — it reads `blocking-constraints.md` automatically and resumes shaping with these constraints as input."
 
 **On next shape cycle:** `shape:10` checks for `context/blocking-constraints.md` automatically. If found, constraints are read and the file is removed to prevent stale context.
 
