@@ -270,12 +270,12 @@ and reads specs from current directory or prompts for paths.
 **Read mode + locate specs:**
 ```bash
 WF_DIR="$(ls -td .stelow/*/*/ 2>/dev/null | head -1)"
-MODE="Full Product"
+REVIEW_MODE="All Above + Scopes In/Out"
 SPEC_PRODUCT=""
 SPEC_TECH=""
 
 if [ -n "$WF_DIR" ] && [ -f "${WF_DIR}index.json" ]; then
-  MODE=$(grep -oP '"mode":\s*"([^"]+)"' "${WF_DIR}index.json" 2>/dev/null | grep -oP '"([^"]+)"$' | tr -d '"' )
+  REVIEW_MODE=$(grep -oP '"review_mode":\s*"([^"]+)"' "${WF_DIR}index.json" 2>/dev/null | grep -oP '"([^"]+)"$' | tr -d '"' )
   SPEC_PRODUCT=".stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md"
   SPEC_TECH=".stelow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_{v}.md"
   STELOW_MODE=true
@@ -312,10 +312,10 @@ If skipped, log: `context/alignment-skipped.md` with reason.
 | Mode | `aligned` | `product_needs_update` | `blocking` |
 |------|-----------|----------------------|-----------|
 | **Auto** | Segue | Auto-update spec-product v+1. Segue. | Auto-update spec-product v+1. Segue. |
-| **Light** | Segue | Auto-update spec-product v+1. Log change in artifact. | Auto-update spec-product v+1. Log change in artifact. |
-| **Moderate** | Segue | **Flag user** (ask tool): "Tech planning suggests updating scope. Allow?" Recom: update. | **Flag user**: "Tech plan contradicts product spec. Reshape required?" Recom: reshape. |
-| **Full Product** | Segue | **Ask user**: show diff, let them choose update/ignore/reshape. | **Ask user**: show contradiction. Offer reshape or abort. |
-| **Full + Tech** | Segue | **Ask user** with detailed tech impact. | **Ask user** with detailed tech impact. |
+| **Only Product Spec** | Segue | Auto-update spec-product v+1. Log change in artifact. | Auto-update spec-product v+1. Log change in artifact. |
+| **Product Spec + Interface Choice** | Segue | **Flag user** (ask tool): "Tech planning suggests updating scope. Allow?" Recom: update. | **Flag user**: "Tech plan contradicts product spec. Reshape required?" Recom: reshape. |
+| **All Above + Scopes In/Out** | Segue | **Ask user**: show diff, let them choose update/ignore/reshape. | **Ask user**: show contradiction. Offer reshape or abort. |
+| **All Above + Tech Review** | Segue | **Ask user** with detailed tech impact. | **Ask user** with detailed tech impact. |
 
 **Appetite affects check depth:**
 
@@ -325,7 +325,7 @@ If skipped, log: `context/alignment-skipped.md` with reason.
 | **Core** | Standard: compare IN/OUT scopes vs feasibility. Check NFR constraints. |
 | **Complete** | Deep: check each scope's ACs vs codebase reality. Include performance, security, dependencies. |
 
-**If `product_needs_update` or `blocking` and Mode ≥ Moderate:**
+**If `product_needs_update` or `blocking` and Review Mode >= Product Spec + Interface Choice:**
 
 Use `ask_user_question` (see `references/cli-tools/structured-question.md`):
 

@@ -41,7 +41,6 @@ references/cli-tools/
 ├── subagents.md       # Parallel task delegation
 ├── plannotator.md     # Visual review gate
 ├── goals.md           # Goal execution
-├── context-mode.md    # Context Mode integration
 └── ...                # Other tool abstractions
 ```
 
@@ -96,8 +95,6 @@ Defaulting to `generic` is safer than assuming a specific harness. When we don't
 | `goals` | Autonomous execution | ✅ pi, ❌ others |
 | `intercom` | Cross-session messaging | ✅ pi, ❌ others |
 | `supervise` | Outcome steering | ✅ pi, ❌ others |
-| `context-mode` | Context reduction (ctx_*) | ⚠️ Optional |
-
 ### CLI-Specific Notes
 
 #### pi
@@ -106,7 +103,6 @@ Full support including:
 - TUI status display
 - Commands (`/sw-start`, `/sw-menu`, etc.)
 - Plannotator integration
-- Context Mode support
 
 #### opencode, claude-code, codex
 
@@ -141,12 +137,6 @@ Run the workflow and verify:
 - Fallbacks work when tools unavailable
 
 ---
-
-## Context Mode
-
-Context Mode provides ~98% context reduction for heavy operations. It's optional but recommended.
-
-See [CONTEXT-MODE.md](./CONTEXT-MODE.md) for details.
 
 ---
 

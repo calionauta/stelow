@@ -80,7 +80,11 @@ Recebi um diretório de código e quero revisar a arquitetura.
 Quando um scope técnico é executado e precisa de revisão de código-fonte.
 
 ### Via stelow (Stage Verification)
-O stage `code-review` delega para esta skill.
+
+Use this skill when the workflow needs a structural codebase audit beyond the
+normal fresh-context code review. The default `code-review` step launches a
+fresh reviewer; use this skill when architecture, data flow, API contracts,
+performance, theming, responsive patterns, or AI slop need deeper analysis.
 
 ---
 
@@ -167,8 +171,10 @@ de código para esta skill.
 
 ### stelow (Stage Verification)
 
-O stage `code-review` delega para esta skill quando o input é um código-fonte
-não-visual.
+The default `code-review` step launches a fresh-context reviewer. Use this skill
+when the workflow needs a deeper structural audit of non-visual code, or when
+the normal review finds architecture/data-flow/performance concerns that need
+specialized analysis.
 
 ---
 

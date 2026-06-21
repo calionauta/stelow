@@ -38,7 +38,7 @@ The plan must contain scopes with type annotations:
 
 If the plan has the optional **"Execution routing"** section (from stelow), use it directly. Otherwise, infer routing from `[TYPE]` tags.
 
-**Standalone awareness:** when inside stelow, reads appetite from `.stelow/*/plans/spec-product*.md` and checks mode in `index.json`. When standalone, defaults to Core appetite + Full Product mode. Scans current directory for `spec-tech*.md` files. The `[TYPE]` routing works identically in both modes — no stelow dependency for scope execution logic.
+**Standalone awareness:** when inside stelow, reads appetite from `.stelow/*/plans/spec-product*.md` and checks review_mode in `index.json`. When standalone, defaults to Core appetite + All Above + Scopes In/Out review mode. Scans current directory for `spec-tech*.md` files. The `[TYPE]` routing works identically in both modes — no stelow dependency for scope execution logic.
 
 ---
 
@@ -134,8 +134,8 @@ Phase 2 (after SCOPE-1):
 APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/*/*/plans/spec-product_*.md 2>/dev/null || echo "Core")
 if [ "$APPETITE" = "Complete" ]; then
   echo "⚠️ COMPREHENSIVE APPETITE: Human-in-loop mode may be needed for architectural changes."
-  echo "Check the workflow's 'mode' setting in index.json."
-  echo "In Full Product + Tech mode, each PR/fork-point requires human approval before merge."
+  echo "Check the workflow's review_mode setting in index.json."
+  echo "In All Above + Tech Review mode, each PR/fork-point requires human approval before merge."
 ```
 
 Ask the user:

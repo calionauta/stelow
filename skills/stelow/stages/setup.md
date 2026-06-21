@@ -259,11 +259,28 @@ After identifying the workflow:
 
 7. **Jump to the determined stage** and execute normally. Do not recreate existing artifacts.
 
-### setup:15 — Appetite & Mode Declaration
+### setup:12 — Group Context Injection
 
-**Before stage selection, the human declares appetite and mode.**
+If a group was selected during the Item Selection stage, a group manifest exists at `.stelow/{date}/{dir}/group-context/manifest.json`. Read it and inject the group items into the session:
 
-Appetite defines the **depth of scope** (what the LLM prepares). Mode defines the **level of interaction** (how the workflow engages the human). They are orthogonal choices.
+```bash
+GROUP_FILE=".stelow/*/*/group-context/manifest.json"
+if ls $GROUP_FILE 2>/dev/null; then
+  cat $(ls $GROUP_FILE | head -1)
+  echo "GROUP_MODE: true"
+fi
+```
+
+If `GROUP_MODE: true`, prefix the session with:
+> **Group mode active.** This workflow shapes ALL items in the group together under one spec. Each group item becomes a separate typed scope during Tech Planning. IN/OUT boundaries apply to the whole group.
+
+This propagates to the Shape Up stage: the spec's `## IN` / `## OUT` sections cover the entire group, and each item in the group becomes a dedicated section under `## Solution`. The gate approves the group spec as a whole — individual item veto is treated as a scope adjustment.
+
+### setup:15 — Appetite & Review Mode Declaration
+
+**Before stage selection, the human declares appetite and review mode.**
+
+Appetite defines the **depth of scope** (what the LLM prepares). Review Mode defines the **level of human review** (which gates and approvals are active). They are orthogonal choices.
 
 #### Step 1: Ask Appetite
 
@@ -276,7 +293,7 @@ ask_user_question({
   questions: [{
     question: `How deep should the plan be?
 This sets the appetite — how much scope the LLM should prepare.
-Appetite is declared first, then the mode of interaction is chosen.`,
+Appetite is declared first, then the review mode is chosen.`,
     header: "Appetite",
     options: [
       { label: "Lean", description: "Quick validation — 1 minimal feature, ~1 page spec, 1-2 scopes. No edge cases." },
@@ -304,34 +321,34 @@ fi
 | Core | Low-value variants. Keep the main JTBD, obvious edge cases, and one alternative only if it changes the core flow. |
 | Complete | Cut nothing unless impossible. Keep full edge case mapping, multiple implementation strategies, and domain context. |
 
-#### Step 2: Ask Mode
+#### Step 2: Ask Review Mode
 
-Use **Pattern 8 (Interaction Mode)** from `stages/ask-patterns.md`.
+Use **Pattern 8 (Review Mode)** from `stages/ask-patterns.md`.
 
 ```
 ask_user_question({
   questions: [{
-    question: `How much interaction do you want during the workflow?
-This sets the mode — which gates, questions, and approvals are active.
-Mode also controls gap resolution — who resolves gaps the Plan Critique finds.
-Mode is orthogonal to appetite: appetite defines depth, mode defines feedback.`,
-    header: "Mode",
+    question: `How much human review during the workflow?
+Review Mode sets which gates, questions, and approvals are active.
+It also controls gap resolution — who resolves gaps the Plan Critique finds.
+Review Mode is orthogonal to appetite: appetite defines depth, review mode defines human oversight.`,
+    header: "Review",
     options: [
-      { label: "Auto", description: "No gates, no questions, no Plannotator. AI resolves all gaps (trivial, moderate, critical) without asking." },
-      { label: "Light", description: "Product approval only: one Plannotator gate before tech planning. AI resolves all gaps without asking. No IN/OUT confirmation." },
-      { label: "Moderate", description: "Product + UX approval. AI resolves trivial gaps. Moderate/critical gaps: AI asks user with its recommendation marked as recommended." },
-      { label: "Full Product", description: "Full flow: all gates, all questions. AI resolves trivial gaps. User answers each moderate/critical gap (AI recommendation marked). Except tech — those use Auto." },
-      { label: "Full Product + Tech", description: "Everything including tech: all gates, all questions. AI resolves trivial gaps. User answers each moderate/critical gap (AI recommendation marked). Plus tech approval and tech questions." }
+      { label: "Auto", description: "No gates, no questions, no Plannotator. AI resolves all gaps without asking." },
+      { label: "Only Product Spec", description: "One Plannotator gate on the shaped product spec. AI resolves all gaps without asking. No IN/OUT confirmation." },
+      { label: "Product Spec + Interface Choice", description: "Product spec gate + interface gate. User picks the UI direction from generated alternatives. AI resolves trivial gaps, asks about moderate/critical." },
+      { label: "All Above + Scopes In/Out", description: "All product gates including scope IN/OUT confirmation after gate approval. User adjusts boundaries. AI resolves trivial gaps, asks about moderate/critical." },
+      { label: "All Above + Tech Review", description: "All product gates + tech plan gate + technical questions. Full pipeline oversight with AI recommendations." }
     ]
   }]
 })
 ```
 
-**Validate the mode value:**
+**Validate the review mode value:**
 ```bash
-VALID_MODES="Auto Light Moderate Full Product Full Product + Tech"
-if ! echo "$VALID_MODES" | grep -qw "{chosen_mode}"; then
-  echo "INVALID_MODE: '{chosen_mode}' must be one of: Auto, Light, Moderate, Full Product, Full Product + Tech"
+VALID_REVIEW_MODES="Auto Only Product Spec Product Spec + Interface Choice All Above + Scopes In/Out All Above + Tech Review"
+if ! echo "$VALID_REVIEW_MODES" | grep -qw "{chosen_review_mode}"; then
+  echo "INVALID_REVIEW_MODE: '{chosen_review_mode}' must be one of: Auto, Only Product Spec, Product Spec + Interface Choice, All Above + Scopes In/Out, All Above + Tech Review"
   exit 1
 fi
 ```
@@ -347,7 +364,7 @@ if [ -n "$INDEX" ]; then
   CONFIG_JSON=$(cat <<EOF
   "config": {
     "appetite": "{chosen_appetite}",
-    "mode": "{chosen_mode}"
+    "review_mode": "{chosen_review_mode}"
   },
 EOF
   )
@@ -371,36 +388,36 @@ cut or reshaped. Appetite is a constraint, not a target — never extended.
 > **Rules:**
 > 1. Appetite is FIXED for the cycle. The LLM cannot extend it.
 > 2. If scope doesn't fit appetite, the LLM splits scope — the human decides final.
-> 3. Mode is fixed for the cycle. The LLM cannot change which gates run.
-> 4. Sub-skills called standalone always run in Full mode.
+> 3. Review Mode is fixed for the cycle. The LLM cannot change which gates run.
+> 4. Sub-skills called standalone always run in "All Above + Scopes In/Out" mode.
 
 ---
 
 ### setup:20 — Stage Selection
 
-**Mode-dependent behavior:**
+**Review Mode-dependent behavior:**
 
-| Mode | Stage selection |
-|------|----------------|
+| Review Mode | Stage selection |
+|-------------|----------------|
 | Auto | Auto-selects Shape Up → Execution (auto-determined). Skip Pattern 5 entirely. |
-| Light | Auto-selects Shape Up → Critique → Gate → Interface (LLM-recommended) → Planning → Execution. Skip Pattern 5 entirely. |
-| Moderate | Show Pattern 5 (recommended: Shape Up + Interface). |
-| Full Product | Show Pattern 5 (recommended: all stages). |
-| Full Product + Tech | Show Pattern 5 (recommended: all stages). |
+| Only Product Spec | Auto-selects Shape Up → Critique → Gate → Interface (LLM-recommended) → Planning → Execution. Skip Pattern 5 entirely. |
+| Product Spec + Interface Choice | Show Pattern 5 (recommended: Shape Up + Interface). |
+| All Above + Scopes In/Out | Show Pattern 5 (recommended: all stages). |
+| All Above + Tech Review | Show Pattern 5 (recommended: all stages). |
 
-**For Auto/Light modes:** auto-define stages without asking. Proceed directly to setup:30.
+**For Auto/Only Product Spec modes:** auto-define stages without asking. Proceed directly to setup:30.
 
-**For Moderate/Full/Full+Tech:** Use **Pattern 5** from `stages/ask-patterns.md`.
+**For Product Spec + Interface Choice / All Above + Scopes In/Out / All Above + Tech Review:** Use **Pattern 5** from `stages/ask-patterns.md`.
 
-**Safe-change behavior (mode-dependent):**
+**Safe-change behavior (review mode-dependent):**
 
-| Mode | Safe-change |
-|------|------------|
+| Review Mode | Safe-change |
+|-------------|------------|
 | Auto | Skip — no check needed |
-| Light | Auto-run `npm test` if repo has `package.json` or similar test marker |
-| Moderate | Auto-run `npm test` if repo has test marker |
-| Full Product | Ask user (Pattern 5's safe-change question) |
-| Full Product + Tech | Ask user (Pattern 5's safe-change question) |
+| Only Product Spec | Auto-run `npm test` if repo has `package.json` or similar test marker |
+| Product Spec + Interface Choice | Auto-run `npm test` if repo has test marker |
+| All Above + Scopes In/Out | Ask user (Pattern 5's safe-change question) |
+| All Above + Tech Review | Ask user (Pattern 5's safe-change question) |
 
 **If safe-change runs and fails:** inform user and offer to fix or skip.
 

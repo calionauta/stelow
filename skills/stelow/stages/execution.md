@@ -110,8 +110,8 @@ APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-
 | `Core` | **Activate** | `medium` | No | Standard feature scope. Medium sensitivity balances steering vs autonomy. |
 | `Complete` | **Activate** | `high` | No | High-risk, multi-scope work. High sensitivity ensures drift is caught early. |
 
-> **Human-in-loop is controlled by Mode** (from `index.json`), not by appetite.
-> Mode = Full Product or Full Product + Tech may add human approval checkpoints per PR.
+> **Human-in-loop is controlled by Review Mode** (from `index.json`), not by appetite.
+> Review Mode = "All Above + Scopes In/Out" or "All Above + Tech Review" may add human approval checkpoints per PR.
 
 | Scope Type | Executor | Supervision |
 |---|---|---|
@@ -223,46 +223,62 @@ After Tech Planning approval, **DO NOT** ask:
 - "Review plan first?"
 - Any variation of "what would you like to do next"
 
-**The workflow proceeds automatically: Execution → Verification → Execution Critique.**
+**The workflow proceeds automatically: Execution → Verification → Code Quality Gate (conditional) → Execution Critique.**
 
 ### Worktree (optional)
 
 Only ask about worktree if modifying code in shared repository AND multiple workflows run in parallel.
 
-### Code Quality Gate (Optional)
+### Code Quality Gate (Post-Verification, Conditional)
 
-**Trigger `codequality-review` before final commit:**
+`thermo-nuclear-code-quality-review` is an optional ultra-strict maintainability
+gate. It is **not installed by default** and must not replace the normal
+verification flow.
 
-Use `/skill:thermo-nuclear-code-quality-review` as final quality gate after executing scopes.
+Run it only after all verification steps pass and before the final commit/merge.
+Save or copy the result to:
 
-#### When to Run
-
-| Moment | Recommendation |
-|--------|---------------|
-| Gate final (before commit) | ✅ Always — validates all executed scopes |
-| Per-scope (optional) | ✅ Ask user if scope meets criteria |
-
-#### Scope Complexity Assessment
-
-After completing a scope, assess if codequality-review should run:
-
-```markdown
-Did this scope:
-- Add >200 LOC total?
-- Modify >2 files?
-- Introduce new abstractions/helpers?
-- Cross any file past 1000 lines?
-
-If YES to any → run codequality-review
-If NO to all → proceed (review at final gate)
+```text
+.stelow/{YYYY-MM-DD}/{_dir}/verification/code-quality-review.md
 ```
 
-#### Fallback (Not Installed)
+#### Run condition
 
-If `codequality-review` is not available:
-- Manually review for files >1000 lines
-- Check functions for complexity >5
-- Look for leaky abstractions and dead code
-- Run `eslint --max-warnings=0` and `tsc --noEmit`
+Run `thermo-nuclear-code-quality-review` when all of these are true:
 
-See `references/cli-tools/codequality-review.md` for full documentation.
+1. `product_type` is `software` or `hybrid`
+2. the diff includes code changes
+3. at least one appetite/review mode condition below is true
+
+#### Appetite + review mode matrix
+
+| Appetite | Review Mode | Decision |
+|----------|-------------|----------|
+| `Lean` | any | **Skip** unless the user explicitly requests it. |
+| `Core` | `Auto` / `Only Product Spec` | **Skip** unless risk is high. |
+| `Core` | `Product Spec + Interface Choice` / `All Above + Scopes In/Out` | Run when risk is high. |
+| `Core` | `All Above + Tech Review` | Run when risk is high or the diff is meaningful. |
+| `Complete` | `Auto` / `Only Product Spec` | **Run** if code changed. Resolve/document findings without asking. |
+| `Complete` | `Product Spec + Interface Choice` | **Run** if code changed. Escalate P0/P1 gaps to the user. |
+| `Complete` | `All Above + Scopes In/Out` | **Run** if code changed. P0/P1 gaps need fix or explicit human acceptance. |
+| `Complete` | `All Above + Tech Review` | **Mandatory** for software/hybrid code changes. Blocking gate before merge. |
+
+#### High-risk trigger
+
+Treat risk as high when any condition is true:
+
+- auth, payments, permissions, data persistence, migrations, API contracts, queues/jobs, or security-sensitive paths changed
+- new shared abstraction, framework integration, architecture boundary, or public contract changed
+- diff touches `>= 5` files, `>= 200` LOC, or any file over `1000` lines
+- function complexity, cyclomatic complexity, or maintainability risk is likely to exceed normal review capacity
+- prior verification found correctness, performance, or security concerns that need a deeper review
+
+#### Fallback (not installed)
+
+If `thermo-nuclear-code-quality-review` is not installed:
+
+- run the normal code-quality-gate checks from `verification.md`
+- manually check files over `1000` lines, functions over `150` lines, complexity over `5`, leaky abstractions, and dead code
+- document the skipped external review in the verification notes
+
+See `references/cli-tools/codequality-review.md` for the full trigger policy.

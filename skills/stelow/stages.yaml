@@ -7,6 +7,7 @@
 stages:
   - name: triage
     order: 10
+    model_hint: economy
     description: Initial assessment. Determine if this is a valid request.
     blocked_tools: []
     allowed_tools: [ask, read, grep, ls]
@@ -19,6 +20,7 @@ stages:
 
   - name: select
     order: 15
+    model_hint: economy
     description: Item selection. Rank accepted items, user picks one.
     blocked_tools: []
     allowed_tools: [ask, read, grep, ls]
@@ -31,6 +33,7 @@ stages:
 
   - name: setup
     order: 20
+    model_hint: standard
     description: Setup context. Explore codebase, gather requirements.
     blocked_tools: []
     allowed_tools: [ask, read, grep, ls, subagent]
@@ -43,7 +46,8 @@ stages:
 
   - name: context
     order: 25
-    description: "Strategic context. Market analysis, JTBD, domain detection. Gated by `context:5` (appetite/mode): Light+Auto skips; Light+non-Auto uses reduced ask. See `stages/context.md#context:5`."
+    model_hint: standard
+    description: "Strategic context. Market analysis, JTBD, domain detection. Gated by `context:5` (appetite/review mode): Only Product Spec+Auto skips; others use reduced ask. See `stages/context.md#context:5`."
     blocked_tools: []
     allowed_tools: [ask, read, grep, ls, write, subagent]
     preferred_tools: [read, write]
@@ -55,6 +59,7 @@ stages:
 
   - name: shape
     order: 40
+    model_hint: best
     description: Shape stage. Define appetite, hill chart, rabbit holes.
     blocked_tools: []
     allowed_tools: [ask, read, grep, ls, write, subagent]
@@ -68,6 +73,7 @@ stages:
 
   - name: critique
     order: 45
+    model_hint: best
     description: Plan critique. Pre-flight check before gate.
     blocked_tools: []
     allowed_tools: [ask, read, grep, ls, write, subagent]
@@ -80,6 +86,7 @@ stages:
 
   - name: gate
     order: 60
+    model_hint: economy
     description: Gate review. Visual approval via Plannotator required.
     blocked_tools: [edit, write, bash]
     allowed_tools: [read, ls, grep, ask]
@@ -94,6 +101,7 @@ stages:
 
   - name: scope
     order: 70
+    model_hint: economy
     description: Scope adjustment. Add/remove from IN/OUT after gate approval.
     blocked_tools: []
     allowed_tools: [ask, read, grep, ls, write, subagent]
@@ -106,6 +114,7 @@ stages:
 
   - name: interface
     order: 80
+    model_hint: best
     description: "Interface alternatives. Appetite-scaled exploration: 1, 3, or 5 proposals + hybrid."
     blocked_tools: []
     allowed_tools: [ask, read, grep, ls, write, subagent]
@@ -118,6 +127,7 @@ stages:
 
   - name: int-gate
     order: 90
+    model_hint: economy
     description: Interface gate. Visual review of all interface proposals.
     blocked_tools: [edit, write, bash]
     allowed_tools: [read, ls, grep, ask]
@@ -132,6 +142,7 @@ stages:
 
   - name: selection
     order: 100
+    model_hint: standard
     description: Interface selection. User picks via structured question.
     blocked_tools: [bash, write]
     allowed_tools: [ask, read, grep, ls, subagent]
@@ -144,6 +155,7 @@ stages:
 
   - name: planning
     order: 110
+    model_hint: best
     description: Tech planning. Typed scopes + sequencing.
     blocked_tools: []
     allowed_tools: [ask, read, grep, ls, write, subagent]
@@ -156,6 +168,7 @@ stages:
 
   - name: execution
     order: 120
+    model_hint: standard
     description: Implementation. Execute planned scopes.
     blocked_tools: []
     allowed_tools: [edit, write, bash, read, grep, ls, subagent, ask, agent_browser]
@@ -169,6 +182,7 @@ stages:
 
   - name: verification
     order: 150
+    model_hint: economy
     description: "Verification. Run full test suite, code review, UI audit, browser testing."
     blocked_tools: []
     allowed_tools: [edit, write, bash, read, grep, ls, subagent, ask, agent_browser]
@@ -181,6 +195,7 @@ stages:
 
   - name: audit
     order: 200
+    model_hint: standard
     description: Final audit. Verify all requirements met.
     blocked_tools: []
     allowed_tools: [ask, read, grep, ls, write]

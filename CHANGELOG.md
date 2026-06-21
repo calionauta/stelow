@@ -2,6 +2,41 @@
 
 All notable changes to `@renatocaliari/stelow` will be documented in this file.
 
+## [0.32.0-alpha] - 2026-06-21
+
+### Added
+- **Inbox grouping** — Triage now creates named group manifests (`.stelow/inbox/groups/`).
+  Selection shows both individual items AND groups as selectable candidates.
+  Setup reads group context and passes multi-item scope to Shape Up.
+- **Cache boundary** — `SKILL.md` reorganized with stable prefix before cache boundary
+  marker and variable content after. Expected ~65-75% reduction on SKILL.md input cost.
+- **Model routing hints** — `stages.yaml` now has `model_hint` per stage:
+  `economy` (triage, select, gate, scope, int-gate, verification),
+  `standard` (setup, context, selection, execution, audit),
+  `best` (shape, critique, interface, planning). Hints are informational —
+  harness controls actual model selection.
+- **context-efficiency.md** — Tool-agnostic token-saving strategies reference
+  (truncation, batching, structured output, stage-specific tool blocking).
+  Replaces the removed context-mode.md.
+
+### Changed
+- **Review Mode rename** — Former "Mode" renamed to "Review Mode" with explicit level names:
+  Auto → Auto, Light → Only Product Spec, Moderate → Product Spec + Interface Choice,
+  Full Product → All Above + Scopes In/Out, Full Product + Tech → All Above + Tech Review.
+  Updated across all skills, stages, tests, and documentation.
+- **install.sh rewrite** — Default is now interactive full setup (skills + extension +
+  optional deps with step-by-step confirmation). `--minimal` for skills-only.
+  `ASSUME_YES=1` for non-interactive CI mode.
+- **context-mode removed** — All 24 `context-mode.md` files deleted (main + 23 sub-skill
+  copies). Replaced by tool-agnostic `context-efficiency.md`.
+- **README.md** — External Dependencies table added. Pi/Muxy integration clarified.
+  All Mode references updated to Review Mode.
+- **AGENTS.md** — External tools section added. context-mode reference removed.
+
+### Fixed
+- **Stale references** — 100 files updated to replace old Mode values
+  (Light/Moderate/Full Product) with new Review Mode names.
+
 ## [0.31.0-alpha] - 2026-06-20
 
 ### Added

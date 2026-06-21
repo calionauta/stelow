@@ -113,7 +113,7 @@ When CLI not detected or tool unavailable:
 | `supervise.md` | Outcome steering |
 | `safe-change.md` | Git-safe changes |
 | `stage-status.md` | Workflow status commands (`/sw-setphase`, `/sw-next`, `/sw-status`) |
-| `context-mode.md` | Context Mode integration |
+| `context-efficiency.md` | Token-saving strategies (truncation, batching, caching) |
 | `codequality-review.md` | Ultra-strict code quality review |
 | `todo.md` | Phase task management with CLI-specific commands |
 | `agent_browser.md` | Automated web browser for UI verification |

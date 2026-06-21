@@ -239,8 +239,8 @@ ask_user_question({
 
 Used in `stages/setup.md` for workflow stage selection and safe-change.
 
-> **Note:** This pattern is only shown for Moderate/Full/Full+Tech modes.
-> Auto/Light modes auto-define stages.
+> **Note:** This pattern is only shown for Product Spec + Interface Choice and above.
+> Auto/Only Product Spec modes auto-define stages.
 
 > **Note:** This is the ONLY place with multiple questions in parallel.
 
@@ -380,40 +380,40 @@ Appetite is declared first, then the mode of interaction is chosen.`,
 
 ---
 
-## Pattern 8: Interaction Mode
+## Pattern 8: Review Mode
 
-Used by `setup:15` after appetite is declared. Defines how much the workflow interacts with the human.
+Used by `setup:15` after appetite is declared. Defines which gates and approvals are active.
 
 > **Trigger:** After appetite selection, before stage selection.
 
 ```typescript
 ask_user_question({
   questions: [{
-    question: `How much interaction do you want during the workflow?
-This sets the mode — which gates, questions, and approvals are active.
-Mode also controls gap resolution — who resolves gaps the Plan Critique finds.
-Mode is orthogonal to appetite: appetite defines depth, mode defines feedback.`,
-    header: "Mode",
+    question: `How much human review during the workflow?
+Review Mode sets which gates, questions, and approvals are active.
+It also controls gap resolution — who resolves gaps the Plan Critique finds.
+Review Mode is orthogonal to appetite: appetite defines depth, review mode defines human oversight.`,
+    header: "Review",
     options: [
       {
         label: "Auto",
-        description: "No gates, no questions, no Plannotator. AI resolves all gaps (trivial, moderate, critical) without asking."
+        description: "No gates, no questions, no Plannotator. AI resolves all gaps without asking."
       },
       {
-        label: "Light",
-        description: "Product approval only: one Plannotator gate before tech planning. AI resolves all gaps without asking. No IN/OUT confirmation."
+        label: "Only Product Spec",
+        description: "One Plannotator gate on the shaped product spec. AI resolves all gaps without asking. No IN/OUT confirmation."
       },
       {
-        label: "Moderate",
-        description: "Product + UX approval. AI resolves trivial gaps. Moderate/critical gaps: AI asks user with its recommendation marked as recommended."
+        label: "Product Spec + Interface Choice",
+        description: "Product spec gate + interface gate. User picks the UI direction. AI resolves trivial gaps, asks about moderate/critical."
       },
       {
-        label: "Full Product",
-        description: "Full flow: all gates, all questions. AI resolves trivial gaps. User answers each moderate/critical gap (AI recommendation marked). Except tech — those use Auto."
+        label: "All Above + Scopes In/Out",
+        description: "All product gates including scope IN/OUT confirmation. AI resolves trivial gaps, asks about moderate/critical."
       },
       {
-        label: "Full Product + Tech",
-        description: "Everything including tech: all gates, all questions. AI resolves trivial gaps. User answers each moderate/critical gap (AI recommendation marked). Plus tech approval and tech questions."
+        label: "All Above + Tech Review",
+        description: "All product gates + tech plan gate + technical Q&A. Full pipeline oversight."
       }
     ]
   }]
@@ -421,27 +421,27 @@ Mode is orthogonal to appetite: appetite defines depth, mode defines feedback.`,
 
 ```
 
-**Mode effect matrix:**
+**Review Mode effect matrix:**
 
-| Mode | Plannotator Gates | User Questions | Interface | IN/OUT Confirmation | Tech Approval | Gap Resolution |
-|------|------------------|---------------|-----------|---------------------|---------------|----------------|
-| Auto | None | None | LLM decides | LLM decides | Auto | AI resolves all (trivial, moderate, critical) |
-| Light | 1 (pre-tech) | None (final confirm only) | LLM decides | LLM decides | Gate only | AI resolves all (trivial, moderate, critical) |
-| Moderate | 1 (pre-tech) | Interface selection | User chooses | LLM decides | Gate only | AI resolves trivial. User asked on moderate/critical (AI recommends) |
-| Full Product | Gate + Int-Gate | All except technical | User chooses | User confirms | Auto | AI resolves trivial. User answers each moderate/critical (AI recommends) |
-| Full Product + Tech | Gate + Int-Gate | All including technical | User chooses | User confirms | Gate + tech Qs | AI resolves trivial. User answers each moderate/critical (AI recommends) |
+| Review Mode | Plannotator Gates | User Questions | Interface | IN/OUT Confirmation | Tech Approval | Gap Resolution |
+|---|---|---|---|---|---|---|
+| Auto | None | None | LLM decides | LLM decides | Auto | AI resolves all |
+| Only Product Spec | 1 (pre-tech) | None | LLM decides | LLM decides | Auto | AI resolves all |
+| Product Spec + Interface Choice | 1 (pre-tech) + Int-Gate | Interface selection | User chooses | LLM decides | Auto | AI trivial. User moderate/critical |
+| All Above + Scopes In/Out | 1 (pre-tech) + Int-Gate | Interface selection + scope | User chooses | User confirms | Auto | AI trivial. User moderate/critical |
+| All Above + Tech Review | 1 (pre-tech) + Int-Gate + Tech Gate | All including technical | User chooses | User confirms | Gate + tech Qs | AI trivial. User moderate/critical |
 
 **Gap Resolution semantics for Plan Critique:**
 
-When the Plan Critique finds gaps via the 7 checklists, each gap is classified as 🚨 Critical, 🤔 Important, or 🔎 Minor. The mode determines what happens:
+When the Plan Critique finds gaps via the 7 checklists, each gap is classified as 🚨 Critical, 🤔 Important, or 🔎 Minor. The review mode determines what happens:
 
-- **Auto / Light:** All gaps regardless of severity are auto-resolved. The LLM fills reasonable defaults per `auto-resolve-rules.md`. No questions to the user.
-- **Moderate:** Trivial (🔎) gaps are auto-resolved. Moderate (🤔) and Critical (🚨) gaps are presented to the user in a single batched question. Each option shows the AI's recommended resolution marked as "Recommended." User can accept or override per gap.
-- **Full Product / Full Product + Tech:** Trivial (🔎) gaps are auto-resolved. Moderate (🤔) are batched into one question. Critical (🚨) gaps are presented individually. The AI's recommended resolution is always the first option marked "(Recommended)."
+- **Auto / Only Product Spec:** All gaps regardless of severity are auto-resolved. The LLM fills reasonable defaults per `auto-resolve-rules.md`. No questions to the user.
+- **Product Spec + Interface Choice:** Trivial (🔎) gaps are auto-resolved. Moderate (🤔) and Critical (🚨) gaps are presented to the user in a single batched question. Each option shows the AI's recommended resolution marked as "Recommended." User can accept or override per gap.
+- **All Above + Scopes In/Out / All Above + Tech Review:** Trivial (🔎) gaps are auto-resolved. Moderate (🤔) are batched into one question. Critical (🚨) gaps are presented individually. The AI's recommended resolution is always the first option marked "(Recommended)."
 
-**Storage:** Save to `index.json` as `config.mode`.
+**Storage:** Save to `index.json` as `config.review_mode`.
 
-> **Note:** Mode does NOT affect supervisor, parallelization, or which skills run. All stages run for all modes — only gates and questions change.
+> **Note:** Review Mode does NOT affect supervisor, parallelization, or which skills run. All stages run for all modes — only gates and questions change.
 
 /// END PATTERN 8
 

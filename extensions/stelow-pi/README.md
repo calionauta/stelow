@@ -20,7 +20,7 @@ pi install npm:@renatocaliari/stelow
 
 ## Dual-Install Pattern
 
-This package follows the dual-install pattern (same as [context-mode](https://github.com/mksglu/context-mode)):
+This package follows a dual-install pattern:
 
 | Install Method | Target | Purpose |
 |---------------|--------|---------|

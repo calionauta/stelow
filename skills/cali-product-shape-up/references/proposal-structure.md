@@ -172,13 +172,13 @@ generated_by: "{model_name}"
 
 Mode is defined independently and stored in `index.json`. It affects gates and questions but NOT depth of scope:
 
-| Mode | Plannotator Gates | User Questions | Interface | IN/OUT Confirmation | Tech Approval |
-|------|------------------|---------------|-----------|---------------------|---------------|
-| Auto | None | None | standard (fixo) | LLM decides | Auto |
-| Light | 1 (pre-tech) | None (final confirm) | standard (fixo) | LLM decides | Gate only |
-| Moderate | 1 (pre-tech) | Interface selection | User chooses | LLM decides | Gate only |
-| Full Product | Gate + Int-Gate | All except technical | User chooses | User confirms | Auto |
-| Full Product + Tech | Gate + Int-Gate | All including technical | User chooses | User confirms | Gate + tech Qs |
+| Review Mode | Plannotator Gates | User Questions | Interface | IN/OUT Confirmation | Tech Approval |
+|-------------|------------------|---------------|-----------|---------------------|---------------|
+| Auto | None | None | LLM decides | LLM decides | Auto |
+| Only Product Spec | 1 (pre-tech) | None | LLM decides | LLM decides | Auto |
+| Product Spec + Interface Choice | Gate + Int-Gate | Interface selection | User chooses | LLM decides | Auto |
+| All Above + Scopes In/Out | Gate + Int-Gate | Interface selection + scope | User chooses | User confirms | Auto |
+| All Above + Tech Review | Gate + Int-Gate + Tech Gate | All including technical | User chooses | User confirms | Gate + tech Qs |
 
 ### Appetite-specific execution budget
 

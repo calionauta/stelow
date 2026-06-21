@@ -168,8 +168,8 @@ before assumptions get baked into a full spec.
 **Read mode:**
 ```bash
 WF_DIR="$(ls -td .stelow/*/*/ 2>/dev/null | head -1)"
-MODE="Full Product"
-[ -n "$WF_DIR" ] && MODE=$(grep -oP '"mode":\s*"([^"]+)"' "${WF_DIR}index.json" 2>/dev/null | grep -oP '"([^"]+)"$' | tr -d '"' )
+REVIEW_MODE="All Above + Scopes In/Out"
+[ -n "$WF_DIR" ] && REVIEW_MODE=$(grep -oP '"review_mode":\s*"([^"]+)"' "${WF_DIR}index.json" 2>/dev/null | grep -oP '"([^"]+)"$' | tr -d '"' )
 ```
 
 **Generate assumption list internally** — check these categories:
@@ -184,13 +184,13 @@ MODE="Full Product"
 
 **Apply mode:**
 
-| Mode | Behavior |
-|------|----------|
-| **Auto/Light** | Auto-resolve. AI fills assumptions in spec as notes. No questions. |
-| **Moderate** | Top-3 most critical assumptions. Each presented with AI recommendation.
+| Review Mode | Behavior |
+|-------------|----------|
+| **Auto/Only Product Spec** | Auto-resolve. AI fills assumptions in spec as notes. No questions. |
+| **Product Spec + Interface Choice** | Top-3 most critical assumptions. Each presented with AI recommendation.
   Use `ask_user_question` (see `references/cli-tools/structured-question.md`).
   Option format: "{assumption}. Recom: {resolution}" with "(Recommended)" marker. |
-| **Full/Full+Tech** | Top-5 assumptions. User responds to each.
+| **All Above + Scopes In/Out / All Above + Tech Review** | Top-5 assumptions. User responds to each.
   AI recommendation marked as "(Recommended)". |
 
 After resolving, note in spec frontmatter:

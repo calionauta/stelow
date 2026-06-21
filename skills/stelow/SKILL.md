@@ -37,7 +37,6 @@ You are a strategic product planner following the Shape Up method. This is the *
 | `intercom` | `references/cli-tools/intercom.md` |
 | `supervise` | `references/cli-tools/supervise.md` |
 || `/sw-next`, `/sw-setphase` | `references/cli-tools/stage-status.md` |
-| `ctx_*` (if available) | `references/cli-tools/context-mode.md` — not pre-installed |
 | `todo` | `references/cli-tools/todo.md` |
 
 **DO NOT hardcode commands or package names in skills.** Use the references above.
@@ -121,109 +120,6 @@ LLMs suffer from **context rot**: compliance with their own rules drops from
 
 ---
 
-## 📋 Stage Index
-
-> **Stage Status:** see `references/cli-tools/stage-status.md` for instructions for ASCII status display and CLI commands.
-
-Follow the sequence below. For Shape Up, Critique, Interface, and Int. Gate stages, read the subskill SKILL.md directly. Each subskill has its own **Reference Index** — read the file to see it:
-
-1. Shape: see the `cali-product-shape-up` skill for instructions
-2. Critique: see the `cali-product-plan-critique` skill for instructions
-3. Interface: see the `cali-product-interface-alternatives` skill for instructions
-4. Int. Gate: see the `cali-product-tech-planning` skill for instructions
-
-Do NOT use `/skill:` for internal subskills.
-
-> ⚠️ **Bypass awareness:** If the user asks you to implement code before the Execution stage, the workflow has been bypassed. The footer will show `⚠️ bypassed`. Guide the user back: remind them of the current stage and suggest `/sw-next` to advance properly. Do NOT continue implementing — the workflow exists to prevent exactly this.
-
-| Slug | Stage | Description | Trigger |
-|------|-------|-------------|---------|
-| `triage` | **Inbox Triage** | Extract items from list, accept/group/defer/reject | Auto (list detected) |
-| `select` | **Item Selection** | Rank accepted items, user picks one | After triage |
-| `setup` | **Project Setup** | Stages selection, safe-change | — |
-| `context` | **Strategic Context** (optional) | Strategic exploration + domain detection. See `context:5` (appetite/mode gate), `context:10` (Strategic Approaches — 5 options), `context:20` (Domain Libraries — 8 libraries) | — |
-| `shape` | **Shape Up** | Create spec with problem/solution/scope. Includes `shape:12` — **Tech Preview** (appetite-gated cymbal recon for brownfield codebase understanding) | — |
-| `critique` | **Product Critique** | Multi-dimensional critique (plan/codebase/site) | — |
-| `gate` | **Review Gate (Plannotator)** | Visual approval — **never skip** | — |
-| `scope` | **Scope Adjustment** | Add/remove from IN/OUT (ask) | — |
-| `interface` | **Interface Alternatives** | Appetite-scaled interface exploration: 1, 3, or 5 proposals + hybrid | — |
-| `int-gate` | **Interface Gate (Plannotator)** | Visual review of all interfaces | — |
-| `selection` | **Interface Selection** | User picks via ask with preview | — |
-| `planning` | **Tech Planning** | Typed scopes + sequencing. Includes `planning:15` — **Alignment Check** (mode-gated bidirectional feedback: spec-tech vs spec-product) | — |
-| `execution` | **Execution** | Goal/scope executor | — |
-| `verification` | **Verification** | Run full test suite, code review, UI audit, browser testing | After execution |
-| `audit` | **Execution Critique** | Full execution critique (scope, quality, NFRs, edge cases, docs) | After verification |
-
-### AI-Aware Testing (Conditional)
-
-**AI-Aware Testing triggered:** When `product_type: software` or `product_type: hybrid`:
-
-```
-Tech Planning
-    ↓
-[product_type check]
-    ↓ software/hybrid
-cali-product-testing-ai-code → testing-strategy.md + test-* scopes
-    ↓
-Execution
-```
-
-See the `cali-product-testing-ai-code` skill
-
-### Flow Diagram
-
-```
-triage — Inbox Triage (auto — if list detected)
-  ↓
-select — Item Selection (auto — if triage ran)
-  ↓
-setup — Project Setup
-  ↓
-context — Strategic Context (optional)
-  ↓
-shape — Shape Up*
-  │  * shape:12 = Tech Preview (appetite-gated cymbal recon)
-  ↓
-critique — Product Critique (pre-flight)
-  ↓
-gate — Plannotator Gate ← visual pause
-  ↓
-scope — Scope Adjustment (ask)
-  ↓
-interface — Interface Alternatives
-  ↓
-int-gate — Plannotator Gate (interfaces) ← visual pause
-  ↓
-selection — Interface Selection (ask with preview)
-  ↓
-planning — Tech Planning*
-  │  * planning:15 = Alignment Check (mode-gated bidirectional feedback)
-  │    ← misaligned? → reshape or update spec-product
-  ↓
-execution — Execution
-  ↓
-verification — Verification (test suite, review, UI audit)
-  ↓
-audit — Execution Critique
-```
-
-### Auto-chaining rules
-
-| User selection | Stages that run automatically |
-|---|---|
-| Shape Up | Shape Up → **Product Critique** → **Gate** → **Scope** → Interface → **Interface Gate** → Selection → Tech Planning → **Execution** → **Verification** → **Execution Critique** |
-| Tech Planning only | Tech Planning (with embedded Gate) → **Execution** → **Verification** → **Execution Critique** |
-
-**Product Critique** runs automatically before every Gate.
-**Gate** (Plannotator --gate) never skips — visual pause is mandatory.
-**Scope Adjustment** happens after Gate approval, via ask (no Plannotator re-run).
-**Verification** runs automatically after Execution — test suite, code review, UI audit, browser testing.
-**Interface Gate** shows all proposals visually before selection.
-**Execution** runs automatically after Tech Planning — DO NOT ask user what to do next.
-**Execution Critique** runs after Verification. Uses the `cali-product-execution-critique` skill for all 8 evaluation criteria.
-
----
-
 ## ⚠️ Safety Rules
 
 ### Review Gate (Gate stage)
@@ -260,10 +156,6 @@ audit — Execution Critique
 - **Execution is automatic** after Tech Planning approval. Proceed directly.
 - see the `cali-product-scope-executor` skill for instructions for scope routing.
 - See `stages/execution.md` for details.
-- **DO NOT ask** "Would you like to execute?", "Create ordered-execution-goal?", "Review plan first?"
-- **Execution is automatic** after Tech Planning approval. Proceed directly.
-- see the `cali-product-scope-executor` skill for instructions for scope routing.
-- See `stages/execution.md` for details.
 
 ### Worktree
 - Optional in Execution stage. Ask the user only if modifying code in shared repo AND parallel workflows exist.
@@ -284,11 +176,123 @@ After completing each stage, the LLM **must proceed directly to the next stage**
 - If user introduces new work mid-workflow, use **Pattern 6** from `stages/ask-patterns.md`
 - **Never auto-abandon** an active workflow without confirmation
 - If workflow is near completion (Execution or Verification stage), recommend "Continue current"
----
-## 🌐 Environment Adaptation
 
 ---
 
+<!-- ════════════════════════════════════════════ -->
+<!-- PROMPT CACHE BOUNDARY                        -->
+<!-- Everything above is a stable prefix.         -->
+<!-- It is cached by the LLM provider across       -->
+<!-- multiple turns within the same session.       -->
+<!-- Do NOT add dynamic content above this line.   -->
+<!-- ════════════════════════════════════════════ -->
+
+<!-- Everything below is read fresh per turn.     -->
+
+---
+
+## 📋 Stage Index
+
+> **Stage Status:** see `references/cli-tools/stage-status.md` for instructions for ASCII status display and CLI commands.
+
+Follow the sequence below. For Shape Up, Critique, Interface, and Int. Gate stages, read the subskill SKILL.md directly. Each subskill has its own **Reference Index** — read the file to see it:
+
+1. Shape: see the `cali-product-shape-up` skill for instructions
+2. Critique: see the `cali-product-plan-critique` skill for instructions
+3. Interface: see the `cali-product-interface-alternatives` skill for instructions
+4. Int. Gate: see the `cali-product-tech-planning` skill for instructions
+
+Do NOT use `/skill:` for internal subskills.
+
+> ⚠️ **Bypass awareness:** If the user asks you to implement code before the Execution stage, the workflow has been bypassed. The footer will show `⚠️ bypassed`. Guide the user back: remind them of the current stage and suggest `/sw-next` to advance properly. Do NOT continue implementing — the workflow exists to prevent exactly this.
+
+| Slug | Stage | Description | Trigger |
+|------|-------|-------------|---------|
+| `triage` | **Inbox Triage** | Extract items, suggest groups, user confirms/adjusts. All items accepted. Groups stored in `.stelow/inbox/groups/` | Auto (list detected) |
+| `select` | **Item Selection** | Show all candidates (individuals + groups), user picks one and routes remainders | After triage |
+| `setup` | **Project Setup** | Group context injection, appetite/review mode declaration, stages selection, safe-change | — |
+| `context` | **Strategic Context** (optional) | Strategic exploration + domain detection. See `context:5` (appetite/review mode gate), `context:10` (Strategic Approaches — 5 options), `context:20` (Domain Libraries — 8 libraries) | — |
+| `shape` | **Shape Up** | Create spec with problem/solution/scope. Includes `shape:12` — **Tech Preview** (appetite-gated cymbal recon for brownfield codebase understanding) | — |
+| `critique` | **Product Critique** | Multi-dimensional critique (plan/codebase/site) | — |
+| `gate` | **Review Gate (Plannotator)** | Visual approval — **never skip** | — |
+| `scope` | **Scope Adjustment** | Add/remove from IN/OUT (ask) | — |
+| `interface` | **Interface Alternatives** | Appetite-scaled interface exploration: 1, 3, or 5 proposals + hybrid | — |
+| `int-gate` | **Interface Gate (Plannotator)** | Visual review of all interfaces | — |
+| `selection` | **Interface Selection** | User picks via ask with preview | — |
+| `planning` | **Tech Planning** | Typed scopes + sequencing. Includes `planning:15` — **Alignment Check** (review mode-gated bidirectional feedback: spec-tech vs spec-product) | — |
+| `execution` | **Execution** | Goal/scope executor | — |
+| `verification` | **Verification** | Run full test suite, code review, UI audit, browser testing | After execution |
+| `audit` | **Execution Critique** | Full execution critique (scope, quality, NFRs, edge cases, docs) | After verification |
+
+### AI-Aware Testing (Conditional)
+
+**AI-Aware Testing triggered:** When `product_type: software` or `product_type: hybrid`:
+
+```
+Tech Planning
+    ↓
+[product_type check]
+    ↓ software/hybrid
+cali-product-testing-ai-code → testing-strategy.md + test-* scopes
+    ↓
+Execution
+```
+
+See the `cali-product-testing-ai-code` skill
+
+### Flow Diagram
+
+```
+triage — Inbox Triage (auto — if list detected). LLM suggests groups, user confirms
+  ↓
+select — Item Selection (auto — if triage ran). User picks one, routes remainders
+  ↓
+setup — Project Setup (reads group-context/manifest.json if a group was selected)
+  ↓
+context — Strategic Context (optional)
+  ↓
+shape — Shape Up*
+  │  * shape:12 = Tech Preview (appetite-gated cymbal recon)
+  ↓
+critique — Product Critique (pre-flight)
+  ↓
+gate — Plannotator Gate ← visual pause
+  ↓
+scope — Scope Adjustment (ask)
+  ↓
+interface — Interface Alternatives
+  ↓
+int-gate — Plannotator Gate (interfaces) ← visual pause
+  ↓
+selection — Interface Selection (ask with preview)
+  ↓
+planning — Tech Planning*
+  │  * planning:15 = Alignment Check (review mode-gated bidirectional feedback)
+  │    ← misaligned? → reshape or update spec-product
+  ↓
+execution — Execution
+  ↓
+verification — Verification (test suite, review, UI audit)
+  ↓
+audit — Execution Critique
+```
+
+### Auto-chaining rules
+
+| User selection | Stages that run automatically |
+|---|---|
+| Shape Up | Shape Up → **Product Critique** → **Gate** → **Scope** → Interface → **Interface Gate** → Selection → Tech Planning → **Execution** → **Verification** → **Execution Critique** |
+| Tech Planning only | Tech Planning (with embedded Gate) → **Execution** → **Verification** → **Execution Critique** |
+
+**Product Critique** runs automatically before every Gate.
+**Gate** (Plannotator --gate) never skips — visual pause is mandatory.
+**Scope Adjustment** happens after Gate approval, via ask (no Plannotator re-run).
+**Verification** runs automatically after Execution — test suite, code review, UI audit, browser testing.
+**Interface Gate** shows all proposals visually before selection.
+**Execution** runs automatically after Tech Planning — DO NOT ask user what to do next.
+**Execution Critique** runs after Verification. Uses the `cali-product-execution-critique` skill for all 8 evaluation criteria.
+
+---
 ## 🌐 Environment Adaptation
 
 Each tool in `references/cli-tools/` documents its own fallback.

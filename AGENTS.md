@@ -62,6 +62,21 @@ npm run typecheck        # Type check
 - Do NOT put secrets in AGENTS.md
 - Do NOT guess version numbers — always read `package.json` first
 
+## External Tools (Optional)
+
+- **cymbal** — codebase navigation for Tech Preview / Feature Recon. Install: `brew install 1broseidon/tap/cymbal`. Fallback: find/git.
+- **ctx7** — live library docs during execution setup. Install: `npx ctx7 setup`. Fallback: skip.
+
+All optional — workflow runs without them.
+
+## Token Efficiency
+
+See `skills/stelow/references/cli-tools/context-efficiency.md` for patterns:
+- Batch multi-symbol cymbal lookups (`show X Y Z`)
+- Batch agent_browser extractions (`snapshot` + batch `get text`)
+- Output truncation with `offset/limit` instead of full `read`
+- Cache-friendly SKILL.md layout (stable prefix before `CACHE BOUNDARY`)
+
 ## Detailed references
 
 - [docs/agents-md-refs/differentiators.md](docs/agents-md-refs/differentiators.md) — what makes this workflow different; key principles. Read when the user asks "why this approach?" or when designing a new stage.

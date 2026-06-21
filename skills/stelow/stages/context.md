@@ -6,22 +6,22 @@
 **After Setup**, the flow enters Strategic Context to enrich planning with optional context.
 The LLM checks if the user should be offered strategic analysis and/or domain libraries.
 
-**Prerequisites:** Appetite (Lean / Core / Complete) and Mode (Auto / Light / Moderate / Full Product / Full Product + Tech) must already be declared in `setup:15` and stored in `index.json` (read via `stages.yaml` conventions).
+**Prerequisites:** Appetite (Lean / Core / Complete) and Review Mode (Auto / Only Product Spec / Product Spec + Interface Choice / All Above + Scopes In/Out / All Above + Tech Review) must already be declared in `setup:15` and stored in `index.json` (read via `stages.yaml` conventions).
 
-### context:5 — Appetite & Mode Gate (auto-skip / reduced)
+### context:5 — Appetite & Review Mode Gate (auto-skip / reduced)
 
-Before executing `context:10` or `context:20`, check the declared appetite and mode.
+Before executing `context:10` or `context:20`, check the declared appetite and review mode.
 
-**Canonical values (from `tests/appetite-consistency.test.ts`):**
+**Canonical values:**
 - Appetite: `Lean` | `Core` (Recommended) | `Complete`
-- Mode: `Auto` | `Light` | `Moderate` | `Full Product` | `Full Product + Tech`
+- Review Mode: `Auto` | `Only Product Spec` | `Product Spec + Interface Choice` | `All Above + Scopes In/Out` | `All Above + Tech Review`
 
 **Gate matrix:**
 
-| Appetite | Mode | `context:10` (Strategic Approaches — 5 options) | `context:20` (Domain Libraries — 8 options) |
+| Appetite | Review Mode | `context:10` (Strategic Approaches — 5 options) | `context:20` (Domain Libraries — 8 options) |
 |---|---|---|---|
 | `Lean` | `Auto` | **Skip** entire Context stage → go directly to `shape:10` | **Skip** (not reached) |
-| `Lean` | `Light` / `Moderate` / `Full Product` / `Full Product + Tech` | **Reduced ask**: present all 5 strategic approaches, but mark execution as opt-in per approach (no automatic parallel subagents) | **Reference-only**: detect domain signals and load the 8 libraries as passive context for Shape/Scope; do not execute subagents per library |
+| `Lean` | `Only Product Spec` / `Product Spec + Interface Choice` / `All Above + Scopes In/Out` / `All Above + Tech Review` | **Reduced ask**: present all 5 strategic approaches, but mark execution as opt-in per approach (no automatic parallel subagents) | **Reference-only**: detect domain signals and load the 8 libraries as passive context for Shape/Scope; do not execute subagents per library |
 | `Core` | any | **Full ask** (current behavior): present all 5, execute selected in parallel, consolidate into `strategic-insights.md` | **Full detect + execute**: 1..N of the 8 libraries via parallel subagents, inject into Shape/Scope/Interface |
 | `Complete` | any | **Full ask** + advisory note: "Complete detected — running all 5 strategic approaches is recommended" | **Full detect + execute** of all 8 libraries detected |
 
@@ -30,7 +30,7 @@ Before executing `context:10` or `context:20`, check the declared appetite and m
 The LLM surfaces this message in the chat output (visible to the user) AND in the per-session log file under `.stelow/{date}/{dir}/session.log`:
 
 ```
-echo "Lean appetite + Auto mode detected — skipping Context per context:5 policy"
+echo "Lean appetite + Auto review mode detected — skipping Context per context:5 policy"
 echo "Proceeding directly to shape:10"
 ```
 

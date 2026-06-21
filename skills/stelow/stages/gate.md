@@ -4,36 +4,36 @@
 > **Tool Restrictions:** See `stages.yaml` for blocked/allowed tools in this stage.
 > This stage runs after Product Critique and before Scope Adjustment.
 
-### gate:1 — Mode-Aware Gate Activation
+### gate:1 — Review Mode-Aware Gate Activation
 
-**Read configuration from index.json before running the gate.**
+**Read configuration from `index.json` before running the gate.**
 
 ```bash
 _DIR="{_dir}"
 INDEX=".stelow/*/*/$_DIR/index.json"
-MODE=$(grep -oP '"mode"\s*:\s*"\K[^"]+' $INDEX 2>/dev/null || echo "Full Product")
+REVIEW_MODE=$(grep -oP '"review_mode"\s*:\s*"\K[^"]+' $INDEX 2>/dev/null || echo "All Above + Scopes In/Out")
 ```
 
-| Mode | Plannotator Gate | Interface Gate (int-gate) | Tech Approval Gate |
-|------|:---:|:---:|:---:|
+| Review Mode | Plannotator Gate | Interface Gate (int-gate) | Tech Approval Gate |
+|-------------|:---:|:---:|:---:|
 | Auto | 🚫 Skip | 🚫 Skip | 🚫 Skip |
-| Light | ✅ Run | 🚫 Skip | 🚫 Skip |
-| Moderate | ✅ Run | ✅ Run | 🚫 Skip |
-| Full Product | ✅ Run | ✅ Run | 🚫 Skip |
-| Full Product + Tech | ✅ Run | ✅ Run | ✅ Run |
+| Only Product Spec | ✅ Run | 🚫 Skip | 🚫 Skip |
+| Product Spec + Interface Choice | ✅ Run | ✅ Run | 🚫 Skip |
+| All Above + Scopes In/Out | ✅ Run | ✅ Run | 🚫 Skip |
+| All Above + Tech Review | ✅ Run | ✅ Run | ✅ Run |
 
-**If Mode = Auto:**
+**If Review Mode = Auto:**
 ```bash
 _DIR="{_dir}"
 DATE_DIR=$(ls -d .stelow/*/"$_DIR" 2>/dev/null | head -1 | sed 's|.*/\([^/]*\)/"$_DIR"|\1|')
-echo "MODE_AUTO: Plannotator gate skipped by mode. Marking as auto-approved."
+echo "REVIEW_MODE_AUTO: Plannotator gate skipped by mode. Marking as auto-approved."
 mkdir -p ".plannotator/approvals/$_DIR"
 date "+%Y-%m-%dT%H:%M:%S" > ".plannotator/approvals/$_DIR/spec-product.approved.md"
-echo "Auto-approved (Mode=Auto)" >> ".plannotator/approvals/$_DIR/spec-product.approved.md"
+echo "Auto-approved (Review Mode=Auto)" >> ".plannotator/approvals/$_DIR/spec-product.approved.md"
 echo "Spec frozen. Proceeding without Plannotator."
 ```
 
-**If Mode ≥ Light:** Proceed to gate:5 Claim Verification below.
+**If Review Mode > Auto:** Proceed to gate:5 Claim Verification below.
 
 ### gate:5 — Claim Verification (before the Gate)
 
@@ -73,12 +73,12 @@ grep -E '\`[^\`]+:[0-9]+\`' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.m
 
 ### Review Gate
 
-**⚠️ SAFETY RULES — DO NOT SKIP (unless Mode=Auto):**
+**⚠️ SAFETY RULES — DO NOT SKIP (unless Review Mode = Auto):**
 1. **Verbal approval in chat does NOT replace the gate.**
-2. **Plannotator with --gate is MANDATORY** when Mode ≥ Light. Only proceed AFTER "approved".
+2. **Plannotator with --gate is MANDATORY** when Review Mode > Auto. Only proceed AFTER "approved".
 3. If the reviewer requests changes, adjust and re-submit.
 4. After approval, spec-product.md is frozen.
-5. **Mode=Auto** skips Plannotator entirely — claim verification still runs if code references exist.
+5. **Review Mode = Auto** skips Plannotator entirely — claim verification still runs if code references exist.
 
 > 💡 **Plannotator --gate is interactive:** you annotate specific lines/paragraphs,
 > the feedback is returned to the LLM for revision, and you approve or request

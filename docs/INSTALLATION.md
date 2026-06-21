@@ -218,7 +218,7 @@ Isso se aplica apenas ao **Pi** — outros CLIs já tem zero npm dependencies.
 | Skill | Required for | Install (Pi) | Install (Other CLIs) |
 |-------|-------------|--------------|----------------------|
 | `pi-agent-codebase-workflows` | safe-change (Phase 2) | `pi install git:github.com/PriNova/pi-agent-codebase-workflows` | `npx skills add Prinova/pi-agent-codebase-workflows -a <cli> -g` |
-| `thermo-nuclear` (codequality-review) | final gate (Phase 11) | `pi install git:github.com/cursor/plugins` | `npx skills add cursor/plugins -a <cli> -g` |
+| `thermo-nuclear` (codequality-review) | optional ultra-strict final gate for high-risk or Complete-appetite code changes | `pi install git:github.com/cursor/plugins` | `npx skills add cursor/plugins -a <cli> -g` |
 
 Replace `<cli>` with: `opencode`, `claude-code`, or `codex`.
 

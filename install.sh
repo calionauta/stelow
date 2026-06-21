@@ -245,6 +245,8 @@ install_pi() {
   # Install supporting packages
   if [[ -z "${INSTALL_SKILLS_ONLY:-}" ]]; then
     log_info "    Installing supporting packages..."
+    # Pi npm packages for deep integration.
+    # These are optional — the workflow runs without them (with degraded features).
     for pkg in \
       "npm:pi-subagents" "npm:pi-intercom" \
       "npm:pi-supervisor" \
@@ -252,6 +254,12 @@ install_pi() {
       "@plannotator/pi-extension"; do
       pi install "$pkg" 2>/dev/null || true
     done
+    
+    # NOTE: cymbal and ctx7 are NOT auto-installed.
+    # They remain user-managed because:
+    # - cymbal requires brew/go/CGO (not npm)
+    # - ctx7 requires OAuth setup (interactive)
+    # The workflow falls back gracefully without them.
   else
     log_info "    INSTALL_SKILLS_ONLY set -- skipping npm packages"
   fi
@@ -493,44 +501,226 @@ uninstall_all() {
   log_info "Manual AGENTS.md/CLAUDE.md entries were not removed."
 }
 
-# Main
+# ── Interactive Confirmation ──────────────────────────────────────────
+
+confirm() {
+  local prompt="$1" default="${2:-Y}"
+  if [[ "$ASSUME_YES" == "1" ]]; then return 0; fi
+  local yn
+  case "$default" in
+    Y|y) yn="Y/n" ;;
+    N|n) yn="y/N" ;;
+  esac
+  while true; do
+    echo "" >&2
+    read -p "${BOLD}?${RESET} $prompt [$yn] " choice </dev/tty
+    case "${choice:-$default}" in
+      [Yy]*) return 0 ;;
+      [Nn]*) return 1 ;;
+      *) echo "  Please answer Y or N." >&2 ;;
+    esac
+  done
+}
+
+# ── Full Setup (Default) ───────────────────────────────────────────────
+
+setup_full() {
+  local clis=$(detect_all_clis)
+  echo ""; log_info "${BOLD}stelow Full Setup${RESET}"; echo ""
+  log_info "This will install stelow and optional dependencies for: ${BOLD}$clis${RESET}"
+  log_info "You can say N to skip any step."
+  echo ""
+
+  # Step 1: Skills (always installed)
+  log_info "[1/5] Installing 25 workflow skills..."
+  for cli in $clis; do install_skills_flat; done
+  log_success "Skills installed."
+  echo ""
+
+  # Step 2: Pi extension + packages
+  if echo "$clis" | grep -qw "pi"; then
+    log_info "[2/5] Pi deep integration"
+    if confirm "Install Pi extension (gates, TUI, slash commands)?" Y; then
+      install_pi_extension
+      if [[ -z "${INSTALL_SKILLS_ONLY:-}" ]] && confirm "Install Pi supporting packages (subagents, intercom, supervisor)?" Y; then
+        install_pi_packages
+      fi
+    fi
+    echo ""
+  fi
+
+  # Step 3: Command files for other CLIs
+  for cli in $clis; do
+    case "$cli" in
+      opencode) install_opencode_commands ;;
+      claude-code) install_claude_code_commands ;;
+      codex) install_codex_commands ;;
+    esac
+  done
+
+  # Step 4: cymbal (codebase navigation)
+  log_info "[3/5] cymbal — codebase navigation for Tech Preview"
+  if ! command -v cymbal &>/dev/null; then
+    if confirm "Install cymbal? Transforms codebase recon from find/grep to full symbol navigation." Y; then
+      install_cymbal
+    fi
+  else
+    log_success "  cymbal already installed."
+  fi
+  echo ""
+
+  # Step 5: ctx7 (library docs)
+  log_info "[4/5] ctx7 — live library documentation"
+  if ! command -v ctx7 &>/dev/null; then
+    log_info "  ctx7 provides current API docs during execution (prevents hallucinated APIs)."
+    log_info "  Requires OAuth setup (opens browser once)."
+    if confirm "Set up ctx7?" N; then
+      echo "  Run: npx ctx7 setup" >&2
+      log_info "  Run this command after setup completes."
+    fi
+  else
+    log_success "  ctx7 already installed."
+  fi
+  echo ""
+
+  # Step 6: Agent-sync (cross-CLI distribution)
+  log_info "[5/5] agent-sync — distribute skills to all harnesses"
+  if confirm "Install agent-sync for automatic skill distribution to all CLIs?" N; then
+    pipx install agent-sync 2>/dev/null || log_warn "  pipx not found. Install manually: pipx install agent-sync"
+  fi
+  echo ""
+
+  # Summary
+  echo ""; log_success "${BOLD}Setup complete!${RESET}"
+  print_agents_setup
+}
+
+# ── Minimal Setup (skills only) ────────────────────────────────────────
+
+setup_minimal() {
+  local clis=$(detect_all_clis)
+  echo ""; log_info "Minimal setup for: ${BOLD}$clis${RESET}"; echo ""
+  for cli in $clis; do install_for_cli "$cli"; done
+  echo ""; log_success "Minimal installation complete!"; print_agents_setup
+}
+
+# ── Tool-specific installers ───────────────────────────────────────────
+
+install_pi_extension() {
+  log_info "  Installing Pi extension..."
+  pi remove "$SCRIPT_DIR/extensions/stelow" 2>/dev/null || true
+  pi install "git:github.com/renatocaliari/stelow" 2>/dev/null || true
+  _configure_pi_skills_filter
+}
+
+install_pi_packages() {
+  log_info "  Installing Pi supporting packages..."
+  local pkgs=0
+  for pkg in \
+    "npm:pi-subagents" "npm:pi-intercom" \
+    "npm:pi-supervisor" \
+    "npm:@juicesharp/rpiv-ask-user-question" \
+    "@plannotator/pi-extension"; do
+    if pi install "$pkg" 2>/dev/null; then
+      ((pkgs++)) || true
+    fi
+  done
+  log_success "  $pkgs Pi packages installed."
+}
+
+install_cymbal() {
+  if [[ "$OSTYPE" == "darwin"* ]] && command -v brew &>/dev/null; then
+    log_info "  Installing via Homebrew..."
+    brew install 1broseidon/tap/cymbal 2>/dev/null && log_success "  cymbal installed." && install_cymbal_hooks && return 0
+  fi
+  if command -v go &>/dev/null; then
+    log_info "  Installing via Go..."
+    CGO_CFLAGS="-DSQLITE_ENABLE_FTS5" go install github.com/1broseidon/cymbal@latest 2>/dev/null && log_success "  cymbal installed." && install_cymbal_hooks && return 0
+  fi
+  log_warn "  Could not auto-install cymbal. Install manually:"
+  log_warn "    brew install 1broseidon/tap/cymbal (macOS)"
+  log_warn "    OR: go install github.com/1broseidon/cymbal@latest"
+  return 1
+}
+
+install_cymbal_hooks() {
+  if command -v cymbal &>/dev/null; then
+    cymbal hook install opencode 2>/dev/null || true
+    cymbal hook install claude-code 2>/dev/null || true
+    log_success "  cymbal agent hooks installed."
+  fi
+}
+
+install_opencode_commands() {
+  local cmd_src="$SCRIPT_DIR/cli-agents/opencode/commands"
+  local cmd_dst="$HOME/.config/opencode/commands"
+  if [[ -d "$cmd_src" ]]; then
+    mkdir -p "$cmd_dst"
+    cp "$cmd_src"/sw-*.md "$cmd_dst/" 2>/dev/null || true
+    log_success "  OpenCode: $(ls "$cmd_dst"/sw-*.md 2>/dev/null | wc -l | tr -d ' ') command files"
+  fi
+}
+
+install_claude_code_commands() {
+  local cmd_src="$SCRIPT_DIR/cli-agents/claude/commands"
+  local cmd_dst="$HOME/.claude/commands"
+  if [[ -d "$cmd_src" ]]; then
+    mkdir -p "$cmd_dst"
+    cp "$cmd_src"/sw-*.md "$cmd_dst/" 2>/dev/null || true
+    log_success "  Claude Code: $(ls "$cmd_dst"/sw-*.md 2>/dev/null | wc -l | tr -d ' ') command files"
+  fi
+}
+
+install_codex_commands() {
+  local cmd_src="$SCRIPT_DIR/cli-agents/codex/commands"
+  local cmd_dst="$HOME/.codex/commands"
+  if [[ -d "$cmd_src" ]]; then
+    mkdir -p "$cmd_dst"
+    cp "$cmd_src"/sw-*.md "$cmd_dst/" 2>/dev/null || true
+    log_success "  Codex: $(ls "$cmd_dst"/sw-*.md 2>/dev/null | wc -l | tr -d ' ') command files"
+  fi
+}
+
+# ── Main ───────────────────────────────────────────────────────────────
+
 show_help() {
   cat << 'EOF'
-stelow Installer
+stelow — product workflow installer
 
-Flattens 25 skills to ~/.agents/skills/ (DotAgents Protocol).
-Distribution to each harness via agent-sync or manual config.
+Usage: ./install.sh [OPTION]
 
-Usage: install.sh [command]
+Options:
+  install     Full setup with interactive prompts (default)
+  --minimal   Skills only, no optional dependencies
+  --help      Show this help
 
 Commands:
-  install     Install for all detected CLIs (default)
-  update      Update skills
+  update      Update installed skills
   remove      Uninstall from all detected CLIs
-  help        Show this help
 
 Environment:
-  INSTALL_SKILLS_ONLY  Skip npm packages (Pi only, skills-only)
+  ASSUME_YES=1     Auto-confirm all prompts (non-interactive)
   PRODUCT_WORKFLOW_CLI  Limit to one CLI (pi|opencode|claude-code|codex)
 
-Skills installed (25 total):
-  - stelow (orchestrator)
-  - 6 critique skills (plan-critique, codebase-critique, ux-critique, shape-up, interface-alternatives, tech-planning)
-  - 5 strategic analysis skills
-  - 8 domain library skills
-  - 3 execution skills (scope-executor, execution-critique, code-standards)
-  - 2 testing skills (testing-ai-code, testing-execution)
+What gets installed (full):
+
+  ✓ 25 workflow skills (always)
+  ✓ Pi extension + npm packages (if Pi detected, with confirmation)
+  ✓ cymbal — codebase navigation (with confirmation)
+  ✓ ctx7 — live library docs (with confirmation, requires OAuth)
+  ✓ agent-sync — cross-CLI distribution (with confirmation)
+
+What gets installed (minimal):
+
+  ✓ 25 workflow skills only
 
 Examples:
-  ./install.sh                                    # All detected CLIs
-  PRODUCT_WORKFLOW_CLI=opencode ./install.sh      # Only OpenCode
-  ./install.sh update                              # Update skills
-  ./install.sh remove                              # Uninstall from all
-
-Optional (for automatic distribution):
-  pipx install agent-sync
-  agent-sync setup
-  agent-sync push
+  ./install.sh                         # Interactive full setup
+  ASSUME_YES=1 ./install.sh            # Non-interactive, install everything
+  ./install.sh --minimal               # Skills only
+  PRODUCT_WORKFLOW_CLI=pi ./install.sh # Pi only
+  ./install.sh update                  # Update skills
+  ./install.sh remove                  # Uninstall
 EOF
 }
 
@@ -538,14 +728,13 @@ main() {
   local cmd="${1:-install}"
   case "$cmd" in
     install|i)
-      local clis=$(detect_all_clis)
-      echo ""; log_info "Detected CLIs: ${BOLD}$clis${RESET}"; echo ""
-      for cli in $clis; do install_for_cli "$cli"; done
-      echo ""; log_success "All installations complete!"; print_agents_setup ;;
+      setup_full ;;
+    --minimal|minimal|--skills-only)
+      setup_minimal ;;
     update|u) update_all ;;
     remove|uninstall|r) uninstall_all ;;
     help|h|--help|-h) show_help ;;
-    *) log_error "Unknown command: $cmd"; show_help; exit 1 ;;
+    *) log_error "Unknown option: $cmd"; show_help; exit 1 ;;
   esac
 }
 

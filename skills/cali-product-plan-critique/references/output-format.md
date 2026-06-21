@@ -5,6 +5,50 @@ applies_to: [plan]
 
 # Output Structure
 
+The critique report has two layers:
+- **YAML frontmatter:** structured gap data (machine-readable, token-efficient)
+- **Markdown body:** narrative with context, examples, and rationale
+
+Both layers are produced in a single file. The frontmatter feeds downstream stages;
+the narrative supports human review in the Plannotator gate.
+
+## Frontmatter Schema
+
+Start every `critique-report.md` with YAML frontmatter containing structured gap data:
+
+```yaml
+---
+gaps:
+  - severity: critical      # critical | important | minor
+    tag: flow               # flow | state | affordance | data | system | feasibility | composition | design-quality
+    title: "Short gap title"
+    description: "What was observed vs what's required"
+    recommendation: "Actionable question the team needs to answer"
+    resolved: false
+  - severity: important
+    tag: data
+    title: "Another gap"
+    description: "..."
+    recommendation: "..."
+    resolved: false
+  - severity: minor
+    tag: affordance
+    title: "Minor item"
+    description: "..."
+    recommendation: "..."
+    resolved: true
+strengths:
+  - "Well-defined user flow for the main JTBD"
+  - "Clear IN/OUT boundaries"
+verdict: "The plan has gaps"   # solid | has gaps | incomplete
+---
+```
+
+> **Why frontmatter:** Downstream stages read `gaps[].severity` and `gaps[].resolved`
+> without re-parsing narrative text. The Plannotator gate still shows the full
+> narrative. No information is lost — the body duplicates nothing from frontmatter;
+> it only adds context.
+
 ## 1. 🎯 Executive Summary
 
 2-3 sentences summarizing overall plan health, coverage of each checklist,

@@ -226,7 +226,7 @@ describe('No orphaned text or formatting issues', () => {
 });
 
 // ═════════════════════════════════════════════════════════════════════
-// 6. VALID APPETITE & MODE VALUES
+// 6. VALID APPETITE & REVIEW MODE VALUES
 // ═════════════════════════════════════════════════════════════════════
 
 describe('Valid appetite values throughout', () => {
@@ -238,13 +238,13 @@ describe('Valid appetite values throughout', () => {
     expect(content).toContain('"Complete"');
   });
 
-  it('ask-patterns.md contains valid mode labels', () => {
+  it('ask-patterns.md contains valid review mode labels', () => {
     const content = readStage('ask-patterns.md');
     expect(content).toContain('"Auto"');
-    expect(content).toContain('"Light"');
-    expect(content).toContain('"Moderate"');
-    expect(content).toContain('"Full Product"');
-    expect(content).toContain('"Full Product + Tech"');
+    expect(content).toContain('"Only Product Spec"');
+    expect(content).toContain('"Product Spec + Interface Choice"');
+    expect(content).toContain('"All Above + Scopes In/Out"');
+    expect(content).toContain('"All Above + Tech Review"');
   });
 
   it('proposal-structure.md references only valid appetite values', () => {
@@ -259,25 +259,25 @@ describe('Valid appetite values throughout', () => {
 });
 
 // ═════════════════════════════════════════════════════════════════════
-// 7. GATE MODE AWARENESS
+// 7. GATE REVIEW MODE AWARENESS
 // ═════════════════════════════════════════════════════════════════════
 
-describe('Gate is Mode-aware', () => {
-  it('gate.md reads Mode from index.json', () => {
+describe('Gate is Review Mode-aware', () => {
+  it('gate.md reads review_mode from index.json', () => {
     const content = readStage('gate.md');
-    expect(content).toMatch(/MODE=\$.*INDEX/);
-    expect(content).toMatch(/"mode"/);
+    expect(content).toMatch(/REVIEW_MODE=\$.*INDEX/);
+    expect(content).toMatch(/"review_mode"/);
   });
 
-  it('gate.md has mode-based activation table', () => {
+  it('gate.md has review mode-based activation table', () => {
     const content = readStage('gate.md');
-    expect(content).toMatch(/\| Mode \|.*Plannotator/);
+    expect(content).toMatch(/\| Review Mode \|.*Plannotator/);
     expect(content).toMatch(/\| Auto \|/);
   });
 
-  it('gate.md handles Auto mode (skip Plannotator)', () => {
+  it('gate.md handles Auto review mode (skip Plannotator)', () => {
     const content = readStage('gate.md');
-    expect(content).toMatch(/MODE_AUTO/);
+    expect(content).toMatch(/REVIEW_MODE_AUTO/);
     expect(content).toMatch(/auto-approved/i);
   });
 });
@@ -473,9 +473,9 @@ describe('context:5 appetite/mode gate', () => {
     expect(skillMd).toContain('Business Models');
   });
 
-  test('gate uses canonical mode label "Full Product + Tech" (not "Full Tech")', () => {
-    expect(context).toContain('Full Product + Tech');
-    expect(context).not.toContain('Full Tech');
+  test('gate uses canonical review mode label "All Above + Tech Review" (not "Tech Review" alone)', () => {
+    expect(context).toContain('All Above + Tech Review');
+    expect(context).not.toContain('"Tech Review"');
   });
 
   test('gate uses canonical appetite labels (Lean, Core, Complete)', () => {
@@ -547,8 +547,8 @@ describe('shape-up step ordering', () => {
     expect(content).toMatch(/Assumption Check/i);
   });
 
-  test('shape:15 scales by mode (Auto/Light/Moderate/Full)', () => {
-    expect(content).toMatch(/Auto.*Light.*auto-resolve|top-3.*Moderate|top-5.*Full/i);
+  test('shape:15 scales by review mode', () => {
+    expect(content).toMatch(/Auto.*Only Product Spec.*auto-resolve|top-3.*Interface Choice|top-5.*All Above/i);
   });
 });
 
@@ -622,7 +622,7 @@ describe('plan-critique flow step ordering', () => {
     // The diagram in the Integration section must list all 5 steps
     const diagramStart = content.indexOf('critique: Critique Gate');
     if (diagramStart > -1) {
-      const diagram = content.slice(diagramStart, diagramStart + 400);
+      const diagram = content.slice(diagramStart, diagramStart + 600);
       expect(diagram).toMatch(/critique:20/);
       expect(diagram).toMatch(/critique:30/);
       expect(diagram).toMatch(/critique:40/);
@@ -633,16 +633,16 @@ describe('plan-critique flow step ordering', () => {
 });
 
 // ═════════════════════════════════════════════════════════════════════
-// 16. MODE DESCRIPTION SYNC (ask-patterns vs setup)
+// 16. REVIEW MODE DESCRIPTION SYNC (ask-patterns vs setup)
 // ═════════════════════════════════════════════════════════════════════
 
 describe('Mode description sync between ask-patterns and setup', () => {
   const askPatterns = readStage('ask-patterns.md');
   const setup = readStage('setup.md');
 
-  // Verify all 5 mode labels appear in both files
-  test.each(['Auto', 'Light', 'Moderate', 'Full Product', 'Full Product + Tech'])(
-    'mode label "%s" appears in ask-patterns.md and setup.md',
+  // Verify all 5 review mode labels appear in both files
+  test.each(['Auto', 'Only Product Spec', 'Product Spec + Interface Choice', 'All Above + Scopes In/Out', 'All Above + Tech Review'])(
+    'review mode label "%s" appears in ask-patterns.md and setup.md',
     (label) => {
       expect(askPatterns).toContain(label);
       expect(setup).toContain(label);
@@ -685,15 +685,15 @@ describe('Purpose-named CLI tools exist', () => {
 });
 
 // ═════════════════════════════════════════════════════════════════════
-// 18. GOLDEN RULE MODE CAVEAT
+// 18. GOLDEN RULE REVIEW MODE CAVEAT
 // ═════════════════════════════════════════════════════════════════════
 
-describe('plan-critique golden rule has mode caveat', () => {
+describe('plan-critique golden rule has review mode caveat', () => {
   const content = readSkill('cali-product-plan-critique');
 
-  test('golden rule caveat mentions Auto/Light modes', () => {
+  test('golden rule caveat mentions Auto/Only Product Spec modes', () => {
     expect(content).toMatch(/Mode caveat/);
-    expect(content).toMatch(/Auto.*Light.*internal recommendation/);
+    expect(content).toMatch(/Auto.*Only Product Spec.*internal recommendation/);
   });
 });
 

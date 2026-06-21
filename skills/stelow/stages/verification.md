@@ -14,11 +14,11 @@ APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-
 SCOPE_COUNT=$(ls .stelow/{YYYY-MM-DD}/{_dir}/plans/scopes/*.md 2>/dev/null | wc -l | tr -d ' ')
 ```
 
-| Appetite | test-suite | code-review | ui-quality | interactive-testing | code-quality-gate | invisible-20% |
-|----------|-----------|-------------|------------|-------------------|-------------------|---------------|
-| `Lean` | ✅ Run | Run when files warrant it | ✅ Static a11y/lint if UI files | **Skip** | ✅ Run | ✅ Run |
-| `Core` | ✅ Run | Run when files warrant it | ✅ Browserless/codebase a11y if UI files | **Skip** | ✅ Run | ✅ Run |
-| `Complete` | ✅ Run | ✅ Run | ✅ Live Site a11y if UI files | ✅ Run when applicable | ✅ Run | ✅ Run |
+| Appetite | test-suite | code-review | ui-quality | interactive-testing | code-quality-gate | code-quality-review | invisible-20% |
+|----------|-----------|-------------|------------|-------------------|-------------------|---------------------|---------------|
+| `Lean` | ✅ Run | Run when files warrant it | ✅ Static a11y/lint if UI files | **Skip** | ✅ Run | **Skip** unless requested | ✅ Run |
+| `Core` | ✅ Run | Run when files warrant it | ✅ Browserless/codebase a11y if UI files | **Skip** | ✅ Run | Conditional by risk | ✅ Run |
+| `Complete` | ✅ Run | ✅ Run | ✅ Live Site a11y if UI files | ✅ Run when applicable | ✅ Run | ✅ Run when code changed; mandatory for `All Above + Tech Review` | ✅ Run |
 
 **Rationale:**
 - **Lean a11y baseline:** UI changes still get static a11y/lint checks; no browser/live audit unless the user upgrades appetite or mode.
@@ -28,7 +28,7 @@ SCOPE_COUNT=$(ls .stelow/{YYYY-MM-DD}/{_dir}/plans/scopes/*.md 2>/dev/null | wc 
 ### Auto-chain
 
 Verification runs **automatically after Execution** once all scopes complete.
-After Verification passes, automatically proceed to Execution Critique.
+After Verification passes, run the conditional Code Quality Review, then automatically proceed to Execution Critique.
 
 ### test-suite
 
@@ -140,15 +140,6 @@ Use `dogfood` skill for structured exploratory testing:
 4. Test edge cases (empty states, loading, errors)
 5. Capture screenshots for evidence
 
-### final-checklist
-
-- [ ] Unit tests pass
-- [ ] Code review done (subagent or human)
-- [ ] No regressions detected
-- [ ] UI accessible (if applicable)
-- [ ] Documentation updated (if applicable)
-- [ ] AGENTS.md updated (if architecture changed)
-
 ### code-quality-gate
 
 Run static analysis appropriate to the project's language. This is language-
@@ -175,6 +166,48 @@ cargo clippy -- -D warnings 2>&1 | head -20
 **Block on errors** (not warnings) — warnings are informational and should be
 reviewed but are not blockers. Address all errors before proceeding.
 
+### code-quality-review (conditional ultra-strict gate)
+
+`thermo-nuclear-code-quality-review` is an optional ultra-strict maintainability
+review for implemented code. It runs **after `code-quality-gate` and only when
+the appetite/mode/risk matrix says it should run**.
+
+```bash
+# Check whether the external skill is installed before invoking it.
+# If missing, use the fallback documented in references/cli-tools/codequality-review.md.
+```
+
+Use `/skill:thermo-nuclear-code-quality-review` only when the trigger conditions
+from `references/cli-tools/codequality-review.md` are met.
+
+Save or copy the result to:
+
+```text
+.stelow/{YYYY-MM-DD}/{_dir}/verification/code-quality-review.md
+```
+
+**Review Mode behavior:**
+
+- `Auto` / `Only Product Spec`: run only if required by risk; fix simple issues or document accepted trade-offs.
+- `Product Spec + Interface Choice`: escalate P0/P1 findings to the user.
+- `All Above + Scopes In/Out`: P0/P1 findings require fix or explicit human acceptance.
+- `All Above + Tech Review`: P0/P1 findings are blocking for software/hybrid code changes.
+
+**Fallback:** if the skill is not installed, run the manual fallback from
+`references/cli-tools/codequality-review.md` and document the fallback in the
+verification notes.
+
+### final-checklist
+
+- [ ] Unit tests pass
+- [ ] Code review done (subagent or human)
+- [ ] Code quality gate completed
+- [ ] Code quality review completed or explicitly skipped
+- [ ] No regressions detected
+- [ ] UI accessible (if applicable)
+- [ ] Documentation updated (if applicable)
+- [ ] AGENTS.md updated (if architecture changed)
+
 ### invisible-20-percent
 
 For each file changed in the diff, check:
@@ -192,7 +225,7 @@ the "invisible 20%" (Osmani 2026, GitClear 2025).
 
 ### auto-proceed
 
-After all verification steps pass, **automatically proceed to Execution Critique**.
+After all verification steps pass, **automatically proceed to Code Quality Review when required, then Execution Critique**.
 
 > **Note on browser dependency:** The Quick Tier (browserless) in
 > `ui-quality` and `interactive-testing` works on ALL CLIs. The Full Tier

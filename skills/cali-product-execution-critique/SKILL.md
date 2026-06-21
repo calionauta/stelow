@@ -22,7 +22,7 @@ Run a structured audit after any implementation — whether it followed the full
 every mode; only the **source of truth** differs based on what input is available.
 
 > **Tools:** See `references/cli-tools/subagents.md` for subagent patterns.
-> See `references/cli-tools/context-mode.md` for processing large outputs.
+> For large outputs, use `bash` with output truncation, or `read` with offset/limit.
 
 ---
 
@@ -96,8 +96,9 @@ If this directory is missing:
 
 ## 🔄 When to Use
 
-This skill activates automatically at the `audit` stage in `stelow`,
-but can also be used standalone when you say:
+This skill activates automatically at the `audit` stage in `stelow`, after
+Verification and the conditional Code Quality Review. It can also be used
+standalone when you say:
 
 - "done", "finished", "completed"
 - "check my work", "verify implementation"
@@ -185,8 +186,10 @@ but can also be used standalone when you say:
 ## 🗺️ Mode: Workflow Audit
 
 For use after a `stelow` cycle. Requires a path to `spec-tech_v{N}.md`.
+If `verification/code-quality-review.md` exists, read it before running the
+audit and include unresolved P0/P1 findings in the Gap Registry.
 
-### 1. Read the plan
+### 1. Read the plan and verification evidence
 
 Read the most recent spec-tech.md from the provided path:
 
@@ -194,6 +197,17 @@ Read the most recent spec-tech.md from the provided path:
 # Find latest version
 ls -t .stelow/*/plans/spec-tech_v*.md 2>/dev/null | head -1
 ```
+
+Also read optional verification evidence, including the ultra-strict code
+quality review report when present:
+
+```bash
+CODE_QUALITY_REPORT=".stelow/{YYYY-MM-DD}/{_dir}/verification/code-quality-review.md"
+[ -f "$CODE_QUALITY_REPORT" ] && cat "$CODE_QUALITY_REPORT"
+```
+
+If the external code quality review wrote elsewhere, locate its report and read
+it. Treat unresolved P0/P1 findings as audit input, not as noise.
 
 Parse all scopes — each has type, DoD, acceptance criteria, and (if present) NFRs.
 
@@ -239,6 +253,7 @@ Check all changed files for:
 - Missing imports
 - Broken references
 - Anti-patterns: secrets in code, global mutable state, god functions (>100 lines)
+- Optional code quality review findings: files >1000 lines, functions >150 lines, complexity >5, leaky abstractions, dead code
 - **Dead code candidates**: see `references/cli-tools/dead-code-candidates.md`
 
 **Invisible 20% (criteria 3):**
@@ -264,6 +279,33 @@ Check all changed files for:
 - Critical-path coverage adequate? (target from testing-strategy.md if available)
 
 **Gap Registry (criteria 6):**
+
+Start the report with YAML frontmatter containing structured gap data.
+This feeds the gap-to-scope loop without re-parsing narrative text:
+
+```yaml
+---
+gaps:
+  - type: missing-tests          # missing-tests | incomplete | quality | new-scope | debt
+    area: "Scope or module affected"
+    description: "What's missing or incomplete"
+    impact: medium               # low | medium | high
+    resolution: escalate         # fixed | documented | escalate
+    scope_candidate: false       # true if this gap should become a new scope
+  - type: incomplete
+    area: "Another area"
+    description: "..."
+    impact: high
+    resolution: fixed
+    scope_candidate: false
+lessons_learned:
+  - "What went well"
+  - "What could improve"
+---
+```
+
+Then output the narrative table for human review:
+
 | Gap Type | Description | Impact | Resolution |
 |----------|-------------|--------|------------|
 
@@ -613,7 +655,7 @@ Always save or display in this format. The Lessons Learned section also writes t
 |-----------|---------|-----------------|
 | [Tool Availability & Fallbacks](#-tool-availability--fallbacks) | sem/git fallback strategy | Before any mode |
 | `references/cli-tools/subagents.md` | Subagent patterns for parallel audit | Workflow mode with many scopes |
-| `references/cli-tools/context-mode.md` | Processing large codebase outputs | Output exceeds viewport |
+| `references/cli-tools/README.md` | Tool capability references | Any tool reference needed |
 | `references/cli-tools/dead-code-candidates.md` | Dead code detection via `sem graph --json` | Implementation Quality check (criteria 2) |
 
 ## Environment Adaptation

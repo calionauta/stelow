@@ -43,9 +43,9 @@ This skill runs 7 specialized checklists against product plans:
 **Golden rule:** Every gap becomes a **specific, actionable question** —
 never a vague criticism. The goal is to unblock the implementation team, not delay them.
 
-> **Mode caveat:** In `Auto`/`Light` modes, gaps become internal recommendations in
+> **Mode caveat:** In `Auto`/`Only Product Spec` modes, gaps become internal recommendations in
 > the report (no user questions). The "question" is posed to the spec, not the user.
-> In `Moderate`/`Full` modes, top-N gaps are pushed as actual user questions.
+> In `Product Spec + Interface Choice` and above, top-N gaps are pushed as actual user questions.
 
 ## Activation
 
@@ -61,7 +61,7 @@ The workflow loads this skill automatically after Tech Planning, before Plannota
 Before generating technical scopes, tech-planning calls this skill to ensure
 the plan is solid.
 
-**Standalone awareness:** when inside stelow, reads mode + spec from `.stelow/*/index.json` and `.stelow/*/plans/spec-product*.md`. When standalone, defaults to Full Product mode (maximum interaction) and scans current directory for `spec-product*.md`. File not found → prompt user for path. Appetite defaults to Core, appetite_fit defaults to fits.
+**Standalone awareness:** when inside stelow, reads review_mode + spec from `.stelow/*/index.json` and `.stelow/*/plans/spec-product*.md`. When standalone, defaults to All Above + Scopes In/Out review mode (maximum product gates) and scans current directory for `spec-product*.md`. File not found → prompt user for path. Appetite defaults to Core, appetite_fit defaults to fits.
 
 ---
 
@@ -111,9 +111,8 @@ fi
 WF_DIR="${WF_DIR%/}"  # Strip trailing slash
 SPEC="$WF_DIR/plans/spec-product*.md"
 SPEC_FILE=$(ls $SPEC 2>/dev/null | head -1) || SPEC_FILE=""
-MODE="Full Product"
-[ -n "$WF_DIR" ] && MODE=$(grep -oP '"mode":\s*"([^"]+)"' "$WF_DIR/index.json" | grep -oP '"([^"]+)"$' | tr -d '"' )
-MODE=${MODE:-Full Product}
+REVIEW_MODE="All Above + Scopes In/Out"
+[ -n "$WF_DIR" ] && REVIEW_MODE=$(grep -oP '"review_mode":\s*"([^"]+)"' "$WF_DIR/index.json" | grep -oP '"([^"]+)"$' | tr -d '"' )
 APPETITE=$(grep -oP '^appetite:\s*\K\S+' "$SPEC_FILE" 2>/dev/null || echo "Core")
 FIT=$(grep -oP '^appetite_fit:\s*\K\S+' "$SPEC_FILE" 2>/dev/null || echo "fits")
 ```
@@ -189,25 +188,25 @@ Do NOT auto-resolve yet — that depends on mode (next step).
 
 | Tag | Severity | Effect |
 |-----|----------|--------|
-| 🚨 **Critical** | Blocking — missing essential definition | Always shown to user in Moderate/Full |
+| 🚨 **Critical** | Blocking — missing essential definition | Always shown to user in Product Spec + Interface Choice and above |
 | 🤔 **Important** | Significant gap or risk | Shown if within top-N budget |
-| 🔎 **Minor** | Polish or nice-to-have | Auto-resolved in all modes |
+| 🔎 **Minor** | Polish or nice-to-have | Auto-resolved in all review modes |
 
-### critique:45 — Resolve Gaps by Mode
+### critique:45 — Resolve Gaps by Review Mode
 
-**Using `$MODE` and `$WF_DIR` determined in critique:20.**
+**Using `$REVIEW_MODE` and `$WF_DIR` determined in critique:20.**
 This step runs in the **parent LLM** (same context as critic=40).
 All 7 checklists run regardless of mode — mode only changes how gaps are resolved.
 
 See `references/cli-tools/structured-question.md` for the `ask_user_question` tool.
 
-**If `$MODE` is `Auto` or `Light`:**
+**If `$REVIEW_MODE` is `Auto` or `Only Product Spec`:**
 
 All gaps (🚨, 🤔, 🔎) are auto-resolved per `references/auto-resolve-rules.md`.
 If a gap has a clear best-practice default, apply it and mark "resolved by default."
 Only genuinely ambiguous gaps are noted in the report but do NOT block the gate.
 
-**If `$MODE` is `Moderate`:**
+**If `$REVIEW_MODE` is `Product Spec + Interface Choice`:**
 
 - 🔎 gaps → auto-resolved
 - 🚨 + 🤔 → sorted by severity (🚨 first), **top-5 combined** presented via
@@ -223,7 +222,7 @@ Only genuinely ambiguous gaps are noted in the report but do NOT block the gate.
 - **Unselected** → treated as **accepted** (AI recommendation stands).
   No re-resolution needed.
 
-**If `$MODE` is `Full Product` or `Full Product + Tech`:**
+**If `$REVIEW_MODE` is `All Above + Scopes In/Out` or `All Above + Tech Review`:**
 
 - 🔎 gaps → auto-resolved
 - 🤔 gaps → **top-5** batched into one multiSelect question
@@ -233,7 +232,7 @@ Only genuinely ambiguous gaps are noted in the report but do NOT block the gate.
   > **When >5 🤔 or >3 🚨 exist:** "Showing top-{N} (most impactful).
   > Remaining M auto-resolved but listed in the spec for Gate review."
 
-**Mode not found (standalone):** Default to `Full Product` behavior.
+**Review Mode not found (standalone):** Default to `All Above + Scopes In/Out` behavior.
 
 **After resolving (all modes):** 
 
@@ -305,10 +304,10 @@ and prepare it for the Plannotator Gate:
 ```
 critique: Critique Gate
   └── cali-product-plan-critique (input: spec-product.md)
-       ├── critique:20 — Determine mode + workflow dir
+       ├── critique:20 — Determine review mode + workflow dir
        ├── critique:30 — 5 parallel subagents (classify only, no resolve)
        ├── critique:40 — Consolidate into critique-report.md
-       ├── critique:45 — Resolve gaps by mode (ask user if Moderate/Full)
+       ├── critique:45 — Resolve gaps by review mode (ask user if Product Spec + Interface Choice and above)
        └── critique:50 — Merge resolutions → spec-product.md (with Gate sections)
 ```
 

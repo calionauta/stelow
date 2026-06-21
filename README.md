@@ -7,6 +7,9 @@
 [![CI](https://github.com/renatocaliari/stelow/actions/workflows/ci.yml/badge.svg)](https://github.com/renatocaliari/stelow/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/badge/coverage-70%25-brightgreen)](https://github.com/renatocaliari/stelow/actions/workflows/ci.yml)
 [![Version](https://img.shields.io/github/v/release/renatocaliari/stelow?logo=github&label=release)](https://github.com/renatocaliari/stelow/releases)
+[![Pi](https://img.shields.io/badge/Deep%20integration-Pi-8B5CF6)](https://pi.dev)
+[![Muxy](https://img.shields.io/badge/Visual%20panel-Muxy.app-10B981)](https://muxy.app)
+[![CLI](https://img.shields.io/badge/Works%20on-Any%20CLI-3B82F6)](https://github.com/renatocaliari/stelow#cli-compatibility)
 
 **Transform product ideas into approved, testable plans - systematically.**
 
@@ -21,7 +24,7 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 **Key differentiators:**
 
 - **Shape Up methodology for AI agents** - IN/OUT scope boundaries, appetite-driven sizing, risk analysis, focused scoping. Every proposal is a shaped bet, not a wishlist.
-- **Appetite × Mode stage control** - Two orthogonal dimensions control the full workflow: how deep to prepare (Appetite: Lean / Core / Complete) and which stages run (Mode: Auto / Light / Moderate / Full Product / Full Product + Tech). The cascade propagates automatically through critique depth, supervisor use, verification rigor, and gate requirements - no manual stage skipping needed.
+- **Appetite × Review Mode stage control** - Two orthogonal dimensions control the full workflow: how deep to prepare (Appetite: Lean / Core / Complete) and which gates run (Review Mode: Auto / Only Product Spec / Product Spec + Interface Choice / All Above + Scopes In/Out / All Above + Tech Review). The cascade propagates automatically through critique depth, supervisor use, verification rigor, and gate requirements - no manual stage skipping needed.
 - **Adversarial plan critique** - Plans are reviewed for gaps, risks, and assumptions by parallel (fresh context) reviewers, not just approved in chat.
 - **Visual review gate** - Plannotator opens the full plan for point-by-point comments before implementation, not a rubber-stamp approval.
 - **Appetite-scaled interface exploration** - 1, 3, or 5 ASCII archetypes plus hybrid depending on scope depth - no coded mockups wasted.
@@ -71,7 +74,7 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 
 And the workflow begins asking questions, exploring scope, shaping the proposal, reviewing for gaps, getting visual approval, and only then generating typed technical scopes for execution.
 
-**Critique → Gate → Scope sequencing.** Execution (stage 12) only runs after all three pass. Lighter modes (Auto/Light) skip some gates; the full path is there when you need it.
+**Critique → Gate → Scope sequencing.** Execution (stage 12) only runs after all three pass. Lighter review modes (Auto/Only Product Spec) skip some gates; the full path is there when you need it.
 
 ## Why This Exists
 
@@ -105,9 +108,9 @@ And the workflow begins asking questions, exploring scope, shaping the proposal,
 
 ---
 
-## 🎚️ Appetite & Mode
+## 🎚️ Appetite & Review Mode
 
-The workflow is controlled by two orthogonal dimensions: **Appetite** (declared by the human) and **Mode** (declared by the human). Appetite controls scope/exploration depth. Mode controls gates, questions, and approvals.
+The workflow is controlled by two orthogonal dimensions: **Appetite** (declared by the human) and **Review Mode** (declared by the human). Appetite controls scope/exploration depth. Review Mode controls which gates, questions, and approvals are active.
 
 ### Appetite (Constraint, Not Estimate)
 
@@ -141,7 +144,7 @@ This is **not an estimate**. The LLM does not estimate effort - it checks whethe
 
 All three appetites benefit from `appetite_fit` validation by the **Plan Critique**'s fresh-context feasibility reviewer — this uses the existing 5-reviewer infrastructure, no dedicated subagent needed. The Shape Up stage provides only a preliminary mechanical check (scope count, spec size). This aligns `appetite_fit` with the workflow's convention: all critical evaluations use fresh context via the Plan Critique stage.
 
-**Critique and Gate are Mode controls, not Appetite controls.** Product Critique and Plannotator Gate are governed by Mode: Auto skips gates; Light/Moderate/Full modes run the configured gates. Appetite changes the depth of the shaped proposal, interface exploration, supervisor sensitivity, and test scope breadth — not whether quality gates exist.
+**Critique and Gate are Review Mode controls, not Appetite controls.** Product Critique and Plannotator Gate are governed by Review Mode: Auto skips gates; all other modes run the configured gates. Appetite changes the depth of the shaped proposal, interface exploration, supervisor sensitivity, and test scope breadth — not whether quality gates exist.
 
 **Appetite-specific execution budget:**
 
@@ -154,54 +157,54 @@ All three appetites benefit from `appetite_fit` validation by the **Plan Critiqu
 | **Testing** | Smoke tests + critical-path unit tests | Unit tests + integration tests for external seams | Unit + integration + behavior/e2e + security tests |
 | **Quality baseline** | Build/test/lint/typecheck always; a11y lint/static if UI exists | Build/test/lint/typecheck always; a11y codebase/browserless audit if UI exists | Build/test/lint/typecheck always; live a11y audit if UI exists |
 
-### Mode
+### Review Mode
 
-Mode controls the **breadth** of the workflow - how many gates and questions are active. Unlike Appetite (depth of scope), Mode determines the **level of interaction** with the human.
+Review Mode controls the **breadth** of human review — which gates, questions, and approvals are active. Unlike Appetite (depth of scope), Review Mode determines the **level of human oversight** during the workflow.
 
-Mode is set explicitly during the setup phase via `ask_user_question`. It is NOT auto-detected.
+Review Mode is set explicitly during the setup phase via `ask_user_question`. It is NOT auto-detected.
 
-| Mode | Plannotator Gates | Interface | IN/OUT Confirmation | Tech Approval | Best for |
-|------|:---:|:---:|:---:|:---:|---------|
-| **Auto** | None | standard (fixo) | LLM decides | Auto | Throwaway prototype, quick validation, spike |
-| **Light** | **1 pre-tech** | standard (fixo) | LLM decides | Auto | Standard feature, bug fix, small improvement |
-| **Moderate** | **1 pre-tech** | **User chooses** | LLM decides | Auto | Feature where interface matters |
-| **Full Product** | **Gate + Int.Gate** | User chooses | **User confirms** | Auto | Critical feature, product with domain context |
-| **Full Product + Tech** | **Gate + Int.Gate** | User chooses | User confirms | **Gate + tech Qs** | Full pipeline, high-risk changes, production |
+| Review Mode | Plannotator Gates | Interface | IN/OUT Confirmation | Tech Approval | Best for |
+|---|---|---|---|---|---|
+| **Auto** | None | LLM decides | LLM decides | Auto | Throwaway prototype, quick validation, spike |
+| **Only Product Spec** | **1 pre-tech** | LLM decides | LLM decides | Auto | Standard feature, bug fix, small improvement |
+| **Product Spec + Interface Choice** | **1 pre-tech + Int.Gate** | **User chooses** | LLM decides | Auto | Feature where interface matters |
+| **All Above + Scopes In/Out** | **Gate + Int.Gate** | User chooses | **User confirms** | Auto | Critical feature, product with domain context |
+| **All Above + Tech Review** | **Gate + Int.Gate + Tech Gate** | User chooses | User confirms | **Gate + tech Qs** | Full pipeline, high-risk changes, production |
 
 **Key rules:**
 
 - **Auto:** No gates, no Plannotator, no questions. LLM decides everything. Quickest path.
-- **Light:** One Plannotator gate (spec-product visual approval before tech planning). Interface depth follows Appetite. User does not choose between alternatives. All other gates skipped.
-- **Moderate:** Same as Light + user chooses between generated interface alternatives via the ask tool with preview.
-- **Full Product:** All gates active (pre-tech + int-gate). User confirms IN/OUT boundaries. Tech approval uses Auto (no Plannotator for tech plan).
-- **Full Product + Tech:** Everything in Full Product + tech plan goes through Plannotator gate + user answers technical questions.
+- **Only Product Spec:** One Plannotator gate (spec-product visual approval before tech planning). AI resolves all gaps. Interface auto-generated, no choice. No IN/OUT confirmation.
+- **Product Spec + Interface Choice:** Product spec gate + interface gate. User chooses between generated interface alternatives. AI resolves trivial gaps, asks about moderate/critical.
+- **All Above + Scopes In/Out:** All product gates active (pre-tech + scope IN/OUT + int-gate). User confirms boundaries. Tech approval uses Auto.
+- **All Above + Tech Review:** Everything in product review + tech plan goes through Plannotator gate + user answers technical questions.
 
-### How Appetite & Mode Interact
+### How Appetite & Review Mode Interact
 
 ```
-Mode controls WHAT runs (breadth)     →  Light vs Full Product, etc.
-Appetite controls HOW DEEP it runs     →  Lean vs Core vs Complete
+Review Mode controls WHAT runs (breadth)      →  Which gates are active
+Appetite controls HOW DEEP it runs             →  Scope depth per gate
 ```
 
 | | Lean | Core | Complete |
 |---|---|---|---|
 | **Auto** | No gates. Fastest path: smaller spec, minimal verify. | No gates. Standard planning depth, standard verify. | No gates. Deep planning, full verify. |
-| **Full Product** | 2 gates (Gate + Int.Gate). User confirms IN/OUT. | 2 gates + IN/OUT confirmation. Full workflow. | 2 gates + all questions. No shortcuts. |
+| **All Above + Scopes In/Out** | 2 gates (Gate + Int.Gate). User confirms IN/OUT. | 2 gates + IN/OUT confirmation. Full workflow. | 2 gates + all questions. No shortcuts. |
 
 **Examples:**
 - `Lean + Auto` → Fastest path: no gates, no questions, no Plannotator. LLM decides scope. Interface runs automatically with 1 suggested interface. (~6 stages)
-- `Core + Light` → Standard feature: 1 Plannotator gate (pre-tech), interface runs automatically with 3 interfaces + hybrid. (~10 stages)
-- `Core + Moderate` → Feature where interface matters: 1 Plannotator gate + user chooses among 3 interfaces + hybrid. (~8 stages)
-- `Complete + Full Product` → Critical feature: 2 Plannotator gates + all questions. Interface explores all 5 archetypes + hybrid. No shortcuts. (~13 stages)
+- `Core + Only Product Spec` → Standard feature: 1 Plannotator gate (pre-tech), interface runs automatically with 3 interfaces + hybrid. (~10 stages)
+- `Core + Product Spec + Interface Choice` → Feature where interface matters: 1 Plannotator gate + user chooses among 3 interfaces + hybrid. (~8 stages)
+- `Complete + All Above + Tech Review` → Critical feature: 3 Plannotator gates + all questions. Interface explores all 5 archetypes + hybrid. No shortcuts. (~15 stages)
 
 ### Motivation
 
-Product ideas vary widely in scope and risk. A throwaway prototype should not require the same planning depth as a critical production feature. The Appetite × Mode cascade system ensures:
+Product ideas vary widely in scope and risk. A throwaway prototype should not require the same planning depth as a critical production feature. The Appetite × Review Mode cascade system ensures:
 
 - **Lean appetite limits scope and exploration** - smaller spec, fewer scopes, one interface suggestion, and critical-path tests only.
 - **Complete appetite expands exploration and verification** - full edge mapping, all 5 interface archetypes + hybrid, behavior/e2e tests, security tests, and live a11y audit when UI exists.
-- **Auto mode skips Plannotator** - for lightweight validations where visual review is overkill
-- **Full Product mode enforces strategy** - JTBD, Opportunity Mapping, etc. run before shaping if product context exists
+- **Auto review mode skips Plannotator** - for lightweight validations where visual review is overkill
+- **All Above + Scopes In/Out review mode enforces strategy** - JTBD, Opportunity Mapping, etc. run before shaping if product context exists
 
 This is an **appetite-first** design: the human's declaration of review budget propagates automatically through all stages - no estimation step required.
 
@@ -223,7 +226,7 @@ Traditional planning is linear: product spec → tech spec. stelow adds **two fe
 
 - **Codebase Feature Recon** — Before tech planning generates typed scopes, a deeper cymbal investigation runs: searches for related modules, maps references (who connects to what), and analyzes impact (what breaks if changed). Depth varies by appetite — see table below.
 
-- **Alignment Check** — After tech planning generates typed scopes, a bidirectional check compares the tech plan against the product spec. If tech reveals constraints that change the product scope, the LLM classifies alignment and acts per Mode: Auto/Light auto-updates the product spec; Moderate/Full asks the user. This catches "tech discovered too late" before any code is written.
+- **Alignment Check** — After tech planning generates typed scopes, a bidirectional check compares the tech plan against the product spec. If tech reveals constraints that change the product scope, the LLM classifies alignment and acts per Review Mode: Auto/Only Product Spec auto-updates the product spec; Product Spec + Interface Choice and above ask the user. This catches "tech discovered too late" before any code is written.
 
 | Appetite | Tech Preview (shaping) | Codebase Feature Recon (planning) | Alignment Check |
 |----------|----------------------|-----------------------------------|----------------|
@@ -234,10 +237,10 @@ Traditional planning is linear: product spec → tech spec. stelow adds **two fe
 Greenfield skips all codebase analysis (no code to inspect).
 If cymbal is not installed, falls back to `find` + `git log` — no cross-references or impact data.
 
-| Mode | Alignment Check behavior |
-|------|------------------------|
-| **Auto/Light** | Auto-resolve. Updates spec-product if needed. No questions. |
-| **Moderate** | Auto-resolve if aligned; flags user if misaligned. |
+| Review Mode | Alignment Check behavior |
+|------------|------------------------|
+| **Auto/Only Product Spec** | Auto-resolve. Updates spec-product if needed. No questions. |
+| **Product Spec + Interface Choice** | Auto-resolve if aligned; flags user if misaligned. |
 | **Full/Full+Tech** | Always shows diff, asks user to choose update/ignore/reshape. |
 
 These loops are **appetite- and mode-respecting by design** — they inherit the same two-axis control as the rest of the workflow. No new mechanism needed.
@@ -344,9 +347,26 @@ Not every feature works on every CLI. Here's what to expect:
 | **Plannotator visual gate** | ✅ Extension | ⚠️ Manual | ⚠️ Manual | ⚠️ Manual |
 | **Deep hooks (events, gates)** | ✅ Extension | ❌ | ❌ | ❌ |
 
-> **Bottom line:** The **25 skills work identically on every CLI** - they run the full Shape Up workflow, generate plans, critique, scopes, everything. The TUI overlay and deep integration features are Pi-only because only Pi exposes an extension system. All CLIs can still complete the workflow; it just happens in chat rather than a visual panel.
+> **Bottom line:** The **25 skills work identically on every CLI** - they run the full Shape Up workflow, generate plans, critique, scopes, everything. The deep integration features (real-time TUI overlay, slash commands, lifecycle hooks, Plannotator gate) are native to pi.dev, which has the extension system to support them. The [Muxy.app](https://muxy.app/) visual panel (macOS terminal multiplexer) provides a dedicated surface for workflow state. All CLIs can still complete the workflow; on non-Pi CLIs it happens via chat and command files rather than extensions.
 
 ---
+
+## External Dependencies
+
+stelow is designed to be **self-contained** — the 25 skills + installer cover the full workflow. Some features optionally integrate with external tools for enhanced capability. Every external dependency has a documented fallback.
+
+| Dependency | Required? | Used by | Install method | Fallback if absent |
+|---|---|---|---|---|
+| [cymbal](https://github.com/1broseidon/cymbal) | Optional | Tech Preview, Codebase Feature Recon, Alignment Check | `brew install 1broseidon/tap/cymbal` (macOS), or `go install` / binary release | Basic `find` + `git log` — no cross-references or impact data |
+| [npx skills](https://github.com/vercel-labs/skills) | Optional | Stack-matched skill discovery during execution setup | Part of Node.js ecosystem (`npx` bundled with npm) | Skip — workflow runs without stack-matched skills |
+| [ctx7](https://github.com/upstash/context7) | Optional | Current library doc fetching during execution setup | `npx ctx7 setup` or `npm i -g ctx7` | Skip — docs not fetched (less informed execution) |
+| [plannotator](https://plannotator.ai/) | Optional (Pi) | Visual review gate annotation | `@plannotator/pi-extension` (Pi npm) | Manual chat review — no structured annotation |
+| [pi-subagents](https://github.com/nicobailon/pi-subagents) | Optional (Pi) | Parallel subagent orchestration | `npm:pi-subagents` (Pi npm) | Sequential execution — slower, same result |
+| [pi-intercom](https://github.com/nicobailon/pi-intercom) | Optional (Pi) | Session-to-session coordination | `npm:pi-intercom` (Pi npm) | Skip — no intercom capability |
+| [pi-supervisor](https://github.com/tintinweb/pi-supervisor) | Optional (Pi) | Conversation supervision during execution | `npm:pi-supervisor` (Pi npm) | Skip — no supervision |
+| [safe-change (pi-agent-codebase-workflows)](https://github.com/PriNova/pi-agent-codebase-workflows) | Optional | Pre-execution code safety checks | `npx skills add Prinova/pi-agent-codebase-workflows -g` | Skip — pre-execution check omitted |
+
+**Design principle:** stelow is **harness-agnostic**. Zero external tools are required to run the full product workflow. Each optional integration enhances a specific phase but never blocks progress. The installer (`./install.sh`) auto-installs Pi npm packages when Pi is detected — other tools (cymbal, ctx7) remain user-managed.
 
 ### 🚀 Path A: From Zero (pi.dev + Everything)
 
@@ -442,7 +462,7 @@ This installs all 25 skills to `~/.agents/skills/` - works on any CLI.
 
 ## 🖥️ Muxy.app Visual Panel
 
-> **Requires [Muxy.app](https://muxy.app/) + the stelow Muxy extension loaded.** Muxy is a macOS terminal multiplexer — think project-based terminal workspaces, tabs, and splits. The visual panel is a native Muxy surface, not a standalone web app.
+> **Requires [Muxy.app](https://muxy.app/) + the stelow Muxy extension loaded.** Muxy is a **macOS terminal multiplexer** — think tmux with a native Mac UI: project-based terminal workspaces, tabs, splits, and custom panels. The visual panel is a Muxy plugin surface, not a web app or a Pi feature.
 
 The Muxy panel shows:
 
@@ -450,6 +470,10 @@ The Muxy panel shows:
 - Phase artifacts and outputs
 - Upcoming tasks
 - Quick actions
+
+**Does NOT require pi.dev.** The Muxy extension reads workflow state from `.stelow/` files on disk, which any CLI writes. If you use Muxy + any CLI (Pi, OpenCode, Claude Code, Codex), the panel works.
+
+**Requires:** Muxy.app (macOS-only) + the stelow Muxy extension (`extensions/stelow-muxy/`). Install via Muxy's plugin system.
 
 ---
 
@@ -516,7 +540,7 @@ This workflow is grounded in empirical evidence from the 2025-2026 AI agent rese
 | **Cross-session learning** | [Cat](https://arxiv.org/abs/2512.22087) (Liu et al., Beihang, 2025); [Memory Transfer](https://arxiv.org/abs/2604.14004) (Kim et al., KAIST, 2026) | Context as callable tool; +3.7% via abstract memory pools | Session knowledge from past cycles read during workflow setup |
 | **Output validation guards** | [Stage-Gate Agentic](https://community.pdma.org/knowledgehub/bok/product-innovation-process/stage-gate-agentic-the-coming-revolution-in-the-new-product-process) (PDMA, 2026); [Phaselock](https://github.com/infinri/Phaselock) (2026) | AI agents with gates reduce execution failures; 80 enforceable rules | Shape Up output guard + Tech Planning validation guard |
 | **Context isolation** | [Clean Context Pattern](https://agentfactory.panaversity.org/docs/General-Agents-Foundations/context-engineering/context-isolation) (Agent Factory, 2026); [GAM](https://arxiv.org/abs/2604.12285) (Zhejiang U., 2026) | Fresh context per agent outperforms shared pipelines; write isolation prevents contamination | `subagents.md` - `context:"fresh"` per subagent; disk-based artifacts |
-| **Visual review gate** | [Plannotator](https://plannotator.ai/) (backnotprop, 2025); [Placement Theory](https://tianpan.co/blog/2026-04-17-hitl-placement-theory-approval-gates) (Tian Pan, 2026) | Browser-based plan annotation with structured feedback loop | Plannotator gate active when Mode ≥ Light; skipped in Auto |
+| **Visual review gate** | [Plannotator](https://plannotator.ai/) (backnotprop, 2025); [Placement Theory](https://tianpan.co/blog/2026-04-17-hitl-placement-theory-approval-gates) (Tian Pan, 2026) | Browser-based plan annotation with structured feedback loop | Plannotator gate active when Review Mode > Auto; skipped in Auto |
 | **Intra-step recovery** | [Try-Heal-Retry](https://adriennevermorel.com/notes/try-heal-retry-pattern/) (Nweke, 2026); [PALADIN](https://arxiv.org/abs/2509.25238) (Chaudhary et al., 2025) | 89.68% recovery rate via annotated failure trajectories | `subagents.md` - Retry 1× + skip with logged error per subagent |
 | **Metric-driven optimization** | [ReflexGrad](https://arxiv.org/abs/2511.14584) (Kadu et al., 2025); [ReliabilityBench](https://arxiv.org/abs/2601.06112) (Gupta et al., 2026) | +40pp lift via dual-process routing; standardized reliability measurement | `optimization` scopes routed to optimization goals (subagent + acceptance) |
 | **Acceptance-based execution** | Pattern inspired by [Try-Heal-Retry](https://adriennevermorel.com/notes/try-heal-retry-pattern/) (Nweke, 2026) and [PALADIN](https://arxiv.org/abs/2509.25238) (Chaudhary et al., 2025) | Self-correction in same context outperforms fresh re-delegation | Scope executor delegates with acceptance contract - child self-corrects (harness-dependent) before parent evaluates |
@@ -534,7 +558,7 @@ Even with these guardrails, the AI agent still exhibits predictable failure mode
 | 2 | **Confabulated research references** - Agents cite nonexistent papers or books (~11-57% hallucination rate across models) | [arXiv 2604.03173](https://arxiv.org/abs/2604.03173) - 10 models/3 databases/69K citation instances | Claim verification via Lessons Learned cross-referencing during setup. | **Caught by structure, not guaranteed.** Multi-model consensus (≥3 LLMs citing same work) yields 95.6% accuracy, but the workflow doesn't enforce this. |
 | 3 | **Silent wrong answers** - Cross-task state leakage produces plausible but incorrect outputs | [UCC (arXiv 2604.01350)](https://arxiv.org/abs/2604.01350), 2026 | Write isolation per subagent; clean context pattern | **Mitigated by isolation, not by detection.** No mechanism to detect when contamination happens despite isolation. |
 | 4 | **Overconfidence in estimates** - AI systematically underestimates implementation complexity | [Agentic Overconfidence (ICLR 2026)](https://openreview.net/forum?id=Ld4bvamfKj) - all tested agents exhibit agentic overconfidence | Appetite is declared by human as a **constraint**, not estimated by the LLM. The LLM only checks `appetite_fit` (fits/cuts_needed/reshape). No estimation step. | **Addressed by design - appetite is a constraint, not an estimate.** The human sets the budget before shaping. The LLM checks fit, not effort. But the human still needs to set appetite honestly. |
-| 5 | **Approval gate fatigue** - Users can desensitize to visual gates and approve without scrutiny | [Tian Pan Apr 2026](https://tianpan.co/blog/2026-04-23-hitl-queue-dynamics-approver-fatigue) - HITL queues have dynamics | Plannotator requires active annotations (deletions, comments, labels). Light+Auto mode skips gates entirely when appropriate. | **Delayed, not prevented.** Mode selection helps reduce unnecessary gates, but if the human always picks Complete+Full Product, fatigue still sets in. |
+| 5 | **Approval gate fatigue** - Users can desensitize to visual gates and approve without scrutiny | [Tian Pan Apr 2026](https://tianpan.co/blog/2026-04-23-hitl-queue-dynamics-approver-fatigue) - HITL queues have dynamics | Plannotator requires active annotations (deletions, comments, labels). Auto/Only Product Spec review modes skip gates entirely when appropriate. | **Delayed, not prevented.** Review Mode selection helps reduce unnecessary gates, but if the human always picks Complete+All Above + Scopes In/Out, fatigue still sets in. |
 | 6 | **80% Problem** - AI ships the happy path (CRUD, main flow) but omits error handling, observability, security, retry, rollback, edge cases | [Osmani Jan 2026](https://addyo.substack.com/p/the-80-problem-in-agentic-coding) (coined the term); [GitClear 2025](https://www.gitclear.com/ai_assistant_code_quality_2025_research) | Tech Planning requires NFRs per scope. Acceptance contracts can include NFR criteria (if the plan specifies them). Audit classifies omissions as gaps - ESCALATED ones become new scopes. | **Partially mitigated, not solved.** NFRs must be in the plan to appear in the contract. Audit classification depends on the LLM - misclassification means gaps slip through. Same model evaluates both stages. |
 | 7 | **Model dependency** - Claude Opus, Gemini Flash, GPT-4o produce significantly different quality | [Veracode 2025](https://www.veracode.com/wp-content/uploads/2025_GenAI_Code_Security_Report_Final.pdf) - 45% of AI-generated code contains flaws across 100+ models; [Anthropic Jan 2026](https://arxiv.org/abs/2601.20245) - RCT: AI-assisted devs score 17% lower on comprehension tests | Every artifact tracks `generated_by: {model_name}` in frontmatter. Gate stage shows provenance before Plannotator review. | **Transparency, not mitigation.** Knowing the model helps calibrate expectations, but it doesn't fix the quality gap. The comprehension penalty (Anthropic 2026) affects users regardless. |
 | 8 | **Constraint decay** - AI progressively violates its own self-imposed rules over time | [arXiv 2026 (Constraint Decay)](https://arxiv.org/abs/2605.06445) - structural constraints drift in backend code generation; [HORIZON](https://arxiv.org/abs/2604.11978) - agents break on long-horizon tasks | Context rot rules explicitly warn about this. "No patching in degraded context" rule blocks the most common decay pattern. | **Same root cause as context rot.** The warning helps, but stopping a session mid-flow is disruptive and users rarely do it. |
