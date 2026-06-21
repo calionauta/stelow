@@ -8,22 +8,23 @@ cd stelow
 ./install.sh
 ```
 
-Auto-detects ALL your CLIs and installs 25 skills to `~/.agents/skills/`.
+Interactive full setup. Installs 25 skills, Pi extension (if detected), and offers
+optional dependencies (cymbal, ctx7) with step-by-step confirmation.
 
 ---
 
 ## Architecture
 
 ```
-stelow/          ← Source (versionado)
+stelow/          ← Source
 └── skills/                     ← 25 skills flat
     ├── stelow/   ← Orchestrator
     ├── cali-product-shape-up/
     └── ... (21 more)
 
-~/.agents/skills/               ← Install target (home do usuário)
+~/.agents/skills/               ← Install target
 ├── stelow/       ← Copied
-├── cali-product-shape-up/               ← Copied
+├── cali-product-shape-up/      ← Copied
 └── ... (25 total)
 ```
 
@@ -39,17 +40,29 @@ stelow/          ← Source (versionado)
 ## Commands
 
 ```bash
-./install.sh              # Install para todos os CLIs detectados
-./install.sh update       # Atualiza skills
-./install.sh remove       # Desinstala de todos os CLIs
-./install.sh help         # Mostra ajuda
+./install.sh                    # Interactive full setup (default)
+./install.sh --minimal          # Skills only, no optional deps
+./install.sh update             # Update skills
+./install.sh remove             # Uninstall from all detected CLIs
+./install.sh --help             # Show help
 
-# Limitar a um CLI
+# Non-interactive (CI), install everything
+ASSUME_YES=1 ./install.sh
+
+# Limit to one CLI
 PRODUCT_WORKFLOW_CLI=opencode ./install.sh
-
-# Apenas skills, sem npm packages (Pi only)
-INSTALL_SKILLS_ONLY=1 ./install.sh
 ```
+
+**Full setup flow:**
+1. 25 workflow skills — **always installed**
+2. Pi extension + npm packages — **confirms before installing** (Pi only)
+3. cymbal (codebase navigation) — **confirms before installing**
+4. ctx7 (live library docs) — **recommends, requires OAuth**
+5. `./install.sh --minimal` skips all optional steps
+
+**CI / automation:** Set `ASSUME_YES=1` to auto-confirm all prompts without interaction.
+
+**Config file:** Unselected options can be installed later by re-running `./install.sh`.
 
 ---
 
@@ -106,8 +119,8 @@ Instala skills para `~/.agents/skills/` — funciona em qualquer CLI.
 # Remove
 ./install.sh remove
 
-# Apenas skills (sem extension/slash commands)
-INSTALL_SKILLS_ONLY=1 ./install.sh
+# Skills only (no extension, no optional deps)
+./install.sh --minimal
 ```
 
 </details>
@@ -201,13 +214,13 @@ Third-party npm dependencies existem **apenas para Pi**. Para proteção contra 
 
 **On pinning:** Not recommended for actively maintained packages. A 2026 study ([Pinning Is Futile, arXiv 2502.06662](https://arxiv.org/abs/2502.06662)) found that pinning *increases* vulnerability exposure.
 
-**Skill-only mode (evita npm entirely):**
+**Skills-only mode (avoids npm entirely):**
 
 ```bash
-INSTALL_SKILLS_ONLY=1 ./install.sh
+./install.sh --minimal
 ```
 
-Isso se aplica apenas ao **Pi** — outros CLIs já tem zero npm dependencies.
+This applies only to **Pi** — other CLIs have zero npm dependencies.
 
 ---
 

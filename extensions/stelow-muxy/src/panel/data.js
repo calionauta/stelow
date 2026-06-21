@@ -218,6 +218,18 @@ export function getStatusBadge(workflow) {
 
 // ── Scope helpers ─────────────────────────────────────────────────────
 
+const SCOPE_STATUS_INFO = {
+  pending: { label: 'Pending', tone: 'muted' },
+  'in-progress': { label: 'Active', tone: 'primary' },
+  completed: { label: 'Done', tone: 'success' },
+  escalated: { label: 'Escalated', tone: 'danger' },
+  failed: { label: 'Failed', tone: 'danger' },
+};
+
+export function getScopeStatusInfo(status) {
+  return SCOPE_STATUS_INFO[status] ?? { label: status || 'Pending', tone: 'muted' };
+}
+
 /**
  * Get scope progress summary for a workflow.
  * Returns null if no scopes exist.
@@ -229,7 +241,20 @@ export function getScopeProgress(workflow) {
   const completed = scopes.filter(s => s.status === 'completed').length;
   const inProgress = scopes.filter(s => s.status === 'in-progress').length;
   const failed = scopes.filter(s => s.status === 'escalated' || s.status === 'failed').length;
-  return { total, completed, inProgress, failed };
+  const pending = Math.max(total - completed - inProgress - failed, 0);
+  return { total, completed, inProgress, pending, failed };
+}
+
+export function getScopeSummaryText(workflow) {
+  const progress = getScopeProgress(workflow);
+  if (!progress) return '';
+  const parts = [
+    `${progress.completed} done`,
+    `${progress.inProgress} active`,
+    `${progress.pending} pending`,
+  ];
+  if (progress.failed > 0) parts.push(`${progress.failed} failed`);
+  return parts.join(', ');
 }
 
 /**

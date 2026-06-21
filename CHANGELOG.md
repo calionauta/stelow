@@ -20,6 +20,10 @@ All notable changes to `@renatocaliari/stelow` will be documented in this file.
   Replaces the removed context-mode.md.
 
 ### Changed
+- **Muxy scope tracking UX** — Workflow detail now keeps the selected workflow in sync
+  with polling refreshes, shows per-scope status labels, type/source chips, and a
+  clearer collapsed summary. Kanban cards show a compact scope progress bar and
+  workflow command buttons refresh the board after execution.
 - **Review Mode rename** — Former "Mode" renamed to "Review Mode" with explicit level names:
   Auto → Auto, Light → Only Product Spec, Moderate → Product Spec + Interface Choice,
   Full Product → All Above + Scopes In/Out, Full Product + Tech → All Above + Tech Review.
@@ -34,6 +38,9 @@ All notable changes to `@renatocaliari/stelow` will be documented in this file.
 - **AGENTS.md** — External tools section added. context-mode reference removed.
 
 ### Fixed
+- **Muxy detail stale state** — selected workflow/card detail now refreshes from
+  the latest `stelow.json` object while the detail panel is open, so generated
+  scopes and scope statuses update without closing/reopening the card.
 - **Stale references** — 100 files updated to replace old Mode values
   (Light/Moderate/Full Product) with new Review Mode names.
 

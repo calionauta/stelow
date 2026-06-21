@@ -6,6 +6,8 @@ import {
   getWorkflowProgress,
   getScopeProgress,
   getScopeBadge,
+  getScopeStatusInfo,
+  getScopeSummaryText,
   getActiveWorkflow,
   getWorkflowCommandLabel,
   isWorkflowCommandEnabled,
@@ -106,7 +108,24 @@ describe('Scope progress helpers', () => {
       { id: 's2', name: 'Token', type: 'feature', status: 'in-progress' },
       { id: 's3', name: 'Cache', type: 'optimization', status: 'pending' },
     ]));
-    expect(progress).toEqual({ total: 3, completed: 1, inProgress: 1, failed: 0 });
+    expect(progress).toEqual({ total: 3, completed: 1, inProgress: 1, pending: 1, failed: 0 });
+  });
+
+  it('returns scope status labels for display', () => {
+    expect(getScopeStatusInfo('pending')).toEqual({ label: 'Pending', tone: 'muted' });
+    expect(getScopeStatusInfo('in-progress')).toEqual({ label: 'Active', tone: 'primary' });
+    expect(getScopeStatusInfo('completed')).toEqual({ label: 'Done', tone: 'success' });
+    expect(getScopeStatusInfo('escalated')).toEqual({ label: 'Escalated', tone: 'danger' });
+  });
+
+  it('builds readable scope summary text', () => {
+    const summary = getScopeSummaryText(wfWithScopes([
+      { id: 's1', name: 'A', type: 'feature', status: 'completed' },
+      { id: 's2', name: 'B', type: 'feature', status: 'in-progress' },
+      { id: 's3', name: 'C', type: 'spike', status: 'pending' },
+      { id: 's4', name: 'D', type: 'test-unit', status: 'escalated' },
+    ]));
+    expect(summary).toBe('1 done, 1 active, 1 pending, 1 failed');
   });
 
   it('counts escalated as failed', () => {

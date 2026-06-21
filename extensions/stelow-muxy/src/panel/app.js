@@ -14,6 +14,8 @@ import {
   getStatusBadge,
   getScopeProgress,
   getScopeBadge,
+  getScopeStatusInfo,
+  getScopeSummaryText,
   getActiveWorkflow,
   getWorkflowCommand,
   isWorkflowCommandEnabled,
@@ -58,11 +60,11 @@ export class PipelinePanel {
 
   start() {
     muxy.events.subscribe('command.refresh-pipeline', () => this.refresh(true));
-    // Workflow commands — execute in selected Pi pane
-    muxy.events.subscribe('command.sw-next-cmd',     () => this.runCommandToast('/sw-next'));
-    muxy.events.subscribe('command.sw-abort-cmd',     () => this.runCommandToast('/sw-abort'));
-    muxy.events.subscribe('command.sw-complete-cmd', () => this.runCommandToast('/sw-complete'));
-    muxy.events.subscribe('command.sw-archive-cmd',  () => this.runCommandToast('/sw-archive'));
+    // Workflow commands — execute in selected Pi pane, then refresh soon after state changes.
+    muxy.events.subscribe('command.sw-next-cmd',     () => this.runCommandToastAndRefresh('/sw-next'));
+    muxy.events.subscribe('command.sw-abort-cmd',     () => this.runCommandToastAndRefresh('/sw-abort'));
+    muxy.events.subscribe('command.sw-complete-cmd', () => this.runCommandToastAndRefresh('/sw-complete'));
+    muxy.events.subscribe('command.sw-archive-cmd',  () => this.runCommandToastAndRefresh('/sw-archive'));
     // Switch events need small delay — Muxy doesn't scope muxy.files
     // to the new worktree until after the event handler returns.
     muxy.events.subscribe('project.switched', () => this.delayedRefresh());
@@ -102,6 +104,7 @@ export class PipelinePanel {
       ]);
       this.projectName = projectName;
       this.workflows = [...(tracking?.workflows ?? []), ...extra];
+      this.syncSelectedWorkflowWithLatest();
       this.inboxItems = inbox ?? [];
       this.updateTopbar();
       // Scan artifacts only when cache cleared (workspace switch, manual refresh)
@@ -203,12 +206,81 @@ export class PipelinePanel {
             title: 'Clear filter',
           }, icon('x', 10))
         : null,
+      h('button', {
+        class: 'inbox-item-btn',
+        onclick: () => this.refresh(true),
+        title: 'Refresh workflow data',
+      }, icon('refresh', 10)),
     );
   }
 
   renderCommandBar(selectedWorkflow = null) {
     return h('div', { class: 'command-bar' },
       ...this.renderWorkflowCommandButtons(selectedWorkflow, 'command-btn'),
+    );
+  }
+
+  syncSelectedWorkflowWithLatest() {
+    if (!this.selectedWf) return;
+    const previous = this.selectedWf;
+    const matches = this.workflows.filter(wf => this.isSameWorkflow(wf, previous));
+    if (matches.length !== 1) return;
+    const latest = matches[0];
+    if (latest === previous) return;
+
+    latest._scopesOpen ??= previous._scopesOpen;
+    latest._draftOpen ??= previous._draftOpen;
+    latest._fullDraft ??= previous._fullDraft;
+    this.selectedWf = latest;
+  }
+
+  isSameWorkflow(candidate, selected) {
+    if (!candidate || !selected) return false;
+    if (candidate.dirHash && selected.dirHash && candidate.dirHash === selected.dirHash) return true;
+    return Boolean(
+      candidate.name && selected.name && candidate.name === selected.name &&
+      candidate.created && selected.created && candidate.created === selected.created,
+    );
+  }
+
+  formatWorkflowUpdated(wf) {
+    if (!wf.updated) return '—';
+    const date = new Date(wf.updated);
+    if (Number.isNaN(date.getTime())) return '—';
+    return date.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  }
+
+  renderScopeMiniProgress(wf) {
+    const progress = getScopeProgress(wf);
+    if (!progress || progress.total === 0) return null;
+    const pct = Math.round((progress.completed / progress.total) * 100);
+    const color = progress.completed === progress.total
+      ? 'var(--muxy-diff-add)'
+      : progress.failed > 0
+        ? 'var(--muxy-diff-remove)'
+        : 'var(--muxy-accent)';
+
+    return h('div', {
+      class: 'card-scope-progress',
+      title: `${progress.completed}/${progress.total} scopes completed. ${getScopeSummaryText(wf)}.`,
+      style: 'height:3px;background:var(--muxy-secondary);border-radius:999px;overflow:hidden;margin-top:6px;',
+    },
+      h('div', { class: 'card-scope-progress-fill', style: `height:100%;display:block;width:${pct}%;background:${color};` }),
+    );
+  }
+
+  renderScopePlaceholder(wf) {
+    const current = wf.currentPhase ?? 0;
+    if (current < 11 || wf.status === 'completed' || wf.status === 'archived') return null;
+
+    return h('div', { class: 'draft-section' },
+      h('div', { class: 'draft-section-header' },
+        icon('rectangle3group', 11),
+        h('span', null, 'Scopes'),
+      ),
+      h('div', { class: 'draft-preview' },
+        'No scopes generated yet. Run Planning/Execution scope tracking to populate this card.',
+      ),
     );
   }
 
@@ -230,7 +302,7 @@ export class PipelinePanel {
       return h('button', {
         class: buttonClass,
         disabled: !enabled,
-        onclick: () => this.runCommandToast(actualCommand),
+        onclick: () => this.runCommandToastAndRefresh(actualCommand),
         title,
       }, icon(icons[command], 10), label);
     });
@@ -260,7 +332,7 @@ export class PipelinePanel {
     const scopeBadge = getScopeBadge(wf);
     const progress = getWorkflowProgress(wf);
     const pct = Math.round(progress * 100);
-      const staleNote = wf.staleCwd
+    const staleNote = wf.staleCwd
       ? h('div', { class: 'card-stale-note', style: 'color:var(--muxy-diff-hunk,#b8860b);font-size:10px;margin-top:6px;' }, `cwd outside project: ${wf.cwd}`)
       : wf.worktreeName
         ? h('div', { class: 'card-worktree', style: 'color:var(--muxy-foreground-muted);font-size:9px;margin-top:2px;' }, `🌿 ${wf.worktreeName}`)
@@ -293,6 +365,7 @@ export class PipelinePanel {
       h('div', { class: 'card-progress' },
         h('div', { class: 'card-progress-fill', style: `width:${pct}%;background:${barColor};` }),
       ),
+      this.renderScopeMiniProgress(wf),
       h('div', { class: 'card-badges' },
         h('span', { class: cls('badge', badge.class) }, badge.label),
         scopeBadge ? h('span', { class: cls('badge', scopeBadge.class) }, scopeBadge.label) : null,
@@ -425,18 +498,25 @@ export class PipelinePanel {
       ),
       wf._scopesOpen
         ? h('div', { class: 'draft-content', style: 'padding:4px 8px;' },
-            ...scopes.map(s =>
-              h('div', { style: 'display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;' },
+            ...scopes.map(s => {
+              const statusInfo = getScopeStatusInfo(s.status);
+              const statusStyle = {
+                success: ['var(--muxy-diff-add)', 'rgba(34,197,94,0.10)'],
+                primary: ['var(--muxy-accent)', 'rgba(59,130,246,0.12)'],
+                danger: ['var(--muxy-diff-remove)', 'rgba(239,68,68,0.10)'],
+                muted: ['var(--muxy-foreground-muted)', 'var(--muxy-secondary)'],
+              }[statusInfo.tone] ?? ['var(--muxy-foreground-muted)', 'var(--muxy-secondary)'];
+
+              return h('div', { style: 'display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px;' },
                 statusIcon(s.status),
                 h('span', { style: 'flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;' }, s.name),
                 h('span', { style: 'font-size:9px;color:var(--muxy-foreground-muted);background:var(--muxy-secondary);padding:1px 4px;border-radius:3px;' }, typeLabel(s.type)),
-              ),
-            ),
+                h('span', { style: `font-size:9px;color:${statusStyle[0]};background:${statusStyle[1]};padding:1px 5px;border-radius:999px;` }, statusInfo.label),
+                s.source ? h('span', { title: `Source: ${s.source}`, style: 'font-size:9px;color:var(--muxy-foreground-muted);background:var(--muxy-secondary);padding:1px 4px;border-radius:3px;' }, s.source) : null,
+              );
+            }),
           )
-        : h('div', { class: 'draft-preview' },
-            `${progress.completed} done, ${progress.inProgress} active, ${progress.total - progress.completed - progress.inProgress - progress.failed} pending` +
-            (progress.failed > 0 ? `, ${progress.failed} failed` : ''),
-          ),
+        : h('div', { class: 'draft-preview' }, getScopeSummaryText(wf)),
     );
   }
 
@@ -537,6 +617,10 @@ export class PipelinePanel {
               wf.created ? new Date(wf.created).toLocaleDateString() : '—'
             ),
           ),
+          h('div', { class: 'detail-row' },
+            h('span', { class: 'detail-label' }, 'Updated'),
+            h('span', { class: 'detail-value' }, this.formatWorkflowUpdated(wf)),
+          ),
         ),
         h('div', { style: 'font-size:11px;font-weight:600;margin-bottom:4px;' }, 'Progress'),
         h('div', { class: 'phase-list' },
@@ -581,6 +665,7 @@ export class PipelinePanel {
           })(),
         ),
         // Scopes section
+        this.renderScopePlaceholder(wf),
         this.renderScopes(wf),
         // Draft / Brief section
         this.renderDraftSection(wf),
@@ -804,6 +889,11 @@ export class PipelinePanel {
         ),
       ),
     );
+  }
+
+  async runCommandToastAndRefresh(command) {
+    await this.runCommandToast(command);
+    setTimeout(() => this.refresh(false), 1200);
   }
 
   async runCommandToast(command) {
