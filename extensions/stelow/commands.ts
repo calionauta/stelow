@@ -2,6 +2,7 @@
 import { rmSync, readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
+import { execSync } from "node:child_process";
 // @ts-ignore - Optional peer dependency for Pi environment
 import type { ExtensionAPI, ExtensionCommandContext } from "@earendil-works/pi-coding-agent";
 import type { Workflow, StageState } from "./types";
@@ -212,6 +213,57 @@ async function showStopPicker(
   }
 }
 
+// ── Drift Detection ──────────────────────────────────────────────────
+
+/**
+ * Check if tracked/untracked files changed in the repo since HEAD.
+ * Uses git diff --stat + git ls-files for untracked.
+ * If drift found, prompts user via UI adapter to confirm resume.
+ * Returns true if resume should proceed (no drift, or user confirmed).
+ */
+async function checkResumeDrift(cwd: string): Promise<boolean> {
+  try {
+    const diff = execSync(
+      "git diff --stat HEAD 2>/dev/null",
+      { encoding: "utf8", cwd, stdio: ["pipe", "pipe", "ignore"] }
+    ).trim();
+
+    const untracked = execSync(
+      "git ls-files --others --exclude-standard 2>/dev/null",
+      { encoding: "utf8", cwd, stdio: ["pipe", "pipe", "ignore"] }
+    ).trim();
+
+    if (!diff && !untracked) return true; // no drift
+
+    const summary = [
+      diff ? `Modified files:\n${diff}` : "",
+      untracked ? `Untracked files:\n${untracked}` : "",
+    ].filter(Boolean).join("\n\n");
+
+    const adapter = getUIAdapter();
+    const choice = await adapter.select(
+      [
+        {
+          value: "continue",
+          label: "Yes — resume anyway (Recommended)",
+          description: "Proceed with resume. Check plan validity before execution.",
+        },
+        {
+          value: "cancel",
+          label: "No — cancel resume",
+          description: "Don\u2019t resume. Review changes and resume when ready.",
+        },
+      ],
+      `\u26A0\uFE0F Files changed since this workflow was paused.\n\n${summary}\n\nResume anyway?`
+    );
+
+    return choice === "continue";
+  } catch {
+    // git not available or not a repo — allow resume
+    return true;
+  }
+}
+
 // ── PAUSE / RESUME ───────────────────────────────────────────────────
 
 function cmdPause(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
@@ -240,7 +292,7 @@ function cmdPause(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
   reply(ctx, `⏸ Workflow '${wf.name}' paused.`);
 }
 
-function cmdResume(pi: ExtensionAPI, args: string, ctx: CmdCtx) {
+async function cmdResume(pi: ExtensionAPI, args: string, ctx: CmdCtx) {
   const wd = resolveProjectDir(ctx.cwd);
   const parsed = parseArgs(args);
   const name = parsed.name || parsed._[0];
@@ -257,7 +309,13 @@ function cmdResume(pi: ExtensionAPI, args: string, ctx: CmdCtx) {
       : t?.workflows.find(w => w.status === "in-progress");
 
     if (inProgress) {
+      // Drift check before resume
       updateFooter(ctx, wd);
+      const proceed = await checkResumeDrift(wd);
+      if (!proceed) {
+        replyWarn(ctx, `Resume cancelled — drift detected in ${inProgress.name}. Review changes and use /sw-resume when ready.`);
+        return;
+      }
       reply(ctx, `▶️ '${inProgress.name}' resuming from ${PHASE_NAMES[inProgress.currentPhase]}...`);
       pi.sendUserMessage(
         `/skill:stelow\n\n[RESUME: workflow '${inProgress.name}', current phase: ${inProgress.currentPhase} (${PHASE_NAMES[inProgress.currentPhase]}). Auto-Discovery will find this in-progress workflow. User already confirmed via /sw-resume — proceed without asking, jump to the current phase and continue from there.]`,
@@ -270,6 +328,13 @@ function cmdResume(pi: ExtensionAPI, args: string, ctx: CmdCtx) {
       ? `Workflow '${name}' not found. /sw-ls`
       : "No paused or active Workflow."
     );
+    return;
+  }
+
+  // Drift check before resuming paused workflow
+  const proceed = await checkResumeDrift(wd);
+  if (!proceed) {
+    replyWarn(ctx, `Resume cancelled — drift detected in ${paused.name}. Review changes and use /sw-resume when ready.`);
     return;
   }
 

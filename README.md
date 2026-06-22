@@ -328,6 +328,31 @@ This package works across **multiple coding agents** - not just pi.dev. See the 
 | **Use OpenCode / Claude Code / Codex** | `git clone ... && ./install.sh` | 25 skills + command files (no TUI) |
 | **Any CLI (skills only)** | `npx skills add renatocaliari/stelow -g` | 25 skills + cross-CLI support |
 
+### Intent-Aware Start
+
+`/sw-start` auto-detects what kind of request you're making:
+
+```bash
+/sw-start "reduce complexity of the codebase"
+# → Detected as: Refactor
+# → Pipeline: Planning → Execution → Verification → Audit
+# → Skips Shape Up, Interface, all Gates
+
+/sw-start "fix login crash when email is empty"
+# → Detected as: Bugfix
+# → Pipeline: Planning → Execution → Verification → Audit
+
+/sw-start "create a new invoicing platform"
+# → Detected as: New Product
+# → Full pipeline: Setup → Shape → ... → Execution → Audit
+```
+
+If detection is ambiguous or incorrect, you can change the category before the workflow starts. This prevents token waste from running the full Shape Up pipeline on a simple bugfix.
+
+### Drift-Aware Resume
+
+`/sw-resume` checks for git changes before resuming a paused workflow. If files changed while paused, it warns you and asks for confirmation before proceeding.
+
 See [docs/INSTALLATION.md](docs/INSTALLATION.md) for detailed options.
 Per-agent configuration files (commands, install scripts) are in [`cli-agents/`](cli-agents/).
 
@@ -428,35 +453,23 @@ This installs all 25 skills to `~/.agents/skills/` - works on any CLI.
 
 | Command | Description |
 |---------|-------------|
-| `/sw-start` or `/sw-begin` | Start the workflow |
+| `/sw-start [idea]` | Start new workflow. Auto-detects intent type (new-product, feature, bugfix, refactor, investigate) and routes to appropriate stage pipeline. |
 | `/sw-menu` | Show terminal quick menu (phase list + next/abort hints). Works without Muxy.app. |
-| `/sw-continue` | Continue to next phase |
-| `/sw-help` | Show available commands |
-| `/sw-status` | Display current phase and progress |
-| `/sw-next` | Advance to next phase. Auto-completes the workflow on the last phase (no manual `/sw-complete` needed). |
-| `/sw-reset` | Reset workflow state |
-
-### Phase Commands
-
-| Command | Description |
-|---------|-------------|
-| `/sw-jtbd` | Run Job To Be Done phase |
-| `/sw-shape` | Run Shape Up phase |
-| `/sw-interface` | Run Interface phase |
-| `/sw-critique` | Run Critique phase |
-| `/sw-tech` | Run Tech Planning phase |
-
-### Utility Commands
-
-| Command | Description |
-|---------|-------------|
-| `/sw-export <phase>` | Export phase output |
-| `/sw-import <file>` | Import saved workflow |
-| `/sw-log` | Show workflow execution log |
-| `/sw-review` | Open Plannotator for review |
-| `/sw-scope <name>` | Create typed scope |
-| `/sw-goals` | Manage execution goals |
-| `/sw-doctor` | Diagnose workflow project health. Detects zombie workflows (stuck `in-progress` >24h), index mismatches, and orphaned entries. |
+| `/sw-next` | Advance to next stage. Auto-completes workflow on last phase. |
+| `/sw-pause` | Pause active workflow (keeps state for resume). |
+| `/sw-resume [name=]` | Resume paused/in-progress workflow. Checks git drift before resuming. |
+| `/sw-abort [name=]` | Abort and archive active workflow. |
+| `/sw-archive [name=]` | Archive completed or inactive workflow. |
+| `/sw-unarchive name=` | Restore archived workflow to paused state. |
+| `/sw-status` | Display current phase, progress, and scope status. |
+| `/sw-ls [all|archived]` | List workflows in current project (or all projects). |
+| `/sw-setphase phase=N` | Jump to specific phase by index. |
+| `/sw-goto [name=]` | Show project directory for a workflow. |
+| `/sw-rename <name>` | Rename active workflow. |
+| `/sw-complete` | Force-complete active workflow. |
+| `/sw-inbox [add|remove|clear]` | View or manage deferred inbox items. |
+| `/sw-doctor [--fix]` | Diagnose workflow health. Detects zombie workflows, index mismatches, orphaned entries. |
+| `/sw-unlock` | Disable stage guard for current session (debug only). |
 
 ---
 
@@ -482,7 +495,7 @@ The Muxy panel shows:
 All workflow artifacts are stored in:
 
 ```
-<project>/.pi/workflow/
+<project>/.stelow/
 ```
 
 | Subdirectory | Contents |

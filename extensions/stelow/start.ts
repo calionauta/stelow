@@ -2,16 +2,16 @@
 import type { ExtensionAPI, ExtensionCommandContext } from "@earendil-works/pi-coding-agent";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join, basename, extname } from "node:path";
-import { WORKFLOW_DIR, PHASE_NAMES, SCHEMA_URL } from "./types";
-import type { Workflow } from "./types";
+import { WORKFLOW_DIR, PHASE_NAMES, SCHEMA_URL, INTENT_PHASE } from "./types";
+import type { Workflow, WorkflowIntent } from "./types";
 import {
   parsedInputStore, readTracking, writeTracking,
   readGlobalTracking, writeGlobalTracking,
   getActiveWorkflow, resolveProjectDir,
   toSafeName, generateDirHash, hashToWorkflowId, getDateStamp,
-  readSourceFile, truncateText, detectCLI
+  readSourceFile, truncateText, detectCLI, classifyIntent
 } from "./state";
-import { updateFooter } from "./ui";
+import { updateFooter, getUIAdapter, initUIAdapter } from "./ui";
 import { buildSkillActivationMessage } from "./start-message";
 
 // Quick key=value parser for the args string
@@ -103,7 +103,75 @@ export default async function cmdStart(
   let fullDraft = draftText ? `### Initial Draft\n\n${draftText}\n\n` : "";
   if (allSrc) fullDraft += allSrc;
 
-  // 5. Initialize tracking
+  // 5. Intent classification + user confirmation
+  //     Uses UI adapter select (works on Pi TUI, falls back on other CLIs).
+  //     For empty/very short drafts, skip prompt and default to unknown.
+  let selectedIntent: WorkflowIntent = "unknown";
+  let initialPhase = 2; // Setup
+
+  if (draftText && draftText.trim().length >= 6) {
+    const detectedIntent = classifyIntent(draftText);
+
+    initUIAdapter(ctx);
+    const adapter = getUIAdapter();
+
+    // Build options: if detected is known, put it first as "(Recommended)"
+    // If unknown, show all options without recommendation.
+    const categoryOptions: Array<{ value: string; label: string; description: string }> = [
+      { value: "new-product", label: "New Product", description: "Full pipeline: Shape Up, Interface, Planning, Execution" },
+      { value: "feature", label: "Feature", description: "Standard: Shape Up, Planning, Execution" },
+      { value: "bugfix", label: "Bugfix", description: "Minimal: Planning \u2192 Execution \u2014 skip Shape/Interface/Gates" },
+      { value: "refactor", label: "Refactor", description: "Minimal: Planning \u2192 Execution \u2014 no new functionality" },
+      { value: "investigate", label: "Investigate / Research", description: "Spike scope only \u2014 quick research" },
+    ];
+
+    let options: Array<{ value: string; label: string; description: string }>;
+    let title: string;
+
+    if (detectedIntent !== "unknown") {
+      const detectedLabel = categoryOptions.find(o => o.value === detectedIntent)?.label || detectedIntent;
+      const detectedDesc = categoryOptions.find(o => o.value === detectedIntent)?.description || "";
+      options = [
+        {
+          value: detectedIntent,
+          label: `${detectedLabel} (Recommended)`,
+          description: `Detected from your request. ${detectedDesc}`,
+        },
+        ...categoryOptions
+          .filter(o => o.value !== detectedIntent)
+          .map(o => ({ value: o.value, label: o.label, description: o.description })),
+      ];
+      title = `\uD83D\uDCCB I detected your request as: "${detectedLabel}"\n\nIf that\u2019s correct, confirm below. The workflow adjusts which stages run based on the type.`;
+    } else {
+      // Can't classify clearly — show all options equally
+      options = categoryOptions.map(o => ({ value: o.value, label: o.label, description: o.description }));
+      title = `\uD83D\uDCCB Couldn\u2019t clearly detect the type. Pick what best describes your request:`;
+    }
+
+    // Cancel is always last
+    options.push({
+      value: "__cancel__",
+      label: "Cancel",
+      description: "Don\u2019t create a workflow",
+    });
+
+    const choice = await adapter.select(options, title);
+
+    if (choice === "__cancel__" || choice === null) {
+      ctx.ui?.notify("Canceled. No workflow created.", "info");
+      return;
+    }
+
+    selectedIntent = choice as WorkflowIntent;
+    initialPhase = INTENT_PHASE[selectedIntent] ?? 2;
+
+    // Re-evaluate name if intent changed what matters for stage selection
+    if (selectedIntent !== detectedIntent) {
+      ctx.ui?.notify(`\uD83D\uDC4D Using "${selectedIntent}" instead. Workflow will start at ${PHASE_NAMES[initialPhase]}.`, "info");
+    }
+  }
+
+  // 6. Initialize tracking
   let tracking = readTracking(wd);
   if (!tracking) {
     tracking = {
@@ -115,21 +183,21 @@ export default async function cmdStart(
 
   const finalName = name; // hash-based untitled is already unique
 
-  // 6. Build workflow object
+  // 7. Build workflow object
+  const stageSlug = PHASE_NAMES[initialPhase]?.toLowerCase() || "setup";
   const wf: Workflow = {
     name: finalName,
     description: truncateText(draftText, 500) || "",
     draftContent: fullDraft ? truncateText(fullDraft, 50000) : undefined,
     source: sources.length > 0 ? sources[0] : undefined,
     status: "in-progress",
-    currentPhase: 2,
+    currentPhase: initialPhase,
     phases: PHASE_NAMES.map((name, i) => ({
       id: `${i}-${name.toLowerCase()}`, name,
-      status: i < 2 ? "completed" : i === 2 ? "in-progress" : "pending"
+      status: i < initialPhase ? "completed" : i === initialPhase ? "in-progress" : "pending"
     })),
-    /** Initial stage state: workflow starts at setup */
     stage: {
-      current_stage: "setup",
+      current_stage: stageSlug,
       previous_stage: null,
       transitioned_at: new Date().toISOString(),
       history: [],
@@ -139,14 +207,15 @@ export default async function cmdStart(
     created: new Date().toISOString(),
     updated: new Date().toISOString(),
     cwd: wd,
-    dirHash,  // CRITICAL: needed for rename/archive operations
-    detectedCLI: detectCLI(),  // CLI harness detected at workflow creation
+    dirHash,
+    detectedCLI: detectCLI(),
+    intent: selectedIntent,
   };
 
   tracking.workflows.push(wf);
   writeTracking(wd, tracking);
 
-  // 6. Create directory (hash-based - stable)
+  // 8. Create directory (hash-based - stable)
   const ds = getDateStamp();
   const wfDir = join(wd, WORKFLOW_DIR, ds, dirHash);
   mkdirSync(wfDir, { recursive: true });
@@ -154,21 +223,22 @@ export default async function cmdStart(
     mkdirSync(join(wfDir, sub), { recursive: true });
   }
 
-  // 7. index.json
+  // 9. index.json
   writeFileSync(join(wfDir, "index.json"), JSON.stringify({
     version: "1.0", created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     name: finalName, _dir: dirHash,
     workflow_status: "in-progress",
     status: "in-progress",
-    current_phase: "setup", current_phase_index: 2,
+    current_phase: stageSlug, current_phase_index: initialPhase,
+    intent: selectedIntent,
     artifacts: {}, approved: false, approved_at: null,
     draft: fullDraft ? truncateText(fullDraft, 50000) : undefined,
     sources,
     detected_cli: detectCLI(),
   }, null, 2));
 
-  // 8. Global tracking
+  // 10. Global tracking
   const gt = readGlobalTracking() || {
     $schema: SCHEMA_URL, version: "1.0",
     created: new Date().toISOString(), updated: new Date().toISOString(),
@@ -177,11 +247,11 @@ export default async function cmdStart(
   gt.workflows.push(wf);
   writeGlobalTracking(gt);
 
-  // 9. UI
+  // 11. UI
   updateFooter(ctx, wd);
   parsedInputStore.delete(sessionId);
 
-  // 10. Output - use notify so user sees feedback immediately
+  // 12. Output - use notify so user sees feedback immediately
   const isUnnamed = !displayName;
   const wfId = hashToWorkflowId(dirHash);
   const displayLabel = isUnnamed ? wfId : finalName;
@@ -194,6 +264,7 @@ export default async function cmdStart(
     `[OK] Workflow '${displayLabel}' started!`,
     `[DIR] ${folderPath}`,
     `Stage: ${PHASE_NAMES[wf.currentPhase]}`,
+    `Intent: ${selectedIntent}`,
   ];
   if (draftText) {
     lines.push(`\n[DRAFT]:\n${draftText.slice(0, 300)}${draftText.length > 300 ? "..." : ""}`);
@@ -212,5 +283,5 @@ export default async function cmdStart(
 
   reply(ctx, lines.join("\n"));
 
-  pi.sendUserMessage(buildSkillActivationMessage(displayLabel, draftText, allSrc), { deliverAs: "followUp" });
+  pi.sendUserMessage(buildSkillActivationMessage(displayLabel, draftText, allSrc, selectedIntent, initialPhase), { deliverAs: "followUp" });
 }

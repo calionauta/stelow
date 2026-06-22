@@ -2,6 +2,33 @@
 
 All notable changes to `@renatocaliari/stelow` will be documented in this file.
 
+## [0.34.0] - 2026-06-22
+
+### Added
+- **Intent classification at /sw-start** — Draft text is auto-classified into
+  `new-product`, `feature`, `bugfix`, `refactor`, `investigate`, or `unknown`.
+  User confirms or changes the detected category via TUI select prompt.
+  Workflow adjusts stage pipeline accordingly (bugfix/refactor skip Shape Up,
+  Interface, and Gates). Stores intent in workflow metadata and propagates
+  to LLM skill activation message.
+- **Drift detection at /sw-resume** — Before resuming, checks `git diff HEAD`
+  and untracked files. If drift detected, warns user and asks for confirmation.
+  Prevents continuing execution on stale code after interruption.
+- **classifyIntent() pure function** — Keyword-pattern-based intent classifier
+  in `state.ts` with scoring and tie-break logic. 11 unit tests.
+- **WorkflowIntent type** — `WorkflowIntent` type + `INTENT_PHASE`,
+  `INTENT_LABELS`, `INTENT_DESCRIPTIONS` constants in `types.ts`.
+
+### Changed
+- `start-message.ts`: `buildSkillActivationMessage()` now accepts `intent` and
+  `initialPhase` params. Bugfix/refactor get minimal pipeline instructions;
+  investigate gets spike-only instructions; new-product/feature get full pipeline.
+- README commands table updated to reflect actual commands (removed stale
+  `/sw-begin`, `/sw-continue`, `/sw-reset`, et al; added `/sw-pause`,
+  `/sw-resume`, `/sw-abort`, `/sw-ls`, `/sw-setphase`, `/sw-goto`,
+  `/sw-rename`, `/sw-complete`, `/sw-inbox`, `/sw-unlock`).
+- Artifact directory path fixed from `.pi/workflow/` to `.stelow/`.
+
 ## [0.33.0-alpha] - 2026-06-22
 
 ### Added

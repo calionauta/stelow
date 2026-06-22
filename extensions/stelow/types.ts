@@ -252,6 +252,55 @@ export interface GlobalIndexEntry {
   updated: string;
 }
 
+/**
+ * Intent category — detected at /sw-start from draft text.
+ * Determines which stages run and which are skipped.
+ */
+export type WorkflowIntent = 'new-product' | 'feature' | 'bugfix' | 'refactor' | 'investigate' | 'unknown';
+
+/**
+ * Map intent to the initial PHASE_NAMES index where the workflow should start.
+ * Stages before this index are marked completed (skipped).
+ *
+ * NOTE: ALL intents start at Setup (2) because later stages (Planning, Execution)
+ * expect artifacts (spec-product.md, scopes) that don't exist without Setup.
+ * The intent is passed via the activation message so the LLM adjusts stage
+ * selection during Setup accordingly. Do NOT route directly to Planning/Execution
+ * — it breaks artifact dependencies.
+ */
+export const INTENT_PHASE: Record<WorkflowIntent, number> = {
+  'new-product': 2, // Setup — full pipeline
+  'feature':      2, // Setup — standard pipeline
+  'bugfix':       2, // Setup — LLM picks Tech Planning only in stage selection
+  'refactor':     2, // Setup — LLM picks Tech Planning only in stage selection
+  'investigate':  2, // Setup — LLM skips shape/interface in stage selection
+  'unknown':      2, // Setup — full pipeline, LLM clarifies
+};
+
+/**
+ * Intent labels for display to the user.
+ */
+export const INTENT_LABELS: Record<WorkflowIntent, string> = {
+  'new-product': '🆕 New Product',
+  'feature':     '✨ Feature',
+  'bugfix':      '🐛 Bugfix',
+  'refactor':    '🔧 Refactor',
+  'investigate': '🔍 Investigate',
+  'unknown':     '❓ Unknown',
+};
+
+/**
+ * Intent descriptions for display to the user.
+ */
+export const INTENT_DESCRIPTIONS: Record<WorkflowIntent, string> = {
+  'new-product': 'Greenfield product — full pipeline: Shape Up, Interface, Planning, Execution',
+  'feature':     'Add new capability — standard pipeline: Shape Up, Planning, Execution',
+  'bugfix':      'Fix broken behavior — minimal: Planning → Execution (skip Shape/Interface/Gates)',
+  'refactor':    'Simplify, optimize or restructure — minimal: Planning → Execution',
+  'investigate': 'Research, spike, learn — flexible: spike scope only',
+  'unknown':     'Could not determine type — will ask during setup',
+};
+
 export type ScopeStatus = 'pending' | 'in-progress' | 'completed' | 'escalated' | 'failed';
 
 export interface Scope {
@@ -288,6 +337,7 @@ export interface Workflow {
   worktreePath?: string;  // Path to git worktree if created for execution
   dirHash?: string;       // Stable directory name (e.g., pw-ollc-whkaxv) — REQUIRED for rename/archive operations
   detectedCLI?: string;   // CLI harness detected at workflow creation
+  intent?: WorkflowIntent; // Intent category detected at /sw-start
   scopes?: Scope[];       // Tech plan scopes — populated during Execution phase
 }
 
