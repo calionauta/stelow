@@ -223,11 +223,28 @@ Verify the proposal is technically achievable.
 - [ ] Integration complexity is estimated
 - [ ] Testing strategy is defined
 
-### Effort estimation:
-- [ ] Scope is bounded
+### ⚡ Effort estimation (relative comparison only, in levels)
+
+> **Absolute estimates are meaningless.** Isolated numbers are misleading
+> and the model has overestimation bias. Use only **relative comparison**
+> between items, in effort/complexity levels, to determine what is
+> **more or less** than another.
+>
+> **Rules:**
+> 1. Assign levels (Low/Medium/High) to each scope, but **use only for
+>    ordering** — not as individual estimates.
+> 2. The relevant question: "Is this scope more or less complex than
+>    that one?" — not "how long will it take?".
+> 3. If the model feels something is "High", it must compare with another
+>    item classified as "Medium" to justify. Without comparison,
+>    the level has no value.
+> 4. Never use individual levels as a gate to cut scope.
+>    The final decision is human.
+
+- [ ] Scopes have **relative** effort levels (compared to each other)
 - [ ] Dependencies are identified
-- [ ] Resources are available
-- [ ] Timeline is realistic
+- [ ] Complexity is expressed in relation to other scopes, not in isolation
+- [ ] Justification: "Scope A is more complex than Scope B because..."
 
 ### Scope Fit (appetite_fit):
 - [ ] Scope count matches declared appetite: Lean ≤ 2, Core ≤ 5, Complete ≤ 15

@@ -37,9 +37,9 @@ Appetite controls **test breadth**, not quality baseline.
 
 | Appetite | Test breadth |
 |----------|-------------|
-| `Lean` | Smoke tests + critical-path unit tests. Add integration only when an external seam is in the Lean IN scope. |
-| `Core` | Unit tests for main business logic + integration tests for DB/API/external seams. |
-| `Complete` | Unit + integration + behavior/e2e for complex flows + security tests/scans for sensitive paths. |
+| `Lean` | Behavior/E2E (1 happy path) + smoke tests + critical-path unit tests. Add integration only when an external seam is in scope. |
+| `Core` | Behavior/E2E (happy path + variations) + unit tests for main logic + integration tests for DB/API/external seams. |
+| `Complete` | Behavior/E2E (full coverage + edge cases) + unit + integration + security tests/scans. |
 
 **Quality baseline applies to every appetite:** build/test/lint/typecheck always run when available, and a11y checks run whenever UI files exist. Appetite changes exploration breadth, not whether quality gates exist.
 
@@ -119,12 +119,12 @@ From research: coverage alone is insufficient. A test suite can execute every li
 
 | Appetite | Path Type | Testing Depth |
 |-----------|-----------|-------------|
-| `Lean` | Critical path | Smoke test + unit test for the happy path and one negative case |
-| `Lean` | Standard/experimental | Smoke or acceptance check only; no broad integration suite |
-| `Core` | Critical path | Unit tests + negative cases + integration seams |
-| `Core` | Standard features | Unit tests for main logic + integration tests for external seams |
-| `Complete` | Critical path | Unit + integration + behavior/e2e + security gates |
-| `Complete` | Complex flows | Behavior/e2e tests for multi-step UI or agent workflows |
+| `Lean` | Critical path | E2E/behavior (1 happy path) + smoke + unit for the one negative case |
+| `Lean` | Standard/experimental | E2E/behavior (1 happy path); no broad integration suite |
+| `Core` | Critical path | E2E/behavior + unit tests + negative cases + integration seams |
+| `Core` | Standard features | E2E/behavior (key variations) + unit tests + integration for external seams |
+| `Complete` | Critical path | E2E/behavior (full) + unit + integration + security gates |
+| `Complete` | Complex flows | E2E/behavior for multi-step UI or agent workflows |
 
 ### Step 5: Define Test Scope Types
 
@@ -134,6 +134,7 @@ For each IN scope in spec-product.md, add corresponding test scopes. Appetite co
 
 | Code Type | Test Type | When to Use | TDD? |
 |----------|-----------|-------------|------|
+| User-facing flows | `test-behavior` | 1 E2E test for happy path | No — browser/e2e |
 | Critical business logic | `test-unit` | Happy path + one negative case | Yes for deterministic logic |
 | External APIs | `test-integration` | Only if external seam is in Lean IN scope | No — test-after |
 | Security-sensitive | `test-security` | Only if auth/payment/data is in Lean IN scope | Automated SAST |
@@ -142,20 +143,22 @@ For each IN scope in spec-product.md, add corresponding test scopes. Appetite co
 
 | Code Type | Test Type | When to Use | TDD? |
 |----------|-----------|-------------|------|
+| User-facing flows | `test-behavior` | E2E for happy path + key variations | No — browser/e2e |
+| Agent workflows | `test-behavior` | Multi-step agents | Multi-run validation |
 | Business logic | `test-unit` | Main flows + obvious edge cases | Yes — critical paths |
 | External APIs | `test-integration` | DB, APIs, queues | No — test-after |
 | Security-sensitive | `test-security` | Auth, payment, data | Automated SAST |
-| Agent workflows | `test-behavior` | Multi-step agents | Multi-run validation |
 
 **Complete:**
 
 | Code Type | Test Type | When to Use | TDD? |
 |----------|-----------|-------------|------|
+| User-facing flows | `test-behavior` | Full E2E coverage + edge cases | No — browser/e2e |
+| Complex UI/user flows | `test-behavior` | Forms, modals, multi-step flows | Browser/e2e |
+| Agent workflows | `test-behavior` | Multi-step agents | Multi-run validation |
 | Business logic | `test-unit` | Full edge mapping | Yes — critical paths |
 | External APIs | `test-integration` | All external seams | No — test-after with contract checks |
 | Security-sensitive | `test-security` | Auth, payment, data, permissions | Automated SAST + targeted tests |
-| Agent workflows | `test-behavior` | Multi-step agents | Multi-run validation |
-| Complex UI/user flows | `test-behavior` | Forms, modals, multi-step flows | Browser/e2e when applicable |
 
 **Brownfield/Hybrid (existing code):**
 

@@ -2,6 +2,34 @@
 
 All notable changes to `@renatocaliari/stelow` will be documented in this file.
 
+## [0.33.0-alpha] - 2026-06-22
+
+### Added
+- **Estimation bias correction** (global criterion) — New rules across
+  `cali-product-shape-up`, `cali-product-tech-planning`, and
+  `cali-product-plan-critique` to counter model overestimation bias:
+  scope count warnings are informational, `cuts_needed` must be based on
+  value overlap not perceived complexity, final decision is always human.
+- **E2E-first testing priority** — `cali-product-testing-ai-code` and
+  `cali-product-testing-execution` reordered to prioritize E2E/behavior
+  tests over unit tests across all appetite levels (Lean=1 E2E happy path,
+  Core=E2E+variations, Complete=full E2E coverage).
+- **Estimation is relative, not absolute** — `plan-critique` feasibility
+  checklist now uses relative comparison levels (Low/Medium/High) for
+  scope ranking, never absolute numbers.
+- **Scope adjustment bias note** — Shape Up scope adjustment warns when
+  model recommends removing items due to perceived complexity.
+
+The mechanical warnings above (scope count, spec lines) are **indicators**, not gates.
+
+### Changed
+- **cali-product-testing-execution** phases inverted: E2E Browser Testing (Phase 1)
+  → UI Quality (Phase 2) → Unit Tests (Phase 3) → Code Review (Phase 4)
+  → Final Checklist (Phase 5). Decision tree, examples, edge cases updated.
+- **test-behavior scopes** now mandatory in all appetites (was Complete-only).
+- All new skill text in English (translated from Portuguese).
+- Updated `appetite-consistency.test.ts` to match English assertion.
+
 ## [0.32.0-alpha] - 2026-06-21
 
 ### Added

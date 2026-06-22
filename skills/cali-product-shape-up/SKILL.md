@@ -303,15 +303,42 @@ If warnings fire, flag them in the output but do NOT block — the **Plan Critiq
 
 The `appetite_fit` field in the spec frontmatter is the **human-readable summary**; the Plan Critique validates it.
 >
-> **Appetite é constraint, não estimativa:**
-> - `appetite` — definido pelo **humano** no setup stage. Quanto investimento esse problema merece? (orçamento, não estimativa)
-> - `appetite_fit` — checagem mecânica inicial no Shape Up, validada pelo Plan Critique (feasibility reviewer fresh-context) pós-shaping. O proposal cabe dentro do appetite declarado?
+> **Appetite is constraint, not estimate:**
+> - `appetite` — set by the **human** during setup. How much investment does this problem deserve? (budget, not estimate)
+> - `appetite_fit` — initial mechanical check in Shape Up, validated by Plan Critique (feasibility reviewer fresh-context) post-shaping. Does the proposal fit within the declared appetite?
 >
-> **Se `appetite_fit = cuts_needed`:** a LLM sugere cortes específicos. O humano decide quais aceitar.
-> **Se `appetite_fit = reshape`:** o proposal não cabe de forma alguma — precisa ser remodelado.
-> A LLM **nunca** pode estender appetite. Appetite é fixo para o ciclo.
+> **If `appetite_fit = cuts_needed`:** the LLM suggests specific cuts. The human decides which to accept.
+> **If `appetite_fit = reshape`:** the proposal fundamentally exceeds appetite — must be reshaped before continuing.
+> The LLM **never** extends appetite. Appetite is fixed for the cycle.
 >
 > **How to define appetite:** see `references/proposal-structure.md` — Lean / Core / Complete with depth of scope. Mode controls gates/questions independently (stored in `index.json`).
+
+---
+
+### ⚡ Estimation Bias Correction (global criterion)
+
+The mechanical warnings above (scope count, spec lines) are **indicators**, not gates.
+Language models are trained on human data, and humans systematically
+**overestimate** implementation time. This makes the model tend to:
+
+- Recommend unnecessary scope cuts (`cuts_needed` false positive)
+- Prefer "cheap" or low-quality solutions out of fear of complexity
+- Interpret "delivery realism" as permission to cut quality
+
+**Correction rules:**
+1. Scope count warnings are **informational** — do not cut scope based on them.
+   The model's bias overestimates complexity, producing false positives.
+2. The question is not "does this plan fit the appetite?" but rather
+   "is the plan well-defined?" — a well-defined plan with 4 Lean scopes
+   is not a violation.
+3. `cuts_needed` must be based on **value overlap**, not on
+   "too many scopes for the available time".
+4. If the model feels "this seems too complex", it should **distrust
+   its own bias** and justify why it thinks cuts are needed
+   — without assuming it is correct.
+5. The final decision on cuts is always **human**. The model suggests cuts,
+   but must present both scenarios (with and without cuts),
+   explicitly stating that the estimate may be inflated.
 
 - Do not ask about Interface Alternatives — already decided in the `setup` stage
 - **Do NOT ask scope adjustment yet** — this happens after Product Critique and Gate approval (see workflow sequence below)
@@ -346,6 +373,11 @@ Show the IN/OUT scope table. Ask:
 2. **Add to IN?** — use the ask tool with multiSelect (see `references/cli-tools/structured-question.md`) with OUT scope items
 
 [Use the ask tool — see `references/cli-tools/structured-question.md`]
+
+> **⚡ Estimation Bias:** When asking "Remove from IN?", the model tends to suggest
+> removing items that **seem** complex, but could be simple to implement.
+> If the model recommends removing something due to "complexity", it must state that
+> this is an estimate and may be inflated. The final decision is human.
 
 **If user removes items:** update spec
 **If user adds items:** create `spec-product_{v+1}.md` (user is aware)

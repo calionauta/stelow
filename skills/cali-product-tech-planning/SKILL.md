@@ -142,6 +142,17 @@ Delegate to a planner subagent (see `references/cli-tools/subagents.md`):
 - Output: `.stelow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_{v}.md`
 - Input: `.stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md`
 
+> **⚡ Estimation Bias Correction:** The planner subagent may tend to generate
+> conservative scopes or suggest cuts by overestimating complexity
+> (bias from human training data). Rules:
+> 1. Do not cut scope out of fear of complexity — distrust your own bias.
+> 2. If a feature seems "too complex", justify why and present an
+>    alternative without assuming the estimate is correct.
+> 3. Scope count vs appetite is an **indicator**, not a gate. 4 well-defined
+>    Lean scopes is not a violation.
+> 4. Prefer quality solutions over "cheap" ones. The model should not
+>    avoid complexity — it should manage it.
+
 #### planning:10.5 — Codebase Feature Recon (brownfield only)
 
 **Before generating scopes**, investigate existing features the new
@@ -220,7 +231,7 @@ for SCOPE_LINE in $(grep -n "^### " "$SPEC_TECH" | sed 's/:.*//'); do
   tail -n +$SCOPE_LINE "$SPEC_TECH" | head -50 | grep -q -E "(DoD|Definition of Done)" || {
     echo "VALIDATION_FAILED: scope at line $SCOPE_LINE missing DoD"; VALID=false;
   }
-  tail -n +$SCOPE_LINE "$SPEC_TECH" | head -50 | grep -q -E "(AC|Acceptance Criteria|Critério)" || {
+  tail -n +$SCOPE_LINE "$SPEC_TECH" | head -50 | grep -q -E "(AC|Acceptance Criteria)" || {
     echo "VALIDATION_FAILED: scope at line $SCOPE_LINE missing AC"; VALID=false;
   }
 done
@@ -392,9 +403,9 @@ What do you want to do?`,
 
 | Appetite | Add test scopes |
 |----------|----------------|
-| `Lean` | `test-unit` for critical business logic; optional `test-integration` only when an external seam is in IN scope; `test-security` only for auth/payment/data in IN scope. |
-| `Core` | `test-unit` for main logic; `test-integration` for DB/API/external services; `test-security` for sensitive paths. |
-| `Complete` | `test-unit`, `test-integration`, `test-behavior` for complex flows, and `test-security` for sensitive paths. |
+| `Lean` | `test-behavior` (1 E2E test for happy path); `test-unit` for critical business logic; optional `test-integration` only when an external seam is in IN scope; `test-security` only for auth/payment/data in IN scope. |
+| `Core` | `test-behavior` (E2E for happy path + key variations); `test-unit` for main logic; `test-integration` for DB/API/external services; `test-security` for sensitive paths. |
+| `Complete` | `test-behavior` (full E2E coverage + edge cases); `test-unit`, `test-integration`, `test-security`. |
 
 **Note on TDD:** Research shows TDD alone is insufficient for AI-generated code.
 - Use TDD for critical business logic (isolated, deterministic)

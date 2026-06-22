@@ -45,6 +45,23 @@ Avoid:
 - vague scope
 - feature soup
 
+---
+
+### ⚡ Estimation Bias Correction
+
+"Delivery realism" and "focus on what's achievable" **do not mean**
+cutting quality out of fear of complexity. Language models
+systematically overestimate implementation time (bias from human
+training data).
+
+- **Sustainable complexity** means complexity must be
+  justified — not that it should be avoided at all costs.
+- If something seems "too complex" to the model, it should:
+  1. Distrust its own bias
+  2. Justify why it thinks it's complex
+  3. Present an alternative without assuming the estimate is correct
+- The decision on what is "achievable" is **human**, not the model's.
+
 ### Good shaping:
 - creates tension-aware trade-offs
 - intentionally excludes things

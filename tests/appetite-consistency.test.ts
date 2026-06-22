@@ -394,7 +394,7 @@ describe('Appetite_fit check logic (constraint check, not estimation)', () => {
     const content = readSkill('cali-product-shape-up');
     expect(content).toMatch(/appetite_fit/);
     expect(content).not.toMatch(/complexity_estimate/);
-    expect(content).toMatch(/constraint, não estimativa/);
+    expect(content).toMatch(/constraint, not estimate/);
   });
 
   it('scope-executor SKILL.md uses Appetite Fit not Complexity Estimate', () => {
