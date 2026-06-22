@@ -274,7 +274,7 @@ export default async function cmdStart(
     "------------------------------------------------------------",
     "[BOT] Skill loaded automatically:",
     "",
-    "  /skill:stelow",
+    "  /skill:stelow-product-orchestrator",
     "------------------------------------------------------------",
   );
   if (isUnnamed) {

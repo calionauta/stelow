@@ -3,6 +3,6 @@ name: sw-rename
 description: Rename active workflow
 ---
 
-/skill:stelow
+/skill:stelow-product-orchestrator
 
-pw-rename {args}
+sw-rename {args}

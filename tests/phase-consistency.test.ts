@@ -16,9 +16,9 @@ import { resolve } from "node:path";
 // ── Source of Truth ──────────────────────────────────────────────────
 
 const TYPES_PATH = resolve(__dirname, "../extensions/stelow/types.ts");
-const STAGES_YAML_PATH = resolve(__dirname, "../skills/stelow/stages.yaml");
-const STAGES_DIR = resolve(__dirname, "../skills/stelow/stages");
-const SKILL_MD_PATH = resolve(__dirname, "../skills/stelow/SKILL.md");
+const STAGES_YAML_PATH = resolve(__dirname, "../skills/stelow-product-orchestrator/stages.yaml");
+const STAGES_DIR = resolve(__dirname, "../skills/stelow-product-orchestrator/stages");
+const SKILL_MD_PATH = resolve(__dirname, "../skills/stelow-product-orchestrator/SKILL.md");
 const PLUGIN_GENERATED_PATH = resolve(__dirname, "../cli-agents/opencode/plugin/src/phase-names.generated.ts");
 
 // ── Helpers ──────────────────────────────────────────────────────────

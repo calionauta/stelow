@@ -4,4 +4,4 @@ description: Resume paused workflow
 ---
 
 @agent
-pw-resume {args}
+sw-resume {args}

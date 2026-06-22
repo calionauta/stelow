@@ -240,7 +240,7 @@ description: ${cmd.description}
 
 // Usage: ${cmd.usage || cmd.description}
 
-/skill:stelow
+/skill:stelow-product-orchestrator
 
 // Command: ${cmd.name}
 // This skill delegates to the product-workflow skill

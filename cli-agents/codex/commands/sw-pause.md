@@ -4,4 +4,4 @@ description: Pause active workflow
 ---
 
 @agent
-pw-pause {args}
+sw-pause {args}

@@ -3,6 +3,6 @@ name: sw-complete
 description: Mark active workflow complete
 ---
 
-/skill:stelow
+/skill:stelow-product-orchestrator
 
-pw-complete {args}
+sw-complete {args}

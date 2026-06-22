@@ -3,6 +3,6 @@ name: sw-doctor
 description: Diagnose workflow tracking health
 ---
 
-/skill:stelow
+/skill:stelow-product-orchestrator
 
-pw-doctor {args}
+sw-doctor {args}

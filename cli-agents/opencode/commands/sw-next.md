@@ -3,6 +3,6 @@ name: sw-next
 description: Advance to next phase
 ---
 
-/skill:stelow
+/skill:stelow-product-orchestrator
 
-pw-next {args}
+sw-next {args}

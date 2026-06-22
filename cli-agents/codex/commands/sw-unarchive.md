@@ -4,4 +4,4 @@ description: Unarchive a workflow
 ---
 
 @agent
-pw-unarchive {args}
+sw-unarchive {args}

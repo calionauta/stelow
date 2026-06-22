@@ -42,3 +42,12 @@ retired:
     note: |
       Renomeada em f3f707a como parte do gap A (1 source = 1 truth).
       Conteúdo e semântica preservados; apenas o nome mudou.
+
+  - name: stelow
+    retired_at: 2026-06-22
+    reason: renamed
+    superseded_by:
+      - stelow-product-orchestrator
+    note: |
+      Renomeada para stelow-product-orchestrator para seguir convenção
+      cali-product-* e esclarecer função de orquestrador.

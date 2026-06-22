@@ -1,5 +1,5 @@
 ---
-name: stelow
+name: stelow-product-orchestrator
 description: "[Cali] Complete product planning workflow: Shape Up -> Interface -> Tech Planning -> Product Critique -> Plannotator Gate. Includes 8 domain playbooks (Pricing, Trust, Ads, Health, etc)"
 metadata:
   frequency: daily

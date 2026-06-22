@@ -22,7 +22,7 @@ const PROJECT_ROOT = join(__testDir, '..', '..');
 // ── Path Helpers ───────────────────────────────────────────────────
 
 function readMainSkill(): string {
-  return readFileSync(join(PROJECT_ROOT, 'skills/stelow/SKILL.md'), 'utf8');
+  return readFileSync(join(PROJECT_ROOT, 'skills/stelow-product-orchestrator/SKILL.md'), 'utf8');
 }
 
 function readSkillByPath(name: string): string {
@@ -30,7 +30,7 @@ function readSkillByPath(name: string): string {
 }
 
 function readStageFile(name: string): string {
-  return readFileSync(join(PROJECT_ROOT, 'skills/stelow/stages', name), 'utf8');
+  return readFileSync(join(PROJECT_ROOT, 'skills/stelow-product-orchestrator/stages', name), 'utf8');
 }
 
 // ═════════════════════════════════════════════════════════════════════
@@ -315,14 +315,14 @@ describe('Iteration Loop Consistency', () => {
 
   it('execution.md routing table should reference acceptance or iteration for features', () => {
     const execContent = readFileSync(
-      join(PROJECT_ROOT, 'skills/stelow/stages/execution.md'), 'utf8'
+      join(PROJECT_ROOT, 'skills/stelow-product-orchestrator/stages/execution.md'), 'utf8'
     );
     expect(execContent).toMatch(/iteration|acceptance/i);
   });
 
   it('core goals.md files should reference acceptance contract pattern', () => {
     const goalsFiles = [
-      join(PROJECT_ROOT, 'skills/stelow/references/cli-tools/goals.md'),
+      join(PROJECT_ROOT, 'skills/stelow-product-orchestrator/references/cli-tools/goals.md'),
       join(PROJECT_ROOT, 'skills/cali-product-scope-executor/references/cli-tools/goals.md'),
       join(PROJECT_ROOT, 'skills/cali-product-tech-planning/references/cli-tools/goals.md'),
       join(PROJECT_ROOT, 'skills/cali-product-testing-ai-code/references/cli-tools/goals.md'),
@@ -352,7 +352,7 @@ describe('Stage Files', () => {
 
   stageFiles.forEach(stage => {
     describe(stage, () => {
-      const path = join(PROJECT_ROOT, 'skills/stelow/stages', stage);
+      const path = join(PROJECT_ROOT, 'skills/stelow-product-orchestrator/stages', stage);
 
       it('should exist', () => {
         expect(existsSync(path)).toBe(true);
@@ -377,7 +377,7 @@ describe('Stage Files', () => {
 });
 
 describe('cli-tools References', () => {
-  const cliToolsDir = join(PROJECT_ROOT, 'skills/stelow/references/cli-tools');
+  const cliToolsDir = join(PROJECT_ROOT, 'skills/stelow-product-orchestrator/references/cli-tools');
 
   it('cli-tools directory should exist', () => {
     expect(existsSync(cliToolsDir)).toBe(true);
@@ -409,7 +409,7 @@ describe('cli-tools References', () => {
 });
 
 describe('Ask Patterns', () => {
-  const askPath = join(PROJECT_ROOT, 'skills/stelow/stages/ask-patterns.md');
+  const askPath = join(PROJECT_ROOT, 'skills/stelow-product-orchestrator/stages/ask-patterns.md');
 
   it('ask-patterns.md should exist', () => {
     expect(existsSync(askPath)).toBe(true);
@@ -426,7 +426,7 @@ describe('Ask Patterns', () => {
 });
 
 describe('References Directory', () => {
-  const refsDir = join(PROJECT_ROOT, 'skills/stelow/references');
+  const refsDir = join(PROJECT_ROOT, 'skills/stelow-product-orchestrator/references');
 
   it('should exist', () => {
     expect(existsSync(refsDir)).toBe(true);
@@ -440,7 +440,7 @@ describe('References Directory', () => {
 });
 
 describe('Execution Phase', () => {
-  const execPath = join(PROJECT_ROOT, 'skills/stelow/stages/execution.md');
+  const execPath = join(PROJECT_ROOT, 'skills/stelow-product-orchestrator/stages/execution.md');
 
   it('execution.md should exist', () => {
     expect(existsSync(execPath)).toBe(true);

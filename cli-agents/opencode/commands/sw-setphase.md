@@ -3,6 +3,6 @@ name: sw-setphase
 description: Jump to phase
 ---
 
-/skill:stelow
+/skill:stelow-product-orchestrator
 
-pw-setphase {args}
+sw-setphase {args}

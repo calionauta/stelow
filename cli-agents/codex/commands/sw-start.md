@@ -4,4 +4,4 @@ description: Start a new product workflow
 ---
 
 @agent
-pw-start {args}
+sw-start {args}

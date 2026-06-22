@@ -3,6 +3,6 @@ name: sw-unarchive
 description: Unarchive a workflow
 ---
 
-/skill:stelow
+/skill:stelow-product-orchestrator
 
-pw-unarchive {args}
+sw-unarchive {args}

@@ -3,6 +3,6 @@ name: sw-pause
 description: Pause active workflow
 ---
 
-/skill:stelow
+/skill:stelow-product-orchestrator
 
-pw-pause {args}
+sw-pause {args}

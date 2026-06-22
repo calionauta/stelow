@@ -4,6 +4,6 @@ description: [Pi only] Manage workflow inbox
 ---
 
 > ⚠️ This command requires the Pi extension for full functionality.
-> Use /skill:stelow and ask to pw-inbox.
+> Use /skill:stelow-product-orchestrator and ask to sw-inbox.
 
-/skill:stelow pw-inbox
+/skill:stelow-product-orchestrator sw-inbox

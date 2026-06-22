@@ -208,7 +208,7 @@ it('starts workflow and advances to shape phase', async () => {
   });
 
   await t.run(
-    when('/skill:stelow', [
+    when('/skill:stelow-product-orchestrator', [
       calls('write', { path: expect.stringContaining('index.json') }),
       says(expect.stringContaining('Setup')),
     ]),

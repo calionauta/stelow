@@ -4,7 +4,7 @@ import { buildSkillActivationMessage } from '../../extensions/stelow/start-messa
 describe('buildSkillActivationMessage', () => {
   it('emits the skill activation header with workflow label', () => {
     const msg = buildSkillActivationMessage('my-workflow', '', '');
-    expect(msg).toContain('/skill:stelow');
+    expect(msg).toContain('/skill:stelow-product-orchestrator');
     expect(msg).toContain(">>> WORKFLOW STARTED: 'my-workflow' <<<");
     expect(msg).toContain('Current stage: Setup');
     expect(msg).toContain('Auto-advance mode: ON');

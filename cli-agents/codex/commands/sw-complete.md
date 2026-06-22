@@ -4,4 +4,4 @@ description: Mark active workflow complete
 ---
 
 @agent
-pw-complete {args}
+sw-complete {args}

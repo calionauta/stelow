@@ -28,7 +28,7 @@
 | `/sw-inbox` | ✅ Native | ✅ Skill * | ✅ Skill * | ✅ Skill * | Pi extension required for full TUI |
 
 - **✅ Native** — Registered via `pi.registerCommand()`. Full TUI overlays, state hooks, interactive pickers.
-- **✅ Skill** — Command file delegates to `/skill:stelow <command>`. The orchestrator skill routes to the correct handler.
+- **✅ Skill** — Command file delegates to `/skill:stelow-product-orchestrator <command>`. The orchestrator skill routes to the correct handler.
 - **\*** — These commands are marked `piOnly`. The `.md` file includes a warning and delegates to the skill for approximate behavior.
 
 ## Per-CLI Architecture
@@ -41,7 +41,7 @@
 
 ### OpenCode, Claude Code, Codex — 15 commands each (Skill delegation)
 - Markdown files generated from dispatcher into `cli-agents/{cli}/commands/sw-*.md`
-- Each file contains frontmatter (`name`, `description`) and body that invokes `/skill:stelow <command>`
+- Each file contains frontmatter (`name`, `description`) and body that invokes `/skill:stelow-product-orchestrator <command>`
 - `install.sh` copies them to: `~/.config/opencode/commands/`, `~/.claude/commands/`, `~/.codex/commands/`
 - `piOnly` commands include a warning banner — they still work via the orchestrator skill
 
@@ -59,7 +59,7 @@
 | Problem | Cause | Fix |
 |---------|-------|-----|
 | `/sw-start` not found in OpenCode | Command files not installed | `cp cli-agents/opencode/commands/sw-*.md ~/.config/opencode/commands/` |
-| `/sw-inbox` not responding | CLI doesn't support `piOnly` commands | Use Pi CLI or `/skill:stelow` in other CLIs |
+| `/sw-inbox` not responding | CLI doesn't support `piOnly` commands | Use Pi CLI or `/skill:stelow-product-orchestrator` in other CLIs |
 | Pi footer shows wrong phase number | `PHASE_NAMES` has 14 entries, `stages.yaml` has 7 | See [stages-mismatch](#stages-mismatch) below |
 | Tools blocked after advancing phase | `stages-guard` caches state at session start | Restart Pi session |
 

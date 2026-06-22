@@ -4,4 +4,4 @@ description: Rename active workflow
 ---
 
 @agent
-pw-rename {args}
+sw-rename {args}

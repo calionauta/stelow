@@ -4,4 +4,4 @@ description: List workflows
 ---
 
 @agent
-pw-ls {args}
+sw-ls {args}

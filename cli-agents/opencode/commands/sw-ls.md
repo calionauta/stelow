@@ -3,6 +3,6 @@ name: sw-ls
 description: List workflows
 ---
 
-/skill:stelow
+/skill:stelow-product-orchestrator
 
-pw-ls {args}
+sw-ls {args}

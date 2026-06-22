@@ -4,4 +4,4 @@ description: Archive workflows
 ---
 
 @agent
-pw-archive {args}
+sw-archive {args}

@@ -4,4 +4,4 @@ description: Open workflow overview overlay
 ---
 
 @agent
-pw-menu {args}
+sw-menu {args}

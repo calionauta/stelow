@@ -73,11 +73,11 @@ description: ${c.piOnly ? "[Pi only] " : ""}${c.description}
 `,
     fileBody: (c) => c.piOnly
       ? `> ⚠️ This command requires the Pi extension for full functionality.
-> Use /skill:stelow and ask to ${c.name}.
+> Use /skill:stelow-product-orchestrator and ask to ${c.name}.
 
-/skill:stelow ${c.name}
+/skill:stelow-product-orchestrator ${c.name}
 `
-      : `/skill:stelow
+      : `/skill:stelow-product-orchestrator
 
 ${c.name} {args}
 `,
@@ -94,11 +94,11 @@ description: ${c.piOnly ? "[Pi only] " : ""}${c.description}
 `,
     fileBody: (c) => c.piOnly
       ? `> ⚠️ This command requires the Pi extension for full functionality.
-> Use /skill:stelow and ask to ${c.name}.
+> Use /skill:stelow-product-orchestrator and ask to ${c.name}.
 
-/skill:stelow ${c.name}
+/skill:stelow-product-orchestrator ${c.name}
 `
-      : `/skill:stelow
+      : `/skill:stelow-product-orchestrator
 
 ${c.name} {args}
 `,
@@ -116,7 +116,7 @@ description: ${c.piOnly ? "[Pi only] " : ""}${c.description}
 `,
     fileBody: (c) => c.piOnly
       ? `> ⚠️ This command requires the Pi extension. Use the skill instead.
-/skill:stelow ${c.name}
+/skill:stelow-product-orchestrator ${c.name}
 `
       : `${c.name} {args}
 `,

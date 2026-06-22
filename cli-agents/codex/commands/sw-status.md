@@ -4,4 +4,4 @@ description: Show active workflow status
 ---
 
 @agent
-pw-status {args}
+sw-status {args}

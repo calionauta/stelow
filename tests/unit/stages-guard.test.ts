@@ -29,7 +29,7 @@ const __testDir = dirname(__filename);
 const PROJECT_ROOT = join(__testDir, '..', '..');
 
 // Load the REAL stages.yaml
-const STAGES_YAML_PATH = join(PROJECT_ROOT, 'skills/stelow/stages.yaml');
+const STAGES_YAML_PATH = join(PROJECT_ROOT, 'skills/stelow-product-orchestrator/stages.yaml');
 const stagesContent = readFileSync(STAGES_YAML_PATH, 'utf-8');
 const stages: StagesConfig = parseYAML(stagesContent) as StagesConfig;
 

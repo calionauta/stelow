@@ -318,7 +318,7 @@ async function cmdResume(pi: ExtensionAPI, args: string, ctx: CmdCtx) {
       }
       reply(ctx, `▶️ '${inProgress.name}' resuming from ${PHASE_NAMES[inProgress.currentPhase]}...`);
       pi.sendUserMessage(
-        `/skill:stelow\n\n[RESUME: workflow '${inProgress.name}', current phase: ${inProgress.currentPhase} (${PHASE_NAMES[inProgress.currentPhase]}). Auto-Discovery will find this in-progress workflow. User already confirmed via /sw-resume — proceed without asking, jump to the current phase and continue from there.]`,
+        `/skill:stelow-product-orchestrator\n\n[RESUME: workflow '${inProgress.name}', current phase: ${inProgress.currentPhase} (${PHASE_NAMES[inProgress.currentPhase]}). Auto-Discovery will find this in-progress workflow. User already confirmed via /sw-resume — proceed without asking, jump to the current phase and continue from there.]`,
         { deliverAs: "followUp" }
       );
       return;
@@ -1255,16 +1255,16 @@ description: [Pi only] ${description}
 ---
 
 > ⚠️ This command requires the Pi extension for full functionality.
-> Use /skill:stelow and ask to ${name}.
+> Use /skill:stelow-product-orchestrator and ask to ${name}.
 
-/skill:stelow
+/skill:stelow-product-orchestrator
 `
     : `---
 name: ${name}
 description: ${description}
 ---
 
-/skill:stelow
+/skill:stelow-product-orchestrator
 
 ${name} {args}
 `;
@@ -1280,7 +1280,7 @@ description: [Pi only] ${description}
 
 @agent
 > ⚠️ This command requires the Pi extension. Use the skill instead.
-/skill:stelow
+/skill:stelow-product-orchestrator
 `
     : `---
 name: ${name}

@@ -3,6 +3,6 @@ name: sw-goto
 description: Go to a workflow
 ---
 
-/skill:stelow
+/skill:stelow-product-orchestrator
 
-pw-goto {args}
+sw-goto {args}

@@ -3,6 +3,6 @@ name: sw-status
 description: Show active workflow status
 ---
 
-/skill:stelow
+/skill:stelow-product-orchestrator
 
-pw-status {args}
+sw-status {args}

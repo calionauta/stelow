@@ -5,4 +5,4 @@ description: [Pi only] Manage workflow inbox
 
 @agent
 > ⚠️ This command requires the Pi extension. Use the skill instead.
-/skill:stelow pw-inbox
+/skill:stelow-product-orchestrator sw-inbox

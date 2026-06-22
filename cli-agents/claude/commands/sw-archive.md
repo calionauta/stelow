@@ -3,6 +3,6 @@ name: sw-archive
 description: Archive workflows
 ---
 
-/skill:stelow
+/skill:stelow-product-orchestrator
 
-pw-archive {args}
+sw-archive {args}

@@ -3,6 +3,6 @@ name: sw-resume
 description: Resume paused workflow
 ---
 
-/skill:stelow
+/skill:stelow-product-orchestrator
 
-pw-resume {args}
+sw-resume {args}

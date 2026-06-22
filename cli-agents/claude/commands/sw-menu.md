@@ -3,6 +3,6 @@ name: sw-menu
 description: Open workflow overview overlay
 ---
 
-/skill:stelow
+/skill:stelow-product-orchestrator
 
-pw-menu {args}
+sw-menu {args}

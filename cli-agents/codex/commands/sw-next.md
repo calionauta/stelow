@@ -4,4 +4,4 @@ description: Advance to next phase
 ---
 
 @agent
-pw-next {args}
+sw-next {args}
