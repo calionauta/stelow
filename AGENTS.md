@@ -36,9 +36,6 @@ npm run typecheck        # Type check
 
 - **Commits:** conventional (`feat:`, `fix:`, `chore:`, `refactor:`, `test:`, `docs:`). Squash merge to main.
 - **Files:** `lowercase-kebab-case` (e.g. `spec-product.md`, not `SpecProduct.md`).
-- **Config/ops files at root, not inside skills/:** Files consumed by extension/ops code
-  (never by the LLM in runtime) go at project root, not inside `skills/*/`. Example:
-  `retired-skills.yaml` at root is consumed by `sync-skills.ts`, not by the LLM.
 - **Stage headings:** must use `slug:major.minor` format — see [docs/agents-md-refs/stage-numbering.md](docs/agents-md-refs/stage-numbering.md) for the gap-based numbering rules.
 - **Tool calls in stage files:** never call `ask_user_question`, `subagent`, or `start_supervision` directly. Use the CLI-agnostic reference in `references/cli-tools/{tool}.md` — see [docs/agents-md-refs/tool-reference-pattern.md](docs/agents-md-refs/tool-reference-pattern.md).
 
@@ -58,6 +55,10 @@ npm run typecheck        # Type check
 
 ## Don'ts
 
+- **Do NOT put ops-only config inside `skills/*/`.** Files consumed by extension/ops
+  code (never by the LLM in runtime) go at project root. If a file is read by
+  `extensions/`, `scripts/`, or `install.sh` — not by `SKILL.md` — it belongs at
+  root, not inside a skill directory. Example: `retired-skills.yaml`.
 - Do NOT use `npm install` in CI — use `npm ci` with committed `package-lock.json`
 - Do NOT edit generated files in `build/`
 - Do NOT use `require()` — this is ESM (`"type": "module"`)
