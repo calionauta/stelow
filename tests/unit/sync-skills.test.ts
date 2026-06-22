@@ -16,12 +16,9 @@ import { join } from "node:path";
 import { getRetiredSkillNames } from "../../extensions/stelow/sync-skills";
 
 let tmpRoot: string;
-let cloneSkillsDir: string;
 
 beforeEach(() => {
   tmpRoot = mkdtempSync(join(tmpdir(), "stelow-pw-sync-test-"));
-  cloneSkillsDir = join(tmpRoot, "skills");
-  mkdirSync(join(cloneSkillsDir, "stelow"), { recursive: true });
 });
 
 afterEach(() => {
@@ -29,13 +26,13 @@ afterEach(() => {
 });
 
 const retiredFilePath = () =>
-  join(cloneSkillsDir, "stelow", "retired-skills.yaml");
+  join(tmpRoot, "retired-skills.yaml");
 
 describe("getRetiredSkillNames", () => {
   it("returns empty set when retired-skills.yaml is missing", () => {
     // Sanity: file is not written
     expect(() => rmSync(retiredFilePath(), { force: true })).not.toThrow();
-    const names = getRetiredSkillNames(cloneSkillsDir);
+    const names = getRetiredSkillNames(tmpRoot);
     expect(names).toBeInstanceOf(Set);
     expect(names.size).toBe(0);
   });
@@ -59,7 +56,7 @@ describe("getRetiredSkillNames", () => {
       ].join("\n")
     );
 
-    const names = getRetiredSkillNames(cloneSkillsDir);
+    const names = getRetiredSkillNames(tmpRoot);
     expect(names).toEqual(
       new Set(["cali-product-critique", "cali-product-old-thing"])
     );
@@ -75,7 +72,7 @@ describe("getRetiredSkillNames", () => {
       ].join("\n")
     );
 
-    const names = getRetiredSkillNames(cloneSkillsDir);
+    const names = getRetiredSkillNames(tmpRoot);
     expect(names).toEqual(new Set(["cali-product-minimal"]));
   });
 
@@ -86,13 +83,13 @@ describe("getRetiredSkillNames", () => {
       ["retired:", " - name: broken", "  - name: also-broken", ""].join("\n")
     );
 
-    const names = getRetiredSkillNames(cloneSkillsDir);
+    const names = getRetiredSkillNames(tmpRoot);
     expect(names.size).toBe(0);
   });
 
   it("returns empty set when the file is empty", () => {
     writeFileSync(retiredFilePath(), "");
-    const names = getRetiredSkillNames(cloneSkillsDir);
+    const names = getRetiredSkillNames(tmpRoot);
     expect(names.size).toBe(0);
   });
 
@@ -109,7 +106,7 @@ describe("getRetiredSkillNames", () => {
       ].join("\n")
     );
 
-    const names = getRetiredSkillNames(cloneSkillsDir);
+    const names = getRetiredSkillNames(tmpRoot);
     expect(names).toEqual(new Set(["cali-product-valid"]));
   });
 
@@ -119,7 +116,7 @@ describe("getRetiredSkillNames", () => {
       ["version: 1", "retired: []", ""].join("\n")
     );
 
-    const names = getRetiredSkillNames(cloneSkillsDir);
+    const names = getRetiredSkillNames(tmpRoot);
     expect(names.size).toBe(0);
   });
 
@@ -147,7 +144,7 @@ describe("getRetiredSkillNames", () => {
       ].join("\n")
     );
 
-    const names = getRetiredSkillNames(cloneSkillsDir);
+    const names = getRetiredSkillNames(tmpRoot);
     expect(names).toEqual(
       new Set([
         "cali-product-critique",

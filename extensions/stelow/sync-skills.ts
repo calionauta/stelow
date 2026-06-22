@@ -11,7 +11,7 @@
  *      and remove any local skill that is NOT active AND NOT retired.
  *
  * The "retired" allow-list is the user-facing knob: a skill listed in
- * skills/stelow/retired-skills.yaml is preserved across
+ * retired-skills.yaml at the project root is preserved across
  * syncs even though it is no longer in the project, so its stale copy
  * on the user's machine can be cleaned up by future releases (or by
  * the same release, if combined with a delete).
@@ -21,20 +21,19 @@ import { join } from "node:path";
 import { parse as parseYaml } from "yaml";
 
 /**
- * Read retired-skills.yaml and return the set of skill names listed as
- * retired. Returns an empty set if the file is missing or malformed —
- * the sync must never break because of a broken YAML file.
+ * Read retired-skills.yaml from the project root and return the set of
+ * skill names listed as retired. Returns an empty set if the file is
+ * missing or malformed — the sync must never break because of a broken
+ * YAML file.
  *
+ * The file lives at the project root (NOT inside a skill directory) because
+ * it is consumed by ops code (sync-skills.ts), not by the LLM in runtime.
  * Only `name` is required on each entry; all other fields (retired_at,
  * reason, superseded_by, note) are documentation for humans and are
  * ignored by the sync logic.
  */
-export function getRetiredSkillNames(cloneSkillsDir: string): Set<string> {
-  const retiredFile = join(
-    cloneSkillsDir,
-    "stelow",
-    "retired-skills.yaml"
-  );
+export function getRetiredSkillNames(repoRoot: string): Set<string> {
+  const retiredFile = join(repoRoot, "retired-skills.yaml");
   if (!existsSync(retiredFile)) return new Set();
   try {
     const doc = parseYaml(readFileSync(retiredFile, "utf8")) as

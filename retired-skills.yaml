@@ -4,9 +4,8 @@
 # do `skills/` atual. O `syncSkillsFromClone` lê este arquivo e remove
 # cópias obsoletas de `~/.agents/skills/` no próximo session_start.
 #
-# IMPORTANTE: este arquivo NÃO é uma skill (não tem SKILL.md). Ele vive
-# dentro da pasta da skill orchestrator apenas para organização — o sync
-# não copia este arquivo para ~/.agents/skills/.
+# Mora na raiz do projeto (não dentro de skills/) porque é consumido
+# por código de ops (sync-skills.ts), nunca pelo LLM em runtime.
 #
 # Formato de cada entrada:
 #   - name:           (obrigatório) nome da skill aposentada

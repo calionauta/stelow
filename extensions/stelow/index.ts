@@ -181,7 +181,7 @@ export default function (pi: ExtensionAPI) {
   // Syncs ALL installed skills on change, not just new ones — handles renamed,
   // modified, and deleted files. Also removes orphaned skills that no longer
   // exist in the project — and skills listed as retired in
-  // skills/stelow/retired-skills.yaml (lets us clean up
+  // retired-skills.yaml at project root (lets us clean up
   // skills that were deleted/renamed in a previous release, not just the
   // current one).
   function syncSkillsFromClone() {
@@ -231,7 +231,7 @@ export default function (pi: ExtensionAPI) {
       //    other tools (agent-sync, etc). Only skills listed in
       //    retired-skills.yaml are removed — they were intentionally
       //    deleted/renamed from the project and stale copies should go.
-      const retiredNames = getRetiredSkillNames(cloneSkillsDir);
+      const retiredNames = getRetiredSkillNames(GIT_DIR);
       if (retiredNames.size > 0 && existsSync(agentsDir)) {
         for (const entry of readdirSync(agentsDir, { withFileTypes: true })) {
           if (!entry.isDirectory()) continue;
