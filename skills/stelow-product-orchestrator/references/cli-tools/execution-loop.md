@@ -1,7 +1,7 @@
 # Execution Loop Protocol
 
-> **Tool Reference** — Part of `skills/stelow/references/cli-tools/`
-> See `skills/stelow/stages/execution.md` for the Execution phase routing table.
+> **Tool Reference** — Part of `skills/stelow-product-orchestrator/references/cli-tools/`
+> See `skills/stelow-product-orchestrator/stages/execution.md` for the Execution phase routing table.
 
 ---
 

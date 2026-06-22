@@ -23,5 +23,5 @@ that documents the tool. The exception is the `.md` files inside
 `references/cli-tools/` themselves, which may document per-CLI syntax.
 
 **Reference from AGENTS.md:** When writing/editing any stage file in
-`skills/stelow/stages/`, this is the rule. Violating it
+`skills/stelow-product-orchestrator/stages/`, this is the rule. Violating it
 breaks portability across Pi / OpenCode / Claude Code.

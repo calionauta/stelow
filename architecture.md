@@ -283,13 +283,13 @@ No config files needed. Structure IS the configuration.
 | 14 | `Audit` | Execution critique (scope, quality, NFRs, docs) |
 
 For code, use `PHASE_NAMES` from `types.ts` and the `STAGE` enum — no hardcoded indices.
-For the orchestrator skill, the complete Stage Index is in `skills/stelow/SKILL.md`.
+For the orchestrator skill, the complete Stage Index is in `skills/stelow-product-orchestrator/SKILL.md`.
 
 ## See Also
 
 - `AGENTS.md` — Agent instructions
-- `skills/stelow/references/cli-tools/todo.md` — Todo system docs
-- `skills/stelow/SKILL.md` — Workflow instructions
+- `skills/stelow-product-orchestrator/references/cli-tools/todo.md` — Todo system docs
+- `skills/stelow-product-orchestrator/SKILL.md` — Workflow instructions
 ---
 
 ## Future Refactor Path

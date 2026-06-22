@@ -77,8 +77,8 @@ print_agents_setup() {
 
 When working on software projects, trigger the product workflow:
 
-1. **Trigger:** Use `/skill stelow`
-2. **Process:** Follow the 15-stage workflow (see Stage Index in `skills/stelow/SKILL.md`)
+1. **Trigger:** Use `/skill:stelow-product-orchestrator`
+2. **Process:** Follow the 15-stage workflow (see Stage Index in `skills/stelow-product-orchestrator/SKILL.md`)
 3. **Execute:** Only after visual review gate (Plannotator approval)
 \`\`\`
 EOF
@@ -144,7 +144,7 @@ install_skills_flat() {
   #   2. Skills explicitamente listadas em retired-skills.yaml (retirements)
   #
   # Só mexe em skills com prefixo gerenciado.
-  local retired_list="$SCRIPT_DIR/skills/stelow/retired-skills.yaml"
+  local retired_list="$SCRIPT_DIR/retired-skills.yaml"
   local pruned=0
   for entry in "$SKILLS_DIR"/*/; do
     local name="$(basename "$entry")"

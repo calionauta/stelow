@@ -16,7 +16,7 @@ shopt -s nullglob
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
-SOURCE="$PROJECT_ROOT/skills/stelow/references/cli-tools"
+SOURCE="$PROJECT_ROOT/skills/stelow-product-orchestrator/references/cli-tools"
 
 # All skills except the orchestrator itself (source)
 TARGET_SKILLS=()

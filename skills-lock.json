@@ -4,7 +4,7 @@
     "stelow": {
       "source": "renatocaliari/stelow",
       "sourceType": "github",
-      "skillPath": "skills/stelow/SKILL.md",
+      "skillPath": "skills/stelow-product-orchestrator/SKILL.md",
       "computedHash": "52d305123e8ed279ccb21bf9b7a96a6aef7c99a9b71067d6506486a756b3f8d7"
     }
   }

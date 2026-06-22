@@ -102,7 +102,7 @@ Save the report to the stelow verification path above so `cali-product-execution
 
 If `thermo-nuclear-code-quality-review` is not installed:
 
-- run the normal `code-quality-gate` checks from `skills/stelow/stages/verification.md`
+- run the normal `code-quality-gate` checks from `skills/stelow-product-orchestrator/stages/verification.md`
 - manually review files over 1000 lines
 - check functions over 150 lines and complexity over 5
 - look for leaky abstractions, dead code, vague API boundaries, and accidental complexity

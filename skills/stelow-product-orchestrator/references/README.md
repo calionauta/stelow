@@ -1,7 +1,7 @@
 # References Index
 
 This directory contains reference files used by the stelow stages.
-All paths below are relative to `skills/stelow/references/` (or `~/.agents/skills/stelow/references/`).
+All paths below are relative to `skills/stelow-product-orchestrator/references/` (or `~/.agents/skills/stelow-product-orchestrator/references/`).
 
 ## CLI Tools (`cli-tools/`)
 

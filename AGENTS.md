@@ -74,7 +74,7 @@ All optional — workflow runs without them.
 
 ## Token Efficiency
 
-See `skills/stelow/references/cli-tools/context-efficiency.md` for patterns:
+See `skills/stelow-product-orchestrator/references/cli-tools/context-efficiency.md` for patterns:
 - Batch multi-symbol cymbal lookups (`show X Y Z`)
 - Batch agent_browser extractions (`snapshot` + batch `get text`)
 - Output truncation with `offset/limit` instead of full `read`

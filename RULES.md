@@ -15,7 +15,7 @@
 
 ## Tool Restrictions Per Stage
 
-See `skills/stelow/stages.yaml` for current tool restrictions.
+See `skills/stelow-product-orchestrator/stages.yaml` for current tool restrictions.
 
 | Stage | Blocked Tools |
 |-------|---------------|
