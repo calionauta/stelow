@@ -2,6 +2,27 @@
 
 All notable changes to `@renatocaliari/stelow` will be documented in this file.
 
+## [0.34.1] - 2026-06-22
+
+### Changed
+- **Skill renamed: `stelow` → `stelow-product-orchestrator`** — Directory,
+  SKILL.md frontmatter, and all `/skill:stelow` references updated. Old name
+  registered in `retired-skills.yaml` for auto-cleanup.
+- **`retired-skills.yaml` moved from `skills/*/` to project root** — Ops-only
+  file no longer leaked to runtime via `cp -r`. Convention added to AGENTS.md.
+- **AGENTS.md: ops-only config rule** — Moved from passive Convention to
+  active Don't, so the AI proactively places config/ops files at root, not
+  inside `skills/*/`.
+
+### Fixed
+- `install.sh`: stale `skills/stelow/retired-skills.yaml` path → root.
+- `install.sh`: stale `/skill stelow` reference in install instructions.
+- `sync-cli-tools.sh`: stale `skills/stelow/references/` source path.
+- `skills-lock.json`: stale `skills/stelow/SKILL.md` skill path.
+- `sync-skills.ts`: hardcoded `"stelow"` directory in retired path.
+- `sync-skills.test.ts`: leaked `mkdirSync` import after refactor.
+- 30+ stale `skills/stelow/` references in docs and skill cross-refs.
+
 ## [0.34.0] - 2026-06-22
 
 ### Added
