@@ -14,6 +14,7 @@ import {
   getStatusBadge,
   getScopeProgress,
   getScopeBadge,
+  getIntentBadge,
   getScopeStatusInfo,
   getScopeSummaryText,
   getActiveWorkflow,
@@ -329,6 +330,7 @@ export class PipelinePanel {
   renderCard(wf) {
     const phaseName = getPhaseName(wf);
     const badge = getStatusBadge(wf);
+    const intentBadge = getIntentBadge(wf);
     const scopeBadge = getScopeBadge(wf);
     const progress = getWorkflowProgress(wf);
     const pct = Math.round(progress * 100);
@@ -367,6 +369,7 @@ export class PipelinePanel {
       ),
       this.renderScopeMiniProgress(wf),
       h('div', { class: 'card-badges' },
+        intentBadge ? h('span', { class: cls('badge', intentBadge.class) }, `${intentBadge.icon} ${intentBadge.label}`) : null,
         h('span', { class: cls('badge', badge.class) }, badge.label),
         scopeBadge ? h('span', { class: cls('badge', scopeBadge.class) }, scopeBadge.label) : null,
         this.renderArtifactBadge(wf.name),
@@ -611,6 +614,13 @@ export class PipelinePanel {
             h('span', { class: 'detail-label' }, 'Stale'),
             h('span', { class: 'detail-value' }, '>24h without update'),
           ) : null,
+          h('div', { class: 'detail-row' },
+            h('span', { class: 'detail-label' }, 'Intent'),
+            h('span', { class: 'detail-value' }, getIntentBadge(wf)
+              ? `${getIntentBadge(wf).icon} ${getIntentBadge(wf).label}`
+              : wf.intent || '—'
+            ),
+          ),
           h('div', { class: 'detail-row' },
             h('span', { class: 'detail-label' }, 'Created'),
             h('span', { class: 'detail-value' },

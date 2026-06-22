@@ -173,6 +173,16 @@ button:disabled { cursor: default; }
   color: var(--muxy-diff-add);
 }
 
+.badge-intent {
+  background: color-mix(in srgb, var(--muxy-accent) 15%, transparent);
+  color: var(--muxy-accent);
+}
+
+.badge-intent-bugfix {
+  background: color-mix(in srgb, var(--muxy-diff-hunk, #b8860b) 20%, transparent);
+  color: var(--muxy-diff-hunk, #b8860b);
+}
+
 .badge-artifact {
   background: var(--muxy-accent-soft);
   color: var(--muxy-accent);

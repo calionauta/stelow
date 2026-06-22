@@ -261,6 +261,34 @@ export function getScopeSummaryText(workflow) {
  * Get scope badge info for display on kanban card.
  * Returns null if no scopes exist.
  */
+/**
+ * Intent badge configuration.
+ * Maps intent → { icon, label, cssClass }.
+ * Returns null for missing or unknown intent (no badge shown).
+ */
+const INTENT_BADGE = {
+  'new-product': { icon: '\uD83C\uDD95', label: 'New', cssClass: 'badge-intent' },
+  'feature':     { icon: '\u2728',      label: 'Feature', cssClass: 'badge-intent' },
+  'bugfix':      { icon: '\uD83D\uDC1B', label: 'Bugfix', cssClass: 'badge-intent-bugfix' },
+  'refactor':    { icon: '\uD83D\uDD27', label: 'Refactor', cssClass: 'badge-intent' },
+  'investigate': { icon: '\uD83D\uDD0D', label: 'Research', cssClass: 'badge-intent' },
+};
+
+/**
+ * Get intent badge info for a workflow.
+ * Returns { icon, label, class } or null if no intent set or unknown.
+ */
+export function getIntentBadge(workflow) {
+  if (!workflow || !workflow.intent) return null;
+  const badge = INTENT_BADGE[workflow.intent];
+  if (!badge) return null;
+  return { icon: badge.icon, label: badge.label, class: badge.cssClass };
+}
+
+/**
+ * Get scope badge info for display on kanban card.
+ * Returns null if no scopes exist.
+ */
 export function getScopeBadge(workflow) {
   const progress = getScopeProgress(workflow);
   if (!progress) return null;
