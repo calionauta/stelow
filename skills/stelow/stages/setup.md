@@ -395,6 +395,11 @@ cut or reshaped. Appetite is a constraint, not a target — never extended.
 
 ### setup:20 — Stage Selection
 
+> **Intent override:** If the activation message contains an `Intent:` field (e.g. `bugfix`, `refactor`, `investigate`),
+> it overrides the default stage selection below. Respect the instructions in the activation message
+> — pick the stages it specifies (usually Tech Planning only for bugfix/refactor).
+> The Review Mode still controls gates and questions within the selected stages.
+
 **Review Mode-dependent behavior:**
 
 | Review Mode | Stage selection |
