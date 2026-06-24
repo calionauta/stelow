@@ -41,8 +41,7 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 
 ## 📋 Table of Contents
 
-- [Philosophy](#philosophy)
-- [Why This Exists](#why-this-exists)
+- [Why stelow](#why-stelow)
 - [🎚️ Appetite & Mode](#️-appetite--mode)
 - [🔄 Process](#-process)
 - [📋 Skills](#-skills)
@@ -59,7 +58,7 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 
 ---
 
-## Philosophy
+## Why stelow
 
 > *"Let's go slow to go fast: invest time in thorough planning to gain speed and deliver value in execution."*
 
@@ -75,9 +74,9 @@ And the workflow begins asking questions, exploring scope, shaping the proposal,
 
 **Critique → Gate → Scope sequencing.** Execution (stage 12) only runs after all three pass. Lighter review modes (Auto/Only Product Spec) skip some gates; the full path is there when you need it.
 
-## Why This Exists
+### The Problem
 
-**The Problem:** Building products with AI agents often leads to:
+Building products with AI agents often leads to:
 
 - Scope creep and unclear boundaries - defining *what not to build* is harder than *what to build*
 - Plans without adversarial review - no one questions assumptions before coding begins
@@ -85,7 +84,9 @@ And the workflow begins asking questions, exploring scope, shaping the proposal,
 - No systematic testing for AI-generated code - AI writes fast, but also writes wrong
 - Generic workflows missing product-specific insights - pricing, trust, ads, and launch strategy are product decisions, not code decisions
 
-**The Solution:** A structured workflow that makes AI think like a product manager:
+### What stelow does
+
+A structured workflow that makes AI think like a product manager:
 
 - ✅ **Measure thrice, cut once** - shapes proposals with IN/OUT boundaries BEFORE coding
 - ✅ **Strategic exploration** - Job To Be Done, Opportunity Mapping, Evolutionary Principles, Market Analysis, and Product Discovery knowledge integrated
@@ -97,7 +98,7 @@ And the workflow begins asking questions, exploring scope, shaping the proposal,
 - ✅ **AI-aware testing strategy** - for software products, with coverage targets, CI gates, and contextual evaluation of mutation testing for critical paths
 - ✅ **Greenfield & Brownfield** - works for new products and existing product evolution
 
-**Key Features:**
+### Key Features
 
 - **24 sub-skills** organized into 4 layers - orchestrator + strategies + workflow stages + tactics
 - Part of a broader ecosystem of **25 skills within the project** (plus additional skills from other packages in the user's agent environment)
