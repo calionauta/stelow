@@ -49,9 +49,8 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 - [🚀 Quick Start](#-quick-start)
 - [📦 Installation](#-installation)
 - [🎮 Commands](#-commands)
-- [🖥️ Muxy.app Visual Panel](#️-muxyapp-visual-panel)
+- [🖥️ Visual & TUI Integrations](#🖥️-visual--tui-integrations)
 - [📁 Artifact Directory](#-artifact-directory)
-- [How We Differ](#how-we-differ)
 - [📖 Evidence & Limitations](#-evidence--limitations)
 - [stelow Integration](#stelow-integration)
 - [🔧 Dependencies](#-dependencies)
@@ -391,6 +390,7 @@ stelow is designed to be **self-contained** — the 25 skills + installer cover 
 | [pi-intercom](https://github.com/nicobailon/pi-intercom) | Optional (Pi) | Session-to-session coordination | `npm:pi-intercom` (Pi npm) | Skip — no intercom capability |
 | [pi-supervisor](https://github.com/tintinweb/pi-supervisor) | Optional (Pi) | Conversation supervision during execution | `npm:pi-supervisor` (Pi npm) | Skip — no supervision |
 | [safe-change (pi-agent-codebase-workflows)](https://github.com/PriNova/pi-agent-codebase-workflows) | Optional | Pre-execution code safety checks | `npx skills add Prinova/pi-agent-codebase-workflows -g` | Skip — pre-execution check omitted |
+| [Muxy.app](https://muxy.app/) + `stelow-board` Muxy extension | Optional (macOS) | Webview panel showing workflow state with phase progress and quick actions | Install Muxy.app, then load extension from `integrations/muxy/stelow-board/` | No webview — read `.stelow/` files manually or use Herdr split-pane TUI |
 | [herdr](https://herdr.dev/) + `stelow-board` plugin | Optional | Split-pane TUI showing workflow state with click-to-drill | `herdr plugin install renatocaliari/stelow-board` | No TUI — read `.stelow/` files manually or use Muxy webview panel |
 
 **Design principle:** stelow is **harness-agnostic**. Zero external tools are required to run the full product workflow. Each optional integration enhances a specific phase but never blocks progress. The installer (`./install.sh`) auto-installs Pi npm packages when Pi is detected — other tools (cymbal, ctx7) remain user-managed.
@@ -479,12 +479,12 @@ This installs all 25 skills to `~/.agents/skills/` - works on any CLI.
 
 Two CLI-agnostic surfaces read workflow state from `.stelow/` files on disk and present it alongside your terminal. Pick one or both — they share no code and don't require each other.
 
-| Surface | Host | UI model | Best for |
-|---|---|---|---|
-| **Muxy webview panel** | [Muxy.app](https://muxy.app/) (macOS terminal multiplexer) | `WKWebView` docked/floating panel with HTML/CSS/JS | Rich UI, mouse-first, macOS users |
-| **Herdr split-pane TUI** | [Herdr](https://herdr.dev) (terminal multiplexer) | Rust+ratatui TUI in split pane (`placement = "split"`) | Terminal-native, Linux/macOS, mouse + keyboard parity |
+| Surface | Host | UI model |
+|---|---|---|
+| **Muxy webview panel** | [Muxy.app](https://muxy.app/) (macOS terminal multiplexer) | `WKWebView` docked/floating panel with HTML/CSS/JS |
+| **Herdr split-pane TUI** | [Herdr](https://herdr.dev) (terminal multiplexer) | Rust+ratatui TUI in split pane (`placement = "split"`) |
 
-Both plugins share the same workflow state (`.stelow/`), both work with any CLI (Pi, OpenCode, Claude Code, Codex), neither requires pi.dev.
+Both integrations share the same workflow state (`.stelow/`), both work with any CLI (Pi, OpenCode, Claude Code, Codex), neither requires pi.dev.
 
 ### Muxy Webview Panel
 
@@ -532,38 +532,6 @@ All workflow artifacts are stored in:
 | `reviews/` | Plannotator feedback |
 | `scopes/` | Typed execution scopes |
 | `logs/` | Workflow execution logs |
-
----
-
-## How We Differ
-
-This workflow combines product planning, domain knowledge, and technical execution for digital products. Here's how it compares:
-
-| Aspect | Standard Agent | Engineering-Focused Framework | Product-Focused Framework (this project) |
-|--------|---------------|-------------------------------|----------------------------------------|
-| **Scope** | Open-ended | Full lifecycle | Shaped proposals with IN/OUT |
-| **Review** | Manual chat | Configured | Adversarial critique + Gate |
-| **Execution** | One-shot | Manual iteration | Acceptance contract + self-correction (harness-dependent) |
-| **Post-execution** | Done | Manual QA | Audit classifies gaps → ESCALATED become scopes → `/sw-next` enforces loop |
-| **Domain Skills** | None | Generic | 8 product-specific (auto-detected) |
-| **Testing** | Ad-hoc | Configured | AI-aware test strategy |
-| **Interface** | None | Coded mockups | ASCII art + tradeoffs + hybrid |
-| **Tracking** | None | Varies | Real-time TUI + Muxy.app visual overlay |
-
-### Key Differences
-
-**vs. Claude Code / OpenCode:**
-
-Both have a "plan" mode, but it's basic - restrict tools and add generic planning instructions. There's no structured product thinking: no scope boundaries, no adversarial critique, no domain-specific playbooks, no visual review gates.
-
-- **Shapes proposals before coding** - with clear IN/OUT boundaries
-- **Adversarial plan critique** - catches gaps, risks, and assumptions
-- **Domain libraries** - auto-detect from user input (pricing, ads, trust, etc.)
-- **Visual review gate** - Plannotator opens the full plan for point-by-point comments (not just chat)
-
-**vs. [BMAD Method](https://github.com/bmad-code-org/BMAD-METHOD) (47K ⭐) and [Superpowers](https://github.com/obra/superpowers) (199K ⭐):**
-
-Both frameworks enforce structure for general software engineering. What differentiates this workflow - appetite × mode control with automatic cascade - is not present in either framework. Shape Up methodology over generic engineering, product domain libraries, and multi-angle adversarial critique are also unique differentiators.
 
 ---
 
