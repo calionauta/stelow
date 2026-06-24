@@ -412,13 +412,18 @@ curl -fsSL https://raw.githubusercontent.com/renatocaliari/stelow/main/setup.sh 
 |---|---|---|---|
 | 1 | Node.js | v20+ via Homebrew (macOS) or nvm (Linux/Windows) | - |
 | 2 | pi.dev | `@earendil-works/pi-coding-agent` via npm | pi.dev |
-| 3 | Pi extensions | 12 npm packages: pi-subagents, pi-skillful, pi-intercom, pi-supervisor, @plannotator/pi-extension, pi-rewind, pi-powerline-footer, plus 5 harness tooling packages (cymbal-style recon, web access, etc.) | pi.dev only |
+| 3 | Pi extensions | 12 npm packages: pi-subagents, pi-skillful, pi-intercom, pi-supervisor, @plannotator/pi-extension, pi-rewind, pi-powerline-footer, plus 5 harness tooling packages | pi.dev only |
 | 4 | Skills (25) | stelow orchestrator + 24 subskills, copied to `~/.agents/skills/` | **All CLIs** ✅ |
 | 5 | Settings | theme, model defaults, skill shortcuts in `~/.pi/agent/settings.json` | pi.dev |
+| 6 | cymbal | codebase navigation via `brew install 1broseidon/tap/cymbal` (macOS) or `go install` (Linux). Skipped gracefully if brew/Go absent | macOS, Linux |
+| 7 | ctx7 | library docs fetcher via `npx ctx7 setup` (interactive OAuth — prompts the user) | All CLIs |
+| 8 | safe-change | pre-planning regression check via `npx skills add PrinNova/pi-agent-codebase-workflows -g` | All CLIs |
+| 9 | Herdr plugin | `stelow-board` split-pane TUI installed via `herdr plugin install renatocaliari/stelow-board` — **only if** `herdr` CLI is on PATH | All CLIs (via Herdr) |
+| 10 | Muxy detection | detects `/Applications/Muxy.app` or `muxy` binary; prints install link if absent (cannot auto-install — paid macOS app) | macOS |
 
 > **Not using pi.dev?** Skills land in `~/.agents/skills/` and work on OpenCode, Claude Code, and Codex too. You just won't get the Pi-only extensions or TUI overlay. The workflow itself runs fine.
 >
-> **Want cymbal and ctx7 too?** Those aren't part of Path A because they require non-npm installs (brew/go for cymbal, OAuth for ctx7). Run `./install.sh` after Path A for an interactive prompt to add them.
+> **Muxy.app can't be auto-installed.** It's a paid macOS app downloaded from https://muxy.app/. Path A detects whether it's present and tells you how to install if not. Once installed, load the `stelow-board` extension from `integrations/muxy/stelow-board/`.
 
 ### 📋 Path B: Existing pi.dev User
 

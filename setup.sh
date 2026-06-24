@@ -472,6 +472,88 @@ SETTINGS_EOF
   log_success "settings.json configured"
 }
 
+# ─── Optional External Tools ──────────────────────────────────────────────────
+
+install_cymbal() {
+  if [[ "$DRY_RUN" == "true" ]]; then
+    log_info "[dry-run] Would install cymbal via brew/go"
+    return
+  fi
+  if command -v cymbal &>/dev/null; then
+    log_success "cymbal already installed."
+    return
+  fi
+
+  log_info "Installing cymbal (codebase navigation)..."
+  if [[ "$(uname -s)" == "Darwin" ]] && command -v brew &>/dev/null; then
+    brew install 1broseidon/tap/cymbal || log_warn "cymbal brew install failed — will fall back to find/git log"
+  elif command -v go &>/dev/null; then
+    go install github.com/1broseidon/cymbal@latest || log_warn "cymbal go install failed — will fall back to find/git log"
+  else
+    log_warn "cymbal requires brew (macOS) or Go installed. Skipping — workflow will fall back to find + git log."
+  fi
+}
+
+install_ctx7() {
+  if [[ "$DRY_RUN" == "true" ]]; then
+    log_info "[dry-run] Would install ctx7 (requires OAuth)"
+    return
+  fi
+  if command -v ctx7 &>/dev/null; then
+    log_success "ctx7 already installed."
+    return
+  fi
+
+  log_info "Installing ctx7 (library docs fetcher)..."
+  log_warn "ctx7 requires interactive OAuth setup. Running 'npx ctx7 setup' — follow the prompts."
+  if command -v npx &>/dev/null; then
+    npx ctx7 setup || log_warn "ctx7 setup incomplete or cancelled — workflow will skip live docs."
+  else
+    log_warn "npx not available — install Node.js first, then run 'npx ctx7 setup' manually."
+  fi
+}
+
+install_safe_change() {
+  if [[ "$DRY_RUN" == "true" ]]; then
+    log_info "[dry-run] Would install safe-change via npx skills"
+    return
+  fi
+  log_info "Installing safe-change (pre-planning regression check)..."
+  if command -v npx &>/dev/null; then
+    npx skills add Prinova/pi-agent-codebase-workflows -g 2>&1 | tail -5 || log_warn "safe-change install failed — pre-execution check will be skipped."
+  else
+    log_warn "npx not available — install Node.js first, then run 'npx skills add PrinNova/pi-agent-codebase-workflows -g' manually."
+  fi
+}
+
+install_herdr_plugin() {
+  if [[ "$DRY_RUN" == "true" ]]; then
+    log_info "[dry-run] Would install herdr plugin if herdr CLI detected"
+    return
+  fi
+  if ! command -v herdr &>/dev/null; then
+    log_info "herdr CLI not detected — skipping stelow-board plugin install."
+    log_info "Install herdr from https://herdr.dev/, then run: herdr plugin install renatocaliari/stelow-board"
+    return
+  fi
+
+  log_info "herdr detected. Installing stelow-board split-pane TUI plugin..."
+  herdr plugin install renatocaliari/stelow-board || log_warn "stelow-board plugin install failed — run 'herdr plugin install renatocaliari/stelow-board' manually."
+}
+
+detect_muxy() {
+  if [[ "$DRY_RUN" == "true" ]]; then
+    log_info "[dry-run] Would detect Muxy.app"
+    return
+  fi
+  if [[ -d "/Applications/Muxy.app" ]] || command -v muxy &>/dev/null; then
+    log_success "Muxy.app detected — load stelow-board extension from integrations/muxy/stelow-board/."
+  else
+    log_info "Muxy.app not detected (optional)."
+    log_info "Install from https://muxy.app/ if you want the webview panel for workflow state."
+  fi
+}
+
 # ─── Summary ─────────────────────────────────────────────────────────────────
 
 print_summary() {
@@ -530,6 +612,11 @@ main() {
   echo "    • Pi extensions"
   echo "    • 25 product workflow skills"
   echo "    • Optimized settings"
+  echo "    • cymbal (codebase navigation) — brew/go"
+  echo "    • ctx7 (library docs) — OAuth setup"
+  echo "    • safe-change (pre-planning regression check)"
+  echo "    • stelow-board Herdr plugin (if herdr CLI detected)"
+  echo "    • Muxy.app detection (manual install from https://muxy.app/)"
   echo ""
 
   if [[ "$DRY_RUN" == "false" ]]; then
@@ -547,6 +634,11 @@ main() {
   install_extensions
   install_skills
   configure_settings
+  install_cymbal
+  install_ctx7
+  install_safe_change
+  install_herdr_plugin
+  detect_muxy
   print_summary
 }
 
