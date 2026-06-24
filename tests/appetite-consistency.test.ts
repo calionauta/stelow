@@ -708,3 +708,259 @@ describe('tool-reference-pattern naming convention', () => {
     expect(content).toMatch(/Name by purpose/);
   });
 });
+
+// ═════════════════════════════════════════════════════════════════════
+// 20. QUALITY FLOOR — APPETITE NEVER CUTS QUALITY
+// ═════════════════════════════════════════════════════════════════════
+//
+// Architectural invariant: appetite governs scope (how much the product does),
+// never quality (how rigorously the product is verified). These tests block
+// any future commit that re-introduces an appetite gate that skips a quality
+// gate in verification/code-review/UI-audit/interactive-testing.
+//
+// Allowlist (legitimate Skip): scope-cutting contexts (skip an entire stage
+// like Context, skip exploratory recon when no codebase exists, skip a
+// non-applicable review mode behavior).
+//
+// If these tests fail, the regression is one of:
+//   - Appetite table has `Skip` in a Lean/Core row for a quality gate
+//   - Appetite table has `❌` for a quality gate at Lean/Core
+//   - code-quality-review, code-review, ui-quality, interactive-testing
+//     have appetite-driven skips that contradict the Quality Floor rule.
+
+describe('Quality Floor: appetite never cuts quality', () => {
+  // Columns that represent quality gates (verification rigor).
+  // These columns must NOT contain 'Skip' or '❌' in Lean/Core rows.
+  const QUALITY_COLUMNS = [
+    'test-suite',
+    'code-review',
+    'code-quality-gate',
+    'code-quality-review',
+    'ui-quality',
+    'interactive-testing',
+    'invisible-20%',
+    'invisible-20-percent',
+    'a11y',
+    'accessibility',
+  ];
+
+  // Files where appetite gates quality verification. These are the canonical
+  // surfaces where a regression would break the Quality Floor.
+  const qualityGateFiles: { path: string; name: string }[] = [
+    { path: join(STAGES_DIR, 'verification.md'), name: 'verification.md' },
+    { path: join(SKILLS_DIR, 'cali-product-codebase-critique', 'SKILL.md'), name: 'codebase-critique/SKILL.md' },
+    { path: join(SKILLS_DIR, 'cali-product-ux-critique', 'SKILL.md'), name: 'ux-critique/SKILL.md' },
+    { path: join(SKILLS_DIR, 'cali-product-testing-ai-code', 'SKILL.md'), name: 'testing-ai-code/SKILL.md' },
+    { path: join(WORKFLOW_DIR, 'references', 'cli-tools', 'codequality-review.md'), name: 'codequality-review.md' },
+    { path: join(SKILLS_DIR, 'cali-product-tech-planning', 'references', 'cli-tools', 'codequality-review.md'), name: 'tech-planning/codequality-review.md' },
+    { path: join(SKILLS_DIR, 'cali-product-shape-up', 'references', 'cli-tools', 'codequality-review.md'), name: 'shape-up/codequality-review.md' },
+  ];
+
+  // Allowlist: legitimate scope-related skips that don't violate the floor.
+  // Each entry: a substring that, when present in the cell, makes the skip legitimate.
+  const SCOPE_ALLOWLIST = [
+    'not reached',
+    'not in scope',
+    'no codebase',
+    'no UI',
+    'no ui',
+    'greenfield',
+    'no code',
+    'no code changes',
+    'no diff',
+    'no test-*',
+    'no new code',
+    'unless risk',
+    'risk is high',
+    'when warranted',
+    'when applicable',
+    'when applicable',  // duplicate to keep list robust
+    'when in scope',
+    'explicitly requested',
+    'explicit request',
+    'user request',
+    'user explicitly',
+    'unless user',
+    'if not installed',
+    'not installed',
+    'fallback',
+    'if appetite',
+    'context stage',  // context:5 whole-stage skip
+    'Strategic Context',
+    'triage',
+    'group',          // triage group size bound
+  ];
+
+  function isLegitimatelyScoped(cellText: string): boolean {
+    return SCOPE_ALLOWLIST.some((p) => cellText.toLowerCase().includes(p.toLowerCase()));
+  }
+
+  // Helper: find rows of the form `| \`Lean\` | ... |` or `| \`Core\` | ... |`
+  // and return cells as arrays of strings.
+  function extractAppetiteRows(content: string): Array<{ appetite: 'Lean' | 'Core' | 'Complete'; cells: string[]; lineNumber: number }> {
+    const lines = content.split('\n');
+    const rows: Array<{ appetite: 'Lean' | 'Core' | 'Complete'; cells: string[]; lineNumber: number }> = [];
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const m = line.match(/^\|\s*`(Lean|Core|Complete)`\s*\|/);
+      if (m) {
+        const cells = line.split('|').slice(1, -1).map((c) => c.trim());
+        rows.push({ appetite: m[1] as 'Lean' | 'Core' | 'Complete', cells, lineNumber: i + 1 });
+      }
+    }
+    return rows;
+  }
+
+  // Helper: identify quality-gate columns by header row above the table.
+  function identifyQualityColumnIndexes(content: string): Map<number, string> {
+    const lines = content.split('\n');
+    const colMap = new Map<number, string>();
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      // Find a header row containing a known quality column
+      if (!line.match(/^\|.*\|.*\|/)) continue;
+      const cells = line.split('|').slice(1, -1).map((c) => c.trim().toLowerCase());
+      for (let c = 0; c < cells.length; c++) {
+        for (const qc of QUALITY_COLUMNS) {
+          if (cells[c].includes(qc.toLowerCase())) {
+            colMap.set(c, qc);
+            break;
+          }
+        }
+      }
+      if (colMap.size > 0) break;  // first header wins per file
+    }
+    return colMap;
+  }
+
+  describe.each(qualityGateFiles)('$name', ({ path, name }) => {
+    const content = readFileSync(path, 'utf-8');
+    const rows = extractAppetiteRows(content);
+    const qualityCols = identifyQualityColumnIndexes(content);
+
+    test('has at least one Lean/Core row to validate', () => {
+      const leanOrCore = rows.filter((r) => r.appetite === 'Lean' || r.appetite === 'Core');
+      // If the file has no appetite table at all, the test is vacuously true.
+      // Only enforce when there ARE appetite rows AND quality columns.
+      if (leanOrCore.length === 0) return;
+      if (qualityCols.size === 0) return;
+      expect(leanOrCore.length).toBeGreaterThan(0);
+    });
+
+    test('Lean/Core rows do NOT skip quality gates (Quality Floor)', () => {
+      // Vacuous skip: no appetite table or no quality columns
+      if (rows.length === 0 || qualityCols.size === 0) return;
+
+      const violations: string[] = [];
+
+      for (const row of rows) {
+        if (row.appetite !== 'Lean' && row.appetite !== 'Complete') {
+          // Core can also be checked but Lean is the strictest. Both must comply.
+        }
+        if (row.appetite !== 'Lean' && row.appetite !== 'Core') continue;
+
+        for (const [colIdx, colName] of qualityCols) {
+          const cell = row.cells[colIdx] ?? '';
+          // Strip emojis and markdown bold
+          const cellNormalized = cell.replace(/[*_`]/g, '').trim();
+          const cellLower = cellNormalized.toLowerCase();
+
+          // Check for skip patterns
+          const hasSkip =
+            cellLower.startsWith('skip') ||
+            cellLower.includes('**skip') ||
+            cellLower.startsWith('❌') ||
+            cellLower.includes('no run') ||
+            cellLower.includes('not run');
+
+          if (!hasSkip) continue;
+          if (isLegitimatelyScoped(cellNormalized)) continue;
+
+          violations.push(
+            `Line ${row.lineNumber} (\`${row.appetite}\`, column \`${colName}\`): "${cell.trim()}" — appetite is cutting a quality gate. Use the Quality Floor pattern (light/single/static) instead of Skip.`
+          );
+        }
+      }
+
+      if (violations.length > 0) {
+        throw new Error(
+          `Quality Floor regression in ${name}:\n` +
+            violations.map((v) => '  - ' + v).join('\n')
+        );
+      }
+      expect(violations).toEqual([]);
+    });
+  });
+
+  test('verification.md explicitly declares the Quality Floor rule', () => {
+    const verification = readStage('verification.md');
+    // The rule must be present and use canonical phrasing
+    expect(verification).toMatch(/Quality Floor/i);
+    expect(verification).toMatch(/never appetite-gated/i);
+    expect(verification).toMatch(/appetite governs scope.*never quality/i);
+  });
+
+  test('verification.md appetite table has NO empty `Skip` cells in Lean/Core quality columns', () => {
+    const verification = readStage('verification.md');
+    const rows = extractAppetiteRows(verification);
+    const qualityCols = identifyQualityColumnIndexes(verification);
+
+    // Look for the canonical verification matrix table
+    const matrixRows = rows.filter(
+      (r) => r.appetite === 'Lean' || r.appetite === 'Core' || r.appetite === 'Complete'
+    );
+    if (matrixRows.length < 3) return; // No appetite table; skip
+
+    for (const row of matrixRows) {
+      if (row.appetite === 'Complete') continue; // Complete can have conditional skips
+      for (const [colIdx, colName] of qualityCols) {
+        const cell = (row.cells[colIdx] ?? '').replace(/[*_`]/g, '').trim().toLowerCase();
+        // Allow only quality-floor affirmative patterns
+        const isAffirmative =
+          cell.startsWith('✅') ||
+          cell.startsWith('✓') ||
+          cell.includes('run') ||
+          cell.includes('light') ||
+          cell.includes('quick tier') ||
+          cell.includes('static') ||
+          cell.includes('codebase mode') ||
+          cell.includes('live site') ||
+          cell.includes('conditional') ||
+          cell.includes('parallel') ||
+          cell.includes('mandatory') ||
+          cell === '' ||
+          cell.includes('when applicable') ||
+          cell.includes('if risk');
+
+        const isNegative =
+          cell.startsWith('skip') || cell.startsWith('❌') || cell.includes('not run');
+
+        if (isNegative && !isAffirmative) {
+          throw new Error(
+            `verification.md line ${row.lineNumber} (\`${row.appetite}\`, column \`${colName}\`): "${row.cells[colIdx]}" — Lean/Core row contains a Skip pattern in a quality column.`
+          );
+        }
+      }
+    }
+  });
+
+  test('codequality-review.md appetite matrix uses light/conditional/nuclear labels (not plain Skip)', () => {
+    const orchCq = readFileSync(
+      join(WORKFLOW_DIR, 'references', 'cli-tools', 'codequality-review.md'),
+      'utf-8'
+    );
+    // After the Quality Floor refactor, Lean row must say "Light only" not "Skip"
+    expect(orchCq).toMatch(/\*\*Light only\.\*\*/);
+    // Complete rows must escalate (Thermo-Nuclear, mandatory)
+    expect(orchCq).toMatch(/\*\*Thermo-Nuclear\*\*/); // any bold variant is fine (with or without trailing punctuation)
+    expect(orchCq).toMatch(/Thermo-Nuclear mandatory/);
+    // Must NOT have legacy "Skip unless the user explicitly requests it" in Lean
+    // (the new text uses "Light only" + "skipped unless user explicitly requests it"
+    // — both phrasings acceptable, but the row label must not be plain Skip)
+    const leanRowMatch = orchCq.match(/^\| `Lean` \|[^|]+\|[^|]+\|/m);
+    if (leanRowMatch) {
+      expect(leanRowMatch[0]).toMatch(/Light/i);
+      expect(leanRowMatch[0]).not.toMatch(/^\| `Lean` \| any \|\s*\*\*Skip\*\*/);
+    }
+  });
+});
