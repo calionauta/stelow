@@ -49,11 +49,10 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 - [🚀 Quick Start](#-quick-start)
 - [📦 Installation](#-installation)
 - [🎮 Commands](#-commands)
+- [stelow Integration](#stelow-integration)
 - [🖥️ Visual & TUI Integrations](#🖥️-visual--tui-integrations)
 - [📁 Artifact Directory](#-artifact-directory)
 - [📖 Evidence & Limitations](#-evidence--limitations)
-- [stelow Integration](#stelow-integration)
-- [🔧 Dependencies](#-dependencies)
 - [About the Author](#about-the-author)
 - [License](#license)
 - [📞 Support](#-support)
@@ -475,6 +474,22 @@ This installs all 25 skills to `~/.agents/skills/` - works on any CLI.
 
 ---
 
+## stelow Integration
+
+When working on software projects, trigger the product workflow:
+
+1. **Trigger:** Use `/skill stelow`
+2. **Execute:** Only after visual review gate (Plannotator approval)
+
+| CLI | File |
+|-----|------|
+| **Pi** | `~/.pi/agent/AGENTS.md` |
+| **OpenCode** | `~/.config/opencode/AGENTS.md` or project `AGENTS.md` |
+| **Claude Code** | `~/.claude/CLAUDE.md` or project `CLAUDE.md` |
+| **Codex** | `~/.codex/AGENTS.md` or project `AGENTS.md` |
+
+---
+
 ## 🖥️ Visual & TUI Integrations
 
 Two CLI-agnostic surfaces read workflow state from `.stelow/` files on disk and present it alongside your terminal. Pick one or both — they share no code and don't require each other.
@@ -582,7 +597,6 @@ Even with these guardrails, the AI agent still exhibits predictable failure mode
 - **Every artifact is a draft.** Treat spec-product.md, spec-tech.md, critique reports, and interface proposals as first drafts that need human eyes.
 - **Results vary by model and codebase.** A small model generating a plan for a mature codebase is a recipe for failure - regardless of how structured the workflow is.
 - **Human review is required.** The workflow catches structural gaps (missing scopes, contradictory requirements, some untested edge cases). It does NOT catch logic errors in individual lines, security flaws in business logic, or nuanced architectural trade-offs - those need you.
-- **None of the 15 problems above are solved by any framework.** Not BMAD (47K⭐), not Superpowers (199K⭐), not SpecKit, not GSD. We're transparent about it because the limitation is not in any framework - it's in the technology itself.
 
 > We don't claim to solve product planning. We claim to **structure the thinking** so you catch more before you code. The rest is still up to you.
 
@@ -590,41 +604,7 @@ Even with these guardrails, the AI agent still exhibits predictable failure mode
 
 ---
 
-## stelow Integration
-
-When working on software projects, trigger the product workflow:
-
-1. **Trigger:** Use `/skill stelow`
-2. **Execute:** Only after visual review gate (Plannotator approval)
-
-| CLI | File |
-|-----|------|
-| **Pi** | `~/.pi/agent/AGENTS.md` |
-| **OpenCode** | `~/.config/opencode/AGENTS.md` or project `AGENTS.md` |
-| **Claude Code** | `~/.claude/CLAUDE.md` or project `CLAUDE.md` |
-| **Codex** | `~/.codex/AGENTS.md` or project `AGENTS.md` |
-
----
-
-## 🔧 Dependencies
-
-For manual setup, per-CLI commands, updates, and detailed installation options, see [docs/INSTALLATION.md](docs/INSTALLATION.md).
-
-### Required (Pi Only)
-
-See [docs/INSTALLATION.md#required-npm-packages](docs/INSTALLATION.md#required-npm-packages).
-
-### Development
-
-See [package.json](package.json) for toolchain dependencies (TypeScript, Vitest).
-
-### Third-Party Skills (Optional)
-
-See [docs/INSTALLATION.md#third-party-skills](docs/INSTALLATION.md#third-party-skills).
-
-### Git-Based Distribution (Why No npm)
-
-This project distributes **exclusively via GitHub** - no npm publishing. This is a deliberate security choice. See [docs/SECURITY.md](docs/SECURITY.md) for details.
+<sub>**Dependencies & install details:** For per-CLI commands, required npm packages, third-party skills, and updates, see [docs/INSTALLATION.md](docs/INSTALLATION.md). For toolchain (TypeScript, Vitest), see [package.json](package.json). This project distributes exclusively via GitHub (no npm) — see [docs/SECURITY.md](docs/SECURITY.md) for rationale.</sub>
 
 ---
 
