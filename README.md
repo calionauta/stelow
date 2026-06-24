@@ -385,7 +385,7 @@ stelow is designed to be **self-contained** — the 25 skills + installer cover 
 | [cymbal](https://github.com/1broseidon/cymbal) | Optional | Tech Preview, Codebase Feature Recon, Alignment Check | `brew install 1broseidon/tap/cymbal` (macOS), or `go install` / binary release | Basic `find` + `git log` — no cross-references or impact data |
 | [npx skills](https://github.com/vercel-labs/skills) | Optional | Stack-matched skill discovery during execution setup | Part of Node.js ecosystem (`npx` bundled with npm) | Skip — workflow runs without stack-matched skills |
 | [ctx7](https://github.com/upstash/context7) | Optional | Current library doc fetching during execution setup | `npx ctx7 setup` or `npm i -g ctx7` | Skip — docs not fetched (less informed execution) |
-| [plannotator](https://plannotator.ai/) | Optional | Visual review gate annotation | Per CLI: `@plannotator/pi-extension`, `@plannotator/opencode`, `@backnotprop/plannotator`, built-in hook in Codex | Manual review with approval receipt file — no structured annotation |
+| [plannotator](https://plannotator.ai/) | Optional | Visual review gate annotation | Pi: `@plannotator/pi-extension` · OpenCode: `@plannotator/opencode` · Claude Code: `@backnotprop/plannotator` · Codex: built-in hook | Manual review with approval receipt file — no structured annotation |
 | [safe-change (pi-agent-codebase-workflows)](https://github.com/PriNova/pi-agent-codebase-workflows) | Optional | Pre-execution code safety checks | `npx skills add Prinova/pi-agent-codebase-workflows -g` (works on Pi, OpenCode, Claude Code, Codex) | Skip — pre-execution check omitted |
 | Subagents (built-in to all CLIs) | Optional | Parallel reviewer orchestration during Plan Critique | `subagent({ agent, task })` — built-in on Pi/OpenCode/Claude Code/Codex | Sequential execution — slower, same outcome (single-context review) |
 | [pi-subagents](https://github.com/nicobailon/pi-subagents) | Optional (Pi only) | Advanced subagent features (fork/fresh context semantics, parent-child contracts) | `npm:pi-subagents` | Use the CLI's built-in `subagent()` instead — same outcome, fewer features |
@@ -406,17 +406,19 @@ For every external tool above, the workflow teaches the agent the **specific fal
 curl -fsSL https://raw.githubusercontent.com/renatocaliari/stelow/main/setup.sh | sh
 ```
 
-**What gets installed:**
+**What gets installed (in order):**
 
-| Component | Details | Works on |
-|-----------|---------|----------|
-| **Node.js** | v20+ (if not installed) | - |
-| **pi.dev** | Latest version | pi.dev |
-| **Extensions (22)** | subagents, browser, intercom, supervisor, plannotator, etc. | pi.dev only |
-| **Skills (25)** | Shape Up, JTBD, Pricing, Ads, Discovery, code-standards, and more | **All CLIs** ✅ |
-| **Settings** | Theme, model defaults, skill shortcuts | pi.dev |
+| Step | Component | Details | Works on |
+|---|---|---|---|
+| 1 | Node.js | v20+ via Homebrew (macOS) or nvm (Linux/Windows) | - |
+| 2 | pi.dev | `@earendil-works/pi-coding-agent` via npm | pi.dev |
+| 3 | Pi extensions | 12 npm packages: pi-subagents, pi-skillful, pi-intercom, pi-supervisor, @plannotator/pi-extension, pi-rewind, pi-powerline-footer, plus 5 harness tooling packages (cymbal-style recon, web access, etc.) | pi.dev only |
+| 4 | Skills (25) | stelow orchestrator + 24 subskills, copied to `~/.agents/skills/` | **All CLIs** ✅ |
+| 5 | Settings | theme, model defaults, skill shortcuts in `~/.pi/agent/settings.json` | pi.dev |
 
-> **Not using pi.dev?** The skills are still installed to `~/.agents/skills/` - they work on OpenCode, Claude Code, and Codex too. You just won't get the Pi-only extensions or TUI. The workflow itself runs fine.
+> **Not using pi.dev?** Skills land in `~/.agents/skills/` and work on OpenCode, Claude Code, and Codex too. You just won't get the Pi-only extensions or TUI overlay. The workflow itself runs fine.
+>
+> **Want cymbal and ctx7 too?** Those aren't part of Path A because they require non-npm installs (brew/go for cymbal, OAuth for ctx7). Run `./install.sh` after Path A for an interactive prompt to add them.
 
 ### 📋 Path B: Existing pi.dev User
 
