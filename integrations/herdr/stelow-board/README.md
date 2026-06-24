@@ -35,30 +35,53 @@ sequence, just be sure to run the two commands separately.
 
 ## Install from GitHub
 
+The plugin lives as a subdirectory of the main
+[stelow repo](https://github.com/renatocaliari/stelow) under
+`integrations/herdr/stelow-board/`. Install via herdr's subdir support:
+
 ```bash
-herdr plugin install renatocaliari/stelow-board
+herdr plugin install renatocaliari/stelow/integrations/herdr/stelow-board
 ```
+
+`herdr` will:
+
+1. Clone the subdirectory into
+   `~/.config/herdr/plugins/github/<hash>/integrations/herdr/stelow-board/`.
+2. Show a preview of the manifest (id, actions, panes) and ask for
+   confirmation in interactive terminals. Use `--yes` for
+   non-interactive installs (e.g. CI).
+3. Run the `[[build]]` command from the manifest (`cargo build
+   --release`) which produces the `./target/release/stelow-board`
+   binary.
+4. Register the plugin so its keybindings, actions, and panes are
+   immediately available.
+
+A standalone `stelow-board` GitHub repo does not exist — install via
+the subdir path above.
 
 ## Install from local source (development)
 
-```bash
-# 1. Clone and build the Rust binary
-git clone https://github.com/renatocaliari/stelow-board
-cd stelow-board
-cargo build --release
+If you have a checkout of the stelow monorepo and want to link the
+plugin from your local source (no GitHub round-trip, edits take effect
+after re-link):
 
-# 2. Link the local plugin directory into herdr
+```bash
+# From the stelow repo root
+cd integrations/herdr/stelow-board
+cargo build --release
 herdr plugin link .
-# Or point at the directory from your stelow checkout:
-herdr plugin link /path/to/stelow/integrations/herdr/stelow-board/
 ```
 
-The `link` command registers the plugin from a local path (no GitHub
-round-trip). After linking, edits to the manifest or `src/` require
-re-linking:
+Or point at the absolute path:
 
 ```bash
-herdr plugin unlink stelow-board
+herdr plugin link /path/to/stelow/integrations/herdr/stelow-board
+```
+
+After editing the manifest or `src/`, re-link:
+
+```bash
+herdr plugin unlink stelow.board
 herdr plugin link .
 ```
 
@@ -66,11 +89,21 @@ herdr plugin link .
 
 ```bash
 herdr plugin list
-# Should show: stelow-board  ✓ enabled
+# Should show: stelow.board (Stelow Board) enabled
 ```
 
+The `source:` field tells you which install method was used:
+
+- `github:renatocaliari/stelow/integrations/herdr/stelow-board@<commit>` —
+  installed from the GitHub subdir
+- `local:/path/to/stelow-board` — linked from local source
+
 Then inside a running herdr session, press `prefix+w` (default
-`ctrl+b w`) to toggle the board.
+`ctrl+b w`) to toggle the board. Or invoke the action directly:
+
+```bash
+herdr plugin action invoke stelow.board.toggle
+```
 
 ## Keybinds
 

@@ -5,6 +5,13 @@ min_herdr_version = "0.7.0"
 description = "Persistent side panel showing stelow workflow stages, projects, scopes, and tasks with click-to-drill navigation."
 platforms = ["linux", "macos"]
 
+# Build the Rust binary before herdr registers the plugin. herdr runs this
+# at install time on a non-interactive terminal, so it must complete without
+# prompts. The binary lands at ./target/release/stelow-board which the
+# [[panes]] command below references.
+[[build]]
+command = ["cargo", "build", "--release"]
+
 # Pane persistente (split). A SEMPRE docked right do pane ativo.
 [[panes]]
 id = "board"

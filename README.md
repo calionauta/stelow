@@ -42,20 +42,20 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 ## 📋 Table of Contents
 
 - [Why stelow](#why-stelow)
-- [🎚️ Appetite & Review Mode](#️-appetite--review-mode)
-- [🔄 Process](#-process)
-- [📋 Skills](#-skills)
-- [🚀 Quick Start](#-quick-start)
-- [📦 Installation](#-installation)
+- [🎚️ Appetite & Review Mode](#appetite-review-mode)
+- [🔄 Process](#process)
+- [📋 Skills](#skills)
+- [🚀 Quick Start](#quick-start)
+- [📦 Installation](#installation)
 - [External Dependencies](#external-dependencies)
-- [🎮 Commands](#-commands)
+- [🎮 Commands](#commands)
 - [Setup per CLI](#setup-per-cli)
-- [🖥️ Visual & TUI Integrations](#🖥️-visual--tui-integrations)
-- [📁 Artifact Directory](#-artifact-directory)
-- [📖 Evidence & Limitations](#-evidence--limitations)
+- [🖥️ Visual & TUI Integrations](#visual-tui-integrations)
+- [📁 Artifact Directory](#artifact-directory)
+- [📖 Evidence & Limitations](#evidence-limitations)
 - [About the Author](#about-the-author)
 - [License](#license)
-- [📞 Support](#-support)
+- [📞 Support](#support)
 
 ---
 
@@ -213,7 +213,7 @@ This is an **appetite-first** design: the human's declaration of review budget p
 
 ## 🔄 Process
 
-The workflow has **3 conceptual phases** (15 stages total), from idea triage to post-execution audit. See the [Stage Index](#-skills) in the orchestrator skill for the complete stage map with auto-chain rules and flow diagram.
+The workflow has **3 conceptual phases** (15 stages total), from idea triage to post-execution audit. See the [Stage Index](#skills) in the orchestrator skill for the complete stage map with auto-chain rules and flow diagram.
 
 ### 1. 🎨 Shaping
 
@@ -320,7 +320,7 @@ All 25 skills are flat in `skills/` directory, ready for `~/.agents/skills/`. Th
 
 ## 🚀 Quick Start
 
-This package works across **multiple coding agents** - not just pi.dev. See the compatibility table in [Installation](#-installation) to pick your path.
+This package works across **multiple coding agents** - not just pi.dev. See the compatibility table in [Installation](#installation) to pick your path.
 
 | Your situation | Recommended command | What you get |
 |----------------|--------------------|-------------|
