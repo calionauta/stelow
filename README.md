@@ -463,7 +463,7 @@ This project distributes exclusively via GitHub (no npm) — see [docs/SECURITY.
 
 | Command | Description |
 |---------|-------------|
-| `/sw-start [idea]` | Start new workflow. Auto-detects intent type (new-product, feature, bugfix, refactor, investigate) and routes to appropriate stage pipeline. |
+| `/sw-start [idea]` | Start new workflow. Auto-detects intent type (new-product, feature, bugfix, refactor, investigate) and routes to appropriate stage pipeline. If the input contains multiple items, auto-runs **triage** (group items) + **select** (pick one, defer the rest) before setup. |
 | `/sw-menu` | Show terminal quick menu (phase list + next/abort hints). Works without Muxy.app. |
 | `/sw-next` | Advance to next stage. Auto-completes workflow on last phase. |
 | `/sw-pause` | Pause active workflow (keeps state for resume). |
@@ -474,7 +474,7 @@ This project distributes exclusively via GitHub (no npm) — see [docs/SECURITY.
 | `/sw-status` | Display current phase, progress, and scope status. |
 | `/sw-ls [all\|archived]` | List workflows in current project (or all projects). |
 | `/sw-setphase phase=N` | Jump to specific phase by index. |
-| `/sw-goto [name=]` | Show project directory for a workflow. |
+| `/sw-goto [name=]` | Print workflow path, current stage, and copy-pasteable `cd` + `/sw-resume` commands. |
 | `/sw-rename <name>` | Rename active workflow. |
 | `/sw-complete` | Force-complete active workflow. |
 | `/sw-inbox [add\|remove\|clear]` | View or manage deferred inbox items. |
