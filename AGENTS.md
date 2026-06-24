@@ -11,6 +11,17 @@
 
 See [architecture.md](architecture.md) for module layout, data flow, and how to extend. Skills live in `skills/*/SKILL.md`; stages defined in `stages.yaml` (single source of truth). Visual review gates: `gate` and `int-gate` (Plannotator) — never skip.
 
+### Top-level layout
+
+| Directory | Purpose |
+|---|---|
+| `skills/` | Stelow skills consumed by pi coding agents (LLM-facing) |
+| `extensions/stelow/` | Pi runtime extension (in-process TS) |
+| `extensions/stelow-pi/` | Pi runtime extension (alt impl) |
+| `integrations/<host>/<plugin>/` | Plugins for **external hosts** (Muxy, Herdr, etc.) — each host has its own incompatible extension model |
+| `docs/design/` | Design docs, plans, ADR (PT-BR discussion, EN artifacts) |
+| `stelow.schema.json` / `stelow.json` | Workflow tracking schema + runtime state |
+
 
 ## Commands
 
@@ -38,6 +49,7 @@ npm run typecheck        # Type check
 - **Files:** `lowercase-kebab-case` (e.g. `spec-product.md`, not `SpecProduct.md`).
 - **Stage headings:** must use `slug:major.minor` format — see [docs/agents-md-refs/stage-numbering.md](docs/agents-md-refs/stage-numbering.md) for the gap-based numbering rules.
 - **Tool calls in stage files:** never call `ask_user_question`, `subagent`, or `start_supervision` directly. Use the CLI-agnostic reference in `references/cli-tools/{tool}.md` — see [docs/agents-md-refs/tool-reference-pattern.md](docs/agents-md-refs/tool-reference-pattern.md).
+- **Product name:** `stelow` (canonical). Legacy `cali-product-workflow` / `Cali Product Workflow` must NOT be used in new files, manifests, display names, or commands. The runtime state directory `.cali-product-workflow/` is the one exception (filesystem path kept for backward compat — do not change).
 
 ## Versioning
 

@@ -486,7 +486,7 @@ The Muxy panel shows:
 
 **Does NOT require pi.dev.** The Muxy extension reads workflow state from `.stelow/` files on disk, which any CLI writes. If you use Muxy + any CLI (Pi, OpenCode, Claude Code, Codex), the panel works.
 
-**Requires:** Muxy.app (macOS-only) + the stelow Muxy extension (`extensions/stelow-muxy/`). Install via Muxy's plugin system.
+**Requires:** Muxy.app (macOS-only) + the stelow-board Muxy extension (`integrations/muxy/stelow-board/`). Install via Muxy's plugin system.
 
 ---
 

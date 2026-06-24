@@ -12,7 +12,7 @@ import {
   getWorkflowCommandLabel,
   isWorkflowCommandEnabled,
   normalizeTrackingDataForProject,
-} from '../../extensions/stelow-muxy/src/panel/data';
+} from '../../integrations/muxy/stelow-board/src/panel/data';
 
 const wf = (name: string, currentPhase = 2, status = 'in-progress') => ({
   name,

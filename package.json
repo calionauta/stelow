@@ -56,7 +56,7 @@
     "skills/",
     "extensions/stelow/",
     "extensions/stelow-pi/",
-    "extensions/stelow-muxy/",
+    "integrations/muxy/stelow-board/",
     "scripts/",
     "install.sh",
     "stelow.schema.json",
