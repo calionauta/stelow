@@ -464,76 +464,77 @@ Task 1: Scaffold + manifest + Cargo.toml
 
 ---
 
-## 📍 Estado atual (post-v0.36.1)
+## 📍 Current state (post-v0.36.1)
 
-Este plano foi escrito em 2026-06-23 como design. O plugin foi implementado
-e está em produção como parte do monorepo `stelow`, sem repo separado. As
-seguintes divergências existem entre o plano e a implementação atual — leia
-esta seção antes de tomar qualquer decisão baseada no plano acima.
+This plan was written on 2026-06-23 as a design document. The plugin has
+since been implemented and ships as part of the `stelow` monorepo (no
+separate repo). The divergences below exist between the original plan
+and the current implementation — read this section before making any
+decision based on the plan above.
 
-### Decisões aplicadas (vs. plano)
+### Decisions applied (vs. the plan)
 
-| # | Questão original | Decisão atual |
+| # | Original question | Current decision |
 |---|---|---|
-| 1 | Owner do repo | **Sem repo separado.** Plugin vive em `integrations/herdr/stelow-board/` no monorepo `stelow`. Distribuído via npm (`@renatocaliari/stelow` package, `files[]` inclui o plugin). |
-| 2 | Naming do binário | **`stelow-board`** (decisão 1 original). |
-| 3 | Source do data | **`stelow.json` (root) + `.stelow/<date>/<dirHash>/index.json` per workflow.** Sem schema próprio. O plano previa `data.rs` separado; a implementação atual mantém tudo em `main.rs` (815 linhas) porque era mais simples. |
-| 4 | Detalhe de scope/task | **Mostra status, type, iteration counter do `Scope` em `index.json`.** Sem campo `detail` no schema atual. |
-| 5 | Auto-refresh | **Polling 2s baseado em signature mtime+size** de `stelow.json` + todos `index.json`. KISS — sem crate `notify`. Manual `[r]` força reload. |
-| 6 | Notificações | **Não implementado.** |
-| 7 | Múltiplos painéis | **Singleton por workspace.** Não há conflito em usar `prefix+w` repetidamente (a action `open-board.sh` faz toggle). |
+| 1 | Repo owner | **No separate repo.** Plugin lives at `integrations/herdr/stelow-board/` inside the `stelow` monorepo. Distributed via npm (`@renatocaliari/stelow` package, `files[]` includes the plugin). |
+| 2 | Binary name | **`stelow-board`** (original option 1). |
+| 3 | Data source | **`stelow.json` (root) + `.stelow/<date>/<dirHash>/index.json` per workflow.** No custom schema. The plan envisioned a separate `data.rs`; the implementation keeps everything in `main.rs` (815 lines) because it was simpler. |
+| 4 | Scope/task detail | **Shows status, type, and iteration counter from `Scope` in `index.json`.** No `detail` field in the current schema. |
+| 5 | Auto-refresh | **2s polling based on mtime+size signature** of `stelow.json` and all `index.json` files. KISS — no `notify` crate. Manual `[r]` forces reload. |
+| 6 | Notifications | **Not implemented.** |
+| 7 | Multiple panels | **Singleton per workspace.** No conflict from pressing `prefix+w` repeatedly — the `open-board.sh` action handles toggle. |
 
-### Arquitetura final (vs. plano)
+### Final architecture (vs. the plan)
 
-O plano previa 5 arquivos Rust (`main.rs`, `app.rs`, `data.rs`, `ui.rs`,
-`action.rs`). A implementação atual tem **1 arquivo `main.rs` (815 linhas)**.
-Decisão consciente: o escopo ficou menor que o planejado (sem state machine
-de drill-in/out, sem notificações), então a modularização perdeu valor.
+The plan envisioned 5 Rust files (`main.rs`, `app.rs`, `data.rs`, `ui.rs`,
+`action.rs`). The current implementation has **1 file `main.rs` (815 lines)**.
+Conscious decision: scope shrank compared to the plan (no drill-in/out
+state machine, no notifications), so modularization lost value.
 
-### Layout final (vs. plano)
+### Final layout (vs. the plan)
 
-O plano previa 3 views (Overview → ProjectDetail → ScopeDetail). A
-implementação atual tem **2 painéis lado-a-lado** (workflows à esquerda,
-detail card + scopes à direita). Sem drill-in/out — toda info cabe em uma
-tela.
+The plan envisioned 3 views (Overview → ProjectDetail → ScopeDetail). The
+current implementation has **2 side-by-side panels** (workflows on the
+left, detail card + scopes on the right). No drill-in/out — all info fits
+on a single screen.
 
-### Keybinds finais (vs. plano)
+### Final keybinds (vs. the plan)
 
-| Plano original | Atual |
+| Original plan | Current |
 |---|---|
 | `j`/`Down` next item, `k`/`Up` prev item | `Tab`/`j`/`Down` next workflow, `Shift+Tab`/`k`/`Up` previous workflow |
-| `h`/`Left` drill out, `l`/`Right`/`Enter` drill in | **removido** (sem drill-in/out) |
-| `space` toggle status | **removido** (read-only por convenção — mutations no shell) |
+| `h`/`Left` drill out, `l`/`Right`/`Enter` drill in | **removed** (no drill-in/out) |
+| `space` toggle status | **removed** (read-only by convention — mutations happen in the shell) |
 | `r` refresh | `r` manual refresh + auto 2s polling |
 | `?` help | `?` help |
 | `q`/`Esc` quit | `q`/`Esc` quit |
 
-### Workflow filter (decisão adicional)
+### Workflow filter (additional decision)
 
-A implementação atual filtra workflows pelo worktree (mirror de
-`muxy`'s `isWorkflowCwdCompatible`). Workflows cujo `cwd` em `stelow.json`
-seja vazio são tratados como compatíveis (mesma convenção do muxy) —
-cobre workflows antigos onde a extension ainda não escrevia `cwd`.
+The current implementation filters workflows by worktree (mirror of
+muxy's `isWorkflowCwdCompatible`). Workflows whose `cwd` in `stelow.json`
+is empty are treated as compatible (same muxy convention) — this covers
+older workflows where the extension didn't write `cwd`.
 
-### Source-of-truth para cwd do projeto
+### Source of truth for project cwd
 
-Lê `HERDR_PLUGIN_CONTEXT_JSON.workspace_cwd` (JSON injetado pelo herdr
-runtime em cada spawn do plugin). Fallback chain:
+Reads `HERDR_PLUGIN_CONTEXT_JSON.workspace_cwd` (JSON blob injected by
+herdr runtime on each plugin spawn). Fallback chain:
 `focused_pane_cwd` → `workspace_cwd` → `HERDR_PLUGIN_ROOT`.
 
-### Convenção para scopes
+### Scopes convention
 
-Lê scopes do `index.json` (`scopes[]` array), não do `spec-tech.md`. Cada
-scope tem `id`, `name`, `type`, `status`, `iteration`, `maxIterations`.
-O status é renderizado com glyphs: `·` pending, `▶` in-progress,
+Reads scopes from `index.json` (`scopes[]` array), not from `spec-tech.md`.
+Each scope has `id`, `name`, `type`, `status`, `iteration`, `maxIterations`.
+Status is rendered with glyphs: `·` pending, `▶` in-progress,
 `✓` completed, `⚠` escalated, `✗` failed.
 
 ### Test coverage
 
-`tests/unit/herdr-cwd-matches.test.ts` (10 testes anti-regressão para
-o filtro de worktree — empty cwd, exact match, sub-path, etc.).
-Sem test framework Rust; testes são indiretos via TS.
+`tests/unit/herdr-cwd-matches.test.ts` (10 anti-regression tests for
+the worktree filter — empty cwd, exact match, sub-path, etc.).
+No Rust test framework; testing is indirect via TypeScript.
 
 ---
 
-**Próximo passo:** aprovação do user → iniciar Tarefa 1 (scaffold).
+**Next step:** user approval → start Task 1 (scaffold).

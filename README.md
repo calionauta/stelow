@@ -42,20 +42,20 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 ## 📋 Table of Contents
 
 - [Why stelow](#why-stelow)
-- [🎚️ Appetite & Review Mode](#appetite-review-mode)
-- [🔄 Process](#process)
-- [📋 Skills](#skills)
-- [🚀 Quick Start](#quick-start)
-- [📦 Installation](#installation)
+- [🎚️ Appetite & Review Mode](#️-appetite--review-mode)
+- [🔄 Process](#--process)
+- [📋 Skills](#--skills)
+- [🚀 Quick Start](#--quick-start)
+- [📦 Installation](#--installation)
 - [External Dependencies](#external-dependencies)
-- [🎮 Commands](#commands)
+- [🎮 Commands](#--commands)
 - [Setup per CLI](#setup-per-cli)
-- [🖥️ Visual & TUI Integrations](#visual-tui-integrations)
-- [📁 Artifact Directory](#artifact-directory)
-- [📖 Evidence & Limitations](#evidence-limitations)
+- [🖥️ Visual & TUI Integrations](#️-visual--tui-integrations)
+- [📁 Artifact Directory](#--artifact-directory)
+- [📖 Evidence & Limitations](#--evidence--limitations)
 - [About the Author](#about-the-author)
 - [License](#license)
-- [📞 Support](#support)
+- [📞 Support](#--support)
 
 ---
 
