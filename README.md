@@ -521,6 +521,12 @@ Two CLI-agnostic surfaces read workflow state from `.stelow/` files on disk and 
 | **Muxy webview panel** | [Muxy.app](https://muxy.app/) (macOS terminal multiplexer) | `WKWebView` docked/floating panel with HTML/CSS/JS |
 | **Herdr split-pane TUI** | [Herdr](https://herdr.dev) (terminal multiplexer) | Rust+ratatui TUI in split pane (`placement = "split"`) |
 
+Muxy plugin           |  Herdr Extension
+:-------------------------:|:-------------------------:
+![](https://github.com/user-attachments/assets/6254c08e-dc92-4b5d-9fc6-144868e53621)  |  ![](https://github.com/user-attachments/assets/e348fd87-f428-4d33-afd6-e08363d16eab)
+
+Herdr Extension
+
 Both integrations share the same workflow state (`.stelow/`), both work with any CLI (Pi, OpenCode, Claude Code, Codex), neither requires pi.dev.
 
 ### Muxy Webview Panel
