@@ -66,7 +66,7 @@ describe('Command Dispatcher Integration Tests', () => {
       expect(commandNames).toContain('sw-setphase');
       expect(commandNames).toContain('sw-next');
       expect(commandNames).toContain('sw-complete');
-      expect(commandNames).toContain('sw-goto');
+      expect(commandNames).toContain('sw-info');
       expect(commandNames).toContain('sw-rename');
       expect(commandNames).toContain('sw-menu');
       expect(commandNames).toContain('sw-doctor');

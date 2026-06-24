@@ -69,9 +69,9 @@ export const WORKFLOW_COMMANDS: CommandDescriptor[] = [
     usage: "/sw-complete",
   },
   {
-    name: "sw-goto",
+    name: "sw-info",
     description: "Go to a workflow",
-    usage: "/sw-goto [name=name]",
+    usage: "/sw-info [name=name]",
   },
   {
     name: "sw-rename",

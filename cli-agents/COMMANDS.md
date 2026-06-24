@@ -20,7 +20,7 @@
 | `/sw-setphase` | ✅ Native | ✅ Skill | ✅ Skill | ✅ Skill | — |
 | `/sw-next` | ✅ Native | ✅ Skill | ✅ Skill | ✅ Skill | — |
 | `/sw-complete` | ✅ Native | ✅ Skill | ✅ Skill | ✅ Skill | — |
-| `/sw-goto` | ✅ Native | ✅ Skill | ✅ Skill | ✅ Skill | — |
+| `/sw-info` | ✅ Native | ✅ Skill | ✅ Skill | ✅ Skill | — |
 | `/sw-rename` | ✅ Native | ✅ Skill | ✅ Skill | ✅ Skill | — |
 | `/sw-menu` | ✅ Native | ✅ Skill | ✅ Skill | ✅ Skill | — |
 | `/sw-archive` | ✅ Native | ✅ Skill | ✅ Skill | ✅ Skill | — |

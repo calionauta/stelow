@@ -112,7 +112,7 @@ export class PiAdapter extends BaseAdapter {
       "sw-setphase": this.handleSetPhase.bind(this),
       "sw-next": this.handleNext.bind(this),
       "sw-complete": this.handleComplete.bind(this),
-      "sw-goto": this.handleGoto.bind(this),
+      "sw-info": this.handleGoto.bind(this),
       "sw-rename": this.handleRename.bind(this),
       "sw-menu": this.handleMenu.bind(this),
       "sw-clean": this.handleClean.bind(this),

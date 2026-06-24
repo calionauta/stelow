@@ -251,7 +251,7 @@ No config files needed. Structure IS the configuration.
 | `/sw-start [idea]` | Start new workflow |
 | `/sw-next` | Advance to next phase |
 | `/sw-prev` | Go back to previous phase |
-| `/sw-goto [phase]` | Jump to specific phase |
+| `/sw-info [phase]` | Jump to specific phase |
 | `/sw-menu` | Show workflow overlay |
 | `/sw-inbox` | Show inbox items |
 | `/sw-inbox add <item>` | Add to inbox |

@@ -474,7 +474,7 @@ This project distributes exclusively via GitHub (no npm) — see [docs/SECURITY.
 | `/sw-status` | Display current phase, progress, and scope status. |
 | `/sw-ls [all\|archived]` | List workflows in current project (or all projects). |
 | `/sw-setphase phase=N` | Jump to specific phase by index. |
-| `/sw-goto [name=]` | Print workflow path, current stage, and copy-pasteable `cd` + `/sw-resume` commands. |
+| `/sw-info [name=]` | Print workflow path, current stage, and copy-pasteable `cd` + `/sw-resume` commands. |
 | `/sw-rename <name>` | Rename active workflow. |
 | `/sw-complete` | Force-complete active workflow. |
 | `/sw-inbox [add\|remove\|clear]` | View or manage deferred inbox items. |

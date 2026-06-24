@@ -46,7 +46,7 @@ All notable changes to `@renatocaliari/stelow` will be documented in this file.
   investigate gets spike-only instructions; new-product/feature get full pipeline.
 - README commands table updated to reflect actual commands (removed stale
   `/sw-begin`, `/sw-continue`, `/sw-reset`, et al; added `/sw-pause`,
-  `/sw-resume`, `/sw-abort`, `/sw-ls`, `/sw-setphase`, `/sw-goto`,
+  `/sw-resume`, `/sw-abort`, `/sw-ls`, `/sw-setphase`, `/sw-info`,
   `/sw-rename`, `/sw-complete`, `/sw-inbox`, `/sw-unlock`).
 - Artifact directory path fixed from `.pi/workflow/` to `.stelow/`.
 
@@ -493,7 +493,7 @@ The mechanical warnings above (scope count, spec lines) are **indicators**, not 
   - `/sw-setphase` - Set current phase
   - `/sw-next` - Advance to next phase
   - `/sw-complete` - Mark as completed
-  - `/sw-goto` - Navigate to workflow in another project
+  - `/sw-info` - Navigate to workflow in another project
 
 - **TUI integration**:
   - Footer status shows current workflow + stage
