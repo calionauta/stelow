@@ -252,7 +252,6 @@ No config files needed. Structure IS the configuration.
 | `/sw-next` | Advance to next phase |
 | `/sw-prev` | Go back to previous phase |
 | `/sw-info [phase]` | Jump to specific phase |
-| `/sw-menu` | Show workflow overlay |
 | `/sw-inbox` | Show inbox items |
 | `/sw-inbox add <item>` | Add to inbox |
 | `/sw-inbox remove <item>` | Remove from inbox |

@@ -79,11 +79,6 @@ export const WORKFLOW_COMMANDS: CommandDescriptor[] = [
     usage: "/sw-rename novo-nome | name=novo-nome",
   },
   {
-    name: "sw-menu",
-    description: "Open workflow overview overlay",
-    usage: "/sw-menu",
-  },
-  {
     name: "sw-doctor",
     description: "Diagnose workflow tracking health",
     usage: "/sw-doctor",

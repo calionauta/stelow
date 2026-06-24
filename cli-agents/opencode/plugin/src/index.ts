@@ -2,7 +2,7 @@
  * stelow OpenCode Plugin
  * 
  * Provides:
- * - /sw-start, /sw-menu, /sw-status, /sw-help commands
+ * - /sw-start, /sw-status, /sw-help commands
  * - Workflow lifecycle hooks
  * - TUI status overlay
  */
@@ -60,7 +60,7 @@ const pwStart = tool({
 
     return {
       title: "Workflow Started",
-      output: `Started "${workflowName}" at Phase 1 (Setup)\n\nThe workflow will guide you through:\nSetup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Execution → Verification → Audit\n\nUse /sw-status to check progress, /sw-menu for actions.`,
+      output: `Started "${workflowName}" at Phase 1 (Setup)\n\nThe workflow will guide you through:\nSetup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Execution → Verification → Audit\n\nUse /sw-status to check progress.`,
       metadata: {
         workflowName,
         phase: 1,
@@ -158,7 +158,6 @@ const pwHelp = tool({
 | Command | Description |
 |---------|-------------|
 | /sw-start | Start a new workflow |
-| /sw-menu | Show workflow menu |
 | /sw-status | Show current status |
 | /sw-help | Show this help |
 | /sw-next | Advance to next phase |

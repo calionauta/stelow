@@ -114,7 +114,6 @@ export class PiAdapter extends BaseAdapter {
       "sw-complete": this.handleComplete.bind(this),
       "sw-info": this.handleGoto.bind(this),
       "sw-rename": this.handleRename.bind(this),
-      "sw-menu": this.handleMenu.bind(this),
       "sw-clean": this.handleClean.bind(this),
     };
     
@@ -176,10 +175,6 @@ export class PiAdapter extends BaseAdapter {
   
   private handleRename(_pi: unknown, _args: string, _ctx: unknown): void {
     console.log("[PiAdapter] Rename command delegated to commands.ts");
-  }
-  
-  private handleMenu(_pi: unknown, _args: string, _ctx: unknown): void {
-    console.log("[PiAdapter] Menu command delegated to commands.ts");
   }
   
   private handleClean(_pi: unknown, _args: string, _ctx: unknown): void {

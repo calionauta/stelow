@@ -103,7 +103,7 @@ A structured workflow that makes AI think like a product manager:
 
 - **24 sub-skills** organized into 4 layers - orchestrator + strategies + workflow stages + tactics
 - Part of a broader ecosystem of **25 skills within the project** (plus additional skills from other packages in the user's agent environment)
-- Real-time TUI tracking with visual overlay (`/sw-menu`)
+- Real-time TUI tracking with visual status overlay (`/sw-status`)
 - Gate approval via Plannotator - review, comment, approve or reject before implementation
 - Typed scopes for autonomous execution (feature, spike, test-*, optimize)
 
@@ -368,7 +368,7 @@ Not every feature works on every CLI. Here's what to expect:
 | Feature | pi.dev | OpenCode | Claude Code | Codex |
 |---------|--------|----------|-------------|-------|
 | **Skills (all 25)** | ✅ | ✅ | ✅ | ✅ |
-| **`/sw-start`, `/sw-menu` commands** | ✅ Slash commands | ✅ Via `sw-*.md` files | ✅ Via command files | ✅ Via command files |
+| **`/sw-start` command** | ✅ Slash commands | ✅ Via `sw-*.md` files | ✅ Via command files | ✅ Via command files |
 | **TUI overlay (real-time status)** | ✅ Native extension | ❌ | ❌ | ❌ |
 | **Plannotator visual gate** | ✅ Extension | ⚠️ Manual | ⚠️ Manual | ⚠️ Manual |
 | **Deep hooks (events, gates)** | ✅ Extension | ❌ | ❌ | ❌ |
@@ -475,7 +475,7 @@ This project distributes exclusively via GitHub (no npm) — see [docs/SECURITY.
 | Command | Description |
 |---------|-------------|
 | `/sw-start [idea]` | Start new workflow. Auto-detects intent type (new-product, feature, bugfix, refactor, investigate) and routes to appropriate stage pipeline. If the input contains multiple items, auto-runs **triage** (group items) + **select** (pick one, defer the rest) before setup. |
-| `/sw-menu` | Show terminal quick menu (phase list + next/abort hints). Works without Muxy.app. |
+| `/sw-status` | Show active workflow phase list, stage progress, and scopes. |
 | `/sw-next` | Advance to next stage. Auto-completes workflow on last phase. |
 | `/sw-pause` | Pause active workflow (keeps state for resume). |
 | `/sw-resume [name=]` | Resume paused/in-progress workflow. Checks git drift before resuming. |

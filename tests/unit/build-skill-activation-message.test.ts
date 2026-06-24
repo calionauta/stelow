@@ -61,4 +61,31 @@ describe('buildSkillActivationMessage', () => {
     expect(headerIdx).toBeLessThan(briefIdx);
     expect(briefIdx).toBeLessThan(filesIdx);
   });
+
+  it('asks for classification when intent is unknown', () => {
+    const msg = buildSkillActivationMessage('wf', 'jogo da velha super simples', '', 'unknown', 2);
+    expect(msg).toContain('CLASSIFY THE USER BRIEF FIRST');
+    expect(msg).toContain('Classification needs user confirmation');
+    expect(msg).not.toContain('Do NOT ask the user what to do next');
+    expect(msg).toContain('=== USER BRIEF ===');
+  });
+
+  it('does not ask for classification when intent is pre-classified', () => {
+    const msg = buildSkillActivationMessage('wf', 'fix the crash', '', 'bugfix', 2);
+    expect(msg).not.toContain('CLASSIFY THE USER BRIEF FIRST');
+    expect(msg).toContain('Do NOT ask the user what to do next');
+    expect(msg).toContain('BUGFIX');
+  });
+
+  it('emits full pipeline for new-product intent', () => {
+    const msg = buildSkillActivationMessage('wf', 'build a new SaaS', '', 'new-product', 2);
+    expect(msg).toContain('new-product');
+    expect(msg).toContain('auto-advance through context');
+  });
+
+  it('emits full pipeline for feature intent', () => {
+    const msg = buildSkillActivationMessage('wf', 'add OAuth login', '', 'feature', 2);
+    expect(msg).toContain('Intent: feature');
+    expect(msg).toContain('auto-advance through context');
+  });
 });

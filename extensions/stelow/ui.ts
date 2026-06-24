@@ -211,31 +211,6 @@ async function triggerAutoRename(ctx: ExtensionContext, currentName: string): Pr
  * Fully agnostic — delegates to UIAdapter.select().
  * Pi gets its native overlay; other CLIs get formatted terminal output.
  */
-export function showOverlay(ctx: ExtensionContext, cwd: string): void {
-  const wf = getActiveWorkflow(cwd);
-  if (!wf) {
-    getUIAdapter().notify("No active workflow", "warning");
-    return;
-  }
-  
-  const adapter = getUIAdapter();
-  
-  const options = wf.phases.map(p => ({
-    value: p.id,
-    label: `${p.status === "completed" ? "✓" : p.status === "in-progress" ? "◆" : "○"} ${p.name}`,
-    description: p.status === "completed" ? "Done" :
-      p.status === "in-progress" ? "Current" : "Pending"
-  }));
-  
-  adapter.select(options, `◆ ${wf.name}`).then((result: any) => {
-    if (result === "next") {
-      adapter.notify("Use /sw-next", "info");
-    } else if (result === "stop") {
-      adapter.notify("Use /sw-abort", "info");
-    }
-  });
-}
-
 // =============================================================================
 // ORPHANED WORKFLOW CLEANUP
 // =============================================================================

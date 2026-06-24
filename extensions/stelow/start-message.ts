@@ -79,8 +79,9 @@ export function buildSkillActivationMessage(
         `\nNo code changes expected unless the research leads to implementation.`;
       break;
 
-    default:
-      // new-product, feature, unknown — full pipeline
+    case "new-product":
+    case "feature":
+      // new-product and feature — full pipeline
       stageSection =
         `\nCurrent stage: ${phaseName} (phase ${initialPhase + 1}/15)` +
         `\nFollow \`stages/setup.md\` in order:` +
@@ -97,7 +98,48 @@ export function buildSkillActivationMessage(
         `\u2192 execution \u2192 verification \u2192 audit.`;
       overrideNote = ``;
       break;
+
+    default:
+      // unknown — skill classifies the brief during setup
+      stageSection =
+        `\nCurrent stage: ${phaseName} (phase ${initialPhase + 1}/15)` +
+        `\n\nCLASSIFY THE USER BRIEF FIRST (if brief exists).` +
+        `\nRead the brief below and decide: new-product, feature, bugfix, refactor, or investigate.` +
+        `\n` +
+        `\nUse \`ask_user_question\` (Pattern 4 from stages/ask-patterns.md) with these options:` +
+        `\n  - New Product (full pipeline)` +
+        `\n  - Feature (standard pipeline)` +
+        `\n  - Bugfix (Tech Planning only)` +
+        `\n  - Refactor (Tech Planning only)` +
+        `\n  - Investigate / Research (spike only)` +
+        `\nState your recommended classification in the question. Proceed after the user confirms.` +
+        `\n` +
+        `\nIf no brief exists, default to Feature pipeline and skip this step.` +
+        `\n` +
+        `\nThen follow \`stages/setup.md\` in order:` +
+        `\n  1. Inbox check \u2014 deferred items from prior sessions` +
+        `\n  2. Lessons learned \u2014 reflect on past cycle patterns` +
+        `\n  3. Session knowledge \u2014 passive context notes` +
+        `\n  4. Auto-discovery \u2014 existing in-progress workflows` +
+        `\n  5. Appetite & Mode declaration (Patterns 7, 8 \u2014 fixed for the cycle)` +
+        `\n  6. Stage selection (Pattern 5, mode-dependent)`;
+      pipelineSection =
+        `\n` +
+        `\nAfter setup, the pipeline depends on the classification. The stage selection ` +
+        `\noverrides in setup:20 will set the correct auto-advance chain.`;
+      overrideNote =
+        `\n\n>>> CLASSIFICATION OVERRIDE <<<` +
+        `\nIntent is unknown. Classify the brief during setup, then proceed.` +
+        `\nIf no brief exists, default to feature pipeline.`;
+      break;
   }
+
+  // The "Do NOT ask the user" instruction is only valid when the intent is
+  // pre-classified. When intent is "unknown", the skill MUST ask the user
+  // to confirm the classification before proceeding.
+  const askRule = intent === "unknown"
+    ? "\nClassification needs user confirmation. Ask the user to confirm your classification before proceeding."
+    : "\nDo NOT ask the user what to do next \u2014 the workflow is automatic.";
 
   let msg =
     "/skill:stelow-product-orchestrator" +
@@ -107,7 +149,7 @@ export function buildSkillActivationMessage(
     "\nAuto-advance mode: ON. Proceed to the next stage when current one completes." +
     "\nUse /sw-next only if the workflow was explicitly paused or after an error." +
     "\nDo NOT implement anything until the Execution stage." +
-    "\nDo NOT ask the user what to do next \u2014 the workflow is automatic." +
+    askRule +
     stageSection +
     pipelineSection +
     overrideNote;

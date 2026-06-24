@@ -60,12 +60,10 @@ export const tui: TuiPluginModule["tui"] = async (api, options, meta) => {
     });
   });
 
-  // Register keyboard shortcut for workflow menu
+  // Register keyboard shortcut for workflow status
   api.keymap.registerLayer({
-    commands: ["sw-menu", "sw-status"],
-    bindings: [
-      { key: "ctrl+w", command: "sw-menu" },
-    ],
+    commands: ["sw-status"],
+    bindings: [],
   });
 
   // Cleanup on dispose

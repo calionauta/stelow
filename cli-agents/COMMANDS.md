@@ -22,7 +22,6 @@
 | `/sw-complete` | ✅ Native | ✅ Skill | ✅ Skill | ✅ Skill | — |
 | `/sw-info` | ✅ Native | ✅ Skill | ✅ Skill | ✅ Skill | — |
 | `/sw-rename` | ✅ Native | ✅ Skill | ✅ Skill | ✅ Skill | — |
-| `/sw-menu` | ✅ Native | ✅ Skill | ✅ Skill | ✅ Skill | — |
 | `/sw-archive` | ✅ Native | ✅ Skill | ✅ Skill | ✅ Skill | — |
 | `/sw-unarchive` | ✅ Native | ✅ Skill | ✅ Skill | ✅ Skill | — |
 | `/sw-inbox` | ✅ Native | ✅ Skill * | ✅ Skill * | ✅ Skill * | Pi extension required for full TUI |

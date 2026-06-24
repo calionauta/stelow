@@ -99,7 +99,7 @@ function validatePackageEntry(
       if (ext.startsWith("-")) {
         errors.push(
           `Extension '${ext}' has '-' prefix (force-exclude). ` +
-            `Commands /sw-start, /sw-menu, etc. will not register. ` +
+            `Commands /sw-start, etc. will not register. ` +
             `Change to '+' or remove the '-' prefix.`,
         );
       }

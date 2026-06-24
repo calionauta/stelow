@@ -101,7 +101,7 @@ Defaulting to `generic` is safer than assuming a specific harness. When we don't
 
 Full support including:
 - TUI status display
-- Commands (`/sw-start`, `/sw-menu`, etc.)
+- Commands (`/sw-start`, etc.)
 - Plannotator integration
 
 #### opencode, claude-code, codex

@@ -1,6 +1,6 @@
 ---
 name: sw-info
-description: Print workflow info and resume commands
+description: Go to a workflow
 ---
 
 /skill:stelow-product-orchestrator

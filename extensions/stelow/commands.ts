@@ -15,7 +15,7 @@ import {
   findWorkflowIndexByName, findWorkflowIndexForProject, isWorkflowFromProject, isSamePath,
   removeGlobalIndexEntry, addToGlobalIndex,
 } from "./state";
-import { updateFooter, notifyPhase, showOverlay, getUIAdapter } from "./ui";
+import { updateFooter, notifyPhase, getUIAdapter } from "./ui";
 import { diagnoseWorkflowProject, formatDoctorReport, repairWorkflowProject, countFixable } from "./doctor";
 import cmdStart from "./start";
 
@@ -397,7 +397,7 @@ function cmdStatus(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
       }),
     ] : []),
     "",
-    "/sw-next  /sw-abort  /sw-menu"
+    "/sw-next  /sw-abort"
   ].join("\n"));
 }
 
@@ -764,17 +764,21 @@ function cmdGoto(_pi: ExtensionAPI, args: string, _ctx: CmdCtx) {
   const wd = resolveProjectDir(_ctx.cwd);
   const parsed = parseArgs(args);
   const name = parsed.name || parsed._[0];
-  const gt = readGlobalTracking();
-  if (!gt) { replyWarn(_ctx, "No global workflows."); return; }
 
-  const wf = name
-    ? (gt.workflows.find(w => w.name === name && isWorkflowFromProject(w, wd))
-        ?? gt.workflows.find(w => w.name === name))
-    : (gt.workflows.find(w => isWorkflowFromProject(w, wd))
-        ?? gt.workflows[0]);
+  // When a name is given, search global tracking (project-first, then global).
+  // When no name is given, get the active workflow for this project.
+  let wf: Workflow | undefined;
+  if (name) {
+    const gt = readGlobalTracking();
+    if (!gt) { replyWarn(_ctx, "No global workflows."); return; }
+    wf = gt.workflows.find(w => w.name === name && isWorkflowFromProject(w, wd))
+      ?? gt.workflows.find(w => w.name === name);
+  } else {
+    wf = getActiveWorkflow(wd) ?? undefined;
+  }
 
   if (!wf) {
-    replyWarn(_ctx, `'${name || "active"}' not found. /sw-ls`);
+    replyWarn(_ctx, `'${name || "active"}' not found. /sw-ls /sw-start`);
     return;
   }
 
@@ -806,14 +810,6 @@ function cmdRename(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
 
   updateFooter(ctx, wd);
   ctx.ui?.notify(`✨ Renamed to "${toSafeName(newName)}"`, "info");
-}
-
-// ── MENU ─────────────────────────────────────────────────────────────
-
-function cmdMenu(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
-  const wd = resolveProjectDir(ctx.cwd);
-  showOverlay(ctx, wd);
-  // Overlay is interactive; no notify needed — user sees TUI.
 }
 
 // ── DOCTOR ───────────────────────────────────────────────────────────
@@ -1110,7 +1106,6 @@ const COMMAND_ALIASES: Record<string, string[]> = {
   "sw-complete":  ["stelow-complete"],
   "sw-info":      ["stelow-goto"],
   "sw-rename":    ["stelow-rename"],
-  "sw-menu":      ["stelow-menu"],
   "sw-doctor":    ["stelow-doctor"],
   "sw-archive":   ["stelow-archive"],
   "sw-unarchive": ["stelow-unarchive"],
@@ -1130,7 +1125,6 @@ const HANDLER_BY_NAME: Record<string, CmdHandler> = {
   "sw-complete":   cmdComplete,
   "sw-info":       cmdGoto,
   "sw-rename":     cmdRename,
-  "sw-menu":       cmdMenu,
   "sw-doctor":     cmdDoctor,
   "sw-archive":    cmdArchive,
   "sw-unarchive":  cmdUnarchive,
@@ -1148,7 +1142,6 @@ const HANDLER_BY_NAME: Record<string, CmdHandler> = {
   "stelow-complete":  cmdComplete,
   "stelow-goto":      cmdGoto,
   "stelow-rename":    cmdRename,
-  "stelow-menu":      cmdMenu,
   "stelow-doctor":    cmdDoctor,
   "stelow-archive":   cmdArchive,
   "stelow-unarchive": cmdUnarchive,

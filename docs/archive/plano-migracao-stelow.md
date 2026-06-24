@@ -82,7 +82,6 @@ Usuários podem digitar qualquer um dos dois.
 | `/sw-complete` | `/sw-complete` | `/stelow-complete` |
 | `/sw-goto` | `/sw-goto` | `/stelow-goto` |
 | `/sw-rename` | `/sw-rename` | `/stelow-rename` |
-| `/sw-menu` | `/sw-menu` | `/stelow-menu` |
 | `/sw-doctor` | `/sw-doctor` | `/stelow-doctor` |
 | `/sw-archive` | `/sw-archive` | `/stelow-archive` |
 | `/sw-unarchive` | `/sw-unarchive` | `/stelow-unarchive` |

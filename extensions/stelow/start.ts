@@ -2,14 +2,14 @@
 import type { ExtensionAPI, ExtensionCommandContext } from "@earendil-works/pi-coding-agent";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join, basename, extname } from "node:path";
-import { WORKFLOW_DIR, PHASE_NAMES, SCHEMA_URL, INTENT_PHASE } from "./types";
+import { WORKFLOW_DIR, PHASE_NAMES, SCHEMA_URL } from "./types";
 import type { Workflow, WorkflowIntent } from "./types";
 import {
   parsedInputStore, readTracking, writeTracking,
   readGlobalTracking, writeGlobalTracking,
   getActiveWorkflow, resolveProjectDir,
   toSafeName, generateDirHash, hashToWorkflowId, getDateStamp,
-  readSourceFile, truncateText, detectCLI, classifyIntent
+  readSourceFile, truncateText, detectCLI
 } from "./state";
 import { updateFooter, getUIAdapter, initUIAdapter } from "./ui";
 import { buildSkillActivationMessage } from "./start-message";
@@ -103,73 +103,10 @@ export default async function cmdStart(
   let fullDraft = draftText ? `### Initial Draft\n\n${draftText}\n\n` : "";
   if (allSrc) fullDraft += allSrc;
 
-  // 5. Intent classification + user confirmation
-  //     Uses UI adapter select (works on Pi TUI, falls back on other CLIs).
-  //     For empty/very short drafts, skip prompt and default to unknown.
-  let selectedIntent: WorkflowIntent = "unknown";
-  let initialPhase = 2; // Setup
-
-  if (draftText && draftText.trim().length >= 6) {
-    const detectedIntent = classifyIntent(draftText);
-
-    initUIAdapter(ctx);
-    const adapter = getUIAdapter();
-
-    // Build options: if detected is known, put it first as "(Recommended)"
-    // If unknown, show all options without recommendation.
-    const categoryOptions: Array<{ value: string; label: string; description: string }> = [
-      { value: "new-product", label: "New Product", description: "Full pipeline: Shape Up, Interface, Planning, Execution" },
-      { value: "feature", label: "Feature", description: "Standard: Shape Up, Planning, Execution" },
-      { value: "bugfix", label: "Bugfix", description: "Minimal: Planning \u2192 Execution \u2014 skip Shape/Interface/Gates" },
-      { value: "refactor", label: "Refactor", description: "Minimal: Planning \u2192 Execution \u2014 no new functionality" },
-      { value: "investigate", label: "Investigate / Research", description: "Spike scope only \u2014 quick research" },
-    ];
-
-    let options: Array<{ value: string; label: string; description: string }>;
-    let title: string;
-
-    if (detectedIntent !== "unknown") {
-      const detectedLabel = categoryOptions.find(o => o.value === detectedIntent)?.label || detectedIntent;
-      const detectedDesc = categoryOptions.find(o => o.value === detectedIntent)?.description || "";
-      options = [
-        {
-          value: detectedIntent,
-          label: `${detectedLabel} (Recommended)`,
-          description: `Detected from your request. ${detectedDesc}`,
-        },
-        ...categoryOptions
-          .filter(o => o.value !== detectedIntent)
-          .map(o => ({ value: o.value, label: o.label, description: o.description })),
-      ];
-      title = `\uD83D\uDCCB I detected your request as: "${detectedLabel}"\n\nIf that\u2019s correct, confirm below. The workflow adjusts which stages run based on the type.`;
-    } else {
-      // Can't classify clearly — show all options equally
-      options = categoryOptions.map(o => ({ value: o.value, label: o.label, description: o.description }));
-      title = `\uD83D\uDCCB Couldn\u2019t clearly detect the type. Pick what best describes your request:`;
-    }
-
-    // Cancel is always last
-    options.push({
-      value: "__cancel__",
-      label: "Cancel",
-      description: "Don\u2019t create a workflow",
-    });
-
-    const choice = await adapter.select(options, title);
-
-    if (choice === "__cancel__" || choice === null) {
-      ctx.ui?.notify("Canceled. No workflow created.", "info");
-      return;
-    }
-
-    selectedIntent = choice as WorkflowIntent;
-    initialPhase = INTENT_PHASE[selectedIntent] ?? 2;
-
-    // Re-evaluate name if intent changed what matters for stage selection
-    if (selectedIntent !== detectedIntent) {
-      ctx.ui?.notify(`\uD83D\uDC4D Using "${selectedIntent}" instead. Workflow will start at ${PHASE_NAMES[initialPhase]}.`, "info");
-    }
-  }
+  // 5. Intent is deferred to the skill (LLM). The activation message tells
+  //     the skill to classify the brief during setup. Always start at Setup.
+  const selectedIntent: WorkflowIntent = "unknown";
+  const initialPhase = 2; // Setup
 
   // 6. Initialize tracking
   let tracking = readTracking(wd);

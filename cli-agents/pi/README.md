@@ -22,7 +22,6 @@ The install script:
 | Command | Description |
 |---------|-------------|
 | `/sw-start` | Start a new workflow |
-| `/sw-menu` | Show workflow menu |
 | `/sw-status` | Show current status |
 | `/sw-help` | Get help |
 

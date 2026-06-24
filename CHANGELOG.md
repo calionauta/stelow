@@ -2,6 +2,78 @@
 
 All notable changes to `@renatocaliari/stelow` will be documented in this file.
 
+## [0.36.0] - 2026-06-24
+
+### Added
+
+- **🛡️ Quality Floor — appetite governs scope, never quality.** New
+  explicit invariant in `stages/verification.md` and propagated to
+  all 24 `codequality-review.md` skill copies. The Quality Floor
+  lists which verification gates always run regardless of declared
+  appetite (test-suite, code-quality-gate, invisible-20%, static a11y
+  when UI exists, Quick-Tier interactive-testing, code review). Appetite
+  controls **depth** (how thoroughly), not **whether** these run.
+- **Anti-regression test suite** in `tests/appetite-consistency.test.ts`
+  (17 new tests across 7 files). Blocks any future commit that
+  re-introduces an appetite table with `Skip` for a quality column.
+  Preserves legitimate scope skips via explicit allowlist (no UI,
+  greenfield, context-stage, etc.).
+
+### Changed
+
+- **`stages/verification.md` — appetite gate table inverted.** Three
+  rows previously allowed Lean/Core to skip quality gates; they now
+  show the floor (light/single/static/quick-tier) and Complete
+  adds depth (parallel/Nuclear/live-site/full browser). Rationale
+  documented per row.
+- **`cali-product-shape-up` SKILL.md (shape:12):** Tech Preview
+  brownfield now always runs minimum `cymbal structure`; appetite
+  adds refs/impact depth.
+- **`cali-product-tech-planning` SKILL.md (planning:10.5):**
+  Codebase Recon floor is always `cymbal search --text`; appetite
+  adds refs/impact depth.
+- **`cali-product-codebase-critique` SKILL.md:** Lean row no longer
+  skips; it runs a single reviewer with a basic checklist. Header
+  clarifies "Lean → light".
+- **`cali-product-ux-critique` SKILL.md:** Header clarifies
+  "Lean → static a11y baseline" (matrix table was already correct).
+
+### Removed
+
+- **`extensions/stelow/modules/cache.ts`** — whole file. `CacheManager`
+  and `MapCache` had no runtime callers and no test coverage.
+- **`readAllEvents`** from `modules/event-logger.ts` — no callers.
+- **`createFreshCheckpoint`** from `modules/checkpoint.ts` — no callers.
+- **`formatTask`, `formatTaskList`** from `modules/task.ts` — no callers.
+- **`TextFileStore`, `MarkdownFileStore`, `ensureDir`, `IFileStore`**
+  from `modules/file-store.ts` — no callers. `JsonFileStore` preserved
+  because `checkpoint.ts` uses it at runtime
+  (`getCheckpointStore` in `index.ts:422`).
+- **`tests/unit/modules-file-store.test.ts`** — coverage of removed code.
+
+### Fixed
+
+- **`tests/integration/commands.test.ts`** — six assertions expected
+  17 command files; dispatcher registers 16 (the 17th was removed in
+  a prior change). Updated to match `npm run generate-cli-commands`
+  output.
+
+### Research basis
+
+- **Estimation Bias Correction** (shape-up SKILL § Estimation Bias):
+  LLMs systematically overestimate implementation time and tend to
+  cut quality out of fear of complexity. The Quality Floor is the
+  architectural countermeasure.
+- **proposal-structure.md:** "Quality gates such as build/test/lint/
+  typecheck and a11y checks when UI exists are not appetite cuts."
+- **cali-product-testing-ai-code SKILL.md:** "Quality baseline applies
+  to every appetite... Appetite changes exploration breadth, not
+  whether quality gates exist."
+
+The Quality Floor rule aligns the verification behavior with what
+shape-up, tech-planning, and testing-ai-code already documented as
+the intent — the verification stage was the outlier.
+
 ## [0.35.0] - 2026-06-23
 
 ### Added

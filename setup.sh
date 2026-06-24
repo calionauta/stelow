@@ -612,8 +612,44 @@ install_herdr_plugin() {
     return
   fi
 
+  # Find the herdr plugins directory
+  local plugin_dir
+  plugin_dir=$(find ~/.config/herdr/plugins -type d -name "stelow-board" -path "*/integrations/herdr/*" 2>/dev/null | head -1)
+
   if herdr plugin install renatocaliari/stelow-board; then
-    record_ok "herdr stelow-board"
+    # Discover plugin dir after install. herdr stores it at:
+    #   ~/.config/herdr/plugins/github/stelow.board-<hash>/integrations/herdr/stelow-board/
+    # The hash suffix changes per install, so we glob for the directory.
+    local plugin_dir
+    plugin_dir=$(find ~/.config/herdr/plugins -type d \
+      \( -name "stelow-board" -path "*/integrations/herdr/*" -o \
+         -name "stelow-board" -path "*/stelow-board*" \) 2>/dev/null \
+      | head -1)
+
+    if [[ -n "$plugin_dir" ]] && [[ -f "$plugin_dir/Cargo.toml" ]]; then
+      log_info "Building stelow-board binary (cargo build --release)..."
+      if command -v cargo &>/dev/null; then
+        (cd "$plugin_dir" && cargo build --release 2>&1) && {
+          if [[ -x "$plugin_dir/target/release/stelow-board" ]]; then
+            log_success "stelow-board binary built at $plugin_dir/target/release/stelow-board"
+            record_ok "herdr stelow-board (built)"
+          else
+            log_warn "Build succeeded but binary not found at target/release/stelow-board"
+            record_fail "herdr stelow-board (binary missing after build)"
+          fi
+        } || {
+          log_warn "cargo build --release failed. See above for details."
+          record_fail "herdr stelow-board (build failed)"
+        }
+      else
+        log_warn "Rust/Cargo not found. Install from https://rustup.rs/ then run: cd '$plugin_dir' && cargo build --release"
+        record_fail "herdr stelow-board (no cargo)"
+      fi
+    else
+      # Plugin dir not found — install still succeeded but we can't find the source
+      record_ok "herdr stelow-board"
+      log_info "Plugin installed. To build the binary: find the plugin directory and run 'cargo build --release'"
+    fi
   else
     log_warn "stelow-board plugin install failed. See https://herdr.dev/docs/plugins/ for troubleshooting."
     record_fail "herdr stelow-board (plugin install failed)"
@@ -685,7 +721,7 @@ print_summary() {
   echo ""
   echo "  ${BOLD}Useful commands:${RESET}"
   echo ""
-  echo "       /sw-menu          Show workflow status"
+  echo "       /sw-status          Show workflow status"
   echo "       /sw-start         Begin product planning"
   echo "       /skills           List all installed skills"
   echo "       alt+1-5           Toggle skill quick-access"
