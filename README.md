@@ -533,7 +533,7 @@ The panel shows:
 - Upcoming tasks
 - Quick actions
 
-**Install:** Muxy.app (macOS-only) + the stelow-board Muxy extension at `integrations/muxy/stelow-board/`. Install via Muxy's plugin system.
+**Install:** Muxy.app (macOS-only) + the stelow-board Muxy extension at `integrations/muxy/stelow-board/`. To load the extension in Muxy: open **Extensions modal → Create**, pick the folder, and Muxy auto-detects the built `dist/`. See [Muxy's Get started guide](https://muxy.app/docs/extensions/get-started) for the official workflow.
 
 ### Herdr Split-Pane TUI
 
@@ -548,7 +548,7 @@ The TUI shows:
 
 **Keybinds:** `prefix+w` toggle · `j/k` move · `Enter`/`l` drill in · `h`/`Esc` back · `space` toggle status · `r` refresh · `q` quit.
 
-**Install:** `herdr plugin install renatocaliari/stelow-board` (or `herdr plugin link integrations/herdr/stelow-board/` for local dev after `cargo build --release`). Source under `integrations/herdr/stelow-board/`.
+**Install:** `herdr plugin install renatocaliari/stelow-board` (or `herdr plugin link integrations/herdr/stelow-board/` for local dev after `cargo build --release`). Source under `integrations/herdr/stelow-board/`. See [herdr's plugin docs](https://herdr.dev/docs/plugins/) for the official install/link workflow.
 
 ---
 

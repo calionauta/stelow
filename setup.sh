@@ -137,7 +137,7 @@ done
 # ─── Prerequisites Check ────────────────────────────────────────────────────
 
 check_prereqs() {
-  log_step "Step 1/5: Checking Prerequisites"
+  log_step "Step 1/10: Checking Prerequisites"
 
   # Check macOS/Linux
   if [[ "$(uname)" != "Darwin" && "$(uname)" != "Linux" ]]; then
@@ -185,7 +185,7 @@ check_prereqs() {
 # ─── Node.js ─────────────────────────────────────────────────────────────────
 
 check_node() {
-  log_step "Step 2/5: Checking Node.js"
+  log_step "Step 2/10: Checking Node.js"
 
   if [[ "$SKIP_NODE" == "true" ]]; then
     log_warn "Skipping Node.js check (--skip-node)"
@@ -240,7 +240,7 @@ check_node() {
 # ─── Pi.dev ──────────────────────────────────────────────────────────────────
 
 install_pi() {
-  log_step "Step 3/5: Installing pi.dev"
+  log_step "Step 3/10: Installing pi.dev"
 
   if command -v pi &>/dev/null; then
     local current_version
@@ -274,7 +274,7 @@ install_pi() {
 # ─── Pi Extensions ───────────────────────────────────────────────────────────
 
 install_extensions() {
-  log_step "Step 4/5: Installing Pi Extensions"
+  log_step "Step 4/10: Installing Pi Extensions"
 
   local installed=0
   local failed=0
@@ -312,7 +312,7 @@ install_extensions() {
 # ─── Skills ──────────────────────────────────────────────────────────────────
 
 install_skills() {
-  log_step "Step 5/5: Installing stelow Skills (25 skills)"
+  log_step "Step 5/10: Installing stelow Skills (25 skills)"
 
   local skills_dir="$HOME/.agents/skills"
   if [[ "$DRY_RUN" == "false" ]]; then
@@ -474,83 +474,167 @@ SETTINGS_EOF
 
 # ─── Optional External Tools ──────────────────────────────────────────────────
 
+# Counters for the final summary
+SUMMARY_OK=()
+SUMMARY_FAIL=()
+SUMMARY_SKIP=()
+
+record_ok()   { SUMMARY_OK+=("$1"); }
+record_fail() { SUMMARY_FAIL+=("$1"); }
+record_skip() { SUMMARY_SKIP+=("$1"); }
+
+confirm_optional() {
+  # Returns 0 (yes/install) or 1 (no/skip). Skips in non-interactive mode.
+  local label="$1"
+  if [[ "$DRY_RUN" == "true" ]]; then return 1; fi
+  if [[ "$ASSUME_YES" == "1" ]]; then return 0; fi
+  if [[ ! -t 0 ]]; then return 1; fi  # no TTY = skip
+  read -p "  Install $label? [Y/n] " -n 1 -r
+  echo ""
+  [[ ! $REPLY =~ ^[Nn]$ ]]
+}
+
 install_cymbal() {
+  log_step "Step 6/10: cymbal (codebase navigation)"
   if [[ "$DRY_RUN" == "true" ]]; then
     log_info "[dry-run] Would install cymbal via brew/go"
+    record_skip "cymbal"
     return
   fi
   if command -v cymbal &>/dev/null; then
     log_success "cymbal already installed."
+    record_ok "cymbal"
     return
   fi
 
-  log_info "Installing cymbal (codebase navigation)..."
+  if ! confirm_optional "cymbal"; then
+    log_info "cymbal skipped. Workflow will fall back to find + git log."
+    record_skip "cymbal"
+    return
+  fi
+
   if [[ "$(uname -s)" == "Darwin" ]] && command -v brew &>/dev/null; then
-    brew install 1broseidon/tap/cymbal || log_warn "cymbal brew install failed — will fall back to find/git log"
+    if brew install 1broseidon/tap/cymbal; then
+      record_ok "cymbal"
+    else
+      log_warn "cymbal brew install failed — workflow will fall back to find + git log."
+      record_fail "cymbal (brew install failed)"
+    fi
   elif command -v go &>/dev/null; then
-    go install github.com/1broseidon/cymbal@latest || log_warn "cymbal go install failed — will fall back to find/git log"
+    if go install github.com/1broseidon/cymbal@latest; then
+      record_ok "cymbal"
+    else
+      log_warn "cymbal go install failed — workflow will fall back to find + git log."
+      record_fail "cymbal (go install failed)"
+    fi
   else
-    log_warn "cymbal requires brew (macOS) or Go installed. Skipping — workflow will fall back to find + git log."
+    log_warn "cymbal requires brew (macOS) or Go installed. See https://github.com/1broseidon/cymbal for manual install."
+    record_fail "cymbal (no brew/Go on PATH)"
   fi
 }
 
 install_ctx7() {
+  log_step "Step 7/10: ctx7 (library docs fetcher)"
   if [[ "$DRY_RUN" == "true" ]]; then
-    log_info "[dry-run] Would install ctx7 (requires OAuth)"
+    log_info "[dry-run] Would install ctx7 (requires interactive OAuth)"
+    record_skip "ctx7"
     return
   fi
   if command -v ctx7 &>/dev/null; then
     log_success "ctx7 already installed."
+    record_ok "ctx7"
     return
   fi
 
-  log_info "Installing ctx7 (library docs fetcher)..."
-  log_warn "ctx7 requires interactive OAuth setup. Running 'npx ctx7 setup' — follow the prompts."
-  if command -v npx &>/dev/null; then
-    npx ctx7 setup || log_warn "ctx7 setup incomplete or cancelled — workflow will skip live docs."
-  else
+  if ! confirm_optional "ctx7 (requires interactive OAuth setup)"; then
+    log_info "ctx7 skipped. Workflow will skip live library docs."
+    record_skip "ctx7"
+    return
+  fi
+
+  if ! command -v npx &>/dev/null; then
     log_warn "npx not available — install Node.js first, then run 'npx ctx7 setup' manually."
+    record_fail "ctx7 (no npx)"
+    return
+  fi
+
+  log_info "Running 'npx ctx7 setup' — follow the OAuth prompts."
+  if npx ctx7 setup; then
+    record_ok "ctx7"
+  else
+    log_warn "ctx7 setup failed or cancelled. See https://github.com/upstash/context7 for manual install."
+    record_fail "ctx7 (setup failed or cancelled)"
   fi
 }
 
 install_safe_change() {
+  log_step "Step 8/10: safe-change (pre-planning regression check)"
   if [[ "$DRY_RUN" == "true" ]]; then
     log_info "[dry-run] Would install safe-change via npx skills"
+    record_skip "safe-change"
     return
   fi
-  log_info "Installing safe-change (pre-planning regression check)..."
-  if command -v npx &>/dev/null; then
-    npx skills add Prinova/pi-agent-codebase-workflows -g 2>&1 | tail -5 || log_warn "safe-change install failed — pre-execution check will be skipped."
+  if ! command -v npx &>/dev/null; then
+    log_info "npx not available — skipping safe-change."
+    record_skip "safe-change (no npx)"
+    return
+  fi
+
+  if ! confirm_optional "safe-change"; then
+    record_skip "safe-change"
+    return
+  fi
+
+  if npx skills add PrinNova/pi-agent-codebase-workflows -g 2>&1 | tail -5; then
+    record_ok "safe-change"
   else
-    log_warn "npx not available — install Node.js first, then run 'npx skills add PrinNova/pi-agent-codebase-workflows -g' manually."
+    log_warn "safe-change install failed. See https://github.com/PriNova/pi-agent-codebase-workflows for manual install."
+    record_fail "safe-change (npx install failed)"
   fi
 }
 
 install_herdr_plugin() {
+  log_step "Step 9/10: Herdr stelow-board plugin (split-pane TUI)"
   if [[ "$DRY_RUN" == "true" ]]; then
     log_info "[dry-run] Would install herdr plugin if herdr CLI detected"
+    record_skip "herdr stelow-board"
     return
   fi
   if ! command -v herdr &>/dev/null; then
     log_info "herdr CLI not detected — skipping stelow-board plugin install."
     log_info "Install herdr from https://herdr.dev/, then run: herdr plugin install renatocaliari/stelow-board"
+    record_skip "herdr stelow-board (no herdr CLI)"
     return
   fi
 
-  log_info "herdr detected. Installing stelow-board split-pane TUI plugin..."
-  herdr plugin install renatocaliari/stelow-board || log_warn "stelow-board plugin install failed — run 'herdr plugin install renatocaliari/stelow-board' manually."
+  if ! confirm_optional "herdr stelow-board plugin"; then
+    record_skip "herdr stelow-board"
+    return
+  fi
+
+  if herdr plugin install renatocaliari/stelow-board; then
+    record_ok "herdr stelow-board"
+  else
+    log_warn "stelow-board plugin install failed. See https://herdr.dev/docs/plugins/ for troubleshooting."
+    record_fail "herdr stelow-board (plugin install failed)"
+  fi
 }
 
 detect_muxy() {
+  log_step "Step 10/10: Muxy.app detection (cannot auto-install — paid macOS app)"
   if [[ "$DRY_RUN" == "true" ]]; then
     log_info "[dry-run] Would detect Muxy.app"
+    record_skip "Muxy.app"
     return
   fi
   if [[ -d "/Applications/Muxy.app" ]] || command -v muxy &>/dev/null; then
-    log_success "Muxy.app detected — load stelow-board extension from integrations/muxy/stelow-board/."
+    log_success "Muxy.app detected."
+    log_info "To load the stelow-board extension: Muxy → Extensions modal → Create, pick integrations/muxy/stelow-board/."
+    log_info "See https://muxy.app/docs/extensions/get-started for details."
+    record_ok "Muxy.app"
   else
-    log_info "Muxy.app not detected (optional)."
-    log_info "Install from https://muxy.app/ if you want the webview panel for workflow state."
+    log_info "Muxy.app not detected (optional). Install from https://muxy.app/ if you want the webview panel."
+    record_skip "Muxy.app (not installed)"
   fi
 }
 
@@ -562,7 +646,7 @@ print_summary() {
   echo "${GREEN}${BOLD}  🎉 Setup Complete!${RESET}"
   echo "${GREEN}${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
   echo ""
-  echo "  ${BOLD}What was installed:${RESET}"
+  echo "  ${BOLD}Core stack:${RESET}"
   echo ""
   echo "  ${CYAN}Node.js${RESET}       $(node --version 2>/dev/null || echo 'not found')"
   echo "  ${CYAN}pi.dev${RESET}        $(pi --version 2>/dev/null || echo 'not found')"
@@ -570,6 +654,22 @@ print_summary() {
   echo "  ${CYAN}Skills${RESET}        25 product workflow skills"
   echo "  ${CYAN}Settings${RESET}      Optimized configuration"
   echo ""
+
+  if [[ ${#SUMMARY_OK[@]} -gt 0 || ${#SUMMARY_FAIL[@]} -gt 0 || ${#SUMMARY_SKIP[@]} -gt 0 ]]; then
+    echo "  ${BOLD}Optional tools:${RESET}"
+    echo ""
+    for item in "${SUMMARY_OK[@]}"; do
+      echo "  ${GREEN}✅${RESET} ${item}"
+    done
+    for item in "${SUMMARY_FAIL[@]}"; do
+      echo "  ${RED}❌${RESET} ${item}"
+    done
+    for item in "${SUMMARY_SKIP[@]}"; do
+      echo "  ${YELLOW}⏭ ${RESET} ${item}"
+    done
+    echo ""
+  fi
+
   echo "  ${BOLD}What's next:${RESET}"
   echo ""
   echo "  1. ${BOLD}Start pi:${RESET}"
