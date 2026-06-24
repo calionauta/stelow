@@ -168,19 +168,19 @@ function getGlobalTrackingPath(): string {
  * incorrectly resolve to a parent directory (e.g. ~/Development/) that
  * happens to have tracking files from a completely different project.
  */
-export function resolveProjectDir(cwd: string): string {
-  // Exact cwd match first
-  if (existsSync(join(cwd, WORKFLOW_DIR)) || existsSync(join(cwd, TRACKING_FILE))) {
-    return cwd;
-  }
-  // One level up (handles git repos where user is inside src/ but tracking is at root)
-  const parent = dirname(cwd);
-  if (parent !== "/" && (existsSync(join(parent, WORKFLOW_DIR)) || existsSync(join(parent, TRACKING_FILE)))) {
-    return parent;
-  }
-  // Nothing found — create fresh tracking in cwd
-  return cwd;
-}
+// ── Re-export for backward compatibility ──
+//
+// `resolveProjectDir` is the historical name. The canonical implementation
+// lives in `workflow-root.ts` (single source of truth across the extension,
+// muxy panel, and herdr Rust plugin). This file re-exports it under both
+// names so callers don't need to change.
+//
+// Bug fix (v0.36.2): the old in-line implementation climbed up to ANY
+// parent that had .stelow/ — this caused the user-reported issue where
+// /sw-start in /Users/cali/Development/PROJECT-X (no .stelow) was
+// blocked by an active workflow in /Users/cali/Development. The new
+// implementation only climbs up to the git toplevel of the cwd.
+export { findProjectWorkflowRoot, resolveProjectDir } from "./workflow-root";
 
 // ── Read / Write ─────────────────────────────────────────────────────
 

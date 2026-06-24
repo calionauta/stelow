@@ -30,6 +30,7 @@ import {
   runWorkflowCommand,
   readArtifactFile,
   loadExtraWorkflows,
+  getActiveWorkspacePath,
   PHASE_TO_ARTIFACT_DIR,
   ARTIFACT_DIR_ICONS,
   ARTIFACT_DIR_LABELS,
@@ -52,6 +53,7 @@ export class PipelinePanel {
     this.inboxOpen = true;
     this.inboxEditIdx = -1;
     this.filterText = '';
+    this.projectPath = null;  // set on first refresh; used to scope getActiveWorkflow
     this.pollTimer = null;
     this.refreshing = false;
     this.previewFile = null;
@@ -103,6 +105,10 @@ export class PipelinePanel {
         loadProjectName(),
         loadExtraWorkflows(),
       ]);
+      // Cache the current projectPath so getActiveWorkflow can scope to it.
+      // getActiveWorkspacePath() is the same source loadTrackingData uses,
+      // so we get the exact same value (avoids drift between filter and lookup).
+      this.projectPath = await getActiveWorkspacePath().catch(() => null);
       this.projectName = projectName;
       this.workflows = [...(tracking?.workflows ?? []), ...extra];
       this.syncSelectedWorkflowWithLatest();
@@ -286,7 +292,7 @@ export class PipelinePanel {
   }
 
   renderWorkflowCommandButtons(selectedWorkflow = null, buttonClass = 'command-btn') {
-    const activeWorkflow = getActiveWorkflow(this.workflows);
+    const activeWorkflow = getActiveWorkflow(this.workflows, this.projectPath);
     const icons = {
       '/sw-next': 'refresh',
       '/sw-abort': 'x',

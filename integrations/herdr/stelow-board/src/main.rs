@@ -313,6 +313,69 @@ fn project_root(ctx: &PluginContext) -> PathBuf {
     env::var("HERDR_PLUGIN_ROOT").map(PathBuf::from).unwrap_or_else(|_| PathBuf::from("."))
 }
 
+// ── project_workflow_root: MIRROR of extensions/stelow/workflow-root.ts ──
+//
+// Finds the project root that owns the workflow state for `cwd`. Used to
+// validate that herdr's `workspace_cwd` is the actual project root, not a
+// subdir that should be resolved.
+//
+// Algorithm (must match the TS implementation):
+//   1. cwd has its own tracking (`.stelow/` or `stelow.json`) → it IS the project.
+//   2. Walk up to git toplevel of cwd — if a parent has tracking, use it.
+//   3. cwd as fallback.
+//
+// Why step 2 needs git: the previous logic climbed up to ANY parent that had
+// tracking, falsely attributing a sibling project's workflow state to the
+// current cwd. The git-toplevel check ensures we only climb when the parent
+// is the git ancestor of cwd (the original intent: "user is in src/ of a
+// repo, tracking at repo root").
+//
+// Today this is unused (project_root returns ctx.workspace_cwd directly,
+// which is what herdr runtime hands us). Kept for parity with the extension
+// and as documentation of the contract.
+//
+// If you change this function, also update extensions/stelow/workflow-root.ts.
+#[allow(dead_code)] // Reserved for parity with the TS implementation; not yet wired into project_root().
+fn project_workflow_root(cwd: &Path) -> PathBuf {
+    if has_tracking(cwd) {
+        return cwd.to_path_buf();
+    }
+    if let Some(git_root) = git_toplevel(cwd) {
+        if git_root != cwd && has_tracking(&git_root) {
+            return git_root;
+        }
+    }
+    cwd.to_path_buf()
+}
+
+/// Does `dir` contain workflow tracking files?
+#[allow(dead_code)]
+fn has_tracking(dir: &Path) -> bool {
+    dir.join(".stelow").is_dir() || dir.join("stelow.json").is_file()
+}
+
+/// Run `git rev-parse --show-toplevel` to find the git repo root.
+/// Returns None if cwd is not inside a git repo or git isn't available.
+#[allow(dead_code)]
+fn git_toplevel(cwd: &Path) -> Option<PathBuf> {
+    use std::process::Command;
+    let output = Command::new("git")
+        .arg("rev-parse")
+        .arg("--show-toplevel")
+        .current_dir(cwd)
+        .output()
+        .ok()?;
+    if !output.status.success() {
+        return None;
+    }
+    let s = String::from_utf8(output.stdout).ok()?;
+    let trimmed = s.trim();
+    if trimmed.is_empty() {
+        return None;
+    }
+    Some(PathBuf::from(trimmed))
+}
+
 // ── App ─────────────────────────────────────────────────────────────
 
 struct App {

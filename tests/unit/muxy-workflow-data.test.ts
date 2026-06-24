@@ -80,10 +80,38 @@ describe('Muxy workflow data normalization', () => {
   });
 
   it('finds active workflow only when cwd is not stale', () => {
+    const cwd = '/Users/cali/Development/project';
     expect(getActiveWorkflow([
-      { ...wf('stale', 2), staleCwd: true },
-      { ...wf('active', 2), staleCwd: false },
-    ])?.name).toBe('active');
+      { ...wf('stale', 2), staleCwd: true, cwd },
+      { ...wf('active', 2), staleCwd: false, cwd },
+    ], cwd)?.name).toBe('active');
+  });
+
+  it('returns null when no workflow matches the current projectPath', () => {
+    // Bug regression: panel used to return workflows from other worktrees
+    // because getActiveWorkflow didn't filter by projectPath. Now it does.
+    expect(getActiveWorkflow([
+      { ...wf('foreign-active', 2), cwd: '/Users/cali/Development/other-project' },
+    ], '/Users/cali/Development/my-project')).toBeNull();
+  });
+
+  it('returns null when projectPath is missing', () => {
+    // Defensive: panel must not pick a workflow when it doesn't know the
+    // current worktree. Otherwise we get the old "active in another
+    // directory" bug back.
+    expect(getActiveWorkflow([
+      { ...wf('active', 2), cwd: '/Users/cali/Development/project' },
+    ], null)).toBeNull();
+  });
+
+  it('returns the legacy cwd-empty workflow as compatible with any projectPath', () => {
+    // Legacy workflows created before cwd tracking was added have no cwd.
+    // They should be accepted as belonging to the current projectPath,
+    // same convention used by the stelow extension (isWorkflowFromProject).
+    const cwd = '/Users/cali/Development/project';
+    const legacy = wf('legacy', 2);
+    delete legacy.cwd;
+    expect(getActiveWorkflow([legacy], cwd)?.name).toBe('legacy');
   });
 });
 

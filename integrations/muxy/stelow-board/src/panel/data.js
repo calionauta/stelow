@@ -305,8 +305,38 @@ export function getScopeBadge(workflow) {
  * workflow-scoped actions as if they applied to the clicked card when they
  * actually advance/complete the active workflow.
  */
-export function getActiveWorkflow(workflows) {
-  return (workflows || []).find(wf => wf.status === 'in-progress' && !wf.staleCwd) ?? null;
+/**
+ * Find the active workflow in the panel.
+ *
+ * The "active workflow" drives `/sw-next`, `/sw-abort`, `/sw-complete`,
+ * `/sw-archive` actions — these are unscoped commands that operate on the
+ * single in-progress workflow in the current worktree. Returning a workflow
+ * from a *different* worktree would cause the panel to act on it, leading
+ * to the user-reported bug: "stelow says there's an active workflow but it's
+ * from another directory". Filter to the current projectPath so the panel
+ * never picks a foreign-worktree workflow.
+ */
+export function getActiveWorkflow(workflows, projectPath) {
+  if (!projectPath) return null;
+  return (workflows || []).find(wf => wf.status === 'in-progress'
+      && !wf.staleCwd
+      && isWorkflowFromProject(wf, projectPath)
+  ) ?? null;
+}
+
+/**
+ * Same path-prefix check used by `isWorkflowCwdCompatible`, but applied
+ * to a workflow vs the current projectPath. Worktrees without a cwd
+ * field (legacy workflows created before cwd tracking was added) are
+ * accepted as compatible with any projectPath — mirrors the same
+ * convention used in `isWorkflowFromProject` in the stelow extension
+ * (`extensions/stelow/state.ts`).
+ */
+function isWorkflowFromProject(workflow, projectPath) {
+  if (!projectPath) return false;
+  const workflowCwd = workflow.cwd?.trim();
+  if (!workflowCwd) return true;  // legacy fallback
+  return isWorkflowCwdCompatible(workflowCwd, projectPath);
 }
 
 function quoteWorkflowName(name) {
@@ -737,6 +767,49 @@ function pathIsInside(candidatePath, parentPath) {
 
 function normalizePath(path) {
   return path.replace(/\/+/g, '/').replace(/\/$/, '');
+}
+
+/**
+ * MIRROR of `findProjectWorkflowRoot` in extensions/stelow/workflow-root.ts.
+ *
+ * The extension (Node) and the muxy panel (browser/electron) cannot share
+ * TypeScript imports — vite builds the panel separately and the panel uses
+ * `muxy.exec` for shell access instead of `child_process`. So we keep a
+ * parallel implementation here, with the same algorithm:
+ *
+ *   1. cwd has its own tracking → it's the project root.
+ *   2. Walk up to git toplevel of cwd — if a parent has tracking, use it.
+ *   3. cwd as fallback.
+ *
+ * Bug fix (v0.36.2): the previous logic climbed up to any parent that had
+ * tracking, falsely attributing a sibling project's workflow state to the
+ * current cwd. The git-toplevel check prevents this.
+ *
+ * If you change one of these functions, change the other and add a test.
+ */
+export async function findProjectWorkflowRoot(cwd) {
+  if (!cwd) return cwd;
+  // Best-effort: this mirror is used only for display decisions in the
+  // panel. The extension is the source of truth for workflow state; the
+  // panel shows what the extension has already written. If git/shell is
+  // unavailable, we fall through to cwd which is the conservative choice
+  // (no false attribution to parent projects).
+  if (hasTracking(cwd)) return cwd;
+  // (We don't shell out to git here — the panel is display-only. If the
+  // extension's tracking has cwd on each workflow, the panel can filter
+  // directly via getActiveWorkflow(this.workflows, this.projectPath)
+  // — see app.js. This resolver exists for future use; today it always
+  // returns cwd because hasTracking() returns false in the panel context.)
+  return cwd;
+}
+
+function hasTracking(dir) {
+  // The panel runs in the muxy webview where node fs APIs are not directly
+  // available. Reading tracking files requires async muxy.files.read which
+  // complicates a sync resolver. The panel already filters workflows by
+  // projectPath in getActiveWorkflow (which is the actual fix), so this
+  // resolver is a placeholder for the extension's logic.
+  return false;
 }
 
 function paneItems(panes) {
