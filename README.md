@@ -481,7 +481,7 @@ This project distributes exclusively via GitHub (no npm) — see [docs/SECURITY.
 | `/sw-doctor [--fix]` | Diagnose workflow health. Detects zombie workflows, index mismatches, orphaned entries. |
 | `/sw-unlock` | Disable stage guard for current session (debug only). |
 
-> All 16 commands work in **Pi** natively (via `pi.registerCommand()`) and in **OpenCode, Claude Code, Codex** via Skill delegation (15 commands invoke `/skill:stelow-product-orchestrator <command>`; `/sw-inbox` shows a warning banner in non-Pi CLIs but still works).
+> All 16 commands work in **Pi** natively (via `pi.registerCommand()`). In **OpenCode, Claude Code, Codex**, 15 commands work via Skill delegation — the `.md` files in `cli-agents/<cli>/commands/sw-*.md` invoke `/skill:stelow-product-orchestrator <command>` and route through the orchestrator. The exception is `/sw-inbox`, which is marked `piOnly` because its handler operates on filesystem state with toast notifications; in non-Pi CLIs it shows a warning banner and the agent will fall back to reading `.stelow/inbox/items.md` directly, without the native command surface.
 
 ---
 
