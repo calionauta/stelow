@@ -8,7 +8,8 @@
 [![Coverage](https://img.shields.io/badge/coverage-70%25-brightgreen)](https://github.com/renatocaliari/stelow/actions/workflows/ci.yml)
 [![Version](https://img.shields.io/github/v/release/renatocaliari/stelow?logo=github&label=release)](https://github.com/renatocaliari/stelow/releases)
 [![Pi](https://img.shields.io/badge/Deep%20integration-Pi-8B5CF6)](https://pi.dev)
-[![Muxy](https://img.shields.io/badge/Visual%20panel-Muxy.app-10B981)](https://muxy.app)
+[![Muxy](https://img.shields.io/badge/Webview%20panel-Muxy.app-10B981)](https://muxy.app)
+[![Herdr](https://img.shields.io/badge/Split%20pane%20TUI-Herdr-EA580C)](https://herdr.dev)
 [![CLI](https://img.shields.io/badge/Works%20on-Any%20CLI-3B82F6)](https://github.com/renatocaliari/stelow#cli-compatibility)
 
 **Transform product ideas into approved, testable plans - systematically.**
@@ -368,11 +369,11 @@ Not every feature works on every CLI. Here's what to expect:
 |---------|--------|----------|-------------|-------|
 | **Skills (all 25)** | ✅ | ✅ | ✅ | ✅ |
 | **`/sw-start`, `/sw-menu` commands** | ✅ Slash commands | ✅ Via `sw-*.md` files | ✅ Via command files | ✅ Via command files |
-| **TUI overlay (real-time status)** | ✅ Native | ❌ | ❌ | ❌ |
+| **TUI overlay (real-time status)** | ✅ Native extension | ❌ | ❌ | ❌ |
 | **Plannotator visual gate** | ✅ Extension | ⚠️ Manual | ⚠️ Manual | ⚠️ Manual |
 | **Deep hooks (events, gates)** | ✅ Extension | ❌ | ❌ | ❌ |
 
-> **Bottom line:** The **25 skills work identically on every CLI** - they run the full Shape Up workflow, generate plans, critique, scopes, everything. The deep integration features (real-time TUI overlay, slash commands, lifecycle hooks, Plannotator gate) are native to pi.dev, which has the extension system to support them. The [Muxy.app](https://muxy.app/) visual panel (macOS terminal multiplexer) provides a dedicated surface for workflow state. All CLIs can still complete the workflow; on non-Pi CLIs it happens via chat and command files rather than extensions.
+> **Bottom line:** The **25 skills work identically on every CLI** - they run the full Shape Up workflow, generate plans, critique, scopes, everything. The deep integration features (real-time TUI overlay, slash commands, lifecycle hooks, Plannotator gate) are native to pi.dev, which has the extension system to support them. Two CLI-agnostic surfaces also read workflow state from `.stelow/` files on disk: the [Muxy.app](https://muxy.app/) webview panel (macOS terminal multiplexer) and the [Herdr](https://herdr.dev) split-pane TUI plugin (terminal multiplexer). Both work with any CLI. All CLIs can still complete the workflow; on non-Pi CLIs it happens via chat and command files rather than extensions.
 
 ---
 
@@ -390,6 +391,7 @@ stelow is designed to be **self-contained** — the 25 skills + installer cover 
 | [pi-intercom](https://github.com/nicobailon/pi-intercom) | Optional (Pi) | Session-to-session coordination | `npm:pi-intercom` (Pi npm) | Skip — no intercom capability |
 | [pi-supervisor](https://github.com/tintinweb/pi-supervisor) | Optional (Pi) | Conversation supervision during execution | `npm:pi-supervisor` (Pi npm) | Skip — no supervision |
 | [safe-change (pi-agent-codebase-workflows)](https://github.com/PriNova/pi-agent-codebase-workflows) | Optional | Pre-execution code safety checks | `npx skills add Prinova/pi-agent-codebase-workflows -g` | Skip — pre-execution check omitted |
+| [herdr](https://herdr.dev/) + `stelow-board` plugin | Optional | Split-pane TUI showing workflow state with click-to-drill | `herdr plugin install renatocaliari/stelow-board` | No TUI — read `.stelow/` files manually or use Muxy webview panel |
 
 **Design principle:** stelow is **harness-agnostic**. Zero external tools are required to run the full product workflow. Each optional integration enhances a specific phase but never blocks progress. The installer (`./install.sh`) auto-installs Pi npm packages when Pi is detected — other tools (cymbal, ctx7) remain user-managed.
 
@@ -473,20 +475,44 @@ This installs all 25 skills to `~/.agents/skills/` - works on any CLI.
 
 ---
 
-## 🖥️ Muxy.app Visual Panel
+## 🖥️ Visual & TUI Integrations
 
-> **Requires [Muxy.app](https://muxy.app/) + the stelow Muxy extension loaded.** Muxy is a **macOS terminal multiplexer** — think tmux with a native Mac UI: project-based terminal workspaces, tabs, splits, and custom panels. The visual panel is a Muxy plugin surface, not a web app or a Pi feature.
+Two CLI-agnostic surfaces read workflow state from `.stelow/` files on disk and present it alongside your terminal. Pick one or both — they share no code and don't require each other.
 
-The Muxy panel shows:
+| Surface | Host | UI model | Best for |
+|---|---|---|---|
+| **Muxy webview panel** | [Muxy.app](https://muxy.app/) (macOS terminal multiplexer) | `WKWebView` docked/floating panel with HTML/CSS/JS | Rich UI, mouse-first, macOS users |
+| **Herdr split-pane TUI** | [Herdr](https://herdr.dev) (terminal multiplexer) | Rust+ratatui TUI in split pane (`placement = "split"`) | Terminal-native, Linux/macOS, mouse + keyboard parity |
+
+Both plugins share the same workflow state (`.stelow/`), both work with any CLI (Pi, OpenCode, Claude Code, Codex), neither requires pi.dev.
+
+### Muxy Webview Panel
+
+> **Requires [Muxy.app](https://muxy.app/) + the stelow-board extension loaded.** Muxy is a **macOS terminal multiplexer** — think tmux with a native Mac UI: project-based terminal workspaces, tabs, splits, and custom panels. The webview panel is a Muxy plugin surface, not a web app or a Pi feature.
+
+The panel shows:
 
 - Current phase and progress
 - Phase artifacts and outputs
 - Upcoming tasks
 - Quick actions
 
-**Does NOT require pi.dev.** The Muxy extension reads workflow state from `.stelow/` files on disk, which any CLI writes. If you use Muxy + any CLI (Pi, OpenCode, Claude Code, Codex), the panel works.
+**Install:** Muxy.app (macOS-only) + the stelow-board Muxy extension at `integrations/muxy/stelow-board/`. Install via Muxy's plugin system.
 
-**Requires:** Muxy.app (macOS-only) + the stelow-board Muxy extension (`integrations/muxy/stelow-board/`). Install via Muxy's plugin system.
+### Herdr Split-Pane TUI
+
+> **Requires [Herdr](https://herdr.dev/) + the `stelow-board` plugin installed.** Herdr is a **terminal multiplexer** — tmux-style persistence, mouse-native panes, agent state tracking, CLI + socket API. The TUI plugin runs as a Rust binary in a split pane, the same model as `herdr-file-viewer`.
+
+The TUI shows:
+
+- Current stage (Discovery → Shape Up → Tech Planning → ...)
+- Per-stage status (✓ done, ▶ active, · pending, ! blocked)
+- Drill-down: stage → project → scope → task
+- Quick action invocation via `herdr plugin action invoke`
+
+**Keybinds:** `prefix+w` toggle · `j/k` move · `Enter`/`l` drill in · `h`/`Esc` back · `space` toggle status · `r` refresh · `q` quit.
+
+**Install:** `herdr plugin install renatocaliari/stelow-board` (or `herdr plugin link integrations/herdr/stelow-board/` for local dev after `cargo build --release`). Source under `integrations/herdr/stelow-board/`.
 
 ---
 
