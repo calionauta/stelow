@@ -48,7 +48,7 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 - [🚀 Quick Start](#-quick-start)
 - [📦 Installation](#-installation)
 - [🎮 Commands](#-commands)
-- [stelow Integration](#stelow-integration)
+- [Setup per CLI](#setup-per-cli)
 - [🖥️ Visual & TUI Integrations](#🖥️-visual--tui-integrations)
 - [📁 Artifact Directory](#-artifact-directory)
 - [📖 Evidence & Limitations](#-evidence--limitations)
@@ -447,6 +447,14 @@ This installs all 25 skills to `~/.agents/skills/` - works on any CLI.
 
 > For CLI-specific setup (OpenCode config, Claude Code plugin, Codex plugin), see [docs/INSTALLATION.md](docs/INSTALLATION.md).
 
+### Manual setup & dependencies
+
+For per-CLI commands, required npm packages, third-party skills, and updates, see [docs/INSTALLATION.md](docs/INSTALLATION.md).
+
+For toolchain dependencies (TypeScript, Vitest), see [package.json](package.json).
+
+This project distributes exclusively via GitHub (no npm) — see [docs/SECURITY.md](docs/SECURITY.md) for rationale.
+
 ---
 
 ## 🎮 Commands
@@ -464,18 +472,20 @@ This installs all 25 skills to `~/.agents/skills/` - works on any CLI.
 | `/sw-archive [name=]` | Archive completed or inactive workflow. |
 | `/sw-unarchive name=` | Restore archived workflow to paused state. |
 | `/sw-status` | Display current phase, progress, and scope status. |
-| `/sw-ls [all|archived]` | List workflows in current project (or all projects). |
+| `/sw-ls [all\|archived]` | List workflows in current project (or all projects). |
 | `/sw-setphase phase=N` | Jump to specific phase by index. |
 | `/sw-goto [name=]` | Show project directory for a workflow. |
 | `/sw-rename <name>` | Rename active workflow. |
 | `/sw-complete` | Force-complete active workflow. |
-| `/sw-inbox [add|remove|clear]` | View or manage deferred inbox items. |
+| `/sw-inbox [add\|remove\|clear]` | View or manage deferred inbox items. |
 | `/sw-doctor [--fix]` | Diagnose workflow health. Detects zombie workflows, index mismatches, orphaned entries. |
 | `/sw-unlock` | Disable stage guard for current session (debug only). |
 
+> All 16 commands work in **Pi** natively (via `pi.registerCommand()`) and in **OpenCode, Claude Code, Codex** via Skill delegation (15 commands invoke `/skill:stelow-product-orchestrator <command>`; `/sw-inbox` shows a warning banner in non-Pi CLIs but still works).
+
 ---
 
-## stelow Integration
+## Setup per CLI
 
 When working on software projects, trigger the product workflow:
 
@@ -602,10 +612,6 @@ Even with these guardrails, the AI agent still exhibits predictable failure mode
 > We don't claim to solve product planning. We claim to **structure the thinking** so you catch more before you code. The rest is still up to you.
 
 *Research sourced May 2026. All references are hyperlinked for verification.*
-
----
-
-<sub>**Dependencies & install details:** For per-CLI commands, required npm packages, third-party skills, and updates, see [docs/INSTALLATION.md](docs/INSTALLATION.md). For toolchain (TypeScript, Vitest), see [package.json](package.json). This project distributes exclusively via GitHub (no npm) — see [docs/SECURITY.md](docs/SECURITY.md) for rationale.</sub>
 
 ---
 
