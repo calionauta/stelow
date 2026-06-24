@@ -17,7 +17,7 @@ See [architecture.md](architecture.md) for module layout, data flow, and how to 
 |---|---|
 | `skills/` | Stelow skills consumed by pi coding agents (LLM-facing) |
 | `extensions/stelow/` | Pi runtime extension (in-process TS) — single extension, all `/sw-*` commands and hooks live here |
-| `integrations/<host>/<plugin>/` | Plugins for **external hosts** (Muxy, Herdr, etc.) — each host has its own incompatible extension model |
+| `integrations/<host>/<plugin>/` | Plugins for **external hosts** (Muxy, Herdr, etc.) — each host has its own incompatible extension model. Shipped via `package.json#files[]` and synced through `scripts/version-sync.mjs`. |
 | `docs/design/` | Design docs, plans, ADR (PT-BR discussion, EN artifacts) |
 | `stelow.schema.json` / `stelow.json` | Workflow tracking schema + runtime state |
 

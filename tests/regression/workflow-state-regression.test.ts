@@ -15,7 +15,7 @@
  *   2. scanWorkflowDirs — backward compat: old current_phase_index:0 + "setup" → normalizes to 2
  *   3. updateWorkflowIndexJson — writes correct index.json with merged updates
  *   4. updateWorkflowIndexJson — recovers from corrupt index.json
- *   5. syncStagesGuardState — creates current-stage.json with correct schema
+ *   5. syncStagesGuardState — writes stage INTO stelow.json (single source of truth)
  *   6. cmdStart phase init — new workflow starts at phase 2 (Setup), phases 0-1 completed
  */
 import { describe, it, expect, beforeEach, afterEach } from "vitest";

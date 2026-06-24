@@ -593,6 +593,11 @@ install_safe_change() {
   fi
 }
 
+# Herdr plugin install is intentionally separate from install.sh
+# (which only flattens skills to ~/.agents/skills/). The herdr plugin
+# has its own distribution path: `herdr plugin install` from
+# https://github.com/renatocaliari/stelow/integrations/herdr/stelow-board,
+# then `cargo build --release` because Rust needs a local toolchain.
 install_herdr_plugin() {
   log_step "Step 9/10: Herdr stelow-board plugin (split-pane TUI)"
   if [[ "$DRY_RUN" == "true" ]]; then

@@ -464,4 +464,76 @@ Task 1: Scaffold + manifest + Cargo.toml
 
 ---
 
+## 📍 Estado atual (post-v0.36.1)
+
+Este plano foi escrito em 2026-06-23 como design. O plugin foi implementado
+e está em produção como parte do monorepo `stelow`, sem repo separado. As
+seguintes divergências existem entre o plano e a implementação atual — leia
+esta seção antes de tomar qualquer decisão baseada no plano acima.
+
+### Decisões aplicadas (vs. plano)
+
+| # | Questão original | Decisão atual |
+|---|---|---|
+| 1 | Owner do repo | **Sem repo separado.** Plugin vive em `integrations/herdr/stelow-board/` no monorepo `stelow`. Distribuído via npm (`@renatocaliari/stelow` package, `files[]` inclui o plugin). |
+| 2 | Naming do binário | **`stelow-board`** (decisão 1 original). |
+| 3 | Source do data | **`stelow.json` (root) + `.stelow/<date>/<dirHash>/index.json` per workflow.** Sem schema próprio. O plano previa `data.rs` separado; a implementação atual mantém tudo em `main.rs` (815 linhas) porque era mais simples. |
+| 4 | Detalhe de scope/task | **Mostra status, type, iteration counter do `Scope` em `index.json`.** Sem campo `detail` no schema atual. |
+| 5 | Auto-refresh | **Polling 2s baseado em signature mtime+size** de `stelow.json` + todos `index.json`. KISS — sem crate `notify`. Manual `[r]` força reload. |
+| 6 | Notificações | **Não implementado.** |
+| 7 | Múltiplos painéis | **Singleton por workspace.** Não há conflito em usar `prefix+w` repetidamente (a action `open-board.sh` faz toggle). |
+
+### Arquitetura final (vs. plano)
+
+O plano previa 5 arquivos Rust (`main.rs`, `app.rs`, `data.rs`, `ui.rs`,
+`action.rs`). A implementação atual tem **1 arquivo `main.rs` (815 linhas)**.
+Decisão consciente: o escopo ficou menor que o planejado (sem state machine
+de drill-in/out, sem notificações), então a modularização perdeu valor.
+
+### Layout final (vs. plano)
+
+O plano previa 3 views (Overview → ProjectDetail → ScopeDetail). A
+implementação atual tem **2 painéis lado-a-lado** (workflows à esquerda,
+detail card + scopes à direita). Sem drill-in/out — toda info cabe em uma
+tela.
+
+### Keybinds finais (vs. plano)
+
+| Plano original | Atual |
+|---|---|
+| `j`/`Down` next item, `k`/`Up` prev item | `Tab`/`j`/`Down` next workflow, `Shift+Tab`/`k`/`Up` previous workflow |
+| `h`/`Left` drill out, `l`/`Right`/`Enter` drill in | **removido** (sem drill-in/out) |
+| `space` toggle status | **removido** (read-only por convenção — mutations no shell) |
+| `r` refresh | `r` manual refresh + auto 2s polling |
+| `?` help | `?` help |
+| `q`/`Esc` quit | `q`/`Esc` quit |
+
+### Workflow filter (decisão adicional)
+
+A implementação atual filtra workflows pelo worktree (mirror de
+`muxy`'s `isWorkflowCwdCompatible`). Workflows cujo `cwd` em `stelow.json`
+seja vazio são tratados como compatíveis (mesma convenção do muxy) —
+cobre workflows antigos onde a extension ainda não escrevia `cwd`.
+
+### Source-of-truth para cwd do projeto
+
+Lê `HERDR_PLUGIN_CONTEXT_JSON.workspace_cwd` (JSON injetado pelo herdr
+runtime em cada spawn do plugin). Fallback chain:
+`focused_pane_cwd` → `workspace_cwd` → `HERDR_PLUGIN_ROOT`.
+
+### Convenção para scopes
+
+Lê scopes do `index.json` (`scopes[]` array), não do `spec-tech.md`. Cada
+scope tem `id`, `name`, `type`, `status`, `iteration`, `maxIterations`.
+O status é renderizado com glyphs: `·` pending, `▶` in-progress,
+`✓` completed, `⚠` escalated, `✗` failed.
+
+### Test coverage
+
+`tests/unit/herdr-cwd-matches.test.ts` (10 testes anti-regressão para
+o filtro de worktree — empty cwd, exact match, sub-path, etc.).
+Sem test framework Rust; testes são indiretos via TS.
+
+---
+
 **Próximo passo:** aprovação do user → iniciar Tarefa 1 (scaffold).
