@@ -58,8 +58,7 @@
         "id": "pipeline",
         "mode": "pinned",
         "position": "right",
-        "title": "Stelow Board",
-        "width": 420
+        "title": "Stelow Board"
       }
     ],
     "events": [
@@ -68,11 +67,8 @@
     ],
     "permissions": [
       "panels:write",
-      "files:read",
-      "files:write",
       "commands:exec",
       "panes:read",
-      "panes:write",
       "projects:read",
       "worktrees:read"
     ],

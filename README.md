@@ -547,7 +547,7 @@ The TUI shows:
 - Drill-down: stage → project → scope → task
 - Quick action invocation via `herdr plugin action invoke`
 
-**Keybinds:** `prefix+w` toggle · `j/k` move · `Enter`/`l` drill in · `h`/`Esc` back · `space` toggle status · `r` refresh · `q` quit.
+**Keybinds:** `prefix+w` toggle · `Tab`/`j`/`k` next/prev workflow · `r` refresh · `?` help · `q`/`Esc` quit. Detail card shows prompt + current stage + scope; click workflow rows to select.
 
 **Install:** `herdr plugin install renatocaliari/stelow-board` (or `herdr plugin link integrations/herdr/stelow-board/` for local dev after `cargo build --release`). Source under `integrations/herdr/stelow-board/`. See [herdr's plugin docs](https://herdr.dev/docs/plugins/) for the official install/link workflow.
 

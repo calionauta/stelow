@@ -110,22 +110,51 @@ herdr plugin action invoke stelow.board.toggle
 | Key | Action |
 |---|---|
 | `prefix+w` | toggle board (open / focus / close) |
-| `j` / `↓` | next item |
-| `k` / `↑` | prev item |
-| `l` / `→` / `Enter` | drill in |
-| `h` / `←` / `Esc` | drill out (back) |
-| `space` | toggle status of selected item |
-| `r` | refresh from `.stelow/` |
-| `e` | execute action on selected item |
-| `q` | quit (close pane) |
+| `Tab` / `w` | next workflow |
+| `Shift+Tab` | previous workflow |
+| `J` / `]` | next workflow |
+| `K` / `[` | previous workflow |
+| `j` / `↓` | next workflow (alias of Tab) |
+| `k` / `↑` | previous workflow (alias of Shift+Tab) |
+| `r` | manual refresh (also auto every 2s) |
+| `?` | toggle help overlay |
+| `q` / `Esc` | quit (close pane) |
 
 ## Mouse
 
-The board is fully clickable. Click on:
+- Click a workflow row in the **left column** → select that workflow
+- Click anywhere else → no-op
 
-- `▸` glyph → drill in
-- `●` / `✓` / `·` glyph → toggle status
-- item row → select
+## Data sources (single source of truth)
+
+The plugin reads the **same** files the stelow extension writes. No config,
+no overrides:
+
+| What | Where |
+|---|---|
+| Workflows list | `<cwd>/stelow.json` (project-local) |
+| Worktree filter | Compares `wf.cwd` against project cwd (matches muxy semantics) |
+| Workflow status / current phase | `stelow.json` → `workflows[].currentPhase` + `phases[]` |
+| Draft / prompt | `.stelow/<date>/<dirHash>/index.json` → `draft` |
+| Scopes (with status) | `.stelow/<date>/<dirHash>/index.json` → `scopes[]` |
+| Stages (PHASE_NAMES) | Hardcoded copy of `extensions/stelow/types.ts` (keep in sync) |
+
+**Workflows are filtered to the current worktree.** A workflow is shown
+only if its `cwd` equals the project cwd, or one is a sub-path of the
+other. This mirrors the filter `muxy` uses (`isWorkflowCwdCompatible` in
+`integrations/muxy/stelow-board/src/panel/data.js`).
+
+**Archived / aborted / stopped / cancelled workflows are filtered out**
+(`isHiddenWorkflowStatus` from muxy). Use `/sw-status` in pi to inspect
+archived workflows.
+
+Auto-refresh: signature-based polling (mtime + size of `stelow.json` and
+all `.stelow/<date>/<dirHash>/index.json` files), every 2 seconds.
+Manual `[r]` always reloads.
+
+Stage IDs follow the canonical stelow phase names: `Triage`, `ItemSelect`,
+`Setup`, `Context`, `Shape`, `Critique`, `Gate`, `Scope`, `Interface`,
+`Int.Gate`, `Selection`, `Planning`, `Execution`, `Verification`, `Audit`.
 
 ## Layout
 
@@ -133,8 +162,50 @@ The board is fully clickable. Click on:
 right of the active pane. It persists across panes in the same tab and
 can be focused with the toggle action.
 
+The pane is split into **two columns**:
+
+- **Left (40%)**: workflow list, filtered to the current worktree. Each row
+  shows the workflow name and a scope progress counter `(done/total sc)`.
+- **Right (60%)** is split vertically into:
+  - **Detail card (top, 8 lines)**: workflow name, status badge, original
+    prompt (truncated to ~200 chars), current stage name, current scope
+    (if any).
+  - **Scopes list (bottom, rest)**: every scope from `index.json` with
+    status, type, and iteration counter. Before `Execution` phase the
+    panel shows a hint that scopes will appear there.
+
+```
+┌─── Stelow — cali-product-workflow · 4 workflow(s) ─────────────────┐
+├────── Workflows (this worktree) ──────┬──────── Detail ───────────┤
+│ ▶ wf-enz84q                (3/3 sc)   │ ● wf-enz84q    ▶ IN PROG  │
+│   wf-eoq7r9                (2/3 sc)   │                            │
+│   wf-31fl47                          │ Prompt: "build cali-pro..  │
+│                                      │ Stage:  Gate  Scope: —    │
+│                                      ├──────── Scopes (3/3) ──────┤
+│                                      │ ✓ scope-1  Triage Prompt  │
+│                                      │ ✓ scope-2  Inbox Storage  │
+│                                      │ ✓ scope-3  Output Format  │
+├─────────── Commands ───────────────────────────────────────────────┤
+│ [Tab/j/k] workflow  [r] refresh  [?] help  [q] quit                │
+├─────────── Context ────────────────────────────────────────────────┤
+│ ws=...  cwd=/Users/.../cali-product-workflow  auto-refresh 2s     │
+└────────────────────────────────────────────────────────────────────┘
+```
+
+## Scope status glyphs
+
+| Glyph | Status |
+|---|---|
+| `·` | pending |
+| `▶` | in-progress (current) |
+| `✓` | completed |
+| `⚠` | escalated (max iterations reached without verify pass) |
+| `✗` | failed |
+
+Matches `ScopeStatus` enum in `extensions/stelow/types.ts`.
+
 ## See also
 
 - Plan: `docs/design/stelow-board-herdr.md` (in the stelow monorepo)
 - Research: `.stelow/session-knowledge/2026-06-23-herdr-plugin-research.md`
-- Muxy sibling: `integrations/muxy/stelow-board/`
+- Muxy sibling: `integrations/muxy/stelow-board/` (shares worktree-filter semantics)

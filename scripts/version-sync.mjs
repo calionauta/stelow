@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 /**
  * Version Sync Script
- * 
+ *
  * Keeps version numbers in sync between:
  * - Main package.json
- * - extensions/cali-pw-pi/package.json
- * 
+ * - .claude-plugin/, .codex-plugin/, .opencode-plugin/ manifests
+ * - integrations/herdr/stelow-board/herdr-plugin.toml (TOML format)
+ *
  * Run automatically via `npm version` lifecycle hook.
  */
 
@@ -20,17 +21,26 @@ const __dirname = dirname(__filename);
 // Project root
 const ROOT = join(__dirname, "..");
 
+// JSON targets (plugin manifests, marketplace.json)
+const JSON_TARGETS = [
+  join(ROOT, ".claude-plugin/plugin.json"),
+  join(ROOT, ".claude-plugin/marketplace.json"),
+  join(ROOT, ".codex-plugin/plugin.json"),
+  join(ROOT, ".codex-plugin/marketplace.json"),
+  join(ROOT, ".opencode-plugin/plugin.json"),
+];
+
+// TOML targets (herdr plugin uses Rust convention)
+const TOML_TARGETS = [
+  join(ROOT, "integrations/herdr/stelow-board/herdr-plugin.toml"),
+];
+
 // Files to sync
 const FILES_TO_SYNC = [
   {
     source: join(ROOT, "package.json"),
-    targets: [
-      join(ROOT, ".claude-plugin/plugin.json"),
-      join(ROOT, ".claude-plugin/marketplace.json"),
-      join(ROOT, ".codex-plugin/plugin.json"),
-      join(ROOT, ".codex-plugin/marketplace.json"),
-      join(ROOT, ".opencode-plugin/plugin.json"),
-    ],
+    jsonTargets: JSON_TARGETS,
+    tomlTargets: TOML_TARGETS,
   },
 ];
 
@@ -41,7 +51,7 @@ function readVersion(filePath) {
   return pkg.version;
 }
 
-// Write version to target file
+// Write version to JSON target file
 function writeVersion(filePath, version) {
   const content = readFileSync(filePath, "utf-8");
   const pkg = JSON.parse(content);
@@ -57,18 +67,42 @@ function writeVersion(filePath, version) {
   console.log(`  ✅ Synced version to: ${filePath.replace(ROOT + "/", "")}`);
 }
 
+// Write version to TOML target file (herdr plugin uses TOML).
+// Naive line-based replace: matches `^version = "..."` in the [package]
+// section. Sufficient for the stelow-board plugin; if other TOML files
+// with nested version fields need syncing, switch to a TOML parser.
+function writeTomlVersion(filePath, version) {
+  const content = readFileSync(filePath, "utf-8");
+  const updated = content.replace(
+    /^version\s*=\s*".*"$/m,
+    `version = "${version}"`,
+  );
+  if (updated === content) {
+    throw new Error(`no version line matched in ${filePath}`);
+  }
+  writeFileSync(filePath, updated);
+  console.log(`  ✅ Synced version to: ${filePath.replace(ROOT + "/", "")}`);
+}
+
 // Main sync function
 function syncVersions() {
   console.log("🔄 Syncing versions...\n");
 
-  for (const { source, targets } of FILES_TO_SYNC) {
+  for (const { source, jsonTargets, tomlTargets } of FILES_TO_SYNC) {
     try {
       const version = readVersion(source);
       console.log(`📦 Source: ${source.replace(ROOT + "/", "")} (v${version})`);
 
-      for (const target of targets) {
+      for (const target of jsonTargets ?? []) {
         try {
           writeVersion(target, version);
+        } catch (err) {
+          console.error(`  ❌ Failed to sync ${target}: ${err.message}`);
+        }
+      }
+      for (const target of tomlTargets ?? []) {
+        try {
+          writeTomlVersion(target, version);
         } catch (err) {
           console.error(`  ❌ Failed to sync ${target}: ${err.message}`);
         }
@@ -85,4 +119,4 @@ function syncVersions() {
 syncVersions();
 
 // Export for programmatic use
-export { syncVersions, readVersion, writeVersion };
+export { syncVersions, readVersion, writeVersion, writeTomlVersion };

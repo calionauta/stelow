@@ -2,6 +2,50 @@
 
 All notable changes to `@renatocaliari/stelow` will be documented in this file.
 
+## [0.36.1] - 2026-06-24
+
+### Fixed (herdr plugin)
+
+- **Workflows with empty `cwd` now show up in the board.** The previous
+  `cwd_matches` rejected empty strings, hiding workflows whose `cwd`
+  field wasn't written by the extension (common for early-version
+  workflows). Mirrors muxy's `isWorkflowCwdCompatible` exactly — no
+  early return on empty. Test coverage in
+  `tests/unit/herdr-cwd-matches.test.ts`.
+- **Plugin now reads cwd from the right source.** Plugin was reading
+  `HERDR_FOCUSED_PANE_CWD` / `HERDR_WORKSPACE_CWD` env vars which herdr
+  doesn't set. Now reads `HERDR_PLUGIN_CONTEXT_JSON` (the JSON blob
+  herdr actually passes), using `ctx.focused_pane_cwd` then falling
+  back to `ctx.workspace_cwd` then `HERDR_PLUGIN_ROOT`. This is the
+  reason the board appeared empty even when workflows existed.
+
+### Fixed (muxy extension)
+
+- **Manifest now passes muxy schema validation.** Removed invalid
+  `files:read` and `files:write` permissions (not in the schema enum),
+  removed duplicate `panes:write`, removed `panel[0].width` (panel
+  schema has `additionalProperties: false`). Pinned a copy of the
+  official muxy manifest schema at
+  `integrations/muxy/stelow-board/manifest.schema.json` for offline
+  validation. Anti-regression test in
+  `tests/unit/muxy-manifest-schema.test.ts`.
+
+### Removed (herdr plugin)
+
+- **Dead `Stage`/`StageStatus`/`PhaseEntry` code.** Computed a list of
+  stages from PHASE_NAMES that was never rendered in the UI. YAGNI
+  removed; future "show stages" view can derive it on demand.
+
+### Changed
+
+- **`package.json` `files[]`** now includes `integrations/herdr/stelow-board/`
+  so the plugin ships in the npm package. Was previously omitted.
+- **`scripts/version-sync.mjs`** now syncs the plugin version to
+  `integrations/herdr/stelow-board/herdr-plugin.toml` (TOML format).
+  Added `writeTomlVersion` helper. Run via existing `npm run version:sync`.
+- **README.md herdr keybinds** updated to match current implementation
+  (`Tab`/`j`/`k` next/prev workflow, no drill-in/out).
+
 ## [0.36.0] - 2026-06-24
 
 ### Added
