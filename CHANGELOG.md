@@ -2,6 +2,116 @@
 
 All notable changes to `@renatocaliari/stelow` will be documented in this file.
 
+## [0.35.0] - 2026-06-23
+
+### Added
+- **`integrations/muxy/stelow-board/`** — Muxy webview panel renamed from
+  `extensions/stelow-muxy/`. Muxy.app is open-source under MIT license
+  (https://muxy.app/), distributed via GitHub releases. Plugin surface
+  unchanged: same `displayName`, same commands, same keyboard shortcut.
+- **`integrations/herdr/stelow-board/`** — New Rust+ratatui split-pane TUI
+  plugin for the Herdr terminal multiplexer (https://herdr.dev/).
+  Click-to-drill navigation through workflow stages → projects → scopes →
+  tasks. Requires `herdr >= 0.7.0`.
+- **`docs/design/stelow-board-herdr.md`** — Implementation plan for the
+  Herdr plugin covering manifest schema, state machine, UI rendering,
+  hit-test math, idempotent action wrapper, and open questions.
+- **`docs/design/README.md`** references the new plan.
+
+### Changed
+- **README: External Dependencies table reordered** — harness-agnostic
+  tools (cymbal, plannotator, safe-change, subagents built-in) come
+  before Pi-only extensions (pi-subagents, pi-intercom, pi-supervisor)
+  before external host integrations (Muxy, Herdr). Plannotator and
+  safe-change were mis-classified as Pi-only and are now correctly
+  listed as harness-agnostic (5 and 4+ CLIs respectively).
+- **README: Visual & TUI Integrations section** — Refactored from
+  Muxy-only to a comparison table + two sub-sections (Muxy webview +
+  Herdr split-pane TUI), with host, UI model, install commands, and
+  keybinds.
+- **README: dropped "How We Differ" section** — Vague competitive
+  comparisons with "Standard Agent" and stale star counts generated
+  more noise than value. Positioning is already covered by Evidence &
+  Limitations below.
+- **README: dropped "🔧 Dependencies" section as standalone** —
+  Collapsed to a `<sub>` footnote inline at the end (then moved into
+  Installation as `### Manual setup & dependencies`).
+- **README: "Philosophy" + "Why This Exists" merged into "Why stelow"**
+  — Two halves of the same elevator pitch collapsed into one section
+  with three H3 subsections (hook → Problem → What stelow does →
+  Key Features).
+- **README: command descriptions refined** — `/sw-start` description
+  now mentions auto-runs triage + select when input is a list;
+  `/sw-info` description clarifies it returns copy-pasteable cd +
+  `/sw-resume` commands (not just info display). `/sw-info` replaces
+  the misleading `/sw-goto` name (suggested "jump to" but is read-only).
+- **Path A (`setup.sh`) installs all External Dependencies** —
+  Previously required `./install.sh` as a separate step. Path A now
+  attempts cymbal, ctx7, safe-change, and the Herdr stelow-board
+  plugin (when herdr CLI on PATH) with graceful fallback. Muxy.app is
+  detected but cannot be auto-installed.
+- **Path A: per-step Y/n prompts + summary tracking** — Each optional
+  install asks before running. Final summary lists ✅ / ❌ / ⏭ per item.
+- **Path A: consistent step numbering (1/10 through 10/10).**
+- **`AGENTS.md`: documented the `integrations/<host>/<plugin>/`
+  convention** — `extensions/` is for in-process Pi extensions;
+  `integrations/<host>/` is for plugins to external hosts (Muxy,
+  Herdr) which have incompatible extension models.
+- **AGENTS.md: added product naming convention** — `stelow` is
+  canonical; legacy `cali-product-workflow` / `Cali Product Workflow`
+  must NOT be used in new files. The runtime state directory
+  `.cali-product-workflow/` is the one exception (filesystem path
+  kept for backward compat).
+
+### Refactored
+- **Renamed `extensions/stelow-muxy/` → `integrations/muxy/stelow-board/`**
+  — Muxy plugin directory moved out of `extensions/` (which is reserved
+  for Pi in-process extensions) into `integrations/muxy/`. Git rename
+  detection preserved history.
+- **Renamed `cali.workflow-board` → `stelow.board`** — Plugin id
+  renames in `herdr-plugin.toml` manifest, displayName in Muxy
+  `package.json`, `<title>` in `panel/index.html`, command titles.
+- **Renamed `cali-workflow-board` → `stelow-board`** — Cargo package
+  and binary name in `Cargo.toml`.
+- **Renamed `cli-agents/opencode|claude|codex/commands/sw-goto.md`
+  → `sw-info.md`** — Commands `/sw-info.md` files. Internal `sw-goto`
+  text inside each file also replaced.
+- **Deprecated `stelow-goto` alias** — `extensions/stelow/commands.ts`
+  still maps `stelow-goto` → `cmdGoto` for backward compatibility with
+  scripts that used the old dispatch name.
+
+### Removed
+- **`extensions/stelow-pi/`** — 4-file stub package (1-line proxy that
+  re-exported from `extensions/stelow/`). The stub added zero value
+  and created two top-level Pi dirs that confused readers. The real
+  Pi extension code lives in `extensions/stelow/`. Package name
+  `extensions/stelow/package.json` corrected from
+  `@renatocaliari/pi-product-workflow-extension` to
+  `@renatocaliari/stelow`.
+
+### Fixed
+- **README: "15 problems" closing bullet** removed — Listed BMAD /
+  Superpowers / SpecKit / GSD with star counts; the Known Limitations
+  table already communicates the same message honestly.
+- **README: `/sw-inbox [add|remove\|clear]` and `/sw-ls [all\|archived]`**
+  rendering — Pipes were not escaped, breaking Markdown table cells.
+- **setup.sh: optional tools (cymbal, ctx7, safe-change, herdr plugin)
+  now exit cleanly under `--dry-run`** — Previously skipped silently.
+- **setup.sh: "Muxy is a paid macOS app" claim corrected** — Muxy is
+  open-source under MIT license (verified via GitHub API). Muxy is
+  macOS-only (SwiftUI + libghostty), distributed via GitHub releases.
+
+### Notes for users upgrading from 0.34.1
+- **Path A (`curl | sh`) now installs everything** — cymbal, ctx7,
+  safe-change, and the Herdr stelow-board plugin all happen
+  automatically. cymbal/ctx7 require interactive prompts and may
+  fail silently if dependencies (brew/Go/npx) are missing.
+- **`herdr plugin install` requires `herdr >= 0.7.0`** — Older versions
+  (< 0.7.0) don't have the `plugin` subcommand. If upgrading, run
+  `herdr server stop && herdr update` first.
+- **The `stelow-goto` internal alias is deprecated** but still works
+  for backward compatibility. New scripts should use `/sw-info`.
+
 ## [0.34.1] - 2026-06-22
 
 ### Changed
