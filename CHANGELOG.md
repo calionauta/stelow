@@ -2,6 +2,60 @@
 
 All notable changes to `@renatocaliari/stelow` will be documented in this file.
 
+## [0.36.2] - 2026-06-24
+
+### Fixed (workflow root detection — user-reported bug)
+
+- **`/sw-start` no longer falsely blocked by workflows in sibling projects.**
+  The extension used to climb up to ANY parent directory that had
+  `.stelow/` or `stelow.json`. This meant: a user running `/sw-start`
+  in `/Users/cali/Development/PROJECT-X` (which has no `.stelow/`)
+  would see "There is already an active workflow in this project"
+  even though the active workflow lived in `/Users/cali/Development`
+  (a separate project, just a shared parent dir).
+- **Fix:** only climb up if the parent is the **git toplevel** of the
+  cwd. This preserves the original intent ("user is in src/ of a git
+  repo, tracking at repo root") while not conflating sibling projects.
+
+### Added (unified source of truth across surfaces)
+
+- **`extensions/stelow/workflow-root.ts`** — canonical `findProjectWorkflowRoot(cwd)`
+  implementation, re-exported as `resolveProjectDir` for backward compat.
+- **Muxy mirror** in `integrations/muxy/stelow-board/src/panel/data.js` —
+  documents the contract; the panel itself filters workflows by `projectPath`
+  in `getActiveWorkflow(workflows, projectPath)` (the actual fix for the
+  panel).
+- **Herdr Rust mirror** in `integrations/herdr/stelow-board/src/main.rs` —
+  `#[allow(dead_code)] fn project_workflow_root(...)` kept for parity.
+  The plugin's primary `project_root` continues to use `HERDR_PLUGIN_CONTEXT_JSON`
+  directly (herdr runtime gives us the correct cwd).
+
+### Added (anti-regression tests)
+
+- **`tests/unit/workflow-root.test.ts`** — 10 tests covering:
+  - cwd with own tracking → cwd
+  - cwd without tracking, no git → cwd
+  - subdir of git repo with tracking at root → git root
+  - **REGRESSION**: sibling project under shared parent → cwd (NOT parent)
+  - cwd is git toplevel with no tracking → cwd
+  - cwd is subdir with own tracking → cwd
+  - non-git-toplevel parent with tracking → cwd
+  - leading tilde expansion
+  - edge cases for tracking detection
+- **`tests/unit/muxy-workflow-data.test.ts`** — 3 new tests for
+  `getActiveWorkflow(workflows, projectPath)`:
+  - foreign-worktree workflow → null
+  - missing projectPath → null (defensive)
+  - legacy cwd-empty workflow → compatible (same as extension)
+
+### Changed (muxy panel)
+
+- **`getActiveWorkflow(workflows, projectPath)`** now takes projectPath
+  and filters workflows by `isWorkflowFromProject(wf, projectPath)`.
+  Previously, it returned the first in-progress workflow regardless of
+  worktree, causing the panel to act on workflows from sibling worktrees
+  when the user clicked `/sw-next`, `/sw-abort`, etc.
+
 ## [0.36.1] - 2026-06-24
 
 ### Fixed (herdr plugin)
