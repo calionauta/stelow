@@ -19,6 +19,18 @@
 version: 1
 
 retired:
+  - name: cali-product-workflow
+    retired_at: 2026-06-24
+    reason: renamed
+    superseded_by:
+      - stelow-product-orchestrator
+    note: |
+      Renomeada em 2026-06-19 (commit 8c6363e "feat: rename product to stelow").
+      A skill legada escreve artefatos em .cali-product-workflow/ (path antigo).
+      A extension/CLI atual (v0.36.2) escreve em .stelow/. Se você tem uma cópia
+      desta skill em ~/.agents/skills/, ela vai produzir workflows no path errado.
+      Delete-a ou re-rode install.sh para que o prune remova.
+
   - name: cali-product-critique
     retired_at: 2026-05-29
     reason: superseded

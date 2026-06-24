@@ -4,6 +4,19 @@ All notable changes to `@renatocaliari/stelow` will be documented in this file.
 
 ## [0.36.2] - 2026-06-24
 
+### Cleanup (legacy skill removal)
+
+- **`cali-product-workflow` added to `retired-skills.yaml`.** This legacy
+  skill (from before the rename in v0.34.0) writes workflow artifacts to
+  `.cali-product-workflow/` — the old path. The current extension (v0.36.2)
+  writes to `.stelow/`. Re-running `install.sh` (or `setup.sh`) will prune
+  any leftover copies of the legacy skill from `~/.agents/skills/`.
+- If you have workflows stuck in `.cali-product-workflow/` (legacy path),
+  they are NOT tracked by the current extension and will appear "missing"
+  in the muxy/herdr panels. Migrate manually if needed:
+  1. Copy `.cali-product-workflow/<date>/<dirHash>/` → `.stelow/<date>/<dirHash>/`
+  2. Add the workflow entry to `stelow.json` with cwd set to your project path
+
 ### Fixed (workflow root detection — user-reported bug)
 
 - **`/sw-start` no longer falsely blocked by workflows in sibling projects.**
