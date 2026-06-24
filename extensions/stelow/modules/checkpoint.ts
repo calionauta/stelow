@@ -103,27 +103,3 @@ export function listScopeDirs(execDir: string): string[] {
     .filter((d) => d.isDirectory())
     .map((d) => d.name);
 }
-
-/**
- * Create a fresh checkpoint for a scope iteration.
- */
-export function createFreshCheckpoint(
-  scopeId: string,
-  verifyCommands: string[],
-  maxIterations: number
-): ExecutionCheckpoint {
-  const now = new Date().toISOString();
-  return {
-    schemaVersion: 1,
-    scopeId,
-    iteration: 0,
-    maxIterations,
-    status: "in_progress",
-    verifyCommands,
-    verifyResults: [],
-    feedbackLog: [],
-    lastStep: "delegate",
-    createdAt: now,
-    updatedAt: now,
-  };
-}

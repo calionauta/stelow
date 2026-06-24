@@ -19,7 +19,7 @@
  *   });
  */
 
-import { appendFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
+import { appendFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 
 export type EventType =
@@ -54,18 +54,4 @@ export function appendEvent(filePath: string, event: ExecutionEvent): void {
   // Ensure parent directory exists (defensive — LLM should create it via checkpoint)
   mkdirSync(dirname(filePath), { recursive: true });
   appendFileSync(filePath, JSON.stringify(event) + "\n", "utf-8");
-}
-
-/**
- * Read all events from a JSONL file.
- * Returns empty array if file doesn't exist.
- *
- * @param filePath  - Full path to events.jsonl
- * @returns Array of parsed events
- */
-export function readAllEvents(filePath: string): ExecutionEvent[] {
-  if (!existsSync(filePath)) return [];
-  const text = readFileSync(filePath, "utf-8").trim();
-  if (!text) return [];
-  return text.split("\n").map((line) => JSON.parse(line) as ExecutionEvent);
 }

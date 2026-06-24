@@ -67,26 +67,3 @@ export const TASK_ICONS: Record<TaskStatus, string> = {
   in_progress: "◐",
   completed: "✓",
 };
-
-/**
- * Format a task for display.
- */
-export function formatTask(task: TaskItem): string {
-  const icon = TASK_ICONS[task.status];
-  const id = task.id ? `[${task.id}] ` : "";
-  return `${icon} ${id}${task.content}`;
-}
-
-/**
- * Format a list of tasks for display.
- */
-export function formatTaskList(tasks: TaskItem[], header?: string): string {
-  const lines: string[] = [];
-  if (header) {
-    lines.push(header, "");
-  }
-  for (const task of tasks) {
-    lines.push(formatTask(task));
-  }
-  return lines.join("\n");
-}
