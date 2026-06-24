@@ -30,7 +30,6 @@
     "node_modules",
     "dist",
     "build",
-    "tests/**/*",
-    "extensions/stelow-pi/**/*"
+    "tests/**/*"
   ]
 }

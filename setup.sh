@@ -621,7 +621,7 @@ install_herdr_plugin() {
 }
 
 detect_muxy() {
-  log_step "Step 10/10: Muxy.app detection (cannot auto-install — paid macOS app)"
+  log_step "Step 10/10: Muxy.app detection (macOS-only, open-source under MIT)"
   if [[ "$DRY_RUN" == "true" ]]; then
     log_info "[dry-run] Would detect Muxy.app"
     record_skip "Muxy.app"

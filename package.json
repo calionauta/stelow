@@ -55,7 +55,6 @@
     "build/",
     "skills/",
     "extensions/stelow/",
-    "extensions/stelow-pi/",
     "integrations/muxy/stelow-board/",
     "scripts/",
     "install.sh",

@@ -419,11 +419,11 @@ curl -fsSL https://raw.githubusercontent.com/renatocaliari/stelow/main/setup.sh 
 | 7 | ctx7 | library docs fetcher via `npx ctx7 setup` (interactive OAuth — prompts the user) | All CLIs |
 | 8 | safe-change | pre-planning regression check via `npx skills add PrinNova/pi-agent-codebase-workflows -g` | All CLIs |
 | 9 | Herdr plugin | `stelow-board` split-pane TUI installed via `herdr plugin install renatocaliari/stelow-board` — **only if** `herdr` CLI is on PATH | All CLIs (via Herdr) |
-| 10 | Muxy detection | detects `/Applications/Muxy.app` or `muxy` binary; prints install link if absent (cannot auto-install — paid macOS app) | macOS |
+| 10 | Muxy detection | detects `/Applications/Muxy.app` or `muxy` binary; prints install link if absent (cannot auto-install — Muxy is macOS-only, distributed via GitHub releases) | macOS |
 
 > **Not using pi.dev?** Skills land in `~/.agents/skills/` and work on OpenCode, Claude Code, and Codex too. You just won't get the Pi-only extensions or TUI overlay. The workflow itself runs fine.
 >
-> **Muxy.app can't be auto-installed.** It's a paid macOS app downloaded from https://muxy.app/. Path A detects whether it's present and tells you how to install if not. Once installed, load the `stelow-board` extension from `integrations/muxy/stelow-board/`.
+> **Muxy.app can't be auto-installed.** It's a macOS-only app (SwiftUI + libghostty), open-source under MIT license, distributed via [GitHub releases](https://github.com/muxy-app/muxy/releases). Path A detects whether it's present and tells you how to install if not. Once installed, load the `stelow-board` extension from `integrations/muxy/stelow-board/`.
 
 ### 📋 Path B: Existing pi.dev User
 

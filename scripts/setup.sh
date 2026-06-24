@@ -56,9 +56,7 @@ pi install "git:github.com/renatocaliari/stelow" 2>/dev/null || {
   pi install "$PACKAGE_DIR" 2>/dev/null || true
 }
 
-# 2. Stub extension (lightweight Pi integration)
-echo "   → stelow-pi (stub extension)"
-pi install "$PACKAGE_DIR/extensions/stelow-pi" 2>/dev/null || true
+# 2. Pi extension is bundled in main package; nothing to install separately.
 echo ""
 
 # Sync cli-tools to all sub-skills
@@ -73,8 +71,7 @@ echo "║  Setup Complete!                                           ║"
 echo "╚════════════════════════════════════════════════════════════╝"
 echo ""
 echo "Installed packages:"
-echo "  • @renatocaliari/stelow (core - skills, adapters)"
-echo "  • @renatocaliari/stelow-pi (stub extension)"
+echo "  • @renatocaliari/stelow (core - skills, Pi extension, adapters)"
 echo ""
 echo "Next steps:"
 echo "  1. Run: pi"

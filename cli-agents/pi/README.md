@@ -11,7 +11,7 @@ All commands are documented in `COMMANDS.md` (single source of truth).
 ```
 
 The install script:
-- Builds the Pi extension (`extensions/stelow-pi/`)
+- Builds the Pi extension (`extensions/stelow/`)
 - Installs the extension to Pi
 - Installs required npm packages (`pi-subagents`, `pi-intercom`, etc.)
 - Installs all 25 skills to `~/.agents/skills/`
@@ -32,15 +32,14 @@ Full command matrix: `../COMMANDS.md`
 
 | Component | Location |
 |-----------|----------|
-| Extension | `~/.pi/agent/extensions/stelow-pi/` |
+| Extension | `~/.pi/agent/extensions/stelow/` |
 | Skills | `~/.agents/skills/` (25 skills flat) |
 | Commands | Via extension (slash commands with TUI) |
 
 ## Extension Architecture
 
 ```
-extensions/stelow-pi/           # Stub (re-exports from build)
-extensions/stelow/  # Source (TypeScript)
+extensions/stelow/  # Source (TypeScript) — single Pi extension
   ├── adapters/pi/                 # Pi-specific adapter
   ├── commands.ts                  # Slash command registration
   ├── ui.ts                        # TUI overlay

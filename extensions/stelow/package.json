@@ -1,5 +1,5 @@
 {
-  "name": "@renatocaliari/pi-product-workflow-extension",
+  "name": "@renatocaliari/stelow",
   "version": "1.0.0",
   "description": "Product workflow extension for pi.dev",
   "main": "index.ts",
