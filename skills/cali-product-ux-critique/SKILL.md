@@ -12,7 +12,7 @@ metadata:
   context-cost: medium
 ---
 
-**Standalone awareness:** inside stelow, appetite gates critique depth (Lean → skip, Core → codebase mode, Complete → live site). Standalone defaults to Core appetite (codebase/browserless mode, ~80% coverage). Works with URL, source directory, or screenshot — no stelow dependency for core audit logic.
+**Standalone awareness:** inside stelow, appetite gates critique depth (Lean → static a11y baseline, Core → codebase mode, Complete → live site). Standalone defaults to Core appetite (codebase/browserless mode, ~80% coverage). Works with URL, source directory, or screenshot — no stelow dependency for core audit logic.
 
 # UX Critique
 

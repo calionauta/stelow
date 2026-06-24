@@ -21,7 +21,7 @@ metadata:
 
 > **Tools:** See `references/cli-tools/subagents.md` for subagent patterns.
 
-**Standalone awareness:** inside stelow, appetite gates critique depth (Lean → skip, Core → quick, Complete → full). Standalone defaults to Core appetite (quick single-reviewer). Works with any source directory — no stelow dependency for the audit logic.
+**Standalone awareness:** inside stelow, appetite gates critique depth (Lean → light, Core → quick, Complete → full). Standalone defaults to Core appetite (quick single-reviewer). Works with any source directory — no stelow dependency for the audit logic.
 
 ## Overview
 
@@ -62,14 +62,12 @@ DIFF_FILES=$(git diff --name-only HEAD~1 2>/dev/null | wc -l | tr -d ' ')
 
 | Appetite | Files changed | Action |
 |----------|--------------|--------|
-| `Lean` | any | **Skip.** 1 file does not need structural critique. |
-| `Core` | 1-2 | **Skip.** Review via subagent is sufficient. |
+| `Lean` | any | **Light.** Single reviewer runs a basic structural check (architecture, dead code, naming). Quality floor. |
+| `Core` | 1-2 | **Light.** Single reviewer with standard checklist. |
 | `Core` | 3+ | **Quick critique.** Single reviewer, no parallel. |
-| `Complete` | any | **Normal.** One reviewer analyzes all dimensions with detailed recommendations. |
+| `Complete` | any | **Full.** One reviewer analyzes all dimensions with detailed recommendations, or parallel reviewers when scope warrants. |
 
-**Rationale:** Codebase critique analyzes architecture, coupling, and data flow.
-For 1 new file or 2 changed files, the cost of structural critique
-outweighs the benefit — code review already covers correctness.
+**Rationale:** Codebase critique is quality protection — appetite controls depth, not whether it runs. At Lean the reviewer uses a lighter checklist (basic structural, dead code, naming) instead of architectural analysis, but the audit always runs. Code review is correctness; codebase critique is structure — they're complementary, not substitutes.
 
 ### Standalone
 ```

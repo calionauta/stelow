@@ -156,8 +156,10 @@ Delegate to a planner subagent (see `references/cli-tools/subagents.md`):
 #### planning:10.5 — Codebase Feature Recon (brownfield only)
 
 **Before generating scopes**, investigate existing features the new
-scope must integrate with or might duplicate. Depth varies by appetite:
-- Lean: `cymbal search --text` — "does it exist?"
+scope must integrate with or might duplicate. Appetite controls depth,
+not whether recon runs — the floor is `cymbal search --text` (does it
+exist?) at every appetite to prevent scope duplication.
+- Lean: `cymbal search --text` — "does it exist?" (Quality Floor)
 - Core: `search` + `cymbal refs` — where is it, who connects
 - Complete: `search` + `refs` + `cymbal impact` — blast radius
 

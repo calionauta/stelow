@@ -81,13 +81,18 @@ fi
 
 ### Tech preview depth by appetite
 
+Tech preview informs shape-up; appetite adds depth but never removes the floor. Even Lean gets a minimum tech context — appetite controls how much recon runs, not whether constraints are surfaced.
+
 | Appetite | Brownfield? | Tech preview |
 |----------|-------------|-------------|
-| **Lean** | any | **Skip.** No tech preview. Product spec goes direct — appetite says minimal scope. |
-| **Core** | existing | **cymbal structure** — entry points, hotspots, central packages. Quick overview. |
-| **Core** | new | **Skip** (no codebase to analyze). |
-| **Complete** | existing | **cymbal structure + cymbal impact on key domain files** — blast radius, coupling, risks. |
-| **Complete** | new | **Skip** (no codebase to analyze). |
+| **Lean** | existing | **Minimum tech preview.** `cymbal structure` — entry points, central packages. Just enough to know what exists. |
+| **Lean** | new | **Skip cymbal.** No codebase to analyze; product spec goes direct. |
+| **Core** | existing | **Standard tech preview.** `cymbal structure` — entry points, hotspots, central packages. Quick overview. |
+| **Core** | new | **Skip cymbal.** No codebase to analyze. |
+| **Complete** | existing | **Deep tech preview.** `cymbal structure` + `cymbal impact` on key domain files — blast radius, coupling, risks. |
+| **Complete** | new | **Skip cymbal.** No codebase to analyze. |
+
+**Rationale:** Skipping tech preview entirely on Lean brownfield creates the same Estimation Bias trap as cutting quality — the LLM then shapes a product spec without knowing what already exists, leading to redundant scope or missed constraints. Appetite cuts scope (lines per spec, number of alternatives explored), not tech context.
 
 ### Run cymbal (if available)
 
