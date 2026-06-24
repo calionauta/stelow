@@ -56,24 +56,31 @@ When running inside stelow, save or copy the result to:
 
 ## When to run
 
-Run `thermo-nuclear-code-quality-review` only when all three conditions are true:
+The code-quality-review stage has two layers. The lightweight review (correctness, security baseline, naming, dead code) is the **Quality Floor** and always runs when `product_type` is `software` or `hybrid`. The ultra-strict Thermo-Nuclear review (1000-line files, complexity>5, abstraction quality) is **appetite-gated** by the matrix below.
+
+**Conditions for the lightweight review (Quality Floor, always runs):**
 
 1. `product_type` is `software` or `hybrid`
 2. the diff includes code changes
-3. the appetite/review mode/risk matrix below says to run it
 
-### Appetite + mode matrix
+**Conditions for the ultra-strict Thermo-Nuclear review (appetite-gated):**
+
+3. the appetite/review mode matrix below says to run it
+
+### Appetite + review mode matrix
+
+The matrix below controls Thermo-Nuclear only. The lightweight review is the Quality Floor and always runs.
 
 | Appetite | Review Mode | Decision |
-|----------|------|----------|
-| `Lean` | any | **Skip** unless the user explicitly requests it. |
-| `Core` | `Auto` / `Only Product Spec` | **Skip** unless risk is high. |
-| `Core` | `Product Spec + Interface Choice` / `All Above + Scopes In/Out` | Run when risk is high. |
-| `Core` | `All Above + Tech Review` | Run when risk is high or the diff is meaningful. |
-| `Complete` | `Auto` / `Only Product Spec` | **Run** if code changed. Resolve or document findings without asking. |
-| `Complete` | `Product Spec + Interface Choice` | **Run** if code changed. Escalate P0/P1 gaps to the user. |
-| `Complete` | `All Above + Scopes In/Out` | **Run** if code changed. P0/P1 gaps need fix or explicit human acceptance. |
-| `Complete` | `All Above + Tech Review` | **Mandatory** for software/hybrid code changes. Blocking gate before merge. |
+|----------|-------------|----------|
+| `Lean` | any | **Light only.** Thermo-Nuclear skipped unless user explicitly requests it. |
+| `Core` | `Auto` / `Only Product Spec` | **Light only.** Thermo-Nuclear skipped unless risk is high. |
+| `Core` | `Product Spec + Interface Choice` / `All Above + Scopes In/Out` | Thermo-Nuclear when risk is high. |
+| `Core` | `All Above + Tech Review` | Thermo-Nuclear when risk is high or the diff is meaningful. |
+| `Complete` | `Auto` / `Only Product Spec` | **Thermo-Nuclear** if code changed. Resolve or document findings without asking. |
+| `Complete` | `Product Spec + Interface Choice` | **Thermo-Nuclear** if code changed. Escalate P0/P1 gaps to the user. |
+| `Complete` | `All Above + Scopes In/Out` | **Thermo-Nuclear** if code changed. P0/P1 gaps need fix or explicit human acceptance. |
+| `Complete` | `All Above + Tech Review` | **Thermo-Nuclear mandatory** for software/hybrid code changes. Blocking gate before merge. |
 
 ### High-risk trigger
 
