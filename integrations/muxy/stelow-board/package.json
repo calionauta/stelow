@@ -70,7 +70,9 @@
       "commands:exec",
       "panes:read",
       "projects:read",
-      "worktrees:read"
+      "worktrees:read",
+      "files:read",
+      "files:write"
     ],
     "topbarItems": [
       {
