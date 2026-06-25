@@ -386,6 +386,7 @@ struct App {
     last_signature: String,
     should_quit: bool,
     show_help: bool,
+    show_full_prompt: bool,
     flash: Option<(String, Instant)>,
 }
 
@@ -406,6 +407,7 @@ impl App {
             last_signature: signature(&root),
             should_quit: false,
             show_help: false,
+            show_full_prompt: false,
             flash: None,
         }
     }
@@ -454,7 +456,20 @@ impl App {
             return;
         }
         match key.code {
-            KeyCode::Char('q') | KeyCode::Esc => self.should_quit = true,
+            KeyCode::Char('q') => self.should_quit = true,
+            KeyCode::Esc => {
+                if self.show_full_prompt {
+                    self.show_full_prompt = false;
+                } else {
+                    self.should_quit = true;
+                }
+            }
+            KeyCode::Enter | KeyCode::Char(' ') => {
+                // Toggle full prompt view on detail card
+                if self.selected_workflow().is_some() {
+                    self.show_full_prompt = !self.show_full_prompt;
+                }
+            }
             KeyCode::Char('?') => self.show_help = !self.show_help,
             // Workflow navigation
             KeyCode::Tab | KeyCode::Char('w') => self.move_workflow(1),
@@ -542,6 +557,8 @@ fn ui(f: &mut Frame, app: &mut App) -> MouseAreas {
         Span::raw(" refresh  "),
         Span::styled("[?]", Style::default().fg(Color::Cyan)),
         Span::raw(" help  "),
+        Span::styled("[Enter]", Style::default().fg(Color::Cyan)),
+        Span::raw(" prompt  "),
         Span::styled("[q]", Style::default().fg(Color::Cyan)),
         Span::raw(" quit"),
     ];
@@ -622,6 +639,11 @@ fn render_workflows(f: &mut Frame, app: &mut App, area: Rect) -> Rect {
 // ── Right column: detail card + scopes list ─────────────────────────
 
 fn render_detail(f: &mut Frame, app: &mut App, area: Rect) {
+    if app.show_full_prompt {
+        // Full prompt takes the entire right column
+        render_full_prompt(f, app, area);
+        return;
+    }
     let right = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
@@ -633,6 +655,44 @@ fn render_detail(f: &mut Frame, app: &mut App, area: Rect) {
 
     render_detail_card(f, app, right[0]);
     render_scopes(f, app, right[1]);
+}
+
+fn render_full_prompt(f: &mut Frame, app: &mut App, area: Rect) {
+    let wf = match app.selected_workflow() {
+        Some(w) => w,
+        None => return,
+    };
+    let prompt_text = if wf.draft.is_empty() {
+        "  (no prompt recorded)".to_string()
+    } else {
+        // Simple word-wrap per line (no external crate needed)
+        let max_width: usize = 100;
+        let mut out_lines: Vec<String> = Vec::new();
+        for line in wf.draft.lines() {
+            if line.len() > max_width {
+                let mut remaining = line;
+                while !remaining.is_empty() {
+                    let split_at = std::cmp::min(max_width, remaining.len());
+                    let (part, rest) = remaining.split_at(split_at);
+                    out_lines.push(part.to_string());
+                    remaining = rest.trim_start();
+                }
+            } else {
+                out_lines.push(line.to_string());
+            }
+        }
+        out_lines.join("\n")
+    };
+    let block = Block::default()
+        .borders(Borders::ALL)
+        .title(format!(" Full Prompt — {} ", truncate(&wf.name, 30)))
+        .title_bottom(Line::from(
+            Span::styled(" Esc to close ", Style::default().fg(Color::DarkGray)),
+        ));
+    let p = Paragraph::new(prompt_text)
+        .block(block)
+        .wrap(Wrap { trim: true });
+    f.render_widget(p, area);
 }
 
 fn render_detail_card(f: &mut Frame, app: &mut App, area: Rect) {
@@ -780,8 +840,10 @@ fn ui_help(f: &mut Frame) {
         Line::from("  J / ]                Next workflow"),
         Line::from("  K / [                Previous workflow"),
         Line::from("  r                    Manual refresh"),
+        Line::from("  Enter / Space        Toggle full prompt view"),
+        Line::from("  Esc                  Close full prompt / back"),
         Line::from("  ?                    Toggle this help overlay"),
-        Line::from("  q / Esc              Quit (close pane)"),
+        Line::from("  q                    Quit (close pane)"),
         Line::from(""),
         Line::from(Span::styled("Mouse", Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD))),
         Line::from("  Click a workflow row → select it"),
