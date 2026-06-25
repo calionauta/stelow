@@ -2,6 +2,25 @@
 
 All notable changes to `@renatocaliari/stelow` will be documented in this file.
 
+## [0.36.7] - 2026-06-25
+
+### Added (herdr TUI)
+
+- **Full prompt view** — press `Enter` or `Space` on the detail card
+  to toggle a full-screen prompt view showing the complete draft text
+  (word-wrapped at 100 chars). `Esc` returns to the detail card.
+  Before: prompt truncated to ~200 chars with no way to see the full
+  content. Added to help overlay and command bar.
+
+### Fixed (muxy panel)
+
+- **Draft preview now shows up to 120 chars** instead of only 5 words.
+  `summarizeDisplayName` was returning just the first 5 significant
+  words (e.g. "Nova homepage (GitHub Pages) para" — broken in the
+  middle). Now returns the first line up to 120 chars with ellipsis
+  at word boundary. The expanded view (click "Brief") was already
+  working.
+
 ## [0.36.6] - 2026-06-25
 
 ### Fixed
