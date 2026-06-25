@@ -734,7 +734,7 @@ async function selectTerminalPane(panes) {
   return panes.find(p => p.id === choice.id) ?? null;
 }
 
-async function getActiveWorkspacePath() {
+export async function getActiveWorkspacePath() {
   const projects = await muxy.projects.list();
   const activeProject = projects.find(project => project.isActive);
   if (!activeProject) return null;

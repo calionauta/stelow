@@ -2,21 +2,29 @@
 
 All notable changes to `@renatocaliari/stelow` will be documented in this file.
 
-## [0.36.3] - 2026-06-24
+## [0.36.5] - 2026-06-25
+
+### Fixed (muxy extension — build + events)
+
+- **Build now copies `package.json` into `dist/`.** Muxy docs require
+  this: "Because only `dist/` ships, your build must copy `package.json`
+  into `dist/`" (contributing.md). Added `scripts/copy-manifest.mjs`.
+- **Fixed vite build** by exporting `getActiveWorkspacePath` from `data.js`
+  (was imported but not exported).
+- **Panel now subscribes to `project.switched` and `worktree.switched`**
+  events so it auto-refreshes when user switches workspace in Muxy.
+  Previously relied only on 15s polling + manual reload.
+
+## [0.36.4] - 2026-06-24
 
 ### Added (state machine documentation)
 
 - **`Workflow.status` enum documented** with full state diagram in
   `extensions/stelow/types.ts`. States: in-progress | paused | completed
   | archived. Transitions documented inline as comments.
-- **`tests/unit/workflow-state-machine.test.ts`** — 13 tests covering
-  - `getActiveWorkflow` returns null when no in-progress
-  - paused workflows are NOT active (v0.36.3 invariant)
-  - `getAllActiveWorkflows` returns in-progress + paused
-  - State transitions: /sw-start, /sw-pause, /sw-resume, /sw-complete,
-    /sw-archive (in-progress AND paused)
-  - Invariants: at most one in-progress per project (enforced by auto-pause);
-    terminal states (completed/archived) never returned
+- **`tests/unit/workflow-state-machine.test.ts`** — 13 tests
+
+## [0.36.3] - 2026-06-24
 
 ### Changed (workflow start behavior)
 

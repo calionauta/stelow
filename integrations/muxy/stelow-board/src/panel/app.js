@@ -62,7 +62,20 @@ export class PipelinePanel {
   }
 
   start() {
+    // Manual refresh via command (header button + palette)
     muxy.events.subscribe('command.refresh-pipeline', () => this.refresh(true));
+
+    // Auto-refresh when user switches project or worktree (permissions declared in manifest)
+    // Muxy fires project.switched and worktree.switched with projectID/worktreeID.
+    // The panel reloads data from the new workspace when these fire.
+    muxy.events.subscribe('project.switched', () => {
+      console.log('[stelow] project switched — reloading');
+      this.refresh(true);
+    });
+    muxy.events.subscribe('worktree.switched', () => {
+      console.log('[stelow] worktree switched — reloading');
+      this.refresh(true);
+    });
     // Workflow commands — execute in selected Pi pane, then refresh soon after state changes.
     muxy.events.subscribe('command.sw-next-cmd',     () => this.runCommandToastAndRefresh('/sw-next'));
     muxy.events.subscribe('command.sw-abort-cmd',     () => this.runCommandToastAndRefresh('/sw-abort'));
