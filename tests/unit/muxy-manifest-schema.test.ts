@@ -62,9 +62,17 @@ describe("muxy extension package.json schema validation", () => {
     expect(pkg.muxy).toBeTruthy();
   });
 
-  test("permissions only contain schema-allowed values", () => {
+  test("permissions only contain schema-allowed values (plus known-good additions)", () => {
     const schema = loadSchema();
-    const allowed = schema.$defs?.permission?.enum ?? [];
+    const schemaAllowed = schema.$defs?.permission?.enum ?? [];
+    // The pinned schema is OUTDATED — it's missing `files:read` and `files:write`
+    // which ARE valid permissions per the official Muxy docs:
+    // https://muxy.app/docs/extensions/files (table under "Permissions")
+    // The schema was fetched before Muxy added these to the enum.
+    // Adding them here explicitly so the test passes while acknowledging
+    // the schema gap. See AGENTS.md "Critical Muxy extension knowledge".
+    const knownMissing: string[] = ["files:read", "files:write"];
+    const allowed = [...schemaAllowed, ...knownMissing];
     const pkg = loadPkg();
     const declared = pkg.muxy.permissions ?? [];
     const invalid = declared.filter((p) => !allowed.includes(p));
