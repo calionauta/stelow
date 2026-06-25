@@ -11,6 +11,26 @@
 
 See [architecture.md](architecture.md) for module layout, data flow, and how to extend. Skills live in `skills/*/SKILL.md`; stages defined in `stages.yaml` (single source of truth). Visual review gates: `gate` and `int-gate` (Plannotator) — never skip.
 
+### Critical Muxy extension knowledge
+
+**Permission `files:read` is required but NOT in the pinned schema.**
+The Muxy files API (`muxy.files.read/write/list`) requires
+`files:read` and `files:write` in `manifest.permissions` *per the
+official Muxy docs*. However, the pinned manifest schema at
+`integrations/muxy/stelow-board/manifest.schema.json` is
+OUTDATED — it was fetched before Muxy added these permissions to
+the schema enum. **Do NOT trust the pinned schema as the source
+of truth for valid permissions.** The source of truth is:
+- https://muxy.app/docs/extensions/files (docs)
+- https://muxy.app/docs/extensions/permissions (permissions list)
+- Muxy.app runtime validator (what actually accepts/rejects)
+
+The pinned schema is only useful for structural validation
+(panel keys, command shapes) — NOT for permission validity.
+If a muxy extension suddenly shows "No workflow data" despite
+correct workspace, check that `files:read` and `files:write`
+are present in package.json muxy.permissions.
+
 ### Top-level layout
 
 | Directory | Purpose |
