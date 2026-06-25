@@ -2,6 +2,35 @@
 
 All notable changes to `@renatocaliari/stelow` will be documented in this file.
 
+## [0.36.3] - 2026-06-24
+
+### Changed (workflow start behavior)
+
+- **`/sw-start` now auto-pauses existing in-progress workflows** instead
+  of blocking with "There is already an active workflow". The previous
+  block behavior led to "shadow" workflows (in-progress in `stelow.json`
+  but invisible to the UI/LLM because `getActiveWorkflow()` returns only
+  the first) when users called `/sw-start` multiple times in succession.
+- **New behavior:**
+  - 0 in-progress: continue (no-op)
+  - 1 in-progress: pause it, then create new
+  - 2+ in-progress: pause all, then create new
+- Paused workflows stay recoverable via `/sw-resume <name>` and are fully
+  removable via `/sw-archive <name>` or `/sw-archive purge`.
+- The user is informed via `ctx.ui.notify` with the names of paused workflows.
+
+### Added (anti-regression tests)
+
+- **`tests/unit/start-auto-pause.test.ts`** — 8 tests covering:
+  - no in-progress: no-op
+  - one in-progress: pauses it
+  - two in-progress: pauses both (was the bug — only first was visible)
+  - three in-progress: pauses all, `getActiveWorkflow` returns null
+  - paused workflows stay in tracking (not deleted)
+  - archived/completed workflows are NOT paused (already terminal)
+  - REGRESSION: empty-cwd legacy workflows are paused (legacy fallback)
+  - REGRESSION: foreign-project workflows are NOT paused
+
 ## [0.36.2] - 2026-06-24
 
 ### Cleanup (legacy skill removal)

@@ -7,9 +7,9 @@ import type { Workflow, WorkflowIntent } from "./types";
 import {
   parsedInputStore, readTracking, writeTracking,
   readGlobalTracking, writeGlobalTracking,
-  getActiveWorkflow, resolveProjectDir,
+  getActiveWorkflow, getAllActiveWorkflows, resolveProjectDir,
   toSafeName, generateDirHash, hashToWorkflowId, getDateStamp,
-  readSourceFile, truncateText, detectCLI
+  readSourceFile, truncateText, detectCLI, updateWorkflowIndexJson
 } from "./state";
 import { updateFooter, getUIAdapter, initUIAdapter } from "./ui";
 import { buildSkillActivationMessage } from "./start-message";
@@ -64,17 +64,49 @@ export default async function cmdStart(
   const sources = parsed.source ? [parsed.source] : storeParsed.sources;
   const userGivenName = parsed.name || null;
 
-  // 1. Block if an active workflow already exists in this project.
-  //    Multiple in-progress in the same worktree causes ambiguous state
-  //    and potential file conflicts between workflows.
-  const active = getActiveWorkflow(wd);
-  if (active) {
-    ctx.ui?.notify(
-      `⚠️ There is already an active workflow in this project: "${active.name}". ` +
-      `Pause, archive, complete or abort it before starting another.`,
-      "warning"
-    );
-    return;
+  // 1. Auto-pause any other in-progress workflows in this project before
+  //    creating a new one. This replaces the previous "block" behavior
+  //    which left "shadow" workflows (in-progress but invisible because the
+  //    LLM/UI only sees the first) when /sw-start was called multiple times
+  //    without explicit archive/abort in between.
+  //
+  // Behavior:
+  //   - 0 in-progress: continue (no-op)
+  //   - 1 in-progress: pause it, then continue
+  //   - 2+ in-progress: pause all, then continue
+  //
+  // The paused workflows stay in stelow.json with status='paused' and are
+  // fully recoverable via /sw-resume (or /sw-archive to clean up).
+  const existing = getAllActiveWorkflows(wd);
+  if (existing.length > 0) {
+    const tracking = readTracking(wd);
+    if (tracking) {
+      const now = new Date().toISOString();
+      let pausedCount = 0;
+      const pausedNames: string[] = [];
+      for (const wf of existing) {
+        const idx = tracking.workflows.findIndex(w => w.name === wf.name);
+        if (idx === -1) continue;
+        tracking.workflows[idx].status = "paused";
+        tracking.workflows[idx].updated = now;
+        // Sync index.json on disk
+        try {
+          updateWorkflowIndexJson(wd, tracking.workflows[idx], {
+            workflow_status: "paused",
+          });
+        } catch { /* index.json may not exist for legacy workflows */ }
+        pausedCount++;
+        pausedNames.push(wf.name);
+      }
+      if (pausedCount > 0) {
+        writeTracking(wd, tracking);
+        ctx.ui?.notify(
+          `⏸ Paused ${pausedCount} workflow(s) to make room for the new one: ${pausedNames.join(", ")}. ` +
+          `Resume any of them later with /sw-resume <name>.`,
+          "info"
+        );
+      }
+    }
   }
 
   // 2. Generate dirHash FIRST (used for untitled ID and directory)
