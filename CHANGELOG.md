@@ -2,6 +2,20 @@
 
 All notable changes to `@renatocaliari/stelow` will be documented in this file.
 
+## [0.36.6] - 2026-06-25
+
+### Fixed
+
+- **CI was failing** because `tests/unit/muxy-manifest-schema.test.ts`
+  validates permissions against the outdated pinned schema (missing
+  `files:read`/`files:write`). Updated the test to explicitly allow
+  these known-good permissions with inline docs referencing the
+  official Muxy docs. See AGENTS.md "Critical Muxy extension knowledge".
+- **Added `files:read` and `files:write` to muxy extension permissions.**
+  Without `files:read`, `muxy.files.read('stelow.json')` silently fails
+  with "permission denied", causing "No workflow data" even when the
+  correct workspace is active.
+
 ## [0.36.5] - 2026-06-25
 
 ### Fixed (muxy extension — build + events)
