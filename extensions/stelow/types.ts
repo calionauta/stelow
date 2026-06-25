@@ -326,6 +326,43 @@ export interface Workflow {
   description: string;
   draftContent?: string;
   source?: string;
+  // ── Workflow state machine ──
+  //
+  //                    /sw-start
+  //                       │
+  //                       ▼
+  //                  ┌──────────┐
+  //                  │  (none)  │  (initial state — no workflow exists)
+  //                  └──────────┘
+  //                       │
+  //                       │ /sw-start (creates)
+  //                       ▼
+  //                  ┌──────────┐         /sw-complete
+  //   ┌─────────────│ in-pro-  │───────────────────────┐
+  //   │ /sw-pause    │ gress    │  /sw-abort            │
+  //   │              └──────────┘                       ▼
+  //   ▼                  ▲                       ┌──────────┐
+  // ┌────────┐ /sw-resume│                       │ completed│
+  // │paused │────────────┘                       └──────────┘
+  // └────────┘
+  //   │
+  //   │ /sw-archive
+  //   ▼
+  // ┌──────────┐
+  // │archived │  (terminal — recoverable via /sw-unarchive)
+  // └──────────┘
+  //
+  // Transitions:
+  //   (none)     → in-progress : /sw-start
+  //   in-progress → paused     : /sw-pause OR auto-pause on /sw-start (v0.36.3+)
+  //   paused     → in-progress : /sw-resume
+  //   in-progress → completed  : /sw-complete OR /sw-next on phase 14
+  //   in-progress → archived   : /sw-archive
+  //   paused     → archived   : /sw-archive
+  //   completed  → archived   : /sw-archive
+  //   archived   → in-progress: /sw-unarchive (rare)
+  //
+  // See /sw-start (start.ts) for the auto-pause logic added in v0.36.3.
   status: string;      // in-progress | paused | completed | archived
   currentPhase: number;
   phases: Phase[];

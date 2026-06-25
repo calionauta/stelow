@@ -4,6 +4,20 @@ All notable changes to `@renatocaliari/stelow` will be documented in this file.
 
 ## [0.36.3] - 2026-06-24
 
+### Added (state machine documentation)
+
+- **`Workflow.status` enum documented** with full state diagram in
+  `extensions/stelow/types.ts`. States: in-progress | paused | completed
+  | archived. Transitions documented inline as comments.
+- **`tests/unit/workflow-state-machine.test.ts`** — 13 tests covering
+  - `getActiveWorkflow` returns null when no in-progress
+  - paused workflows are NOT active (v0.36.3 invariant)
+  - `getAllActiveWorkflows` returns in-progress + paused
+  - State transitions: /sw-start, /sw-pause, /sw-resume, /sw-complete,
+    /sw-archive (in-progress AND paused)
+  - Invariants: at most one in-progress per project (enforced by auto-pause);
+    terminal states (completed/archived) never returned
+
 ### Changed (workflow start behavior)
 
 - **`/sw-start` now auto-pauses existing in-progress workflows** instead
