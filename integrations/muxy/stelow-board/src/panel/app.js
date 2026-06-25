@@ -122,6 +122,8 @@ export class PipelinePanel {
       // getActiveWorkspacePath() is the same source loadTrackingData uses,
       // so we get the exact same value (avoids drift between filter and lookup).
       this.projectPath = await getActiveWorkspacePath().catch(() => null);
+      console.log('[stelow] workspace path:', this.projectPath);
+      console.log('[stelow] stelow.json workflows:', tracking?.workflows?.length ?? 0);
       this.projectName = projectName;
       this.workflows = [...(tracking?.workflows ?? []), ...extra];
       this.syncSelectedWorkflowWithLatest();
@@ -174,6 +176,12 @@ export class PipelinePanel {
   // ── Empty ─────────────────────────────────────────────────────────
 
   renderEmpty() {
+    // Fetch debug info async — stored after refresh.
+    const debugLines = [
+      `workspace: ${this.projectPath || 'not set'}`,
+      `project: ${this.projectName || 'unknown'}`,
+      `workflows: ${this.workflows?.length ?? 0} in stelow.json`,
+    ];
     return h('div', { class: 'empty-state' },
       icon('rectangle3group', 28, 'text-muted-foreground opacity-40'),
       h('div', { class: 'empty-state-title' }, 'No workflow data'),
@@ -181,6 +189,9 @@ export class PipelinePanel {
         'Open a project that uses stelow.\n' +
         'This panel shows workflows and their progress\n' +
         'through Shape → Build → Verify → Done pipeline.'
+      ),
+      h('div', { style: 'margin-top:16px;padding:8px;font-size:11px;font-family:monospace;opacity:0.5;text-align:left;line-height:1.5;border-top:1px solid var(--muxy-border, #ddd)' },
+        debugLines.map(line => h('div', {}, line)),
       ),
     );
   }
