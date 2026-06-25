@@ -1,6 +1,6 @@
 id = "stelow.board"
 name = "Stelow Board"
-version = "0.36.6"
+version = "0.36.7"
 min_herdr_version = "0.7.0"
 description = "Persistent side panel showing stelow workflow stages, projects, scopes, and tasks with click-to-drill navigation."
 platforms = ["linux", "macos"]
