@@ -957,14 +957,25 @@ export function summarizeDisplayName(draftContent) {
     .replace(/=== FILE:.*?===/g, '')
     .replace(/### Initial Draft\n\n/, '')
     .trim();
-  // First non-empty line under 80 chars
+  // First non-empty line — up to 120 chars, then ellipsis
   const firstLine = clean.split('\n')[0]?.trim();
-  if (firstLine && firstLine.length > 3 && firstLine.length < 80) {
-    return firstLine;
+  if (firstLine && firstLine.length > 3) {
+    if (firstLine.length <= 120) return firstLine;
+    // Return first ~117 chars + ellipsis
+    let cut = firstLine.slice(0, 117);
+    // Try to break at word boundary
+    const lastSpace = cut.lastIndexOf(' ');
+    if (lastSpace > 60) cut = cut.slice(0, lastSpace);
+    return cut + '...';
   }
-  // First 5 significant words
-  const words = clean.split(/\s+/).filter(w => w.length > 2).slice(0, 5);
-  if (words.length >= 2) return words.join(' ');
+  // Fallback: first 120 chars of any text
+  if (clean.length > 0) {
+    if (clean.length <= 120) return clean;
+    let cut = clean.slice(0, 117);
+    const lastSpace = cut.lastIndexOf(' ');
+    if (lastSpace > 60) cut = cut.slice(0, lastSpace);
+    return cut + '...';
+  }
   return null;
 }
 
