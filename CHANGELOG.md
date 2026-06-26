@@ -2,6 +2,18 @@
 
 All notable changes to `@renatocaliari/stelow` will be documented in this file.
 
+## [0.36.8] - 2026-06-26
+
+### Fixed (herdr plugin)
+
+- **`herdr plugin action invoke stelow.board.toggle` agora funciona.**
+  `open-board.sh` usava `--plugin stelow-board` (ID errado) e parseava
+  JSON da `herdr pane list` no nó errado (`data.panes` em vez de
+  `data.result.panes`). Script também ignorava `HERDR_PLUGIN_ROOT`
+  — fallback adicionado.
+- **README reorganizado**: keybinds separados do CLI reference, uso
+  TUI é primário, CLI fica em seção de teste/debug.
+
 ## [0.36.7] - 2026-06-25
 
 ### Added (herdr TUI)

@@ -98,32 +98,49 @@ The `source:` field tells you which install method was used:
   installed from the GitHub subdir
 - `local:/path/to/stelow-board` — linked from local source
 
-Then inside a running herdr session, press `prefix+w` (default
-`ctrl+b w`) to toggle the board. Or invoke the action directly:
+## Usage (TUI)
+
+Inside a running herdr session, press **`prefix+w`** (default `ctrl+b w`)
+to toggle the board open/closed.
+
+Once open, navigate with:
+
+| Key | Action |
+|---|---|
+| `prefix+w` | toggle board (open / focus / close) |
+| `Tab` / `j` / `↓` | next workflow |
+| `Shift+Tab` / `k` / `↑` | previous workflow |
+| `J` / `]` | next workflow (skip alias) |
+| `K` / `[` | previous workflow (skip alias) |
+| `r` | manual refresh (also auto every 2s) |
+| `?` | toggle help overlay |
+| `Enter` / `Space` | toggle full prompt view |
+| `q` / `Esc` | quit (close pane) |
+
+### Mouse
+
+Click a workflow row in the **left column** → select that workflow.
+
+## CLI (testing / debug)
+
+Keybinds são o uso normal no TUI. Se quiser testar ou invocar
+programaticamente, use:
 
 ```bash
 herdr plugin action invoke stelow.board.toggle
 ```
 
-## Keybinds
+Isso executa o mesmo `open-board.sh` que o keybind. Se o painel
+não aparecer, rode o script manualmente para ver erros:
 
-| Key | Action |
-|---|---|
-| `prefix+w` | toggle board (open / focus / close) |
-| `Tab` / `w` | next workflow |
-| `Shift+Tab` | previous workflow |
-| `J` / `]` | next workflow |
-| `K` / `[` | previous workflow |
-| `j` / `↓` | next workflow (alias of Tab) |
-| `k` / `↑` | previous workflow (alias of Shift+Tab) |
-| `r` | manual refresh (also auto every 2s) |
-| `?` | toggle help overlay |
-| `q` / `Esc` | quit (close pane) |
+```bash
+cd integrations/herdr/stelow-board
+./scripts/open-board.sh "$PWD"
+```
 
-## Mouse
-
-- Click a workflow row in the **left column** → select that workflow
-- Click anywhere else → no-op
+> **Nota:** quando invocado via keybind, herdr define `HERDR_PLUGIN_ROOT`
+> automaticamente. Via `plugin action invoke`, também funciona — o
+> script usa essa env var como fallback.
 
 ## Data sources (single source of truth)
 
