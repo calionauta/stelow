@@ -9,7 +9,7 @@ import {
   readGlobalTracking, writeGlobalTracking,
   getActiveWorkflow, getAllActiveWorkflows, resolveProjectDir,
   toSafeName, generateDirHash, hashToWorkflowId, getDateStamp,
-  readSourceFile, truncateText, detectCLI, updateWorkflowIndexJson
+  readSourceFile, truncateText, detectCLI
 } from "./state";
 import { updateFooter, getUIAdapter, initUIAdapter } from "./ui";
 import { buildSkillActivationMessage } from "./start-message";
@@ -89,12 +89,6 @@ export default async function cmdStart(
         if (idx === -1) continue;
         tracking.workflows[idx].status = "paused";
         tracking.workflows[idx].updated = now;
-        // Sync index.json on disk
-        try {
-          updateWorkflowIndexJson(wd, tracking.workflows[idx], {
-            workflow_status: "paused",
-          });
-        } catch { /* index.json may not exist for legacy workflows */ }
         pausedCount++;
         pausedNames.push(wf.name);
       }

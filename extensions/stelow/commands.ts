@@ -280,11 +280,6 @@ function cmdPause(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
       writeTracking(wd, t);
     }
   }
-  // Sync index.json on disk (write-through)
-  updateWorkflowIndexJson(wd, wf, {
-    workflow_status: "paused",
-  });
-
   // Sync stages guard state
   syncStagesGuardState(wd, wf.currentPhase);
 
@@ -350,11 +345,6 @@ async function cmdResume(pi: ExtensionAPI, args: string, ctx: CmdCtx) {
     if (idx !== -1) t.workflows[idx].status = "in-progress";
     writeTracking(wd, t);
   }
-  // Sync index.json on disk (write-through)
-  updateWorkflowIndexJson(wd, paused, {
-    workflow_status: "in-progress",
-  });
-
   // Sync stages guard state
   syncStagesGuardState(wd, paused.currentPhase);
 
@@ -581,13 +571,6 @@ function cmdSetPhase(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
       writeTracking(wd, t);
     }
   }
-  // Sync index.json on disk (write-through)
-  updateWorkflowIndexJson(wd, wf, {
-    current_phase: PHASE_NAMES[phase].toLowerCase(),
-    current_phase_index: phase,
-    workflow_status: "in-progress",
-  });
-
   // Sync wf in-memory so notifyPhase compares correctly
   wf.currentPhase = phase;
   updateFooter(ctx, wd);
@@ -687,11 +670,6 @@ function cmdNext(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
     // Sync wf in-memory state
     wf.phases.forEach(p => { p.status = "completed"; });
     wf.status = "completed";
-    updateWorkflowIndexJson(wd, wf, {
-      workflow_status: "completed",
-      current_phase_index: PHASE_NAMES.length - 1,
-      current_phase: PHASE_NAMES[PHASE_NAMES.length - 1].toLowerCase(),
-    });
     syncStagesGuardState(wd, PHASE_NAMES.length - 1);
     updateFooter(ctx, wd);
     ctx.ui?.notify(`🎉 ${wf.name} completed!`, "info");
@@ -712,13 +690,6 @@ function cmdNext(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
       writeTracking(wd, t);
     }
   }
-  // Sync index.json on disk (write-through — third state source)
-  updateWorkflowIndexJson(wd, wf, {
-    current_phase: PHASE_NAMES[next].toLowerCase(),
-    current_phase_index: next,
-    workflow_status: "in-progress",
-  });
-
   // Sync wf in-memory so notifyPhase compares correctly
   wf.currentPhase = next;
   updateFooter(ctx, wd);
@@ -745,13 +716,6 @@ function cmdComplete(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
       writeTracking(wd, t);
     }
   }
-  // Sync index.json on disk
-  updateWorkflowIndexJson(wd, wf, {
-    workflow_status: "completed",
-    current_phase_index: PHASE_NAMES.length - 1,
-    current_phase: PHASE_NAMES[PHASE_NAMES.length - 1].toLowerCase(),
-  });
-
   // Sync stages guard state
   syncStagesGuardState(wd, PHASE_NAMES.length - 1);
 

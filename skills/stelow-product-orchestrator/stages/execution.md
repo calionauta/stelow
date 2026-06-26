@@ -49,50 +49,7 @@ or (3) stop and re-plan.
 
 ---
 
-### execution:10 — Git Worktree Check
-
-**Check if the workflow is in an isolated directory.** If multiple workflows
-modify the same code in parallel, use a worktree to avoid conflicts:
-
-```bash
-if git rev-parse --git-dir | grep -q '.git/worktrees/'; then
-  echo "INSIDE_WORKTREE"
-else
-  echo "MAIN_REPO"
-fi
-```
-
-**If in the main repository (`MAIN_REPO`) and modifying code:**
-Use the ask tool (see `references/cli-tools/structured-question.md`) with Pattern 1 from `stages/ask-patterns.md` for the worktree decision.
-
-```markdown
-Question: This workflow will modify code. Create an isolated branch + worktree?
-Options:
-  - Yes — create isolated worktree (Recommended)
-  - No — execute in current directory
-```
-```
-
-**If Yes:**
-```bash
-BASE_BRANCH=$(git remote show origin 2>/dev/null | grep "HEAD branch" | cut -d" " -f5 || echo "main")
-git fetch origin 2>/dev/null || true
-git worktree add .worktrees/sw-{name}-{date} -b pw/{name}/{YYYY-MM-DD} "$BASE_BRANCH"
-cd .worktrees/sw-{name}-{date}
-echo "WORKTREE_ACTIVE"
-```
-
-- Copy the approved plan (`.stelow/`) to the worktree if needed
-- Execute all scopes inside the worktree
-- At the end, ask: "Commit + push?" and "Remove worktree?"
-
-**If No or already in a worktree:**
-Proceed directly to scope execution in the current directory.
-
-> ⚠️ The worktree **is not mandatory**. Workflows with 1 scope or no code
-> changes can skip this step. The question is always optional.
-
-### execution:20 — Scope Executor Routing
+### execution:10 — Scope Executor Routing
 
 > **Goal system:** See `references/cli-tools/goals.md` for all scope types —
 > optimization scopes use the goals tool with benchmark verify commands.
@@ -154,7 +111,7 @@ APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-
 > **Tip:** `/supervise` is especially useful for long scopes where the LLM
 > may forget the original objective. Activate WHEN STARTING the scope, not before.
 
-### execution:30 — Testing Gates (AI-Aware Testing for Software Products)
+### execution:20 — Testing Gates (AI-Aware Testing for Software Products)
 
 **For test-* scopes, hard blocks are enforced:**
 
@@ -282,3 +239,35 @@ If `thermo-nuclear-code-quality-review` is not installed:
 - document the skipped external review in the verification notes
 
 See `references/cli-tools/codequality-review.md` for the full trigger policy.
+
+---
+
+### Advanced: Git Worktree Isolation
+
+> ⚠️ **Not recommended for most workflows.** Execute in the current directory
+> unless you have parallel scopes that modify the same files AND you understand
+> git worktree merge.
+
+If you have multiple parallel scopes that touch overlapping files, a git worktree
+isolates each scope's changes on its own branch:
+
+```bash
+# Create worktree on a new branch from main
+git fetch origin 2>/dev/null || true
+BASE_BRANCH=$(git remote show origin 2>/dev/null |
+  grep "HEAD branch" | cut -d" " -f5 || echo "main")
+git worktree add .worktrees/sw-{name}-{date} \
+  -b pw/{name}/{YYYY-MM-DD} "$BASE_BRANCH"
+```
+
+**After execution, merge back:**
+```bash
+git checkout "$BASE_BRANCH"
+git merge pw/{name}/{YYYY-MM-DD}
+git push origin "$BASE_BRANCH"
+git worktree remove .worktrees/sw-{name}-{date}
+git branch -D pw/{name}/{YYYY-MM-DD}
+```
+
+**Merge conflicts:** resolve manually or use `git mergetool`. If conflicts
+are extensive, consider sequential execution instead.

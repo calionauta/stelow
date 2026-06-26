@@ -158,8 +158,11 @@ LLMs suffer from **context rot**: compliance with their own rules drops from
 - See `stages/execution.md` for details.
 
 ### Worktree
-- Optional in Execution stage. Ask the user only if modifying code in shared repo AND parallel workflows exist.
-- Single-scope workflows can skip worktree.
+- **Default:** execute all scopes in the current directory. Sequential execution or subagent parallelism
+  with fresh context avoids file conflicts without worktree complexity.
+- **Advanced:** see `stages/execution.md#advanced-git-worktree-isolation` for git worktree usage
+  when parallel scopes must modify overlapping files. Includes merge instructions.
+  Not recommended for most workflows — only use if you understand git worktree lifecycle.
 
 ### Workflow Interruption
 

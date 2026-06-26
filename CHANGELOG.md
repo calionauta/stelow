@@ -2,6 +2,33 @@
 
 All notable changes to `@renatocaliari/stelow` will be documented in this file.
 
+## [0.36.9] - 2026-06-26
+
+### Added
+
+- **`blockedBy?: string[]` field on `Scope` type** — scopes now carry explicit dependency
+  IDs, parsed from `Dependencies:` in spec-tech.md.
+- **`readyScopes()` utility** — 10-line function returns scopes whose dependencies
+  are satisfied. Replaces hardcoded phase ordering with data-driven scheduling.
+
+### Changed
+
+- **Index.json write folded into `writeTracking()`** — eliminates 7 sync callsites.
+  Every mutation to `stelow.json` now automatically syncs `.stelow/<date>/<hash>/index.json`.
+  Archive fallbacks (dirHash robustness) remain explicit.
+- **Worktree removed from default execution flow.** The `execution:10` prompt
+  "Create isolated branch + worktree?" was dangerous: LLMs mishandle multi-step git,
+  and the instruction had no merge step. Replaced with simple "execute in current dir".
+  Worktree moved to **Advanced: Git Worktree Isolation** at end of `execution.md`
+  with real merge instructions (`git merge`, `git push`, `git worktree remove`).
+- **`blockedBy` is optional** — prevents runtime crash on legacy scope data
+  that lacks the field.
+
+### Fixed
+
+- **`readyScopes()` handles `undefined` blockedBy** via `(s.blockedBy ?? []).every(...)`.
+  Legacy scopes without the field no longer throw.
+
 ## [0.36.8] - 2026-06-26
 
 ### Fixed (herdr plugin)

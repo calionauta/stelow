@@ -308,6 +308,7 @@ export interface Scope {
   name: string;         // e.g. "Auth Foundation"
   type: string;         // e.g. "feature", "optimization", "spike", "test-unit"
   status: ScopeStatus;
+  blockedBy?: string[];  // Scope IDs that must complete first. Omitted/[] = no deps. Parsed from "Dependencies: [SCOPE-1]" in spec-tech.md.
   iteration?: number;   // current iteration count (for feature scopes)
   maxIterations?: number; // from [MAX_ITERATIONS]
   source?: string;      // e.g. "spec-tech" | "audit-gap" — where this scope originated

@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach, afterEach } from 'vitest';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { diagnoseWorkflowProject, formatDoctorReport } from '../../extensions/stelow/doctor';
@@ -96,13 +96,14 @@ describe('sw-doctor diagnostics', () => {
   it('detects missing index and global mismatch', () => {
     const local = wf('missing-index', 'in-progress', 2);
     const global = wf('missing-index', 'paused', 1, { cwd: projectDir });
-    const tracking: TrackingData = {
+    // Write stelow.json directly (bypassing writeTracking) so index.json is NOT created.
+    writeFileSync(join(projectDir, 'stelow.json'), JSON.stringify({
       $schema: '',
       version: '1.0',
       created: '',
       updated: '',
       workflows: [local],
-    };
+    }, null, 2));
     const globalData: TrackingData = {
       $schema: '',
       version: '1.0',
@@ -110,7 +111,6 @@ describe('sw-doctor diagnostics', () => {
       updated: '',
       workflows: [global],
     };
-    writeTracking(projectDir, tracking);
     writeGlobalTracking(globalData);
 
     const report = diagnoseWorkflowProject(projectDir);

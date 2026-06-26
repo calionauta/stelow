@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, writeFileSync, statSync, readdirSync, mkdirSync } from "node:fs";
 import { join, basename, dirname, extname, resolve as resolvePath } from "node:path";
 import { homedir } from "node:os";
-import type { Workflow, TrackingData, ParsedInput, CLI } from "./types";
+import type { Workflow, TrackingData, Scope, ParsedInput, CLI } from "./types";
 import { TASK_ICONS } from "./modules/task";
 import type { PhaseTodo, PhaseTodosData } from "./modules/task";
 import { WORKFLOW_DIR, TRACKING_FILE, GLOBAL_TRACKING_FILE, SCHEMA_URL, PHASE_NAMES, getCLICapabilities } from "./types";
@@ -227,6 +227,15 @@ export function readGlobalTracking(): TrackingData | null {
 export function writeTracking(cwd: string, data: TrackingData): void {
   data.updated = new Date().toISOString();
   writeFileSync(getTrackingPath(cwd), JSON.stringify(data, null, 2));
+
+  // Write-through to index.json for every workflow.
+  // This replaces ~9 explicit updateWorkflowIndexJson calls from commands.ts.
+  // The 3 archive-path calls remain explicit (they fire after workflow is removed from tracking).
+  for (const wf of data.workflows) {
+    if (wf.dirHash) {
+      updateWorkflowIndexJson(cwd, wf, {});
+    }
+  }
 }
 
 export function writeGlobalTracking(data: TrackingData): void {
@@ -671,6 +680,30 @@ export function updateWorkflowIndexJson(
   mkdirSync(dirname(idxPath), { recursive: true });
   writeFileSync(idxPath, JSON.stringify(idx, null, 2));
   return true;
+}
+
+/**
+ * Return scopes whose dependencies are all satisfied and status is `pending`.
+ * These are "ready" to execute. Independent scopes (empty blockedBy) are always ready.
+ * KISS: no DAG library, no topological sort. Caller loops readyScopes() until empty.
+ *
+ * Usage:
+ * ```
+ * let ready = readyScopes(scopes);
+ * while (ready.length > 0) {
+ *   for (const s of ready) { }
+ *   // after each finishes, mark s.status = "completed"
+ *   ready = readyScopes(scopes);
+ * }
+ * ```
+ */
+export function readyScopes(scopes: Scope[]): Scope[] {
+  const completed = new Set(
+    scopes.filter(s => s.status === "completed").map(s => s.id)
+  );
+  return scopes.filter(
+    s => s.status === "pending" && (s.blockedBy ?? []).every(dep => completed.has(dep))
+  );
 }
 
 /** Safe directory listing that returns [] on error. */
