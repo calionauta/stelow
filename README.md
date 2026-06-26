@@ -392,8 +392,8 @@ stelow is designed to be **self-contained** — the 25 skills + installer cover 
 | [pi-subagents](https://github.com/nicobailon/pi-subagents) | Optional (Pi only) | Advanced subagent features (fork/fresh context semantics, parent-child contracts) | `npm:pi-subagents` | Use the CLI's built-in `subagent()` instead — same outcome, fewer features |
 | [pi-intercom](https://github.com/nicobailon/pi-intercom) | Optional (Pi only) | Session-to-session coordination | `npm:pi-intercom` | Skip — no intercom capability |
 | [pi-supervisor](https://github.com/tintinweb/pi-supervisor) | Optional (Pi only) | Conversation supervision during execution | `npm:pi-supervisor` | Skip — no supervision; rely on `stages-guard` for invariant enforcement |
-| [Muxy.app](https://muxy.app/) + `stelow-board` Muxy extension | Optional (macOS) | Webview panel showing workflow state with phase progress and quick actions | Install Muxy.app, then load extension from `integrations/muxy/stelow-board/` | No webview — read `.stelow/` files directly or use Herdr split-pane TUI |
-| [herdr](https://herdr.dev/) + `stelow-board` plugin | Optional | Split-pane TUI showing workflow state with click-to-drill | `herdr plugin install renatocaliari/stelow-board` | No TUI — read `.stelow/` files directly or use Muxy webview panel |
+| [Muxy.app](https://muxy.app/) + stelow Muxy extension | Optional (macOS) | Webview panel showing workflow state with phase progress and quick actions | Install Muxy.app, then load extension from `integrations/muxy/stelow/` | No webview — read `.stelow/` files directly or use Herdr split-pane TUI |
+| [herdr](https://herdr.dev/) + stelow plugin | Optional | Split-pane TUI showing workflow state with click-to-drill | `herdr plugin install renatocaliari/stelow` | No TUI — read `.stelow/` files directly or use Muxy webview panel |
 
 **Design principle:** stelow is **harness-agnostic**. Zero external tools are required to run the full product workflow. Each optional integration enhances a specific phase but never blocks progress. The installer (`./install.sh`) auto-installs Pi npm packages when Pi is detected — other tools (cymbal, ctx7) remain user-managed.
 
@@ -419,12 +419,12 @@ curl -fsSL https://raw.githubusercontent.com/renatocaliari/stelow/main/setup.sh 
 | 6 | cymbal | codebase navigation via `brew install 1broseidon/tap/cymbal` (macOS) or `go install` (Linux). Skipped gracefully if brew/Go absent | macOS, Linux |
 | 7 | ctx7 | library docs fetcher via `npx ctx7 setup` (interactive OAuth — prompts the user) | All CLIs |
 | 8 | safe-change | pre-planning regression check via `npx skills add PrinNova/pi-agent-codebase-workflows -g` | All CLIs |
-| 9 | Herdr plugin | `stelow-board` split-pane TUI installed via `herdr plugin install renatocaliari/stelow-board` — **only if** `herdr` CLI is on PATH | All CLIs (via Herdr) |
+| 9 | Herdr plugin | stelow split-pane TUI installed via `herdr plugin install renatocaliari/stelow` — **only if** `herdr` CLI is on PATH | All CLIs (via Herdr) |
 | 10 | Muxy detection | detects `/Applications/Muxy.app` or `muxy` binary; prints install link if absent (cannot auto-install — Muxy is macOS-only, distributed via GitHub releases) | macOS |
 
 > **Not using pi.dev?** Skills land in `~/.agents/skills/` and work on OpenCode, Claude Code, and Codex too. You just won't get the Pi-only extensions or TUI overlay. The workflow itself runs fine.
 >
-> **Muxy.app can't be auto-installed.** It's a macOS-only app (SwiftUI + libghostty), open-source under MIT license, distributed via [GitHub releases](https://github.com/muxy-app/muxy/releases). Path A detects whether it's present and tells you how to install if not. Once installed, load the `stelow-board` extension from `integrations/muxy/stelow-board/`.
+> **Muxy.app can't be auto-installed.** It's a macOS-only app (SwiftUI + libghostty), open-source under MIT license, distributed via [GitHub releases](https://github.com/muxy-app/muxy/releases). Path A detects whether it's present and tells you how to install if not. Once installed, load the stelow extension from `integrations/muxy/stelow/`.
 
 ### 📋 Path B: Existing pi.dev User
 
@@ -531,7 +531,7 @@ Both integrations share the same workflow state (`.stelow/`), both work with any
 
 ### Muxy Webview Panel
 
-> **Requires [Muxy.app](https://muxy.app/) + the stelow-board extension loaded.** Muxy is a **macOS terminal multiplexer** — think tmux with a native Mac UI: project-based terminal workspaces, tabs, splits, and custom panels. The webview panel is a Muxy plugin surface, not a web app or a Pi feature.
+> **Requires [Muxy.app](https://muxy.app/) + the stelow extension loaded.** Muxy is a **macOS terminal multiplexer** — think tmux with a native Mac UI: project-based terminal workspaces, tabs, splits, and custom panels. The webview panel is a Muxy plugin surface, not a web app or a Pi feature.
 
 The panel shows:
 
@@ -540,11 +540,11 @@ The panel shows:
 - Upcoming tasks
 - Quick actions
 
-**Install:** Muxy.app (macOS-only) + the stelow-board Muxy extension at `integrations/muxy/stelow-board/`. To load the extension in Muxy: open **Extensions modal → Create**, pick the folder, and Muxy auto-detects the built `dist/`. See [Muxy's Get started guide](https://muxy.app/docs/extensions/get-started) for the official workflow.
+**Install:** Muxy.app (macOS-only) + the stelow Muxy extension at `integrations/muxy/stelow/`. To load the extension in Muxy: open **Extensions modal → Create**, pick the folder, and Muxy auto-detects the built `dist/`. See [Muxy's Get started guide](https://muxy.app/docs/extensions/get-started) for the official workflow.
 
 ### Herdr Split-Pane TUI
 
-> **Requires [Herdr](https://herdr.dev/) + the `stelow-board` plugin installed.** Herdr is a **terminal multiplexer** — tmux-style persistence, mouse-native panes, agent state tracking, CLI + socket API. The TUI plugin runs as a Rust binary in a split pane, the same model as `herdr-file-viewer`.
+> **Requires [Herdr](https://herdr.dev/) + the stelow plugin installed.** Herdr is a **terminal multiplexer** — tmux-style persistence, mouse-native panes, agent state tracking, CLI + socket API. The TUI plugin runs as a Rust binary in a split pane, the same model as `herdr-file-viewer`.
 
 The TUI shows:
 
@@ -555,7 +555,7 @@ The TUI shows:
 
 **Keybinds:** `prefix+w` toggle · `Tab`/`j`/`k` next/prev workflow · `r` refresh · `?` help · `q`/`Esc` quit. Detail card shows prompt + current stage + scope; click workflow rows to select.
 
-**Install:** `herdr plugin install renatocaliari/stelow-board` (or `herdr plugin link integrations/herdr/stelow-board/` for local dev after `cargo build --release`). Source under `integrations/herdr/stelow-board/`. See [herdr's plugin docs](https://herdr.dev/docs/plugins/) for the official install/link workflow.
+**Install:** `herdr plugin install renatocaliari/stelow` (or `herdr plugin link integrations/herdr/stelow/` for local dev after `cargo build --release`). Source under `integrations/herdr/stelow/`. See [herdr's plugin docs](https://herdr.dev/docs/plugins/) for the official install/link workflow.
 
 ---
 

@@ -596,68 +596,68 @@ install_safe_change() {
 # Herdr plugin install is intentionally separate from install.sh
 # (which only flattens skills to ~/.agents/skills/). The herdr plugin
 # has its own distribution path: `herdr plugin install` from
-# https://github.com/renatocaliari/stelow/integrations/herdr/stelow-board,
+# https://github.com/renatocaliari/stelow/integrations/herdr/stelow,
 # then `cargo build --release` because Rust needs a local toolchain.
 install_herdr_plugin() {
-  log_step "Step 9/10: Herdr stelow-board plugin (split-pane TUI)"
+  log_step "Step 9/10: Herdr stelow plugin (split-pane TUI)"
   if [[ "$DRY_RUN" == "true" ]]; then
     log_info "[dry-run] Would install herdr plugin if herdr CLI detected"
-    record_skip "herdr stelow-board"
+    record_skip "herdr stelow"
     return
   fi
   if ! command -v herdr &>/dev/null; then
-    log_info "herdr CLI not detected — skipping stelow-board plugin install."
-    log_info "Install herdr from https://herdr.dev/, then run: herdr plugin install renatocaliari/stelow-board"
-    record_skip "herdr stelow-board (no herdr CLI)"
+    log_info "herdr CLI not detected — skipping stelow plugin install."
+    log_info "Install herdr from https://herdr.dev/, then run: herdr plugin install renatocaliari/stelow"
+    record_skip "herdr stelow (no herdr CLI)"
     return
   fi
 
-  if ! confirm_optional "herdr stelow-board plugin"; then
-    record_skip "herdr stelow-board"
+  if ! confirm_optional "herdr stelow plugin"; then
+    record_skip "herdr stelow"
     return
   fi
 
   # Find the herdr plugins directory
   local plugin_dir
-  plugin_dir=$(find ~/.config/herdr/plugins -type d -name "stelow-board" -path "*/integrations/herdr/*" 2>/dev/null | head -1)
+  plugin_dir=$(find ~/.config/herdr/plugins -type d -name "stelow" -path "*/integrations/herdr/*" 2>/dev/null | head -1)
 
-  if herdr plugin install renatocaliari/stelow-board; then
+  if herdr plugin install renatocaliari/stelow; then
     # Discover plugin dir after install. herdr stores it at:
-    #   ~/.config/herdr/plugins/github/stelow.board-<hash>/integrations/herdr/stelow-board/
+    #   ~/.config/herdr/plugins/github/stelow-<hash>/integrations/herdr/stelow/
     # The hash suffix changes per install, so we glob for the directory.
     local plugin_dir
     plugin_dir=$(find ~/.config/herdr/plugins -type d \
-      \( -name "stelow-board" -path "*/integrations/herdr/*" -o \
-         -name "stelow-board" -path "*/stelow-board*" \) 2>/dev/null \
+      \( -name "stelow" -path "*/integrations/herdr/*" -o \
+         -name "stelow" -path "*/stelow*" \) 2>/dev/null \
       | head -1)
 
     if [[ -n "$plugin_dir" ]] && [[ -f "$plugin_dir/Cargo.toml" ]]; then
-      log_info "Building stelow-board binary (cargo build --release)..."
+      log_info "Building stelow binary (cargo build --release)..."
       if command -v cargo &>/dev/null; then
         (cd "$plugin_dir" && cargo build --release 2>&1) && {
-          if [[ -x "$plugin_dir/target/release/stelow-board" ]]; then
-            log_success "stelow-board binary built at $plugin_dir/target/release/stelow-board"
-            record_ok "herdr stelow-board (built)"
+          if [[ -x "$plugin_dir/target/release/stelow" ]]; then
+            log_success "stelow binary built at $plugin_dir/target/release/stelow"
+            record_ok "herdr stelow (built)"
           else
-            log_warn "Build succeeded but binary not found at target/release/stelow-board"
-            record_fail "herdr stelow-board (binary missing after build)"
+            log_warn "Build succeeded but binary not found at target/release/stelow"
+            record_fail "herdr stelow (binary missing after build)"
           fi
         } || {
           log_warn "cargo build --release failed. See above for details."
-          record_fail "herdr stelow-board (build failed)"
+          record_fail "herdr stelow (build failed)"
         }
       else
         log_warn "Rust/Cargo not found. Install from https://rustup.rs/ then run: cd '$plugin_dir' && cargo build --release"
-        record_fail "herdr stelow-board (no cargo)"
+        record_fail "herdr stelow (no cargo)"
       fi
     else
       # Plugin dir not found — install still succeeded but we can't find the source
-      record_ok "herdr stelow-board"
+      record_ok "herdr stelow"
       log_info "Plugin installed. To build the binary: find the plugin directory and run 'cargo build --release'"
     fi
   else
-    log_warn "stelow-board plugin install failed. See https://herdr.dev/docs/plugins/ for troubleshooting."
-    record_fail "herdr stelow-board (plugin install failed)"
+    log_warn "stelow plugin install failed. See https://herdr.dev/docs/plugins/ for troubleshooting."
+    record_fail "herdr stelow (plugin install failed)"
   fi
 }
 
@@ -670,7 +670,7 @@ detect_muxy() {
   fi
   if [[ -d "/Applications/Muxy.app" ]] || command -v muxy &>/dev/null; then
     log_success "Muxy.app detected."
-    log_info "To load the stelow-board extension: Muxy → Extensions modal → Create, pick integrations/muxy/stelow-board/."
+    log_info "To load the stelow extension: Muxy → Extensions modal → Create, pick integrations/muxy/stelow/."
     log_info "See https://muxy.app/docs/extensions/get-started for details."
     record_ok "Muxy.app"
   else
@@ -756,7 +756,7 @@ main() {
   echo "    • cymbal (codebase navigation) — brew/go"
   echo "    • ctx7 (library docs) — OAuth setup"
   echo "    • safe-change (pre-planning regression check)"
-  echo "    • stelow-board Herdr plugin (if herdr CLI detected)"
+  echo "    • stelow Herdr plugin (if herdr CLI detected)"
   echo "    • Muxy.app detection (manual install from https://muxy.app/)"
   echo ""
 

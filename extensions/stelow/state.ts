@@ -3,7 +3,6 @@ import { join, basename, dirname, extname, resolve as resolvePath } from "node:p
 import { homedir } from "node:os";
 import type { Workflow, TrackingData, Scope, ParsedInput, CLI } from "./types";
 import { TASK_ICONS } from "./modules/task";
-import type { PhaseTodo, PhaseTodosData } from "./modules/task";
 import { WORKFLOW_DIR, TRACKING_FILE, GLOBAL_TRACKING_FILE, SCHEMA_URL, PHASE_NAMES, getCLICapabilities } from "./types";
 import { PHASE_TO_STAGE } from "./stages-guard";
 
@@ -706,6 +705,37 @@ export function readyScopes(scopes: Scope[]): Scope[] {
   );
 }
 
+/**
+ * Parse checklist.md and return task counts per scope.
+ * Format:
+ * ```markdown
+ * ### SCOPE-1: Auth Foundation
+ * - [x] Task done
+ * - [ ] Task pending
+ * ```
+ * Returns { "SCOPE-1: Auth Foundation": { total: 2, done: 1 } }
+ */
+export function parseChecklist(path: string): Record<string, { total: number; done: number }> {
+  let content: string;
+  try { content = readFileSync(path, "utf-8"); }
+  catch { return {}; }
+
+  const result: Record<string, { total: number; done: number }> = {};
+  let current = "";
+
+  for (const line of content.split("\n")) {
+    const header = line.match(/^###\s+(.+)$/);
+    if (header) { current = header[1].trim(); continue; }
+    if (line.match(/^- \[[ x]\]/)) {
+      if (!current) continue;
+      result[current] ??= { total: 0, done: 0 };
+      result[current].total++;
+      if (line[3] === "x") result[current].done++;
+    }
+  }
+  return result;
+}
+
 /** Safe directory listing that returns [] on error. */
 function readdirSafe(dir: string): string[] {
   try { return readdirSync(dir); }
@@ -732,55 +762,6 @@ export function readSourceFile(sourcePath: string): string | null {
 export function truncateText(text: string, maxLen: number): string {
   if (text.length <= maxLen) return text;
   return text.slice(0, maxLen - 100) + "\n\n[... truncated ...]";
-}
-
-const PHASE_TODOS_FILE = "phase-todos.json";
-
-function getPhaseTodosPath(cwd: string, wf: Workflow): string {
-  if (!wf.dirHash) return "";
-  const ds = getDateStamp(new Date(wf.created));
-  return join(cwd, WORKFLOW_DIR, ds, wf.dirHash, PHASE_TODOS_FILE);
-}
-
-export function readPhaseTodos(cwd: string, wf: Workflow): PhaseTodosData | null {
-  const path = getPhaseTodosPath(cwd, wf);
-  if (!path || !existsSync(path)) return null;
-  try {
-    return JSON.parse(readFileSync(path, "utf-8")) as PhaseTodosData;
-  } catch {
-    return null;
-  }
-}
-
-export function writePhaseTodos(cwd: string, wf: Workflow, todos: PhaseTodo[]): void {
-  const path = getPhaseTodosPath(cwd, wf);
-  if (!path) return;
-  const data: PhaseTodosData = {
-    workflowName: wf.name,
-    phase: PHASE_NAMES[wf.currentPhase] || "unknown",
-    phaseIndex: wf.currentPhase,
-    todos,
-    updatedAt: new Date().toISOString(),
-  };
-  try {
-    writeFileSync(path, JSON.stringify(data, null, 2));
-  } catch { /* skip */ }
-}
-
-export function getPhaseTodos(cwd: string, wf: Workflow): PhaseTodo[] {
-  const data = readPhaseTodos(cwd, wf);
-  return data?.todos || [];
-}
-
-let _phaseTodosCache: PhaseTodo[] = [];
-
-export function setPhaseTodos(todos: PhaseTodo[]): void {
-  _phaseTodosCache = todos;
-}
-
-export function getPhaseTodosFromCache(cwd: string, wf: Workflow): PhaseTodo[] {
-  if (_phaseTodosCache.length > 0) return _phaseTodosCache;
-  return getPhaseTodos(cwd, wf);
 }
 
 // ── Inbox ──────────────────────────────────────────────────────────────
@@ -848,4 +829,3 @@ export function clearInbox(cwd: string): void {
 
 // Re-export for convenience (used by commands.ts)
 export { TASK_ICONS };
-export type { PhaseTodo };

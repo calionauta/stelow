@@ -2,6 +2,40 @@
 
 All notable changes to `@renatocaliari/stelow` will be documented in this file.
 
+## [0.36.10] - 2026-06-26
+
+### Added
+
+- **checklist.md replaces phase-todos.json** — LLM now writes markdown checklists
+  (`- [x]` / `- [ ]`) instead of JSON todos. Human-readable, Plannotator-friendly,
+  ~3.5x fewer tokens. File at `.stelow/<date>/<hash>/checklist.md`.
+- **Plannotator auto-open during Execution** — LLM runs `plannotator annotate`
+  when the checklist is created. Browser shows interactive checkboxes updating
+  in real time as tasks complete.
+- **`parseChecklist()` utility** — reads checklist.md and returns task counts
+  per scope. Used by /sw-next scope completion gate as optional safety net.
+- **`execution:05` step** in execution.md — checklist creation + Plannotator
+  integration documented.
+
+### Changed
+
+- **All phase-todos.json code removed.** Zero backward compat, zero migration,
+  zero dead code. `PhaseTodo`/`PhaseTodosData` types eliminated.
+- **Extensions renamed:** `stelow-board`/`stelow-muxy` → `stelow` across Muxy
+  extension, Herdr plugin, package names, binary names, plugin IDs, commands,
+  and all documentation.
+- **todo.md rewritten** — markdown checklist format, Plannotator integration,
+  CLI instructions updated for all harnesses.
+- **architecture.md updated** — phase-todos.json → checklist.md.
+- **Muxy panel comment fix** — stale phase-todos comment corrected.
+
+### Removed
+
+- `PHASE_TODOS_FILE`, `getPhaseTodosPath`, `readPhaseTodos`, `writePhaseTodos`,
+  `getPhaseTodos`, `_phaseTodosCache`, `setPhaseTodos`, `getPhaseTodosFromCache`,
+  `migratePhaseTodosToChecklist` — all from state.ts.
+- `PhaseTodo`, `PhaseTodosData` types from modules/task.ts and modules/index.ts.
+
 ## [0.36.9] - 2026-06-26
 
 ### Added

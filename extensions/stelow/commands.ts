@@ -11,9 +11,10 @@ import {
   readTracking, writeTracking, readGlobalTracking, writeGlobalTracking,
   getActiveWorkflow, renameWorkflow, toSafeName, reconcileTracking, scanWorkflowDirs,
   archiveWorkflowOnDisk, updateWorkflowIndexJson, resolveProjectDir,
+  parseChecklist,
   readInbox, addToInbox, removeFromInbox, clearInbox,
   findWorkflowIndexByName, findWorkflowIndexForProject, isWorkflowFromProject, isSamePath,
-  removeGlobalIndexEntry, addToGlobalIndex,
+  removeGlobalIndexEntry, addToGlobalIndex, getDateStamp,
 } from "./state";
 import { updateFooter, notifyPhase, getUIAdapter } from "./ui";
 import { diagnoseWorkflowProject, formatDoctorReport, repairWorkflowProject, countFixable } from "./doctor";
@@ -609,6 +610,26 @@ function cmdNext(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
   if (wf.currentPhase === STAGE.EXECUTION() && next === STAGE.VERIFICATION()) {
     const scopes = wf.scopes;
     if (scopes && scopes.length > 0) {
+      // Optional: parse checklist.md to derive scope completion status
+      if (wf.dirHash) {
+        const ds = getDateStamp(new Date(wf.created));
+        const checklistPath = join(wd, WORKFLOW_DIR, ds, wf.dirHash, "checklist.md");
+        const parsed = parseChecklist(checklistPath);
+        if (Object.keys(parsed).length > 0) {
+          for (const scope of scopes) {
+            // Match scope name from "### SCOPE-1: Name" format
+            for (const [key, info] of Object.entries(parsed)) {
+              if (key.endsWith(`: ${scope.name}`) || key === scope.name) {
+                if (info.total > 0 && info.done === info.total && scope.status !== 'completed') {
+                  scope.status = 'completed';
+                }
+                break;
+              }
+            }
+          }
+        }
+      }
+
       const incomplete = scopes.filter(s => s.status !== 'completed');
       if (incomplete.length > 0) {
         const summary = incomplete.map(s => `  • ${s.name} [${s.status}]`).join('\n');

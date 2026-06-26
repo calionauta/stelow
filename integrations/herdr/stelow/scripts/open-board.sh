@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Idempotent launcher for the stelow board.
+# Idempotent launcher for the stelow workflow board.
 # Pattern: OPEN if no pane exists, FOCUS if exists but not focused, CLOSE if already focused.
 # Reference: herdr-file-viewer/scripts/open-file-viewer.sh
 #
@@ -7,7 +7,7 @@
 #
 # Invocation:
 #   Via keybind (prefix+w): herdr runtime sets HERDR_PLUGIN_ROOT automatically.
-#   Via CLI: herdr plugin action invoke stelow.board.toggle
+#   Via CLI: herdr plugin action invoke stelow.toggle
 #   Manual:  ./scripts/open-board.sh /path/to/plugin/root
 set -uo pipefail
 
@@ -22,7 +22,7 @@ fi
 
 # Fail fast with clear message if no path resolved.
 if [[ -z "$target_path" ]]; then
-  echo "stelow-board: no plugin path provided. Pass as argument or set HERDR_PLUGIN_ROOT." >&2
+  echo "stelow: no plugin path provided. Pass as argument or set HERDR_PLUGIN_ROOT." >&2
   echo "  Usage: ./scripts/open-board.sh <plugin-root-dir>" >&2
   exit 2
 fi
@@ -30,20 +30,20 @@ fi
 # Quick existence check — fail fast with a clear message instead of
 # herdr's generic "No such file or directory".
 if [[ ! -d "$target_path" ]]; then
-  echo "stelow-board: directory not found: $target_path" >&2
+  echo "stelow: directory not found: $target_path" >&2
   exit 2
 fi
 
 # Validate the manifest exists before invoking herdr.
 if [[ ! -f "$target_path/herdr-plugin.toml" ]]; then
-  echo "stelow-board: no herdr-plugin.toml in $target_path" >&2
-  echo "  Hint: cd into integrations/herdr/stelow-board/ before linking" >&2
+  echo "stelow: no herdr-plugin.toml in $target_path" >&2
+  echo "  Hint: cd into integrations/herdr/stelow/ before linking" >&2
   exit 2
 fi
 
 # Validate the binary was built (herdr reads manifest command paths at link time).
-if [[ ! -x "$target_path/target/release/stelow-board" ]]; then
-  echo "stelow-board: binary not built: $target_path/target/release/stelow-board" >&2
+if [[ ! -x "$target_path/target/release/stelow" ]]; then
+  echo "stelow: binary not built: $target_path/target/release/stelow" >&2
   echo "  Hint: run 'cargo build --release' in $target_path first" >&2
   exit 2
 fi
@@ -94,7 +94,7 @@ elif [[ -n "$board_id" ]]; then
 else
   # not open -> open as split
   exec "$herdr_bin" plugin pane open \
-    --plugin stelow.board \
+    --plugin stelow \
     --entrypoint board \
     --placement split \
     --direction right \

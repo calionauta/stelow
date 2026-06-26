@@ -2,7 +2,7 @@ import { describe, test, expect } from "vitest";
 
 /**
  * Mirror the Rust `cwd_matches` function from
- * integrations/herdr/stelow-board/src/main.rs.
+ * integrations/herdr/stelow/src/main.rs.
  *
  * IMPORTANT: this test exists because of the bug where the herdr plugin
  * returned false for `cwd_matches("", project)`, hiding workflows whose

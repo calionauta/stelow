@@ -2,12 +2,10 @@
  * Task Types - Shared interfaces for task management
  * 
  * Defines common types for tasks across different systems:
- * - PhaseTodo: Tasks for workflow phases
  * - InboxItem: Deferred items in inbox
  * 
  * Usage:
- *   import { PhaseTodo, TaskStatus } from './modules/task';
- *   const task: PhaseTodo = { id: 'SHAPE-1', content: '...', status: 'pending' };
+ *   import type { TaskStatus } from './modules/task';
  */
 
 /**
@@ -24,29 +22,6 @@ export interface TaskItem {
   status: TaskStatus;
   createdAt?: string;
   completedAt?: string;
-}
-
-/**
- * Phase todo for workflow phases.
- * Extends TaskItem with phase-specific fields.
- */
-export interface PhaseTodo extends TaskItem {
-  id: string;  // Required for phase todos (e.g., "SHAPE-1")
-  content: string;
-  status: TaskStatus;
-  createdAt?: string;
-  completedAt?: string;
-}
-
-/**
- * Phase todos data structure stored in file.
- */
-export interface PhaseTodosData {
-  workflowName: string;
-  phase: string;
-  phaseIndex: number;
-  todos: PhaseTodo[];
-  updatedAt: string;
 }
 
 /**

@@ -1,6 +1,6 @@
 {
   "name": "@renatocaliari/stelow",
-  "version": "0.36.9",
+  "version": "0.36.10",
   "description": "stelow — opinionated product workflow. stellar clarity. low friction.",
   "keywords": [
     "pi-skill",
@@ -55,8 +55,8 @@
     "build/",
     "skills/",
     "extensions/stelow/",
-    "integrations/muxy/stelow-board/",
-    "integrations/herdr/stelow-board/",
+    "integrations/muxy/stelow/",
+    "integrations/herdr/stelow/",
     "scripts/",
     "install.sh",
     "stelow.schema.json",
@@ -79,7 +79,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",
     "version:sync": "node scripts/version-sync.mjs",
-    "version": "npm run version:sync && git add -f .claude-plugin/plugin.json .claude-plugin/marketplace.json .codex-plugin/plugin.json .codex-plugin/marketplace.json .opencode-plugin/plugin.json integrations/herdr/stelow-board/herdr-plugin.toml"
+    "version": "npm run version:sync && git add -f .claude-plugin/plugin.json .claude-plugin/marketplace.json .codex-plugin/plugin.json .codex-plugin/marketplace.json .opencode-plugin/plugin.json integrations/herdr/stelow/herdr-plugin.toml"
   },
   "devDependencies": {
     "@marcfargas/pi-test-harness": "^0.5.0",

@@ -4,8 +4,8 @@
     "tailwindcss": "^4.3.0",
     "vite": "^7.3.5"
   },
-  "displayName": "Stelow Board",
-  "description": "Stelow workflow board panel (Shape Up → critique → gate → interface → planning → execution)",
+  "displayName": "Stelow",
+  "description": "Stelow — opinionated agentic product workflow orchestrator. Visual kanban for AI agents and humans: Shape Up → Critique → Gate → Interface → Planning → Execution.",
   "muxy": {
     "$schema": "https://raw.githubusercontent.com/muxy-app/muxy/main/docs/extensions/schema/manifest.schema.json",
     "commands": [
@@ -16,11 +16,11 @@
         },
         "defaultShortcut": "cmd+shift+p",
         "id": "toggle-pipeline",
-        "title": "Stelow Board: Toggle Panel"
+        "title": "Stelow: Toggle Panel"
       },
       {
         "id": "refresh-pipeline",
-        "title": "Stelow Board: Refresh"
+        "title": "Stelow: Refresh"
       },
       {
         "id": "sw-next-cmd",
@@ -58,7 +58,7 @@
         "id": "pipeline",
         "mode": "pinned",
         "position": "right",
-        "title": "Stelow Board"
+        "title": "Stelow"
       }
     ],
     "events": [
@@ -85,7 +85,7 @@
       }
     ]
   },
-  "name": "stelow-muxy",
+  "name": "stelow",
   "private": true,
   "scripts": {
     "build": "vite build && node scripts/copy-manifest.mjs",

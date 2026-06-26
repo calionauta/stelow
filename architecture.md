@@ -36,7 +36,7 @@ Product planning workflow system for AI coding agents (Pi, Claude Code, OpenCode
 │  .stelow/                                   │
 │  ├── inbox/items.md          # Deferred items              │
 │  ├── {date}/{hash}/                                          │
-│  │   ├── phase-todos.json    # Current phase tasks         │
+│  │   ├── checklist.md        # Current phase tasks (markdown)        │
 │  │   ├── index.json          # Workflow metadata          │
 │  │   └── tracking.json       # Local tracking             │
 │  └── stelow.json  # Global tracking         │
@@ -91,7 +91,7 @@ const todos = cache.get();  // from memory or file
 - `TaskStatus` — `"pending" | "in_progress" | "completed"`
 - `TaskItem` — Base interface with optional id
 - `PhaseTodo` — Task with required id (e.g., "SHAPE-1")
-- `PhaseTodosData` — File structure for phase-todos.json
+- `parseChecklist()` — Parse checklist.md to derive scope task counts
 - `InboxItem` — Simple deferred item
 
 **Utilities:**
@@ -124,7 +124,7 @@ todo tool → setPhaseTodos([...]) [state.ts]
     ↓
 writePhaseTodos() [state.ts]
     ↓
-JsonFileStore → {date}/{hash}/phase-todos.json
+LLM → checklist.md (markdown, Plannotator-visible)
 ```
 
 ### Resume Flow
@@ -224,7 +224,7 @@ No config files needed. Structure IS the configuration.
 │   └── items.md            # Markdown, one item per line
 ├── {date}-{hash}/          # Workflow-specific
 │   ├── index.json          # { workflowName, phase, phaseIndex, updatedAt }
-│   ├── phase-todos.json    # { workflowName, phase, phaseIndex, todos[], updatedAt }
+│   ├── checklist.md    # # Phase\n- [x] task1\n- [ ] task2
 │   ├── specs/              # Spec documents
 │   ├── interfaces/         # Interface explorations
 │   ├── plans/              # Technical plans

@@ -528,7 +528,7 @@ fn ui(f: &mut Frame, app: &mut App) -> MouseAreas {
         .map(|n| n.to_string_lossy().to_string())
         .unwrap_or_else(|| "?".into());
     let header = Paragraph::new(Line::from(vec![
-        Span::styled("Stelow Board", Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)),
+        Span::styled("Stelow", Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)),
         Span::raw("  "),
         Span::styled(env!("CARGO_PKG_VERSION"), Style::default().fg(Color::DarkGray)),
         Span::raw("   "),
@@ -822,7 +822,7 @@ fn render_scopes(f: &mut Frame, app: &mut App, area: Rect) {
 fn ui_help(f: &mut Frame) {
     let block = Block::default()
         .borders(Borders::ALL)
-        .title(" Stelow Board — Help (press any key to dismiss) ");
+        .title(" Stelow — Help (press any key to dismiss) ");
     let area = centered_rect(80, 75, f.area());
     let text = vec![
         Line::from(Span::styled("Source of truth", Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD))),

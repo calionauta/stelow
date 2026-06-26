@@ -12,13 +12,13 @@ import { join } from "node:path";
  * require updating this test anyway.
  *
  * Schema source: https://raw.githubusercontent.com/muxy-app/muxy/main/docs/extensions/schema/manifest.schema.json
- * Pinned copy in: integrations/muxy/stelow-board/manifest.schema.json
+ * Pinned copy in: integrations/muxy/stelow/manifest.schema.json
  * Update the pinned copy manually when upstream schema changes.
  */
 
 const ROOT = join(__dirname, "..", "..");
-const SCHEMA_PATH = join(ROOT, "integrations/muxy/stelow-board/manifest.schema.json");
-const PKG_PATH = join(ROOT, "integrations/muxy/stelow-board/package.json");
+const SCHEMA_PATH = join(ROOT, "integrations/muxy/stelow/manifest.schema.json");
+const PKG_PATH = join(ROOT, "integrations/muxy/stelow/package.json");
 
 interface MuxyPkg {
   name: string;

@@ -5,7 +5,7 @@
  * Keeps version numbers in sync between:
  * - Main package.json
  * - .claude-plugin/, .codex-plugin/, .opencode-plugin/ manifests
- * - integrations/herdr/stelow-board/herdr-plugin.toml (TOML format)
+ * - integrations/herdr/stelow/herdr-plugin.toml (TOML format)
  *
  * Run automatically via `npm version` lifecycle hook.
  */
@@ -32,7 +32,7 @@ const JSON_TARGETS = [
 
 // TOML targets (herdr plugin uses Rust convention)
 const TOML_TARGETS = [
-  join(ROOT, "integrations/herdr/stelow-board/herdr-plugin.toml"),
+  join(ROOT, "integrations/herdr/stelow/herdr-plugin.toml"),
 ];
 
 // Files to sync
@@ -69,7 +69,7 @@ function writeVersion(filePath, version) {
 
 // Write version to TOML target file (herdr plugin uses TOML).
 // Naive line-based replace: matches `^version = "..."` in the [package]
-// section. Sufficient for the stelow-board plugin; if other TOML files
+// section. Sufficient for the stelow plugin; if other TOML files
 // with nested version fields need syncing, switch to a TOML parser.
 function writeTomlVersion(filePath, version) {
   const content = readFileSync(filePath, "utf-8");

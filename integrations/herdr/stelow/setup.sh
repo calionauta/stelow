@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# stelow-board — Build and link herdr plugin from local source.
+# stelow — Build and link herdr plugin from local source.
 #
 # Usage:
 #   ./setup.sh                          # detect plugin dir, build, link, open
-#   ./setup.sh /path/to/stelow-board    # explicit plugin source directory
+#   ./setup.sh /path/to/stelow    # explicit plugin source directory
 #   ./setup.sh --build-only             # build binary only, skip link
 #   ./setup.sh --help                   # this help
 #
@@ -53,7 +53,7 @@ done
 if [[ -z "$PLUGIN_DIR" ]]; then
   # Auto-detect from herdr installed plugins
   # The hash suffix changes per install, so we glob for the directory.
-  for d in "$HOME"/.config/herdr/plugins/github/*/integrations/herdr/stelow-board; do
+  for d in "$HOME"/.config/herdr/plugins/github/*/integrations/herdr/stelow; do
     if [[ -f "$d/Cargo.toml" ]]; then
       PLUGIN_DIR="$d"
       break
@@ -63,14 +63,14 @@ fi
 
 if [[ -z "$PLUGIN_DIR" ]]; then
   err "Plugin source not found."
-  err "Pass the path to the stelow-board source directory:"
-  err "  $0 /path/to/stelow/integrations/herdr/stelow-board"
+  err "Pass the path to the stelow source directory:"
+  err "  $0 /path/to/stelow/integrations/herdr/stelow"
   exit 1
 fi
 
 if [[ ! -f "$PLUGIN_DIR/Cargo.toml" ]]; then
   err "No Cargo.toml found in $PLUGIN_DIR"
-  err "Make sure this is the stelow-board source directory."
+  err "Make sure this is the stelow source directory."
   exit 1
 fi
 
@@ -90,13 +90,13 @@ info "Rust toolchain found: $(cargo --version)"
 
 # ── Build binary ─────────────────────────────────────────────────────
 
-BINARY="$PLUGIN_DIR/target/release/stelow-board"
+BINARY="$PLUGIN_DIR/target/release/stelow"
 
 if [[ -x "$BINARY" ]]; then
   info "Binary already exists at $BINARY (skip build)"
   info "To rebuild: cd '$PLUGIN_DIR' && cargo build --release"
 else
-  info "Building stelow-board (cargo build --release)..."
+  info "Building stelow (cargo build --release)..."
   (cd "$PLUGIN_DIR" && cargo build --release)
   if [[ -x "$BINARY" ]]; then
     ok "Binary built at $BINARY"
@@ -121,9 +121,9 @@ if ! command -v herdr &>/dev/null; then
 fi
 
 info "Checking herdr plugin list..."
-if herdr plugin list 2>/dev/null | grep -q "stelow-board"; then
+if herdr plugin list 2>/dev/null | grep -q "stelow"; then
   info "Plugin is already registered in herdr."
-  info "If you need to re-link: herdr plugin unlink stelow-board && herdr plugin link '$PLUGIN_DIR'"
+  info "If you need to re-link: herdr plugin unlink stelow && herdr plugin link '$PLUGIN_DIR'"
 else
   info "Linking plugin from $PLUGIN_DIR into herdr..."
   if herdr plugin link "$PLUGIN_DIR"; then
@@ -139,9 +139,9 @@ fi
 
 echo ""
 info "Board is ready. Press prefix+w (ctrl+b w) inside herdr to toggle."
-echo "  Or run:  herdr plugin action toggle --plugin stelow-board"
+echo "  Or run:  herdr plugin action toggle --plugin stelow"
 echo ""
 info "If the pane doesn't appear, run inside a herdr session:"
-echo "    herdr plugin pane open --plugin stelow-board --entrypoint board"
+echo "    herdr plugin pane open --plugin stelow --entrypoint board"
 echo ""
 ok "Done."

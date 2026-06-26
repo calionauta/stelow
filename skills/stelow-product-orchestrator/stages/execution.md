@@ -49,6 +49,62 @@ or (3) stop and re-plan.
 
 ---
 
+### execution:05 — Task Checklist + Plannotator
+
+Before executing, break each scope into concrete tasks and write them to
+`checklist.md`. This file serves as:
+- **Persistence** across sessions (replaces phase-todos.json)
+- **Real-time visibility** via Plannotator (browser checkboxes)
+- **Scope completion signal** for stelow's gate (`/sw-next`)
+
+**1. Build the checklist from spec-tech.md scopes:**
+
+```bash
+CHECKLIST=".stelow/{YYYY-MM-DD}/{_dir}/checklist.md"
+{
+  echo "# Execution: {_dir}"
+  echo ""
+  # For each scope, derive tasks from objectives + DoD + ACs
+  echo "### SCOPE-1: Auth Foundation"
+  echo "- [ ] Create users table migration"
+  echo "- [ ] Implement signup endpoint"
+  echo "- [ ] Implement login endpoint"
+  echo ""
+  echo "### SCOPE-2: Token Refresh"
+  echo "- [ ] Create refresh token table"
+  echo "- [ ] Implement refresh endpoint"
+} > "$CHECKLIST"
+```
+
+**Rules:**
+- Each `### SCOPE-N:` header must match a scope name in `stelow.json`
+- Each `- [ ]` is one concrete task (small enough to do in one LLM turn)
+- Do NOT add IDs — order in file is the ID
+- Do NOT duplicate blockedBy/type metadata — that lives in stelow.json scopes
+
+**2. Open Plannotator for real-time tracking:**
+
+```bash
+# If Plannotator is installed, open the checklist in browser
+if command -v plannotator &>/dev/null; then
+  plannotator annotate "$CHECKLIST" &
+  echo "📋 Checklist opened in browser — track progress in real time"
+else
+  echo "📋 Checklist written to $CHECKLIST"
+  echo "💡 Install Plannotator (npx skills add plannotator) for browser view"
+fi
+```
+
+> The Plannotator tab shows checkboxes updating in real time as the LLM
+> marks tasks complete. Refresh to see latest state.
+
+**3. Every turn end, sync memory to checklist.md:**
+
+Keep `checklist.md` updated with current task status. The file IS the source
+of truth — CLI-native todos (TodoWrite, rpiv-todo) are display-only.
+
+---
+
 ### execution:10 — Scope Executor Routing
 
 > **Goal system:** See `references/cli-tools/goals.md` for all scope types —

@@ -17,7 +17,7 @@ See [architecture.md](architecture.md) for module layout, data flow, and how to 
 The Muxy files API (`muxy.files.read/write/list`) requires
 `files:read` and `files:write` in `manifest.permissions` *per the
 official Muxy docs*. However, the pinned manifest schema at
-`integrations/muxy/stelow-board/manifest.schema.json` is
+`integrations/muxy/stelow/manifest.schema.json` is
 OUTDATED — it was fetched before Muxy added these permissions to
 the schema enum. **Do NOT trust the pinned schema as the source
 of truth for valid permissions.** The source of truth is:

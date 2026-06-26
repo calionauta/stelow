@@ -1,10 +1,10 @@
-# stelow-board (herdr plugin)
+# stelow (herdr plugin)
 
 Persistent split-pane TUI for [herdr](https://herdr.dev) showing the
 [stelow](https://github.com/renatocaliari/stelow) workflow state:
 projects → scopes → tasks, with click-to-drill navigation.
 
-Companion to [`integrations/muxy/stelow-board/`](../muxy/stelow-board/)
+Companion to [`integrations/muxy/stelow/`](../muxy/stelow/)
 which is the Muxy webview panel of the same product.
 
 ## Requirements
@@ -37,26 +37,26 @@ sequence, just be sure to run the two commands separately.
 
 The plugin lives as a subdirectory of the main
 [stelow repo](https://github.com/renatocaliari/stelow) under
-`integrations/herdr/stelow-board/`. Install via herdr's subdir support:
+`integrations/herdr/stelow/`. Install via herdr's subdir support:
 
 ```bash
-herdr plugin install renatocaliari/stelow/integrations/herdr/stelow-board
+herdr plugin install renatocaliari/stelow/integrations/herdr/stelow
 ```
 
 `herdr` will:
 
 1. Clone the subdirectory into
-   `~/.config/herdr/plugins/github/<hash>/integrations/herdr/stelow-board/`.
+   `~/.config/herdr/plugins/github/<hash>/integrations/herdr/stelow/`.
 2. Show a preview of the manifest (id, actions, panes) and ask for
    confirmation in interactive terminals. Use `--yes` for
    non-interactive installs (e.g. CI).
 3. Run the `[[build]]` command from the manifest (`cargo build
-   --release`) which produces the `./target/release/stelow-board`
+   --release`) which produces the `./target/release/stelow`
    binary.
 4. Register the plugin so its keybindings, actions, and panes are
    immediately available.
 
-A standalone `stelow-board` GitHub repo does not exist — install via
+A standalone `stelow` GitHub repo does not exist — install via
 the subdir path above.
 
 ## Install from local source (development)
@@ -67,7 +67,7 @@ after re-link):
 
 ```bash
 # From the stelow repo root
-cd integrations/herdr/stelow-board
+cd integrations/herdr/stelow
 cargo build --release
 herdr plugin link .
 ```
@@ -75,13 +75,13 @@ herdr plugin link .
 Or point at the absolute path:
 
 ```bash
-herdr plugin link /path/to/stelow/integrations/herdr/stelow-board
+herdr plugin link /path/to/stelow/integrations/herdr/stelow
 ```
 
 After editing the manifest or `src/`, re-link:
 
 ```bash
-herdr plugin unlink stelow.board
+herdr plugin unlink stelow
 herdr plugin link .
 ```
 
@@ -89,14 +89,14 @@ herdr plugin link .
 
 ```bash
 herdr plugin list
-# Should show: stelow.board (Stelow Board) enabled
+# Should show: stelow (Stelow) enabled
 ```
 
 The `source:` field tells you which install method was used:
 
-- `github:renatocaliari/stelow/integrations/herdr/stelow-board@<commit>` —
+- `github:renatocaliari/stelow/integrations/herdr/stelow@<commit>` —
   installed from the GitHub subdir
-- `local:/path/to/stelow-board` — linked from local source
+- `local:/path/to/stelow` — linked from local source
 
 ## Usage (TUI)
 
@@ -106,7 +106,7 @@ to toggle the board open/closed.
 > **Keybinding conflict?** `prefix+w` may be taken by herdr's built-in
 > pane navigation. If pressing `prefix+w` navigates panes instead of
 > toggling the board, herdr's native binding wins. Use the
-> [`herdr plugin action invoke stelow.board.toggle`](#cli-testing--debug)
+> [`herdr plugin action invoke stelow.toggle`](#cli-testing--debug)
 > command instead, or remap the action in your herdr config.
 
 Once open, navigate with:
@@ -133,8 +133,8 @@ After installing from GitHub, the plugin is a snapshot. To get the
 latest version (bugfixes, new features):
 
 ```bash
-herdr plugin uninstall stelow.board
-herdr plugin install renatocaliari/stelow/integrations/herdr/stelow-board
+herdr plugin uninstall stelow
+herdr plugin install renatocaliari/stelow/integrations/herdr/stelow
 ```
 
 Or switch to a local source checkout for faster iteration (see
@@ -145,14 +145,14 @@ Or switch to a local source checkout for faster iteration (see
 Keybinds are the normal TUI usage. To test or invoke programmatically:
 
 ```bash
-herdr plugin action invoke stelow.board.toggle
+herdr plugin action invoke stelow.toggle
 ```
 
 This runs the same `open-board.sh` as the keybind. If the pane does
 not appear, run the script manually to see errors:
 
 ```bash
-cd integrations/herdr/stelow-board
+cd integrations/herdr/stelow
 ./scripts/open-board.sh "$PWD"
 ```
 
@@ -177,7 +177,7 @@ no overrides:
 **Workflows are filtered to the current worktree.** A workflow is shown
 only if its `cwd` equals the project cwd, or one is a sub-path of the
 other. This mirrors the filter `muxy` uses (`isWorkflowCwdCompatible` in
-`integrations/muxy/stelow-board/src/panel/data.js`).
+`integrations/muxy/stelow/src/panel/data.js`).
 
 **Archived / aborted / stopped / cancelled workflows are filtered out**
 (`isHiddenWorkflowStatus` from muxy). Use `/sw-status` in pi to inspect
@@ -243,4 +243,4 @@ Matches `ScopeStatus` enum in `extensions/stelow/types.ts`.
 
 - Plan: `docs/design/stelow-board-herdr.md` (in the stelow monorepo)
 - Research: `.stelow/session-knowledge/2026-06-23-herdr-plugin-research.md`
-- Muxy sibling: `integrations/muxy/stelow-board/` (shares worktree-filter semantics)
+- Muxy sibling: `integrations/muxy/stelow/` (shares worktree-filter semantics)

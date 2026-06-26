@@ -72,7 +72,7 @@ export async function saveInbox(items) {
 }
 
 /**
- * Try to load phase-todos for a workflow by scanning session dirs.
+ * Try to load the project name for display.
  * Returns null if none found.
  * Also returns the project name (dir name) for display.
  */
