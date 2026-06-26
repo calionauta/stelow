@@ -103,6 +103,12 @@ The `source:` field tells you which install method was used:
 Inside a running herdr session, press **`prefix+w`** (default `ctrl+b w`)
 to toggle the board open/closed.
 
+> **Keybinding conflict?** `prefix+w` may be taken by herdr's built-in
+> pane navigation. If pressing `prefix+w` navigates panes instead of
+> toggling the board, herdr's native binding wins. Use the
+> [`herdr plugin action invoke stelow.board.toggle`](#cli-testing--debug)
+> command instead, or remap the action in your herdr config.
+
 Once open, navigate with:
 
 | Key | Action |
@@ -121,26 +127,38 @@ Once open, navigate with:
 
 Click a workflow row in the **left column** → select that workflow.
 
+## Updating (GitHub install)
+
+After installing from GitHub, the plugin is a snapshot. To get the
+latest version (bugfixes, new features):
+
+```bash
+herdr plugin uninstall stelow.board
+herdr plugin install renatocaliari/stelow/integrations/herdr/stelow-board
+```
+
+Or switch to a local source checkout for faster iteration (see
+[Install from local source](#install-from-local-source-development)).
+
 ## CLI (testing / debug)
 
-Keybinds são o uso normal no TUI. Se quiser testar ou invocar
-programaticamente, use:
+Keybinds are the normal TUI usage. To test or invoke programmatically:
 
 ```bash
 herdr plugin action invoke stelow.board.toggle
 ```
 
-Isso executa o mesmo `open-board.sh` que o keybind. Se o painel
-não aparecer, rode o script manualmente para ver erros:
+This runs the same `open-board.sh` as the keybind. If the pane does
+not appear, run the script manually to see errors:
 
 ```bash
 cd integrations/herdr/stelow-board
 ./scripts/open-board.sh "$PWD"
 ```
 
-> **Nota:** quando invocado via keybind, herdr define `HERDR_PLUGIN_ROOT`
-> automaticamente. Via `plugin action invoke`, também funciona — o
-> script usa essa env var como fallback.
+> **Note:** when invoked via keybind, herdr sets `HERDR_PLUGIN_ROOT`
+> automatically. Via `plugin action invoke`, it also works — the
+> script uses that env var as fallback.
 
 ## Data sources (single source of truth)
 
