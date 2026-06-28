@@ -49,6 +49,7 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 - [📦 Installation](#--installation)
 - [External Dependencies](#external-dependencies)
 - [🎮 Commands](#--commands)
+- [📡 Pulse — Autonomous Inbox Processing](#--pulse--autonomous-inbox-processing)
 - [Setup per CLI](#setup-per-cli)
 - [🖥️ Visual & TUI Integrations](#️-visual--tui-integrations)
 - [📁 Artifact Directory](#--artifact-directory)
@@ -474,7 +475,7 @@ This project distributes exclusively via GitHub (no npm) — see [docs/SECURITY.
 
 | Command | Description |
 |---------|-------------|
-| `/sw-start [idea]` | Start new workflow. Auto-detects intent type (new-product, feature, bugfix, refactor, investigate) and routes to appropriate stage pipeline. If the input contains multiple items, auto-runs **triage** (group items) + **select** (pick one, defer the rest) before setup. |
+| `/sw-start [idea]` | Start new workflow. Auto-detects intent type and routes to appropriate stage pipeline. If called without arguments, reads from inbox (`.stelow/inbox/items.md`). If the input contains multiple items, auto-runs **triage** (group) + **select** (pick one). |
 | `/sw-status` | Show active workflow phase list, stage progress, and scopes. |
 | `/sw-next` | Advance to next stage. Auto-completes workflow on last phase. |
 | `/sw-pause` | Pause active workflow (keeps state for resume). |
@@ -488,11 +489,50 @@ This project distributes exclusively via GitHub (no npm) — see [docs/SECURITY.
 | `/sw-info [name=]` | Print workflow path, current stage, and copy-pasteable `cd` + `/sw-resume` commands. |
 | `/sw-rename <name>` | Rename active workflow. |
 | `/sw-complete` | Force-complete active workflow. |
-| `/sw-inbox [add\|remove\|clear]` | View or manage deferred inbox items. |
+| `/sw-inbox [add\|remove\|clear\|history]` | View or manage deferred inbox items. |
+| `/sw-pulse` | Manage autonomous inbox processing (see Pulse section below). |
 | `/sw-doctor [--fix]` | Diagnose workflow health. Detects zombie workflows, index mismatches, orphaned entries. |
 | `/sw-unlock` | Disable stage guard for current session (debug only). |
 
-> All 16 commands work in **Pi** natively (via `pi.registerCommand()`). In **OpenCode, Claude Code, Codex**, 15 commands work via Skill delegation — the `.md` files in `cli-agents/<cli>/commands/sw-*.md` invoke `/skill:stelow-product-orchestrator <command>` and route through the orchestrator. The exception is `/sw-inbox`, which is marked `piOnly` because its handler operates on filesystem state with toast notifications; in non-Pi CLIs it shows a warning banner and the agent will fall back to reading `.stelow/inbox/items.md` directly, without the native command surface.
+> All 17 commands work in **Pi** natively (via `pi.registerCommand()`). In **OpenCode, Claude Code, Codex**, 15 commands work via Skill delegation — the `.md` files in `cli-agents/<cli>/commands/sw-*.md` invoke `/skill:stelow-product-orchestrator <command>` and route through the orchestrator. The exceptions are `/sw-inbox` and `/sw-pulse`, which are marked `piOnly` because they operate on filesystem state with native TUI notifications; in non-Pi CLIs, the agent falls back to reading files directly.
+
+---
+
+## 📡 Pulse — Autonomous Inbox Processing
+
+Pulse is a background system that periodically checks your inbox and creates workflows automatically — no interactive session needed. It runs on a timer (cron, launchd, systemd, Task Scheduler) and processes items with `review_mode=Auto` (no gates, no questions, no Plannotator).
+
+```
+cron/launchd/systemd (every 30m)
+  → pulse.sh / pulse.ps1
+    → checks inbox (.stelow/inbox/items.md)
+    → runs `pi --print` with triage prompt
+    → creates workflow(s) with review_mode=Auto
+    → logs provenance to .stelow/inbox/history.jsonl
+```
+
+| Command | Purpose |
+|---------|---------|
+| `/sw-pulse status` | Show pulse state (paused, inbox count, last run) |
+| `/sw-pulse pause` | Pause automatic processing |
+| `/sw-pulse resume` | Resume automatic processing |
+| `/sw-pulse process` | Force immediate processing |
+| `/sw-pulse log [n]` | Show last N log entries |
+
+| Flag / Env | Default | Description |
+|------------|---------|-------------|
+| `--max-items N` | `10` | Items per cycle. `0` = uncapped (all). `1` = one at a time |
+| `--force` | — | Skip pause + user-activity checks |
+| `--dry-run` | — | Preview without executing |
+| `PULSE_MODEL` | `haiku` | LLM model for triage |
+| `PULSE_TIMEOUT` | `120` | Max seconds for `pi --print` |
+| `PULSE_USER_ACTIVITY_MINUTES` | `15` | Skip if user modified `stelow.json` recently |
+
+**Marking items for human review:** Prefix an inbox item with `[human-in-the-loop]` (or `[hitl]`) — Pulse skips it entirely. Use for items that need human judgement (pricing, partnership, strategy). Items without the marker are processed automatically.
+
+**Conflict prevention:** Pulse detects active user sessions (modified `stelow.json` mtime + interactive `pi` process) and skips automatically. Lock file prevents concurrent runs.
+
+**Setup guides:** See `.stelow/pulse/SETUP.md` for macOS (launchd), Linux (systemd/cron), and Windows (Task Scheduler + PowerShell).
 
 ---
 

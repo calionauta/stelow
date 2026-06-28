@@ -26,7 +26,7 @@ export const WORKFLOW_COMMANDS: CommandDescriptor[] = [
   {
     name: "sw-start",
     description: "Start a new product workflow",
-    usage: "/sw-start [name=...] [description=...] [@file]",
+    usage: "/sw-start [name=...] [description=...] [@file] | (empty = reads inbox)",
   },
   {
     name: "sw-abort",
@@ -102,7 +102,13 @@ export const WORKFLOW_COMMANDS: CommandDescriptor[] = [
   {
     name: "sw-inbox",
     description: "Manage workflow inbox",
-    usage: "/sw-inbox | add <text> | remove <text> | clear",
+    usage: "/sw-inbox | add <text> | remove <text> | clear | history",
+    piOnly: true,
+  },
+  {
+    name: "sw-pulse",
+    description: "Manage automatic inbox processing (Pulse)",
+    usage: "/sw-pulse | status | pause | resume | process | log [n]",
     piOnly: true,
   },
 ];

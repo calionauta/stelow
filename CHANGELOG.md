@@ -2,6 +2,67 @@
 
 All notable changes to `@renatocaliari/stelow` will be documented in this file.
 
+## [0.38.0] - 2026-06-28
+
+### Added
+
+- **Pulse — autonomous inbox processing** — new background system that
+  periodically checks `.stelow/inbox/items.md` and creates workflows
+  automatically with `review_mode=Auto` (no gates, no questions, no
+  Plannotator). Includes:
+  - `pulse.sh` (bash, cross-platform: macOS/Linux/Windows Git Bash/WSL)
+  - `pulse.ps1` (PowerShell for Windows)
+  - System + task prompts at `.stelow/pulse/pulse-{system,task}.md`
+  - Setup guide at `.stelow/pulse/SETUP.md` (launchd, systemd, cron,
+    Task Scheduler)
+  - Provenance log at `.stelow/inbox/history.jsonl`
+  - `/sw-inbox history` subcommand
+
+- **`/sw-pulse` commands** — 5 commands to manage the background processor:
+  status, pause, resume, process, log.
+
+- **`/sw-start` now reads inbox** — when called without arguments, reads
+  items from `.stelow/inbox/items.md` as the draft. Detects `[human]`/
+  `[human-in-the-loop]`/`[hitl]` markers and suggests appropriate Review Mode.
+
+- **Inbox item markers** — prefix items with `[human-in-the-loop]` (or `[hitl]`
+  or `[human]`) to exclude them from Pulse processing. Pulse enforces this at
+  the code level (`grep`/`notmatch`). `/sw-start` includes marked items but
+  suggests a Review Mode higher than Auto.
+
+- **Conflict prevention** in Pulse: detects active user sessions via
+  `stelow.json` mtime + interactive `pi` process check. Atomic `mkdir` lock.
+  Configurable via `PULSE_USER_ACTIVITY_MINUTES`.
+
+### Changed
+
+- **`getAutoBlockedTools()` → `toAgnosticName()`** in CLI adapter interface.
+  Each adapter now maps CLI-specific tool names to agnostic names from
+  `stages.yaml` (Pi: `ask_user_question` → `ask`, OpenCode: `Grep` → `grep`,
+  etc.). Both stages guard and Auto mode enforcement use agnostic names.
+  Fixes a latent bug where `ask` in `stages.yaml` never matched
+  `ask_user_question` from Pi.
+
+- **Auto mode enforcement now agnostic** — blocks tools by agnostic name
+  (`ask`, `plannotator`) instead of Pi-specific names. Works regardless of
+  what name Pi extensions register their tools under.
+
+- **Stages guard now uses agnostic names** — converts via
+  `adapter.toAgnosticName()` before checking against `stages.yaml`.
+
+- **README** — new Pulse section (`📡 Pulse — Autonomous Inbox Processing`),
+  command count updated (16→17), `/sw-start` description updated.
+
+### Tests
+
+- **`tests/unit/agnostic-tools.test.ts`** — 55 new tests covering:
+  - `toAgnosticName()` on all 5 real adapters (Pi, OpenCode, Claude Code,
+    Codex, Generic) — no mocks
+  - Stages guard with CLI-specific names (verifies the bug fix)
+  - Auto mode enforcement with real `index.json` I/O
+  - Full chain: Pi `ask_user_question` → agnostic `ask` → Auto mode block
+  - All 15 stages allow `ask` (design invariant)
+
 ## [0.37.0] - 2026-06-28
 
 ### Changed

@@ -325,6 +325,10 @@ fi
 
 Use **Pattern 8 (Review Mode)** from `stages/ask-patterns.md`.
 
+> **If the draft contains items marked `[human-in-the-loop]`, `[hitl]`, or `[human]`:** These items need human judgement.
+> Default to a Review Mode higher than Auto (Only Product Spec or above).
+> If the user insists on Auto, warn that these items will remain unprocessed in the inbox (Pulse will skip them).
+
 ```
 ask_user_question({
   questions: [{

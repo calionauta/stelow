@@ -9,7 +9,8 @@ import {
   readGlobalTracking, writeGlobalTracking,
   getActiveWorkflow, getAllActiveWorkflows, resolveProjectDir,
   toSafeName, generateDirHash, hashToWorkflowId, getDateStamp,
-  readSourceFile, truncateText, detectCLI
+  readSourceFile, truncateText, detectCLI,
+  readInbox,
 } from "./state";
 import { updateFooter, getUIAdapter, initUIAdapter } from "./ui";
 import { buildSkillActivationMessage } from "./start-message";
@@ -60,9 +61,22 @@ export default async function cmdStart(
   // Merge: explicit key=value args take priority over parsed input.
   // Positional tokens without "=" are joined as the draft description.
   const positionalDraft = parsed._.length > 0 ? parsed._.join(" ") : "";
-  const draftText = parsed.description || positionalDraft || storeParsed.draftText;
+  let draftText = parsed.description || positionalDraft || storeParsed.draftText;
   const sources = parsed.source ? [parsed.source] : storeParsed.sources;
   const userGivenName = parsed.name || null;
+
+  // If no draft text and no explicit sources, read from inbox
+  if (!draftText && sources.length === 0) {
+    const inboxItems = readInbox(wd);
+    if (inboxItems.length > 0) {
+      const hasHuman = inboxItems.some(i => /\[(human(-in-the-loop)?|hitl)\]/.test(i));
+      const itemLines = inboxItems.map((item, i) => `${i + 1}. ${item}`).join('\n');
+      draftText = `Inbox items:\n\n${itemLines}`;
+      if (hasHuman) {
+        draftText += '\n\nNOTE: Some items are marked [human-in-the-loop] — these need human review. Consider a Review Mode higher than Auto.';
+      }
+    }
+  }
 
   // 1. Auto-pause any other in-progress workflows in this project before
   //    creating a new one. This replaces the previous "block" behavior

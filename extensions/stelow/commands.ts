@@ -13,6 +13,7 @@ import {
   archiveWorkflowOnDisk, updateWorkflowIndexJson, resolveProjectDir,
   parseChecklist,
   readInbox, addToInbox, removeFromInbox, clearInbox,
+  readProvenance,
   findWorkflowIndexByName, findWorkflowIndexForProject, isWorkflowFromProject, isSamePath,
   removeGlobalIndexEntry, addToGlobalIndex, getDateStamp,
 } from "./state";
@@ -878,6 +879,29 @@ function cmdInbox(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
     return;
   }
 
+  // /sw-inbox history — show provenance log
+  if (parsed.history !== undefined || parsed.hist || parsed.h) {
+    const log = readProvenance(wd);
+    if (log.length === 0) {
+      reply(ctx, "📋 No inbox history yet.");
+      return;
+    }
+    const limit = parseInt(parsed.n || parsed.limit || "20", 10);
+    const recent = log.slice(-limit).reverse();
+    const lines = ["📋 Inbox history (most recent first):", ""];
+    for (const entry of recent) {
+      const ts = (entry.ts as string || "").slice(0, 19).replace("T", " ");
+      const item = (entry.item as string || "").slice(0, 60);
+      const wf = entry.workflow as string || "";
+      const status = entry.exit_code === 0 ? "✅" : entry.exit_code === undefined ? "⏳" : "❌";
+      const dir = entry.dir as string || "";
+      lines.push(`${status} [${ts}] ${item}`);
+      if (wf && wf !== "unknown") lines.push(`   → ${wf} (${dir})`);
+    }
+    reply(ctx, lines.join("\n"));
+    return;
+  }
+
   // /sw-inbox (show)
   if (items.length === 0) {
     reply(ctx, "📥 Inbox is empty.");
@@ -1074,6 +1098,118 @@ function cmdUnarchive(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
 export { WORKFLOW_COMMANDS } from "./adapters/commands/dispatcher";
 export type { CommandDescriptor } from "./adapters/commands/dispatcher";
 
+// ── PULSE ────────────────────────────────────────────────────────────
+
+function cmdPulse(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
+  const wd = resolveProjectDir(ctx.cwd);
+  const parsed = parseArgs(args);
+  const pulseDir = join(wd, ".stelow", "pulse");
+  const logPath = join(pulseDir, "pulse.log");
+  const pausePath = join(pulseDir, "pulse.pause");
+
+  // /sw-pulse status
+  if (parsed.status !== undefined || parsed._.includes("status") || (!parsed.pause && !parsed.resume && !parsed.process && !parsed.log && parsed._.length === 0)) {
+    const paused = existsSync(pausePath);
+    const lastLine = (() => {
+      try {
+        const content = readFileSync(logPath, "utf-8").trim().split("\n").filter(Boolean);
+        return content[content.length - 1] || "Never ran";
+      } catch { return "Never ran"; }
+    })();
+    const inbox = readInbox(wd);
+    const lines = [
+      "📡 Pulse status:",
+      `  ${paused ? "⏸️ PAUSED" : "▶️ Active"}`,
+      `  📥 ${inbox.length} item(s) in inbox`,
+      `  🕐 Last run: ${lastLine.slice(0, 80)}`,
+      "",
+      "Commands:",
+      "  /sw-pulse pause     — pause automatic processing",
+      "  /sw-pulse resume    — resume automatic processing",
+      "  /sw-pulse process   — force processing now",
+      "  /sw-pulse log       — show recent log entries",
+      "  /sw-pulse status    — show this status",
+    ];
+    reply(ctx, lines.join("\n"));
+    return;
+  }
+
+  // /sw-pulse pause
+  if (parsed.pause !== undefined || parsed._.includes("pause")) {
+    mkdirSync(pulseDir, { recursive: true });
+    writeFileSync(pausePath, new Date().toISOString() + "\n");
+    ctx.ui?.notify(`⏸️ Pulse paused — no automatic processing until resumed`, "info");
+    return;
+  }
+
+  // /sw-pulse resume
+  if (parsed.resume !== undefined || parsed._.includes("resume")) {
+    if (existsSync(pausePath)) {
+      rmSync(pausePath);
+      ctx.ui?.notify(`▶️ Pulse resumed — automatic processing active`, "info");
+    } else {
+      replyWarn(ctx, "Pulse is not paused.");
+    }
+    return;
+  }
+
+  // /sw-pulse process
+  if (parsed.process !== undefined || parsed._.includes("process")) {
+    const shell = process.platform === "win32" ? "powershell" : "bash";
+    const scriptPath = join(pulseDir, shell === "powershell" ? "pulse.ps1" : "pulse.sh");
+    const altScript = join(pulseDir, shell === "powershell" ? "pulse.sh" : "pulse.ps1");
+
+    if (!existsSync(scriptPath)) {
+      if (existsSync(altScript)) {
+        // Fall back to the other script if available
+        const finalPath = altScript;
+        const finalShell = shell === "powershell" ? "bash" : "powershell";
+        const cmd = finalShell === "powershell"
+          ? `powershell -ExecutionPolicy Bypass -File "${finalPath}" -Force`
+          : `bash "${finalPath}" --force`;
+        ctx.ui?.notify(`⚡ Pulse processing started (via ${finalShell})...`, "info");
+        const output = execSync(cmd, { cwd: wd, encoding: "utf8", timeout: 180000, stdio: ["pipe", "pipe", "pipe"] });
+        ctx.ui?.notify(`✅ Pulse processing complete`, "success");
+        reply(ctx, output.trim() || "✅ Done.");
+      } else {
+        replyWarn(ctx, `No pulse script found at ${scriptPath} or ${altScript}. Run setup first.`);
+      }
+      return;
+    }
+
+    const cmd = shell === "powershell"
+      ? `powershell -ExecutionPolicy Bypass -File "${scriptPath}" -Force`
+      : `bash "${scriptPath}" --force`;
+
+    ctx.ui?.notify(`⚡ Pulse processing started...`, "info");
+    try {
+      const output = execSync(cmd, { cwd: wd, encoding: "utf8", timeout: 180000, stdio: ["pipe", "pipe", "pipe"] });
+      ctx.ui?.notify(`✅ Pulse processing complete`, "success");
+      reply(ctx, output.trim() || "✅ Done.");
+    } catch (e: any) {
+      ctx.ui?.notify(`❌ Pulse processing failed`, "error");
+      reply(ctx, e.stdout?.trim() || e.message || "Unknown error");
+    }
+    return;
+  }
+
+  // /sw-pulse log [n]
+  if (parsed.log !== undefined || parsed._.includes("log") || parsed._.length > 0 && !isNaN(Number(parsed._[0]))) {
+    const n = parseInt(parsed.log || parsed.n || parsed._.find(t => !isNaN(Number(t))) || "10", 10);
+    try {
+      const content = readFileSync(logPath, "utf-8").trim().split("\n").filter(Boolean);
+      const recent = content.slice(-n);
+      reply(ctx, recent.join("\n") || "📡 No log entries yet.");
+    } catch {
+      reply(ctx, "📡 No log entries yet.");
+    }
+    return;
+  }
+
+  // Fallback: show status
+  replyWarn(ctx, "Usage: /sw-pulse [status|pause|resume|process|log [n]]");
+}
+
 // ── Single source of truth: handler lookups ──────────────────────────
 // Handlers are keyed by command name (derived from WORKFLOW_COMMANDS).
 // When you add a command to dispatcher.ts, add its handler here.
@@ -1096,6 +1232,7 @@ const COMMAND_ALIASES: Record<string, string[]> = {
   "sw-unarchive": ["stelow-unarchive"],
   "sw-unlock":    ["stelow-unlock"],
   "sw-inbox":     ["stelow-inbox"],
+  "sw-pulse":     ["stelow-pulse"],
 };
 
 const HANDLER_BY_NAME: Record<string, CmdHandler> = {
@@ -1115,6 +1252,7 @@ const HANDLER_BY_NAME: Record<string, CmdHandler> = {
   "sw-unarchive":  cmdUnarchive,
   "sw-unlock":     cmdUnlock,
   "sw-inbox":      cmdInbox,
+  "sw-pulse":      cmdPulse,
   // Aliases
   "stelow-start":     cmdStart,
   "stelow-abort":     cmdAbort,
@@ -1132,6 +1270,7 @@ const HANDLER_BY_NAME: Record<string, CmdHandler> = {
   "stelow-unarchive": cmdUnarchive,
   "stelow-unlock":    cmdUnlock,
   "stelow-inbox":     cmdInbox,
+  "stelow-pulse":     cmdPulse,
 };
 
 function getDescription(cmdName: string): string {

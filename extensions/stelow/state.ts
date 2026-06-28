@@ -825,7 +825,48 @@ export function clearInbox(cwd: string): void {
   writeInbox(cwd, []);
 }
 
+// ── Provenance Log ───────────────────────────────────────────────────
 
+const PROVENANCE_FILE = join(INBOX_DIR, "history.jsonl");
+
+export function getProvenancePath(cwd: string): string {
+  return join(cwd, PROVENANCE_FILE);
+}
+
+/**
+ * Append a provenance entry to the inbox history log.
+ * Each entry is a JSON object on its own line (JSONL format).
+ */
+export function appendProvenance(cwd: string, entry: Record<string, unknown>): void {
+  const path = getProvenancePath(cwd);
+  mkdirSync(dirname(path), { recursive: true });
+  const line = JSON.stringify({ ts: new Date().toISOString(), ...entry }) + "\n";
+  writeFileSync(path, line, { flag: "a" });
+}
+
+/**
+ * Read all provenance entries from the inbox history log.
+ * Returns parsed JSON objects in order (oldest first).
+ * Returns empty array if file doesn't exist or is corrupt.
+ */
+export function readProvenance(cwd: string): Record<string, unknown>[] {
+  const path = getProvenancePath(cwd);
+  if (!existsSync(path)) return [];
+  const results: Record<string, unknown>[] = [];
+  try {
+    const lines = readFileSync(path, "utf-8").split("\n").filter(l => l.trim().length > 0);
+    for (const line of lines) {
+      try {
+        results.push(JSON.parse(line));
+      } catch {
+        // skip corrupt line
+      }
+    }
+  } catch {
+    // skip unreadable file
+  }
+  return results;
+}
 
 // Re-export for convenience (used by commands.ts)
 export { TASK_ICONS };
