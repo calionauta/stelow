@@ -1,10 +1,17 @@
-# Tool: ask_user_question
+# Tool: ask
 
-> Structured user questions for PI using ask_user_question.
+> Ask the user a structured question with options.
+> Use for ANY user-facing decision (scope, interface, confirmation, appetite).
+> This is the CLI-agnostic reference — per-CLI tool names and syntax below.
 
----
+## Per-CLI
 
-## Specific Command (PI)
+| CLI | Tool | Notes |
+|-----|------|-------|
+| Pi | `ask_user_question` | Structured options + preview + multiSelect |
+| Generic | Markdown numbered list | Fallback: list options, user types number |
+
+## Pi Syntax
 
 ```typescript
 ask_user_question({
@@ -22,8 +29,6 @@ ask_user_question({
 | Package | @juicesharp/rpiv-ask-user-question (juicesharp) |
 | Patterns | See `stages/ask-patterns.md` |
 
----
-
 ## Tool Capabilities
 
 | Capability | Description |
@@ -33,16 +38,12 @@ ask_user_question({
 | multiSelect | Allow multiple selections |
 | Notes | Press 'n' on option to attach notes |
 
----
-
 ## Preview Limits
 
 | Mode | Max rows |
 |------|----------|
 | Side-by-side | 20 rows |
 | Stacked | 15 rows |
-
----
 
 ## Patterns Reference
 
@@ -55,7 +56,6 @@ ask_user_question({
 | Pattern 3 | Scope Adjustment | Scope adjustment (add/remove) |
 | Pattern 4 | General | Simple confirmation |
 | Pattern 5 | Setup | Stage selection |
-57:ef6| Pattern 5 | setup | Stage selection |
 | Pattern 6 | Orchestrator | Workflow interruption (mid-workflow new request) |
 
 ### Product type (single-select)
@@ -135,8 +135,6 @@ ask_user_question({
 })
 ```
 
----
-
 ## Multi-Select Rule
 
 When `multiSelect: true`:
@@ -144,8 +142,6 @@ When `multiSelect: true`:
 - User can select **nothing** to mean "none"
 - Selecting **everything** is allowed
 - Selections are explicit — no need for "select all"
-
----
 
 ## Schema
 
@@ -164,8 +160,6 @@ interface Question {
 }
 ```
 
----
-
 ## Reserved Labels
 
 These are auto-added and must NOT be in options:
@@ -173,11 +167,9 @@ These are auto-added and must NOT be in options:
 - `"Chat about this"`
 - `"Next →"`
 
----
-
 ## Fallback (Other Harnesses)
 
-If `ask_user_question` is not available:
+If the structured question tool is not available:
 - List options as numbered markdown
 - User responds with number
 - Process response as selection
@@ -193,4 +185,4 @@ Respond with the number of your choice:
 > 1
 ```
 
-**Abstraction:** "Structured question with options and user response"
+**Abstraction:** "Ask structured question with options and user response"

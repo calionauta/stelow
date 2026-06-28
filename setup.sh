@@ -553,13 +553,13 @@ install_ctx7() {
   fi
 
   if ! command -v npx &>/dev/null; then
-    log_warn "npx not available — install Node.js first, then run 'npx ctx7 setup' manually."
+    log_warn "npx not available — install Node.js first, then run 'npx @vedanth/context7 setup' manually."
     record_fail "ctx7 (no npx)"
     return
   fi
 
-  log_info "Running 'npx ctx7 setup' — follow the OAuth prompts."
-  if npx ctx7 setup; then
+  log_info "Running 'npx @vedanth/context7 setup' — follow the OAuth prompts."
+  if npx @vedanth/context7 setup; then
     record_ok "ctx7"
   else
     log_warn "ctx7 setup failed or cancelled. See https://github.com/upstash/context7 for manual install."

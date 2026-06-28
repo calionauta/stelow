@@ -1,11 +1,9 @@
 ---
 name: cali-product-coding-standards
 description: >
-  [Cali] Self-contained coding standards for product planning. Merges universal
-  principles (KISS, DRY, LoB, SoC, Fail Fast, YAGNI, file/function size limits)
-  with product-domain depth (Datastar: backend source of truth, SSE-first,
-  HATEOAS). Use when generating or reviewing code within any product planning
-  context.
+  [Cali] Self-contained coding standards for product planning. Universal
+  principles (KISS, DRY, LoB, SoC, Fail Fast, YAGNI, file/function size limits).
+  Use when generating or reviewing code within any product planning context.
 metadata:
   frequency: daily
   category: code
@@ -14,8 +12,7 @@ metadata:
 
 # Product Coding Standards
 
-> **Self-contained.** This skill includes both universal coding principles
-> and product-domain (Datastar) depth — no external prerequisite skills needed.
+> **Self-contained.** This skill includes universal coding principles — no external prerequisite skills needed.
 
 ---
 
@@ -59,15 +56,14 @@ Interfaces for extensibility only when it adds real value.
 - Add interfaces when you have 2+ concrete implementations
 
 ### 6. Locality of Behavior (LoB)
-For **Datastar, HTMX, or Alpine.js frontend**: behavior lives in the HTML that uses it.
+Behavior lives close to where it's used — in the template/view that owns it.
 
-- Zero custom JavaScript: use native attributes (`data-*`, `@get`, `@post`, `data-on`, `data-bind`, `data-signal`)
+- Use the framework's native declarative attributes before custom JavaScript
 - Inline JS only when framework doesn't offer native behavior
 - Frontend is a dumb reactive terminal — minimum possible logic on the client
-- Datastar depth: backend source of truth, SSE-First, HATEOAS
 
 ### 7. Separation of Concerns (SoC)
-For **backend** (Go handlers, services, repos) and **non-Datastar frameworks** (React, Vue, Svelte).
+For backend code and multi-layer frameworks.
 
 - Separate template, logic, data, and style in distinct layers
 - Component/layer does one thing: handler shouldn't call database directly
@@ -81,21 +77,7 @@ Validate at the boundary. Return errors immediately.
 - Guard clauses at function entry
 - Return meaningful error messages
 
-### 9. SSE-First
-Prefer Server-Sent Events over WebSockets for one-directional updates.
-
-- SSE is simpler, has automatic browser reconnection, more efficient than polling
-- Server drives state; client renders it
-- WebSockets only for real bidirectional communication (chat, collaboration, gaming)
-
-### 10. HATEOAS
-Backend determines which actions the user can take.
-
-- Links and forms are discovered via hypertext — frontend doesn't hardcode URLs
-- Actions trigger requests, backend responds with HTML morphs into DOM
-- Frontend is a dumb reactive terminal — minimum possible logic on the client
-
-### 11. YAGNI — You Aren't Gonna Need It
+### 9. YAGNI — You Aren't Gonna Need It
 Don't build for future needs. Implement only what's needed now.
 
 - No speculative features
@@ -109,11 +91,11 @@ Don't build for future needs. Implement only what's needed now.
 When LoB and SoC conflict:
 
 | Context | Principle |
-|---|---|
-| Datastar frontend (`data-*` attributes) | ✅ **LoB** — behavior in the HTML that uses it |
-| Datastar project backend (Go handlers) | ✅ **SoC** — separation into layers |
-| Non-Datastar project (React, Vue, etc.) | ✅ **SoC** — everything in separate layers |
-| Mix Datastar + other framework | ⚠️ LoB on Datastar frontend, SoC on rest |
+|---|---|---|
+| Template/frontend layer (HTML with reactive attributes) | ✅ **LoB** — behavior in the template that uses it |
+| Backend layer (handlers, services, repos) | ✅ **SoC** — separation into layers |
+| Multi-layer frameworks (React, Vue, Svelte) | ✅ **SoC** — everything in separate layers |
+| Mix LoB + SoC frameworks | ⚠️ LoB on frontend, SoC on backend |
 | Unsure | **SoC** is the safe default |
 
 ---
@@ -147,7 +129,7 @@ When applying these principles, produce code that:
 ## Expected Behavior
 
 ### Strong Output
-- Code that follows all 11 principles naturally
+- Code that follows all 9 principles naturally
 - Functions under the size limit
 - Clear separation between frontend (LoB) and backend (SoC)
 - Error handling at boundaries
@@ -160,8 +142,8 @@ When applying these principles, produce code that:
 - `fmt.Sprintf` with HTML tags in Go
 - Error swallowing (`if err != nil { return nil }`)
 - Premature interfaces for single implementations
-- Domain state in frontend signals instead of backend
-- Hardcoded URLs instead of HATEOAS discovery
+- Domain state in frontend instead of backend
+- Hardcoded URLs instead of hypermedia discovery
 
 ---
 

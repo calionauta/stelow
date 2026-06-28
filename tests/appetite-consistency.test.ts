@@ -606,8 +606,8 @@ describe('plan-critique flow step ordering', () => {
     expect(content).not.toMatch(/auto-resolve clear defaults/);
   });
 
-  test('critique:45 references structured-question tool', () => {
-    expect(content).toMatch(/structured-question/);
+  test('critique:45 references ask tool', () => {
+    expect(content).toMatch(/ask\.md/);
   });
 
   test('critique:50 merges into spec-product.md', () => {

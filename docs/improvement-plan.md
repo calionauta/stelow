@@ -119,7 +119,7 @@ Users often don't know these tools exist or what they'd gain. The workflow falls
 - `npx skills add renatocaliari/stelow -g` installs skills to `~/.agents/skills/`
 
 **ctx7:**
-- Install: `npx ctx7 setup` (requires Node.js)
+- Use: `npx @vedanth/context7` (auto-install via npx, requires Node.js)
 - Requires OAuth authentication (interactive web flow)
 - Cannot be fully automated in a script
 
@@ -174,7 +174,7 @@ install_cymbal() {
 
 install_ctx7() {
   echo "ctx7 requires OAuth setup. Run manually:"
-  echo "  npx ctx7 setup"
+  echo "  npx @vedanth/context7 setup"
   echo "This opens a browser for authentication."
 }
 ```
@@ -207,7 +207,7 @@ Where `install_full` calls `install_minimal` then `scripts/setup-deps.sh`.
 |------|------------|
 | `brew install` fails (no brew) | Fallback to `go install` or binary download |
 | cymbal requires CGO on Linux | Detect `go` + `gcc`; if missing, offer binary release |
-| ctx7 OAuth blocks automation | Skip auto-install, document `npx ctx7 setup` as post-install step |
+| ctx7 OAuth blocks automation | Skip auto-install, document `npx @vedanth/context7 setup` as post-install step |
 | User doesn't want auto-deps | `setup-full.sh --minimal` skips all external installs |
 | Network issues during install | Each step is independent with retry + skip |
 

@@ -12,7 +12,7 @@ All paths below are relative to `skills/stelow-product-orchestrator/references/`
 | `cli-tools/plannotator.md` | Plannotator gate command + after-approval workflow |
 | `cli-tools/safe-change.md` | Safe-change tool reference |
 | `cli-tools/stage-status.md` | Status display, `/sw-next`, `/sw-setphase` |
-| `cli-tools/structured-question.md` | `ask_user_question` pattern reference |
+| `cli-tools/ask.md` | `ask_user_question` pattern reference |
 | `cli-tools/subagents.md` | Subagent delegation patterns |
 | `cli-tools/supervise.md` | Supervisor activation during execution |
 | `cli-tools/todo.md` | Task management tool reference |

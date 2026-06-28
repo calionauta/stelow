@@ -106,7 +106,7 @@ When CLI not detected or tool unavailable:
 | File | Purpose |
 |------|---------|
 | `subagents.md` | Parallel task delegation |
-| `structured-question.md` | Structured user questions (`ask_user_question`) |
+| `ask.md` | Structured user questions (`ask_user_question`) |
 | `plannotator.md` | Visual review gate |
 | `goals.md` | Autonomous goal execution (replaces deprecated autoresearch) |
 | `intercom.md` | Cross-session messaging |

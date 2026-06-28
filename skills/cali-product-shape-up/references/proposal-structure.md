@@ -202,7 +202,7 @@ Mode is defined independently and stored in `index.json`. It affects gates and q
 
 ### When to ask:
 
-Use the ask tool (see `references/cli-tools/structured-question.md`) to determine `product_type` if ambiguous:
+Use the ask tool (see `references/cli-tools/ask.md`) to determine `product_type` if ambiguous:
 
 ```
 ask tool: "What type of product is this?"

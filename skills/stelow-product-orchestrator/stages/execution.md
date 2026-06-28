@@ -88,7 +88,7 @@ CHECKLIST=".stelow/{YYYY-MM-DD}/{_dir}/checklist.md"
 # If Plannotator is installed, open the checklist in browser
 if command -v plannotator &>/dev/null; then
   plannotator annotate "$CHECKLIST" &
-  echo "📋 Checklist opened in browser — track progress in real time"
+  echo "📋 Checklist opened in browser — view-only, no action needed. Tracks progress as scopes complete."
 else
   echo "📋 Checklist written to $CHECKLIST"
   echo "💡 Install Plannotator (npx skills add plannotator) for browser view"

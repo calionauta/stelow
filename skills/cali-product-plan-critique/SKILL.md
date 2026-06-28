@@ -198,7 +198,7 @@ Do NOT auto-resolve yet — that depends on mode (next step).
 This step runs in the **parent LLM** (same context as critic=40).
 All 7 checklists run regardless of mode — mode only changes how gaps are resolved.
 
-See `references/cli-tools/structured-question.md` for the `ask_user_question` tool.
+See `references/cli-tools/ask.md` for the `ask_user_question` tool.
 
 **If `$REVIEW_MODE` is `Auto` or `Only Product Spec`:**
 

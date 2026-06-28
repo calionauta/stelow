@@ -2,6 +2,33 @@
 
 All notable changes to `@renatocaliari/stelow` will be documented in this file.
 
+## [0.37.0] - 2026-06-28
+
+### Changed
+
+- **`cali-product-coding-standards` cleaned** — removed Datastar-specific content
+  (SSE-First, HATEOAS sections, LoB/SoC/tie-breaker Datastar bias). Now contains
+  only universal principles (KISS, DRY, LoB, SoC, Fail Fast, YAGNI, size limits).
+  Datastar design principles belong solely in `cali-coding-go-stack`. Affected
+  references in README and `cali-product-tech-planning` updated.
+
+- **`structured-question.md` → `ask.md`** — replaced Pi-specific
+  `ask_user_question` tool reference file with CLI-agnostic `ask.md` across all
+  24 skills. All skill-internal references updated.
+
+- **`ctx7` → `@vedanth/context7`** — updated npx package name in
+  `doc-search.md` references.
+
+- **Muxy extension improvements** — adapter layer refactored for consistency
+  across Pi, Claude Code, Codex, and OpenCode harnesses.
+
+- **Config/install updates** — AGENTS.md, setup.sh, install.sh improvements.
+
+### Tests
+
+- Updated `skill-implementation.test.ts` and `appetite-consistency.test.ts` to
+  reference `ask.md` instead of `structured-question.md`.
+
 ## [0.36.10] - 2026-06-26
 
 ### Added

@@ -57,7 +57,7 @@ PRODUCT_WORKFLOW_CLI=opencode ./install.sh
 1. 25 workflow skills — **always installed**
 2. Pi extension + npm packages — **confirms before installing** (Pi only)
 3. cymbal (codebase navigation) — **confirms before installing**
-4. ctx7 (live library docs) — **recommends, requires OAuth**
+4. ctx7 — live library docs via `npx @vedanth/context7` (recommends, requires OAuth)
 5. `./install.sh --minimal` skips all optional steps
 
 **CI / automation:** Set `ASSUME_YES=1` to auto-confirm all prompts without interaction.

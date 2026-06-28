@@ -575,7 +575,7 @@ setup_full() {
     log_info "  ctx7 provides current API docs during execution (prevents hallucinated APIs)."
     log_info "  Requires OAuth setup (opens browser once)."
     if confirm "Set up ctx7?" N; then
-      echo "  Run: npx ctx7 setup" >&2
+      echo "  Run: npx @vedanth/context7 setup" >&2
       log_info "  Run this command after setup completes."
     fi
   else

@@ -77,7 +77,7 @@ The user's request is exclusively about one of these domains (e.g., "help me def
 
 **Mode B — General product request with domain overlap** (user asks for product planning but mentions domains):
 The user wants full product planning but the input also contains domain signals.
-→ Offer domain libraries as **complementary context** using the ask tool (see `references/cli-tools/structured-question.md`), referencing patterns from `stages/ask-patterns.md`:
+→ Offer domain libraries as **complementary context** using the ask tool (see `references/cli-tools/ask.md`), referencing patterns from `stages/ask-patterns.md`:
 
 ```
 ask tool: multiSelect question with detected domain options

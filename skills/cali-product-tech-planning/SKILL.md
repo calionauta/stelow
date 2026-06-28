@@ -54,7 +54,7 @@ Read the `references/` files to guide the process:
 | `references/tech-context.md` | Tech planning context, prerequisites, workflow position | **Before starting** — sets planning context |
 | `references/scopes-and-sequencing.md` | Scope types (feature/optimization/spike + test-*), executor routing, sequencing principles | **During generation** — defines scope structure |
 | `references/tech-output.md` | Tech plan output format, frontmatter, receipts | **After generation** — formats output |
-| `cali-product-coding-standards` (skill) | Coding standards + Datastar framework philosophy | **During generation** — guides implementation |
+| `cali-product-coding-standards` (skill) | Universal coding standards (KISS, DRY, LoB, SoC, Fail Fast, YAGNI) | **During generation** — guides implementation |
 
 ## Process
 
@@ -107,7 +107,7 @@ Parallel queries:
 ```
 
 Consolidate into a recommendation with alternatives. Use `ask_user_question`
-(see `references/cli-tools/structured-question.md`) to present:
+(see `references/cli-tools/ask.md`) to present:
 
 > **Recommendation:** {chosen stack} (Recommended)
 > **Alternatives:** {alt1} | {alt2}
@@ -267,7 +267,7 @@ esac
 **⚠️ FALLBACK — if subagent fails or is unavailable:**
 Generate spec-tech.md INLINE using the same process. Read the references files
 (`tech-context.md`, `scopes-and-sequencing.md`, `tech-output.md`)
-and read `cali-product-coding-standards` for Datastar framework philosophy,
+and read `cali-product-coding-standards` for universal coding principles,
 then produce the spec-tech artifact directly in the current context.
 
 ### planning:15 — Bidirectional Alignment Check (mode-gated)
@@ -340,7 +340,7 @@ If skipped, log: `context/alignment-skipped.md` with reason.
 
 **If `product_needs_update` or `blocking` and Review Mode >= Product Spec + Interface Choice:**
 
-Use `ask_user_question` (see `references/cli-tools/structured-question.md`):
+Use `ask_user_question` (see `references/cli-tools/ask.md`):
 
 ```
 ask tool: {

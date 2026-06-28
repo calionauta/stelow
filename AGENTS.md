@@ -100,7 +100,7 @@ npm run typecheck        # Type check
 ## External Tools (Optional)
 
 - **cymbal** — codebase navigation for Tech Preview / Feature Recon. Install: `brew install 1broseidon/tap/cymbal`. Fallback: find/git.
-- **ctx7** — live library docs during execution setup. Install: `npx ctx7 setup`. Fallback: skip.
+- **ctx7** — live library docs during execution setup. Use: `npx @vedanth/context7`. Fallback: skip.
 
 All optional — workflow runs without them.
 

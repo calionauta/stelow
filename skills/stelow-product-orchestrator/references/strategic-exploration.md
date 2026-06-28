@@ -14,7 +14,7 @@ Look for user mentions of:
 
 ## Ask
 
-Use the ask tool (see `references/cli-tools/structured-question.md`):
+Use the ask tool (see `references/cli-tools/ask.md`):
     options: [
       {
         label: "Job-to-Be-Done Framework",
@@ -58,7 +58,7 @@ If user selects one or more:
 
 4. Show summary in chat with file links
 
-5. For each skill, ask granular integration using the ask tool (see `references/cli-tools/structured-question.md`).
+5. For each skill, ask granular integration using the ask tool (see `references/cli-tools/ask.md`).
 ```
    - If no insights selected from a skill → skip that skill
    - Proceed to next or Shape Up

@@ -243,6 +243,16 @@ export class CodexAdapter extends BaseAdapter {
       { name: "WebSearch", description: "Search the web" },
     ];
   }
+
+  toAgnosticName(cliName: string): string {
+    // Codex uses different names for some tools.
+    switch (cliName) {
+      case "Grep":         return "grep";
+      case "Glob":         return "ls";
+      case "WebSearch":    return "web_search";
+      default:              return cliName;  // identity
+    }
+  }
   
   showNotification(message: string, type: NotificationType = "info"): void {
     // Codex has basic terminal output

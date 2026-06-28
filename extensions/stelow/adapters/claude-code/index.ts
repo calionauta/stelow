@@ -240,6 +240,15 @@ export class ClaudeCodeAdapter extends BaseAdapter {
       { name: "Glob", description: "Find files by pattern" },
     ];
   }
+
+  toAgnosticName(cliName: string): string {
+    // Claude Code uses different names for some tools.
+    switch (cliName) {
+      case "Grep":         return "grep";
+      case "Glob":         return "ls";
+      default:              return cliName;  // identity
+    }
+  }
   
   showNotification(message: string, type: NotificationType = "info"): void {
     // Claude Code has basic notification support

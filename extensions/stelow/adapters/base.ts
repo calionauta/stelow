@@ -157,6 +157,12 @@ export abstract class BaseAdapter implements CLIAdapter {
       { name: "edit", description: "Edit existing files" },
     ];
   }
+
+  toAgnosticName(cliName: string): string {
+    // Default: identity — assume CLI tool names ARE agnostic names.
+    // Override in adapters where tool names differ from stages.yaml.
+    return cliName;
+  }
   
   hasCapability(capability: keyof CLICapabilities): boolean {
     const value = this._capabilities[capability];

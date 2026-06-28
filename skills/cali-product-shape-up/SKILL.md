@@ -193,7 +193,7 @@ REVIEW_MODE="All Above + Scopes In/Out"
 |-------------|----------|
 | **Auto/Only Product Spec** | Auto-resolve. AI fills assumptions in spec as notes. No questions. |
 | **Product Spec + Interface Choice** | Top-3 most critical assumptions. Each presented with AI recommendation.
-  Use `ask_user_question` (see `references/cli-tools/structured-question.md`).
+  Use `ask_user_question` (see `references/cli-tools/ask.md`).
   Option format: "{assumption}. Recom: {resolution}" with "(Recommended)" marker. |
 | **All Above + Scopes In/Out / All Above + Tech Review** | Top-5 assumptions. User responds to each.
   AI recommendation marked as "(Recommended)". |
@@ -229,7 +229,7 @@ Read the `references/` files to guide the process:
 | `references/proposal-structure.md` | Output structure for the shaped proposal |
 | `references/output-expectations.md` | Strong vs weak output criteria |
 
-Use the ask tool (see `references/cli-tools/structured-question.md`) for strategic questions when needed.
+Use the ask tool (see `references/cli-tools/ask.md`) for strategic questions when needed.
 
 After shaping:
 - Save to `.stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md`
@@ -374,10 +374,10 @@ When triggered by the orchestrator:
 
 Show the IN/OUT scope table. Ask:
 
-1. **Remove from IN?** — use the ask tool with multiSelect (see `references/cli-tools/structured-question.md`) with current IN scopes
-2. **Add to IN?** — use the ask tool with multiSelect (see `references/cli-tools/structured-question.md`) with OUT scope items
+1. **Remove from IN?** — use the ask tool with multiSelect (see `references/cli-tools/ask.md`) with current IN scopes
+2. **Add to IN?** — use the ask tool with multiSelect (see `references/cli-tools/ask.md`) with OUT scope items
 
-[Use the ask tool — see `references/cli-tools/structured-question.md`]
+[Use the ask tool — see `references/cli-tools/ask.md`]
 
 > **⚡ Estimation Bias:** When asking "Remove from IN?", the model tends to suggest
 > removing items that **seem** complex, but could be simple to implement.

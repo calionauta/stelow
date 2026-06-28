@@ -26,6 +26,7 @@ import {
   resolveProjectDir,
   parseInputForWorkflow,
   updateWorkflowIndexJson,
+  getDateStamp,
 } from "./state";
 import { updateFooter, notifyPhase } from "./ui";
 import { registerCommands, executeCommand } from "./commands";
@@ -289,26 +290,52 @@ export default function (pi: ExtensionAPI) {
     updateFooter(ctx, wd);
   });
 
-  // ── Tool call: stages guard + detection ───────────────────────
+  // ── Tool call: stages guard + Auto mode enforcement + detection ─────
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   pi.on("tool_call", async (event: any, ctx: any) => {
     const tool = event.toolName || "";
     const input = event.input as any;
-    
-    // Stage guard check (blocked tools per stages.yaml)
+
+    // Convert to agnostic tool name (maps ask_user_question → ask, etc.)
+    // All subsequent checks use the agnostic name, making them CLI-independent.
+    const agnosticTool = adapter.toAgnosticName(tool);
+
+    // Auto mode enforcement: block user-interaction tools at agnostic level.
+    // Works regardless of what Pi extension registers the tool as.
+    if (agnosticTool === "ask" || agnosticTool === "plannotator") {
+      const wd = resolveProjectDir(ctx.cwd);
+      const wf = getActiveWorkflow(wd);
+      if (wf?.dirHash) {
+        const createdDate = new Date(wf.created);
+        const ds = isNaN(createdDate.getTime()) ? getDateStamp() : getDateStamp(createdDate);
+        const idxPath = join(wd, WORKFLOW_DIR, ds, wf.dirHash, "index.json");
+        try {
+          const idx = JSON.parse(readFileSync(idxPath, "utf-8"));
+          if (idx?.config?.review_mode === "Auto") {
+            const reason = `🔒 Tool '${tool}' (agnostic: ${agnosticTool}) blocked by Auto review mode. No gates, no questions.`;
+            console.warn(`[AutoMode] Blocked ${tool} → ${agnosticTool} — review_mode=Auto`);
+            ctx.ui?.notify(reason, "warning");
+            return { block: true, reason };
+          }
+        } catch {
+          // index.json missing or corrupt — don't block
+        }
+      }
+    }
+
+    // Stage guard check uses agnostic name (fixes bug: was comparing
+    // CLI-specific name against agnostic name in stages.yaml)
     const checker = getStageGuard(resolveProjectDir(ctx.cwd), ctx.cwd);
     if (checker) {
-      const result = checker(tool);
+      const result = checker(agnosticTool);
       if (!result.allowed) {
-        const hint = `🔒 Tool '${tool}' blocked in '${result.reason || "current"}'. Use /sw-pause (keep), /sw-next (advance), /sw-archive (soft delete), /sw-abort (delete), or /sw-unlock (session only) to lift the lock.`;
+        const hint = `🔒 Tool '${tool}' (agnostic: ${agnosticTool}) blocked in '${result.reason || "current"}'. Use /sw-pause (keep), /sw-next (advance), /sw-archive (soft delete), /sw-abort (delete), or /sw-unlock (session only) to lift the lock.`;
         console.warn(`[StagesGuard] ${result.reason}`);
-        // Surface a TUI warning so the user sees the lock + how to lift it
         ctx.ui?.notify(hint, "warning");
-        // Block the tool call — Pi hooks support { block: true, reason }.
-        // The reason includes the hint so the LLM can guide the user.
         return { block: true, reason: hint };
       }
     }
+
     // Tracking file write detection — refresh footer when LLM
     // self-advances by writing directly to stelow.json
     if (input?.path?.includes?.(TRACKING_FILE) && ctx.ui) {

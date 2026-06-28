@@ -96,6 +96,14 @@ export interface CLIAdapter {
    * Get all available tools for this CLI.
    */
   getAvailableTools(): ToolDefinition[];
+
+  /**
+   * Convert a CLI-specific tool name to its agnostic equivalent.
+   * Agnostic tool names are defined in stages.yaml (e.g. "ask", "read",
+   * "subagent"). Each adapter maps its CLI's native tool names to these.
+   * Returns the input unchanged if no mapping exists (identity).
+   */
+  toAgnosticName(cliName: string): string;
   
   /**
    * Check if a specific capability is supported.

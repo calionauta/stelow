@@ -224,6 +224,16 @@ export class OpenCodeAdapter extends BaseAdapter {
       { name: "WebSearch", description: "Search the web" },
     ];
   }
+
+  toAgnosticName(cliName: string): string {
+    // OpenCode uses different names for some tools.
+    switch (cliName) {
+      case "Grep":         return "grep";
+      case "Glob":         return "ls";
+      case "WebSearch":    return "web_search";
+      default:              return cliName;  // identity
+    }
+  }
   
   showNotification(message: string, type: NotificationType = "info"): void {
     // OpenCode has tui.toast.show() for notifications

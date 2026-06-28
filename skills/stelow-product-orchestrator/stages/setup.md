@@ -156,7 +156,7 @@ fi
    ```
 
 3. **If only 1 (not fresh):** ask using the ask tool
-   (see `references/cli-tools/structured-question.md`):
+   (see `references/cli-tools/ask.md`):
 
    ```
    ask tool: 'Workflow "{name}" in progress at stage {current_stage}. Continue?'
@@ -164,7 +164,7 @@ fi
    ```
 
 4. **If multiple:** show the list and recommend `/sw-clean`
-   (see `references/cli-tools/structured-question.md`):
+   (see `references/cli-tools/ask.md`):
 
    ```
    ask tool: 'There are {count} active workflows. Use /sw-clean to organize.'

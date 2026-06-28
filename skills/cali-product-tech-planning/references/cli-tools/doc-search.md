@@ -7,13 +7,13 @@
 ## Tool: ctx7 (Recommended)
 
 ```bash
-npx ctx7 library <name>          # Resolve library → ctx7 ID
-npx ctx7 docs <id> "<query>"     # Query docs for that library
+npx @vedanth/context7 library <name>          # Resolve library → ctx7 ID
+npx @vedanth/context7 docs <id> "<query>"     # Query docs for that library
 ```
 
 | Info | Value |
 |-------|------|
-| Command | `npx ctx7` (auto-install if missing) |
+| Command | `npx @vedanth/context7` (auto-install if missing) |
 | Source | https://context7.com |
 
 `npx` auto-installs. No `npm install -g` needed.
@@ -26,32 +26,29 @@ npx ctx7 docs <id> "<query>"     # Query docs for that library
 | Tech Planning — scope gen | 🟡 | Useful when scopes reference specific libs and need accurate API patterns. |
 | Execution — writing code | ✅ | Primary use case. Before using a lib API, query for current docs. |
 
-## Detection + Install
+## Detection
 
 ```bash
 # Detection (auto-installs if missing via npx)
-npx ctx7 --version 2>&1
-
-# Install globally if desired (optional, not needed for npx):
-npm install -g ctx7
+npx @vedanth/context7 --version 2>&1
 ```
 
 ## Query Pattern
 
 ```bash
 # Step 1: Resolve library name to ctx7 ID
-npx ctx7 library next
+npx @vedanth/context7 library next
 
 # Step 2: Query docs for specific API or pattern
-npx ctx7 docs /vercel/next.js "app router server components v15"
+npx @vedanth/context7 docs /vercel/next.js "app router server components v15"
 
 # Query during execution, before writing code
-npx ctx7 docs /tanstack/query "useMutation optimistic update"
+npx @vedanth/context7 docs /tanstack/query "useMutation optimistic update"
 ```
 
 ## Fallback (ctx7 unavailable)
 
-If `npx ctx7` does not work (network, environment restrictions):
+If `npx @vedanth/context7` does not work (network, environment restrictions):
 
 1. Use `web_search` with query: `"{library} {version} API documentation {current_year}"`
 2. Use `fetch_content` to read the official doc page

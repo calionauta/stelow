@@ -124,11 +124,11 @@ Output: Append to interfaces.md per hybrid-recommendation.md
 
 **After all selected proposals (+ Hybrid when applicable), use the Plannotator gate command** (see `references/cli-tools/plannotator.md` for the correct CLI command). Execute it directly — do NOT describe it to the user.
 
-Wait for the `--gate` result. If approved, **automatically advance to Interface Selection** — use **Pattern 2** from `references/cli-tools/structured-question.md` to let the user pick one proposal. Do NOT just describe what comes next — execute it.
+Wait for the `--gate` result. If approved, **automatically advance to Interface Selection** — use **Pattern 2** from `references/cli-tools/ask.md` to let the user pick one proposal. Do NOT just describe what comes next — execute it.
 
 ## User Selection (Interface Selection)
 
-After visual review and approval, use **Pattern 2** from `references/cli-tools/structured-question.md` to ask the user which proposal to follow.
+After visual review and approval, use **Pattern 2** from `references/cli-tools/ask.md` to ask the user which proposal to follow.
 
 ## Output
 

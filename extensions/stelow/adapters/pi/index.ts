@@ -195,6 +195,20 @@ export class PiAdapter extends BaseAdapter {
       { name: "supervise", description: "Supervise subagent execution" },
     ];
   }
+
+  toAgnosticName(cliName: string): string {
+    // Map Pi-specific tool names to agnostic names from stages.yaml.
+    // Tools with matching names (read, write, bash, edit) pass through.
+    switch (cliName) {
+      case "ask_user_question": return "ask";
+      case "plannotator":       return "plannotator";
+      case "subagent":          return "subagent";
+      case "goal":              return "goal";
+      case "intercom":          return "intercom";
+      case "supervise":         return "supervise";
+      default:                  return cliName;  // identity
+    }
+  }
   
   showNotification(message: string, type: NotificationType = "info"): void {
     if (!this._pi?.notify) {

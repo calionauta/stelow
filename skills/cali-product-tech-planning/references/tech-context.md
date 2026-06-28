@@ -77,7 +77,7 @@ When building a new product:
 
 ### Questions to Ask (Phase 1 or early Phase 11)
 
-Use the ask tool (see `references/cli-tools/structured-question.md`):
+Use the ask tool (see `references/cli-tools/ask.md`):
 
 ```
 ask tool: "Is this a new product or an evolution of an existing one?"

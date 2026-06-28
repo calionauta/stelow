@@ -106,9 +106,9 @@ describe('Main SKILL.md Structure', () => {
       }
     });
 
-    it('structured question should reference structured-question.md', () => {
-      if (content.includes('ask_user_question') || content.includes('structured question')) {
-        expect(content).toMatch(/structured-question\.md/);
+    it('structured question should reference ask.md', () => {
+      if (content.includes('ask_user_question') || content.includes('ask tool')) {
+        expect(content).toMatch(/ask\.md/);
       }
     });
 
@@ -388,7 +388,7 @@ describe('cli-tools References', () => {
     'plannotator': 'plannotator.md',
     'subagents': 'subagents.md',
     'goals': 'goals.md',
-    'ask': 'structured-question.md',
+    'ask': 'ask.md',
     'todo': 'todo.md',
     'stage-status': 'stage-status.md',
     'subagent': 'subagents.md',

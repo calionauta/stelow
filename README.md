@@ -314,7 +314,7 @@ All 25 skills are flat in `skills/` directory, ready for `~/.agents/skills/`. Th
 
 | Skill | Purpose |
 |-------|---------|
-| `cali-product-coding-standards` | Self-contained coding standards - universal principles + Datastar rules (SSE-first, HATEOAS, LoB) |
+| `cali-product-coding-standards` | Self-contained coding standards - KISS, DRY, LoB, SoC, Fail Fast, YAGNI, file/function size limits |
 
 ---
 
@@ -385,7 +385,7 @@ stelow is designed to be **self-contained** — the 25 skills + installer cover 
 |---|---|---|---|---|
 | [cymbal](https://github.com/1broseidon/cymbal) | Optional | Tech Preview, Codebase Feature Recon, Alignment Check | `brew install 1broseidon/tap/cymbal` (macOS), or `go install` / binary release | Basic `find` + `git log` — no cross-references or impact data |
 | [npx skills](https://github.com/vercel-labs/skills) | Optional | Stack-matched skill discovery during execution setup | Part of Node.js ecosystem (`npx` bundled with npm) | Skip — workflow runs without stack-matched skills |
-| [ctx7](https://github.com/upstash/context7) | Optional | Current library doc fetching during execution setup | `npx ctx7 setup` or `npm i -g ctx7` | Skip — docs not fetched (less informed execution) |
+| [ctx7](https://github.com/upstash/context7) | Optional | Current library doc fetching during execution setup | `npx @vedanth/context7` (auto-install via npx) | Skip — docs not fetched (less informed execution) |
 | [plannotator](https://plannotator.ai/) | Optional | Visual review gate annotation | Pi: `@plannotator/pi-extension` · OpenCode: `@plannotator/opencode` · Claude Code: `@backnotprop/plannotator` · Codex: built-in hook | Manual review with approval receipt file — no structured annotation |
 | [safe-change (pi-agent-codebase-workflows)](https://github.com/PriNova/pi-agent-codebase-workflows) | Optional | Pre-execution code safety checks | `npx skills add Prinova/pi-agent-codebase-workflows -g` (works on Pi, OpenCode, Claude Code, Codex) | Skip — pre-execution check omitted |
 | Subagents (built-in to all CLIs) | Optional | Parallel reviewer orchestration during Plan Critique | `subagent({ agent, task })` — built-in on Pi/OpenCode/Claude Code/Codex | Sequential execution — slower, same outcome (single-context review) |
@@ -417,7 +417,7 @@ curl -fsSL https://raw.githubusercontent.com/renatocaliari/stelow/main/setup.sh 
 | 4 | Skills (25) | stelow orchestrator + 24 subskills, copied to `~/.agents/skills/` | **All CLIs** ✅ |
 | 5 | Settings | theme, model defaults, skill shortcuts in `~/.pi/agent/settings.json` | pi.dev |
 | 6 | cymbal | codebase navigation via `brew install 1broseidon/tap/cymbal` (macOS) or `go install` (Linux). Skipped gracefully if brew/Go absent | macOS, Linux |
-| 7 | ctx7 | library docs fetcher via `npx ctx7 setup` (interactive OAuth — prompts the user) | All CLIs |
+| 7 | ctx7 | library docs fetcher via `npx @vedanth/context7` (interactive OAuth — prompts the user) | All CLIs |
 | 8 | safe-change | pre-planning regression check via `npx skills add PrinNova/pi-agent-codebase-workflows -g` | All CLIs |
 | 9 | Herdr plugin | stelow split-pane TUI installed via `herdr plugin install renatocaliari/stelow` — **only if** `herdr` CLI is on PATH | All CLIs (via Herdr) |
 | 10 | Muxy detection | detects `/Applications/Muxy.app` or `muxy` binary; prints install link if absent (cannot auto-install — Muxy is macOS-only, distributed via GitHub releases) | macOS |
