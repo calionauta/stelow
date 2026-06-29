@@ -62,7 +62,7 @@ function toSlug(text: string): SlugVariants {
   out = out.replace(/^-+|-+$/g, "");
 
   if (startsWithEmoji) {
-    out = (isVSPrefixedEmoji ? "\ufe0f-" : "--") + out;
+    out = (isVSPrefixedEmoji ? "\ufe0f-" : "-") + out;
   }
   return { canonical: out };
 }

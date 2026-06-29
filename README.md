@@ -36,6 +36,7 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 - **Bidirectional product ↔ tech flow** — tech constraints and opportunities inform product decisions *before* execution. Tech Preview uses cymbal for appetite-gated codebase recon; Alignment Check catches product-vs-tech misalignment with mode-dependent resolution (auto or user-flagged).
 - **Stack-matched skills + fresh docs** — during execution setup, the workflow discovers skills (via `npx skills`) optimized for the chosen tech stack and fetches current library docs (via `ctx7`). Both skip if already installed or unavailable. Skills install in project scope only, after user confirmation.
 - **Real-time TUI tracking** - see workflow state as it progresses through all stages.
+- **Pulse — autonomous inbox processing** — background cron-driven system periodically checks your inbox and auto-creates workflows with `review_mode=Auto` (no gates, no questions). Items needing human review skip Pulse and land in the interactive inbox for manual triage, preventing silent loops on ambiguous requests.
 
 ---
 
@@ -43,20 +44,20 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 
 - [Why stelow](#why-stelow)
 - [🎚️ Appetite & Review Mode](#️-appetite--review-mode)
-- [🔄 Process](#--process)
-- [📋 Skills](#--skills)
-- [🚀 Quick Start](#--quick-start)
-- [📦 Installation](#--installation)
+- [🔄 Process](#-process)
+- [📋 Skills](#-skills)
+- [🚀 Quick Start](#-quick-start)
+- [📦 Installation](#-installation)
 - [External Dependencies](#external-dependencies)
-- [🎮 Commands](#--commands)
-- [📡 Pulse — Autonomous Inbox Processing](#--pulse--autonomous-inbox-processing)
+- [🎮 Commands](#-commands)
+- [📡 Pulse — Autonomous Inbox Processing](#-pulse--autonomous-inbox-processing)
 - [Setup per CLI](#setup-per-cli)
 - [🖥️ Visual & TUI Integrations](#️-visual--tui-integrations)
-- [📁 Artifact Directory](#--artifact-directory)
-- [📖 Evidence & Limitations](#--evidence--limitations)
+- [📁 Artifact Directory](#-artifact-directory)
+- [📖 Evidence & Limitations](#-evidence--limitations)
 - [About the Author](#about-the-author)
 - [License](#license)
-- [📞 Support](#--support)
+- [📞 Support](#-support)
 
 ---
 
@@ -214,7 +215,7 @@ This is an **appetite-first** design: the human's declaration of review budget p
 
 ## 🔄 Process
 
-The workflow has **3 conceptual phases** (15 stages total), from idea triage to post-execution audit. See the [Stage Index](#skills) in the orchestrator skill for the complete stage map with auto-chain rules and flow diagram.
+The workflow has **3 conceptual phases** (15 stages total), from idea triage to post-execution audit. See the [Stage Index](#-skills) in the orchestrator skill for the complete stage map with auto-chain rules and flow diagram.
 
 ### 1. 🎨 Shaping
 
@@ -321,7 +322,7 @@ All 25 skills are flat in `skills/` directory, ready for `~/.agents/skills/`. Th
 
 ## 🚀 Quick Start
 
-This package works across **multiple coding agents** - not just pi.dev. See the compatibility table in [Installation](#installation) to pick your path.
+This package works across **multiple coding agents** - not just pi.dev. See the compatibility table in [Installation](#-installation) to pick your path.
 
 | Your situation | Recommended command | What you get |
 |----------------|--------------------|-------------|
