@@ -101,6 +101,7 @@ npm run typecheck        # Type check
 
 - **cymbal** — codebase navigation for Tech Preview / Feature Recon. Install: `brew install 1broseidon/tap/cymbal`. Fallback: find/git.
 - **ctx7** — live library docs during execution setup. Use: `npx @vedanth/context7`. Fallback: skip.
+- **sem** — entity-level diff for Execution Critique (functions, types, methods instead of raw lines). Install: `brew install sem` (macOS) or `go install github.com/bcongdon/sem@latest`. Fallback: `git diff` — raw line-level only.
 
 All optional — workflow runs without them.
 

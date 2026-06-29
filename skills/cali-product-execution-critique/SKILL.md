@@ -13,6 +13,8 @@ metadata:
 
 # Execution Critique
 
+> **`sem diff` is the primary diff tool.** When `sem` is available, always use `sem diff` first for entity-level change detection (functions, types, methods). Use `git diff` only as fallback when `sem` is absent. The entire skill follows this convention — the fallback table in [Tool Availability](#-tool-availability--fallbacks) covers every `sem` command's git equivalent.
+
 **Standalone awareness:** when inside stelow, reads scope + mode from `.stelow/*/plans/spec-tech*.md` and `index.json`. When standalone, auto-detects input type (plan path, directory, URL, or nothing). The `HAS_WORKFLOW_DIR` flag gates stelow-specific features; all audit criteria work in both modes.
 
 ## Overview

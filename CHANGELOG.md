@@ -2,6 +2,36 @@
 
 All notable changes to `@renatocaliari/stelow` will be documented in this file.
 
+## [0.39.1] - 2026-06-29
+
+### Fixed
+
+- **Plannotator gate now works end-to-end** — the gate stage had `bash` in
+  `blocked_tools` (commit `543dbef`) but `gate.md` required bash to run
+  `plannotator annotate --gate`. A new `plannotator` tool (`pi.registerTool`)
+  spawns the CLI binary directly, bypassing the bash block. The tool writes
+  `.plannotator/approvals/<hash>/gate-approved.md` on approval, and the stelow
+  `turn_end` handler auto-advances when it detects any `*.approved.md` receipt.
+
+### Changed
+
+- **`stages.yaml`**: gate/int-gate now block only `bash` — `edit` and `write`
+  unblocked (needed for frontmatter stamping and receipt creation).
+- **`gate.md`**: rewritten — uses `plannotator` tool (not bash), receipt
+  auto-created by the tool, no manual receipt step.
+- **`plannotator.md` reference**: updated to show tool path as primary,
+  CLI fallback as secondary, receipt paths unified to `.plannotator/approvals/`.
+- **`gates_passed` removed** — the field was declared in 22+ files and used in
+  the auto-advance logic, but was never populated. Replaced by direct receipt
+  file detection. All type declarations, initializations, spreads, migration
+  code, tests, schema, and docs updated.
+
+### Added
+
+- **`sem` tool documentation** — entity-level diff for Execution Critique
+  (functions, types, methods instead of raw lines). Docs in AGENTS.md,
+  README.md, and execution-critique SKILL.md.
+
 ## [0.39.0] - 2026-06-28
 
 ### Added
