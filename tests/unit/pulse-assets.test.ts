@@ -58,3 +58,56 @@ describe("Pulse scripts do not hardcode haiku model", () => {
     expect(content).not.toMatch(/"haiku"/);
   });
 });
+
+describe("Standalone Pulse setup script", () => {
+  it("scripts/setup-pulse.sh exists and is executable", () => {
+    const path = join(PROJECT_ROOT, "scripts", "setup-pulse.sh");
+    expect(existsSync(path)).toBe(true);
+  });
+
+  it("setup-pulse.sh syntax is valid", () => {
+    const { execSync } = require("node:child_process");
+    const path = join(PROJECT_ROOT, "scripts", "setup-pulse.sh");
+    expect(() => execSync(`bash -n "${path}"`)).not.toThrow();
+  });
+
+  it("setup-pulse.sh accepts --help", () => {
+    const { execSync } = require("node:child_process");
+    const path = join(PROJECT_ROOT, "scripts", "setup-pulse.sh");
+    const output = execSync(`bash "${path}" --help`).toString();
+    expect(output).toMatch(/Usage:/);
+  });
+
+  it("setup-pulse.sh --dry-run creates no files", () => {
+    const { execSync } = require("node:child_process");
+    const { mkdtempSync, rmSync } = require("node:fs");
+    const { tmpdir } = require("node:os");
+    const path = join(PROJECT_ROOT, "scripts", "setup-pulse.sh");
+    const tmp = mkdtempSync(join(tmpdir(), "pulse-test-"));
+    try {
+      execSync(`bash "${path}" --dry-run --project-dir "${tmp}"`, { stdio: "pipe" });
+      expect(existsSync(join(tmp, ".stelow"))).toBe(false);
+    } finally {
+      rmSync(tmp, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("setup.sh includes Pulse step", () => {
+  it("setup.sh renumbered to /11", () => {
+    const content = readFileSync(join(PROJECT_ROOT, "setup.sh"), "utf-8");
+    expect(content).not.toMatch(/Step \d+\/10:/);
+    expect(content).toMatch(/Step \d+\/11:/);
+  });
+
+  it("setup.sh has Pulse step", () => {
+    const content = readFileSync(join(PROJECT_ROOT, "setup.sh"), "utf-8");
+    expect(content).toMatch(/Step 11\/11:.*Pulse/);
+    expect(content).toMatch(/setup_pulse\(\)/);
+  });
+
+  it("setup.sh calls setup_pulse after detect_muxy", () => {
+    const content = readFileSync(join(PROJECT_ROOT, "setup.sh"), "utf-8");
+    expect(content).toMatch(/detect_muxy\n  setup_pulse\n  print_summary/);
+  });
+});

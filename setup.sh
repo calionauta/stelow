@@ -25,6 +25,15 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 GITHUB_REPO="https://github.com/renatocaliari/stelow"
 MIN_NODE_VERSION=20
+# Project where stelow is being installed. Defaults to cwd (user's project).
+# Override via --project-dir <path> (used by setup-pulse to copy scripts there).
+PROJECT_DIR="$(pwd)"
+for arg in "$@"; do
+  case "$arg" in
+    --project-dir) shift; PROJECT_DIR="$1"; shift ;;
+    --project-dir=*) PROJECT_DIR="${arg#*=}"; ;;
+  esac
+done
 
 # All Pi packages to install
 PI_PACKAGES=(
@@ -137,7 +146,7 @@ done
 # ─── Prerequisites Check ────────────────────────────────────────────────────
 
 check_prereqs() {
-  log_step "Step 1/10: Checking Prerequisites"
+  log_step "Step 1/11: Checking Prerequisites"
 
   # Check macOS/Linux
   if [[ "$(uname)" != "Darwin" && "$(uname)" != "Linux" ]]; then
@@ -185,7 +194,7 @@ check_prereqs() {
 # ─── Node.js ─────────────────────────────────────────────────────────────────
 
 check_node() {
-  log_step "Step 2/10: Checking Node.js"
+  log_step "Step 2/11: Checking Node.js"
 
   if [[ "$SKIP_NODE" == "true" ]]; then
     log_warn "Skipping Node.js check (--skip-node)"
@@ -240,7 +249,7 @@ check_node() {
 # ─── Pi.dev ──────────────────────────────────────────────────────────────────
 
 install_pi() {
-  log_step "Step 3/10: Installing pi.dev"
+  log_step "Step 3/11: Installing pi.dev"
 
   if command -v pi &>/dev/null; then
     local current_version
@@ -274,7 +283,7 @@ install_pi() {
 # ─── Pi Extensions ───────────────────────────────────────────────────────────
 
 install_extensions() {
-  log_step "Step 4/10: Installing Pi Extensions"
+  log_step "Step 4/11: Installing Pi Extensions"
 
   local installed=0
   local failed=0
@@ -312,7 +321,7 @@ install_extensions() {
 # ─── Skills ──────────────────────────────────────────────────────────────────
 
 install_skills() {
-  log_step "Step 5/10: Installing stelow Skills (25 skills)"
+  log_step "Step 5/11: Installing stelow Skills (25 skills)"
 
   local skills_dir="$HOME/.agents/skills"
   if [[ "$DRY_RUN" == "false" ]]; then
@@ -495,7 +504,7 @@ confirm_optional() {
 }
 
 install_cymbal() {
-  log_step "Step 6/10: cymbal (codebase navigation)"
+  log_step "Step 6/11: cymbal (codebase navigation)"
   if [[ "$DRY_RUN" == "true" ]]; then
     log_info "[dry-run] Would install cymbal via brew/go"
     record_skip "cymbal"
@@ -534,7 +543,7 @@ install_cymbal() {
 }
 
 install_ctx7() {
-  log_step "Step 7/10: ctx7 (library docs fetcher)"
+  log_step "Step 7/11: ctx7 (library docs fetcher)"
   if [[ "$DRY_RUN" == "true" ]]; then
     log_info "[dry-run] Would install ctx7 (requires interactive OAuth)"
     record_skip "ctx7"
@@ -568,7 +577,7 @@ install_ctx7() {
 }
 
 install_safe_change() {
-  log_step "Step 8/10: safe-change (pre-planning regression check)"
+  log_step "Step 8/11: safe-change (pre-planning regression check)"
   if [[ "$DRY_RUN" == "true" ]]; then
     log_info "[dry-run] Would install safe-change via npx skills"
     record_skip "safe-change"
@@ -599,7 +608,7 @@ install_safe_change() {
 # https://github.com/renatocaliari/stelow/integrations/herdr/stelow,
 # then `cargo build --release` because Rust needs a local toolchain.
 install_herdr_plugin() {
-  log_step "Step 9/10: Herdr stelow plugin (split-pane TUI)"
+  log_step "Step 9/11: Herdr stelow plugin (split-pane TUI)"
   if [[ "$DRY_RUN" == "true" ]]; then
     log_info "[dry-run] Would install herdr plugin if herdr CLI detected"
     record_skip "herdr stelow"
@@ -662,7 +671,7 @@ install_herdr_plugin() {
 }
 
 detect_muxy() {
-  log_step "Step 10/10: Muxy.app detection (macOS-only, open-source under MIT)"
+  log_step "Step 10/11: Muxy.app detection (macOS-only, open-source under MIT)"
   if [[ "$DRY_RUN" == "true" ]]; then
     log_info "[dry-run] Would detect Muxy.app"
     record_skip "Muxy.app"
@@ -676,6 +685,40 @@ detect_muxy() {
   else
     log_info "Muxy.app not detected (optional). Install from https://muxy.app/ if you want the webview panel."
     record_skip "Muxy.app (not installed)"
+  fi
+}
+
+setup_pulse() {
+  # Optional Pulse setup — copies the standalone setup-pulse.sh from the
+  # package scripts/ directory and runs it for the project at SCRIPT_DIR.
+  # Pulse is a background inbox processor (cron/launchd/systemd) and works
+  # without an interactive pi session.
+  log_step "Step 11/11: Pulse — autonomous inbox processing (optional)"
+  if [[ "$DRY_RUN" == "true" ]]; then
+    log_info "[dry-run] Would offer to setup Pulse scripts"
+    record_skip "Pulse"
+    return
+  fi
+  if [[ -f "$PROJECT_DIR/.stelow/pulse/pulse.sh" ]] || [[ -f "$PROJECT_DIR/.stelow/pulse/pulse.ps1" ]]; then
+    log_info "Pulse scripts already installed at $PROJECT_DIR/.stelow/pulse"
+    record_ok "Pulse"
+    return
+  fi
+  if ! confirm_optional "Pulse"; then
+    log_info "Pulse skipped. Run later: ./scripts/setup-pulse.sh"
+    record_skip "Pulse"
+    return
+  fi
+  local setup_script="$SCRIPT_DIR/scripts/setup-pulse.sh"
+  if [[ ! -f "$setup_script" ]]; then
+    log_warn "Setup script not found at $setup_script (skipping)"
+    record_fail "Pulse (setup-pulse.sh missing in package)"
+    return
+  fi
+  if bash "$setup_script" --project-dir "$PROJECT_DIR"; then
+    record_ok "Pulse"
+  else
+    record_fail "Pulse (setup-pulse.sh failed)"
   fi
 }
 
@@ -758,6 +801,7 @@ main() {
   echo "    • safe-change (pre-planning regression check)"
   echo "    • stelow Herdr plugin (if herdr CLI detected)"
   echo "    • Muxy.app detection (manual install from https://muxy.app/)"
+  echo "    • Pulse scripts (autonomous inbox processing, optional)"
   echo ""
 
   if [[ "$DRY_RUN" == "false" ]]; then
@@ -780,6 +824,7 @@ main() {
   install_safe_change
   install_herdr_plugin
   detect_muxy
+  setup_pulse
   print_summary
 }
 
