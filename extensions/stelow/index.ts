@@ -199,7 +199,7 @@ export default function (pi: ExtensionAPI) {
       }),
     }),
 
-    async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
+    async execute(_toolCallId: any, params: any, _signal: any, _onUpdate: any, ctx: any) {
       const filePath = (params as { filePath?: string })?.filePath?.trim();
       if (!filePath) {
         return {
