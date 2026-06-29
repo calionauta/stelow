@@ -161,18 +161,16 @@ describe("Stages guard with agnostic tool names (regression: bug fix)", () => {
       previous_stage: "critique",
       transitioned_at: "2026-06-28T10:00:00Z",
       history: [],
-      gates_passed: [],
       supervisor_active: false,
     };
     const guard = createStagesGuard(stages, gateState);
 
-    it("blocks edit (Pi name = edit, agnostic = edit)", () => {
-      // Pi tool_call gives "edit" → toAgnostic("edit") = "edit"
-      expect(guard(toAgnostic("edit")).allowed).toBe(false);
+    it("allows edit in gate (unblocked for receipt + stamping)", () => {
+      expect(guard(toAgnostic("edit")).allowed).toBe(true);
     });
 
-    it("blocks write (Pi name = write, agnostic = write)", () => {
-      expect(guard(toAgnostic("write")).allowed).toBe(false);
+    it("allows write in gate (unblocked for receipt + stamping)", () => {
+      expect(guard(toAgnostic("write")).allowed).toBe(true);
     });
 
     it("blocks bash (Pi name = bash, agnostic = bash)", () => {
@@ -195,7 +193,6 @@ describe("Stages guard with agnostic tool names (regression: bug fix)", () => {
       previous_stage: "select",
       transitioned_at: "2026-06-28T10:00:00Z",
       history: [],
-      gates_passed: [],
       supervisor_active: false,
     };
     const guard = createStagesGuard(stages, setupState);
@@ -221,7 +218,6 @@ describe("Stages guard with agnostic tool names (regression: bug fix)", () => {
       previous_stage: null,
       transitioned_at: "2026-06-28T10:00:00Z",
       history: [],
-      gates_passed: [],
       supervisor_active: false,
     };
     const guard = createStagesGuard(stages, triageState);
@@ -407,7 +403,6 @@ describe("Stages guard allows ask in all stages (by design)", () => {
         previous_stage: null,
         transitioned_at: "2026-06-28T10:00:00Z",
         history: [],
-        gates_passed: [],
         supervisor_active: false,
       };
       const guard = createStagesGuard(stages, state);

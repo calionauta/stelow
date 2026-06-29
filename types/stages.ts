@@ -38,6 +38,5 @@ export interface StageState {
   previous_stage: string | null;
   transitioned_at: string;
   history: StageHistoryEntry[];
-  gates_passed: string[];
   supervisor_active: boolean;
 }

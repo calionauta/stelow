@@ -178,7 +178,6 @@ export default async function cmdStart(
       previous_stage: null,
       transitioned_at: new Date().toISOString(),
       history: [],
-      gates_passed: [],
       supervisor_active: false,
     },
     created: new Date().toISOString(),

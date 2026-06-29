@@ -119,11 +119,6 @@
             }
           }
         },
-        "gates_passed": {
-          "type": "array",
-          "items": { "type": "string" },
-          "description": "Plannotator gates passed by name"
-        },
         "supervisor_active": {
           "type": "boolean",
           "description": "Whether supervisor is active in current stage"

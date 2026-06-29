@@ -255,15 +255,27 @@ export default function (pi: ExtensionAPI) {
 
         if (stdout.includes('"decision":"approved"')) {
           decision = "approved";
+          // Write approval receipt directly — triggers auto-advance
+          try {
+            const wd = resolveProjectDir(ctx.cwd);
+            const wf = getActiveWorkflow(wd);
+            if (wf?.dirHash) {
+              const receiptsDir = join(wd, ".plannotator", "approvals", wf.dirHash);
+              mkdirSync(receiptsDir, { recursive: true });
+              const receiptPath = join(receiptsDir, "gate-approved.md");
+              writeFileSync(receiptPath, `approved: true\napproved_at: ${new Date().toISOString()}\napproved_via: plannotator --gate\n`);
+            }
+          } catch (_e) {
+            // Receipt is best-effort — don't fail the gate over it
+            console.error("[stelow] Failed to write approval receipt:", _e);
+          }
         } else if (stdout.includes('"decision":"dismissed"')) {
           decision = "dismissed";
         } else if (stdout.includes('"decision":"annotated"')) {
           decision = "annotated";
-          // Extract feedback if present
           const m = stdout.match(/"feedback"\s*:\s*"([^"]+)"/);
           if (m) feedback = m[1];
         } else if (stdout || stderr.includes("File not found")) {
-          // Check if plannotator binary exists
           return {
             content: [{
               type: "text",
@@ -465,46 +477,18 @@ export default function (pi: ExtensionAPI) {
     // Always refresh footer so tracking updates from commands are picked up
     updateFooter(ctx, wd);
 
-    // ── Plannotator receipt poller ──────────────────────────────────
-    // Check .plannotator/approvals/<dirHash>/ for *.approved.md files.
-    // When the LLM creates a receipt after plannotator approval, this
-    // poller populates gates_passed so the auto-advance below fires.
-    const wfForGate = getActiveWorkflow(wd);
-    if (wfForGate?.dirHash && wfForGate?.stage) {
-      const curStage = PHASE_TO_STAGE[wfForGate.currentPhase];
-      const isGate = curStage === "gate" || curStage === "int-gate";
-      if (isGate && !wfForGate.stage.gates_passed.includes(curStage)) {
-        const approvalsDir = join(wd, ".plannotator", "approvals", wfForGate.dirHash);
-        if (existsSync(approvalsDir)) {
-          const files = readdirSync(approvalsDir);
-          if (files.some(f => f.endsWith(".approved.md"))) {
-            // Found approval receipt — populate gates_passed
-            try {
-              const tracking = readTracking(wd);
-              const wfIdx = tracking.workflows.findIndex(w => w.name === wfForGate.name);
-              if (wfIdx >= 0) {
-                if (!tracking.workflows[wfIdx].stage.gates_passed.includes(curStage)) {
-                  tracking.workflows[wfIdx].stage.gates_passed.push(curStage);
-                }
-                tracking.updated = new Date().toISOString();
-                writeTracking(wd, tracking);
-                console.log(`[stelow] Approval receipt detected for ${curStage} — gates_passed updated`);
-              }
-            } catch (e) {
-              console.error("[stelow] Failed to update gates_passed from receipt:", e);
-            }
-          }
-        }
-      }
-    }
-
-    // Auto-advance from Gate/Int.Gate when Plannotator marks gates_passed
-    const activeWf = getActiveWorkflow(wd);
-    if (activeWf?.stage) {
-      const stageName = PHASE_TO_STAGE[activeWf.currentPhase];
+    // ── Plannotator receipt check + auto-advance ───────────────────
+    // The `plannotator` tool writes `.plannotator/approvals/<hash>/gate-approved.md`
+    // on approval. Detect it here and advance automatically.
+    const gateWf = getActiveWorkflow(wd);
+    if (gateWf?.dirHash) {
+      const stageName = PHASE_TO_STAGE[gateWf.currentPhase];
       const isGateStage = stageName === "gate" || stageName === "int-gate";
-      if (isGateStage && activeWf.stage.gates_passed.includes(stageName)) {
-        executeCommand(pi, "sw-next", "", ctx);
+      if (isGateStage) {
+        const receiptsDir = join(wd, ".plannotator", "approvals", gateWf.dirHash);
+        if (existsSync(receiptsDir) && readdirSync(receiptsDir).some(f => f.endsWith(".approved.md"))) {
+          executeCommand(pi, "sw-next", "", ctx);
+        }
       }
     }
 

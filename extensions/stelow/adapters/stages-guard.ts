@@ -35,7 +35,6 @@ export interface StageState {
     entered_at: string;
     exited_at: string | null;
   }>;
-  gates_passed: string[];
   supervisor_active: boolean;
 }
 
@@ -77,7 +76,6 @@ function defaultStageState(): StageState {
     previous_stage: null,
     transitioned_at: new Date().toISOString(),
     history: [],
-    gates_passed: [],
     supervisor_active: false
   };
 }

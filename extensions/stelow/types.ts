@@ -232,8 +232,6 @@ export interface StageState {
     entered_at: string;
     exited_at: string | null;
   }>;
-  /** Plannotator gates passed by name */
-  gates_passed: string[];
   /** Whether supervisor is active in current stage */
   supervisor_active: boolean;
 }

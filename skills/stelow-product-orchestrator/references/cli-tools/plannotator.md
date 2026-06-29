@@ -152,15 +152,15 @@ approved_at: "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 approved_via: plannotator --gate
 ```
 
-### 2. Create receipt (triggers stelow auto-advance)
-Use the `write` tool (bash is blocked in gate stages):
+### 2. Receipt auto-created
+The `plannotator` tool writes `.plannotator/approvals/{_dir}/gate-approved.md` automatically on approval.
+
+If using the fallback CLI or manual review, create receipt manually:
 ```
 write .plannotator/approvals/{_dir}/{filename}_v{N}.approved.md
 approved: true
 approved_via: plannotator --gate
 ```
-
-The `write` tool creates parent directories automatically.
 
 ### 3. File is frozen
 Future changes require new version + new gate.

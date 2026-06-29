@@ -39,7 +39,6 @@ const triageState: StageState = {
   previous_stage: null,
   transitioned_at: '2026-05-26T10:00:00Z',
   history: [{ stage: 'triage', entered_at: '2026-05-26T10:00:00Z', exited_at: null }],
-  gates_passed: [],
   supervisor_active: false,
 };
 
@@ -51,7 +50,6 @@ const executionState: StageState = {
     { stage: 'triage', entered_at: '2026-05-26T10:00:00Z', exited_at: '2026-05-26T10:05:00Z' },
     { stage: 'execution', entered_at: '2026-05-26T10:30:00Z', exited_at: null },
   ],
-  gates_passed: ['gate'],
   supervisor_active: true,
 };
 
@@ -63,7 +61,6 @@ const gateState: StageState = {
     { stage: 'critique', entered_at: '2026-05-26T10:15:00Z', exited_at: '2026-05-26T10:20:00Z' },
     { stage: 'gate', entered_at: '2026-05-26T10:20:00Z', exited_at: null },
   ],
-  gates_passed: [],
   supervisor_active: false,
 };
 
@@ -74,7 +71,6 @@ const setupState: StageState = {
   history: [
     { stage: 'setup', entered_at: '2026-05-26T10:10:00Z', exited_at: null },
   ],
-  gates_passed: [],
   supervisor_active: false,
 };
 
@@ -110,12 +106,12 @@ describe('Stages Guard', () => {
   describe('Gate stage', () => {
     const guard = createStagesGuard(stages, gateState);
 
-    it('blocks edit in gate', () => {
-      expect(guard('edit').allowed).toBe(false);
+    it('allows edit in gate (unblocked for receipt + stamping)', () => {
+      expect(guard('edit').allowed).toBe(true);
     });
 
-    it('blocks write in gate', () => {
-      expect(guard('write').allowed).toBe(false);
+    it('allows write in gate (unblocked for receipt + stamping)', () => {
+      expect(guard('write').allowed).toBe(true);
     });
 
     it('blocks bash in gate', () => {
@@ -180,7 +176,6 @@ describe('Stages Guard', () => {
         previous_stage: null,
         transitioned_at: '',
         history: [],
-        gates_passed: [],
         supervisor_active: false,
       };
       const guard = createStagesGuard(stages, unknownState);
@@ -193,7 +188,6 @@ describe('Stages Guard', () => {
         previous_stage: null,
         transitioned_at: '',
         history: [],
-        gates_passed: [],
         supervisor_active: false,
       };
       const guard = createStagesGuard(stages, emptyState);
@@ -211,9 +205,9 @@ describe('Stages Guard', () => {
         called = true;
         captured = { tool, stage, allowed };
       });
-      guard('edit');
+      guard('bash');
       expect(called).toBe(true);
-      expect(captured?.tool).toBe('edit');
+      expect(captured?.tool).toBe('bash');
       expect(captured?.stage).toBe('gate');
       expect(captured?.allowed).toContain('read');
     });

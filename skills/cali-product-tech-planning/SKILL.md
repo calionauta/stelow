@@ -443,7 +443,7 @@ See `references/cli-tools/plannotator.md` for command format, after-approval wor
 
 **If approved:**
 1. Stamp `approved: true, approved_at: ...` in spec-tech frontmatter
-2. Create receipt: `write .plannotator/approvals/{_dir}/spec-tech.approved.md` with content `approved: true`
+2. Receipt is auto-created by the tool at `.plannotator/approvals/{_dir}/gate-approved.md`
 3. Proceed to Goal Generation
 
 **If user requests changes:**

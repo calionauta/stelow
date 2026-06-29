@@ -1083,7 +1083,6 @@ function cmdUnarchive(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
       previous_stage: null,
       transitioned_at: archived.updated,
       history: [],
-      gates_passed: [],
       supervisor_active: false,
     } satisfies StageState,
     cwd: wd,

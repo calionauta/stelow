@@ -22,7 +22,6 @@ const wf = (name: string, status = 'in-progress', phase = 2, extra: Partial<Work
     previous_stage: null,
     transitioned_at: '2026-06-11T00:00:00.000Z',
     history: [],
-    gates_passed: [],
     supervisor_active: false,
   },
   ...extra,

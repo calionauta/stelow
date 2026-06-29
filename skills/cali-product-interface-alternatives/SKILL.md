@@ -134,15 +134,7 @@ plannotator filePath=.stelow/{YYYY-MM-DD}/{_dir}/interfaces/interfaces_v{N}.md
 plannotator annotate .stelow/{YYYY-MM-DD}/{_dir}/interfaces/interfaces_v{N}.md --gate --json
 ```
 
-Wait for the decision. If `approved`, create the receipt (use `write` tool — bash is blocked in this stage):
-
-```
-write .plannotator/approvals/{_dir}/interfaces.approved.md
-approved: true
-approved_via: plannotator --gate
-```
-
-Then advance to Interface Selection.
+Wait for the decision. If `approved`, the tool auto-creates the receipt. Then advance to Interface Selection.
 
 Then use **Pattern 2** from `references/cli-tools/ask.md` to let the user pick one proposal. Do NOT just describe what comes next — execute it.
 

@@ -102,13 +102,7 @@ approved_via: plannotator --gate
 ---
 ```
 
-2. **Create approval receipt** (triggers auto-advance by stelow). Use `write` tool (bash is blocked):
-```
-write .plannotator/approvals/{_dir}/spec-product.approved.md
-approved: true
-approved_via: plannotator --gate
-```
-
+2. **Receipt auto-created** by the `plannotator` tool at `.plannotator/approvals/{_dir}/gate-approved.md` — this triggers stelow auto-advance.
 3. **File is frozen** — future changes need new version + new gate.
 4. Stelow auto-advances to the next stage (Scope).
 

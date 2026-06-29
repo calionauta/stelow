@@ -89,7 +89,6 @@ function makeMinimalWorkflow(overrides?: Partial<Workflow>): Workflow {
       previous_stage: null,
       transitioned_at: now,
       history: [],
-      gates_passed: [],
       supervisor_active: false,
     },
     created: now,
@@ -372,7 +371,6 @@ describe("syncStagesGuardState", () => {
     expect(stage.history[0].stage).toBe("setup");
     expect(stage.history[0].entered_at).toBeDefined();
     expect(stage.history[0].exited_at).toBeDefined();
-    expect(Array.isArray(stage.gates_passed)).toBe(true);
     expect(stage.supervisor_active).toBe(false);
   });
 
@@ -436,7 +434,6 @@ describe("syncStagesGuardState", () => {
       previous_stage: "setup",
       transitioned_at: new Date().toISOString(),
       history: [{ stage: "setup", entered_at: new Date().toISOString(), exited_at: new Date().toISOString() }],
-      gates_passed: [],
       supervisor_active: false,
     };
     data.workflows[0].currentPhase = STAGE.SHAPE();

@@ -310,7 +310,7 @@ The file contains a `workflows[]` array. Each active workflow has:
 - `currentPhase` (number index into PHASE_NAMES)
 - `phases[]` (array of {id, name, status})
 - `stage` (object with `current_stage`, `previous_stage`, `transitioned_at`, `history`,
-  `gates_passed`, `supervisor_active`)
+  `supervisor_active`)
 
 ### Stage Transitions
 

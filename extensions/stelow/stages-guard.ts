@@ -46,7 +46,6 @@ export function syncStagesGuardState(cwd: string, phaseIndex: number): void {
     previous_stage: string | null;
     transitioned_at: string;
     history: Array<{ stage: string; entered_at: string; exited_at: string | null }>;
-    gates_passed: string[];
     supervisor_active: boolean;
   };
 
@@ -65,7 +64,6 @@ export function syncStagesGuardState(cwd: string, phaseIndex: number): void {
           previous_stage: null,
           transitioned_at: now,
           history: [],
-          gates_passed: [],
           supervisor_active: false,
         };
       } else {
@@ -93,7 +91,6 @@ export function syncStagesGuardState(cwd: string, phaseIndex: number): void {
         exited_at: now,
       },
     ],
-    gates_passed: prev.gates_passed || [],
     supervisor_active: prev.supervisor_active || false,
   };
 
@@ -134,7 +131,6 @@ function getFallbackState(
   previous_stage: string | null;
   transitioned_at: string;
   history: Array<{ stage: string; entered_at: string; exited_at: string | null }>;
-  gates_passed: string[];
   supervisor_active: boolean;
 } {
   const legacyPath = join(cwd, WORKFLOW_DIR, "state", "current-stage.json");
@@ -146,7 +142,6 @@ function getFallbackState(
         previous_stage: legacy.previous_stage || null,
         transitioned_at: legacy.transitioned_at || now,
         history: legacy.history || [],
-        gates_passed: legacy.gates_passed || [],
         supervisor_active: legacy.supervisor_active || false,
       };
     } catch {
@@ -158,7 +153,6 @@ function getFallbackState(
     previous_stage: null,
     transitioned_at: now,
     history: [],
-    gates_passed: [],
     supervisor_active: false,
   };
 }

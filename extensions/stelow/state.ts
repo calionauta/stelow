@@ -567,7 +567,6 @@ export function reconcileTracking(cwd: string): Workflow[] {
           previous_stage: null,
           transitioned_at: new Date().toISOString(),
           history: [],
-          gates_passed: [],
           supervisor_active: false,
         },
       };
