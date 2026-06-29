@@ -2,6 +2,21 @@
 
 All notable changes to `@renatocaliari/stelow` will be documented in this file.
 
+## [0.39.0] - 2026-06-28
+
+### Added
+
+- **`execHeadless(task, cwd?)`** — new method on all 4 CLI adapters (Pi, Claude Code, OpenCode, Codex). Spawns the harness CLI non-interactively (`pi --print`, `claude -p`, `opencode -p`, `codex -p`) with the user's default model. Enables agnostic subagent fallback and checkpoint supervision.
+
+- **`subagents.md` — headless CLI fallback** — new section documenting when native `subagent` tool is unavailable. Per-CLI commands, usage patterns, structured output, and parallel headless via `&` + `wait`.
+
+- **`supervise.md` — CLI-agnostic supervision** — replaced Pi-only `/supervise` documentation with a dual-approach pattern: (1) Headless CLI checkpoint for any harness (checkpoint-based, discrete verification), (2) `/supervise` for Pi (continuous, real-time). Both activation table (old) and approach-by-appetite table (new) preserved.
+
+### Changed
+
+- **Adapter interface** — `execHeadless()` added to `CLIAdapter` interface. BaseAdapter throws by default, each harness adapter implements via its native non-interactive command.
+- **No model flag** — `execHeadless` uses the user's default model. No `--model` override.
+
 ## [0.38.0] - 2026-06-28
 
 ### Added

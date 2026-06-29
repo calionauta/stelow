@@ -163,6 +163,12 @@ export abstract class BaseAdapter implements CLIAdapter {
     // Override in adapters where tool names differ from stages.yaml.
     return cliName;
   }
+
+  execHeadless(_task: string, _cwd?: string): string {
+    // Default: no headless mode available.
+    // Override in each adapter with the CLI's non-interactive command.
+    throw new Error("Headless execution not supported by this CLI adapter.");
+  }
   
   hasCapability(capability: keyof CLICapabilities): boolean {
     const value = this._capabilities[capability];

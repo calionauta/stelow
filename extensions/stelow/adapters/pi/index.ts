@@ -8,6 +8,7 @@
  * SCOPE-5 (events), and SCOPE-6 (UI).
  */
 
+import { execSync } from "node:child_process";
 import type { CLI } from "../../types";
 import { BaseAdapter } from "../base";
 import type {
@@ -209,7 +210,17 @@ export class PiAdapter extends BaseAdapter {
       default:                  return cliName;  // identity
     }
   }
-  
+
+  execHeadless(task: string, cwd?: string): string {
+    // Run pi in non-interactive mode with default model (user's default).
+    return execSync(`pi --print ${JSON.stringify(task)}`, {
+      cwd: cwd || process.cwd(),
+      encoding: "utf-8",
+      timeout: 120_000,
+      maxBuffer: 10 * 1024 * 1024,
+    }).trim();
+  }
+
   showNotification(message: string, type: NotificationType = "info"): void {
     if (!this._pi?.notify) {
       console.log(`[${type.toUpperCase()}] ${message}`);

@@ -11,6 +11,7 @@
  * - post_tool: Phase change detection after tool execution
  */
 
+import { execSync } from "node:child_process";
 import type { CLI } from "../../types";
 import { BaseAdapter } from "../base";
 import type {
@@ -249,7 +250,16 @@ export class ClaudeCodeAdapter extends BaseAdapter {
       default:              return cliName;  // identity
     }
   }
-  
+
+  execHeadless(task: string, cwd?: string): string {
+    return execSync(`claude -p ${JSON.stringify(task)}`, {
+      cwd: cwd || process.cwd(),
+      encoding: "utf-8",
+      timeout: 120_000,
+      maxBuffer: 10 * 1024 * 1024,
+    }).trim();
+  }
+
   showNotification(message: string, type: NotificationType = "info"): void {
     // Claude Code has basic notification support
     // For now, log to console

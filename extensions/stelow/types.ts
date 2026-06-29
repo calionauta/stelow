@@ -371,6 +371,7 @@ export interface Workflow {
   stage: StageState;
   created: string;
   updated: string;
+  completedAt?: string;  // Immutable: set once when status becomes "completed"
   cwd?: string;
   worktreePath?: string;  // Path to git worktree if created for execution
   dirHash?: string;       // Stable directory name (e.g., pw-ollc-whkaxv) — REQUIRED for rename/archive operations

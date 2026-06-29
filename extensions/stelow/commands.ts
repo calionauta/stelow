@@ -679,13 +679,15 @@ function cmdNext(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
   if (next >= PHASE_NAMES.length) {
     // Auto-complete — no manual /sw-complete command needed
     ctx.ui?.setStatus("workflow", undefined);
+    const nowAuto = new Date().toISOString();
     const tComplete = readTracking(wd);
     if (tComplete) {
       const idxComplete = tComplete.workflows.findIndex(w => w.name === wf.name);
       if (idxComplete !== -1) {
         tComplete.workflows[idxComplete].status = "completed";
         tComplete.workflows[idxComplete].phases.forEach(p => { p.status = "completed"; });
-        tComplete.workflows[idxComplete].updated = new Date().toISOString();
+        tComplete.workflows[idxComplete].updated = nowAuto;
+        if (!tComplete.workflows[idxComplete].completedAt) tComplete.workflows[idxComplete].completedAt = nowAuto;
         writeTracking(wd, tComplete);
       }
     }
@@ -729,12 +731,14 @@ function cmdComplete(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
 
   ctx.ui?.setStatus("workflow", undefined);
 
+  const now = new Date().toISOString();
   const t = readTracking(wd);
   if (t) {
     const idx = t.workflows.findIndex(w => w.name === wf.name);
     if (idx !== -1) {
       t.workflows[idx].status = "completed";
-      t.workflows[idx].updated = new Date().toISOString();
+      t.workflows[idx].updated = now;
+      if (!t.workflows[idx].completedAt) t.workflows[idx].completedAt = now;
       writeTracking(wd, t);
     }
   }

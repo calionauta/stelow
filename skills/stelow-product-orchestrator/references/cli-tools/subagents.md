@@ -256,11 +256,61 @@ For each subagent call:
 
 ---
 
+## Fallback — Headless CLI (any harness)
+
+When no native `subagent` tool is available (e.g. pi without `pi-subagents` extension,
+or a generic CLI), spawn the harness itself as a headless subprocess.
+Each CLI's non-interactive mode (`-p`/`--print`) runs a prompt and exits —
+this IS a subagent, just called via CLI instead of a tool.
+
+**No model flag needed** — uses the user's default model.
+
+### Per-CLI command
+
+| CLI | Command |
+|-----|---------|
+| pi | `pi --print \"$task\"` |
+| Claude Code | `claude -p \"$task\"` |
+| OpenCode | `opencode -p \"$task\"` |
+| Codex | `codex -p \"$task\"` |
+
+### Usage pattern
+
+```bash
+# Instead of subagent({ agent: "worker", task: "generate report" }):
+pi --print "generate report and save to output.md"
+
+# Or with structured output for verification:
+claude -p --output-format json \
+  'Read output.md. Return JSON: { valid: bool, issues: [] }'
+```
+
+### When to use
+
+| Scenario | Native subagent | Headless CLI fallback |
+|----------|----------------|----------------------|
+| Extension installed | ✅ Preferred | ❌ Not needed |
+| Extension missing | ❌ Fails | ✅ Works |
+| Need structured output | ✅ Works | ⚠️ Requires prompt instruction |
+| Pipeline of tasks | ✅ Subagent returns control | ✅ Command exits, next runs |
+| Parallel fan-out | ✅ Built-in | ⚠️ Background each with `&` + wait |
+
+### Parallel headless (POSIX)
+
+```bash
+# Launch multiple headless subagents in parallel
+pi --print "task A" > output-a.md &
+pi --print "task B" > output-b.md &
+pi --print "task C" > output-c.md &
+wait
+echo "All done"
+```
+
+---
+
 ## Fallback (Generic)
 
-> Delegate parallel work to built-in subagents with task handoff pattern. Use the agent's native subagent/delegate tool.
-
-If no subagent available:
+If no subagent AND no headless CLI available:
 - Execute tasks directly
 - Save outputs to files
 - Read files for continuation

@@ -106,6 +106,18 @@ export interface CLIAdapter {
   toAgnosticName(cliName: string): string;
   
   /**
+   * Execute a task non-interactively using this CLI's headless mode.
+   * Runs the CLI as a subprocess with a prompt, captures stdout.
+   * Used for agnostic subagent fallback and checkpoint supervision.
+   * Uses the user's default model — no model override.
+   * 
+   * @param task - Prompt/instruction to execute
+   * @param cwd - Working directory for the subprocess
+   * @returns stdout from the headless execution
+   */
+  execHeadless(task: string, cwd?: string): string;
+
+  /**
    * Check if a specific capability is supported.
    */
   hasCapability(capability: keyof CLICapabilities): boolean;

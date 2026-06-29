@@ -12,6 +12,7 @@
  * - pre_compact: Cleanup before context compaction
  */
 
+import { execSync } from "node:child_process";
 import type { CLI } from "../../types";
 import { BaseAdapter } from "../base";
 import type {
@@ -234,7 +235,16 @@ export class OpenCodeAdapter extends BaseAdapter {
       default:              return cliName;  // identity
     }
   }
-  
+
+  execHeadless(task: string, cwd?: string): string {
+    return execSync(`opencode -p ${JSON.stringify(task)}`, {
+      cwd: cwd || process.cwd(),
+      encoding: "utf-8",
+      timeout: 120_000,
+      maxBuffer: 10 * 1024 * 1024,
+    }).trim();
+  }
+
   showNotification(message: string, type: NotificationType = "info"): void {
     // OpenCode has tui.toast.show() for notifications
     // For now, log to console

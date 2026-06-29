@@ -667,6 +667,10 @@ export function updateWorkflowIndexJson(
   }
 
   Object.assign(idx, updates);
+  // Sync immutable timestamp from Workflow object to index.json
+  if (wf.completedAt && !idx.completed_at) {
+    idx.completed_at = wf.completedAt;
+  }
   // Normalize status field: LLMs prefer 'status' (tracking file convention),
   // legacy readers/auto-discovery use 'workflow_status'. Keep both in sync.
   if (idx.status !== undefined) {
