@@ -277,8 +277,8 @@ describe('Gate is Review Mode-aware', () => {
 
   it('gate.md handles Auto review mode (skip Plannotator)', () => {
     const content = readStage('gate.md');
-    expect(content).toMatch(/REVIEW_MODE_AUTO/);
-    expect(content).toMatch(/auto-approved/i);
+    expect(content).toMatch(/Review Mode=Auto/i);
+    expect(content).toMatch(/auto-approval|auto-approved/i);
   });
 });
 
