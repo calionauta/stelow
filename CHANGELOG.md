@@ -2,6 +2,47 @@
 
 All notable changes to `@renatocaliari/stelow` will be documented in this file.
 
+## [0.39.2] - 2026-06-29
+
+### Fixed
+
+- **Pulse scripts now ship with the extension** — previously lived only in
+  `.stelow/pulse/` (gitignored), so anyone installing stelow via GitHub/npm
+  got a broken Pulse. The 5 pulse files (`pulse.sh`, `pulse.ps1`, prompts,
+  `SETUP.md`) now live in `extensions/stelow/pulse/` (tracked, versioned).
+  The extension's `ensurePulseScripts()` auto-copies them to the user's
+  `.stelow/pulse/` on first `/sw-pulse` invocation. A new
+  `scripts/copy-pulse-assets.sh` copies non-TS files into `build/` during
+  `npm run build` so the published npm package includes them.
+
+- **`PULSE_MODEL` no longer hardcoded to `haiku`** — the bash and PowerShell
+  scripts defaulted to `haiku` when `PULSE_MODEL` was unset. Now defaults to
+  empty, and the `--model` flag is only passed to `pi --print` when
+  `PULSE_MODEL` is explicitly set. Pulse uses the user's harness-configured
+  model otherwise.
+
+- **12 broken TOC anchors in README** — double-dash anchors (`#--pulse--...`)
+  corrected to single-dash (`#-pulse--...`) for single-codepoint emoji
+  headings. The `toSlug` test helper was also corrected to match GitHub's
+  actual anchor algorithm (single-codepoint emojis get one leading dash,
+  not two).
+
+### Added
+
+- **`scripts/setup-pulse.sh`** — standalone Pulse setup that doesn't require
+  the pi extension or an interactive pi session. Useful for CI/CD, cron
+  setup, or pre-staging the project before installing pi. Validates bundled
+  scripts, copies them to `.stelow/pulse/`, creates the inbox, prints
+  scheduling instructions.
+
+- **`setup.sh` Step 11/11 (Pulse)** — optional step in the main installer
+  flow that delegates to `setup-pulse.sh`. Prompts Y/n. Records ok/skip/fail
+  in the summary table. All 10 previous steps renumbered `/10` → `/11`.
+
+- **Pulse + HITL differentiator** — top-of-README Key Differentiator entry
+  describing Pulse as background cron-driven processing with `review_mode=Auto`,
+  and the `[human-in-the-loop]` marker for items that need human judgement.
+
 ## [0.39.1] - 2026-06-29
 
 ### Fixed

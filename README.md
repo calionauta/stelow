@@ -424,6 +424,7 @@ curl -fsSL https://raw.githubusercontent.com/renatocaliari/stelow/main/setup.sh 
 | 8 | safe-change | pre-planning regression check via `npx skills add PrinNova/pi-agent-codebase-workflows -g` | All CLIs |
 | 9 | Herdr plugin | stelow split-pane TUI installed via `herdr plugin install renatocaliari/stelow` — **only if** `herdr` CLI is on PATH | All CLIs (via Herdr) |
 | 10 | Muxy detection | detects `/Applications/Muxy.app` or `muxy` binary; prints install link if absent (cannot auto-install — Muxy is macOS-only, distributed via GitHub releases) | macOS |
+| 11 | Pulse (optional) | copies Pulse scripts to project's `.stelow/pulse/` and creates inbox. Or run standalone: `./scripts/setup-pulse.sh` (no pi required — works in CI/CD or before pi is installed) | All CLIs (cron/launchd/systemd/Task Scheduler) |
 
 > **Not using pi.dev?** Skills land in `~/.agents/skills/` and work on OpenCode, Claude Code, and Codex too. You just won't get the Pi-only extensions or TUI overlay. The workflow itself runs fine.
 >
@@ -535,6 +536,8 @@ cron/launchd/systemd (every 30m)
 **Conflict prevention:** Pulse detects active user sessions (modified `stelow.json` mtime + interactive `pi` process) and skips automatically. Lock file prevents concurrent runs.
 
 **Setup guides:** See `.stelow/pulse/SETUP.md` for macOS (launchd), Linux (systemd/cron), and Windows (Task Scheduler + PowerShell).
+
+**Getting the scripts:** The stelow extension auto-copies Pulse scripts to `.stelow/pulse/` on the first `/sw-pulse` invocation. To pre-stage (no pi required, useful for CI/CD or before the extension is installed): `./scripts/setup-pulse.sh [--project-dir DIR] [--dry-run]`.
 
 ---
 
