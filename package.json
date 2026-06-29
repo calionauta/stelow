@@ -65,7 +65,7 @@
     "CHANGELOG.md"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.build.json && ./scripts/copy-pulse-assets.sh",
     "prepublishOnly": "npm run build && npm run generate-cli-commands && ./scripts/sync-cli-tools.sh",
     "generate-cli-commands": "npm exec -- tsx scripts/generate-cli-commands.ts",
     "test": "vitest run",

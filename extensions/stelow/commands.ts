@@ -1,5 +1,5 @@
 // @lat: [[architecture#System Layers#Extension Layer]]
-import { rmSync, readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
+import { rmSync, readFileSync, writeFileSync, existsSync, mkdirSync, copyFileSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
 import { execSync } from "node:child_process";
@@ -1103,12 +1103,50 @@ export type { CommandDescriptor } from "./adapters/commands/dispatcher";
 
 // ── PULSE ────────────────────────────────────────────────────────────
 
+// Copy bundled Pulse scripts (.stelow/pulse/) from extension's bundled
+// `pulse/` directory. Runs once on first /sw-pulse invocation when
+// scripts are missing, so users don't need a separate setup step.
+const PULSE_SCRIPT_FILES = [
+  "pulse.sh",
+  "pulse.ps1",
+  "pulse-task.md",
+  "pulse-system.md",
+  "SETUP.md",
+];
+
+function ensurePulseScripts(pulseDir: string): void {
+  // Skip if user already has the bash script
+  if (existsSync(join(pulseDir, "pulse.sh")) || existsSync(join(pulseDir, "pulse.ps1"))) {
+    return;
+  }
+  // Find bundled location (next to this file: extensions/stelow/pulse/)
+  const bundledDir = join(import.meta.dirname || __dirname, "pulse");
+  if (!existsSync(bundledDir)) {
+    return; // bundled files not shipped — caller will report missing
+  }
+  mkdirSync(pulseDir, { recursive: true });
+  for (const file of PULSE_SCRIPT_FILES) {
+    const src = join(bundledDir, file);
+    const dst = join(pulseDir, file);
+    if (existsSync(src) && !existsSync(dst)) {
+      try {
+        copyFileSync(src, dst);
+      } catch (_e) {
+        // best-effort — don't fail the whole setup if one file fails
+      }
+    }
+  }
+}
+
 function cmdPulse(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
   const wd = resolveProjectDir(ctx.cwd);
   const parsed = parseArgs(args);
   const pulseDir = join(wd, ".stelow", "pulse");
   const logPath = join(pulseDir, "pulse.log");
   const pausePath = join(pulseDir, "pulse.pause");
+
+  // Auto-install bundled scripts on first invocation
+  ensurePulseScripts(pulseDir);
 
   // /sw-pulse status
   if (parsed.status !== undefined || parsed._.includes("status") || (!parsed.pause && !parsed.resume && !parsed.process && !parsed.log && parsed._.length === 0)) {
