@@ -526,6 +526,7 @@ cron/launchd/systemd (every 30m)
 | `--max-items N` | `10` | Items per cycle. `0` = uncapped (all). `1` = one at a time |
 | `--force` | — | Skip pause + user-activity checks |
 | `--dry-run` | — | Preview without executing |
+| `PULSE_MODEL` | — | Optional. Override harness's configured model for `pi --print`. If unset, uses whatever the user's harness is configured with (no hardcoded default). |
 | `PULSE_TIMEOUT` | `120` | Max seconds for `pi --print` |
 | `PULSE_USER_ACTIVITY_MINUTES` | `15` | Skip if user modified `stelow.json` recently |
 
