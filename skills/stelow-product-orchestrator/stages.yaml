@@ -87,9 +87,9 @@ stages:
   - name: gate
     order: 60
     model_hint: economy
-    description: Gate review. Visual approval via Plannotator required.
-    blocked_tools: [edit, write, bash]
-    allowed_tools: [read, ls, grep, ask]
+    description: Gate review. Visual approval via Plannotator required. Use `plannotator` tool (not bash).
+    blocked_tools: [bash]
+    allowed_tools: [read, ls, grep, ask, plannotator, edit, write]
     preferred_tools: [read]
     primary_actions: [read]
     requires_approval: true
@@ -128,9 +128,9 @@ stages:
   - name: int-gate
     order: 90
     model_hint: economy
-    description: Interface gate. Visual review of all interface proposals.
-    blocked_tools: [edit, write, bash]
-    allowed_tools: [read, ls, grep, ask]
+    description: Interface gate. Visual review of all interface proposals. Use `plannotator` tool (not bash).
+    blocked_tools: [bash]
+    allowed_tools: [read, ls, grep, ask, plannotator, edit, write]
     preferred_tools: [read]
     primary_actions: [read]
     requires_approval: true

@@ -424,8 +424,14 @@ cover spec-tech content.
 
 **Run Plannotator gate for the tech plan BEFORE generating goals:**
 
-```bash
-[use the Plannotator gate command — see `references/cli-tools/plannotator.md`]
+Prefer the `plannotator` tool. Fall back to bash CLI if tool unavailable:
+
+```
+# Primary (tool):
+plannotator filePath=.stelow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_v{N}.md
+
+# Fallback (bash):
+plannotator annotate .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_v{N}.md --gate --json
 ```
 
 See `references/cli-tools/plannotator.md` for command format, after-approval workflow, and frozen file rules.
@@ -437,7 +443,7 @@ See `references/cli-tools/plannotator.md` for command format, after-approval wor
 
 **If approved:**
 1. Stamp `approved: true, approved_at: ...` in spec-tech frontmatter
-2. Create receipt in `approvals/` directory
+2. Create receipt: `write .plannotator/approvals/{_dir}/spec-tech.approved.md` with content `approved: true`
 3. Proceed to Goal Generation
 
 **If user requests changes:**

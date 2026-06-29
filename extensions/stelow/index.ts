@@ -1,9 +1,10 @@
 // @ts-ignore - Optional peer dependency for Pi environment
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import { execSync } from "node:child_process";
+import { execSync, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, writeFileSync, readFileSync, readdirSync, cpSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
+import { Type } from "@mariozechner/pi-ai";
 import { WORKFLOW_DIR, TRACKING_FILE, SCHEMA_URL, PHASE_NAMES } from "./types";
 import { getRetiredSkillNames } from "./sync-skills";
 
@@ -179,6 +180,116 @@ export default function (pi: ExtensionAPI) {
   // (<15ms overhead). Full sync (rm -rf + cp -r for all skills) only when
   // git HEAD changed (~110ms).
   //
+  // ── Plannotator Gate Tool ─────────────────────────────────────────
+  // Registered as a named tool so the LLM can call it without bash.
+  // Bash is blocked in gate/int-gate stages; this tool provides an escape
+  // hatch that runs the plannotator CLI binary directly.
+  pi.registerTool({
+    name: "plannotator",
+    label: "Plannotator Gate",
+    description:
+      "Open a file for visual review via Plannotator. " +
+      "Blocks until user approves, annotates, or dismisses. " +
+      "Pass the path to a markdown file (e.g., plans/spec-product_v1.md). " +
+      "Returns structured decision: approved/annotated/dismissed.",
+    parameters: Type.Object({
+      filePath: Type.String({
+        description:
+          "Path to the markdown file to review, relative to working directory",
+      }),
+    }),
+
+    async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
+      const filePath = (params as { filePath?: string })?.filePath?.trim();
+      if (!filePath) {
+        return {
+          content: [{
+            type: "text",
+            text: "Error: plannotator requires a filePath argument.",
+          }],
+          details: { decision: "error" },
+        };
+      }
+
+      const fullPath = join(ctx.cwd, filePath);
+      if (!existsSync(fullPath)) {
+        return {
+          content: [{
+            type: "text",
+            text: `Error: file not found: ${filePath}`,
+          }],
+          details: { decision: "error" },
+        };
+      }
+
+      // Run plannotator CLI binary synchronously
+      // --gate adds Approve button; --json emits structured decision on stdout
+      try {
+        const result = spawnSync(
+          "plannotator",
+          ["annotate", fullPath, "--gate", "--json"],
+          {
+            encoding: "utf-8",
+            cwd: ctx.cwd,
+            stdio: ["inherit", "pipe", "pipe"],
+            timeout: 0, // no timeout — blocks until user acts
+          },
+        );
+
+        if (result.error) {
+          return {
+            content: [{
+              type: "text",
+              text: `Plannotator failed: ${result.error.message}`,
+            }],
+            details: { decision: "error" },
+          };
+        }
+
+        const stdout = (result.stdout || "").trim();
+        const stderr = (result.stderr || "").trim();
+
+        // Parse decision from JSON stdout
+        let decision = "unknown";
+        let feedback = "";
+
+        if (stdout.includes('"decision":"approved"')) {
+          decision = "approved";
+        } else if (stdout.includes('"decision":"dismissed"')) {
+          decision = "dismissed";
+        } else if (stdout.includes('"decision":"annotated"')) {
+          decision = "annotated";
+          // Extract feedback if present
+          const m = stdout.match(/"feedback"\s*:\s*"([^"]+)"/);
+          if (m) feedback = m[1];
+        } else if (stdout || stderr.includes("File not found")) {
+          // Check if plannotator binary exists
+          return {
+            content: [{
+              type: "text",
+              text: `Plannotator review failed or unavailable.\nstdout: ${stdout}\nstderr: ${stderr}`,
+            }],
+            details: { decision: "error" },
+          };
+        }
+
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({ decision, feedback }, null, 2),
+          }],
+          details: { decision, feedback },
+        };
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        return {
+          content: [{ type: "text", text: `Plannotator failed: ${msg}` }],
+          details: { decision: "error" },
+        };
+      }
+    },
+  });
+
   // Syncs ALL installed skills on change, not just new ones — handles renamed,
   // modified, and deleted files. Also removes orphaned skills that no longer
   // exist in the project — and skills listed as retired in
@@ -353,6 +464,39 @@ export default function (pi: ExtensionAPI) {
 
     // Always refresh footer so tracking updates from commands are picked up
     updateFooter(ctx, wd);
+
+    // ── Plannotator receipt poller ──────────────────────────────────
+    // Check .plannotator/approvals/<dirHash>/ for *.approved.md files.
+    // When the LLM creates a receipt after plannotator approval, this
+    // poller populates gates_passed so the auto-advance below fires.
+    const wfForGate = getActiveWorkflow(wd);
+    if (wfForGate?.dirHash && wfForGate?.stage) {
+      const curStage = PHASE_TO_STAGE[wfForGate.currentPhase];
+      const isGate = curStage === "gate" || curStage === "int-gate";
+      if (isGate && !wfForGate.stage.gates_passed.includes(curStage)) {
+        const approvalsDir = join(wd, ".plannotator", "approvals", wfForGate.dirHash);
+        if (existsSync(approvalsDir)) {
+          const files = readdirSync(approvalsDir);
+          if (files.some(f => f.endsWith(".approved.md"))) {
+            // Found approval receipt — populate gates_passed
+            try {
+              const tracking = readTracking(wd);
+              const wfIdx = tracking.workflows.findIndex(w => w.name === wfForGate.name);
+              if (wfIdx >= 0) {
+                if (!tracking.workflows[wfIdx].stage.gates_passed.includes(curStage)) {
+                  tracking.workflows[wfIdx].stage.gates_passed.push(curStage);
+                }
+                tracking.updated = new Date().toISOString();
+                writeTracking(wd, tracking);
+                console.log(`[stelow] Approval receipt detected for ${curStage} — gates_passed updated`);
+              }
+            } catch (e) {
+              console.error("[stelow] Failed to update gates_passed from receipt:", e);
+            }
+          }
+        }
+      }
+    }
 
     // Auto-advance from Gate/Int.Gate when Plannotator marks gates_passed
     const activeWf = getActiveWorkflow(wd);

@@ -122,9 +122,29 @@ Output: Append to interfaces.md per hybrid-recommendation.md
 
 ## Visual Review (Interface Gate — Automatic)
 
-**After all selected proposals (+ Hybrid when applicable), use the Plannotator gate command** (see `references/cli-tools/plannotator.md` for the correct CLI command). Execute it directly — do NOT describe it to the user.
+**After all selected proposals (+ Hybrid when applicable), use the Plannotator gate** (see `references/cli-tools/plannotator.md` for the correct command). Execute it directly — do NOT describe it to the user.
 
-Wait for the `--gate` result. If approved, **automatically advance to Interface Selection** — use **Pattern 2** from `references/cli-tools/ask.md` to let the user pick one proposal. Do NOT just describe what comes next — execute it.
+Prefer the `plannotator` tool (registered by stelow extension). Fall back to bash CLI if unavailable:
+
+```
+# Primary (tool, works when bash is blocked):
+plannotator filePath=.stelow/{YYYY-MM-DD}/{_dir}/interfaces/interfaces_v{N}.md
+
+# Fallback (bash):
+plannotator annotate .stelow/{YYYY-MM-DD}/{_dir}/interfaces/interfaces_v{N}.md --gate --json
+```
+
+Wait for the decision. If `approved`, create the receipt (use `write` tool — bash is blocked in this stage):
+
+```
+write .plannotator/approvals/{_dir}/interfaces.approved.md
+approved: true
+approved_via: plannotator --gate
+```
+
+Then advance to Interface Selection.
+
+Then use **Pattern 2** from `references/cli-tools/ask.md` to let the user pick one proposal. Do NOT just describe what comes next — execute it.
 
 ## User Selection (Interface Selection)
 

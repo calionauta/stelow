@@ -23,15 +23,13 @@ REVIEW_MODE=$(grep -oP '"review_mode"\s*:\s*"\K[^"]+' $INDEX 2>/dev/null || echo
 | All Above + Tech Review | ✅ Run | ✅ Run | ✅ Run |
 
 **If Review Mode = Auto:**
-```bash
-_DIR="{_dir}"
-DATE_DIR=$(ls -d .stelow/*/"$_DIR" 2>/dev/null | head -1 | sed 's|.*/\([^/]*\)/"$_DIR"|\1|')
-echo "REVIEW_MODE_AUTO: Plannotator gate skipped by mode. Marking as auto-approved."
-mkdir -p ".plannotator/approvals/$_DIR"
-date "+%Y-%m-%dT%H:%M:%S" > ".plannotator/approvals/$_DIR/spec-product.approved.md"
-echo "Auto-approved (Review Mode=Auto)" >> ".plannotator/approvals/$_DIR/spec-product.approved.md"
-echo "Spec frozen. Proceeding without Plannotator."
 ```
+# Use write tool to create auto-approval receipt (bash is blocked in gate):
+write .plannotator/approvals/{_dir}/spec-product.approved.md
+approved: true
+approved_via: auto (Review Mode=Auto)
+```
+Then proceed past the gate — no Plannotator review needed.
 
 **If Review Mode > Auto:** Proceed to gate:5 Claim Verification below.
 
@@ -39,10 +37,9 @@ echo "Spec frozen. Proceeding without Plannotator."
 
 **BEFORE submitting to Plannotator**, run claim verification:
 
-```bash
-grep -E '\`[^\`]+:[0-9]+\`' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md | \
-  sed 's/.*\`\([^\`]*:[0-9]*\).*/\1/' | \
-  sort -u > /tmp/refs_to_verify.txt
+Use the `grep` tool with regex pattern to find code references in the spec:
+```
+grep pattern='\`[^\`]+:[0-9]+\`' path=.stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_v{N}.md
 ```
 
 **For each reference**, reopen the file and verify:
@@ -71,20 +68,57 @@ grep -E '\`[^\`]+:[0-9]+\`' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.m
 
 **Effort:** Medium — **Value:** High (catches false positives before approval)
 
-### Review Gate
+### Submission to Plannotator (gate:10)
 
-**⚠️ SAFETY RULES — DO NOT SKIP (unless Review Mode = Auto):**
-1. **Verbal approval in chat does NOT replace the gate.**
-2. **Plannotator with --gate is MANDATORY** when Review Mode > Auto. Only proceed AFTER "approved".
-3. If the reviewer requests changes, adjust and re-submit.
-4. After approval, spec-product.md is frozen.
-5. **Review Mode = Auto** skips Plannotator entirely — claim verification still runs if code references exist.
+**Use the `plannotator` tool** (not bash — bash is blocked in this stage):
 
-> 💡 **Plannotator --gate is interactive:** you annotate specific lines/paragraphs,
-> the feedback is returned to the LLM for revision, and you approve or request
-> changes. This catches flow, affordance, and clarity issues.
-> **What it does NOT catch:** business logic correctness, security flaws, or
-> edge cases in code — those need human code review.
+```
+plannotator filePath=.stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_v{N}.md
+```
+
+The tool blocks until you (the user) act in the browser UI. It returns a structured decision:
+
+| Decision | Meaning | Action |
+|----------|---------|--------|
+| `approved` | Spec is accepted | Proceed to receipt + next stage |
+| `annotated` | User sent feedback with changes | Revise spec, re-submit |
+| `dismissed` | Closed without decision | Ask user what to do |
+
+**If tool is unavailable** (e.g., subagent without extension):
+```bash
+plannotator annotate .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_v{N}.md --gate --json
+```
+
+### After Approval (gate:20)
+
+When the tool returns `decision: "approved"`:
+
+1. **Stamp frontmatter** in the approved file:
+```yaml
+---
+approved: true
+approved_at: "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+approved_via: plannotator --gate
+---
+```
+
+2. **Create approval receipt** (triggers auto-advance by stelow). Use `write` tool (bash is blocked):
+```
+write .plannotator/approvals/{_dir}/spec-product.approved.md
+approved: true
+approved_via: plannotator --gate
+```
+
+3. **File is frozen** — future changes need new version + new gate.
+4. Stelow auto-advances to the next stage (Scope).
+
+### If Changes Requested (gate:30)
+
+When the tool returns `decision: "annotated"`:
+1. Read the feedback from the tool result
+2. Adjust the spec file
+3. Re-submit using the `plannotator` tool with the same filePath
+4. Repeat until approved
 
 ### Model Provenance Check
 
@@ -100,11 +134,18 @@ Artifacts from different models deserve proportional attention.
 Plannotator's visual review catches flow and affordance issues, but
 business logic and security require additional human review.
 
-**Use `references/cli-tools/plannotator.md`** for:
-- Plannotator command format
-- After-approval workflow (stamp + receipt)
-- Frozen file rules
-- **Tool failure path** — if the Plannotator CLI command fails, follow the manual
-  review degradation documented there. The gate is NEVER skipped.
+### ⚠️ SAFETY RULES — DO NOT SKIP (unless Review Mode = Auto)
+
+1. **Verbal approval in chat does NOT replace the gate.**
+2. **Plannotator gate is MANDATORY** when Review Mode > Auto. Use the `plannotator` tool. Only proceed after `decision: "approved"`.
+3. If the reviewer requests changes, adjust and re-submit.
+4. After approval, spec-product.md is frozen.
+5. **Review Mode = Auto** skips Plannotator entirely — claim verification still runs if code references exist.
+
+> 💡 **Plannotator gate is interactive:** you annotate specific lines/paragraphs,
+> the feedback is returned to the LLM for revision, and you approve or request
+> changes. This catches flow, affordance, and clarity issues.
+> **What it does NOT catch:** business logic correctness, security flaws, or
+> edge cases in code — those need human code review.
 
 > **If only Tech Planning was selected (standalone):** the Review Gate runs at the end of Tech Planning, not here.
