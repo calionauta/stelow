@@ -2,6 +2,12 @@
 
 All notable changes to `@renatocaliari/stelow` will be documented in this file.
 
+## [0.39.3] - 2026-07-01
+
+### Added
+
+- **Evidence & Limitations:** added coordination overhead research (CooperBench, clawRxiv, Co-Coder), research vs code parallelism rationale, file-overlap guard documentation
+
 ## [0.39.2] - 2026-06-29
 
 ### Fixed
