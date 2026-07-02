@@ -11,16 +11,17 @@
 ```bash
 _DIR="{_dir}"
 INDEX=".stelow/*/*/$_DIR/index.json"
-REVIEW_MODE=$(grep -oP '"review_mode"\s*:\s*"\K[^"]+' $INDEX 2>/dev/null || echo "All Above + Scopes In/Out")
+REVIEW_MODE=$(grep -oP '"review_mode"\s*:\s*"\K[^"]+' $INDEX 2>/dev/null || echo "Product Spec + Interface + Scopes")
 ```
 
-| Review Mode | Plannotator Gate | Interface Gate (int-gate) | Tech Approval Gate |
-|-------------|:---:|:---:|:---:|
-| Auto | 🚫 Skip | 🚫 Skip | 🚫 Skip |
-| Only Product Spec | ✅ Run | 🚫 Skip | 🚫 Skip |
-| Product Spec + Interface Choice | ✅ Run | ✅ Run | 🚫 Skip |
-| All Above + Scopes In/Out | ✅ Run | ✅ Run | 🚫 Skip |
-| All Above + Tech Review | ✅ Run | ✅ Run | ✅ Run |
+| Review Mode | Plannotator Gate | Interface Gate (int-gate) | Tech Plan Gate (plan-gate) | Code Diff Gate (diff-gate) |
+|-------------|:---:|:---:|:---:|:---:|
+| Auto | 🚫 Skip | 🚫 Skip | 🚫 Skip | 🚫 Skip |
+| Product Spec Gate | ✅ Run | 🚫 Skip | 🚫 Skip | 🚫 Skip |
+| Product Spec + Interface Gates | ✅ Run | ✅ Run | 🚫 Skip | 🚫 Skip |
+| Product Spec + Interface + Scopes | ✅ Run | ✅ Run | 🚫 Skip | 🚫 Skip |
+| Product Spec + Interface + Tech Review | ✅ Run | ✅ Run | ✅ Run | 🚫 Skip |
+| Product Spec + Interface + Tech Review + Code Diff | ✅ Run | ✅ Run | ✅ Run | ✅ Run |
 
 **If Review Mode = Auto:**
 ```

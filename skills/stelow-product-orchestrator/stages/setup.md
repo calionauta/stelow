@@ -326,7 +326,7 @@ fi
 Use **Pattern 8 (Review Mode)** from `stages/ask-patterns.md`.
 
 > **If the draft contains items marked `[human-in-the-loop]`, `[hitl]`, or `[human]`:** These items need human judgement.
-> Default to a Review Mode higher than Auto (Only Product Spec or above).
+> Default to a Review Mode higher than Auto (Product Spec Gate or above).
 > If the user insists on Auto, warn that these items will remain unprocessed in the inbox (Pulse will skip them).
 
 ```
@@ -339,10 +339,11 @@ Review Mode is orthogonal to appetite: appetite defines depth, review mode defin
     header: "Review",
     options: [
       { label: "Auto", description: "No gates, no questions, no Plannotator. AI resolves all gaps without asking." },
-      { label: "Only Product Spec", description: "One Plannotator gate on the shaped product spec. AI resolves all gaps without asking. No IN/OUT confirmation." },
-      { label: "Product Spec + Interface Choice", description: "Product spec gate + interface gate. User picks the UI direction from generated alternatives. AI resolves trivial gaps, asks about moderate/critical." },
-      { label: "All Above + Scopes In/Out", description: "All product gates including scope IN/OUT confirmation after gate approval. User adjusts boundaries. AI resolves trivial gaps, asks about moderate/critical." },
-      { label: "All Above + Tech Review", description: "All product gates + tech plan gate + technical questions. Full pipeline oversight with AI recommendations." }
+      { label: "Product Spec Gate", description: "One Plannotator gate on the shaped product spec. AI resolves all gaps without asking. No IN/OUT confirmation." },
+      { label: "Product Spec + Interface Gates", description: "Product spec gate + interface gate. User picks the UI direction from generated alternatives. AI resolves trivial gaps, asks about moderate/critical." },
+      { label: "Product Spec + Interface + Scopes", description: "All product gates including scope IN/OUT confirmation after gate approval. User adjusts boundaries. AI resolves trivial gaps, asks about moderate/critical." },
+      { label: "Product Spec + Interface + Tech Review", description: "All product gates + tech plan gate (Plannotator on spec-tech.md) + technical questions. Full pipeline oversight with AI recommendations." },
+      { label: "Product Spec + Interface + Tech Review + Code Diff", description: "All gates including code diff review via Plannotator. Maximum human oversight: spec → interfaces → scopes → tech plan → code diff." }
     ]
   }]
 })
@@ -350,9 +351,9 @@ Review Mode is orthogonal to appetite: appetite defines depth, review mode defin
 
 **Validate the review mode value:**
 ```bash
-VALID_REVIEW_MODES="Auto Only Product Spec Product Spec + Interface Choice All Above + Scopes In/Out All Above + Tech Review"
+VALID_REVIEW_MODES="Auto Product Spec Gate Product Spec + Interface Gates Product Spec + Interface + Scopes Product Spec + Interface + Tech Review Product Spec + Interface + Tech Review + Code Diff"
 if ! echo "$VALID_REVIEW_MODES" | grep -qw "{chosen_review_mode}"; then
-  echo "INVALID_REVIEW_MODE: '{chosen_review_mode}' must be one of: Auto, Only Product Spec, Product Spec + Interface Choice, All Above + Scopes In/Out, All Above + Tech Review"
+  echo "INVALID_REVIEW_MODE: '{chosen_review_mode}' must be one of: Auto, Product Spec Gate, Product Spec + Interface Gates, Product Spec + Interface + Scopes, Product Spec + Interface + Tech Review, Product Spec + Interface + Tech Review + Code Diff"
   exit 1
 fi
 ```
@@ -393,7 +394,7 @@ cut or reshaped. Appetite is a constraint, not a target — never extended.
 > 1. Appetite is FIXED for the cycle. The LLM cannot extend it.
 > 2. If scope doesn't fit appetite, the LLM splits scope — the human decides final.
 > 3. Review Mode is fixed for the cycle. The LLM cannot change which gates run.
-> 4. Sub-skills called standalone always run in "All Above + Scopes In/Out" mode.
+> 4. Sub-skills called standalone always run in "Product Spec + Interface + Scopes" mode.
 
 ---
 
@@ -409,24 +410,26 @@ cut or reshaped. Appetite is a constraint, not a target — never extended.
 | Review Mode | Stage selection |
 |-------------|----------------|
 | Auto | Auto-selects Shape Up → Execution (auto-determined). Skip Pattern 5 entirely. |
-| Only Product Spec | Auto-selects Shape Up → Critique → Gate → Interface (LLM-recommended) → Planning → Execution. Skip Pattern 5 entirely. |
-| Product Spec + Interface Choice | Show Pattern 5 (recommended: Shape Up + Interface). |
-| All Above + Scopes In/Out | Show Pattern 5 (recommended: all stages). |
-| All Above + Tech Review | Show Pattern 5 (recommended: all stages). |
+| Product Spec Gate | Auto-selects Shape Up → Critique → Gate → Interface (LLM-recommended) → Planning → Plan.Gate → Execution. Skip Pattern 5 entirely. |
+| Product Spec + Interface Gates | Show Pattern 5 (recommended: Shape Up + Interface). |
+| Product Spec + Interface + Scopes | Show Pattern 5 (recommended: all stages). |
+| Product Spec + Interface + Tech Review | Show Pattern 5 (recommended: all stages). |
+| Product Spec + Interface + Tech Review + Code Diff | Show Pattern 5 (recommended: all stages). |
 
-**For Auto/Only Product Spec modes:** auto-define stages without asking. Proceed directly to setup:30.
+**For Auto / Product Spec Gate modes:** auto-define stages without asking. Proceed directly to setup:30.
 
-**For Product Spec + Interface Choice / All Above + Scopes In/Out / All Above + Tech Review:** Use **Pattern 5** from `stages/ask-patterns.md`.
+**For Product Spec + Interface Gates / Product Spec + Interface + Scopes / Product Spec + Interface + Tech Review / Product Spec + Interface + Tech Review + Code Diff:** Use **Pattern 5** from `stages/ask-patterns.md`.
 
 **Safe-change behavior (review mode-dependent):**
 
 | Review Mode | Safe-change |
 |-------------|------------|
 | Auto | Skip — no check needed |
-| Only Product Spec | Auto-run `npm test` if repo has `package.json` or similar test marker |
-| Product Spec + Interface Choice | Auto-run `npm test` if repo has test marker |
-| All Above + Scopes In/Out | Ask user (Pattern 5's safe-change question) |
-| All Above + Tech Review | Ask user (Pattern 5's safe-change question) |
+| Product Spec Gate | Auto-run `npm test` if repo has `package.json` or similar test marker |
+| Product Spec + Interface Gates | Auto-run `npm test` if repo has test marker |
+| Product Spec + Interface + Scopes | Ask user (Pattern 5's safe-change question) |
+| Product Spec + Interface + Tech Review | Ask user (Pattern 5's safe-change question) |
+| Product Spec + Interface + Tech Review + Code Diff | Ask user (Pattern 5's safe-change question) |
 
 **If safe-change runs and fails:** inform user and offer to fix or skip.
 

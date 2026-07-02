@@ -241,10 +241,10 @@ describe('Valid appetite values throughout', () => {
   it('ask-patterns.md contains valid review mode labels', () => {
     const content = readStage('ask-patterns.md');
     expect(content).toContain('"Auto"');
-    expect(content).toContain('"Only Product Spec"');
-    expect(content).toContain('"Product Spec + Interface Choice"');
-    expect(content).toContain('"All Above + Scopes In/Out"');
-    expect(content).toContain('"All Above + Tech Review"');
+    expect(content).toContain('"Product Spec Gate"');
+    expect(content).toContain('"Product Spec + Interface Gates"');
+    expect(content).toContain('"Product Spec + Interface + Scopes"');
+    expect(content).toContain('"Product Spec + Interface + Tech Review"');
   });
 
   it('proposal-structure.md references only valid appetite values', () => {
@@ -473,8 +473,8 @@ describe('context:5 appetite/mode gate', () => {
     expect(skillMd).toContain('Business Models');
   });
 
-  test('gate uses canonical review mode label "All Above + Tech Review" (not "Tech Review" alone)', () => {
-    expect(context).toContain('All Above + Tech Review');
+  test('gate uses canonical review mode label "Product Spec + Interface + Tech Review" (not "Tech Review" alone)', () => {
+    expect(context).toContain('Product Spec + Interface + Tech Review');
     expect(context).not.toContain('"Tech Review"');
   });
 
@@ -548,7 +548,7 @@ describe('shape-up step ordering', () => {
   });
 
   test('shape:15 scales by review mode', () => {
-    expect(content).toMatch(/Auto.*Only Product Spec.*auto-resolve|top-3.*Interface Choice|top-5.*All Above/i);
+    expect(content).toMatch(/Auto.*Product Spec Gate.*auto-resolve|Product Spec \+ Interface Gates|Product Spec \+ Interface \+ Scopes|Product Spec \+ Interface \+ Tech Review/i);
   });
 });
 
@@ -641,7 +641,7 @@ describe('Mode description sync between ask-patterns and setup', () => {
   const setup = readStage('setup.md');
 
   // Verify all 5 review mode labels appear in both files
-  test.each(['Auto', 'Only Product Spec', 'Product Spec + Interface Choice', 'All Above + Scopes In/Out', 'All Above + Tech Review'])(
+  test.each(['Auto', 'Product Spec Gate', 'Product Spec + Interface Gates', 'Product Spec + Interface + Scopes', 'Product Spec + Interface + Tech Review'])(
     'review mode label "%s" appears in ask-patterns.md and setup.md',
     (label) => {
       expect(askPatterns).toContain(label);
@@ -691,9 +691,9 @@ describe('Purpose-named CLI tools exist', () => {
 describe('plan-critique golden rule has review mode caveat', () => {
   const content = readSkill('cali-product-plan-critique');
 
-  test('golden rule caveat mentions Auto/Only Product Spec modes', () => {
+  test('golden rule caveat mentions Auto/Product Spec Gate modes', () => {
     expect(content).toMatch(/Mode caveat/);
-    expect(content).toMatch(/Auto.*Only Product Spec.*internal recommendation/);
+    expect(content).toMatch(/Auto.*Product Spec Gate.*internal recommendation/);
   });
 });
 

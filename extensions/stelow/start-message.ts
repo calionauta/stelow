@@ -34,7 +34,7 @@ export function buildSkillActivationMessage(
   switch (intent) {
     case "bugfix":
       stageSection =
-        `\nCurrent stage: ${phaseName} (phase ${initialPhase + 1}/15)` +
+        `\nCurrent stage: ${phaseName} (phase ${initialPhase + 1}/${phaseNames.length})` +
         `\n` +
         `\nThis workflow was classified as a BUGFIX.` +
         `\nDuring stage selection (setup:20), pick ONLY Tech Planning (\"Tech Planning Sequencing\").` +
@@ -50,7 +50,7 @@ export function buildSkillActivationMessage(
 
     case "refactor":
       stageSection =
-        `\nCurrent stage: ${phaseName} (phase ${initialPhase + 1}/15)` +
+        `\nCurrent stage: ${phaseName} (phase ${initialPhase + 1}/${phaseNames.length})` +
         `\n` +
         `\nThis workflow was classified as a REFACTOR.` +
         `\nDuring stage selection (setup:20), pick ONLY Tech Planning (\"Tech Planning Sequencing\").` +
@@ -66,7 +66,7 @@ export function buildSkillActivationMessage(
 
     case "investigate":
       stageSection =
-        `\nCurrent stage: ${phaseName} (phase ${initialPhase + 1}/15)` +
+        `\nCurrent stage: ${phaseName} (phase ${initialPhase + 1}/${phaseNames.length})` +
         `\n` +
         `\nThis workflow was classified as INVESTIGATE / RESEARCH.` +
         `\nDuring stage selection (setup:20), pick ONLY Tech Planning with a spike scope.` +
@@ -83,7 +83,7 @@ export function buildSkillActivationMessage(
     case "feature":
       // new-product and feature — full pipeline
       stageSection =
-        `\nCurrent stage: ${phaseName} (phase ${initialPhase + 1}/15)` +
+        `\nCurrent stage: ${phaseName} (phase ${initialPhase + 1}/${phaseNames.length})` +
         `\nFollow \`stages/setup.md\` in order:` +
         `\n  1. Inbox check \u2014 deferred items from prior sessions` +
         `\n  2. Lessons learned \u2014 reflect on past cycle patterns` +
@@ -102,7 +102,7 @@ export function buildSkillActivationMessage(
     default:
       // unknown — skill classifies the brief during setup
       stageSection =
-        `\nCurrent stage: ${phaseName} (phase ${initialPhase + 1}/15)` +
+        `\nCurrent stage: ${phaseName} (phase ${initialPhase + 1}/${phaseNames.length})` +
         `\n\nCLASSIFY THE USER BRIEF FIRST (if brief exists).` +
         `\nRead the brief below and decide: new-product, feature, bugfix, refactor, or investigate.` +
         `\n` +
@@ -180,7 +180,9 @@ const phaseNames = [
   "Int.Gate",
   "Selection",
   "Planning",
+  "Plan.Gate",
   "Execution",
   "Verification",
+  "Diff.Gate",
   "Audit",
 ];

@@ -11,7 +11,7 @@
  *   - Each test cleans up after itself
  *
  * Contracts tested:
- *   1. PHASE_TO_STAGE — all 15 mappings exist and match PHASE_NAMES
+ *   1. PHASE_TO_STAGE — all mappings exist and match PHASE_NAMES
  *   2. scanWorkflowDirs — backward compat: old current_phase_index:0 + "setup" → normalizes to 2
  *   3. updateWorkflowIndexJson — writes correct index.json with merged updates
  *   4. updateWorkflowIndexJson — recovers from corrupt index.json
@@ -103,7 +103,7 @@ function makeMinimalWorkflow(overrides?: Partial<Workflow>): Workflow {
 // ══════════════════════════════════════════════════════════════════════
 
 describe("PHASE_TO_STAGE", () => {
-  it("has exactly 15 entries matching PHASE_NAMES length", () => {
+  it("has entries matching PHASE_NAMES length", () => {
     expect(Object.keys(PHASE_TO_STAGE).length).toBe(PHASE_NAMES.length);
   });
 
@@ -403,7 +403,7 @@ describe("syncStagesGuardState", () => {
     expect(data.workflows[0].stage.current_stage).toBe("triage");
   });
 
-  it("maps phase 14 (Audit) correctly", () => {
+  it("maps Audit phase to correct stage slug", () => {
     writeTrackingWithWorkflow(env.root, STAGE.AUDIT());
     syncStagesGuardState(env.root, STAGE.AUDIT());
 

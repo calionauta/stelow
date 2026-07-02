@@ -79,8 +79,10 @@ const PHASE_TO_YAML_ID: Record<string, string> = {
   "Int.Gate": "int-gate",
   "Selection": "selection",
   "Planning": "planning",
+  "Plan.Gate": "plan-gate",
   "Execution": "execution",
   "Verification": "verification",
+  "Diff.Gate": "diff-gate",
   "Audit": "audit",
 };
 
@@ -103,8 +105,10 @@ const PHASE_TO_MD_FILE: Record<string, string | null> = {
   "Int.Gate": "gate.md",                  // Shared: Gate + Int.Gate → gate.md
   "Selection": "selection.md",           // Shared: ItemSelect + Selection → selection.md
   "Planning": null,                       // Delegated to cali-product-tech-planning skill
+  "Plan.Gate": "plan-gate.md",            // NEW: Tech plan gate
   "Execution": "execution.md",
   "Verification": "verification.md",
+  "Diff.Gate": "diff-gate.md",            // NEW: Code diff review gate
   "Audit": "execution-critique.md",
 };
 
@@ -131,8 +135,10 @@ const SLUG_NAMES: Record<string, string> = {
   "Int.Gate": "int-gate",
   "Selection": "selection",
   "Planning": "planning",
+  "Plan.Gate": "plan-gate",
   "Execution": "execution",
   "Verification": "verification",
+  "Diff.Gate": "diff-gate",
   "Audit": "audit",
 };
 
@@ -145,11 +151,12 @@ describe("Phase Consistency", () => {
   const stageFiles = readdirSync(STAGES_DIR).filter(f => f.endsWith(".md"));
 
   describe("PHASE_NAMES (types.ts) completeness", () => {
-    it("should have all 15 phases", () => {
+    it("should have all 17 phases", () => {
       expect(phaseNames).toEqual([
         "Triage", "ItemSelect", "Setup", "Context", "Shape",
         "Critique", "Gate", "Scope", "Interface", "Int.Gate",
-        "Selection", "Planning", "Execution", "Verification", "Audit"
+        "Selection", "Planning", "Plan.Gate", "Execution",
+        "Verification", "Diff.Gate", "Audit"
       ]);
     });
 
@@ -232,14 +239,14 @@ describe("Phase Consistency", () => {
     it("plugin should start at Setup and end at Audit (skip Triage/ItemSelect)", () => {
       const content = readFileSync(PLUGIN_GENERATED_PATH, "utf-8");
       expect(content).toContain('1: "Setup"');
-      expect(content).toContain('13: "Audit"');
+      expect(content).toContain('15: "Audit"');
       expect(content).not.toMatch(/Triage/);
       expect(content).not.toMatch(/ItemSelect/);
     });
 
-    it("plugin MAX_PHASE matches last key (13 = Audit)", () => {
+    it("plugin MAX_PHASE matches last key (15 = Audit)", () => {
       const content = readFileSync(PLUGIN_GENERATED_PATH, "utf-8");
-      expect(content).toMatch(/export const MAX_PHASE = 13;/);
+      expect(content).toMatch(/export const MAX_PHASE = 15;/);
     });
 
     it("plugin has the same number of entries as PHASE_NAMES minus 2 (skipped)", () => {

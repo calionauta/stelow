@@ -10,21 +10,21 @@ export const MACRO_STAGES = [
   {
     id: 'build',
     name: 'Build',
-    phaseRange: [8, 12],
-    phases: ['Interface','Int.Gate','Selection','Planning','Execution'],
+    phaseRange: [8, 13],
+    phases: ['Interface','Int.Gate','Selection','Planning','Plan.Gate','Execution'],
   },
   {
     id: 'verify',
     name: 'Verify',
-    phaseRange: [13, 14],
-    phases: ['Verification','Audit'],
+    phaseRange: [14, 16],
+    phases: ['Verification','Diff.Gate','Audit'],
   },
 ];
 
 export const PHASE_NAMES = [
   'Triage','ItemSelect','Setup','Context','Shape','Critique','Gate','Scope',
-  'Interface','Int.Gate','Selection','Planning','Execution',
-  'Verification','Audit',
+  'Interface','Int.Gate','Selection','Planning','Plan.Gate','Execution',
+  'Verification','Diff.Gate','Audit',
 ];
 
 // ── Data fetching ────────────────────────────────────────────────────

@@ -25,7 +25,7 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 **Key differentiators:**
 
 - **Shape Up methodology for AI agents** - IN/OUT scope boundaries, appetite-driven sizing, risk analysis, focused scoping. Every proposal is a shaped bet, not a wishlist.
-- **Appetite × Review Mode stage control** - Two orthogonal dimensions control the full workflow: how deep to prepare (Appetite: Lean / Core / Complete) and which gates run (Review Mode: Auto / Only Product Spec / Product Spec + Interface Choice / All Above + Scopes In/Out / All Above + Tech Review). The cascade propagates automatically through critique depth, supervisor use, verification rigor, and gate requirements - no manual stage skipping needed.
+- **Appetite × Review Mode stage control** - Two orthogonal dimensions control the full workflow: how deep to prepare (Appetite: Lean / Core / Complete) and which gates run (Review Mode: Auto / Product Spec Gate / Product Spec + Interface Gates / Product Spec + Interface + Scopes / Product Spec + Interface + Tech Review). The cascade propagates automatically through critique depth, supervisor use, verification rigor, and gate requirements - no manual stage skipping needed.
 - **Adversarial plan critique** - Plans are reviewed for gaps, risks, and assumptions by parallel (fresh context) reviewers, not just approved in chat.
 - **Visual review gate** - Plannotator opens the full plan for point-by-point comments before implementation, not a rubber-stamp approval.
 - **Appetite-scaled interface exploration** - 1, 3, or 5 ASCII archetypes plus hybrid depending on scope depth - no coded mockups wasted.
@@ -75,7 +75,7 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 
 And the workflow begins asking questions, exploring scope, shaping the proposal, reviewing for gaps, getting visual approval, and only then generating typed technical scopes for execution.
 
-**Critique → Gate → Scope sequencing.** Execution (stage 12) only runs after all three pass. Lighter review modes (Auto/Only Product Spec) skip some gates; the full path is there when you need it.
+**Critique → Gate → Scope sequencing.** Execution (stage 12) only runs after all three pass. Lighter review modes (Auto/Product Spec Gate) skip some gates; the full path is there when you need it.
 
 ### The Problem
 
@@ -169,18 +169,20 @@ Review Mode is set explicitly during the setup phase via `ask_user_question`. It
 | Review Mode | Plannotator Gates | Interface | IN/OUT Confirmation | Tech Approval | Best for |
 |---|---|---|---|---|---|
 | **Auto** | None | LLM decides | LLM decides | Auto | Throwaway prototype, quick validation, spike |
-| **Only Product Spec** | **1 pre-tech** | LLM decides | LLM decides | Auto | Standard feature, bug fix, small improvement |
-| **Product Spec + Interface Choice** | **1 pre-tech + Int.Gate** | **User chooses** | LLM decides | Auto | Feature where interface matters |
-| **All Above + Scopes In/Out** | **Gate + Int.Gate** | User chooses | **User confirms** | Auto | Critical feature, product with domain context |
-| **All Above + Tech Review** | **Gate + Int.Gate + Tech Gate** | User chooses | User confirms | **Gate + tech Qs** | Full pipeline, high-risk changes, production |
+| **Product Spec Gate** | **1 pre-tech** | LLM decides | LLM decides | Auto | Standard feature, bug fix, small improvement |
+| **Product Spec + Interface Gates** | **1 pre-tech + Int.Gate** | **User chooses** | LLM decides | Auto | Feature where interface matters |
+| **Product Spec + Interface + Scopes** | **Gate + Int.Gate** | User chooses | **User confirms** | Auto | Critical feature, product with domain context |
+| **Product Spec + Interface + Tech Review** | **Gate + Int.Gate + Plan.Gate** | User chooses | User confirms | **Gate + tech Qs** | Full pipeline, high-risk changes, production |
+| **Product Spec + Interface + Tech Review + Code Diff** | **Gate + Int.Gate + Plan.Gate + Diff.Gate** | User chooses | User confirms | **Gate + tech Qs + code diff** | Maximum oversight, critical infrastructure |
 
 **Key rules:**
 
 - **Auto:** No gates, no Plannotator, no questions. LLM decides everything. Quickest path.
-- **Only Product Spec:** One Plannotator gate (spec-product visual approval before tech planning). AI resolves all gaps. Interface auto-generated, no choice. No IN/OUT confirmation.
-- **Product Spec + Interface Choice:** Product spec gate + interface gate. User chooses between generated interface alternatives. AI resolves trivial gaps, asks about moderate/critical.
-- **All Above + Scopes In/Out:** All product gates active (pre-tech + scope IN/OUT + int-gate). User confirms boundaries. Tech approval uses Auto.
-- **All Above + Tech Review:** Everything in product review + tech plan goes through Plannotator gate + user answers technical questions.
+- **Product Spec Gate:** One Plannotator gate (spec-product visual approval before tech planning). AI resolves all gaps. Interface auto-generated, no choice. No IN/OUT confirmation.
+- **Product Spec + Interface Gates:** Product spec gate + interface gate. User chooses between generated interface alternatives. AI resolves trivial gaps, asks about moderate/critical.
+- **Product Spec + Interface + Scopes:** All product gates active (pre-tech + scope IN/OUT + int-gate). User confirms boundaries. Tech approval uses Auto.
+- **Product Spec + Interface + Tech Review:** Everything in product review + tech plan goes through Plannotator gate + user answers technical questions.
+- **Product Spec + Interface + Tech Review + Code Diff:** All the above + Plannotator code diff review on the working tree after verification. Maximum human oversight for critical changes.
 
 ### How Appetite & Review Mode Interact
 
@@ -192,13 +194,15 @@ Appetite controls HOW DEEP it runs             →  Scope depth per gate
 | | Lean | Core | Complete |
 |---|---|---|---|
 | **Auto** | No gates. Fastest path: smaller spec, minimal verify. | No gates. Standard planning depth, standard verify. | No gates. Deep planning, full verify. |
-| **All Above + Scopes In/Out** | 2 gates (Gate + Int.Gate). User confirms IN/OUT. | 2 gates + IN/OUT confirmation. Full workflow. | 2 gates + all questions. No shortcuts. |
+| **Product Spec + Interface + Scopes** | 2 gates (Gate + Int.Gate). User confirms IN/OUT. | 2 gates + IN/OUT confirmation. Full workflow. | 2 gates + all questions. No shortcuts. |
+| **Product Spec + Interface + Tech Review + Code Diff** | 4 gates + plan-gate + diff-gate. Full review. | 4 gates + all questions. Max oversight. | 4 gates + all questions + code diff review. No shortcuts. |
 
 **Examples:**
 - `Lean + Auto` → Fastest path: no gates, no questions, no Plannotator. LLM decides scope. Interface runs automatically with 1 suggested interface. (~6 stages)
-- `Core + Only Product Spec` → Standard feature: 1 Plannotator gate (pre-tech), interface runs automatically with 3 interfaces + hybrid. (~10 stages)
-- `Core + Product Spec + Interface Choice` → Feature where interface matters: 1 Plannotator gate + user chooses among 3 interfaces + hybrid. (~8 stages)
-- `Complete + All Above + Tech Review` → Critical feature: 3 Plannotator gates + all questions. Interface explores all 5 archetypes + hybrid. No shortcuts. (~15 stages)
+- `Core + Product Spec Gate` → Standard feature: 1 Plannotator gate (pre-tech), interface runs automatically with 3 interfaces + hybrid. (~10 stages)
+- `Core + Product Spec + Interface Gates` → Feature where interface matters: 1 Plannotator gate + user chooses among 3 interfaces + hybrid. (~8 stages)
+- `Complete + Product Spec + Interface + Tech Review` → Critical feature: 3 Plannotator gates + all questions. Interface explores all 5 archetypes + hybrid. No shortcuts. (~17 stages)
+- `Complete + Product Spec + Interface + Tech Review + Code Diff` → Maximum oversight: 4 Plannotator gates + code diff review. All questions. All archetypes. (~17 stages)
 
 ### Motivation
 
@@ -207,7 +211,7 @@ Product ideas vary widely in scope and risk. A throwaway prototype should not re
 - **Lean appetite limits scope and exploration** - smaller spec, fewer scopes, one interface suggestion, and critical-path tests only.
 - **Complete appetite expands exploration and verification** - full edge mapping, all 5 interface archetypes + hybrid, behavior/e2e tests, security tests, and live a11y audit when UI exists.
 - **Auto review mode skips Plannotator** - for lightweight validations where visual review is overkill
-- **All Above + Scopes In/Out review mode enforces strategy** - JTBD, Opportunity Mapping, etc. run before shaping if product context exists
+- **Product Spec + Interface + Scopes review mode enforces strategy** - JTBD, Opportunity Mapping, etc. run before shaping if product context exists
 
 This is an **appetite-first** design: the human's declaration of review budget propagates automatically through all stages - no estimation step required.
 
@@ -215,11 +219,11 @@ This is an **appetite-first** design: the human's declaration of review budget p
 
 ## 🔄 Process
 
-The workflow has **3 conceptual phases** (15 stages total), from idea triage to post-execution audit. See the [Stage Index](#-skills) in the orchestrator skill for the complete stage map with auto-chain rules and flow diagram.
+The workflow has **3 conceptual phases** (17 stages total), from idea triage to post-execution audit. See the [Stage Index](#-skills) in the orchestrator skill for the complete stage map with auto-chain rules and flow diagram.
 
 ### 1. 🎨 Shaping
 
-**Stages 0-11** - From raw idea through shaped proposal, adversarial critique, visual gate approval, interface exploration, to typed technical scopes ready for execution.
+**Stages 0-11** — From raw idea through shaped proposal, adversarial critique, visual gate approval, interface exploration, to typed technical plan. **Stages 12** — Tech plan gate (conditional). **Stages 13+** — Execution onward.
 
 #### Bidirectional Product ↔ Tech Flow
 
@@ -229,7 +233,7 @@ Traditional planning is linear: product spec → tech spec. stelow adds **two fe
 
 - **Codebase Feature Recon** — Before tech planning generates typed scopes, a deeper cymbal investigation runs: searches for related modules, maps references (who connects to what), and analyzes impact (what breaks if changed). Depth varies by appetite — see table below.
 
-- **Alignment Check** — After tech planning generates typed scopes, a bidirectional check compares the tech plan against the product spec. If tech reveals constraints that change the product scope, the LLM classifies alignment and acts per Review Mode: Auto/Only Product Spec auto-updates the product spec; Product Spec + Interface Choice and above ask the user. This catches "tech discovered too late" before any code is written.
+- **Alignment Check** — After tech planning generates typed scopes, a bidirectional check compares the tech plan against the product spec. If tech reveals constraints that change the product scope, the LLM classifies alignment and acts per Review Mode: Auto/Product Spec Gate auto-updates the product spec; Product Spec + Interface Gates and above ask the user. This catches "tech discovered too late" before any code is written.
 
 | Appetite | Tech Preview (shaping) | Codebase Feature Recon (planning) | Alignment Check |
 |----------|----------------------|-----------------------------------|----------------|
@@ -242,19 +246,19 @@ If cymbal is not installed, falls back to `find` + `git log` — no cross-refere
 
 | Review Mode | Alignment Check behavior |
 |------------|------------------------|
-| **Auto/Only Product Spec** | Auto-resolve. Updates spec-product if needed. No questions. |
-| **Product Spec + Interface Choice** | Auto-resolve if aligned; flags user if misaligned. |
-| **Full/Full+Tech** | Always shows diff, asks user to choose update/ignore/reshape. |
+| **Auto/Product Spec Gate** | Auto-resolve. Updates spec-product if needed. No questions. |
+| **Product Spec + Interface Gates** | Auto-resolve if aligned; flags user if misaligned. |
+| **Product Spec + Interface + Tech Review / +Code Diff** | Always shows diff, asks user to choose update/ignore/reshape. |
 
 These loops are **appetite- and mode-respecting by design** — they inherit the same two-axis control as the rest of the workflow. No new mechanism needed.
 
 ### 2. ⚡ Execution
 
-**Stages 12-13** - Autonomous scope execution via acceptance contracts: each scope is delegated with criteria, verify commands, and stop rules. Self-correction is harness-dependent - native acceptance loops (pi-subagents) let the child fix gaps in the same context; other harnesses use parent-controlled re-delegation. Optimization scopes use benchmark-driven iteration. Scope completion is gated - `/sw-next` blocks advance to Verification if any scopes remain incomplete.
+**Stages 13-14** — Autonomous scope execution via acceptance contracts: each scope is delegated with criteria, verify commands, and stop rules. Self-correction is harness-dependent - native acceptance loops (pi-subagents) let the child fix gaps in the same context; other harnesses use parent-controlled re-delegation. Optimization scopes use benchmark-driven iteration. Scope completion is gated - `/sw-next` blocks advance to Verification if any scopes remain incomplete.
 
 ### 3. ✅ Verification & Audit
 
-**Stage 14** — Full test suite, parallel code review, UI quality audit, and execution critique (scope fidelity, NFR coverage, edge cases, docs, test quality). The audit classifies gaps as FIXED / DOCUMENTED / ESCALATED. ESCALATED gaps become new scopes. `/sw-next` detects pending scopes at the Audit phase and loops back to Execution.
+**Stage 14** — Verification (tests, code review, UI audit). **Stage 15** — Code diff review gate (conditional). **Stage 16** — Execution critique (scope fidelity, NFR coverage, edge cases, docs, test quality). The audit classifies gaps as FIXED / DOCUMENTED / ESCALATED. ESCALATED gaps become new scopes. `/sw-next` detects pending scopes at the Audit phase and loops back to Execution.
 
 ---
 
@@ -272,7 +276,7 @@ All 25 skills are flat in `skills/` directory, ready for `~/.agents/skills/`. Th
 
 | Skill | Purpose |
 |-------|---------|
-| `stelow` | Coordinates the multi-stage workflow (Setup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Execution → Verification → Audit) |
+| `stelow` | Coordinates the multi-stage workflow (Setup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Plan.Gate → Execution → Verification → Diff.Gate → Audit) |
 
 ### 🧠 Product Strategies (5)
 
@@ -658,7 +662,7 @@ Even with these guardrails, the AI agent still exhibits predictable failure mode
 | 2 | **Confabulated research references** - Agents cite nonexistent papers or books (~11-57% hallucination rate across models) | [arXiv 2604.03173](https://arxiv.org/abs/2604.03173) - 10 models/3 databases/69K citation instances | Claim verification via Lessons Learned cross-referencing during setup. | **Caught by structure, not guaranteed.** Multi-model consensus (≥3 LLMs citing same work) yields 95.6% accuracy, but the workflow doesn't enforce this. |
 | 3 | **Silent wrong answers** - Cross-task state leakage produces plausible but incorrect outputs | [UCC (arXiv 2604.01350)](https://arxiv.org/abs/2604.01350), 2026 | Write isolation per subagent; clean context pattern | **Mitigated by isolation, not by detection.** No mechanism to detect when contamination happens despite isolation. |
 | 4 | **Overconfidence in estimates** - AI systematically underestimates implementation complexity | [Agentic Overconfidence (ICLR 2026)](https://openreview.net/forum?id=Ld4bvamfKj) - all tested agents exhibit agentic overconfidence | Appetite is declared by human as a **constraint**, not estimated by the LLM. The LLM only checks `appetite_fit` (fits/cuts_needed/reshape). No estimation step. | **Addressed by design - appetite is a constraint, not an estimate.** The human sets the budget before shaping. The LLM checks fit, not effort. But the human still needs to set appetite honestly. |
-| 5 | **Approval gate fatigue** - Users can desensitize to visual gates and approve without scrutiny | [Tian Pan Apr 2026](https://tianpan.co/blog/2026-04-23-hitl-queue-dynamics-approver-fatigue) - HITL queues have dynamics | Plannotator requires active annotations (deletions, comments, labels). Auto/Only Product Spec review modes skip gates entirely when appropriate. | **Delayed, not prevented.** Review Mode selection helps reduce unnecessary gates, but if the human always picks Complete+All Above + Scopes In/Out, fatigue still sets in. |
+| 5 | **Approval gate fatigue** - Users can desensitize to visual gates and approve without scrutiny | [Tian Pan Apr 2026](https://tianpan.co/blog/2026-04-23-hitl-queue-dynamics-approver-fatigue) - HITL queues have dynamics | Plannotator requires active annotations (deletions, comments, labels). Auto/Product Spec Gate review modes skip gates entirely when appropriate. | **Delayed, not prevented.** Review Mode selection helps reduce unnecessary gates, but if the human always picks Complete+Product Spec + Interface + Scopes, fatigue still sets in. |
 | 6 | **80% Problem** - AI ships the happy path (CRUD, main flow) but omits error handling, observability, security, retry, rollback, edge cases | [Osmani Jan 2026](https://addyo.substack.com/p/the-80-problem-in-agentic-coding) (coined the term); [GitClear 2025](https://www.gitclear.com/ai_assistant_code_quality_2025_research) | Tech Planning requires NFRs per scope. Acceptance contracts can include NFR criteria (if the plan specifies them). Audit classifies omissions as gaps - ESCALATED ones become new scopes. | **Partially mitigated, not solved.** NFRs must be in the plan to appear in the contract. Audit classification depends on the LLM - misclassification means gaps slip through. Same model evaluates both stages. |
 | 7 | **Model dependency** - Claude Opus, Gemini Flash, GPT-4o produce significantly different quality | [Veracode 2025](https://www.veracode.com/wp-content/uploads/2025_GenAI_Code_Security_Report_Final.pdf) - 45% of AI-generated code contains flaws across 100+ models; [Anthropic Jan 2026](https://arxiv.org/abs/2601.20245) - RCT: AI-assisted devs score 17% lower on comprehension tests | Every artifact tracks `generated_by: {model_name}` in frontmatter. Gate stage shows provenance before Plannotator review. | **Transparency, not mitigation.** Knowing the model helps calibrate expectations, but it doesn't fix the quality gap. The comprehension penalty (Anthropic 2026) affects users regardless. |
 | 8 | **Constraint decay** - AI progressively violates its own self-imposed rules over time | [arXiv 2026 (Constraint Decay)](https://arxiv.org/abs/2605.06445) - structural constraints drift in backend code generation; [HORIZON](https://arxiv.org/abs/2604.11978) - agents break on long-horizon tasks | Context rot rules explicitly warn about this. "No patching in degraded context" rule blocks the most common decay pattern. | **Same root cause as context rot.** The warning helps, but stopping a session mid-flow is disruptive and users rarely do it. |

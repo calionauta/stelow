@@ -74,13 +74,14 @@ The matrix below controls Thermo-Nuclear only. The lightweight review is the Qua
 | Appetite | Review Mode | Decision |
 |----------|-------------|----------|
 | `Lean` | any | **Light only.** Thermo-Nuclear skipped unless user explicitly requests it. |
-| `Core` | `Auto` / `Only Product Spec` | **Light only.** Thermo-Nuclear skipped unless risk is high. |
-| `Core` | `Product Spec + Interface Choice` / `All Above + Scopes In/Out` | Thermo-Nuclear when risk is high. |
-| `Core` | `All Above + Tech Review` | Thermo-Nuclear when risk is high or the diff is meaningful. |
-| `Complete` | `Auto` / `Only Product Spec` | **Thermo-Nuclear** if code changed. Resolve or document findings without asking. |
-| `Complete` | `Product Spec + Interface Choice` | **Thermo-Nuclear** if code changed. Escalate P0/P1 gaps to the user. |
-| `Complete` | `All Above + Scopes In/Out` | **Thermo-Nuclear** if code changed. P0/P1 gaps need fix or explicit human acceptance. |
-| `Complete` | `All Above + Tech Review` | **Thermo-Nuclear mandatory** for software/hybrid code changes. Blocking gate before merge. |
+| `Core` | `Auto` / `Product Spec Gate` | **Light only.** Thermo-Nuclear skipped unless risk is high. |
+| `Core` | `Product Spec + Interface Gates` / `Product Spec + Interface + Scopes` | Thermo-Nuclear when risk is high. |
+| `Core` | `Product Spec + Interface + Tech Review` | Thermo-Nuclear when risk is high or the diff is meaningful. |
+| `Complete` | `Auto` / `Product Spec Gate` | **Thermo-Nuclear** if code changed. Resolve or document findings without asking. |
+| `Complete` | `Product Spec + Interface Gates` | **Thermo-Nuclear** if code changed. Escalate P0/P1 gaps to the user. |
+| `Complete` | `Product Spec + Interface + Scopes` | **Thermo-Nuclear** if code changed. P0/P1 gaps need fix or explicit human acceptance. |
+| `Complete` | `Product Spec + Interface + Tech Review` | **Thermo-Nuclear mandatory** for software/hybrid code changes. |
+| `Complete` | `Product Spec + Interface + Tech Review + Code Diff` | **Thermo-Nuclear mandatory** + code diff gate runs after fix. |
 
 ### High-risk trigger
 

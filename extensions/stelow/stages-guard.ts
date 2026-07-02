@@ -21,8 +21,8 @@ export const PHASE_TO_STAGE: Record<number, string> = {
   0: "triage", 1: "select", 2: "setup", 3: "context",
   4: "shape", 5: "critique", 6: "gate", 7: "scope",
   8: "interface", 9: "int-gate", 10: "selection",
-  11: "planning", 12: "execution", 13: "verification",
-  14: "audit",
+  11: "planning", 12: "plan-gate", 13: "execution",
+  14: "verification", 15: "diff-gate", 16: "audit",
 };
 
 /**

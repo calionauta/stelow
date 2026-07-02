@@ -239,8 +239,8 @@ ask_user_question({
 
 Used in `stages/setup.md` for workflow stage selection and safe-change.
 
-> **Note:** This pattern is only shown for Product Spec + Interface Choice and above.
-> Auto/Only Product Spec modes auto-define stages.
+> **Note:** This pattern is only shown for Product Spec + Interface Gates and above.
+> Auto/Product Spec Gate modes auto-define stages.
 
 > **Note:** This is the ONLY place with multiple questions in parallel.
 
@@ -400,20 +400,24 @@ Review Mode is orthogonal to appetite: appetite defines depth, review mode defin
         description: "No gates, no questions, no Plannotator. AI resolves all gaps without asking."
       },
       {
-        label: "Only Product Spec",
+        label: "Product Spec Gate",
         description: "One Plannotator gate on the shaped product spec. AI resolves all gaps without asking. No IN/OUT confirmation."
       },
       {
-        label: "Product Spec + Interface Choice",
+        label: "Product Spec + Interface Gates",
         description: "Product spec gate + interface gate. User picks the UI direction. AI resolves trivial gaps, asks about moderate/critical."
       },
       {
-        label: "All Above + Scopes In/Out",
+        label: "Product Spec + Interface + Scopes",
         description: "All product gates including scope IN/OUT confirmation. AI resolves trivial gaps, asks about moderate/critical."
       },
       {
-        label: "All Above + Tech Review",
-        description: "All product gates + tech plan gate + technical Q&A. Full pipeline oversight."
+        label: "Product Spec + Interface + Tech Review",
+        description: "All product gates + tech plan gate (Plannotator on spec-tech.md) + technical Q&A. Full pipeline oversight."
+      },
+      {
+        label: "Product Spec + Interface + Tech Review + Code Diff",
+        description: "All gates including code diff review via Plannotator. Maximum human oversight end-to-end."
       }
     ]
   }]
@@ -423,21 +427,22 @@ Review Mode is orthogonal to appetite: appetite defines depth, review mode defin
 
 **Review Mode effect matrix:**
 
-| Review Mode | Plannotator Gates | User Questions | Interface | IN/OUT Confirmation | Tech Approval | Gap Resolution |
-|---|---|---|---|---|---|---|
-| Auto | None | None | LLM decides | LLM decides | Auto | AI resolves all |
-| Only Product Spec | 1 (pre-tech) | None | LLM decides | LLM decides | Auto | AI resolves all |
-| Product Spec + Interface Choice | 1 (pre-tech) + Int-Gate | Interface selection | User chooses | LLM decides | Auto | AI trivial. User moderate/critical |
-| All Above + Scopes In/Out | 1 (pre-tech) + Int-Gate | Interface selection + scope | User chooses | User confirms | Auto | AI trivial. User moderate/critical |
-| All Above + Tech Review | 1 (pre-tech) + Int-Gate + Tech Gate | All including technical | User chooses | User confirms | Gate + tech Qs | AI trivial. User moderate/critical |
+| Review Mode | Plannotator Gates | User Questions | Interface | IN/OUT Confirmation | Tech Plan Gate | Code Diff Gate | Gap Resolution |
+|---|---|---|---|---|---|---|---|---|
+| Auto | None | None | LLM decides | LLM decides | Skip | Skip | AI resolves all |
+| Product Spec Gate | 1 (pre-tech) | None | LLM decides | LLM decides | Skip | Skip | AI resolves all |
+| Product Spec + Interface Gates | 1 (pre-tech) + Int-Gate | Interface selection | User chooses | LLM decides | Skip | Skip | AI trivial. User moderate/critical |
+| Product Spec + Interface + Scopes | 1 (pre-tech) + Int-Gate | Interface + scope | User chooses | User confirms | Skip | Skip | AI trivial. User moderate/critical |
+| Product Spec + Interface + Tech Review | 1 (pre-tech) + Int-Gate + Plan-Gate | All including technical | User chooses | User confirms | Gate | Skip | AI trivial. User moderate/critical |
+| Product Spec + Interface + Tech Review + Code Diff | 1 (pre-tech) + Int-Gate + Plan-Gate + Diff-Gate | All including technical | User chooses | User confirms | Gate | Gate | AI trivial. User moderate/critical |
 
 **Gap Resolution semantics for Plan Critique:**
 
 When the Plan Critique finds gaps via the 7 checklists, each gap is classified as 🚨 Critical, 🤔 Important, or 🔎 Minor. The review mode determines what happens:
 
-- **Auto / Only Product Spec:** All gaps regardless of severity are auto-resolved. The LLM fills reasonable defaults per `auto-resolve-rules.md`. No questions to the user.
-- **Product Spec + Interface Choice:** Trivial (🔎) gaps are auto-resolved. Moderate (🤔) and Critical (🚨) gaps are presented to the user in a single batched question. Each option shows the AI's recommended resolution marked as "Recommended." User can accept or override per gap.
-- **All Above + Scopes In/Out / All Above + Tech Review:** Trivial (🔎) gaps are auto-resolved. Moderate (🤔) are batched into one question. Critical (🚨) gaps are presented individually. The AI's recommended resolution is always the first option marked "(Recommended)."
+- **Auto / Product Spec Gate:** All gaps regardless of severity are auto-resolved. The LLM fills reasonable defaults per `auto-resolve-rules.md`. No questions to the user.
+- **Product Spec + Interface Gates:** Trivial (🔎) gaps are auto-resolved. Moderate (🤔) and Critical (🚨) gaps are presented to the user in a single batched question. Each option shows the AI's recommended resolution marked as "Recommended." User can accept or override per gap.
+- **Product Spec + Interface + Scopes / Product Spec + Interface + Tech Review / Product Spec + Interface + Tech Review + Code Diff:** Trivial (🔎) gaps are auto-resolved. Moderate (🤔) are batched into one question. Critical (🚨) gaps are presented individually. The AI's recommended resolution is always the first option marked "(Recommended)."
 
 **Storage:** Save to `index.json` as `config.review_mode`.
 

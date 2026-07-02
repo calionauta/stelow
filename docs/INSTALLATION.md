@@ -179,7 +179,7 @@ O installer **não modifica** seu AGENTS.md/CLAUDE.md automaticamente. Adicione 
 When working on software projects, trigger the product workflow:
 
 1. **Trigger:** Use `/skill stelow`
-2. **Process:** Follow the structured workflow (Setup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Execution → Verification → Audit)
+2. **Process:** Follow the structured workflow (Setup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Plan.Gate → Execution → Verification → Diff.Gate → Audit)
 3. **Execute:** Only after visual review gate (Plannotator approval)
 ```
 

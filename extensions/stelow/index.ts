@@ -483,7 +483,7 @@ export default function (pi: ExtensionAPI) {
     const gateWf = getActiveWorkflow(wd);
     if (gateWf?.dirHash) {
       const stageName = PHASE_TO_STAGE[gateWf.currentPhase];
-      const isGateStage = stageName === "gate" || stageName === "int-gate";
+      const isGateStage = stageName === "gate" || stageName === "int-gate" || stageName === "plan-gate" || stageName === "diff-gate";
       if (isGateStage) {
         const receiptsDir = join(wd, ".plannotator", "approvals", gateWf.dirHash);
         if (existsSync(receiptsDir) && readdirSync(receiptsDir).some(f => f.endsWith(".approved.md"))) {

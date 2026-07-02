@@ -9,7 +9,7 @@
 
 ## Architecture
 
-See [architecture.md](architecture.md) for module layout, data flow, and how to extend. Skills live in `skills/*/SKILL.md`; stages defined in `stages.yaml` (single source of truth). Visual review gates: `gate` and `int-gate` (Plannotator) — never skip.
+See [architecture.md](architecture.md) for module layout, data flow, and how to extend. Skills live in `skills/*/SKILL.md`; stages defined in `stages.yaml` (single source of truth). Visual review gates: `gate`, `int-gate`, `plan-gate`, `diff-gate` (Plannotator) — conditional by review mode.
 
 ### Critical Muxy extension knowledge
 
