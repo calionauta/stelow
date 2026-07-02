@@ -173,7 +173,7 @@ before assumptions get baked into a full spec.
 **Read mode:**
 ```bash
 WF_DIR="$(ls -td .stelow/*/*/ 2>/dev/null | head -1)"
-REVIEW_MODE="All Above + Scopes In/Out"
+REVIEW_MODE="Product Spec + Interface + Scopes"
 [ -n "$WF_DIR" ] && REVIEW_MODE=$(grep -oP '"review_mode":\s*"([^"]+)"' "${WF_DIR}index.json" 2>/dev/null | grep -oP '"([^"]+)"$' | tr -d '"' )
 ```
 
@@ -191,11 +191,11 @@ REVIEW_MODE="All Above + Scopes In/Out"
 
 | Review Mode | Behavior |
 |-------------|----------|
-| **Auto/Only Product Spec** | Auto-resolve. AI fills assumptions in spec as notes. No questions. |
-| **Product Spec + Interface Choice** | Top-3 most critical assumptions. Each presented with AI recommendation.
+| **Auto/Product Spec Gate** | Auto-resolve. AI fills assumptions in spec as notes. No questions. |
+| **Product Spec + Interface Gates** | Top-3 most critical assumptions. Each presented with AI recommendation.
   Use `ask_user_question` (see `references/cli-tools/ask.md`).
   Option format: "{assumption}. Recom: {resolution}" with "(Recommended)" marker. |
-| **All Above + Scopes In/Out / All Above + Tech Review** | Top-5 assumptions. User responds to each.
+| **Product Spec + Interface + Scopes / Product Spec + Interface + Tech Review** | Top-5 assumptions. User responds to each.
   AI recommendation marked as "(Recommended)". |
 
 After resolving, note in spec frontmatter:

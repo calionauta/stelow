@@ -6,7 +6,7 @@
 **After Setup**, the flow enters Strategic Context to enrich planning with optional context.
 The LLM checks if the user should be offered strategic analysis and/or domain libraries.
 
-**Prerequisites:** Appetite (Lean / Core / Complete) and Review Mode (Auto / Only Product Spec / Product Spec + Interface Choice / All Above + Scopes In/Out / All Above + Tech Review) must already be declared in `setup:15` and stored in `index.json` (read via `stages.yaml` conventions).
+**Prerequisites:** Appetite (Lean / Core / Complete) and Review Mode (Auto / Product Spec Gate / Product Spec + Interface Gates / Product Spec + Interface + Scopes / Product Spec + Interface + Tech Review / Product Spec + Interface + Tech Review + Code Diff) must already be declared in `setup:15` and stored in `index.json` (read via `stages.yaml` conventions).
 
 ### context:5 — Appetite & Review Mode Gate (auto-skip / reduced)
 
@@ -14,14 +14,14 @@ Before executing `context:10` or `context:20`, check the declared appetite and r
 
 **Canonical values:**
 - Appetite: `Lean` | `Core` (Recommended) | `Complete`
-- Review Mode: `Auto` | `Only Product Spec` | `Product Spec + Interface Choice` | `All Above + Scopes In/Out` | `All Above + Tech Review`
+- Review Mode: `Auto` | `Product Spec Gate` | `Product Spec + Interface Gates` | `Product Spec + Interface + Scopes` | `Product Spec + Interface + Tech Review` | `Product Spec + Interface + Tech Review + Code Diff`
 
 **Gate matrix:**
 
 | Appetite | Review Mode | `context:10` (Strategic Approaches — 5 options) | `context:20` (Domain Libraries — 8 options) |
 |---|---|---|---|
 | `Lean` | `Auto` | **Skip** entire Context stage → go directly to `shape:10` | **Skip** (not reached) |
-| `Lean` | `Only Product Spec` / `Product Spec + Interface Choice` / `All Above + Scopes In/Out` / `All Above + Tech Review` | **Reduced ask**: present all 5 strategic approaches, but mark execution as opt-in per approach (no automatic parallel subagents) | **Reference-only**: detect domain signals and load the 8 libraries as passive context for Shape/Scope; do not execute subagents per library |
+| `Lean` | `Product Spec Gate` / `Product Spec + Interface Gates` / `Product Spec + Interface + Scopes` / `Product Spec + Interface + Tech Review` / `Product Spec + Interface + Tech Review + Code Diff` | **Reduced ask**: present all 5 strategic approaches, but mark execution as opt-in per approach (no automatic parallel subagents) | **Reference-only**: detect domain signals and load the 8 libraries as passive context for Shape/Scope; do not execute subagents per library |
 | `Core` | any | **Full ask** (current behavior): present all 5, execute selected in parallel, consolidate into `strategic-insights.md` | **Full detect + execute**: 1..N of the 8 libraries via parallel subagents, inject into Shape/Scope/Interface |
 | `Complete` | any | **Full ask** + advisory note: "Complete detected — running all 5 strategic approaches is recommended" | **Full detect + execute** of all 8 libraries detected |
 

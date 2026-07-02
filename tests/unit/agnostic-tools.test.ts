@@ -289,17 +289,17 @@ describe("Auto mode enforcement (tool-level blocking)", () => {
     expect(shouldBlockInAutoMode("read", idx)).toBe(false);
   });
 
-  it("ALLOWS ask when review_mode=Only Product Spec (not Auto)", () => {
+  it("ALLOWS ask when review_mode=Product Spec Gate (not Auto)", () => {
     writeFileSync(indexPath, JSON.stringify({
-      config: { review_mode: "Only Product Spec" },
+      config: { review_mode: "Product Spec Gate" },
     }));
     const idx = JSON.parse(readFileSync(indexPath, "utf-8"));
     expect(shouldBlockInAutoMode("ask", idx)).toBe(false);
   });
 
-  it("ALLOWS ask when review_mode=All Above + Scopes In/Out", () => {
+  it("ALLOWS ask when review_mode=Product Spec + Interface + Scopes", () => {
     writeFileSync(indexPath, JSON.stringify({
-      config: { review_mode: "All Above + Scopes In/Out" },
+      config: { review_mode: "Product Spec + Interface + Scopes" },
     }));
     const idx = JSON.parse(readFileSync(indexPath, "utf-8"));
     expect(shouldBlockInAutoMode("ask", idx)).toBe(false);

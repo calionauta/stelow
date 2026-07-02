@@ -223,9 +223,11 @@ Do NOT use `/skill:` for internal subskills.
 | `int-gate` | **Interface Gate (Plannotator)** | Visual review of all interfaces | — |
 | `selection` | **Interface Selection** | User picks via ask with preview | — |
 | `planning` | **Tech Planning** | Typed scopes + sequencing. Includes `planning:15` — **Alignment Check** (review mode-gated bidirectional feedback: spec-tech vs spec-product) | — |
+| `plan-gate` | **Tech Plan Gate (Plannotator)** | Visual review of spec-tech.md. Only in Tech Review / Code Diff modes | After planning |
 | `execution` | **Execution** | Goal/scope executor | — |
 | `verification` | **Verification** | Run full test suite, code review, UI audit, browser testing | After execution |
-| `audit` | **Execution Critique** | Full execution critique (scope, quality, NFRs, edge cases, docs) | After verification |
+| `diff-gate` | **Code Diff Review (Plannotator)** | Visual diff review of working tree. Only in Code Diff mode | After verification |
+| `audit` | **Execution Critique** | Full execution critique (scope, quality, NFRs, edge cases, docs) | After diff-gate |
 
 ### AI-Aware Testing (Conditional)
 
@@ -273,9 +275,13 @@ planning — Tech Planning*
   │  * planning:15 = Alignment Check (review mode-gated bidirectional feedback)
   │    ← misaligned? → reshape or update spec-product
   ↓
+plan-gate — Tech Plan Gate (Plannotator) ← conditional: only Tech Review / Code Diff modes
+  ↓
 execution — Execution
   ↓
 verification — Verification (test suite, review, UI audit)
+  ↓
+diff-gate — Code Diff Review (Plannotator) ← conditional: only Code Diff mode
   ↓
 audit — Execution Critique
 ```
@@ -293,7 +299,9 @@ audit — Execution Critique
 **Verification** runs automatically after Execution — test suite, code review, UI audit, browser testing.
 **Interface Gate** shows all proposals visually before selection.
 **Execution** runs automatically after Tech Planning — DO NOT ask user what to do next.
-**Execution Critique** runs after Verification. Uses the `cali-product-execution-critique` skill for all 8 evaluation criteria.
+**Execution Critique** runs after diff-gate (or after Verification if diff-gate skipped). Uses the `cali-product-execution-critique` skill for all 8 evaluation criteria.
+**Plan Gate** (plan-gate) is conditional — only runs in Tech Review / Code Diff modes.
+**Diff Gate** (diff-gate) is conditional — only runs in Code Diff mode.
 
 ---
 ## 🌐 Environment Adaptation

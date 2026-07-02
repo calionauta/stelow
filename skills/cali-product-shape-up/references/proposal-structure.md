@@ -175,10 +175,10 @@ Mode is defined independently and stored in `index.json`. It affects gates and q
 | Review Mode | Plannotator Gates | User Questions | Interface | IN/OUT Confirmation | Tech Approval |
 |-------------|------------------|---------------|-----------|---------------------|---------------|
 | Auto | None | None | LLM decides | LLM decides | Auto |
-| Only Product Spec | 1 (pre-tech) | None | LLM decides | LLM decides | Auto |
-| Product Spec + Interface Choice | Gate + Int-Gate | Interface selection | User chooses | LLM decides | Auto |
-| All Above + Scopes In/Out | Gate + Int-Gate | Interface selection + scope | User chooses | User confirms | Auto |
-| All Above + Tech Review | Gate + Int-Gate + Tech Gate | All including technical | User chooses | User confirms | Gate + tech Qs |
+| Product Spec Gate | 1 (pre-tech) | None | LLM decides | LLM decides | Auto |
+| Product Spec + Interface Gates | Gate + Int-Gate | Interface selection | User chooses | LLM decides | Auto |
+| Product Spec + Interface + Scopes | Gate + Int-Gate | Interface selection + scope | User chooses | User confirms | Auto |
+| Product Spec + Interface + Tech Review | Gate + Int-Gate + Tech Gate | All including technical | User chooses | User confirms | Gate + tech Qs |
 
 ### Appetite-specific execution budget
 

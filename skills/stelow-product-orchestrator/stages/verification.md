@@ -38,7 +38,7 @@ SCOPE_COUNT=$(ls .stelow/{YYYY-MM-DD}/{_dir}/plans/scopes/*.md 2>/dev/null | wc 
 |----------|-----------|-------------|------------|-------------------|-------------------|---------------------|---------------|
 | `Lean` | ✅ Run | ✅ Light (single reviewer) | ✅ Static a11y/lint | ✅ Quick Tier | ✅ Run | ✅ Light (skip Thermo-Nuclear) | ✅ Run |
 | `Core` | ✅ Run | ✅ Parallel reviewers | ✅ Codebase mode (~80%) | ✅ Quick Tier | ✅ Run | ✅ Conditional by risk (Nuclear if risk high) | ✅ Run |
-| `Complete` | ✅ Run | ✅ Parallel + Thermo-Nuclear when applicable | ✅ Live Site mode | ✅ Quick + Full Tier (browser) | ✅ Run | ✅ Mandatory for `All Above + Tech Review` | ✅ Run |
+| `Complete` | ✅ Run | ✅ Parallel + Thermo-Nuclear when applicable | ✅ Live Site mode | ✅ Quick + Full Tier (browser) | ✅ Run | ✅ Mandatory for `Product Spec + Interface + Tech Review` and `Product Spec + Interface + Tech Review + Code Diff` | ✅ Run |
 
 **Rationale (per row):**
 - **Lean code-review:** A single fresh-context reviewer runs the standard check. Not skipped — quality floor.
@@ -51,7 +51,7 @@ SCOPE_COUNT=$(ls .stelow/{YYYY-MM-DD}/{_dir}/plans/scopes/*.md 2>/dev/null | wc 
 - **Core interactive-testing:** Quick Tier runs by default; Full Tier only when a complex UI flow is in scope.
 - **Complete interactive-testing:** Quick + Full Tier when interactive elements exist.
 - **Lean code-quality-review:** The lightweight gate (lint + typecheck) runs. Thermo-Nuclear is skipped unless explicitly requested.
-- **Complete code-quality-review:** Thermo-Nuclear runs for software/hybrid code changes, mandatory in `All Above + Tech Review`.
+- **Complete code-quality-review:** Thermo-Nuclear runs for software/hybrid code changes, mandatory in `Product Spec + Interface + Tech Review` and `Product Spec + Interface + Tech Review + Code Diff`.
 
 ### Auto-chain
 
@@ -254,10 +254,11 @@ When Thermo-Nuclear runs, save or copy the result to:
 
 **Review Mode (orthogonal to appetite):**
 
-- `Auto` / `Only Product Spec`: run only if required by risk; fix simple issues or document accepted trade-offs.
-- `Product Spec + Interface Choice`: escalate P0/P1 findings to the user.
-- `All Above + Scopes In/Out`: P0/P1 findings require fix or explicit human acceptance.
-- `All Above + Tech Review`: P0/P1 findings are blocking for software/hybrid code changes.
+- `Auto` / `Product Spec Gate`: run only if required by risk; fix simple issues or document accepted trade-offs.
+- `Product Spec + Interface Gates`: escalate P0/P1 findings to the user.
+- `Product Spec + Interface + Scopes`: P0/P1 findings require fix or explicit human acceptance.
+- `Product Spec + Interface + Tech Review`: P0/P1 findings are blocking for software/hybrid code changes.
+- `Product Spec + Interface + Tech Review + Code Diff`: P0/P1 findings are blocking. Code diff gate will re-run after fix.
 
 **Fallback:** if the skill is not installed, run the manual fallback from
 `references/cli-tools/codequality-review.md` and document the fallback in the

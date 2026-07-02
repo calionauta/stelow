@@ -117,10 +117,10 @@ determines whether and how aggressively to supervise:
 | Appetite | Review Mode | Supervisor decision |
 |----------|-------------|-------------------|
 | `Lean` | any | **Skip** unless explicitly requested |
-| `Core` | `Auto` / `Only Product Spec` | **Skip** unless risk is high |
-| `Core` | `Product Spec + Interface Choice` / above | Run when risk is high |
-| `Complete` | `Auto` / `Only Product Spec` | **Run** if code changed |
-| `Complete` | `Product Spec + Interface Choice` / above | **Mandatory** |
+| `Core` | `Auto` / `Product Spec Gate` | **Skip** unless risk is high |
+| `Core` | `Product Spec + Interface Gates` / above | Run when risk is high |
+| `Complete` | `Auto` / `Product Spec Gate` | **Run** if code changed |
+| `Complete` | `Product Spec + Interface Gates` / above | **Mandatory** |
 
 ---
 

@@ -12,9 +12,11 @@ export const PHASE_NAMES: Record<number, string> = {
   8: "Int.Gate",
   9: "Selection",
   10: "Planning",
-  11: "Execution",
-  12: "Verification",
-  13: "Audit",
+  11: "Plan.Gate",
+  12: "Execution",
+  13: "Verification",
+  14: "Diff.Gate",
+  15: "Audit",
 };
 
-export const MAX_PHASE = 13;
+export const MAX_PHASE = 15;

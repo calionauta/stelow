@@ -34,7 +34,7 @@ struct PluginContext {
 const PHASE_NAMES: &[&str] = &[
     "Triage", "ItemSelect", "Setup", "Context", "Shape", "Critique",
     "Gate", "Scope", "Interface", "Int.Gate", "Selection", "Planning",
-    "Execution", "Verification", "Audit",
+    "Plan.Gate", "Execution", "Verification", "Diff.Gate", "Audit",
 ];
 
 // ── Scope shape (mirrors extensions/stelow/types.ts Scope interface) ──

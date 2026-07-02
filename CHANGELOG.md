@@ -2,6 +2,30 @@
 
 All notable changes to `@renatocaliari/stelow` will be documented in this file.
 
+## [0.40.0] - 2026-07-02
+
+### Added
+
+- **plan-gate stage** (order 115) — Tech plan gate between Planning and Execution. Plannotator visual review of `spec-tech.md`. Runs only in `Product Spec + Interface + Tech Review` and `Product Spec + Interface + Tech Review + Code Diff` review modes.
+
+- **diff-gate stage** (order 175) — Code diff review gate between Verification and Audit. Plannotator `review` command on the working tree diff. Runs only in `Product Spec + Interface + Tech Review + Code Diff` review mode. Verification must pass before the diff gate runs.
+
+- **New review mode: "Product Spec + Interface + Tech Review + Code Diff"** — The most advanced mode, adding `diff-gate` on top of all existing gates. Maximum human oversight with visual code review.
+
+### Changed
+
+- **Review mode rename** for clarity and consistency — all mode names are now explicit and additive:
+  - `Only Product Spec` → `Product Spec Gate`
+  - `Product Spec + Interface Choice` → `Product Spec + Interface Gates`
+  - `All Above + Scopes In/Out` → `Product Spec + Interface + Scopes`
+  - `All Above + Tech Review` → `Product Spec + Interface + Tech Review`
+
+- **PHASE_NAMES** expanded from 15 to 17: `Plan.Gate` (index 12), `Diff.Gate` (index 15). All downstream mappings, integrations (Muxy, Herdr), and plugin regenerated.
+
+- **Workflow sequence** updated everywhere: `... → Planning → Plan.Gate → Execution → Verification → Diff.Gate → Audit`
+
+- **Review mode effect matrices** across all skills updated with 6 modes and 2 new gate columns (plan-gate, diff-gate).
+
 ## [0.39.3] - 2026-07-01
 
 ### Added

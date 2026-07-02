@@ -19,9 +19,11 @@ export const PHASE_NAMES = [
   "Int.Gate",    // 9 — Phase 9: Interface Gate
   "Selection",   // 10 — Phase 10: Interface Selection
   "Planning",    // 11 — Phase 11: Tech Planning
-  "Execution",   // 12 — Phase 12: Execution
-  "Verification",// 13 — Phase 13: Verification (test suite, review, UI audit)
-  "Audit"        // 14 — Phase 14: Execution Critique
+  "Plan.Gate",   // 12 — Phase 12: Tech Plan Gate
+  "Execution",   // 13 — Phase 13: Execution
+  "Verification",// 14 — Phase 14: Verification (test suite, review, UI audit)
+  "Diff.Gate",   // 15 — Phase 15: Code Diff Review Gate
+  "Audit"        // 16 — Phase 16: Execution Critique
 ];
 
 // ── Stage Aliasing ────────────────────────────────────────────────────
@@ -59,8 +61,10 @@ export const STAGE = {
   INT_GATE:    () => PHASE_NAMES.indexOf("Int.Gate"),
   SELECTION:   () => PHASE_NAMES.indexOf("Selection"),
   PLANNING:    () => PHASE_NAMES.indexOf("Planning"),
+  PLAN_GATE:   () => PHASE_NAMES.indexOf("Plan.Gate"),
   EXECUTION:   () => PHASE_NAMES.indexOf("Execution"),
   VERIFICATION:() => PHASE_NAMES.indexOf("Verification"),
+  DIFF_GATE:   () => PHASE_NAMES.indexOf("Diff.Gate"),
   AUDIT:       () => PHASE_NAMES.indexOf("Audit"),
 } as const;
 
@@ -355,7 +359,7 @@ export interface Workflow {
   //   (none)     → in-progress : /sw-start
   //   in-progress → paused     : /sw-pause OR auto-pause on /sw-start (v0.36.3+)
   //   paused     → in-progress : /sw-resume
-  //   in-progress → completed  : /sw-complete OR /sw-next on phase 14
+   //   in-progress → completed  : /sw-complete OR /sw-next on last phase
   //   in-progress → archived   : /sw-archive
   //   paused     → archived   : /sw-archive
   //   completed  → archived   : /sw-archive

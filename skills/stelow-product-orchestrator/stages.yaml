@@ -47,7 +47,7 @@ stages:
   - name: context
     order: 25
     model_hint: standard
-    description: "Strategic context. Market analysis, JTBD, domain detection. Gated by `context:5` (appetite/review mode): Only Product Spec+Auto skips; others use reduced ask. See `stages/context.md#context:5`."
+    description: "Strategic context. Market analysis, JTBD, domain detection. Gated by `context:5` (appetite/review mode): Product Spec Gate+Auto skips; others use reduced ask. See `stages/context.md#context:5`."
     blocked_tools: []
     allowed_tools: [ask, read, grep, ls, write, subagent]
     preferred_tools: [read, write]
@@ -162,9 +162,24 @@ stages:
     preferred_tools: [read, write]
     primary_actions: [read, write]
     transitions:
+      next: [plan-gate]
+      accept: [plan-gate]
+      reject: [scope]
+
+  - name: plan-gate
+    order: 115
+    model_hint: economy
+    description: "Tech plan gate. Visual review of spec-tech.md via Plannotator. Only in Product Spec + Interface + Tech Review or Code Diff mode."
+    blocked_tools: [bash]
+    allowed_tools: [read, ls, grep, ask, plannotator, edit, write]
+    preferred_tools: [read]
+    primary_actions: [read]
+    requires_approval: true
+    approval_tool: plannotator
+    transitions:
       next: [execution]
       accept: [execution]
-      reject: [scope]
+      reject: [planning]
 
   - name: execution
     order: 120
@@ -189,8 +204,24 @@ stages:
     preferred_tools: [bash, write]
     primary_actions: [bash, write]
     transitions:
+      next: [diff-gate]
+      accept: [diff-gate]
+      reject: [execution]
+
+  - name: diff-gate
+    order: 175
+    model_hint: economy
+    description: "Code diff review. Plannotator review of working tree diff. Only in Product Spec + Interface + Tech Review + Code Diff mode."
+    blocked_tools: []
+    allowed_tools: [read, ls, grep, ask, bash, plannotator, edit, write]
+    preferred_tools: [read]
+    primary_actions: [read]
+    requires_approval: true
+    approval_tool: plannotator
+    transitions:
       next: [audit]
       accept: [audit]
+      annotate: [execution]
       reject: [execution]
 
   - name: audit

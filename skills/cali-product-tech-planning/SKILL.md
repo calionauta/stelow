@@ -283,7 +283,7 @@ and reads specs from current directory or prompts for paths.
 **Read mode + locate specs:**
 ```bash
 WF_DIR="$(ls -td .stelow/*/*/ 2>/dev/null | head -1)"
-REVIEW_MODE="All Above + Scopes In/Out"
+REVIEW_MODE="Product Spec + Interface + Scopes"
 SPEC_PRODUCT=""
 SPEC_TECH=""
 
@@ -325,10 +325,10 @@ If skipped, log: `context/alignment-skipped.md` with reason.
 | Mode | `aligned` | `product_needs_update` | `blocking` |
 |------|-----------|----------------------|-----------|
 | **Auto** | Segue | Auto-update spec-product v+1. Segue. | Auto-update spec-product v+1. Segue. |
-| **Only Product Spec** | Segue | Auto-update spec-product v+1. Log change in artifact. | Auto-update spec-product v+1. Log change in artifact. |
-| **Product Spec + Interface Choice** | Segue | **Flag user** (ask tool): "Tech planning suggests updating scope. Allow?" Recom: update. | **Flag user**: "Tech plan contradicts product spec. Reshape required?" Recom: reshape. |
-| **All Above + Scopes In/Out** | Segue | **Ask user**: show diff, let them choose update/ignore/reshape. | **Ask user**: show contradiction. Offer reshape or abort. |
-| **All Above + Tech Review** | Segue | **Ask user** with detailed tech impact. | **Ask user** with detailed tech impact. |
+| **Product Spec Gate** | Segue | Auto-update spec-product v+1. Log change in artifact. | Auto-update spec-product v+1. Log change in artifact. |
+| **Product Spec + Interface Gates** | Segue | **Flag user** (ask tool): "Tech planning suggests updating scope. Allow?" Recom: update. | **Flag user**: "Tech plan contradicts product spec. Reshape required?" Recom: reshape. |
+| **Product Spec + Interface + Scopes** | Segue | **Ask user**: show diff, let them choose update/ignore/reshape. | **Ask user**: show contradiction. Offer reshape or abort. |
+| **Product Spec + Interface + Tech Review** | Segue | **Ask user** with detailed tech impact. | **Ask user** with detailed tech impact. |
 
 **Appetite affects check depth:**
 
@@ -338,7 +338,7 @@ If skipped, log: `context/alignment-skipped.md` with reason.
 | **Core** | Standard: compare IN/OUT scopes vs feasibility. Check NFR constraints. |
 | **Complete** | Deep: check each scope's ACs vs codebase reality. Include performance, security, dependencies. |
 
-**If `product_needs_update` or `blocking` and Review Mode >= Product Spec + Interface Choice:**
+**If `product_needs_update` or `blocking` and Review Mode >= Product Spec + Interface Gates:**
 
 Use `ask_user_question` (see `references/cli-tools/ask.md`):
 

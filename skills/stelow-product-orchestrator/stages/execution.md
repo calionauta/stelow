@@ -124,7 +124,7 @@ APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-
 | `Complete` | **Activate** | `high` | No | High-risk, multi-scope work. High sensitivity ensures drift is caught early. |
 
 > **Human-in-loop is controlled by Review Mode** (from `index.json`), not by appetite.
-> Review Mode = "All Above + Scopes In/Out" or "All Above + Tech Review" may add human approval checkpoints per PR.
+> Review Mode = "Product Spec + Interface + Scopes", "Product Spec + Interface + Tech Review", or "Product Spec + Interface + Tech Review + Code Diff" may add human approval checkpoints per PR.
 
 | Scope Type | Executor | Supervision |
 |---|---|---|
@@ -268,13 +268,14 @@ Run `thermo-nuclear-code-quality-review` when all of these are true:
 | Appetite | Review Mode | Decision |
 |----------|-------------|----------|
 | `Lean` | any | **Skip** unless the user explicitly requests it. |
-| `Core` | `Auto` / `Only Product Spec` | **Skip** unless risk is high. |
-| `Core` | `Product Spec + Interface Choice` / `All Above + Scopes In/Out` | Run when risk is high. |
-| `Core` | `All Above + Tech Review` | Run when risk is high or the diff is meaningful. |
-| `Complete` | `Auto` / `Only Product Spec` | **Run** if code changed. Resolve/document findings without asking. |
-| `Complete` | `Product Spec + Interface Choice` | **Run** if code changed. Escalate P0/P1 gaps to the user. |
-| `Complete` | `All Above + Scopes In/Out` | **Run** if code changed. P0/P1 gaps need fix or explicit human acceptance. |
-| `Complete` | `All Above + Tech Review` | **Mandatory** for software/hybrid code changes. Blocking gate before merge. |
+| `Core` | `Auto` / `Product Spec Gate` | **Skip** unless risk is high. |
+| `Core` | `Product Spec + Interface Gates` / `Product Spec + Interface + Scopes` | Run when risk is high. |
+| `Core` | `Product Spec + Interface + Tech Review` | Run when risk is high or the diff is meaningful. |
+| `Complete` | `Auto` / `Product Spec Gate` | **Run** if code changed. Resolve/document findings without asking. |
+| `Complete` | `Product Spec + Interface Gates` | **Run** if code changed. Escalate P0/P1 gaps to the user. |
+| `Complete` | `Product Spec + Interface + Scopes` | **Run** if code changed. P0/P1 gaps need fix or explicit human acceptance. |
+| `Complete` | `Product Spec + Interface + Tech Review` | **Mandatory** for software/hybrid code changes. |
+| `Complete` | `Product Spec + Interface + Tech Review + Code Diff` | **Mandatory** for software/hybrid code changes. Code diff gate runs after fix. |
 
 #### High-risk trigger
 

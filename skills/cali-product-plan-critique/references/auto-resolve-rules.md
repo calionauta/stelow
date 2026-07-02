@@ -8,7 +8,7 @@ These rules apply in two contexts:
 
 1. **Subagent recommendation generation** (all modes) — subagents CLASSIFY gaps
    and produce recommendations using these rules. They do NOT apply them.
-2. **Parent auto-resolution** (Auto/Only Product Spec modes) — parent applies
+2. **Parent auto-resolution** (Auto/Product Spec Gate modes) — parent applies
    recommendations directly.
 
 ## Resolution Rules (for auto-resolved gaps)
@@ -27,7 +27,7 @@ For every gap being auto-resolved:
 ## Recommendation Rules (for gaps presented to user)
 
 When a gap is presented to the user for decision (top-N 🚨/🤔 in
-Product Spec + Interface Choice and above):
+Product Spec + Interface Gates and above):
 
 1. AI **recommends** the best practice resolution (same logic as above)
 2. Option label format: `"Accept AI: {short resolution}"` with
