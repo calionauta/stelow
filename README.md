@@ -5,13 +5,13 @@
 # stelow · opinionated agentic product workflow
 
 [![zread](https://img.shields.io/badge/Ask_Zread-_.svg?style=flat-square&color=00b0aa&labelColor=000000&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTQuOTYxNTYgMS42MDAxSDIuMjQxNTZDMS44ODgxIDEuNjAwMSAxLjYwMTU2IDEuODg2NjQgMS42MDE1NiAyLjI0MDFWNC45NjAxQzEuNjAxNTYgNS4zMTM1NiAxLjg4ODEgNS42MDAxIDIuMjQxNTYgNS42MDAxSDQuOTYxNTZDNS4zMTUwMiA1LjYwMDEgNS42MDE1NiA1LjMxMzU2IDUuNjAxNTYgNC45NjAxVjIuMjQwMUM1LjYwMTU2IDEuODg2NjQgNS4zMTUwMiAxLjYwMDEgNC45NjE1NiAxLjYwMDFaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik00Ljk2MTU2IDEwLjM5OTlIMi4yNDE1NkMxLjg4ODEgMTAuMzk5OSAxLjYwMTU2IDEwLjY4NjQgMS42MDE1NiAxMS4wMzk5VjEzLjc1OTlDMS42MDE1NiAxNC4xMTM0IDEuODg4MSAxNC4zOTk5IDIuMjQxNTYgMTQuMzk5OUg0Ljk2MTU2QzUuMzE1MDIgMTQuMzk5OSA1LjYwMTU2IDE0LjExMzQgNS42MDE1NiAxMy43NTk5VjExLjAzOTlDNS42MDE1NiAxMC42ODY0IDUuMzE1MDIgMTAuMzk5OSA0Ljk2MTU2IDEwLjM5OTlaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik0xMy43NTg0IDEuNjAwMUgxMS4wMzg0QzEwLjY4NSAxLjYwMDEgMTAuMzk4NCAxLjg4NjY0IDEwLjM5ODQgMi4yNDAxVjQuOTYwMUMxMC4zOTg0IDUuMzEzNTYgMTAuNjg1IDUuNjAwMSAxMS4wMzg0IDUuNjAwMUgxMy43NTg0QzE0LjExMTkgNS42MDAxIDE0LjM5ODQgNS4zMTM1NiAxNC4zOTg0IDQuOTYwMVYyLjI0MDFDMTQuMzk4NCAxLjg4NjY0IDE0LjExMTkgMS42MDAxIDEzLjc1ODQgMS42MDAxWiIgZmlsbD0iI2ZmZiIvPgo8cGF0aCBkPSJNNCAxMkwxMiA0TDQgMTJaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik00IDEyTDEyIDQiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4K&logoColor=ffffff)](https://zread.ai/renatocaliari/stelow)
-[![CI](https://github.com/renatocaliari/stelow/actions/workflows/ci.yml/badge.svg)](https://github.com/renatocaliari/stelow/actions/workflows/ci.yml)
-[![Coverage](https://img.shields.io/badge/coverage-70%25-brightgreen)](https://github.com/renatocaliari/stelow/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/github/v/release/renatocaliari/stelow?logo=github&label=release)](https://github.com/renatocaliari/stelow/releases)
+[![CI](https://github.com/calionauta/stelow/actions/workflows/ci.yml/badge.svg)](https://github.com/calionauta/stelow/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/badge/coverage-70%25-brightgreen)](https://github.com/calionauta/stelow/actions/workflows/ci.yml)
+[![Version](https://img.shields.io/github/v/release/renatocaliari/stelow?logo=github&label=release)](https://github.com/calionauta/stelow/releases)
 [![Pi](https://img.shields.io/badge/Deep%20integration-Pi-8B5CF6)](https://pi.dev)
 [![Muxy](https://img.shields.io/badge/Webview%20panel-Muxy.app-10B981)](https://muxy.app)
 [![Herdr](https://img.shields.io/badge/Split%20pane%20TUI-Herdr-EA580C)](https://herdr.dev)
-[![CLI](https://img.shields.io/badge/Works%20on-Any%20CLI-3B82F6)](https://github.com/renatocaliari/stelow#cli-compatibility)
+[![CLI](https://img.shields.io/badge/Works%20on-Any%20CLI-3B82F6)](https://github.com/calionauta/stelow#cli-compatibility)
 
 **Transform product ideas into approved, testable plans - systematically.**
 
@@ -267,7 +267,7 @@ All 25 skills are flat in `skills/` directory, ready for `~/.agents/skills/`. Th
 - ✅ **Skills work standalone** - invoke any sub-skill (e.g., `cali-product-shape-up`, `cali-product-plan-critique`) independently of the orchestrator
 - ✅ **Portable across CLIs** - Pi, Claude Code, Codex, OpenCode all reference skills by name (`~/.agents/skills/`)
 - ✅ **References resolve locally** - every `references/cli-tools/*.md` path is relative to the skill's own directory
-- ❌ **Not in `~/.agents/skills/`?** Use `./install.sh` or `npx skills add renatocaliari/stelow -g`
+- ❌ **Not in `~/.agents/skills/`?** Use `./install.sh` or `npx skills add calionauta/stelow -g`
 
 ### 🎛️ Orchestrator (1)
 
@@ -330,7 +330,7 @@ This package works across **multiple coding agents** - not just pi.dev. See the 
 | **New to CLIs** (no Node, no agent) | `curl -fsSL https://raw.githubusercontent.com/.../setup.sh \| sh` | Node.js + pi.dev + all extensions + 25 skills |
 | **Already use pi.dev** | `git clone ... && ./install.sh` | 25 skills + TUI overlay + slash commands |
 | **Use OpenCode / Claude Code / Codex** | `git clone ... && ./install.sh` | 25 skills + command files (no TUI) |
-| **Any CLI (skills only)** | `npx skills add renatocaliari/stelow -g` | 25 skills + cross-CLI support |
+| **Any CLI (skills only)** | `npx skills add calionauta/stelow -g` | 25 skills + cross-CLI support |
 
 ### Intent-Aware Start
 
@@ -397,7 +397,7 @@ stelow is designed to be **self-contained** — the 25 skills + installer cover 
 | [pi-intercom](https://github.com/nicobailon/pi-intercom) | Optional (Pi only) | Session-to-session coordination | `npm:pi-intercom` | Skip — no intercom capability |
 | [pi-supervisor](https://github.com/tintinweb/pi-supervisor) | Optional (Pi only) | Conversation supervision during execution | `npm:pi-supervisor` | Skip — no supervision; rely on `stages-guard` for invariant enforcement |
 | [Muxy.app](https://muxy.app/) + stelow Muxy extension | Optional (macOS) | Webview panel showing workflow state with phase progress and quick actions | Install Muxy.app, then load extension from `integrations/muxy/stelow/` | No webview — read `.stelow/` files directly or use Herdr split-pane TUI |
-| [herdr](https://herdr.dev/) + stelow plugin | Optional | Split-pane TUI showing workflow state with click-to-drill | `herdr plugin install renatocaliari/stelow` | No TUI — read `.stelow/` files directly or use Muxy webview panel |
+| [herdr](https://herdr.dev/) + stelow plugin | Optional | Split-pane TUI showing workflow state with click-to-drill | `herdr plugin install calionauta/stelow` | No TUI — read `.stelow/` files directly or use Muxy webview panel |
 
 **Design principle:** stelow is **harness-agnostic**. Zero external tools are required to run the full product workflow. Each optional integration enhances a specific phase but never blocks progress. The installer (`./install.sh`) auto-installs Pi npm packages when Pi is detected — other tools (cymbal, ctx7) remain user-managed.
 
@@ -408,7 +408,7 @@ For every external tool above, the workflow teaches the agent the **specific fal
 **One command, everything included.** Pick this if you don't have pi.dev yet.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/renatocaliari/stelow/main/setup.sh | sh
+curl -fsSL https://raw.githubusercontent.com/calionauta/stelow/main/setup.sh | sh
 ```
 
 **What gets installed (in order):**
@@ -423,7 +423,7 @@ curl -fsSL https://raw.githubusercontent.com/renatocaliari/stelow/main/setup.sh 
 | 6 | cymbal | codebase navigation via `brew install 1broseidon/tap/cymbal` (macOS) or `go install` (Linux). Skipped gracefully if brew/Go absent | macOS, Linux |
 | 7 | ctx7 | library docs fetcher via `npx @vedanth/context7` (interactive OAuth — prompts the user) | All CLIs |
 | 8 | safe-change | pre-planning regression check via `npx skills add PrinNova/pi-agent-codebase-workflows -g` | All CLIs |
-| 9 | Herdr plugin | stelow split-pane TUI installed via `herdr plugin install renatocaliari/stelow` — **only if** `herdr` CLI is on PATH | All CLIs (via Herdr) |
+| 9 | Herdr plugin | stelow split-pane TUI installed via `herdr plugin install calionauta/stelow` — **only if** `herdr` CLI is on PATH | All CLIs (via Herdr) |
 | 10 | Muxy detection | detects `/Applications/Muxy.app` or `muxy` binary; prints install link if absent (cannot auto-install — Muxy is macOS-only, distributed via GitHub releases) | macOS |
 | 11 | Pulse (optional) | copies Pulse scripts to project's `.stelow/pulse/` and creates inbox. Or run standalone: `./scripts/setup-pulse.sh` (no pi required — works in CI/CD or before pi is installed) | All CLIs (cron/launchd/systemd/Task Scheduler) |
 
@@ -434,7 +434,7 @@ curl -fsSL https://raw.githubusercontent.com/renatocaliari/stelow/main/setup.sh 
 ### 📋 Path B: Existing pi.dev User
 
 ```bash
-git clone https://github.com/renatocaliari/stelow.git
+git clone https://github.com/calionauta/stelow.git
 cd stelow
 ./install.sh
 ```
@@ -446,7 +446,7 @@ The installer auto-detects your CLIs and installs skills + extensions + slash co
 The **skills** are the core of this project - they work on **any** agent (Pi, OpenCode, Claude Code, Codex).
 
 ```bash
-git clone https://github.com/renatocaliari/stelow.git
+git clone https://github.com/calionauta/stelow.git
 cd stelow
 ./install.sh
 ```
@@ -456,7 +456,7 @@ The installer detects your CLI and installs **skills + command files**. No exten
 **Or, with npx (no clone needed):**
 
 ```bash
-npx skills add renatocaliari/stelow -g
+npx skills add calionauta/stelow -g
 ```
 
 This installs all 25 skills to `~/.agents/skills/` - works on any CLI.
@@ -601,7 +601,7 @@ The TUI shows:
 
 **Keybinds:** `prefix+w` toggle · `Tab`/`j`/`k` next/prev workflow · `r` refresh · `?` help · `q`/`Esc` quit. Detail card shows prompt + current stage + scope; click workflow rows to select.
 
-**Install:** `herdr plugin install renatocaliari/stelow` (or `herdr plugin link integrations/herdr/stelow/` for local dev after `cargo build --release`). Source under `integrations/herdr/stelow/`. See [herdr's plugin docs](https://herdr.dev/docs/plugins/) for the official install/link workflow.
+**Install:** `herdr plugin install calionauta/stelow` (or `herdr plugin link integrations/herdr/stelow/` for local dev after `cargo build --release`). Source under `integrations/herdr/stelow/`. See [herdr's plugin docs](https://herdr.dev/docs/plugins/) for the official install/link workflow.
 
 ---
 
@@ -686,7 +686,7 @@ Even with these guardrails, the AI agent still exhibits predictable failure mode
 
 ## About the Author
 
-**[Cali (Renato Caliari)](https://www.linkedin.com/in/calirenato82/)**
+**[Cali (Renato Caliari)](https://www.linkedin.com/in/calionauta/)**
 
 This workflow wasn't designed in a vacuum. It comes from years inside real teams — as a developer, product manager, consultant, and leader across different organizations. The skills, patterns, and disciplines here were tested, broken, and rebuilt in live product environments and real codebases, not conference rooms.
 
@@ -708,7 +708,7 @@ This workflow wasn't designed in a vacuum. It comes from years inside real teams
 | Site | Description |
 |------|-------------|
 | [timeproduto.com.br](https://www.timeproduto.com.br/) | Product process divided into stages, with AI tools and prompts for each stage |
-| [calirenato82.substack.com](https://calirenato82.substack.com) | Blog exploring AI, organizational culture, daily philosophy, narrative practices, and product thinking - with published prompts and free e-books |
+| [espacocalionauta.substack.com](https://espacocalionauta.substack.com) | Blog exploring AI, organizational culture, daily philosophy, narrative practices, and product thinking - with published prompts and free e-books |
 
 ---
 
@@ -721,5 +721,5 @@ MIT
 ## 📞 Support
 
 - [Documentation](docs/)
-- [Issues](https://github.com/renatocaliari/stelow/issues)
-- [Discussions](https://github.com/renatocaliari/stelow/discussions)
+- [Issues](https://github.com/calionauta/stelow/issues)
+- [Discussions](https://github.com/calionauta/stelow/discussions)
