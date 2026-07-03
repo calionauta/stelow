@@ -2,6 +2,13 @@
 
 All notable changes to `@renatocaliari/stelow` will be documented in this file.
 
+## [0.40.1] - 2026-07-02
+
+### Fixed
+
+- **diff-gate stdout parsing** — `plannotator review` does not support `--json`. Added explicit stdout pattern-matching strategy and human fallback for ambiguous results.
+- **Selected interface artifact** — Chosen interface proposal now saved to `.stelow/{date}/{dir}/interfaces/selected-interface.md` as permanent artifact. Execution stage reads it for UI direction.
+
 ## [0.40.0] - 2026-07-02
 
 ### Added
@@ -20,7 +27,6 @@ All notable changes to `@renatocaliari/stelow` will be documented in this file.
 - **PHASE_NAMES** expanded from 15 to 17: `Plan.Gate` (index 12), `Diff.Gate` (index 15). All downstream mappings, integrations (Muxy, Herdr), and plugin regenerated.
 - **Workflow sequence** updated everywhere: `... → Planning → Plan.Gate → Execution → Verification → Diff.Gate → Audit`
 - **Review mode effect matrices** across all skills updated with 6 modes and 2 new gate columns (plan-gate, diff-gate).
-- **Selected interface artifact** — After interface selection, chosen proposal saved to `.stelow/{date}/{dir}/interfaces/selected-interface.md` as permanent artifact for tech planning and execution.
 
 ## [0.39.3] - 2026-07-01
 
