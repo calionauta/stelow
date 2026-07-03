@@ -284,7 +284,7 @@ All 25 skills are flat in `skills/` directory, ready for `~/.agents/skills/`. Th
 | Skill | Purpose |
 |-------|---------|
 | `cali-product-job-to-be-done` | Job To Be Done - understand what job users hire the product to do |
-| `cali-product-discovery` | Customer discovery and validation |
+| `cali-product-discovery` | Product discovery and validation |
 | `cali-product-opportunity-mapping` | Map opportunities to see where to focus |
 | `cali-product-multi-method-market-analysis` | Multi-method market analysis |
 | `cali-product-evolutionary-principles` | Evolutionary principles for sustainable development |
