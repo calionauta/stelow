@@ -142,11 +142,40 @@ Then use **Pattern 2** from `references/cli-tools/ask.md` to let the user pick o
 
 After visual review and approval, use **Pattern 2** from `references/cli-tools/ask.md` to ask the user which proposal to follow.
 
+### Save Selected Interface as Permanent Artifact
+
+After the user picks a proposal, extract it from `interfaces_{v}.md` into a dedicated artifact:
+
+```bash
+PROPOSAL_LABEL="{chosen_proposal_label}"  # e.g. "A — Convention Navigator"
+OUTPUT=".stelow/{YYYY-MM-DD}/{_dir}/interfaces/selected-interface.md"
+
+# Extract the chosen proposal's full content (all 7 sections)
+awk -v label="$PROPOSAL_LABEL" '
+  /^## Proposal / && !started { started = ($0 ~ label); next }
+  /^## Proposal / && started { exit }
+  started { print }
+' ".stelow/{YYYY-MM-DD}/{_dir}/interfaces/interfaces_{v}.md" > "$OUTPUT"
+
+# Verify: chosen interface must contain Work Pattern and Breadboarding
+grep -q "Work Pattern" "$OUTPUT" || { echo "ERROR: selected interface missing Work Pattern Declaration"; exit 1; }
+grep -q "Breadboarding" "$OUTPUT" || { echo "ERROR: selected interface missing Breadboarding section"; exit 1; }
+```
+
+The saved artifact contains the **complete proposal**: work pattern declaration, breadboarding guidelines, ASCII wireframe, interaction flow, trade-off analysis, design smell audit, and state coverage table.
+
+The tech planning and execution stages reference this file for UI direction — they should NOT regenerate or reinterpret the interface.
+
 ## Output
 
 Interface proposals are saved to:
 ```
 .stelow/{YYYY-MM-DD}/{_dir}/interfaces/interfaces_{v}.md
+```
+
+The chosen interface (after user selection) is saved to:
+```
+.stelow/{YYYY-MM-DD}/{_dir}/interfaces/selected-interface.md
 ```
 
 ## Related Skills

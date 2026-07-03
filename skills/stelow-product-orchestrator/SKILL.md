@@ -221,7 +221,7 @@ Do NOT use `/skill:` for internal subskills.
 | `scope` | **Scope Adjustment** | Add/remove from IN/OUT (ask) | — |
 | `interface` | **Interface Alternatives** | Appetite-scaled interface exploration: 1, 3, or 5 proposals + hybrid | — |
 | `int-gate` | **Interface Gate (Plannotator)** | Visual review of all interfaces | — |
-| `selection` | **Interface Selection** | User picks via ask with preview | — |
+| `selection` | **Interface Selection** | User picks via ask with preview. Chosen interface saved to `selected-interface.md` | — |
 | `planning` | **Tech Planning** | Typed scopes + sequencing. Includes `planning:15` — **Alignment Check** (review mode-gated bidirectional feedback: spec-tech vs spec-product) | — |
 | `plan-gate` | **Tech Plan Gate (Plannotator)** | Visual review of spec-tech.md. Only in Tech Review / Code Diff modes | After planning |
 | `execution` | **Execution** | Goal/scope executor | — |

@@ -20,6 +20,20 @@ cat .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_v{N}.md
 If the plan seems inconsistent with what you remember, **trust the file**,
 not your memory.
 
+### Read Selected Interface Artifact
+
+If an interface was chosen and saved as `selected-interface.md`, read it for UI direction:
+
+```bash
+INTERFACE=".stelow/{YYYY-MM-DD}/{_dir}/interfaces/selected-interface.md"
+if [ -f "$INTERFACE" ]; then
+  echo "SELECTED_INTERFACE_FOUND"
+  cat "$INTERFACE"
+fi
+```
+
+The selected interface contains the work pattern, breadboarding, ASCII sketches, interaction flow, and trade-off analysis. Follow its direction — do NOT regenerate or reinterpret the interface during execution.
+
 ### ⚠️ Plan Staleness Detection (before scope execution)
 
 **Check if target files changed since the plan was created.** The plan was

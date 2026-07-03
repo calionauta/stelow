@@ -6,6 +6,8 @@ Plannotator review of the working tree diff. Blocks until human approves, annota
 
 > **Runs AFTER verification** — tests and automated checks must pass first. The human reviews only code that has passed all automated gates.
 
+> **⚠️ Note on structured output:** Unlike `plannotator annotate --gate --json`, the `plannotator review` command does not support `--json` structured output. The CLI returns plaintext. The LLM must infer the decision from stdout text patterns — see below.
+
 ## Gate Activation
 
 Review the current working tree diff via Plannotator:
@@ -14,12 +16,19 @@ Review the current working tree diff via Plannotator:
 plannotator review
 ```
 
-This opens the browser-based code review UI showing the diff of all uncommitted changes.
+This opens the browser-based code review UI showing the diff of all uncommitted changes. The CLI blocks until the human interacts and closes the browser.
 
-Expected outcomes:
-- `approved` — proceed to audit
-- `annotated` with comments — apply the feedback to execution, then cycle back: execution → verification → diff-gate
-- `rejected` — structural issues found, return to execution for rework
+## Parsing the Decision
+
+`plannotator review` returns plaintext stdout. Infer the decision from these patterns:
+
+| Stdout contains | Decision | Action |
+|---|---|---|
+| `"no changes requested"` (or custom `review.approved` prompt) | **approved** | Proceed to Audit |
+| `"Review session closed without feedback."` | **dismissed** | Ask user: "The review was dismissed without feedback. Proceed or re-review?" |
+| Anything else (annotation feedback markdown) | **annotated** | Apply feedback, cycle back to execution |
+
+> **If custom `review.approved` prompt is configured** in `~/.plannotator/config.json`, the approval text will differ from the default `"no changes requested"`. If the stdout is ambiguous, ask the user: "What was the result of the Plannotator review?"
 
 ## On Approval
 
