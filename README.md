@@ -14,7 +14,7 @@
 [![Herdr](https://img.shields.io/badge/Split%20pane%20TUI-Herdr-EA580C)](https://herdr.dev)
 [![CLI](https://img.shields.io/badge/Works%20on-Any%20CLI-3B82F6)](https://github.com/calionauta/stelow#cli-compatibility)
 
-**Transform product ideas into approved, testable plans - systematically.**
+I'm trying to make ai agents behave less like coding assistants and more like cross-functional product teams.
 
 This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI coding agents. Instead of open-ended feature lists, you shape proposals with clear scope boundaries, validate them through adversarial critique, and generate typed technical scopes ready for autonomous execution.
 
