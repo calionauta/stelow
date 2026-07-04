@@ -94,3 +94,14 @@ edge-case-review.md
 .opencode-plugin/
 # Old runtime artifacts (pre-rename)
 .cali-product-workflow/
+
+# Generated cli-tools (synced from orchestrator at build/install time)
+# The orchestrator is the source of truth; sub-skills get cli-tools via sync-cli-tools.sh
+skills/*/references/cli-tools/*.md
+# Keep orchestrator tracked (source of truth)
+!skills/stelow-product-orchestrator/references/cli-tools/*.md
+# Keep skill-specific extras (not in orchestrator)
+!skills/*/references/cli-tools/dead-code-candidates.md
+!skills/*/references/cli-tools/doc-search.md
+!skills/*/references/cli-tools/stack-skills.md
+!skills/*/references/cli-tools/cymbal.md

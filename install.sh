@@ -108,6 +108,10 @@ install_for_cli() {
 
 # Install skills to ~/.agents/skills/ (flat)
 install_skills_flat() {
+  # Ensure cli-tools are generated before copy (they're gitignored, generated at build/install)
+  log_info "Syncing cli-tools to sub-skills..."
+  "$SCRIPT_DIR/sync-cli-tools.sh" 2>/dev/null || log_warn "  cli-tools sync skipped (non-fatal)"
+
   log_info "Installing 25 skills to ~/.agents/skills/..."
   mkdir -p "$SKILLS_DIR"
 
