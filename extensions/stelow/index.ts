@@ -349,7 +349,25 @@ export default function (pi: ExtensionAPI) {
         cpSync(join(cloneSkillsDir, skill), join(agentsDir, skill), { recursive: true });
       }
 
-      // 3. Remove only skills explicitly retired in retired-skills.yaml.
+      // 3. Sync cli-tools from orchestrator to each installed skill.
+      //    cli-tools are gitignored in sub-skills (single source of truth:
+      //    stelow-product-orchestrator/references/cli-tools/). We regenerate
+      //    them here so each skill is self-contained in ~/.agents/skills/.
+      const orchCliTools = join(cloneSkillsDir, "stelow-product-orchestrator/references/cli-tools");
+      if (existsSync(orchCliTools)) {
+        for (const skill of projectSkills) {
+          if (skill === "stelow-product-orchestrator") continue;
+          const target = join(agentsDir, skill, "references/cli-tools");
+          mkdirSync(target, { recursive: true });
+          for (const file of readdirSync(orchCliTools)) {
+            if (file.endsWith(".md")) {
+              cpSync(join(orchCliTools, file), join(target, file));
+            }
+          }
+        }
+      }
+
+      // 4. Remove only skills explicitly retired in retired-skills.yaml.
       //    The project's `skills/` directory IS the source of truth for
       //    which skills belong here. We never delete skills managed by
       //    other tools (agent-sync, etc). Only skills listed in
@@ -365,7 +383,7 @@ export default function (pi: ExtensionAPI) {
         }
       }
 
-      // 4. Write marker hash
+      // 5. Write marker hash
       writeFileSync(MARKER, currentHash);
 
       return projectSkills.size;

@@ -76,6 +76,8 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Generate cli-tools (gitignored, needed for tests)
+        run: ./scripts/sync-cli-tools.sh
 
       - name: Run tests
         run: npm test

@@ -18,11 +18,14 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
 SOURCE="$PROJECT_ROOT/skills/stelow-product-orchestrator/references/cli-tools"
 
+# Files in SOURCE that are orchestrator-only and should NOT be synced to sub-skills
+SYNC_EXCLUDE=("context-efficiency.md" "execution-loop.md")
+
 # All skills except the orchestrator itself (source)
 TARGET_SKILLS=()
 for SKILL_DIR in "$PROJECT_ROOT/skills"/*/; do
   SKILL=$(basename "$SKILL_DIR")
-  [ "$SKILL" = "stelow" ] && continue
+  [ "$SKILL" = "stelow-product-orchestrator" ] && continue
   TARGET_SKILLS+=("$SKILL")
 done
 
@@ -62,19 +65,57 @@ for SKILL in "${TARGET_SKILLS[@]}"; do
 
   TARGET_COUNT=$(find "$TARGET" -maxdepth 1 -name '*.md' 2>/dev/null | wc -l | tr -d ' ')
 
-  if [ "$SOURCE_COUNT" -ne "$TARGET_COUNT" ] 2>/dev/null; then
-    echo "⚠️  $SKILL: $TARGET_COUNT files (expected $SOURCE_COUNT)"
+  # Determine expected file count (source minus excluded files)
+  EXPECTED_COUNT=$((SOURCE_COUNT - ${#SYNC_EXCLUDE[@]}))
+  # Build find-prune expression to exclude orchestrator-only files from search
+  PRUNE_EXPR=""
+  for EXCL in "${SYNC_EXCLUDE[@]}"; do
+    PRUNE_EXPR="$PRUNE_EXPR ! -name '$EXCL'"
+  done
+  eval "TARGET_FILES=\$(find \"$TARGET\" -maxdepth 1 -name '*.md' $PRUNE_EXPR 2>/dev/null | wc -l | tr -d ' ')"
+
+  MISSING=false
+  for FILE in "$SOURCE"/*.md; do
+    BASENAME=$(basename "$FILE")
+    # Skip excluded files
+    for EXCL in "${SYNC_EXCLUDE[@]}"; do
+      if [ "$BASENAME" = "$EXCL" ]; then
+        continue 2
+      fi
+    done
+    if [ ! -f "$TARGET/$BASENAME" ]; then
+      MISSING=true
+      break
+    fi
+  done
+
+  # Check for stale excluded files (from previous syncs)
+  STALE_EXCL=false
+  for EXCL in "${SYNC_EXCLUDE[@]}"; do
+    [ -f "$TARGET/$EXCL" ] && STALE_EXCL=true
+  done
+
+  if $MISSING || $STALE_EXCL; then
+    echo "⚠️  $SKILL: missing or has stale files"
     HAS_MISMATCH=true
     $CHECK_ONLY && continue
 
-    # Sync: copy missing files, update existing
+    # Sync: copy files from source, excluding orchestrator-only files
     for FILE in "$SOURCE"/*.md; do
       BASENAME=$(basename "$FILE")
+      for EXCL in "${SYNC_EXCLUDE[@]}"; do
+        [ "$BASENAME" = "$EXCL" ] && continue 2
+      done
       cp "$FILE" "$TARGET/$BASENAME"
     done
-    echo "   → Synced to $TARGET_COUNT → $SOURCE_COUNT files"
+    # Remove excluded files from target (cleanup from previous syncs)
+    for EXCL in "${SYNC_EXCLUDE[@]}"; do
+      rm -f "$TARGET/$EXCL"
+    done
+    echo "   → Synced"
   else
-    echo "✅ $SKILL: $TARGET_COUNT files (match)"
+    ALL_COUNT=$(find "$TARGET" -maxdepth 1 -name '*.md' 2>/dev/null | wc -l | tr -d ' ')
+    echo "✅ $SKILL: ${ALL_COUNT} files (match)"
   fi
 done
 

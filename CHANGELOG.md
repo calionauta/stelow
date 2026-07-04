@@ -2,6 +2,12 @@
 
 All notable changes to `@renatocaliari/stelow` will be documented in this file.
 
+## [0.40.2] - 2026-07-04
+
+### Changed
+
+- **cli-tools distribution** — Removed duplicated `references/cli-tools/` from git tracking (276 files). Sub-skills now get cli-tools generated at build/install time from orchestrator (`stelow-product-orchestrator`), the single source of truth. Added `.npmignore` override so npm tarball includes cli-tools. Updated `install.sh` and Pi extension to regenerate cli-tools on install. CI pipeline generates cli-tools before tests.
+
 ## [0.40.1] - 2026-07-02
 
 ### Fixed
