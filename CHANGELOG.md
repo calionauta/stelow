@@ -2,6 +2,33 @@
 
 All notable changes to `@renatocaliari/stelow` will be documented in this file.
 
+## [0.41.0] - 2026-07-06
+
+### Added
+
+- **Per-CLI deterministic subagent dispatch** (`subagents.md`) — New explicit table for `pi` (built-in + pi-subagents), `opencode`, `claude-code`, `codex`, `generic`. Eliminates LLM translation of intent — orchestrator picks the row for `detected_cli` and emits the literal call shape. Critical rule block at top: **EVERY stelow subagent call passes `context: "fresh"` EXPLICITLY**.
+- **Strategic-context worked example** (`subagents.md`) — Concrete `subagent()` invocation for `context:10`/`context:20` showing the user's verbatim request in the task string + `reads: [index.json]` (NOT spec-product.md, which doesn't exist yet at this stage).
+- **Packaged-agent gotcha table** (`subagents.md`) — Documents that pi-subagents' `worker`/`planner`/`oracle` ship with `defaultContext: "fork"`. All other packaged agents default to fresh. Stelow always overrides with explicit `context: "fresh"` for predictability.
+- **`domains_detected` persistence** (`stages/context.md`) — `context:20` (Domain Context Detection) now writes detected domains to `index.json#config.domains_detected` (single source of truth). Initialized to `[]` in setup.
+- **`review_mode` in spec-product.md frontmatter** (`stages/setup.md`) — Was only in `index.json`; now also injected into spec frontmatter as canonical subagent input. Shape Up validation guard rejects files missing this field.
+- **`selected-interface.md` as explicit subagent input** — Now read by `tech-planning` (planner subagent) and `scope-executor` (UI-scope workers). Previously only `execution.md` consumed it. Closes the gap where tech scopes could be generated without knowing the chosen UI direction.
+- **Code-reviewer subagent invocation contract** (`stages/verification.md`) — Was vague "launch a fresh-context reviewer". Now shows literal subagent invocation shape with diff in task string + `reads: [spec-product.md]`.
+- **Convention in global pi.dev AGENTS.md** — Added "Releases & Changelog" section: tag + GitHub Release go together, CHANGELOG.md is canonical, never tag-only.
+- **154 new regression tests** — `subagent-context-contract` (41), `spec-frontmatter-contract` (18), `artifact-flow-contract` (19), `sync-content-equality` (76). Sanity-verified by introducing real drift and confirming tests fail.
+
+### Changed
+
+- **fork is now explicitly fallback-only** (`subagents.md`) — New "When fork is necessary (fallback only)" section. Default answer is "never" for workflow-anticipated calls. Fork is only acceptable when the workflow design didn't anticipate the call.
+- **README pi-subagents row** — Was marked "Optional, same outcome, fewer features". Now marked "Recommended for Pi" with accurate "Without it" fallback description (scope-executor falls back to parent-controlled loop, no `reads`, no explicit `context: "fresh"` override).
+- **README skill breakdown** — Replaced confusing "4 layers - orchestrator + strategies + workflow stages + tactics" with accurate breakdown: 1 orchestrator + 5 strategic approaches + 8 domain tactics + 5 product workflow + 6 code/UX/meta = 25 total.
+
+### Fixed
+
+- **Wrong default claim in subagents.md** — Said `context: "fork"` was the default. Actual pi-subagents default is `fresh` (with packaged `worker`/`planner`/`oracle` overriding to `fork` via their frontmatter). Now correctly documented.
+- **Wrong default claim in pi-row of dispatch table** — Said "(default is fork)". Now correctly says "(default is fresh)".
+- **sync-cli-tools.sh content drift** — Previously checked only file **existence**, not content equality. Files with stale content passed silently. Now uses `cmp -s` for byte-level comparison, reports per-file drift, and syncs only what's actually different.
+- **Strategic-context subagents missing explicit input contract** — `strategic-exploration.md` said "run in parallel, fresh context" but didn't tell the orchestrator what to put in the task string or which files to `reads`. Now explicit about user's verbatim request, appetite, review_mode, domains_detected.
+
 ## [0.40.3] - 2026-07-06
 
 ### Fixed

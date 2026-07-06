@@ -136,11 +136,15 @@ tech_stack:
 Use the references above to generate technical scopes.
 
 Delegate to a planner subagent (see `references/cli-tools/subagents.md`):
-- Agent: `planner`
+- Agent: `planner` (note: pi-subagents' packaged `planner` defaults to `fork` — always pass `context: "fresh"` explicitly)
 - Task: generate typed scopes (feature/optimization/spike) from the approved spec-product.md
 - Follow steps: strategic stability check → codebase awareness → risk analysis → spike identification → scope definition → sequencing → DoD + ACs → formatting
 - Output: `.stelow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_{v}.md`
-- Input: `.stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md`
+- Inputs (all via `reads:`):
+  - `.stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md` (canonical product spec)
+  - `.stelow/{YYYY-MM-DD}/{_dir}/interfaces/selected-interface.md` (user's chosen interface direction from int-gate — exists by this stage; absent only if interface stage was skipped via Review Mode)
+  - context/tech-recon.md (tech constraints from shape:12)
+- `context: "fresh"` — planner must NOT inherit orchestrator's deliberation
 
 > **⚡ Estimation Bias Correction:** The planner subagent may tend to generate
 > conservative scopes or suggest cuts by overestimating complexity

@@ -121,6 +121,35 @@ This mitigates the shallow review trap (Ox Security 2025) even with the
 same model, because the issue isn't identical models but contaminated context
 (Gamage 2026 "Omission Constraints Decay").
 
+**Code-reviewer subagent invocation contract:**
+
+```typescript
+// Parallel reviewers at Core/Complete appetite
+subagent({
+  agent: "reviewer",
+  task: `Review diff for {dimension} (correctness | tests | simplicity | architecture).
+
+Appetite: ${configAppetite}  // Lean = single reviewer, Core/Complete = parallel
+Diff (git diff HEAD~1):
+${diffOutput}
+
+Read .stelow/{date}/{dir}/plans/spec-product_{v}.md for spec context (frontmatter: appetite, review_mode, domains_detected; body: scope, DoD).
+Do NOT inherit orchestrator deliberation. Save review to {reviewOutputPath}.`,
+  reads: [".stelow/{date}/{dir}/plans/spec-product_{v}.md"],
+  output: reviewOutputPath,
+  context: "fresh"
+})
+```
+
+The reviewer gets:
+- The diff (from task string — it can't be inferred)
+- spec-product.md (from `reads` — appetite + scope + DoD)
+- Fresh context (defeats context rot, mitigates shallow review trap)
+
+The reviewer does NOT need:
+- Parent's deliberation history (would inject context rot)
+- Acceptance contract (this is review, not execution)
+
 ### ui-quality (appetite-aware)
 
 Check appetite and UI scope before running:

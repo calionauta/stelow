@@ -374,7 +374,7 @@ Appetite is declared first, then the mode of interaction is chosen.`,
 
 **Cut policy:** Lean cuts edge cases, secondary flows, alternative strategies, and non-critical integrations. Core cuts only low-value variants. Complete cuts nothing unless impossible. Quality gates are not cut: build/test/lint/typecheck run for every appetite, and a11y checks run whenever UI files exist; Appetite only changes interface/test exploration depth.
 
-**Storage:** Save to `index.json` as `config.appetite`, and inject into `spec-product.md` frontmatter as `appetite: {chosen_appetite}`.
+**Storage:** Save to `index.json` as `config.appetite`, and inject into `spec-product.md` frontmatter as `appetite: {chosen_appetite}`. Review Mode follows the same pattern (`config.review_mode` + `review_mode:` in frontmatter). Both are canonical subagent inputs — see `references/cli-tools/subagents.md` (Input Files table).
 
 > **Key rule:** Appetite is FIXED for the cycle. The LLM cannot extend it. If scope doesn't fit, the LLM splits — the human decides whether to accept the split or extend appetite in a NEW cycle.
 

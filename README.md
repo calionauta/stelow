@@ -105,8 +105,8 @@ A structured workflow that makes AI think like a product manager:
 
 ### Key Features
 
-- **24 sub-skills** organized into 4 layers - orchestrator + strategies + workflow stages + tactics
-- Part of a broader ecosystem of **25 skills within the project** (plus additional skills from other packages in the user's agent environment)
+- **25 skills total** in this repo: 1 orchestrator + 24 sub-skills (5 strategic approaches + 8 domain tactics + 11 utility skills)
+- Part of a broader ecosystem — the orchestrator composes these and can also invoke additional skills from the user's agent environment at runtime
 - Real-time TUI tracking with visual status overlay (`/sw-status`)
 - Gate approval via Plannotator - review, comment, approve or reject before implementation
 - Typed scopes for autonomous execution (feature, spike, test-*, optimize)
@@ -268,7 +268,17 @@ These loops are **appetite- and mode-respecting by design** — they inherit the
 
 ## 📋 Skills
 
-All 25 skills are flat in `skills/` directory, ready for `~/.agents/skills/`. They're organized into 4 layers plus 1 complementary skill.
+All 25 skills are flat in `skills/` directory, ready for `~/.agents/skills/`. The breakdown:
+
+| Role | Count | Skills |
+|---|---|---|
+| Orchestrator | 1 | `stelow-product-orchestrator` |
+| Strategic approaches | 5 | Job-to-Be-Done, Evolutionary Principles, Opportunity Mapping, Discovery, Multi-Method Market Analysis |
+| Domain tactics | 8 | Pricing, Trust, Ads, Health, Promotions, Business Models, Open Source, Marketplace Playbook |
+| Product workflow | 5 | Shape Up, Plan Critique, Interface Alternatives, Tech Planning, Scope Executor |
+| Code + UX + meta | 6 | Codebase Critique, Coding Standards, Testing AI Code, Testing Execution, UX Critique, Execution Critique |
+
+5 + 8 + 5 + 6 = 24 sub-skills, plus 1 orchestrator = 25 total.
 
 **Each skill is fully self-contained** - the installer copies the complete directory tree including its own `references/cli-tools/`, `references/`, and `stages/` files. This means:
 - ✅ **Skills work standalone** - invoke any sub-skill (e.g., `cali-product-shape-up`, `cali-product-plan-critique`) independently of the orchestrator
@@ -400,7 +410,7 @@ stelow is designed to be **self-contained** — the 25 skills + installer cover 
 | [plannotator](https://plannotator.ai/) | Optional | Visual review gate annotation | Pi: `@plannotator/pi-extension` · OpenCode: `@plannotator/opencode` · Claude Code: `@backnotprop/plannotator` · Codex: built-in hook | Manual review with approval receipt file — no structured annotation |
 | [safe-change (pi-agent-codebase-workflows)](https://github.com/PriNova/pi-agent-codebase-workflows) | Optional | Pre-execution code safety checks | `npx skills add Prinova/pi-agent-codebase-workflows -g` (works on Pi, OpenCode, Claude Code, Codex) | Skip — pre-execution check omitted |
 | Subagents (built-in to all CLIs) | Optional | Parallel reviewer orchestration during Plan Critique | `subagent({ agent, task })` — built-in on Pi/OpenCode/Claude Code/Codex | Sequential execution — slower, same outcome (single-context review) |
-| [pi-subagents](https://github.com/nicobailon/pi-subagents) | Optional (Pi only) | Advanced subagent features (fork/fresh context semantics, parent-child contracts) | `npm:pi-subagents` | Use the CLI's built-in `subagent()` instead — same outcome, fewer features |
+| [pi-subagents](https://github.com/nicobailon/pi-subagents) | **Recommended for Pi** | `context: "fresh"` enforcement (defeats packaged `worker`/`planner`/`oracle` defaults), `reads` parameter, `acceptance` contracts (child self-corrects in same context for scope execution), parallel fanout | `npm:pi-subagents` | Without it: scope-executor falls back to parent-controlled loop (slower); no `reads` (subagent relies on task-string context); no explicit `context: "fresh"` override |
 | [pi-intercom](https://github.com/nicobailon/pi-intercom) | Optional (Pi only) | Session-to-session coordination | `npm:pi-intercom` | Skip — no intercom capability |
 | [pi-supervisor](https://github.com/tintinweb/pi-supervisor) | Optional (Pi only) | Conversation supervision during execution | `npm:pi-supervisor` | Skip — no supervision; rely on `stages-guard` for invariant enforcement |
 | [Muxy.app](https://muxy.app/) + stelow Muxy extension | Optional (macOS) | Webview panel showing workflow state with phase progress and quick actions | Install Muxy.app, then load extension from `integrations/muxy/stelow/` | No webview — read `.stelow/` files directly or use Herdr split-pane TUI |

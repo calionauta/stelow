@@ -369,7 +369,8 @@ if [ -n "$INDEX" ]; then
   CONFIG_JSON=$(cat <<EOF
   "config": {
     "appetite": "{chosen_appetite}",
-    "review_mode": "{chosen_review_mode}"
+    "review_mode": "{chosen_review_mode}",
+    "domains_detected": []
   },
 EOF
   )
@@ -385,8 +386,11 @@ When the LLM generates `spec-product.md` later in the Shape Up stage, it MUST in
 ```yaml
 appetite: {chosen_appetite}
 appetite_source: setup
+review_mode: {chosen_review_mode}
+review_mode_source: setup
+domains_detected: {json_array_from_config}  # populated by context:20
 ```
-The Shape Up validation guard will reject the file if `appetite:` is missing.
+The Shape Up validation guard will reject the file if `appetite:` or `review_mode:` is missing. `domains_detected:` is also required if any domain was detected by `context:20`. All three are **canonical inputs** for downstream subagents — they read the frontmatter explicitly via `reads: [spec-product.md]` rather than receiving these values through conversation history.
 The Shape Up stage runs a preliminary mechanical check (scope count, spec size) and writes `appetite_fit`. The **Plan Critique** stage validates it via its fresh-context feasibility reviewer — this reuses the existing 5-reviewer infrastructure. If the critique finds `cuts_needed` or `reshape`, the scope must be
 cut or reshaped. Appetite is a constraint, not a target — never extended.
 

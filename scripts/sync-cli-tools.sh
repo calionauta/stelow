@@ -52,7 +52,12 @@ echo ""
 
 HAS_MISMATCH=false
 
+# Per-file diff tracking (declared here to satisfy `set -u` when empty)
+STALE_FILES=()
+
 for SKILL in "${TARGET_SKILLS[@]}"; do
+  # Reset per-skill tracking
+  STALE_FILES=()
   [ -n "$TARGET_FILTER" ] && [[ "$SKILL" != *"$TARGET_FILTER"* ]] && continue
 
   TARGET="$PROJECT_ROOT/skills/$SKILL/references/cli-tools"
@@ -74,7 +79,6 @@ for SKILL in "${TARGET_SKILLS[@]}"; do
   done
   eval "TARGET_FILES=\$(find \"$TARGET\" -maxdepth 1 -name '*.md' $PRUNE_EXPR 2>/dev/null | wc -l | tr -d ' ')"
 
-  MISSING=false
   for FILE in "$SOURCE"/*.md; do
     BASENAME=$(basename "$FILE")
     # Skip excluded files
@@ -84,35 +88,41 @@ for SKILL in "${TARGET_SKILLS[@]}"; do
       fi
     done
     if [ ! -f "$TARGET/$BASENAME" ]; then
-      MISSING=true
-      break
+      STALE_FILES+=("$BASENAME (missing)")
+    elif ! cmp -s "$FILE" "$TARGET/$BASENAME"; then
+      STALE_FILES+=("$BASENAME (content differs)")
     fi
   done
 
-  # Check for stale excluded files (from previous syncs)
+  # Check for stale excluded files (from previous syncs that should now be removed)
   STALE_EXCL=false
   for EXCL in "${SYNC_EXCLUDE[@]}"; do
     [ -f "$TARGET/$EXCL" ] && STALE_EXCL=true
   done
 
-  if $MISSING || $STALE_EXCL; then
-    echo "⚠️  $SKILL: missing or has stale files"
+  if [ "${#STALE_FILES[@]}" -gt 0 ] || $STALE_EXCL; then
+    echo "⚠️  $SKILL: out of sync"
+    if [ "${#STALE_FILES[@]}" -gt 0 ]; then
+      for F in "${STALE_FILES[@]}"; do
+        echo "   stale: $F"
+      done
+    fi
+    $STALE_EXCL && echo "   stale excluded: ${SYNC_EXCLUDE[*]}"
     HAS_MISMATCH=true
     $CHECK_ONLY && continue
 
-    # Sync: copy files from source, excluding orchestrator-only files
-    for FILE in "$SOURCE"/*.md; do
-      BASENAME=$(basename "$FILE")
-      for EXCL in "${SYNC_EXCLUDE[@]}"; do
-        [ "$BASENAME" = "$EXCL" ] && continue 2
+    # Sync stale source files to target (only the ones that differ)
+    if [ "${#STALE_FILES[@]}" -gt 0 ]; then
+      for BASENAME in "${STALE_FILES[@]}"; do
+        NAME="${BASENAME%% *}"  # strip " (missing)" / " (content differs)"
+        cp "$SOURCE/$NAME" "$TARGET/$NAME"
       done
-      cp "$FILE" "$TARGET/$BASENAME"
-    done
+    fi
     # Remove excluded files from target (cleanup from previous syncs)
     for EXCL in "${SYNC_EXCLUDE[@]}"; do
       rm -f "$TARGET/$EXCL"
     done
-    echo "   → Synced"
+    echo "   → Synced ${#STALE_FILES[@]} stale"
   else
     ALL_COUNT=$(find "$TARGET" -maxdepth 1 -name '*.md' 2>/dev/null | wc -l | tr -d ' ')
     echo "✅ $SKILL: ${ALL_COUNT} files (match)"

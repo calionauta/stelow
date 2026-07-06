@@ -291,7 +291,7 @@ The delegation mechanism varies by harness. The contract data stays the same; on
 
 **Example: pi-subagents (acceptance-native)**
 
-When the harness supports acceptance contracts natively, delegate once and let the runtime handle self-correction:
+When the harness supports acceptance contracts natively, delegate once and let the runtime handle self-correction. The worker runs **fresh** with **explicit reads** — the acceptance contract IS the contract, orchestrator deliberation history is noise.
 
 ```typescript
 subagent({
@@ -304,6 +304,13 @@ Acceptance Criteria:
 
 Verify commands: {verifyCommands.join(', ')}
 Stop rules: {stopRules.join(', ')}`,
+  reads: [
+    ".stelow/{date}/{dir}/plans/spec-tech_{v}.md",
+    ".stelow/{date}/{dir}/scopes/{SCOPE-ID}.json",
+    // For UI/visual scopes, also include the user's chosen interface
+    ".stelow/{date}/{dir}/interfaces/selected-interface.md"  // include only if scope is UI-related
+  ],
+  context: "fresh",
   acceptance: {
     criteria: acs.map((ac, i) => ({
       id: `AC-${i+1}`,
@@ -333,7 +340,7 @@ Parent evaluates the acceptance report — no manual iteration loop needed.
 
 **Example: other CLIs (parent-controlled loop)**
 
-When the harness does NOT support acceptance natively, the parent controls the iteration loop:
+When the harness does NOT support acceptance natively, the parent controls the iteration loop. Each iteration is a **fresh** subagent with **explicit reads** — the child does not remember prior attempts, so feedback must be in the task string.
 
 ```typescript
 // Iteration 1
@@ -345,7 +352,12 @@ Objective: {dod}
 Acceptance Criteria:
 {acs.map((ac, i) => `- AC-${i+1}: ${ac}`).join('\n')}
 
-Verify commands: {verifyCommands.join(', ')}`
+Verify commands: {verifyCommands.join(', ')}`,
+  reads: [
+    ".stelow/{date}/{dir}/plans/spec-tech_{v}.md",
+    ".stelow/{date}/{dir}/scopes/{SCOPE-ID}.json"
+  ],
+  context: "fresh"
 })
 // → run verify commands → evaluate
 // If failed: collect feedback
@@ -361,13 +373,18 @@ Acceptance Criteria:
 
 Previous attempt failed:
 {feedback}
-Try a different approach — do not repeat the same fix.`
+Try a different approach — do not repeat the same fix.`,
+  reads: [
+    ".stelow/{date}/{dir}/plans/spec-tech_{v}.md",
+    ".stelow/{date}/{dir}/scopes/{SCOPE-ID}.json"
+  ],
+  context: "fresh"
 })
 // → run verify commands → evaluate
 // Repeat up to max_iterations
 ```
 
-Key difference: each iteration is a **new context** (child doesn't remember prior attempt). The feedback must be explicit in the task description.
+Key difference: each iteration is a **new fresh context** (child doesn't inherit parent history, doesn't remember prior attempts). The feedback + acceptance contract must be explicit in the task string + `reads`.
 
 ---
 
@@ -581,7 +598,8 @@ Read this SKILL.md and follow the steps directly.
 Delegate to a subagent (see `references/cli-tools/subagents.md`):
 - Agent: `delegate` or `worker`
 - Skills: `cali-product-scope-executor` + `goals` (optimization goals via subagent + acceptance)
-- Context: fork
+- Context: fresh
+- Reads: spec-tech.md + scope-contract.json (acceptance IS the contract; history is noise)
 
 ## Interaction with Tools
 

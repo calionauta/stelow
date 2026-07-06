@@ -45,7 +45,18 @@ Use the ask tool (see `references/cli-tools/ask.md`):
 
 If user selects one or more:
 
-1. Run each selected skill via parallel subagent (see `references/cli-tools/subagents.md`), fresh context, ALL concurrently.
+1. Run each selected skill via parallel subagent (see `references/cli-tools/subagents.md`), **fresh context, ALL concurrently**.
+
+   **Task string must include the user's verbatim request** — strategic-context subagents do NOT inherit orchestrator deliberation. Pass:
+   - `USER REQUEST (verbatim): ${userOriginalRequest}` — the literal text the user typed at workflow start
+   - `Appetite: ${configAppetite}`
+   - `Review Mode: ${configReviewMode}`
+   - `Detected domains: ${configDomainsDetected}`
+   - `Workflow dir: ${WF_DIR}`
+
+   **Reads:** `reads: [".stelow/{date}/{dir}/index.json"]` — spec-product.md does NOT exist yet at this stage (Shape Up creates it later). index.json is the only canonical config artifact available.
+
+   See the "Strategic-context worked example" in `subagents.md` for the literal invocation shape.
 
 2. Save individual files to `.stelow/{YYYY-MM-DD}/{_dir}/strategic/`
    - `<skill>-analysis.md`
@@ -55,6 +66,8 @@ If user selects one or more:
    - Links to full analyses
    - Top opportunities consolidated
    - Recommended focus areas
+
+   **Task string inputs:** consolidated inputs include the original user request, appetite, review_mode, and the N individual skill analyses (paths in `reads`).
 
 4. Show summary in chat with file links
 

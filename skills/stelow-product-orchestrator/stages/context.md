@@ -34,7 +34,7 @@ echo "Lean appetite + Auto review mode detected — skipping Context per context
 echo "Proceeding directly to shape:10"
 ```
 
-**Reference-only library handling (when `Lean` + non-Auto):** Detected domain libraries are noted in the `## Domain Signals` section of `spec-product.md` (or appended as a single-line `domains_detected: [pricing, marketplace]` field in frontmatter). They are NOT executed as subagents and no `strategic-insights.md` is produced. The downstream Shape/Scope/Interface/Planning stages load the listed libraries as passive context (their `SKILL.md` files are referenced on demand).
+**Reference-only library handling (when `Lean` + non-Auto):** Detected domain libraries are recorded in `spec-product.md` frontmatter as `domains_detected: [pricing, marketplace]` (single source of truth — canonical for subagent `reads`). They are NOT executed as subagents and no `strategic-insights.md` is produced. The downstream Shape/Scope/Interface/Planning stages load the listed libraries as passive context (their `SKILL.md` files are referenced on demand). A `## Domain Signals` body section is allowed for human-readable rationale but is not the canonical input for subagents.
 
 **Why this gate exists:** Appetite controls depth, Mode controls breadth (see `README.md` "Appetite & Mode"). For Lean-appetite work under Auto mode, strategic analysis and domain library execution are overhead that defeats the purpose of the appetite declaration. The five Strategic Approaches and eight Domain Libraries remain available — only the *execution* is gated, not the *availability*.
 
@@ -88,5 +88,19 @@ ask tool: multiSelect question with detected domain options
 **If user selects libraries:**
 1. Load the selected skill(s) content as additional context
 2. Proceed to Shape Up with domain context enriched
+3. **Persist detected domains** to `index.json#config.domains_detected` (single source of truth — consumed by Shape Up's frontmatter generator and by all subagents via `reads: [spec-product.md]`):
 
-**If nothing detected or user declines:** proceed directly to Shape Up or end.
+```bash
+INDEX="$(find .stelow/*/*/index.json -type f 2>/dev/null | head -1 | tr -d '\n')"
+if [ -n "$INDEX" ] && [ -n "{selected_domains_json}" ]; then
+  # Update domains_detected in-place (e.g., ["pricing", "marketplace"])
+  python3 -c "
+import json, sys
+with open('$INDEX') as f: data = json.load(f)
+data.setdefault('config', {})['domains_detected'] = {selected_domains_json}
+with open('$INDEX', 'w') as f: json.dump(data, f, indent=2)
+"
+fi
+```
+
+**If nothing detected or user declines:** proceed directly to Shape Up or end (set `domains_detected: []` in index.json).

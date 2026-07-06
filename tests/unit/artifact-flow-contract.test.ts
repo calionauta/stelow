@@ -1,0 +1,240 @@
+/**
+ * artifact-flow-contract.test.ts
+ *
+ * Regression guard for the artifact flow between stages.
+ *
+ * The stelow workflow is a producer/consumer chain:
+ *   setup → context → shape-up → plan-critique → tech-planning → scope-execution → verification
+ *
+ * Each stage reads specific fields from `index.json` and `spec-product.md`
+ * frontmatter. This test enforces that:
+ *   1. Every field WRITTEN by setup.md is READ by at least one downstream stage.
+ *   2. Every field READ by a downstream stage is WRITTEN by an upstream stage.
+ *   3. The canonical-source contract holds: producers write to a single
+ *      canonical artifact, consumers read from it (no scattered copies).
+ *
+ * If these tests fail, a human MUST investigate — silent breakage happens
+ * when a producer renames a field but a consumer still reads the old name.
+ */
+import { describe, it, expect } from 'vitest';
+import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __testDir = dirname(__filename);
+const PROJECT_ROOT = join(__testDir, '..', '..');
+
+const SKILLS_DIR = join(PROJECT_ROOT, 'skills');
+
+// ═════════════════════════════════════════════════════════════════════
+// HELPERS
+// ═════════════════════════════════════════════════════════════════════
+
+function read(path: string): string {
+  return readFileSync(path, 'utf-8');
+}
+
+function listSkillFiles(skillName: string): string[] {
+  const dir = join(SKILLS_DIR, skillName);
+  const files: string[] = [];
+  function walk(d: string): void {
+    for (const entry of readdirSync(d)) {
+      const p = join(d, entry);
+      const stat = statSync(p);
+      if (stat.isDirectory()) walk(p);
+      else if (entry.endsWith('.md')) files.push(p);
+    }
+  }
+  try { walk(dir); } catch { /* skill may not exist */ }
+  return files;
+}
+
+const SCAN_TARGETS = [
+  'stelow-product-orchestrator',
+  'cali-product-shape-up',
+  'cali-product-interface-alternatives',
+  'cali-product-plan-critique',
+  'cali-product-tech-planning',
+  'cali-product-scope-executor',
+  'cali-product-testing-ai-code',
+  'cali-product-execution-critique',
+  'cali-product-codebase-critique',
+  'cali-product-discovery',
+];
+
+function corpus(): string {
+  const all: string[] = [];
+  for (const skill of SCAN_TARGETS) {
+    for (const file of listSkillFiles(skill)) {
+      all.push(read(file));
+    }
+  }
+  return all.join('\n');
+}
+
+// ═════════════════════════════════════════════════════════════════════
+// 1. APPETITE — PRODUCED + CONSUMED + CANONICAL SOURCE
+// ═════════════════════════════════════════════════════════════════════
+
+describe('appetite field flow', () => {
+  const body = corpus();
+
+  it('is WRITTEN to index.json by setup.md', () => {
+    const setupMd = read(join(SKILLS_DIR, 'stelow-product-orchestrator/stages/setup.md'));
+    expect(setupMd).toMatch(/"appetite":\s*"\{chosen_appetite\}"/);
+  });
+
+  it('is WRITTEN to spec-product.md frontmatter by setup.md', () => {
+    const setupMd = read(join(SKILLS_DIR, 'stelow-product-orchestrator/stages/setup.md'));
+    expect(setupMd).toMatch(/^appetite:\s*\{chosen_appetite\}/m);
+  });
+
+  it('is READ by shape-up validation guard', () => {
+    const shapeUp = read(join(SKILLS_DIR, 'cali-product-shape-up/SKILL.md'));
+    expect(shapeUp).toMatch(/grep -q "appetite:" "\$SPEC"/);
+  });
+
+  it('is READ by interface-alternatives step 0', () => {
+    const ia = read(join(SKILLS_DIR, 'cali-product-interface-alternatives/SKILL.md'));
+    expect(ia).toMatch(/grep -oP.*\^appetite/);
+  });
+
+  it('is READ by verification stage', () => {
+    const v = read(join(SKILLS_DIR, 'stelow-product-orchestrator/stages/verification.md'));
+    expect(v).toMatch(/grep -oP.*\^appetite/);
+  });
+
+  it('is READ by execution stage', () => {
+    const e = read(join(SKILLS_DIR, 'stelow-product-orchestrator/stages/execution.md'));
+    expect(e).toMatch(/grep -oP.*\^appetite/);
+  });
+});
+
+// ═════════════════════════════════════════════════════════════════════
+// 2. REVIEW_MODE — PRODUCED + CONSUMED + CANONICAL SOURCE
+// ═════════════════════════════════════════════════════════════════════
+
+describe('review_mode field flow', () => {
+  it('is WRITTEN to index.json by setup.md', () => {
+    const setupMd = read(join(SKILLS_DIR, 'stelow-product-orchestrator/stages/setup.md'));
+    expect(setupMd).toMatch(/"review_mode":\s*"\{chosen_review_mode\}"/);
+  });
+
+  it('is WRITTEN to spec-product.md frontmatter by setup.md', () => {
+    const setupMd = read(join(SKILLS_DIR, 'stelow-product-orchestrator/stages/setup.md'));
+    expect(setupMd).toMatch(/^review_mode:\s*\{chosen_review_mode\}/m);
+  });
+
+  it('is READ by gate stage from index.json', () => {
+    const gate = read(join(SKILLS_DIR, 'stelow-product-orchestrator/stages/gate.md'));
+    expect(gate).toMatch(/review_mode/);
+  });
+
+  it('is READ by plan-critique from index.json', () => {
+    const pc = read(join(SKILLS_DIR, 'cali-product-plan-critique/SKILL.md'));
+    expect(pc).toMatch(/review_mode/);
+  });
+
+  it('is READ by tech-planning from index.json', () => {
+    const tp = read(join(SKILLS_DIR, 'cali-product-tech-planning/SKILL.md'));
+    expect(tp).toMatch(/review_mode/);
+  });
+
+  it('is READ by scope-executor (standalone awareness)', () => {
+    const se = read(join(SKILLS_DIR, 'cali-product-scope-executor/SKILL.md'));
+    expect(se).toMatch(/checks review_mode in `index\.json`/);
+  });
+});
+
+// ═════════════════════════════════════════════════════════════════════
+// 3. DOMAINS_DETECTED — PRODUCED + CONSUMED + CANONICAL SOURCE
+// ═════════════════════════════════════════════════════════════════════
+
+describe('domains_detected field flow', () => {
+  it('is INITIALIZED in index.json by setup.md (as [])', () => {
+    const setupMd = read(join(SKILLS_DIR, 'stelow-product-orchestrator/stages/setup.md'));
+    expect(setupMd).toMatch(/"domains_detected":\s*\[\]/);
+  });
+
+  it('is WRITTEN by context:20 (Domain Context Detection)', () => {
+    const ctx = read(join(SKILLS_DIR, 'stelow-product-orchestrator/stages/context.md'));
+    expect(ctx).toMatch(/Persist detected domains/);
+    expect(ctx).toMatch(/config.*domains_detected|domains_detected.*index\.json/);
+  });
+
+  it('is DOCUMENTED as canonical for subagent reads', () => {
+    const subagentsMd = read(
+      join(SKILLS_DIR, 'stelow-product-orchestrator/references/cli-tools/subagents.md'),
+    );
+    // Phrase appears in either order: "domains_detected ... single source of truth"
+    // OR "single source of truth ... domains_detected"
+    const hasDomainsDoc =
+      /domains_detected[\s\S]{0,300}single source of truth/i.test(subagentsMd) ||
+      /single source of truth[\s\S]{0,300}domains_detected/i.test(subagentsMd);
+    expect(hasDomainsDoc).toBe(true);
+  });
+
+  it('is DOCUMENTED as expected input for Interface Alternatives and Strategic Context', () => {
+    const subagentsMd = read(
+      join(SKILLS_DIR, 'stelow-product-orchestrator/references/cli-tools/subagents.md'),
+    );
+    expect(subagentsMd).toMatch(/domains_detected/i);
+  });
+});
+
+// ═════════════════════════════════════════════════════════════════════
+// 4. DETECTED_CLI — PRODUCED + CONSUMED
+// ═════════════════════════════════════════════════════════════════════
+
+describe('detected_cli field flow', () => {
+  it('is WRITTEN to index.json by start.ts (extension)', () => {
+    const start = read(join(PROJECT_ROOT, 'extensions/stelow/start.ts'));
+    expect(start).toMatch(/detected_cli:\s*detectCLI\(\)/);
+  });
+
+  it('is READ by subagents.md dispatch table (per-CLI selection)', () => {
+    const subagentsMd = read(
+      join(SKILLS_DIR, 'stelow-product-orchestrator/references/cli-tools/subagents.md'),
+    );
+    expect(subagentsMd).toMatch(/detected_cli.*from.*index\.json/);
+  });
+});
+
+// ═════════════════════════════════════════════════════════════════════
+// 5. NO ORPHANED FIELDS — PRODUCERS WITHOUT CONSUMERS
+// ═════════════════════════════════════════════════════════════════════
+
+describe('No orphaned producer-only fields', () => {
+  it('every config field written to index.json is read by at least one consumer', () => {
+    const setupMd = read(join(SKILLS_DIR, 'stelow-product-orchestrator/stages/setup.md'));
+    // Extract config field names from setup.md
+    const configBlock = setupMd.match(/CONFIG_JSON[\s\S]{0,500}/);
+    expect(configBlock).not.toBeNull();
+    const fields = (configBlock![0].match(/"(\w+)":/g) ?? [])
+      .map((s) => s.replace(/[":]/g, ''));
+
+    // Every field must appear in at least one consumer file
+    const consumerCorpus = [
+      'stelow-product-orchestrator/stages/gate.md',
+      'stelow-product-orchestrator/stages/verification.md',
+      'stelow-product-orchestrator/stages/execution.md',
+      'stelow-product-orchestrator/stages/context.md',
+      'stelow-product-orchestrator/stages/ask-patterns.md',
+      'cali-product-shape-up/SKILL.md',
+      'cali-product-interface-alternatives/SKILL.md',
+      'cali-product-plan-critique/SKILL.md',
+      'cali-product-tech-planning/SKILL.md',
+      'cali-product-scope-executor/SKILL.md',
+      'cali-product-testing-ai-code/SKILL.md',
+    ]
+      .map((p) => read(join(SKILLS_DIR, p)))
+      .join('\n');
+
+    for (const field of fields) {
+      expect(consumerCorpus, `field "${field}" written by setup.md but no consumer reads it`).toMatch(
+        new RegExp(`["']${field}["']`),
+      );
+    }
+  });
+});

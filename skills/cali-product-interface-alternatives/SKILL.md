@@ -84,7 +84,7 @@ esac
 Use the subagents tool (see `references/cli-tools/subagents.md`) to generate the appetite-selected proposals in parallel. For `Lean`, run one worker only. For `Core`, run 3 workers. For `Complete`, run 5 workers.
 
 ```
-$INTERFACE_COUNT parallel workers (fork context):
+$INTERFACE_COUNT parallel workers (fresh context, explicit reads):
   Generate only the selected archetype(s) from $ARCHETYPES
 
 ⚠️ CRITICAL — Before generating, each worker MUST read:
@@ -92,7 +92,11 @@ $INTERFACE_COUNT parallel workers (fork context):
   2. references/interface-rules.md — Smell Self-Audit (mandatory Section 6)
   3. references/interface-rules.md — State Coverage Baseline (mandatory Section 7)
   4. references/output-format.md — full output format with all 8 sections
+  5. spec-product.md — body + frontmatter (`appetite`, `review_mode`, `domains_detected`)
+  6. tech-recon.md — tech constraints (if it exists)
 
+Each worker MUST receive `reads: [spec-product.md, tech-recon.md]` (or `references/interface-*.md` when running standalone).
+Each worker runs `context: "fresh"` — proposals must be independent of orchestrator deliberation history.
 Each outputs to .stelow/{date}/{dir}/interfaces/proposal-{letter}.md
 ```
 
