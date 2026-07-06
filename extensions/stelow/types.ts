@@ -314,6 +314,9 @@ export interface Scope {
   iteration?: number;   // current iteration count (for feature scopes)
   maxIterations?: number; // from [MAX_ITERATIONS]
   source?: string;      // e.g. "spec-tech" | "audit-gap" — where this scope originated
+  targetFiles?: string[];  // Optional. Parsed from [TARGET_FILES] block in spec-tech.md. Convention: planning aid + parallel-dispatch overlap prevention via file-reservation locks (see references/cli-tools/file-locking.md). NOT enforced at this layer — advisory only.
+  actualFiles?: string[];  // Captured by scope-executor Step 3e via `git diff --name-only`. Ground truth for post-execution overlap report.
+  startSha?: string;       // Captured by scope-executor Step 3c via `git rev-parse HEAD` before scope begins. Used to compute actualFiles.
 }
 
 export interface Phase {

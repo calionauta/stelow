@@ -252,10 +252,6 @@ After Tech Planning approval, **DO NOT** ask:
 
 **The workflow proceeds automatically: Execution → Verification → Code Quality Gate (conditional) → Execution Critique.**
 
-### Worktree (optional)
-
-Only ask about worktree if modifying code in shared repository AND multiple workflows run in parallel.
-
 ### Code Quality Gate (Post-Verification, Conditional)
 
 `thermo-nuclear-code-quality-review` is an optional ultra-strict maintainability
@@ -313,32 +309,18 @@ See `references/cli-tools/codequality-review.md` for the full trigger policy.
 
 ---
 
-### Advanced: Git Worktree Isolation
+### Scope execution ordering and parallelism
 
-> ⚠️ **Not recommended for most workflows.** Execute in the current directory
-> unless you have parallel scopes that modify the same files AND you understand
-> git worktree merge.
+Parallel scope execution defaults to **DAG-independent + sequential** unless
+the orchestrator explicitly pairs scopes for concurrent dispatch. When
+parallel scope execution IS used, file overlap is detected **post-execution**
+via `git diff --name-only` capture (see `cali-product-scope-executor` Step 3e
+"Persist state" — `actual_files` field) — NOT predicted pre-execution.
 
-If you have multiple parallel scopes that touch overlapping files, a git worktree
-isolates each scope's changes on its own branch:
-
-```bash
-# Create worktree on a new branch from main
-git fetch origin 2>/dev/null || true
-BASE_BRANCH=$(git remote show origin 2>/dev/null |
-  grep "HEAD branch" | cut -d" " -f5 || echo "main")
-git worktree add .worktrees/sw-{name}-{date} \
-  -b pw/{name}/{YYYY-MM-DD} "$BASE_BRANCH"
-```
-
-**After execution, merge back:**
-```bash
-git checkout "$BASE_BRANCH"
-git merge pw/{name}/{YYYY-MM-DD}
-git push origin "$BASE_BRANCH"
-git worktree remove .worktrees/sw-{name}-{date}
-git branch -D pw/{name}/{YYYY-MM-DD}
-```
-
-**Merge conflicts:** resolve manually or use `git mergetool`. If conflicts
-are extensive, consider sequential execution instead.
+This is **audit, not prevention**: stelow surfaces overlap AFTER both scopes
+finish, so a human can decide (merge, sequential re-run, or rework) before
+the workflow advances. Stelow does not ship a runtime working-directory
+isolation layer; users who need prevention configure their harness directly
+(see `references/cli-tools/subagents.md` for per-CLI parallel syntax).
+Merge conflicts are resolved manually; if conflicts are extensive, fall
+back to sequential execution.

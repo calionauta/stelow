@@ -162,7 +162,7 @@ if (!wf) { console.error('No active workflow found'); process.exit(1); }
 
 // Initialize scopes from parsed plan (build this array from Step 1)
 wf.scopes = [
-  { id: 'scope-1', name: 'Auth Foundation', type: 'feature', status: 'pending' },
+  { id: 'scope-1', name: 'Auth Foundation', type: 'feature', status: 'pending', target_files: ['src/auth/**', 'src/middleware/auth.ts', 'tests/auth/**'] },
   { id: 'scope-2', name: 'Token Refresh', type: 'feature', status: 'pending' },
   // ... one entry per scope from spec-tech.md
 ];
@@ -173,6 +173,21 @@ console.log('Scope tracking initialized: ' + wf.scopes.length + ' scopes');
 ```
 
 **Key:** All scopes start as `status: 'pending'`. Update each scope's status as execution progresses.
+
+**Parse `[TARGET_FILES]` from spec-tech.md (optional convention):**
+
+If a scope body in `spec-tech_{v}.md` includes a `[TARGET_FILES]` block:
+
+```
+[TARGET_FILES]
+- src/auth/**
+- src/middleware/auth.ts
+- tests/auth/**
+```
+
+parse it into `target_files: string[]` on the corresponding `wf.scopes[i]` entry AND into the per-scope `scope-contract.json` (under `target_files`).
+
+Convention is **advisory** — no enforcement at the tracking layer. The file-reservation lock protocol (see `references/cli-tools/file-locking.md` in `stelow-product-orchestrator`) uses these declared paths at scope-execution time. If undeclared, the post-execution `actual_files ∩ declared` diff in Step 8 still flags undeclared writes.
 
 ### Step 2d: Complete Human-in-loop execution mode
 
@@ -251,6 +266,46 @@ From the scope definition in spec-tech.md, extract:
 
 #### 3c. Delegate with contract
 
+**Record scope-start SHA (for post-execution overlap detection):**
+```bash
+SCOPE_START_SHA=$(git rev-parse HEAD)
+```
+Record this SHA in `iteration-state-{SCOPE-ID}.md` so the post-execution `git diff --name-only` (Step 3e) can compute the scope's exact file footprint, not a heuristic.
+
+**Acquire file-reservation locks (prevention layer):**
+
+If the scope declared `[TARGET_FILES]` (see Step 2e) AND the orchestrator plans parallel dispatch, acquire locks via the protocol in `references/cli-tools/file-locking.md`:
+
+```bash
+# Check existing locks for any of this scope's target_files
+LOCK_DIR=".stelow/${DATE}/${DIR}/locks"
+mkdir -p "$LOCK_DIR"
+CONFLICTS=()
+for f in ${TARGET_FILES[@]}; do
+  LOCK="$LOCK_DIR/$(printf '%.12s' "$(printf '%s' "$f" | sha1sum | cut -d' ' -f1)").lock"
+  if [ -f "$LOCK" ]; then
+    HOLDER=$(jq -r '.scope_id' "$LOCK" 2>/dev/null)
+    EXPIRES=$(jq -r '.expires_at' "$LOCK" 2>/dev/null)
+    if [ "$HOLDER" != "$SCOPE_ID" ] && [ "$(date -u -d "$EXPIRES" +%s)" -gt "$(date -u +%s)" ]; then
+      CONFLICTS+=("$f held by $HOLDER")
+    fi
+  fi
+done
+if [ ${#CONFLICTS[@]} -gt 0 ]; then
+  echo "⚠️ Lock conflicts — aborting parallel dispatch:" >&2
+  printf '  • %s\n' "${CONFLICTS[@]}" >&2
+  echo "Either: (a) sequential re-dispatch, or (b) wait for lock expiry." >&2
+  # Orchestrator decides next step (sequential re-run or wait)
+fi
+
+# Acquire locks (skip files held by stale/expired locks — see file-locking.md)
+for f in ${TARGET_FILES[@]}; do
+  # ... full acquire snippet in file-locking.md ...
+done
+```
+
+The lock protocol is **opt-in for the agent**: skip this step entirely if the scope has no `target_files` declared OR sequential dispatch is in use. See `file-locking.md` for full bash, TTL semantics, and stale-lock stealing.
+
 **Mark scope as in-progress:**
 ```bash
 node -e "
@@ -259,7 +314,10 @@ const tracking = JSON.parse(fs.readFileSync('stelow.json', 'utf8'));
 const wf = tracking.workflows.find(w => w.status === 'in-progress');
 if (wf?.scopes) {
   const scope = wf.scopes.find(s => s.id === '{SCOPE-ID}');
-  if (scope) scope.status = 'in-progress';
+  if (scope) {
+    scope.status = 'in-progress';
+    scope.start_sha = process.env.SCOPE_START_SHA || '';
+  }
   wf.updated = new Date().toISOString();
   fs.writeFileSync('stelow.json', JSON.stringify(tracking, null, 2));
 }
@@ -415,7 +473,7 @@ After the child returns its final result (acceptance report or iteration output)
 
 ---
 
-#### 3e. Persist state and update tracking
+#### 3e. Persist state, capture scope footprint, and update tracking
 
 **Persist iteration state** (survives compaction/crash):
 ```bash
@@ -423,7 +481,22 @@ After the child returns its final result (acceptance report or iteration output)
 # Include: scope, iteration, status, errors, files changed, feedback
 ```
 
-**Update scope tracking:**
+**Capture observed file footprint (post-hoc overlap detection)**
+
+After the scope finishes (acceptance verified or final iteration reached), capture the actual files changed via `git diff --name-only`. This is the source of truth for overlap detection — observed reality, not a predicted `[TARGET_FILES]` declaration.
+
+```bash
+# Capture diff between the SHA recorded at scope-start and HEAD
+SCOPE_START_SHA={capture-before-scope-began}   # set in Step 3c "Mark scope as in-progress"
+ACTUAL_FILES=$(git diff --name-only "$SCOPE_START_SHA"..HEAD 2>/dev/null \
+  | grep -v '^docs/' \
+  | grep -v '^\.stelow/' \
+  || true)
+```
+
+Why this matters: parallel scope execution is opt-in. If two scopes were dispatched concurrently and they touched the same files, the post-execution diff will reveal the conflict — not a predicted heuristic, but observed file changes. This replaces the LLM-applied "file-overlap guard" with deterministic, ground-truth detection.
+
+**Update scope tracking** (status + iteration + observed footprint):
 ```bash
 node -e "
 const fs = require('fs');
@@ -434,6 +507,7 @@ if (wf?.scopes) {
   if (scope) {
     scope.status = 'completed';  // or 'escalated' on failure
     scope.iteration = {M};       // final iteration count
+    scope.actual_files = {ACTUAL_FILES.split('\n').filter(Boolean)};
   }
   wf.updated = new Date().toISOString();
   fs.writeFileSync('stelow.json', JSON.stringify(tracking, null, 2));
@@ -441,13 +515,17 @@ if (wf?.scopes) {
 "
 ```
 
+**Release file-reservation locks:**
+
+If locks were acquired in Step 3c, release them now. Lock release uses the same atomic-create pattern inverted (just `rm -f`). Stale locks (TTL expired) auto-recover on next acquire. See `references/cli-tools/file-locking.md`.
+
 **Report per scope:**
 ```
 ✅ [SCOPE-1] Login — DONE (acceptance verified, 3 files, 2 reviews passed)
 ⚠️ [SCOPE-2] Dashboard — ESCALATED (3 iterations, last error: e2e test timeout)
 ```
 
-> **Why file persistence?** LLM context can be compacted (pi's `/compact`, `/clear`, or tool-level resets). The state file ensures the iteration loop resumes correctly after any context loss. This pattern is CLI-agnostic — any agent with file system access can read/write the same format.
+> **Why file persistence?** LLM context can be compacted (pi's `/compact`, `/clear`, or tool-level resets). The state file ensures the iteration loop resumes correctly after any context loss. This pattern is CLI-agnostic — any agent with file system access can read/write the same format. The `actual_files` field enables the post-execution overlap check (Step 8).
 
 ### Step 4: Execute optimization scopes (optimization → goals tool)
 
@@ -502,7 +580,66 @@ Before generating the final report, cross-reference the original plan (spec-tech
 
 ### Step 8: Report results
 
-After all scopes are executed and compliance verified, produce a consolidated report and save it:
+After all scopes are executed and compliance verified, compute **post-execution file overlap** from the captured `actual_files` arrays and produce a consolidated report:
+
+```bash
+# Compute pairwise file overlap + declared vs actual diff across completed scopes
+node -e "
+const fs = require('fs');
+const tracking = JSON.parse(fs.readFileSync('stelow.json', 'utf8'));
+const wf = tracking.workflows.find(w => w.status === 'in-progress');
+const completed = (wf?.scopes ?? []).filter(s => s.status === 'completed' && Array.isArray(s.actual_files));
+
+// (a) declared ∩ actual — undeclared writes (scope touched files outside its contract)
+const undeclared = completed.map(s => ({
+  id: s.id,
+  declared: s.target_files ?? [],
+  actual: s.actual_files,
+  undeclared_writes: s.actual_files.filter(f => {
+    const declared = s.target_files ?? [];
+    return !declared.some(g => {
+      // Convention: trailing /** means prefix match; otherwise exact match.
+      const prefix = g.endsWith('/**') ? g.slice(0, -2) : (g.endsWith('/*') ? g.slice(0, -1) : null);
+      return prefix ? f.startsWith(prefix) : f === g;
+    });
+  })
+})).filter(s => s.undeclared_writes.length > 0);
+
+// (b) pairwise actual ∩ actual — real overlap between parallel scopes
+const overlaps = [];
+for (let i = 0; i < completed.length; i++) {
+  for (let j = i + 1; j < completed.length; j++) {
+    const a = completed[i], b = completed[j];
+    const shared = a.actual_files.filter(f => b.actual_files.includes(f));
+    if (shared.length > 0) overlaps.push({ a: a.id, b: b.id, shared });
+  }
+}
+
+// (c) lock conflicts — file-locking.md protocol violations
+const lockDir = '.stelow/' + tracking.workflows[0]?.dirHash + '/locks';
+const lockConflicts = [];
+try {
+  for (const f of fs.readdirSync(lockDir)) {
+    const lock = JSON.parse(fs.readFileSync(lockDir + '/' + f, 'utf8'));
+    const expires = new Date(lock.expires_at).getTime();
+    if (expires < Date.now()) lockConflicts.push({ lock: f, scope: lock.scope_id, file: lock.file, status: 'stale' });
+  }
+} catch {}
+
+console.log(JSON.stringify({ undeclared, overlaps, lockConflicts }, null, 2));
+" > overlap-report.json
+```
+
+**4-class overlap report:**
+
+| Class | Definition | Action |
+|---|---|---|
+| **(a) undeclared writes** | Scope touched files outside its declared `target_files` | Human review — possible contract violation, possible scope creep |
+| **(b) real overlaps** | Two scopes wrote the same file (no lock or lock stolen) | Human decision: merge, sequential re-run, or rework |
+| **(c) stale locks** | Locks left behind past `expires_at` (agent crashed mid-edit) | Auto-recover on next acquire; surface for visibility |
+| **(d) clean** | declared == actual, no inter-scope overlap, no stale locks | ✅ No action |
+
+Append the overlap result to the report. If any non-clean class is non-empty, surface it to the human for decision.
 
 **Save to:** `docs/{YYYY-MM-DD}/{slug}/execution-report.md`
 
@@ -514,11 +651,17 @@ After all scopes are executed and compliance verified, produce a consolidated re
 ✅ [SCOPE-3] Vector DB eval — spike — DONE (recommendation in docs/spikes/)
 ⚠️ [SCOPE-4] Dashboard — feature — ESCALATED (3/3 iterations, last error: e2e timeout)
 
+📋 Overlap report: {overlap-report.json}
+  class (a) undeclared writes: {n}
+  class (b) real overlaps:      {n}
+  class (c) stale locks:        {n}
+  class (d) clean scopes:       {n}
+
 Timeline: {total duration}
 Commits: {commit hashes for each scope}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Next steps:
-- Review and merge branches (escalated scopes need human attention)
+- Review overlap report (classes a/b/c need human attention)
 - Handoff to Verification: run test suite, code review, UI/browser testing
 ```
 
@@ -528,7 +671,7 @@ Next steps:
 
 - **Independent scopes can run in parallel.** Use subagent's `async: true` + `concurrency` to run multiple scopes simultaneously.
 - **Dependent scopes must wait.** If SCOPE-2 depends on SCOPE-1, do not start SCOPE-2 until SCOPE-1 is complete and reviewed.
-- **Worktree isolation** is available via `worktree: true` for scopes that might touch overlapping files. Use it when multiple feature scopes modify the same area.
+- **File overlap is detected post-execution** via `git diff --name-only` capture (see Step 3e "Persist state" — `actual_files` field). This is **audit, not prevention**: stelow surfaces overlap AFTER both scopes finish for human decision. No pre-execution guard; no runtime working-directory isolation. Users who need prevention configure their harness directly.
 - **Reasonable concurrency:** 2-3 parallel scopes maximum unless the plan explicitly allows more. Running too many in parallel increases the risk of conflicts.
 
 ---

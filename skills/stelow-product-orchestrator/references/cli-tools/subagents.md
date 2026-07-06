@@ -174,6 +174,24 @@ subagent({
 | `codex` | `/agent <task-with-embedded-inputs>` or `agent.run({ task })` | `/agent` always spawns independent thread. Embed file references in task string. |
 | `generic` | Execute directly in current session; save output to file; next stage reads file. | No subagent support. File-based handoff IS fresh-context by construction. |
 
+### PARALLEL dispatch (per-CLI, verified 2026)
+
+**Parallel subagent invocation differs per CLI — use the per-row shape below.** Stelow prefers research-parallelism (independent files, fresh context, zero inter-agent comms); parallel code-execution is opt-in and uses these shapes. For parallel SCOPE execution specifically, see scope-executor Step 6 + Step 8 (`actual_files` overlap capture) — file overlap is detected post-execution, not pre-execution.
+
+| `detected_cli` | **PARALLEL** invocation | Notes (verified 2026) |
+|---|---|---|
+| `pi` (built-in) | Multiple `subagent(...)` calls in same turn | Runtime queues serially by default — no true concurrency |
+| `pi` (pi-subagents, nicobailon) | `subagent({ tasks: [...], concurrency: N, context: "fresh" })` | Native fan-out via `tasks[]` array + `concurrency`. Each child gets fresh context. |
+| `opencode` | Multiple Task calls in **single** LLM response → `Promise.all` (PR #14196). Cross-message fan-out serializes (issue #29638, open as of 2026-05). Fallback: headless `&` + `wait`. | Buggy cross-message: avoid relying on multi-turn parallel. |
+| `claude-code` | Multiple `Task(...)` invocations in same assistant turn. SDK: `agents: [...]` parameter (parallel agent invocation). | Docs page `code.claude.com/docs/en/agents` — "Run agents in parallel". |
+| `codex` | Multiple subagent spawns via TOML agent config; `codex exec` instances with `&` + `wait`. | OpenAI docs explicitly support parallel subagents (concepts/subagents). |
+| `generic` | `cmd_a & cmd_b & wait` (POSIX) | Shell-based fan-out; each process is independent. |
+
+**Parallel scope prevention (CLI-agnostic):**
+
+For parallel scope execution that touches shared files, use the file-reservation lock protocol in `file-locking.md` — works on every CLI without runtime hooks or per-CLI flags. Declared `[TARGET_FILES]` (spec-tech.md convention) + acquired locks + post-execution `git diff` audit form the prevention → detection → response pipeline.
+
+
 **Selection rule (deterministic):**
 1. Read `.stelow/{date}/{dir}/index.json` → `detected_cli`.
 2. Pick the row above for that CLI.
@@ -236,8 +254,8 @@ Subagents should receive inputs as **explicit artifacts**, not inherited convers
 | `spec-product.md` | `.stelow/{date}/{dir}/plans/spec-product_{v}.md` | `appetite`, `review_mode`, `product_type`, `domains_detected`, `appetite_fit` | All proposal/review/strategic-context subagents |
 | `tech-recon.md` | `.stelow/{date}/{dir}/tech/tech-recon.md` | — | Interface proposals, alignment checks |
 | `spec-tech.md` | `.stelow/{date}/{dir}/plans/spec-tech_{v}.md` | — | Scope executors |
-| `scope-contract.json` | `.stelow/{date}/{dir}/scopes/{scope-id}.json` | `acceptance_criteria`, `verify_commands`, `stop_rules` | Scope executors |
-| `sibling-scopes.json` | `.stelow/{date}/{dir}/scopes/_all-scopes.json` | scope IDs + target file globs | Parallel scope executors (file-overlap guard) |
+| `scope-contract.json` | `.stelow/{date}/{dir}/scopes/{scope-id}.json` | `acceptance_criteria`, `verify_commands`, `stop_rules`, `target_files?` | Scope executors |
+| `scope-actual-files.json` | `.stelow/{date}/{dir}/scopes/_all-actual-files.json` | `scope_id`, `actual_files` (paths from `git diff --name-only`) | Execution report overlap detection (scope-executor Step 8) |
 
 **Why this matters:** `spec-product.md` frontmatter is the **single source of truth** for `appetite`, `review_mode`, and `domains_detected`. Subagents should read it explicitly rather than relying on the orchestrator passing these values in the task string or inheriting from history. This makes input auditable, reproducible, and CLI-agnostic.
 
