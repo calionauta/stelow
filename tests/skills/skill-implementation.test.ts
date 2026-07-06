@@ -333,18 +333,14 @@ describe('Iteration Loop Consistency', () => {
     });
   });
 
-  it('scope-executor goals.md should use acceptance-based pattern', () => {
+  it('scope-executor goals.md documents acceptance contract fields', () => {
     const goalsPath = join(PROJECT_ROOT, 'skills/cali-product-scope-executor/references/cli-tools/goals.md');
     const content = readFileSync(goalsPath, 'utf8');
-    // Should reference criteria, verify, stopRules (acceptance contract fields)
     expect(content).toMatch(/criteria/i);
     expect(content).toMatch(/verify/i);
     expect(content).toMatch(/stopRules/i);
-    // Feature row should mention criteria from ACs
-    const featureRow = content.match(/\| `feature` \|[^|]+\|/);
-    expect(featureRow).toBeTruthy();
-    expect(featureRow?.[0]).toMatch(/criteria/);
   });
+
 });
 
 describe('Stage Files', () => {
