@@ -122,6 +122,8 @@ The workflow is controlled by two orthogonal dimensions: **Appetite** (declared 
 Appetite is the **scope and exploration budget** - how much product depth the human wants prepared before execution.
 
 > **Appetite is a constraint, not an estimate.** Unlike traditional estimation (which asks "how long will this take?"), appetite asks "how much is this worth?" before the work is defined. This forces scope cuts to fit the budget - the budget never expands.
+>
+> This departs from the original Shape Up (37signals/Basecamp), where appetite is a fixed calendar window — 6 weeks — serving as a circuit breaker against scope creep. Under LLM execution, wall-clock time is not a predictable constraint: an agent can batch-parallelize, context-switch instantly, or stall on a single stubborn test. That makes time a poor governor for scope. Here, appetite caps **preparation depth** — spec size, number of scopes, interface variants considered, test layers required — not calendar duration. The scope, not the schedule, is what gets cut.
 
 | Appetite | What it means | Scope depth | Interface exploration | Supervisor | Testing | Best for |
 |----------|---------------|-------------|----------------------|------------|---------|----------|
