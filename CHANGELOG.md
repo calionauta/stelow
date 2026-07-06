@@ -2,6 +2,16 @@
 
 All notable changes to `@renatocaliari/stelow` will be documented in this file.
 
+## [0.40.3] - 2026-07-06
+
+### Fixed
+
+- **scope-executor goals.md test** — Adapted test to match synced generic goals.md (removed feature-row `criteria` assertion that no longer applies).
+
+### Docs
+
+- **appetite constraint contrast** — Added paragraph explaining departure from original Shape Up calendar-based model: stelow caps preparation depth, not wall-clock time.
+
 ## [0.40.2] - 2026-07-04
 
 ### Changed
