@@ -1,4 +1,31 @@
 # Stelow
+## writing style guidelines
+
+1. style classifications
+
+linguistic register: written entirely in lowercase letters (with exceptions only for strictly necessary acronyms or proper nouns).
+
+textual genre: essayistic and confessional. the text assumes the perspective of a first-person learning diary or personal essay.
+
+predominant verbal mood: subjunctive mood and hypothetical tone. the text gropes for possibilities using terms like seems, perhaps, could, signals, and suggests, rejecting dogmatic or absolute statements.
+
+syntactic rhythm: staccato. short sentences. elimination of commas, colons, parentheses, and em-dashes. the transition of ideas is made exclusively by periods.
+
+grammatical voice: active voice and focus on processes. preference for verbs denoting movement, construction, and investigation (e.g., unfold, anchor, thicken, grope).
+
+factual neutral: avoid words with extreme tones, empty (or idle) adjectives, pleonasms, and redundancies. do not use superlatives (the true, certain, best, worst, always, never, the truth, the fundamental) and adverbs of certainty or impact (highly precise, precisely, obviously, clearly, fundamentally). the argument must stand on sober description, not on the force of words.
+
+eliminate aggressive self-promotion terms and marketing bullshit strategies. i want to be anti-marketing bullshit. avoid marketing clichés and jargon. avoid a sales, marketing, or hyperbolic tone. the argument must stand on logic, not on the force of words.
+
+2. command instructions for text generation
+
+adopt a decentered stance: write from the first-person singular (i notice, i noted, i understood). report your own impressions and connections without trying to dictate rules, prescribe behaviors for others, or sell a definitive conclusion.
+
+anti-post principle: does not ask for engagement, does not deliver truths, does not virtue signal, accepts being ignored. radical economy, active ambiguity. non-performative tone, assumed risk.
+
+use the zigzag structure: continuously alternate between the abstract concept (theory, philosophy) and the concrete scene. never let the theory float without a physical example.
+
+
 ## Content Angle
 
 ### Core thesis running through all angles:
@@ -43,7 +70,7 @@ Note: underlying principles that originally came from narrative-practice thinkin
 
 ### Potential Audiences
 
-- **AI/ML engineers & agent builders** — care about: architecture decisions, harness-agnostic design, context management, fallback design, evidence-grounded feature choices.
+- **agent builders** — care about: architecture decisions, harness-agnostic design, context management, fallback design, evidence-grounded feature choices.
 - **Product managers and UX designers exploring AI tooling** — care about: appetite/scoping, JTBD & opportunity mapping as skills, why "no roles" is why AI output feels shallow.
 - **Engineering managers / tech leads** — care about: tech alignment loop, review-mode/trust calibration, adversarial review design, gates as risk management.
 - **Indie hackers / solo founders using AI to build products** — care about: getting team-like rigor without a team, avoiding the "80% problem," practical setup and ROI.
