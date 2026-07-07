@@ -6,7 +6,7 @@
  * entry in settings.json MUST have:
  *   - "extensions": ["+extensions/stelow/index.ts"]
  *   - "skills": []
- *   - "source": "git:github.com/renatocaliari/stelow"
+ *   - "source": "git:github.com/calionauta/stelow"
  *
  * Tests use tempdir fixtures to validate the parser/validator logic, then
  * optionally check the real ~/.pi/agent/settings.json as integration check.

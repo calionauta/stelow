@@ -4,10 +4,10 @@
   "description": "Product workflow for AI coding agents: Shape Up + Interface + Tech Planning + Critique + Gate.",
   "author": {
     "name": "Cali",
-    "url": "https://github.com/renatocaliari"
+    "url": "https://github.com/calionauta"
   },
-  "homepage": "https://github.com/renatocaliari/stelow#readme",
-  "repository": "https://github.com/renatocaliari/stelow",
+  "homepage": "https://github.com/calionauta/stelow#readme",
+  "repository": "https://github.com/calionauta/stelow",
   "license": "MIT",
   "keywords": [
     "product-workflow",

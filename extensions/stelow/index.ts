@@ -311,7 +311,7 @@ export default function (pi: ExtensionAPI) {
   function syncSkillsFromClone() {
     try {
       const HOME = homedir();
-      const GIT_DIR = join(HOME, ".pi/agent/git/github.com/renatocaliari/stelow");
+      const GIT_DIR = join(HOME, ".pi/agent/git/github.com/calionauta/stelow");
       const MARKER = join(HOME, ".agents/skills/.cali-skill-sync-hash");
 
       // Fast path: compare git HEAD hash

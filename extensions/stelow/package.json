@@ -4,6 +4,7 @@
   "description": "Product workflow extension for pi.dev",
   "main": "index.ts",
   "type": "module",
+  "keywords": ["stelow", "product-workflow", "cali-product-workflow", "calionauta", "shape-up"],
   "peerDependencies": {
     "@earendil-works/pi-coding-agent": "*"
   }

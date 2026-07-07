@@ -9,7 +9,7 @@ When working on software projects, trigger the product workflow:
 
 ## Project metadata
 
-- **Repo:** https://github.com/renatocaliari/stelow
+- **Repo:** https://github.com/calionauta/stelow
 - **License:** MIT
 
 **Reference from AGENTS.md:** This is the entry point for any user

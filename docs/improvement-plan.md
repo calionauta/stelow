@@ -116,7 +116,7 @@ Users often don't know these tools exist or what they'd gain. The workflow falls
 **npx skills:**
 - Already bundled with Node.js (required by stelow)
 - Zero additional install cost
-- `npx skills add renatocaliari/stelow -g` installs skills to `~/.agents/skills/`
+- `npx skills add calionauta/stelow -g` installs skills to `~/.agents/skills/`
 
 **ctx7:**
 - Use: `npx @vedanth/context7` (auto-install via npx, requires Node.js)

@@ -98,7 +98,7 @@ export function syncStagesGuardState(cwd: string, phaseIndex: number): void {
   if (!trackingData) {
     // Create minimal tracking data if it doesn't exist
     trackingData = {
-      $schema: "https://raw.githubusercontent.com/renatocaliari/stelow/main/stelow.schema.json",
+      $schema: "https://raw.githubusercontent.com/calionauta/stelow/main/stelow.schema.json",
       version: "1.0",
       created: now,
       updated: now,

@@ -1,7 +1,7 @@
 # stelow (herdr plugin)
 
 Persistent split-pane TUI for [herdr](https://herdr.dev) showing the
-[stelow](https://github.com/renatocaliari/stelow) workflow state:
+[stelow](https://github.com/calionauta/stelow) workflow state:
 projects → scopes → tasks, with click-to-drill navigation.
 
 Companion to [`integrations/muxy/stelow/`](../muxy/stelow/)
@@ -36,11 +36,11 @@ sequence, just be sure to run the two commands separately.
 ## Install from GitHub
 
 The plugin lives as a subdirectory of the main
-[stelow repo](https://github.com/renatocaliari/stelow) under
+[stelow repo](https://github.com/calionauta/stelow) under
 `integrations/herdr/stelow/`. Install via herdr's subdir support:
 
 ```bash
-herdr plugin install renatocaliari/stelow/integrations/herdr/stelow
+herdr plugin install calionauta/stelow/integrations/herdr/stelow
 ```
 
 `herdr` will:
@@ -94,7 +94,7 @@ herdr plugin list
 
 The `source:` field tells you which install method was used:
 
-- `github:renatocaliari/stelow/integrations/herdr/stelow@<commit>` —
+- `github:calionauta/stelow/integrations/herdr/stelow@<commit>` —
   installed from the GitHub subdir
 - `local:/path/to/stelow` — linked from local source
 
@@ -134,7 +134,7 @@ latest version (bugfixes, new features):
 
 ```bash
 herdr plugin uninstall stelow
-herdr plugin install renatocaliari/stelow/integrations/herdr/stelow
+herdr plugin install calionauta/stelow/integrations/herdr/stelow
 ```
 
 Or switch to a local source checkout for faster iteration (see

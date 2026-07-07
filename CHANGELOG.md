@@ -2,6 +2,24 @@
 
 All notable changes to `@renatocaliari/stelow` will be documented in this file.
 
+> ## [Unreleased] — npm package rename
+>
+> The GitHub repository URL was migrated from `renatocaliari/stelow` to
+> `calionauta/stelow`. GitHub redirects all old URLs automatically (HTTP 301).
+>
+> The npm package name `@renatocaliari/stelow` will follow in a future
+> release (target: v0.42.0). When that ships:
+>
+> 1. New package `@calionauta/stelow` is published with v0.42.0 contents.
+> 2. `@renatocaliari/stelow` is marked `npm deprecate`d with redirect notice.
+> 3. Existing installs of `@renatocaliari/stelow` keep working unchanged.
+> 4. New installs via `npm install @calionauta/stelow` get v0.42.0+.
+> 5. `setup.sh` and `install.sh` flip from old name to new on v0.42.0.
+>
+> GitHub-only references (READMEs, badges, schema URLs, plugin paths)
+> were migrated to `calionauta` in this commit while npm name stayed
+> `@renatocaliari/stelow` for backward compatibility.
+
 ## [0.41.2] - 2026-07-06
 
 Scope-execution overlap rework: kill the aspirational "file-overlap guard" heuristic, ship a CLI-agnostic prevention layer (file-reservation locks) + ground-truth post-hoc detection (`git diff --name-only`). No `git worktree` requirement; no per-CLI hook integration; no merge complexity.

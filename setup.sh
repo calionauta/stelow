@@ -10,7 +10,7 @@
 #   5. Configures settings.json with optimized defaults
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/renatocaliari/stelow/main/setup.sh | sh
+#   curl -fsSL https://raw.githubusercontent.com/calionauta/stelow/main/setup.sh | sh
 #
 # Or download and run:
 #   ./setup.sh
@@ -23,7 +23,7 @@ set -euo pipefail
 # ─── Configuration ───────────────────────────────────────────────────────────
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GITHUB_REPO="https://github.com/renatocaliari/stelow"
+GITHUB_REPO="https://github.com/calionauta/stelow"
 MIN_NODE_VERSION=20
 # Project where stelow is being installed. Defaults to cwd (user's project).
 # Override via --project-dir <path> (used by setup-pulse to copy scripts there).
@@ -68,7 +68,7 @@ PI_PACKAGES=(
   "https://github.com/dbachelder/pi-btw"
   "git:github.com/PriNova/pi-agent-codebase-workflows"
   "git:github.com/renatocaliari/pi-tool-repair-layer"
-  "git:github.com/renatocaliari/stelow"
+  "git:github.com/calionauta/stelow"
 )
 
 # Skills to install from stelow
@@ -605,7 +605,7 @@ install_safe_change() {
 # Herdr plugin install is intentionally separate from install.sh
 # (which only flattens skills to ~/.agents/skills/). The herdr plugin
 # has its own distribution path: `herdr plugin install` from
-# https://github.com/renatocaliari/stelow/integrations/herdr/stelow,
+# https://github.com/calionauta/stelow/integrations/herdr/stelow,
 # then `cargo build --release` because Rust needs a local toolchain.
 install_herdr_plugin() {
   log_step "Step 9/11: Herdr stelow plugin (split-pane TUI)"
@@ -616,7 +616,7 @@ install_herdr_plugin() {
   fi
   if ! command -v herdr &>/dev/null; then
     log_info "herdr CLI not detected — skipping stelow plugin install."
-    log_info "Install herdr from https://herdr.dev/, then run: herdr plugin install renatocaliari/stelow"
+    log_info "Install herdr from https://herdr.dev/, then run: herdr plugin install calionauta/stelow"
     record_skip "herdr stelow (no herdr CLI)"
     return
   fi
@@ -630,7 +630,7 @@ install_herdr_plugin() {
   local plugin_dir
   plugin_dir=$(find ~/.config/herdr/plugins -type d -name "stelow" -path "*/integrations/herdr/*" 2>/dev/null | head -1)
 
-  if herdr plugin install renatocaliari/stelow; then
+  if herdr plugin install calionauta/stelow; then
     # Discover plugin dir after install. herdr stores it at:
     #   ~/.config/herdr/plugins/github/stelow-<hash>/integrations/herdr/stelow/
     # The hash suffix changes per install, so we glob for the directory.
@@ -774,7 +774,7 @@ print_summary() {
   echo "       /skills           List all installed skills"
   echo "       alt+1-5           Toggle skill quick-access"
   echo ""
-  echo "  ${BOLD}Docs:${RESET} https://github.com/renatocaliari/stelow"
+  echo "  ${BOLD}Docs:${RESET} https://github.com/calionauta/stelow"
   echo ""
 }
 

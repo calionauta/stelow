@@ -10,7 +10,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GITHUB_REPO="https://github.com/renatocaliari/stelow"
+GITHUB_REPO="https://github.com/calionauta/stelow"
 SKILLS_DIR="$HOME/.agents/skills"
 
 # Colors
@@ -215,7 +215,7 @@ _configure_pi_skills_filter() {
   local tmp=$(mktemp)
   jq '
     (.packages // []) |= map(
-      if type == "object" and .source == "git:github.com/renatocaliari/stelow" then
+      if type == "object" and .source == "git:github.com/calionauta/stelow" then
         .skills = []
       else
         .
@@ -237,7 +237,7 @@ install_pi() {
 
   log_info "    Installing Pi extension (git package)..."
   pi remove "$SCRIPT_DIR/extensions/stelow" 2>/dev/null || true
-  pi install "git:github.com/renatocaliari/stelow" 2>/dev/null || true
+  pi install "git:github.com/calionauta/stelow" 2>/dev/null || true
 
   # Configure Pi to ignore skills/ from the git clone via native package filter.
   # Skills are served from ~/.agents/skills/ (kept fresh by extension sync).
@@ -436,7 +436,7 @@ update_all() {
         if command -v pi &>/dev/null; then
           log_info "  Reinstalling Pi extension (git package)..."
           pi remove "$SCRIPT_DIR/extensions/stelow" 2>/dev/null || true
-          pi install "git:github.com/renatocaliari/stelow" 2>/dev/null || true
+          pi install "git:github.com/calionauta/stelow" 2>/dev/null || true
           # Re-apply package filter (pi update re-clones repo with skills/)
           _configure_pi_skills_filter
         fi
@@ -466,7 +466,7 @@ uninstall_all() {
   for cli in $clis; do
     case "$cli" in
       pi)
-        pi remove "git:github.com/renatocaliari/stelow" 2>/dev/null || true
+        pi remove "git:github.com/calionauta/stelow" 2>/dev/null || true
         rm -rf "$HOME/.pi/agent/skills/stelow" 2>/dev/null || true
         # Clean package filter from settings.json
         if command -v jq &>/dev/null; then
@@ -475,7 +475,7 @@ uninstall_all() {
             local tmp=$(mktemp)
             jq '
               (.packages // []) |= map(
-                if type == "object" and .source == "git:github.com/renatocaliari/stelow" then
+                if type == "object" and .source == "git:github.com/calionauta/stelow" then
                   del(.skills)
                 else
                   .
@@ -613,7 +613,7 @@ setup_minimal() {
 install_pi_extension() {
   log_info "  Installing Pi extension..."
   pi remove "$SCRIPT_DIR/extensions/stelow" 2>/dev/null || true
-  pi install "git:github.com/renatocaliari/stelow" 2>/dev/null || true
+  pi install "git:github.com/calionauta/stelow" 2>/dev/null || true
   _configure_pi_skills_filter
 }
 

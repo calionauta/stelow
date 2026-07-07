@@ -3,7 +3,7 @@
 ## Quick Start
 
 ```bash
-git clone https://github.com/renatocaliari/stelow.git
+git clone https://github.com/calionauta/stelow.git
 cd stelow
 ./install.sh
 ```
@@ -97,7 +97,7 @@ agent-sync push
 Para instalar skills sem o installer:
 
 ```bash
-npx skills add renatocaliari/stelow -g
+npx skills add calionauta/stelow -g
 ```
 
 Instala skills para `~/.agents/skills/` — funciona em qualquer CLI.
@@ -130,7 +130,7 @@ Instala skills para `~/.agents/skills/` — funciona em qualquer CLI.
 
 ```bash
 # Instala skills
-npx skills add renatocaliari/stelow -a opencode -g
+npx skills add calionauta/stelow -a opencode -g
 
 # Configura ~/.agents/skills/
 # Adicionar em ~/.config/opencode/opencode.json:
@@ -144,11 +144,11 @@ npx skills add renatocaliari/stelow -a opencode -g
 
 ```bash
 # Plugin marketplace
-claude plugin marketplace add https://github.com/renatocaliari/stelow
+claude plugin marketplace add https://github.com/calionauta/stelow
 claude plugin install stelow@marketplace-name
 
 # Ou apenas skills
-npx skills add renatocaliari/stelow -a claude-code -g
+npx skills add calionauta/stelow -a claude-code -g
 ```
 
 </details>
@@ -158,11 +158,11 @@ npx skills add renatocaliari/stelow -a claude-code -g
 
 ```bash
 # Plugin marketplace
-codex plugin marketplace add https://github.com/renatocaliari/stelow
+codex plugin marketplace add https://github.com/calionauta/stelow
 codex plugin add stelow@marketplace-name
 
 # Ou apenas skills
-npx skills add renatocaliari/stelow -a codex -g
+npx skills add calionauta/stelow -a codex -g
 ```
 
 </details>

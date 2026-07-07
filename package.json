@@ -9,7 +9,8 @@
     "workflow",
     "shape-up",
     "product-planning",
-    "product-management"
+    "product-management",
+    "calionauta"
   ],
   "license": "MIT",
   "author": "Cali",
@@ -26,11 +27,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/renatocaliari/stelow.git"
+    "url": "git+https://github.com/calionauta/stelow.git"
   },
-  "homepage": "https://github.com/renatocaliari/stelow#readme",
+  "homepage": "https://github.com/calionauta/stelow#readme",
   "bugs": {
-    "url": "https://github.com/renatocaliari/stelow/issues"
+    "url": "https://github.com/calionauta/stelow/issues"
   },
   "peerDependencies": {
     "typebox": "*"

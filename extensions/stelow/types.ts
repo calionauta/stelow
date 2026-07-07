@@ -4,7 +4,7 @@ export const WORKFLOW_DIR = ".stelow";
 export const TRACKING_FILE = "stelow.json";
 export const GLOBAL_TRACKING_FILE = ".stelow-global.json";
 export const SCHEMA_URL =
-  "https://raw.githubusercontent.com/renatocaliari/stelow/main/stelow.schema.json";
+  "https://raw.githubusercontent.com/calionauta/stelow/main/stelow.schema.json";
 
 export const PHASE_NAMES = [
   "Triage",      // 0 — Phase 0: Inbox Triage

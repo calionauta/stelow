@@ -56,7 +56,7 @@ gh release create v0.2.0-alpha \
 - Update README with new skills
 - Add AGENTS.md testing context
 
-**Full Changelog:** https://github.com/renatocaliari/stelow/compare/v0.1.0-alpha...v0.2.0-alpha"
+**Full Changelog:** https://github.com/calionauta/stelow/compare/v0.1.0-alpha...v0.2.0-alpha"
 
 # Option B: Use semantic-release (if configured)
 npm run release

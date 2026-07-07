@@ -51,7 +51,7 @@ echo ""
 echo "📦 Installing packages (Git-based distribution)..."
 # 1. Core package (skills, adapters, etc.)
 echo "   → stelow (core)"
-pi install "git:github.com/renatocaliari/stelow" 2>/dev/null || {
+pi install "git:github.com/calionauta/stelow" 2>/dev/null || {
   echo "   Note: Installing from local source instead"
   pi install "$PACKAGE_DIR" 2>/dev/null || true
 }
@@ -316,7 +316,7 @@ echo "║  Setup Complete!                                           ║"
 echo "╚════════════════════════════════════════════════════════════╝"
 echo ""
 echo "Installed packages:"
-echo "  • @renatocaliari/stelow (core - skills, Pi extension, adapters)"
+echo "  • @calionauta/stelow (core - skills, Pi extension, adapters)"
 echo ""
 echo "Next steps:"
 echo "  1. Run: pi"
