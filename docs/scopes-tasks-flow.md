@@ -1,6 +1,5 @@
 # Scopes, Tasks & Records — Execution Model
 
-> **Applies from:** v0.43.0+  
 > **Covers:** the three-layer runtime model for scope execution: what's planned up front, what emerges during building, and what proves it happened.
 
 ## Why three layers
@@ -58,13 +57,13 @@ flowchart LR
 | `cali-product-scope-executor` | Seeds tasks, appends discovered, marks done/skipped, creates Record at close | `skills/cali-product-scope-executor/SKILL.md` (Steps 3a-3e, 3e-bis, 3e-ter) |
 | `cali-product-execution-critique` | Criterion 6 (Record) + Criterion 11 (Tasks Tracking) — audits both layers | `skills/cali-product-execution-critique/SKILL.md` |
 
-## Convention, not configuration (v1) → enforcement (v2)
+## Field status
 
-| Field | v1 (0.43.0) | v2 (next cycle) |
-|---|---|---|
-| `scope.record` | Optional TS type. Advised in SKILL. Flagged by execution-critique. Required for `status: 'completed'`. Runtime validation ON by default. Pre-commit hook. | Required for `status: 'completed'`. Runtime validation ON by default. Pre-commit hook. Pre-commit hook blocks commits with missing records. |
-| `scope.tasks` | Optional TS type. Advised in SKILL. Seeded from spec-tech.md table. | Checked by execution-critique Criterion 11. No write-time block (tasks are a checklist, not proof). |
-| `scope.discovered_tasks_count` | Bash-incremented counter. Validated when present. | Schema check in `schema-record.ts`. Used by Criterion 11's discovery-ratio check. |
+| Field | Status |
+|---|---|
+| `scope.record` | Required for `status: 'completed'`. Runtime validation ON by default. Pre-commit hook blocks commits with missing records. |
+| `scope.tasks` | Optional. Checked by execution-critique Criterion 11. No write-time block (tasks are a checklist, not proof). |
+| `scope.discovered_tasks_count` | Bash-incremented counter. Validated when present by `schema-record.ts`. |
 
 ## Rules of thumb
 
@@ -72,4 +71,4 @@ flowchart LR
 - **If `discovered_tasks_count > 5`**, the scope was probably under-planned. Surface in Lessons Learned — don't block close.
 - **If a scope closed with no tasks and no Record**, it's unauditable. The doer may have done good work, but the system cannot prove it. Block.
 - **If a scope closed with all tasks `status: 'pending'`**, the executor skipped tracking. Either the scope was trivially small (do-nothing pattern), or tracking failed. Investigate.
-- **Discovered tasks without `note:`** are allowed only when `STELOW_VALIDATE=0`. When `STELOW_VALIDATE=1`, the validator rejects them at write time. When `=0`, execution-critique Criterion 11 warns about them.
+- **Discovered tasks without `note:`** are rejected at write time (validation is ON by default). When `STELOW_VALIDATE=0`, the runtime validator skips the check; execution-critique Criterion 11 still warns about them.
