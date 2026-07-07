@@ -602,6 +602,10 @@ The panel shows:
 - Phase artifacts and outputs
 - Upcoming tasks
 - Quick actions
+- **Cross-workflow scope view** (v0.43.0) — flat scope cards across all
+  workflows in the active worktree, grouped by status (Pending / In Progress /
+  Escalated / Failed / Completed). Filter strip by status or free-text.
+  Project picker for switching between known Muxy projects.
 
 **Install:** Muxy.app (macOS-only) + the stelow Muxy extension at `integrations/muxy/stelow/`. To load the extension in Muxy: open **Extensions modal → Create**, pick the folder, and Muxy auto-detects the built `dist/`. See [Muxy's Get started guide](https://muxy.app/docs/extensions/get-started) for the official workflow.
 

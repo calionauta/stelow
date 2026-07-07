@@ -54,6 +54,67 @@ describe("matchesDeclaredGlob", () => {
     expect(matchesDeclaredGlob("src/middleware/auth.ts", "src/middleware/auth.ts")).toBe(true);
     expect(matchesDeclaredGlob("src/middleware/login.ts", "src/middleware/auth.ts")).toBe(false);
   });
+
+  it("brace expansion `{a,b}` matches either alternative", () => {
+    expect(matchesDeclaredGlob("src/auth/foo.ts", "src/**/*.{ts,tsx}")).toBe(true);
+    expect(matchesDeclaredGlob("src/auth/foo.tsx", "src/**/*.{ts,tsx}")).toBe(true);
+    expect(matchesDeclaredGlob("src/auth/foo.js", "src/**/*.{ts,tsx}")).toBe(false);
+    expect(matchesDeclaredGlob("src/auth/foo", "src/**/*.{ts,tsx}")).toBe(false);
+  });
+
+  it("brace expansion with more than two alternatives", () => {
+    expect(matchesDeclaredGlob("a/x.ts", "a/*.{ts,tsx,js,jsx}")).toBe(true);
+    expect(matchesDeclaredGlob("a/x.jsx", "a/*.{ts,tsx,js,jsx}")).toBe(true);
+    expect(matchesDeclaredGlob("a/x.vue", "a/*.{ts,tsx,js,jsx}")).toBe(false);
+  });
+
+  it("brace expansion combined with trailing /**", () => {
+    expect(matchesDeclaredGlob("src/auth/sub/foo.ts", "src/**/*.{ts,tsx}")).toBe(true);
+    expect(matchesDeclaredGlob("src/auth/sub/foo.tsx", "src/**/*.{ts,tsx}")).toBe(true);
+    expect(matchesDeclaredGlob("src/middleware/foo.ts", "src/**/*.{ts,tsx}")).toBe(true);
+    expect(matchesDeclaredGlob("other/foo.ts", "src/**/*.{ts,tsx}")).toBe(false);
+  });
+
+  it("empty alternatives in brace group are skipped (not match-everything)", () => {
+    // `{a,}` would expand to ["a"] only — empty trailing alt dropped.
+    expect(matchesDeclaredGlob("foo/a", "foo/{a,}")).toBe(true);
+    expect(matchesDeclaredGlob("foo/", "foo/{a,}")).toBe(false);
+    // `{a,,b}` — middle empty dropped, leaves {a,b}
+    expect(matchesDeclaredGlob("foo/a", "foo/{a,,b}")).toBe(true);
+    expect(matchesDeclaredGlob("foo/b", "foo/{a,,b}")).toBe(true);
+  });
+
+  it("unclosed brace treated as literal (does not throw)", () => {
+    expect(matchesDeclaredGlob("src/foo/{a,b", "src/foo/{a,b")).toBe(true);
+    expect(matchesDeclaredGlob("src/foo/a", "src/foo/{a,b")).toBe(false);
+  });
+
+  it("in-segment `*` matches any non-slash chars within one segment", () => {
+    expect(matchesDeclaredGlob("src/auth/foo.ts", "src/auth/*.ts")).toBe(true);
+    expect(matchesDeclaredGlob("src/auth/foo-bar.ts", "src/auth/*.ts")).toBe(true);
+    expect(matchesDeclaredGlob("src/auth/foo.ts.bak", "src/auth/*.ts")).toBe(false);
+    expect(matchesDeclaredGlob("src/auth/sub/foo.ts", "src/auth/*.ts")).toBe(false);
+    expect(matchesDeclaredGlob("src/auth/foo.js", "src/auth/*.ts")).toBe(false);
+  });
+
+  it("`**` as a whole segment matches zero or more segments", () => {
+    // Leading ** with nothing after = match anything
+    expect(matchesDeclaredGlob("a", "**")).toBe(true);
+    expect(matchesDeclaredGlob("a/b", "**")).toBe(true);
+    expect(matchesDeclaredGlob("a/b/c", "**")).toBe(true);
+    // src/** = src + any depth under it
+    expect(matchesDeclaredGlob("src/foo.ts", "src/**")).toBe(true);
+    expect(matchesDeclaredGlob("src/a/foo.ts", "src/**")).toBe(true);
+    expect(matchesDeclaredGlob("src/a/b/foo.ts", "src/**")).toBe(true);
+    expect(matchesDeclaredGlob("other/foo.ts", "src/**")).toBe(false);
+    // **/suffix matches any depth with that suffix
+    expect(matchesDeclaredGlob("foo.ts", "**/*.ts")).toBe(true);
+    expect(matchesDeclaredGlob("a/foo.ts", "**/*.ts")).toBe(true);
+    expect(matchesDeclaredGlob("a/b/foo.ts", "**/*.ts")).toBe(true);
+    expect(matchesDeclaredGlob("a/foo.js", "**/*.ts")).toBe(false);
+    // ** must be its own segment, not embedded in a segment
+    expect(matchesDeclaredGlob("src/foo.ts", "src/**.ts")).toBe(false);
+  });
 });
 
 describe("classifyOverlap — 4-class report", () => {

@@ -45,7 +45,7 @@ import {
 import { runVerifyCommands } from "./modules/verify-runner";
 import { appendEvent } from "./modules/event-logger";
 
-// ── Re-export CLI Adapter for external use ─────────────────────────
+// ── Re-export CLI Adapter + public utilities for external use ─────
 
 export {
   createAdapter,
@@ -53,6 +53,22 @@ export {
   EventDispatcher,
   createEventDispatcher,
 } from "./adapters";
+
+// Glob matcher (shared between scope-executor inline `node -e`
+// and external tooling). See AGENTS.md: "No overlap or conflict"
+// between text, structural, and semantic search — this is a
+// structural pattern match for file paths.
+export { matchesDeclaredGlob } from "./scope";
+
+// Record and task validators. Used by state.ts writeTracking
+// (opt-in via STELOW_VALIDATE=1) and by external pre-commit hooks.
+export {
+  validateScopeRecord,
+  validateScopeTask,
+  validateScopeTasks,
+  validateScopeAdditions,
+  ScopeRecordValidationError,
+} from "./schema-record";
 
 export type {
   CLIAdapter,

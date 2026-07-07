@@ -2,6 +2,104 @@
 
 All notable changes to `@calionauta/stelow` will be documented in this file.
 
+## [0.43.0] - 2026-07-07
+
+Record evidence convention (v1) + glob pattern expansion + Shape Up task tracking + Muxy cross-workflow scope view. No npm publish at any name; install via `pi install git:github.com/calionauta/stelow` or `npx skills add ...`.
+
+### Added
+
+- **Record evidence convention (v1, advisory).** `cali-product-scope-executor`
+  SKILL Step 3e-bis ships a `## Record` template that scopes fill before close.
+  Template lives in the scope's iteration-state markdown file; the
+  machine-checkable mirror (`completed_at`, `files_count`, `commands_count`,
+  `verified`, `suggested_commit` — all snake_case to match the rest of
+  `stelow.json`) lands in `wf.scopes[i].record`. Convention only — no
+  enforcement in v1; `execution-critique` Criterion 6 (`Record Evidence`)
+  flags missing or unverified records as critique findings (block / warning / minor).
+  Rationale: weakest-true-claim discipline borrowed from Skill-Steward
+  ADR 0023 — without a non-vacuous record, the ✅ is unearned.
+- **Glob pattern expansion in `matchesDeclaredGlob()`.**
+  `extensions/stelow/scope.ts` now supports:
+    - in-segment `*` wildcard (e.g. `src/auth/*.ts`)
+    - `**` as a cross-segment wildcard (e.g. `src/**/*.{ts,tsx}`)
+    - brace expansion `{a,b,c}` for OR alternatives (single-level, no nesting)
+  Existing trailing `/**` and `/*` patterns unchanged. Net effect: the
+  `[TARGET_FILES]` block in spec-tech.md can now declare
+  `src/**/*.{ts,tsx}` instead of enumerating extensions.
+- **`ScopeRecord` interface** in `extensions/stelow/types.ts` —
+  TypeBox-friendly shape for the mirror fields above.
+- **`cali-product-execution-critique` Criterion 6 (Record Evidence).**
+  New criterion (renumbered subsequent criteria 7–10) checks every
+  completed scope for: record present, `verified: true`,
+  `files_count > 0`, `commands_count > 0`, suggested_commit set, and
+  `iteration-state-{SCOPE-ID}.md` has a `## Record` section.
+- **5 new test cases** in `tests/integration/scope-overlap-classify.test.ts`
+  covering brace expansion (2-way, 3+way, combined with `/**`, empty
+  alternatives, unclosed brace as literal).
+- **Task tracking inside scopes (Shape Up hill chart collapse).** New
+  `wf.scopes[i].tasks?: ScopeTask[]` for runtime task checkboxes that
+  emerge as the scope executes. Each task is `source: 'planned' |
+  'discovered'`; `discovered` tasks always carry a `note:` explaining
+  the discovery trigger. Two scopes stay at the appetite ceiling
+  (Lean ≤2, Core ≤5, Complete ~10) while individual scopes can carry
+  many tasks — tasks emerge from reality, scopes are committed up
+  front.
+- **Scope-executor SKILL Step 3e-ter** documents seeding, appending,
+  and marking-done patterns for the task checklist. Iteration-state
+  markdown renders the live checklist so a future agent or human can
+  see what's actually done vs. what was planned.
+- **Muxy cross-workflow scope tab.** New "Scopes" view in the muxy
+  panel (`integrations/muxy/stelow/src/panel/{app,data}.js`)
+  flattens `wf.scopes[]` across all workflows in the active worktree
+  into hill-chart columns (Pending / In Progress / Escalated /
+  Failed / Completed). Filter strip: status chips + free-text search
+  across scope id, name, type, workflow name, project path. Each card
+  shows scope id, name, workflow, project (last 2 path segments),
+  iteration counter, and a Record badge (✅ verified / ○ unverified)
+  when present. Build verified via `npm run build`.
+- **Sandboxing note (muxy limitation):** cross-workflow is scoped to
+  the active worktree because `muxy.files.read` is sandboxed to the
+  workspace root (per Muxy docs). True cross-project would require
+  Muxy to expose a `projects.read.files` API; tracked for later cycles.
+
+### Changed
+
+- **`Scope` interface** now has two new optional fields:
+  `record?: ScopeRecord` and `tasks?: ScopeTask[]`. Both are
+  advisory in v1 (convention only). Future v2 makes `record` mandatory
+  for `status: 'completed'` scopes (TypeBox schema enforcement).
+- **Criterion numbering** in `cali-product-execution-critique`:
+  Record Evidence is now 6; Gap Registry 7; Lessons Learned 8;
+  Gap-to-Scope 9; Decision Matrix 10. All references updated.
+- **`ScopeRecord` field naming:** snake_case throughout
+  (`completed_at`, `files_count`, `commands_count`, `suggested_commit`)
+  to match the rest of `stelow.json` schema (target_files,
+  actual_files, start_sha, lock_ttl_seconds). v1 advisory references
+  updated.
+
+### Tests
+
+- **8 new unit tests** in `tests/unit/scope-record-tasks.test.ts`
+  covering ScopeRecord + ScopeTask shape, planned vs discovered,
+  files_count ↔ actual_files invariance.
+- **8 new unit tests** in `tests/unit/scope-panel-data.test.ts`
+  covering SCOPE_COLUMNS order, flattenScopesForView identity
+  preservation, groupScopesByStatus column stability.
+- **Total: 1099 tests passing** (was 1049 in v0.42.1).
+
+### Notes for next cycle
+
+- **Record v2 → pre-commit hook.** The current opt-in runtime validation
+  (`STELOW_VALIDATE=1`) works but requires an env var. The next cycle
+  should ship a `scripts/pre-commit-record.sh` that runs the validators
+  from `schema-record.ts` via `require()` and blocks commits with
+  missing/incomplete records. Also check `discovered_tasks_count > 5`
+  as a project-level threshold.
+- **Execution-critique Criterion 6 → block threshold.** Currently flags
+  missing records as `warning`/`minor`. Bump to `block` after ≥3
+  workflows ship with v1 discipline (proves the convention is real,
+  not just paper).
+
 ## [0.42.1] - 2026-07-07
 
 Two patches addressing items deferred from the v0.42.0 release notes:

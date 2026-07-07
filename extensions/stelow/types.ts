@@ -440,6 +440,125 @@ export interface Scope {
    * never touches locks regardless of TTL.
    */
   lockTtlSeconds?: number;
+  /**
+   * Optional. Per-scope task checklist — the Shape Up model: scopes are
+   * atomic delivery units, tasks are sub-items that emerge as the
+   * scope is executed. Tasks can be **planned** (carried from the
+   * Scope Detail Template in `spec-tech_{v}.md` table) or **discovered**
+   * (added during execution when reality reveals new work, a la the
+   * hill-chart principle). Tasks are NEVER separate execution units —
+   * they are a checklist rendered in `iteration-state-{SCOPE-ID}.md`.
+   *
+   * Populated by scope-executor:
+   *   - Tasks seed: at scope start, parse the `| # | Task | ... |` table
+   *     in spec-tech.md and seed each as `source: 'planned'`.
+   *   - Tasks append: during iteration, the executor (LLM child) may
+   *     add `source: 'discovered'` entries. Always with a comment
+   *     explaining the discovery trigger (slow query, test flake,
+   *     schema mismatch, etc.).
+   *
+   * @see references/scopes-and-sequencing.md#Scope Detail Template
+   *      (the spec-tech table that seeds tasks)
+   */
+  tasks?: ScopeTask[];
+  /**
+   * Optional. Aggregate count of `source: 'discovered'` tasks at
+   * close time. Mirrors the increment done in scope-executor Step
+   * 3e-ter bash. Surfaced in Muxy scope cards + execution-critique
+   * for quick "how much new work did reality reveal" signal.
+   */
+  discovered_tasks_count?: number;
+  /**
+   * Optional. Claim-proof evidence block populated by scope-executor
+   * Step 3e-bis. The full Record body lives in markdown at
+   * `iteration-state-{SCOPE-ID}.md`; this is the machine-checkable
+   * subset that `cali-product-execution-critique` reads.
+   *
+   * Convention (v1, advisory). Field names are snake_case throughout
+   * to match the rest of `stelow.json` schema:
+   *   - `completed_at` set when status transitions to `completed`.
+   *   - `files_count` mirrors `actual_files.length`.
+   *   - `commands_count` is the number of verify commands listed in the
+   *     Record body. Helps detect "verified via vibes" (0 commands).
+   *   - `verified: true` requires the full Verification checklist to
+   *     be ticked in the markdown body.
+   *   - `suggested_commit` is the conventional-commit line the executor
+   *     would write; kept here so execution-critique can compare against
+   *     what was actually committed.
+   *
+   * See `cali-product-scope-executor` SKILL Step 3e-bis for the full
+   * Record template, evidence-ladder rationale, and v2 enforcement plan.
+   */
+  record?: ScopeRecord;
+}
+
+/**
+ * A single task within a scope. Mirrors the markdown table row from
+ * spec-tech.md (planned) or an executor-append entry (discovered).
+ */
+export interface ScopeTask {
+  /** Hierarchical ID matching spec-tech convention (`{scope}.{task}`). */
+  id: string;
+  /** Short action description. */
+  name: string;
+  /** Where this task came from. */
+  source: 'planned' | 'discovered';
+  /** Task lifecycle. `pending` → `done` or `skipped`. */
+  status: 'pending' | 'done' | 'skipped';
+  /** Iteration index where a discovered task was added. Undefined for planned. */
+  discovered_in_iter?: number;
+  /** Components touched (matches spec-tech table column). Optional. */
+  components?: string[];
+  /** Risk score 1-5 (matches spec-tech table column). Optional. */
+  risk?: number;
+  /** Free-form note — required for `source: 'discovered'` explaining
+   *  what triggered the discovery. */
+  note?: string;
+  /**
+   * Optional. Claim-proof evidence block populated by scope-executor
+   * Step 3e-bis. The full Record body lives in markdown at
+   * `iteration-state-{SCOPE-ID}.md`; this is the machine-checkable
+   * subset that `cali-product-execution-critique` reads.
+   *
+   * Convention (v1, advisory). Field names are snake_case throughout
+   * to match the rest of `stelow.json` schema:
+   *   - `completed_at` set when status transitions to `completed`.
+   *   - `files_count` mirrors `actual_files.length`.
+   *   - `commands_count` is the number of verify commands listed in the
+   *     Record body. Helps detect "verified via vibes" (0 commands).
+   *   - `verified: true` requires the full Verification checklist to
+   *     be ticked in the markdown body.
+   *   - `suggested_commit` is the conventional-commit line the executor
+   *     would write; kept here so execution-critique can compare against
+   *     what was actually committed.
+   *
+   * See `cali-product-scope-executor` SKILL Step 3e-bis for the full
+   * Record template, evidence-ladder rationale, and v2 enforcement plan.
+   */
+  record?: ScopeRecord;
+}
+
+/**
+ * Machine-checkable subset of the Record evidence block. Full text
+ * lives in `iteration-state-{SCOPE-ID}.md`; this is what `stelow.json`
+ * stores for programmatic checks (execution-critique, future typecheck).
+ *
+ * **Naming convention: snake_case throughout** — matches the existing
+ * Scope fields (`target_files`, `actual_files`, `start_sha`,
+ * `lock_ttl_seconds`) and the JSON serialization format of `stelow.json`.
+ * Mixed casing across `stelow.json` is a footgun for downstream tooling.
+ */
+export interface ScopeRecord {
+  /** ISO-8601 timestamp when the scope transitioned to `completed`. */
+  completed_at: string;
+  /** Mirror of `actual_files.length`. Set by executor at close. */
+  files_count: number;
+  /** Number of verify commands logged in the Record body. */
+  commands_count: number;
+  /** True only when the full Verification checklist is ticked. */
+  verified: boolean;
+  /** Conventional-commit line the executor would write. */
+  suggested_commit?: string;
 }
 
 export interface Phase {

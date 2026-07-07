@@ -2,6 +2,11 @@ import { existsSync, readFileSync, writeFileSync, statSync, readdirSync, mkdirSy
 import { join, basename, dirname, extname, resolve as resolvePath } from "node:path";
 import { homedir } from "node:os";
 import type { Workflow, TrackingData, Scope, ParsedInput, CLI } from "./types";
+import {
+  isRuntimeValidationEnabled,
+  validateScopeAdditions,
+  ScopeRecordValidationError,
+} from "./schema-record";
 import { TASK_ICONS } from "./modules/task";
 import { WORKFLOW_DIR, TRACKING_FILE, GLOBAL_TRACKING_FILE, SCHEMA_URL, PHASE_NAMES, getCLICapabilities } from "./types";
 import { PHASE_TO_STAGE } from "./stages-guard";
@@ -243,6 +248,33 @@ export function readGlobalTracking(): TrackingData | null {
 
 export function writeTracking(cwd: string, data: TrackingData): void {
   data.updated = new Date().toISOString();
+  // v0.43.0 Record v2: opt-in runtime validation. When STELOW_VALIDATE=1,
+  // validate every scope's `record` and `tasks` before persisting. Default
+  // OFF — validation has a cost (iteration + type checks per scope) that
+  // matters on hot paths like /sw-next (single-scope status flip).
+  // Discipline first; opt-in enforcement for projects that want the gate.
+  if (isRuntimeValidationEnabled()) {
+    for (const wf of data.workflows) {
+      if (!Array.isArray(wf.scopes)) continue;
+      for (const scope of wf.scopes) {
+        try {
+          validateScopeAdditions({
+            record: scope.record,
+            tasks: scope.tasks,
+          });
+        } catch (err) {
+          // Re-throw with workflow + scope context so the operator
+          // sees exactly which scope broke the contract.
+          if (err instanceof ScopeRecordValidationError) {
+            throw new Error(
+              `writeTracking rejected: ${wf.name} / ${scope.id} — ${err.message}`,
+            );
+          }
+          throw err;
+        }
+      }
+    }
+  }
   writeJson(getTrackingPath(cwd), data);
 
   // Write-through to index.json for every workflow.

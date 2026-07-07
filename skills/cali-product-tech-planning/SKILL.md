@@ -56,6 +56,34 @@ Read the `references/` files to guide the process:
 | `references/tech-output.md` | Tech plan output format, frontmatter, receipts | **After generation** — formats output |
 | `cali-product-coding-standards` (skill) | Universal coding standards (KISS, DRY, LoB, SoC, Fail Fast, YAGNI) | **During generation** — guides implementation |
 
+## How scopes & tasks flow between planning and execution (v0.43.0)
+
+**The split (Shape Up hill chart collapsed into scopes):**
+
+| Layer | Owned by | Lifetime | Purpose |
+|---|---|---|---|
+| **Scope** | `cali-product-tech-planning` (this skill) | Workflow lifetime (stelow.json) | Atomic delivery unit. Appetite ceiling: Lean ≤2, Core ≤5, Complete ~10. Cannot be created during execution — must be planned. |
+| **Task** | `cali-product-scope-executor` Step 3e-ter (runtime) | Scope lifetime (`wf.scopes[i].tasks`) | Sub-item checklist inside a scope. Seeds from spec-tech.md table; can be added during execution as `source: 'discovered'`. |
+
+**At planning time (this skill):**
+
+- The scope body in `spec-tech_{v}.md` contains a Tasks table — the initial hill-chart breakdown per scope. This table is the **input** to runtime tracking.
+- You do NOT add a `tasks: []` field to `wf.scopes[i]` at planning time. The executor parses the table at scope start and seeds the field.
+
+**At execution time (scope-executor Step 3e-ter):**
+
+- Scope start: parse the Tasks table, seed each row as `source: 'planned', status: 'pending'`.
+- During execution: when the child LLM discovers new work (test flake, missing index, refactor needed for an AC), append a task with `source: 'discovered', note: <trigger>`.
+- At scope close: the final `tasks[]` snapshot is the executable proof of what actually happened. `discovered_tasks_count` aggregates the count.
+
+**Why this split:** scopes are committed up front (Shape Up's "you can change the hill chart but not the scope shape"). Tasks emerge from reality — they're the visible, low-cost-by-design artifacts of "what we learned by building".
+
+**Rule:** if a discovered task grows large enough to be its own delivery unit, **escalate it as a new scope** in the next cycle. Do not bloat the current scope. The hill chart's job is to make scope size honest, not to encourage scope creep in disguise.
+
+**See also:**
+- `skills/cali-product-scope-executor/SKILL.md#3e-ter` — task seeding, append, mark-done.
+- `skills/cali-product-tech-planning/references/scopes-and-sequencing.md#Scope Detail Template` — the markdown table format.
+
 ## Process
 
 ### tech:5 — Discover Stack
@@ -240,6 +268,12 @@ for SCOPE_LINE in $(grep -n "^### " "$SPEC_TECH" | sed 's/:.*//'); do
   tail -n +$SCOPE_LINE "$SPEC_TECH" | head -50 | grep -q -E "(AC|Acceptance Criteria)" || {
     echo "VALIDATION_FAILED: scope at line $SCOPE_LINE missing AC"; VALID=false;
   }
+  # v0.43.0: Tasks table is recommended (Shape Up hill chart collapse).
+  # Not a hard requirement — empty table is allowed when the scope is
+  # small enough that the DoD itself is the task list. WARN, not FAIL.
+  if ! tail -n +$SCOPE_LINE "$SPEC_TECH" | head -80 | grep -q "^| # .* Task "; then
+    echo "VALIDATION_WARN: scope at line $SCOPE_LINE has no Tasks table (Shape Up hill chart). Consider adding one for runtime tracking."
+  fi
 done
 
 # Check for circular dependencies (>5 levels of nesting = probable error)

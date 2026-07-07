@@ -108,6 +108,90 @@ function isHiddenWorkflowStatus(status) {
   return ['archived', 'aborted', 'stopped', 'cancelled', 'canceled'].includes(status);
 }
 
+/**
+ * Flatten all `wf.scopes` across all workflows in a tracking file into
+ * a uniform list of `{ workflow, scope, project }` entries. Used by the
+ * cross-workflow "Scope view" tab in the Muxy panel.
+ *
+ * Each card shows: project path (worktree-aware), workflow name + status,
+ * scope id + name, scope progress. Filter strip on top narrows the list.
+ *
+ * **Sandboxing caveat:** Muxy's `muxy.files.read` is sandboxed to the
+ * active worktree. This view therefore reads scopes from the active
+ * workspace's `stelow.json` only. For multi-worktree scope aggregation,
+ * switch worktrees manually; cross-project aggregation would require
+ * Muxy to expose a `projects.read.files` API (not yet available —
+ * see https://muxy.app/docs/extensions/files).
+ *
+ * Within the active worktree, multiple workflows in the same stelow.json
+ * ARE visible (the panel already supports this for workflow cards; this
+ * function reuses the same data source).
+ */
+export function flattenScopesForView(tracking) {
+  if (!tracking?.workflows) return [];
+  const out = [];
+  for (const wf of tracking.workflows) {
+    if (!Array.isArray(wf.scopes)) continue;
+    for (const scope of wf.scopes) {
+      out.push({
+        project: wf.cwd ?? null,
+        worktree: wf.dirHash ?? null,
+        workflow: wf,
+        scope,
+      });
+    }
+  }
+  return out;
+}
+
+/**
+ * Cross-workflow scope column definitions. Status groups become columns,
+ * mirroring the shape-up notion of "where is this scope on the hill chart".
+ *
+ * Status is read from `scope.status` (the canonical field in stelow.json).
+ * Unknown statuses fall into 'other' to keep the column count stable.
+ */
+export const SCOPE_COLUMNS = [
+  { id: 'pending', label: 'Pending' },
+  { id: 'in-progress', label: 'In Progress' },
+  { id: 'escalated', label: 'Escalated' },
+  { id: 'failed', label: 'Failed' },
+  { id: 'completed', label: 'Completed' },
+];
+
+/**
+ * Group a flat scope list into columns by status. Pure, deterministic.
+ */
+export function groupScopesByStatus(flat) {
+  const buckets = Object.fromEntries(SCOPE_COLUMNS.map(c => [c.id, []]));
+  buckets.other = [];
+  for (const entry of flat) {
+    const status = entry.scope?.status ?? 'other';
+    if (buckets[status]) buckets[status].push(entry);
+    else buckets.other.push(entry);
+  }
+  return buckets;
+}
+
+/**
+ * v0.43.0: list all known projects for the cross-project picker UI.
+ * Calls `muxy.projects.list()` and normalizes the shape. Returns an
+ * empty array on any error (sandbox or permission missing).
+ */
+export async function loadProjectList() {
+  try {
+    const projects = await muxy.projects.list();
+    return (Array.isArray(projects) ? projects : []).map((p) => ({
+      id: p.id ?? p.path ?? null,
+      name: p.name ?? p.path?.split('/').filter(Boolean).pop() ?? null,
+      path: p.path ?? null,
+      isActive: Boolean(p.isActive),
+    }));
+  } catch {
+    return [];
+  }
+}
+
 export function normalizeTrackingDataForProject(tracking, projectPath) {
   if (!tracking) return null;
   if (!projectPath) return tracking;

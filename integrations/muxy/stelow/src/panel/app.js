@@ -39,6 +39,10 @@ import {
   summarizeDisplayName,
   persistWorkflowMeta,
   renameWorkflowInFiles,
+  flattenScopesForView,
+  groupScopesByStatus,
+  SCOPE_COLUMNS,
+  loadProjectList,
 } from './data';
 
 export class PipelinePanel {
@@ -59,6 +63,12 @@ export class PipelinePanel {
     this.previewFile = null;
     this.previewContent = null;
     this.renameState = null;
+    // v0.43.0: cross-workflow scope view tab. 'pipeline' = existing kanban,
+    // 'scopes' = new flat scope cards across all workflows in this workspace.
+    this.viewTab = 'pipeline';
+    // Scope-tab filter strip state (independent of pipeline filterText).
+    this.scopeFilterText = '';
+    this.scopeStatusFilter = 'all';  // 'all' | scope.status id
   }
 
   start() {
@@ -102,6 +112,9 @@ export class PipelinePanel {
     this.state = 'pipeline';
     this.filterText = '';
     this.renameState = null;
+    this.viewTab = 'pipeline';
+    this.scopeFilterText = '';
+    this.scopeStatusFilter = 'all';
     // Switch to pipeline view immediately, then async-refresh data
     this.render();
     setTimeout(() => this.refresh(true), 300);
@@ -112,11 +125,13 @@ export class PipelinePanel {
     this.refreshing = true;
     if (clearCache) this.artifactMap = new Map();
     try {
-      const [tracking, inbox, projectName, extra] = await Promise.all([
+      const [tracking, inbox, projectName, extra, projectList] = await Promise.all([
         loadTrackingData(),
         loadInbox(),
         loadProjectName(),
         loadExtraWorkflows(),
+        // v0.43.0: load full project list for cross-project picker UI.
+        loadProjectList(),
       ]);
       // Cache the current projectPath so getActiveWorkflow can scope to it.
       // getActiveWorkspacePath() is the same source loadTrackingData uses,
@@ -125,6 +140,7 @@ export class PipelinePanel {
       console.log('[stelow] workspace path:', this.projectPath);
       console.log('[stelow] stelow.json workflows:', tracking?.workflows?.length ?? 0);
       this.projectName = projectName;
+      this.projectList = projectList ?? [];
       this.workflows = [...(tracking?.workflows ?? []), ...extra];
       this.syncSelectedWorkflowWithLatest();
       this.inboxItems = inbox ?? [];
@@ -170,6 +186,12 @@ export class PipelinePanel {
       return;
     }
 
+    // v0.43.0: view-tab routing. Pipeline is the existing kanban; Scopes
+    // is the new cross-workflow flat scope view.
+    if (this.viewTab === 'scopes') {
+      this.root.appendChild(this.renderScopesTab());
+      return;
+    }
     this.root.appendChild(this.renderPipeline());
   }
 
@@ -198,6 +220,206 @@ export class PipelinePanel {
 
   // ── Pipeline ──────────────────────────────────────────────────────
 
+  /**
+   * v0.43.0: top tab strip that toggles between pipeline kanban and
+   * the cross-workflow scope view.
+   */
+  renderViewTabs() {
+    const tabs = [
+      { id: 'pipeline', label: 'Workflows', icon: 'rectangleStack' },
+      { id: 'scopes', label: 'Scopes', icon: 'listBullet' },
+    ];
+    return h('div', { class: 'view-tabs', style: 'display:flex;gap:6px;padding:8px 10px 0 10px;border-bottom:1px solid var(--muxy-border,#2222);align-items:center' },
+      ...tabs.map(t => {
+        const active = this.viewTab === t.id;
+        return h('button', {
+          class: cls('view-tab', active && 'view-tab-active'),
+          onclick: () => {
+            if (this.viewTab === t.id) return;
+            this.viewTab = t.id;
+            this.render();
+          },
+          title: t.label,
+          style: [
+            'display:flex;align-items:center;gap:5px;padding:6px 10px;border:none;background:transparent',
+            'cursor:pointer;color:inherit;font-size:12px;border-radius:6px 6px 0 0',
+            active ? 'background:var(--muxy-secondary,#333);font-weight:600' : 'opacity:0.7',
+          ].join(';'),
+        }, icon(t.icon, 11), h('span', {}, t.label));
+      }),
+    );
+  }
+
+  /**
+   * v0.43.0: cross-workflow scope view. Reads the same `stelow.json` as
+   * the pipeline view (sandboxed to active worktree), but flattens
+   * `wf.scopes[]` into cards grouped by status (hill-chart columns).
+   *
+   * Within-worktree only (muxy.files is sandboxed; see data.js docs).
+   * Filter strip lets the user narrow by free text or status.
+   */
+  renderScopesTab() {
+    const flat = flattenScopesForView({ workflows: this.workflows });
+    const filtered = flat.filter(entry => {
+      if (this.scopeStatusFilter !== 'all' && entry.scope.status !== this.scopeStatusFilter) {
+        return false;
+      }
+      if (this.scopeFilterText) {
+        const q = this.scopeFilterText.toLowerCase();
+        const hay = [
+          entry.scope.id ?? '',
+          entry.scope.name ?? '',
+          entry.scope.type ?? '',
+          entry.workflow?.name ?? '',
+          entry.project ?? '',
+        ].join(' ').toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+    const buckets = groupScopesByStatus(filtered);
+
+    return h('div', { class: 'scopes-view' },
+      this.renderViewTabs(),
+      this.renderScopeFilterStrip(),
+      this.renderProjectPicker(),
+      h('div', { class: 'scope-columns', style: 'display:grid;grid-auto-flow:column;grid-auto-columns:minmax(180px,1fr);gap:12px;padding:12px;overflow-x:auto' },
+        ...SCOPE_COLUMNS.map(col => this.renderScopeColumn(col, buckets[col.id] ?? [])),
+      ),
+    );
+  }
+
+  /**
+   * v0.43.0: cross-project affordance. Muxy's `muxy.files.read` is
+   * sandboxed to the active worktree (see Muxy docs), so we cannot
+   * magically read every project's `stelow.json`. Instead, list all
+   * known projects with their cached metadata (name, path, scope
+   * count) and provide a Switch button that calls
+   * `muxy.worktrees.switchTo()` to navigate. The panel auto-reloads
+   * via the existing `worktree.switched` event subscription.
+   *
+   * Tradeoff: this is "navigation across projects" not "aggregation
+   * across projects". The honest answer to "show all my in-progress
+   * scopes at once" without `exec:allow` permission is "switch and
+   * look". Future when Muxy exposes `projects.read.files`, we can
+   * actually aggregate.
+   */
+  renderProjectPicker() {
+    const projects = this.projectList ?? [];
+    if (projects.length === 0) return null;
+    return h('div', {
+      class: 'scope-project-picker',
+      style: 'padding:8px 12px;border-bottom:1px solid var(--muxy-border,#2222);display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:11px',
+    },
+      h('span', { style: 'opacity:0.6;margin-right:4px' }, 'Project:'),
+      ...projects.map(p => {
+        const isActive = p.isActive;
+        return h('button', {
+          class: cls('project-chip', isActive && 'project-chip-active'),
+          title: p.path,
+          onclick: async () => {
+            if (isActive) return;
+            try {
+              await muxy.worktrees.switchTo(p.id);
+              // The worktree.switched event handler in start() will
+              // call delayedRefresh() which re-renders.
+            } catch (err) {
+              console.error('[stelow] worktree switch failed:', err);
+            }
+          },
+          style: [
+            'padding:3px 8px;border:1px solid var(--muxy-border,#444);border-radius:10px;background:transparent;color:inherit;cursor:pointer',
+            isActive ? 'background:var(--muxy-accent,#3a8);color:var(--muxy-background,#fff);font-weight:600' : '',
+          ].join(';'),
+        }, p.name ?? p.path?.split('/').pop() ?? '?');
+      }),
+      h('span', { style: 'opacity:0.4;margin-left:8px' }, '(click to switch — Muxy files are sandboxed per worktree)'),
+    );
+  }
+
+  renderScopeFilterStrip() {
+    const statusOptions = [
+      { id: 'all', label: 'All' },
+      ...SCOPE_COLUMNS,
+    ];
+    return h('div', {
+      class: 'scope-filter-strip',
+      style: 'display:flex;gap:8px;padding:8px 10px;align-items:center;border-bottom:1px solid var(--muxy-border,#2222);font-size:11px',
+    },
+      ...statusOptions.map(opt => {
+        const active = this.scopeStatusFilter === opt.id;
+        return h('button', {
+          class: cls('scope-chip', active && 'scope-chip-active'),
+          onclick: () => { this.scopeStatusFilter = opt.id; this.render(); },
+          style: [
+            'padding:3px 8px;border:1px solid var(--muxy-border,#444);border-radius:10px;background:transparent;color:inherit;cursor:pointer',
+            active ? 'background:var(--muxy-secondary,#333);font-weight:600' : '',
+          ].join(';'),
+        }, opt.label);
+      }),
+      h('input', {
+        class: 'scope-filter-input',
+        placeholder: 'Find scope, wf, project...',
+        value: this.scopeFilterText,
+        oninput: (e) => { this.scopeFilterText = e.target.value; this.render(); },
+        style: 'flex:1;padding:3px 8px;border:1px solid var(--muxy-border,#444);border-radius:6px;background:transparent;color:inherit;font-size:11px',
+      }),
+    );
+  }
+
+  renderScopeColumn(col, entries) {
+    return h('div', {
+      class: `scope-column scope-column-${col.id}`,
+      style: 'display:flex;flex-direction:column;gap:8px;min-width:0;padding:6px;background:var(--muxy-tertiary,#1118);border-radius:6px',
+    },
+      h('div', {
+        class: 'scope-column-header',
+        style: 'display:flex;justify-content:space-between;align-items:center;font-size:11px;opacity:0.8;text-transform:uppercase;letter-spacing:0.5px;padding:2px 4px',
+      },
+        h('span', {}, col.label),
+        h('span', { class: 'scope-column-count' }, String(entries.length)),
+      ),
+      ...entries.map(entry => this.renderScopeCard(entry)),
+    );
+  }
+
+  renderScopeCard(entry) {
+    const { scope, workflow, project } = entry;
+    const projectLabel = project ? project.split('/').filter(Boolean).slice(-2).join('/') : '?';
+    const rec = scope.record;
+    return h('div', {
+      class: 'scope-card',
+      style: 'padding:8px;border:1px solid var(--muxy-border,#333);border-radius:6px;background:var(--muxy-background,#000a);display:flex;flex-direction:column;gap:4px',
+    },
+      h('div', { class: 'scope-card-id', style: 'font-family:monospace;font-size:10px;opacity:0.6' }, scope.id ?? '?'),
+      h('div', { class: 'scope-card-name', style: 'font-weight:600;font-size:13px' }, scope.name ?? '(unnamed)'),
+      h('div', { class: 'scope-card-meta', style: 'font-size:10px;opacity:0.7;display:flex;flex-wrap:wrap;gap:4px' },
+        h('span', { class: 'scope-card-workflow', title: workflow?.name ?? '' }, workflow?.name ?? '?'),
+        scope.type ? h('span', { style: 'opacity:0.6' }, ` \u00b7 ${scope.type}`) : null,
+      ),
+      h('div', { class: 'scope-card-project', style: 'font-size:9px;font-family:monospace;opacity:0.5', title: project ?? '' }, projectLabel),
+      scope.iteration !== undefined
+        ? h('div', { class: 'scope-card-iter', style: 'font-size:9px;opacity:0.6' }, `iter ${scope.iteration}/${scope.maxIterations ?? '?'}`)
+        : null,
+      rec
+        ? h('div', {
+            class: 'scope-card-record',
+            title: `verified=${rec.verified}, files=${rec.files_count}, cmds=${rec.commands_count}`,
+            style: `font-size:9px;opacity:${rec.verified ? '0.95' : '0.55'}`,
+          }, rec.verified ? '\u2705 verified' : '\u25cb unverified')
+        : null,
+      // Task count line (when tasks are populated). Surfaces Shape Up
+      // hill-chart collapse inside each scope card.
+      Array.isArray(scope.tasks) && scope.tasks.length > 0
+        ? h('div', {
+            class: 'scope-card-tasks',
+            title: `planned=${scope.tasks.filter(t => t.source === 'planned').length}, discovered=${scope.discovered_tasks_count ?? scope.tasks.filter(t => t.source === 'discovered').length}`,
+            style: 'font-size:9px;opacity:0.6',
+          }, `tasks: ${scope.tasks.filter(t => t.status === 'done').length}/${scope.tasks.length}`)
+        : null,
+    );
+  }
+
   renderPipeline() {
     // Apply filter
     let wfs = this.workflows;
@@ -208,6 +430,7 @@ export class PipelinePanel {
     const buckets = groupWorkflowsByMacroStage(wfs);
 
     return h('div', { class: 'pipeline' },
+      this.renderViewTabs(),
       this.renderFilter(),
       this.renderCommandBar(this.selectedWf),
       this.renderInbox(),
