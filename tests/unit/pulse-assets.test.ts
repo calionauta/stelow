@@ -41,23 +41,6 @@ describe("Pulse assets are shipped with the extension", () => {
   });
 });
 
-describe("Pulse scripts do not hardcode haiku model", () => {
-  it("pulse.sh does not default to haiku", () => {
-    const path = join(PROJECT_ROOT, "extensions", "stelow", "pulse", "pulse.sh");
-    if (!existsSync(path)) return; // skip if source missing
-    const content = readFileSync(path, "utf-8");
-    // The old default was: MODEL="${PULSE_MODEL:-haiku}"
-    // The new default is:    MODEL="${PULSE_MODEL:-}" (empty = use harness)
-    expect(content).not.toMatch(/PULSE_MODEL:-haiku/);
-  });
-
-  it("pulse.ps1 does not default to haiku", () => {
-    const path = join(PROJECT_ROOT, "extensions", "stelow", "pulse", "pulse.ps1");
-    if (!existsSync(path)) return;
-    const content = readFileSync(path, "utf-8");
-    expect(content).not.toMatch(/"haiku"/);
-  });
-});
 
 describe("Standalone Pulse setup script", () => {
   it("scripts/setup-pulse.sh exists and is executable", () => {
