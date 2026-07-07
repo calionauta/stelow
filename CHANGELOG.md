@@ -2,6 +2,20 @@
 
 All notable changes to `@calionauta/stelow` will be documented in this file.
 
+## [0.43.2] - 2026-07-07
+
+Robustness pass: seed + re-sync guard merged into single `node -e`, shape validation (source/status/id) at seed time, discovered append guard rejects missing note. New e2e test (18 cases) covering seed → stelow.json → Muxy display pipeline. All tests green: 36 files, 1051 passing.
+
+### Added
+
+- **Inline shape validation in seed guard** (`SKILL.md` Step 3c): `VALID_SOURCES` / `VALID_STATUSES` Set checks every task at seed time. Catches misspelled `source:'planed'` or `status:'complet'` before they reach stelow.json.
+- **Discovered append guard** (`SKILL.md` Step 3e-ter): rejects discovered task without `note:` at push time. Also validates `source === 'discovered'`.
+- **E2E test suite** (`tests/integration/scope-task-tracking.test.ts`): 18 tests covering seed, re-sync guard, shape validation, discovered append, mark done/skipped, Muxy `getScopeProgress` aggregation, `getTaskSummaryText` formatting, `discovered_tasks_count` fallback, and full seed→mark→append→Muxy pipeline.
+
+### Changed
+
+- **Re-sync guard merged into seed step** (DRY). Eliminates separate `node -e` that re-reads the file. Same validation, same guarantees, one pass instead of two.
+
 ## [0.43.1] - 2026-07-07
 
 Task visibility + CI fix — Muxy pipeline card shows task progress, scope cards are expandable with inline task list + link to spec-tech.md, discovered-task badge, and re-sync guard in scope-executor. CI pi-dependent tests now skip (not fail) in CI runners without global `pi` binary.
