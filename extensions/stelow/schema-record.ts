@@ -169,16 +169,22 @@ export function validateScopeTasks(input: unknown): ScopeTask[] {
 }
 
 /**
- * Top-level entry: validate `scope.record` AND `scope.tasks` if present.
+ * Top-level entry: validate `scope.record`, `scope.tasks`, and
+ * `scope.discovered_tasks_count` if present.
  * Used by `writeTracking()` when `STELOW_VALIDATE=1`.
  */
 export function validateScopeAdditions(input: {
   record?: unknown;
   tasks?: unknown;
+  discovered_tasks_count?: unknown;
 }): { record?: ScopeRecord; tasks?: ScopeTask[] } {
   const out: { record?: ScopeRecord; tasks?: ScopeTask[] } = {};
   if (input.record !== undefined) out.record = validateScopeRecord(input.record);
   if (input.tasks !== undefined) out.tasks = validateScopeTasks(input.tasks);
+  // discovered_tasks_count must be non-negative integer when present.
+  if (input.discovered_tasks_count !== undefined) {
+    isNonNegInt(input.discovered_tasks_count, "discovered_tasks_count");
+  }
   return out;
 }
 

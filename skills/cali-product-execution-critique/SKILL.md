@@ -305,7 +305,22 @@ Flag as gap if any of:
 Severity ladder (matches the v1/v2 enforcement plan in Step 3e-bis):
 - **block**: missing `record` entirely on a `completed` scope. close audit.
 - **warning**: incomplete verification or zero commands. document in gap registry.
-- **minor**: cosmetic (suggestedCommit missing). Note in lessons learned.
+- **minor**: cosmetic (suggested_commit missing). Note in lessons learned.
+
+**Threshold note (v0.43.0 → v0.44.x):**
+
+In v0.43.0, `record.verified !== true` is a **warning** because discipline is
+being established. After ≥3 workflows in your project have shipped with valid
+Records — meaning the team has proven the convention works — upgrade to
+**block** by:
+
+1. Setting `STELOW_VALIDATE=1` in your environment (runtime validation).
+2. Enabling the pre-commit hook (`scripts/pre-commit-record.sh`).
+3. Reporting `record.verified !== true` as **block** in this audit step.
+
+The threshold is project-level, not per-cycle. Once you have infrastructure in
+place (validation + hook), treat incomplete records as blockers — because the
+tools to prevent them exist, and skipping them is now a choice, not a gap.
 
 Note: `record` field uses snake_case (`completed_at`, `files_count`,
 `commands_count`, `suggested_commit`) to match the rest of `stelow.json`
@@ -494,7 +509,8 @@ Flag as gap if any of:
 - `tasks` filtered to `source: 'discovered'` AND any task has empty
   `note` → **warning** (Record Evidence via convention): discovered
   tasks must explain the trigger. (Hard-blocked at write time when
-  `STELOW_VALIDATE=1`.)
+  `STELOW_VALIDATE=1`. Without the env var, the warning is the only
+  guard — check each discovered task's note explicitly.)
 - `discovered_tasks_count > 5` → **minor**: high discovery ratio
   signals either under-planning at spec-tech time OR scope boundary
   drift. Not a blocker; surface in lessons learned.

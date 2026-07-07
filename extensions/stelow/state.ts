@@ -261,6 +261,7 @@ export function writeTracking(cwd: string, data: TrackingData): void {
           validateScopeAdditions({
             record: scope.record,
             tasks: scope.tasks,
+            discovered_tasks_count: scope.discovered_tasks_count,
           });
         } catch (err) {
           // Re-throw with workflow + scope context so the operator

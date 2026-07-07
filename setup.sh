@@ -774,6 +774,10 @@ print_summary() {
   echo "       /skills           List all installed skills"
   echo "       alt+1-5           Toggle skill quick-access"
   echo ""
+  echo "  ${BOLD}Record v2 (opt-in):${RESET}"
+  echo "       export STELOW_VALIDATE=1     Runtime record validation"
+  echo "       bash scripts/pre-commit-record.sh  Pre-commit record hook"
+  echo ""
   echo "  ${BOLD}Docs:${RESET} https://github.com/calionauta/stelow"
   echo ""
 }
