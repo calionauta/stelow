@@ -6,6 +6,36 @@ import { TASK_ICONS } from "./modules/task";
 import { WORKFLOW_DIR, TRACKING_FILE, GLOBAL_TRACKING_FILE, SCHEMA_URL, PHASE_NAMES, getCLICapabilities } from "./types";
 import { PHASE_TO_STAGE } from "./stages-guard";
 
+// ── Internal helpers (file-private) ────────────────────────────────────
+
+/**
+ * Read a JSON file with strict typing. Returns null when the file is
+ * absent or malformed; never throws to the caller. DRY for the six
+ * near-identical `JSON.parse(readFileSync(...))` sites this module used
+ * to have.
+ */
+function readJson<T = unknown>(path: string): T | null {
+  if (!existsSync(path)) return null;
+  try {
+    return JSON.parse(readFileSync(path, "utf-8")) as T;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Persist a value as pretty-printed JSON. Used by every site that
+ * previously hand-rolled `writeFileSync(p, JSON.stringify(d, null, 2))`.
+ */
+function writeJson(path: string, data: unknown): void {
+  writeFileSync(path, JSON.stringify(data, null, 2));
+}
+
+// ── 1. CLI detection ──────────────────────────────────────────────────
+
+/**
+ * Detection signals for each CLI.
+
 // ── CLI Detection ────────────────────────────────────────────────────
 
 /**
@@ -202,30 +232,18 @@ function migrateTrackingData(data: any): TrackingData {
 }
 
 export function readTracking(cwd: string): TrackingData | null {
-  const path = getTrackingPath(cwd);
-  if (!existsSync(path)) return null;
-  try {
-    const raw = JSON.parse(readFileSync(path, "utf-8"));
-    return migrateTrackingData(raw);
-  } catch {
-    return null;
-  }
+  const raw = readJson<TrackingData>(getTrackingPath(cwd));
+  return raw ? migrateTrackingData(raw) : null;
 }
 
 export function readGlobalTracking(): TrackingData | null {
-  const path = getGlobalTrackingPath();
-  if (!existsSync(path)) return null;
-  try {
-    const raw = JSON.parse(readFileSync(path, "utf-8"));
-    return migrateTrackingData(raw);
-  } catch {
-    return null;
-  }
+  const raw = readJson<TrackingData>(getGlobalTrackingPath());
+  return raw ? migrateTrackingData(raw) : null;
 }
 
 export function writeTracking(cwd: string, data: TrackingData): void {
   data.updated = new Date().toISOString();
-  writeFileSync(getTrackingPath(cwd), JSON.stringify(data, null, 2));
+  writeJson(getTrackingPath(cwd), data);
 
   // Write-through to index.json for every workflow.
   // This replaces ~9 explicit updateWorkflowIndexJson calls from commands.ts.
@@ -248,7 +266,7 @@ export function writeGlobalTracking(data: TrackingData): void {
     updated: new Date().toISOString(),
   })) as Workflow[];
   data.updated = new Date().toISOString();
-  writeFileSync(getGlobalTrackingPath(), JSON.stringify(data, null, 2));
+  writeJson(getGlobalTrackingPath(), data);
 }
 
 /**
@@ -457,13 +475,11 @@ export function renameWorkflow(
   const dirToUse = wf.dirHash || oldName;  // dirHash is stable, name may change
   const idxPath = join(cwd, WORKFLOW_DIR, ds, dirToUse, "index.json");
   if (existsSync(idxPath)) {
-    try {
-      const idx = JSON.parse(readFileSync(idxPath, "utf-8"));
+    const idx = readJson<Record<string, unknown>>(idxPath);
+    if (idx) {
       idx.name = finalName;
       idx.updated_at = new Date().toISOString();
-      writeFileSync(idxPath, JSON.stringify(idx, null, 2));
-    } catch {
-      /* skip */
+      writeJson(idxPath, idx);
     }
   }
 
@@ -502,9 +518,9 @@ export function scanWorkflowDirs(cwd: string): DiskWorkflow[] {
       for (const wfDir of wfDirs) {
         const indexPath = join(datePath, wfDir, "index.json");
         if (!existsSync(indexPath)) continue;
-        try {
-          const raw = JSON.parse(readFileSync(indexPath, "utf-8"));
-          result.push({
+        const raw = readJson<Record<string, any>>(indexPath);
+        if (!raw) continue;
+        result.push({
             name: raw.name || raw.slug || wfDir,
             status: raw.status || raw.workflow_status || "unknown",
             // Backward compatibility: old workflows had current_phase_index: 0 for Setup
@@ -521,7 +537,6 @@ export function scanWorkflowDirs(cwd: string): DiskWorkflow[] {
             dateStamp: dateDir,
             artifacts: raw.artifacts || {},
           });
-        } catch { /* skip corrupt index */ }
       }
     }
   } catch { /* skip unreadable */ }
@@ -608,17 +623,16 @@ export function archiveWorkflowOnDisk(cwd: string, workflowName: string): boolea
       for (const wfDir of wfDirs) {
         const indexPath = join(datePath, wfDir, "index.json");
         if (!existsSync(indexPath)) continue;
-        try {
-          const raw = JSON.parse(readFileSync(indexPath, "utf-8"));
-          const rawName = raw.name || raw.slug;
-          if (rawName === workflowName) {
-            raw.workflow_status = "archived";
-            raw.status = "archived";
-            raw.updated_at = new Date().toISOString();
-            writeFileSync(indexPath, JSON.stringify(raw, null, 2));
-            return true;
-          }
-        } catch { /* skip */ }
+        const raw = readJson<Record<string, any>>(indexPath);
+        if (!raw) continue;
+        const rawName = raw.name || raw.slug;
+        if (rawName === workflowName) {
+          raw.workflow_status = "archived";
+          raw.status = "archived";
+          raw.updated_at = new Date().toISOString();
+          writeJson(indexPath, raw);
+          return true;
+        }
       }
     }
   } catch { /* skip */ }
@@ -648,14 +662,21 @@ export function updateWorkflowIndexJson(
   const idxPath = join(cwd, WORKFLOW_DIR, ds, wf.dirHash, "index.json");
 
   let idx: Record<string, unknown> = {};
-  try {
-    idx = JSON.parse(readFileSync(idxPath, "utf-8"));
-  } catch {
-    if (existsSync(idxPath)) {
-      // File exists but is corrupt — warn and rebuild from workflow state
-      console.warn(`[stelow] Corrupt index.json, rebuilding: ${idxPath}`);
-    }
-    // Init from workflow state (defensive recovery)
+  const existing = readJson<Record<string, unknown>>(idxPath);
+  if (existing) {
+    idx = existing;
+  } else if (existsSync(idxPath)) {
+    // File exists but is corrupt — warn and rebuild from workflow state
+    console.warn(`[stelow] Corrupt index.json, rebuilding: ${idxPath}`);
+    idx = {
+      name: wf.name,
+      workflow_status: wf.status,
+      current_phase: PHASE_NAMES[wf.currentPhase]?.toLowerCase() || "setup",
+      current_phase_index: wf.currentPhase,
+      created_at: wf.created,
+    };
+  } else {
+    // First-write: seed from workflow state
     idx = {
       name: wf.name,
       workflow_status: wf.status,
@@ -680,7 +701,7 @@ export function updateWorkflowIndexJson(
   idx.updated_at = new Date().toISOString();
 
   mkdirSync(dirname(idxPath), { recursive: true });
-  writeFileSync(idxPath, JSON.stringify(idx, null, 2));
+  writeJson(idxPath, idx);
   return true;
 }
 
@@ -699,150 +720,16 @@ export function updateWorkflowIndexJson(
  * }
  * ```
  */
-export function readyScopes(scopes: Scope[]): Scope[] {
-  const completed = new Set(
-    scopes.filter(s => s.status === "completed").map(s => s.id)
-  );
-  return scopes.filter(
-    s => s.status === "pending" && (s.blockedBy ?? []).every(dep => completed.has(dep))
-  );
-}
-
-/**
- * Match a single declared glob against a single actual file path.
- *
- * Convention (matches `cali-product-scope-executor` SKILL Step 8):
- *   - trailing `/**` ⇒ prefix match (e.g. `src/auth/**` matches `src/auth/foo.ts`)
- *   - trailing `/*`  ⇒ single-level match (e.g. `src/auth/*` matches
- *                      `src/auth/foo.ts` but not `src/auth/sub/bar.ts`)
- *   - otherwise exact match (e.g. `src/middleware/auth.ts` matches exactly)
- *
- * Pure function. Exported for unit testing + reuse.
- */
-export function matchesDeclaredGlob(file: string, glob: string): boolean {
-  if (glob.endsWith("/**")) return file.startsWith(glob.slice(0, -2));
-  if (glob.endsWith("/*")) {
-    const prefix = glob.slice(0, -1);
-    if (!file.startsWith(prefix)) return false;
-    const rest = file.slice(prefix.length);
-    return !rest.includes("/");
-  }
-  return file === glob;
-}
-
-/**
- * 4-class overlap classification result. See `cali-product-scope-executor`
- * SKILL Step 8 for the user-facing rationale; this function computes the
- * underlying data.
- *
- * Classes (always returned, possibly empty):
- *   - (a) `undeclared` — a completed scope wrote to files outside its
- *                         declared `targetFiles` (contract drift / scope creep)
- *   - (b) `overlaps`   — two completed scopes share at least one file in
- *                         their `actualFiles` (parallel write collision)
- *   - (c) `staleLocks` — `.lock` files in `lockDir` with `expires_at` in
- *                         the past (crash recovery / orphan detection)
- *   - (d) `clean`      — completed scopes that touched no class (a)/(b) paths
- */
-export interface OverlapReport {
-  undeclared: Array<{ id: string; declared: string[]; actual: string[]; undeclaredWrites: string[] }>;
-  overlaps: Array<{ a: string; b: string; shared: string[] }>;
-  staleLocks: Array<{ file: string; scope: string; expiresAt: string }>;
-  clean: string[];
-}
-
-interface LockRecord {
-  scope_id?: string;
-  file?: string;
-  expires_at?: string;
-}
-
-/**
- * Classify scopes for the post-execution 4-class overlap report.
- *
- * @param scopes  — typically `wf.scopes` from the current workflow.
- * @param lockDir — optional path to the directory of `.lock` files
- *                  (defaults to `.stelow/{date}/{dir}/locks`). If absent
- *                  or unreadable, `staleLocks` is empty (not an error).
- */
-export function classifyOverlap(scopes: Scope[], lockDir?: string): OverlapReport {
-  const completed = scopes.filter(
-    (s) => s.status === "completed" && Array.isArray(s.actualFiles)
-  );
-
-  // (a) undeclared writes — only when the scope declared a contract
-  // (targetFiles). If targetFiles is absent/empty, no contract exists and
-  // every write is "implicitly allowed"; we skip class (a) for that scope.
-  const undeclared = completed
-    .map((s) => {
-      const declared = s.targetFiles ?? [];
-      if (declared.length === 0) {
-        return { id: s.id, declared, actual: s.actualFiles ?? [], undeclaredWrites: [] };
-      }
-      const writes = (s.actualFiles ?? []).filter(
-        (f) => !declared.some((g) => matchesDeclaredGlob(f, g))
-      );
-      return {
-        id: s.id,
-        declared,
-        actual: s.actualFiles ?? [],
-        undeclaredWrites: writes,
-      };
-    })
-    .filter((s) => s.undeclaredWrites.length > 0);
-
-  // (b) pairwise real overlaps
-  const overlaps: OverlapReport["overlaps"] = [];
-  for (let i = 0; i < completed.length; i++) {
-    for (let j = i + 1; j < completed.length; j++) {
-      const a = completed[i];
-      const b = completed[j];
-      const aFiles = a.actualFiles ?? [];
-      const bFiles = b.actualFiles ?? [];
-      const shared = aFiles.filter((f) => bFiles.includes(f));
-      if (shared.length > 0) {
-        overlaps.push({ a: a.id, b: b.id, shared });
-      }
-    }
-  }
-
-  // (d) clean (computed last, after (a) and (b) deductions)
-  const tainted = new Set<string>();
-  for (const u of undeclared) tainted.add(u.id);
-  for (const o of overlaps) {
-    tainted.add(o.a);
-    tainted.add(o.b);
-  }
-  const clean = completed.filter((s) => !tainted.has(s.id)).map((s) => s.id);
-
-  // (c) stale locks (best-effort — quietly skip on any error)
-  const staleLocks: OverlapReport["staleLocks"] = [];
-  if (lockDir) {
-    try {
-      const now = Date.now();
-      for (const f of readdirSync(lockDir)) {
-        try {
-          const content = readFileSync(join(lockDir, f), "utf-8");
-          const lock = JSON.parse(content) as LockRecord;
-          const expires = new Date(lock.expires_at ?? "").getTime();
-          if (Number.isFinite(expires) && expires < now && lock.file) {
-            staleLocks.push({
-              file: lock.file,
-              scope: lock.scope_id ?? "",
-              expiresAt: lock.expires_at ?? "",
-            });
-          }
-        } catch {
-          // skip malformed / unreadable locks — best effort
-        }
-      }
-    } catch {
-      // lockDir missing / unreadable — return empty staleLocks
-    }
-  }
-
-  return { undeclared, overlaps, staleLocks, clean };
-}
+// `readyScopes`, `matchesDeclaredGlob`, `classifyOverlap` and the
+// `OverlapReport` / `LockRecord` types moved to `scope.ts` (scope
+// execution concerns). Re-exported below for callers that import
+// them from `state.ts` (backward compatibility for adapters).
+export {
+  readyScopes,
+  matchesDeclaredGlob,
+  classifyOverlap,
+  type OverlapReport,
+} from "./scope";
 
 /**
  * Parse checklist.md and return task counts per scope.
@@ -904,108 +791,29 @@ export function truncateText(text: string, maxLen: number): string {
 }
 
 // ── Inbox ──────────────────────────────────────────────────────────────
-
-const INBOX_DIR = ".stelow/inbox";
-const INBOX_FILE = "items.md";
-
-export function getInboxDir(cwd: string): string {
-  return join(cwd, INBOX_DIR);
-}
-
-export function getInboxPath(cwd: string): string {
-  return join(cwd, INBOX_DIR, INBOX_FILE);
-}
-
-export function ensureInboxDir(cwd: string): void {
-  const dir = getInboxDir(cwd);
-  if (!existsSync(dir)) {
-    mkdirSync(dir, { recursive: true });
-  }
-}
-
-export function readInbox(cwd: string): string[] {
-  const path = getInboxPath(cwd);
-  if (!existsSync(path)) return [];
-  try {
-    const content = readFileSync(path, "utf-8");
-    return content
-      .split("\n")
-      .map(line => line.trim())
-      .filter(line => line.length > 0)
-      .filter(line => !line.startsWith("#"));
-  } catch {
-    return [];
-  }
-}
-
-export function writeInbox(cwd: string, items: string[]): void {
-  ensureInboxDir(cwd);
-  const path = getInboxPath(cwd);
-  const header = "# Inbox\n\n";
-  const content = items.length > 0 ? items.join("\n") + "\n" : "\n";
-  writeFileSync(path, header + content);
-}
-
-export function addToInbox(cwd: string, item: string): void {
-  const items = readInbox(cwd);
-  if (!items.includes(item)) {
-    items.push(item);
-    writeInbox(cwd, items);
-  }
-}
-
-export function removeFromInbox(cwd: string, item: string): void {
-  const items = readInbox(cwd);
-  const filtered = items.filter(i => i !== item);
-  writeInbox(cwd, filtered);
-}
-
-export function clearInbox(cwd: string): void {
-  writeInbox(cwd, []);
-}
+// Moved to inbox.ts (filesystem helper for the .stelow/inbox/items.md
+// staging area). Re-exported below for callers that import from
+// `state.ts`. See `inbox.ts` for the canonical implementation.
 
 // ── Provenance Log ───────────────────────────────────────────────────
+// Moved to provenance.ts (JSONL append-only history log).
+// Re-exported below. See `provenance.ts` for the canonical implementation.
 
-const PROVENANCE_FILE = join(INBOX_DIR, "history.jsonl");
-
-export function getProvenancePath(cwd: string): string {
-  return join(cwd, PROVENANCE_FILE);
-}
-
-/**
- * Append a provenance entry to the inbox history log.
- * Each entry is a JSON object on its own line (JSONL format).
- */
-export function appendProvenance(cwd: string, entry: Record<string, unknown>): void {
-  const path = getProvenancePath(cwd);
-  mkdirSync(dirname(path), { recursive: true });
-  const line = JSON.stringify({ ts: new Date().toISOString(), ...entry }) + "\n";
-  writeFileSync(path, line, { flag: "a" });
-}
-
-/**
- * Read all provenance entries from the inbox history log.
- * Returns parsed JSON objects in order (oldest first).
- * Returns empty array if file doesn't exist or is corrupt.
- */
-export function readProvenance(cwd: string): Record<string, unknown>[] {
-  const path = getProvenancePath(cwd);
-  if (!existsSync(path)) return [];
-  const results: Record<string, unknown>[] = [];
-  try {
-    const lines = readFileSync(path, "utf-8").split("\n").filter(l => l.trim().length > 0);
-    for (const line of lines) {
-      try {
-        results.push(JSON.parse(line));
-      } catch {
-        // skip corrupt line
-      }
-    }
-  } catch {
-    // skip unreadable file
-  }
-  return results;
-}
-
-// Re-export for convenience (used by commands.ts)
+// Re-export for convenience (used by commands.ts and external consumers).
 export { TASK_ICONS };
+export {
+  getInboxDir,
+  getInboxPath,
+  ensureInboxDir,
+  readInbox,
+  writeInbox,
+  addToInbox,
+  removeFromInbox,
+  clearInbox,
+} from "./inbox";
+export {
+  getProvenancePath,
+  appendProvenance,
+  readProvenance,
+  PROVENANCE_FILE,
+} from "./provenance";
