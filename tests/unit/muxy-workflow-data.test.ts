@@ -136,7 +136,7 @@ describe('Scope progress helpers', () => {
       { id: 's2', name: 'Token', type: 'feature', status: 'in-progress' },
       { id: 's3', name: 'Cache', type: 'optimization', status: 'pending' },
     ]));
-    expect(progress).toEqual({ total: 3, completed: 1, inProgress: 1, pending: 1, failed: 0, declaredFilesCount: 0 });
+    expect(progress).toEqual({ total: 3, completed: 1, inProgress: 1, pending: 1, failed: 0, declaredFilesCount: 0, taskDone: 0, taskTotal: 0, withDiscovered: 0 });
   });
 
   it('returns scope status labels for display', () => {

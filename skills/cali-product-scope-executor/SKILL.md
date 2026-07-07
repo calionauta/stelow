@@ -644,11 +644,16 @@ if (wf?.scopes) {
 
 **Seeding planned tasks (scope start, in Step 3c):**
 
-After parsing the scope body for the Tasks table, push each into `scope.tasks` with `status: 'pending'`, `source: 'planned'`.
+After parsing the scope body for the Tasks table, push each into `scope.tasks` with
+`status: 'pending'`, `source: 'planned'`. **Seed + validate in one pass** — no
+separate guard step needed.
 
 ```bash
 node -e "
 const fs = require('fs');
+const VALID_SOURCES = new Set(['planned', 'discovered']);
+const VALID_STATUSES = new Set(['pending', 'done', 'skipped']);
+
 const tracking = JSON.parse(fs.readFileSync('stelow.json', 'utf8'));
 const wf = tracking.workflows.find(w => w.status === 'in-progress');
 if (wf?.scopes) {
@@ -657,40 +662,48 @@ if (wf?.scopes) {
     scope.status = 'in-progress';
     scope.start_sha = process.env.SCOPE_START_SHA || '';
     // Seed planned tasks from spec-tech.md — executor parses the body table and emits this list.
-    scope.tasks = {TASKS_JSON_FROM_PARSED_TABLE};   // e.g. [{id:'3.1', name:'SQLite migration', source:'planned', status:'pending', risk:2}, ...]
+    const tasks = {TASKS_JSON_FROM_PARSED_TABLE};   // e.g. [{id:'3.1', name:'SQLite migration', source:'planned', status:'pending', risk:2}, ...]
+
+    // Re-sync guard: validate tasks exist and have correct shape.
+    // FAIL: empty/malformed table (parse failed).
+    // FAIL: invalid source or status (typo, wrong field name).
+    // WARN: discovered task without note.
+    if (!Array.isArray(tasks) || tasks.length === 0) {
+      console.error('[Seed guard] SCOPE-{SCOPE-ID}: tasks empty or not an array. spec-tech.md table may be malformed.');
+      process.exit(1);
+    }
+    for (let i = 0; i < tasks.length; i++) {
+      const t = tasks[i];
+      if (!t.id || !t.name) {
+        console.error('[Seed guard] SCOPE-{SCOPE-ID}: task[' + i + '] missing id or name');
+        process.exit(1);
+      }
+      if (!VALID_SOURCES.has(t.source)) {
+        console.error('[Seed guard] SCOPE-{SCOPE-ID}: task[' + i + '] invalid source: ' + t.source + ' (expected planned|discovered)');
+        process.exit(1);
+      }
+      if (!VALID_STATUSES.has(t.status)) {
+        console.error('[Seed guard] SCOPE-{SCOPE-ID}: task[' + i + '] invalid status: ' + t.status + ' (expected pending|done|skipped)');
+        process.exit(1);
+      }
+      if (t.source === 'discovered' && !t.note) {
+        console.warn('[Seed guard] SCOPE-{SCOPE-ID}: task[' + i + '] discovered but no note. Add note explaining trigger.');
+      }
+    }
+    scope.tasks = tasks;
   }
   wf.updated = new Date().toISOString();
   fs.writeFileSync('stelow.json', JSON.stringify(tracking, null, 2));
+  console.log('[Seed guard] SCOPE-{SCOPE-ID}: ' + (scope?.tasks?.length ?? 0) + ' tasks seeded OK.');
 }
 "
 ```
 
-**Re-sync guard (validate tasks were seeded correctly):**
-
-After writing, immediately verify that tasks were populated. If the parse failed
-(spec-tech.md table malformed, empty, or absent), `scope.tasks` stays undefined
-and the scope would show "no tasks" everywhere — Muxy, mermaid, execution-critique.
-Catch this here, not at close time.
-
-```bash
-node -e "
-const fs = require('fs');
-const tracking = JSON.parse(fs.readFileSync('stelow.json', 'utf8'));
-const wf = tracking.workflows.find(w => w.status === 'in-progress');
-if (wf?.scopes) {
-  const scope = wf.scopes.find(s => s.id === '{SCOPE-ID}');
-  if (!scope || !Array.isArray(scope.tasks) || scope.tasks.length === 0) {
-    console.error('[Re-sync guard] SCOPE-{SCOPE-ID}: tasks not seeded! spec-tech.md table may be malformed or empty.');
-    process.exit(1);
-  }
-  console.log('[Re-sync guard] SCOPE-{SCOPE-ID}: ' + scope.tasks.length + ' tasks seeded OK.');
-}
-"
-```
-
-If this guard fails, inspect the spec-tech.md Tasks table and fix the parsing
-before proceeding. Do NOT start execution without seeded tasks — every task
-not discovered will be invisible and uncheckable.
+**Re-sync guard rationale:** Instead of a separate `node -e` that re-reads the file
+(post-seed verification), validation runs inline during the seed write. Same
+pass, same data, same guarantees. If the guard fails, inspect the spec-tech.md
+Tasks table and fix the parsing before proceeding. Do NOT start execution
+without seeded tasks — every task not discovered will be invisible and uncheckable.
 
 **Appending a discovered task (mid-execution, in iteration feedback):**
 
@@ -706,7 +719,17 @@ if (wf?.scopes) {
   if (scope) {
     if (!scope.tasks) scope.tasks = [];
     // {DISCOVERED_TASK_JSON} — emit e.g. {id:'3.7', name:'Index on users.email', source:'discovered', status:'pending', discovered_in_iter:3, note:'P95 query time 380ms without index; AC requires 50ms'}
-    scope.tasks.push({DISCOVERED_TASK_JSON});
+    const task = {DISCOVERED_TASK_JSON};
+    // Validate discovered task has a note (anti-rationalization)
+    if (!task.note) {
+      console.error('[Append guard] SCOPE-{SCOPE-ID}: discovered task missing note. Explain what triggered this task.');
+      process.exit(1);
+    }
+    if (task.source !== 'discovered') {
+      console.error('[Append guard] SCOPE-{SCOPE-ID}: appended task must have source:\'discovered\', got ' + task.source);
+      process.exit(1);
+    }
+    scope.tasks.push(task);
     scope.discovered_tasks_count = (scope.discovered_tasks_count || 0) + 1;
   }
   wf.updated = new Date().toISOString();
