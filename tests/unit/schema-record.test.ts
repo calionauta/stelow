@@ -254,50 +254,17 @@ describe("validateScopeAdditions() (combined)", () => {
   });
 });
 
-describe("isRuntimeValidationEnabled()", () => {
-  const ORIGINAL_ENV = process.env.STELOW_VALIDATE;
-  afterEach(() => {
-    if (ORIGINAL_ENV === undefined) {
-      delete process.env.STELOW_VALIDATE;
-    } else {
-      process.env.STELOW_VALIDATE = ORIGINAL_ENV;
-    }
-  });
-
-  it("returns false when env not set", () => {
-    delete process.env.STELOW_VALIDATE;
-    expect(isRuntimeValidationEnabled()).toBe(false);
-  });
-
-  it("returns true when STELOW_VALIDATE=1", () => {
-    process.env.STELOW_VALIDATE = "1";
-    expect(isRuntimeValidationEnabled()).toBe(true);
-  });
-
-  it("returns false for any other value (strict equality)", () => {
-    process.env.STELOW_VALIDATE = "true";
-    expect(isRuntimeValidationEnabled()).toBe(false);
-    process.env.STELOW_VALIDATE = "0";
-    expect(isRuntimeValidationEnabled()).toBe(false);
-  });
-});
-
-describe("writeTracking() opt-in validation integration", () => {
+describe("writeTracking() validation integration", () => {
   let tmpDir: string;
   beforeEach(() => {
     tmpDir = mkdtempSync(join(tmpdir(), "stelow-v2-test-"));
   });
   afterEach(() => {
     rmSync(tmpDir, { recursive: true, force: true });
-    delete process.env.STELOW_VALIDATE;
   });
 
   function makeTracking(scope: unknown): TrackingData {
     return {
-      $schema: "https://example.invalid/stelow.schema.json",
-      version: "1.0",
-      created: "2026-07-07T10:00:00Z",
-      updated: "2026-07-07T10:00:00Z",
       workflows: [
         {
           name: "test-wf",
@@ -311,24 +278,10 @@ describe("writeTracking() opt-in validation integration", () => {
           scopes: [scope as any],
         },
       ],
-    };
+    } as TrackingData;
   }
 
-  it("writes through silently when STELOW_VALIDATE is unset (default OFF)", () => {
-    const data = makeTracking({
-      id: "scope-1",
-      name: "x",
-      type: "feature",
-      status: "completed",
-      record: { completed_at: "x", files_count: -1, commands_count: 0, verified: "yes" }, // all bad
-    });
-    expect(() => writeTracking(tmpDir, data)).not.toThrow();
-    const onDisk = JSON.parse(readFileSync(join(tmpDir, "stelow.json"), "utf-8"));
-    expect(onDisk.workflows[0].scopes[0].record.files_count).toBe(-1); // unchanged
-  });
-
-  it("rejects bad records when STELOW_VALIDATE=1", () => {
-    process.env.STELOW_VALIDATE = "1";
+  it("rejects bad records (validation ON by default)", () => {
     const data = makeTracking({
       id: "scope-1",
       name: "x",
@@ -339,30 +292,20 @@ describe("writeTracking() opt-in validation integration", () => {
     expect(() => writeTracking(tmpDir, data)).toThrow(/scope-1.*files_count/);
   });
 
-  it("accepts good records when STELOW_VALIDATE=1", () => {
-    process.env.STELOW_VALIDATE = "1";
+  it("accepts good records", () => {
     const data = makeTracking({
       id: "scope-1",
       name: "x",
       type: "feature",
       status: "completed",
-      record: {
-        completed_at: "2026-07-07T10:00:00Z",
-        files_count: 5,
-        commands_count: 3,
-        verified: true,
-      },
-      tasks: [
-        { id: "1.1", name: "a", source: "planned", status: "done" },
-        { id: "1.2", name: "b", source: "discovered", status: "done", note: "spike" },
-      ],
+      record: { completed_at: "2026-07-07T10:00:00Z", files_count: 5, commands_count: 3, verified: true },
+      tasks: [{ id: "1.1", name: "a", source: "planned", status: "done" }],
     });
     expect(() => writeTracking(tmpDir, data)).not.toThrow();
     expect(existsSync(join(tmpDir, "stelow.json"))).toBe(true);
   });
 
-  it("rejects discovered task without note when STELOW_VALIDATE=1", () => {
-    process.env.STELOW_VALIDATE = "1";
+  it("rejects discovered task without note", () => {
     const data = makeTracking({
       id: "scope-1",
       name: "x",

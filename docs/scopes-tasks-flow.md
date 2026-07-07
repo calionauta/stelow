@@ -62,7 +62,7 @@ flowchart LR
 
 | Field | v1 (0.43.0) | v2 (next cycle) |
 |---|---|---|
-| `scope.record` | Optional TS type. Advised in SKILL. Flagged by execution-critique. | Required for `status: 'completed'`. Stetlow.json validation via `STELOW_VALIDATE=1`. Pre-commit hook. |
+| `scope.record` | Optional TS type. Advised in SKILL. Flagged by execution-critique. Required for `status: 'completed'`. Runtime validation ON by default. Pre-commit hook. | Required for `status: 'completed'`. Runtime validation ON by default. Pre-commit hook. Pre-commit hook blocks commits with missing records. |
 | `scope.tasks` | Optional TS type. Advised in SKILL. Seeded from spec-tech.md table. | Checked by execution-critique Criterion 11. No write-time block (tasks are a checklist, not proof). |
 | `scope.discovered_tasks_count` | Bash-incremented counter. Validated when present. | Schema check in `schema-record.ts`. Used by Criterion 11's discovery-ratio check. |
 

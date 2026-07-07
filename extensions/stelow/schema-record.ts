@@ -2,7 +2,7 @@
  * Runtime validation for `wf.scopes[i].record` (and adjacent scope fields
  * Optimistic concurrency for scope fields.
  *
- * **Convention (v2):** when `STELOW_VALIDATE=1` is set in the environment,
+ * **Convention:** validation is ON by default. Set `STELOW_VALIDATE=0` to disable.
  * `extensions/stelow/state.ts#writeTracking` invokes `validateScopeRecord()`
  * (and `validateScopeTasks()`) before persisting the tracking file. Bad
  * records throw a `ScopeRecordValidationError` with a precise path.
@@ -189,13 +189,20 @@ export function validateScopeAdditions(input: {
 }
 
 /**
- * Check whether runtime validation is enabled. Centralized so the env
- * name is documented in one place. Tests stub this via the `validators`
- * module's optional env injection (see `state.ts`).
+ * Check whether runtime validation is enabled. **On by default.**
+ * Set `STELOW_VALIDATE=0` (or unset) to disable.
+ *
+ * The env var is a defense-in-depth switch: if a consumer needs to
+ * bypass validation for migration or bulk import, they can set it to
+ * `0`. Default on means every `writeTracking()` run validates its
+ * scopes — same as the pre-commit hook checks at commit time.
  */
 export function isRuntimeValidationEnabled(): boolean {
   try {
-    return process.env.STELOW_VALIDATE === "1";
+    const v = process.env.STELOW_VALIDATE;
+    // ON by default. OFF only for '0' or 'false'.
+    // Unset, empty, or any other value stays ON.
+    return v === undefined || v === "" || (v !== "0" && v !== "false");
   } catch {
     return false;
   }
