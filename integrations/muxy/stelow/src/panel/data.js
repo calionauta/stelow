@@ -233,6 +233,11 @@ export function getScopeStatusInfo(status) {
 /**
  * Get scope progress summary for a workflow.
  * Returns null if no scopes exist.
+ *
+ * The `declaredFilesCount` field surfaces the sum of `target_files` arrays
+ * across all scopes that declared them — a quick at-a-glance signal that
+ * the workflow is using the file-overlap prevention layer. When 0, no
+ * scope opted in; treat the workflow as freeform.
  */
 export function getScopeProgress(workflow) {
   const scopes = workflow.scopes;
@@ -242,7 +247,11 @@ export function getScopeProgress(workflow) {
   const inProgress = scopes.filter(s => s.status === 'in-progress').length;
   const failed = scopes.filter(s => s.status === 'escalated' || s.status === 'failed').length;
   const pending = Math.max(total - completed - inProgress - failed, 0);
-  return { total, completed, inProgress, pending, failed };
+  const declaredFilesCount = scopes.reduce(
+    (sum, s) => sum + (Array.isArray(s.target_files) ? s.target_files.length : 0),
+    0
+  );
+  return { total, completed, inProgress, pending, failed, declaredFilesCount };
 }
 
 export function getScopeSummaryText(workflow) {
@@ -254,6 +263,11 @@ export function getScopeSummaryText(workflow) {
     `${progress.pending} pending`,
   ];
   if (progress.failed > 0) parts.push(`${progress.failed} failed`);
+  // Surface file-overlap guard usage: when scopes declared target_files
+  // the workflow is operating under the prevention protocol (file-locking.md).
+  if (progress.declaredFilesCount > 0) {
+    parts.push(`${progress.declaredFilesCount} declared paths`);
+  }
   return parts.join(', ');
 }
 

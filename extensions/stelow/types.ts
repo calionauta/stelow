@@ -305,18 +305,141 @@ export const INTENT_DESCRIPTIONS: Record<WorkflowIntent, string> = {
 
 export type ScopeStatus = 'pending' | 'in-progress' | 'completed' | 'escalated' | 'failed';
 
+/**
+ * Represents a single executable scope within a stelow workflow.
+ *
+ * A `Scope` is the runtime tracking record for what was declared in
+ * `spec-tech.md` (parsed by the scope-executor skill) plus state captured
+ * during execution. Fields marked `Optional` may be absent if the scope
+ * was authored without the corresponding declaration; downstream code
+ * MUST treat them as `undefined`.
+ *
+ * Lifecycle:
+ *   1. Scope init (Step 2e of `cali-product-scope-executor`): `id`, `name`,
+ *      `type`, `status: 'pending'`, plus optional `targetFiles` from the
+ *      `[TARGET_FILES]` block in spec-tech.md.
+ *   2. Scope start (Step 3c): `status -> 'in-progress'`, `startSha` captured
+ *      via `git rev-parse HEAD`.
+ *   3. Scope finish (Step 3e): `status -> 'completed'|'escalated'`, iteration
+ *      count finalised, `actualFiles` captured via `git diff --name-only
+ *      ${startSha}..HEAD`.
+ *   4. Post-execution report (Step 8): pairwise overlap computed from
+ *      `actualFiles` (4-class report).
+ *
+ * @example
+ * ```ts
+ * const scope: Scope = {
+ *   id: 'scope-1',
+ *   name: 'Auth Foundation',
+ *   type: 'feature',
+ *   status: 'completed',
+ *   blockedBy: [],
+ *   iteration: 2,
+ *   maxIterations: 3,
+ *   source: 'spec-tech',
+ *   targetFiles: ['src/auth/**', 'src/middleware/auth.ts'],
+ *   actualFiles: ['src/auth/login.ts', 'src/middleware/auth.ts'],
+ *   startSha: 'a1b2c3d4',
+ * };
+ * ```
+ *
+ * @see docs/scope-execution-strategy.md (high-level pipeline overview)
+ * @see skills/cali-product-scope-executor/SKILL.md (Steps 2e / 3c / 3e / 8)
+ * @see skills/stelow-product-orchestrator/references/cli-tools/file-locking.md
+ *      (parallel-scope prevention via file-reservation locks)
+ */
 export interface Scope {
-  id: string;           // e.g. "scope-1", "scope-2"
-  name: string;         // e.g. "Auth Foundation"
-  type: string;         // e.g. "feature", "optimization", "spike", "test-unit"
+  /** Stable identifier for this scope (e.g. `"scope-1"`, `"scope-2"`). */
+  id: string;
+  /** Human-readable label for display (e.g. `"Auth Foundation"`). */
+  name: string;
+  /** One of `"feature"`, `"optimization"`, `"spike"`, `"test-unit"`,
+   *  `"test-integration"`, `"test-security"`, `"test-behavior"`. Drives
+   *  executor routing per scope-executor Step 2b. */
+  type: string;
+  /** Current lifecycle state. */
   status: ScopeStatus;
-  blockedBy?: string[];  // Scope IDs that must complete first. Omitted/[] = no deps. Parsed from "Dependencies: [SCOPE-1]" in spec-tech.md.
-  iteration?: number;   // current iteration count (for feature scopes)
-  maxIterations?: number; // from [MAX_ITERATIONS]
-  source?: string;      // e.g. "spec-tech" | "audit-gap" — where this scope originated
-  targetFiles?: string[];  // Optional. Parsed from [TARGET_FILES] block in spec-tech.md. Convention: planning aid + parallel-dispatch overlap prevention via file-reservation locks (see references/cli-tools/file-locking.md). NOT enforced at this layer — advisory only.
-  actualFiles?: string[];  // Captured by scope-executor Step 3e via `git diff --name-only`. Ground truth for post-execution overlap report.
-  startSha?: string;       // Captured by scope-executor Step 3c via `git rev-parse HEAD` before scope begins. Used to compute actualFiles.
+  /**
+   * Scope IDs that must complete before this one starts.
+   *
+   * - `undefined` or `[]` → no deps, eligible for any phase.
+   * - Parsed from `"Dependencies: [SCOPE-1, SCOPE-3]"` line in `spec-tech.md`.
+   *
+   * DAG constraint only. Does NOT imply file-set independence — that is
+   * handled separately via `targetFiles` + the file-reservation lock protocol.
+   */
+  blockedBy?: string[];
+  /** Current iteration count (for `feature` scopes that have an
+   *  acceptance-driven loop). Increments on each child self-correction
+   *  round. Capped by `maxIterations`. */
+  iteration?: number;
+  /** Maximum self-correction iterations allowed before escalation.
+   *  Sourced from `[MAX_ITERATIONS]` block in `spec-tech.md`. */
+  maxIterations?: number;
+  /** Where this scope originated. Currently one of `"spec-tech"` (from
+   *  the approved plan) or `"audit-gap"` (from a prior Audit cycle's
+   *  gap classification). */
+  source?: string;
+  /**
+   * Optional. The set of file paths this scope is *expected* to modify.
+   *
+   * Parsed from the `[TARGET_FILES]` block in `spec-tech.md` by the
+   * scope-executor skill at init time. Convention over config:
+   *   - trailing `/**` ⇒ prefix match (e.g. `src/auth/**` matches
+   *     every path under `src/auth/`)
+   *   - trailing `/*`  ⇒ single-level match (e.g. `src/auth/*` matches
+   *     `src/auth/foo.ts` but not `src/auth/sub/bar.ts`)
+   *   - exact path    ⇒ exact match
+   *
+   * USED FOR:
+   *   1. PARALLEL-DISPATCH DECISION — declared & disjoint → safe parallel;
+   *      declared & intersect → acquire locks via `file-locking.md`.
+   *   2. 4-CLASS REPORT (Step 8) — class (a) "undeclared writes" flags
+   *      any `actualFiles` entry NOT matching any declared glob.
+   *
+   * NOT enforced at this layer. Advisory only. See
+   * `references/cli-tools/file-locking.md` for the prevention protocol.
+   */
+  targetFiles?: string[];
+  /**
+   * Optional. The set of file paths actually modified by this scope.
+   *
+   * Captured by scope-executor Step 3e via
+   *   `git diff --name-only ${startSha}..HEAD`
+   * Ground truth. Reported in:
+   *   1. 4-class overlap report (Step 8) — class (b) "real overlaps" if
+   *      this list intersects another scope's `actualFiles`.
+   *   2. Execution report under each scope's row.
+   * Populated only on `status: 'completed'` (or `'escalated'` with partial
+   * capture if the escalation happened mid-edit).
+   */
+  actualFiles?: string[];
+  /**
+   * Optional. The git SHA captured at scope start (Step 3c).
+   *
+   * Recorded via `git rev-parse HEAD` immediately before delegating the
+   * scope to its worker. Used to compute `actualFiles` via
+   * `git diff --name-only ${startSha}..HEAD` so the diff is scoped to
+   * the scope's lifetime (not the user's whole session).
+   *
+   * If absent on a completed scope, the diff cannot be reconstructed
+   * post-hoc; Step 8 will report `actualFiles: []` rather than crash.
+   */
+  startSha?: string;
+  /**
+   * Optional. Per-scope override of the file-reservation lock TTL in seconds.
+   *
+   * Parsed from `[LOCK_TTL_SECONDS]` block in `spec-tech.md` (see
+   * `references/cli-tools/file-locking.md#ttl-configuration`). Validated
+   * and clamped to `[60, 86400]` by the acquire snippet; values outside
+   * that range are silently clamped. Omitted / `undefined` ⇒ default
+   * `1800` (30 min).
+   *
+   * Honored ONLY when the scope declares `[TARGET_FILES]` AND the
+   * orchestrator dispatches scopes in parallel. Sequential dispatch
+   * never touches locks regardless of TTL.
+   */
+  lockTtlSeconds?: number;
 }
 
 export interface Phase {

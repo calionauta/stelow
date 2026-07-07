@@ -291,9 +291,17 @@ export class PipelinePanel {
         ? 'var(--muxy-diff-remove)'
         : 'var(--muxy-accent)';
 
+    // Compose tooltip — include declared-paths count when scope-execution
+    // prevention protocol is active (any scope declared target_files).
+    const summary = getScopeSummaryText(wf);
+    const declared = progress.declaredFilesCount;
+    const tooltip = declared > 0
+      ? `${progress.completed}/${progress.total} scopes completed. ${summary}. Using file-reservation lock protocol for parallel scope prevention.`
+      : `${progress.completed}/${progress.total} scopes completed. ${summary}.`;
+
     return h('div', {
       class: 'card-scope-progress',
-      title: `${progress.completed}/${progress.total} scopes completed. ${getScopeSummaryText(wf)}.`,
+      title: tooltip,
       style: 'height:3px;background:var(--muxy-secondary);border-radius:999px;overflow:hidden;margin-top:6px;',
     },
       h('div', { class: 'card-scope-progress-fill', style: `height:100%;display:block;width:${pct}%;background:${color};` }),
