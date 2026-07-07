@@ -73,13 +73,20 @@ function writeVersion(filePath, version) {
 // with nested version fields need syncing, switch to a TOML parser.
 function writeTomlVersion(filePath, version) {
   const content = readFileSync(filePath, "utf-8");
-  const updated = content.replace(
-    /^version\s*=\s*".*"$/m,
-    `version = "${version}"`,
-  );
-  if (updated === content) {
+  // Use a regex object + .test() so we can distinguish a genuine
+  // "no version line found" (regex.test() === false) from a no-op
+  // (file already at target version, regex matched but replace() was
+  // effectively a no-op). The naive `updated === content` check
+  // spuriously reports "no match" when the file already has the
+  // desired version, causing unnecessary errors on idempotent runs.
+  const VERSION_LINE = /^version\s*=\s*".*"$/m;
+  if (!VERSION_LINE.test(content)) {
     throw new Error(`no version line matched in ${filePath}`);
   }
+  const updated = content.replace(
+    VERSION_LINE,
+    `version = "${version}"`,
+  );
   writeFileSync(filePath, updated);
   console.log(`  ✅ Synced version to: ${filePath.replace(ROOT + "/", "")}`);
 }
