@@ -79,7 +79,7 @@ echo ""
 #            Fallback when unavailable: find / git / grep.
 #
 #   sem    — entity-level diff (functions, types, methods, not raw lines)
-#            Ataraxy-Labs/sem (formerly bcongdon/sem). Benefits Execution
+#            https://github.com/Ataraxy-Labs/sem. Benefits Execution
 #            Critique (post-execution) and the 4-class overlap report in
 #            scope-executor Step 8.
 #            Fallback when unavailable: git diff (raw line-level only).
@@ -103,6 +103,17 @@ case "$OSTYPE" in
   msys*|mingw*|cygwin*|win32*) IS_WINDOWS=1 ;;
 esac
 
+# ---------------------------------------------------------------------------
+# Tool verification helpers — distinguish the real tool from collisions.
+# GNU Parallel ships a `sem` binary too; we verify via `sem --version` output.
+# cymbal has no known collision; presence check suffices.
+# ---------------------------------------------------------------------------
+verify_at_ataraxy() {
+  command -v sem &> /dev/null || return 1
+  sem --version 2>/dev/null | grep -qi 'ataraxy\|entity' || return 1
+  return 0
+}
+
 HAS_CYMBAL=false
 HAS_SEM=false
 
@@ -114,17 +125,14 @@ else
   echo "   • cymbal (codebase navigation): not detected"
 fi
 
-# sem — detect
-if command -v sem &> /dev/null; then
-  # GNU Parallel ships a `sem` binary too — check we got the real one
-  if sem --version 2>/dev/null | grep -qi 'ataraxy\|entity'; then
-    echo "✅ sem (Ataraxy-Labs): already installed"
-    HAS_SEM=true
-  else
-    echo "   ⚠️ `sem` command found but appears to be GNU Parallel (not Ataraxy-Labs)"
-    echo "      See: docs/scope-execution-strategy.md#name-conflict-with-gnu-parallel"
-    HAS_SEM=false
-  fi
+# sem — detect (verify it's Ataraxy's, not GNU Parallel's)
+if verify_at_ataraxy; then
+  echo "✅ sem: already installed (Ataraxy-Labs)"
+  HAS_SEM=true
+elif command -v sem &> /dev/null; then
+  echo "   ⚠️ `sem` command found but appears to be GNU Parallel (not Ataraxy-Labs)"
+  echo "      See: docs/scope-execution-strategy.md#name-conflict-with-gnu-parallel"
+  HAS_SEM=false
 else
   echo "   • sem (entity-level diff): not detected"
 fi
@@ -146,8 +154,14 @@ attempt_install() {
   local WIN_PS_URL="$4"      # Windows PowerShell installer URL (or "")
   local UNIX_CURL_URL="$5"   # macOS / Linux curl|sh URL (or "")
 
-  # Already installed — nothing to do
-  if command -v "$TOOL" &> /dev/null; then
+  # Already installed — verify (for `sem`, distinguish from GNU Parallel)
+  if [ "$TOOL" = "sem" ]; then
+    if verify_at_ataraxy; then
+      echo "   ✅ $TOOL: present (verified Ataraxy-Labs)"
+      return 0
+    fi
+    # If a GNU Parallel `sem` exists but Ataraxy doesn't, fall through to install
+  elif command -v "$TOOL" &> /dev/null; then
     echo "   ✅ $TOOL: present"
     return 0
   fi
@@ -250,8 +264,9 @@ if ! $HAS_CYMBAL; then
 fi
 
 # sem — benefits Execution Critique + 4-class overlap report
-# Tooltip: Ataraxy-Labs/sem (formerly bcongdon/sem). NOTE: GNU Parallel has
-# its own `sem` binary; ours is the entity-level diff tool.
+# Tooltip: https://github.com/Ataraxy-Labs/sem. NOTE: GNU Parallel has its
+# own `sem` binary; ours is the entity-level diff tool (verified via
+# `sem --version` containing 'ataraxy' or 'entity').
 if ! $HAS_SEM; then
   if confirm_install "sem" "Used for Execution Critique + 4-class overlap report (entity-level diff)."; then
     if attempt_install "sem" "sem-cli" "" "" \

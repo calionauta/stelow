@@ -101,7 +101,7 @@ npm run typecheck        # Type check
 
 - **cymbal** — codebase navigation for Tech Preview / Feature Recon. Cross-platform install: `brew install 1broseidon/tap/cymbal` (macOS / Linuxbrew), `irm https://raw.githubusercontent.com/1broseidon/cymbal/main/install.ps1 | iex` (Windows PowerShell). Fallback: find/git.
 - **ctx7** — live library docs during execution setup. Use: `npx @vedanth/context7`. Fallback: skip.
-- **sem** — entity-level diff for Execution Critique (functions, types, methods instead of raw lines). Note: project moved to [Ataraxy-Labs/sem](https://github.com/Ataraxy-Labs/sem); the historical `bcongdon/sem` reference is **deprecated**. Cross-platform install: `curl -fsSL https://raw.githubusercontent.com/Ataraxy-Labs/sem/main/install.sh | sh` (macOS / Linux), `winget install AtaraxyLabs.sem` (Windows), `brew install sem-cli` (macOS / Linuxbrew). Fallback: `git diff` — raw line-level only. NOTE: GNU Parallel ships a `sem` binary; if a non-Ataraxy `sem` is found, see https://ataraxy-labs.com/#name-conflict-with-gnu-parallel.
+- **sem** ([Ataraxy-Labs/sem](https://github.com/Ataraxy-Labs/sem)) — entity-level diff for Execution Critique (functions, types, methods instead of raw lines). Cross-platform install: `curl -fsSL https://raw.githubusercontent.com/Ataraxy-Labs/sem/main/install.sh | sh` (macOS / Linux), `winget install AtaraxyLabs.sem` (Windows), `brew install sem-cli` (macOS / Linuxbrew). Fallback: `git diff` — raw line-level only. NOTE: GNU Parallel ships a `sem` binary; if a non-Ataraxy `sem` is found, see https://ataraxy-labs.com/#name-conflict-with-gnu-parallel.
 
 All optional — workflow runs without them. `scripts/setup.sh` auto-detects + offers install (default Y).
 
