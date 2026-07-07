@@ -1,24 +1,28 @@
 # Changelog
 
-All notable changes to `@renatocaliari/stelow` will be documented in this file.
+All notable changes to `@calionauta/stelow` will be documented in this file.
 
-> ## [Unreleased] — npm package rename
+> ## [Unreleased] — npm name aligned to GitHub
 >
-> The GitHub repository URL was migrated from `renatocaliari/stelow` to
-> `calionauta/stelow`. GitHub redirects all old URLs automatically (HTTP 301).
+> The GitHub repository URL is `calionauta/stelow` (formerly
+> the old name on GitHub; redirects handle the URL alias).
 >
-> The npm package name `@renatocaliari/stelow` will follow in a future
-> release (target: v0.42.0). When that ships:
+> The npm package **was never published** to npmjs.com at any name — the
+> `name` fields in `package.json` and `extensions/stelow/package.json`
+> have been aligned to `@calionauta/stelow` so a future `npm publish`
+> will use the canonical name. Installers in this repo use the git URL
+> (`git:github.com/calionauta/stelow`) and are not affected by the name
+> field.
 >
-> 1. New package `@calionauta/stelow` is published with v0.42.0 contents.
-> 2. `@renatocaliari/stelow` is marked `npm deprecate`d with redirect notice.
-> 3. Existing installs of `@renatocaliari/stelow` keep working unchanged.
-> 4. New installs via `npm install @calionauta/stelow` get v0.42.0+.
-> 5. `setup.sh` and `install.sh` flip from old name to new on v0.42.0.
+> External references that were intentionally preserved:
 >
-> GitHub-only references (READMEs, badges, schema URLs, plugin paths)
-> were migrated to `calionauta` in this commit while npm name stayed
-> `@renatocaliari/stelow` for backward compatibility.
+>   - `CHANGELOG.md` historic entries: the published-npm artifact name at
+>     that point in history (records what *would* have shipped).
+>   - `docs/design/stelow-board-herdr.md`: a future separate project.
+>   - `skills/cali-product-discovery/SKILL.md` (lines 95, 101, 107): credits
+>     to a third-party author's repositories (not stelow).
+>   - `setup.sh` line 70 (`pi-tool-repair-layer`): a separate upstream
+>     package with its own naming.
 
 ## [0.41.2] - 2026-07-06
 
@@ -718,9 +722,8 @@ the intent — the verification stage was the outlier.
   re-exported from `extensions/stelow/`). The stub added zero value
   and created two top-level Pi dirs that confused readers. The real
   Pi extension code lives in `extensions/stelow/`. Package name
-  `extensions/stelow/package.json` corrected from
-  `@renatocaliari/pi-product-workflow-extension` to
-  `@renatocaliari/stelow`.
+  `extensions/stelow/package.json` corrected to canonical
+  `@calionauta/stelow`.
 
 ### Fixed
 - **README: "15 problems" closing bullet** removed — Listed BMAD /

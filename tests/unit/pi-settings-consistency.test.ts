@@ -36,7 +36,7 @@ interface ValidationResult {
   errors: string[];
 }
 
-const PACKAGE_SOURCE = "git:github.com/renatocaliari/stelow";
+const PACKAGE_SOURCE = "git:github.com/calionauta/stelow";
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
