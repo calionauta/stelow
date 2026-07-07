@@ -302,25 +302,10 @@ Flag as gap if any of:
 - `iteration-state-{SCOPE-ID}.md` lacks a `## Record` section even when
   `stelow.json` has the mirror fields → **warning**: mirror may be hallucinated.
 
-Severity ladder (matches the v1/v2 enforcement plan in Step 3e-bis):
+Severity ladder:
 - **block**: missing `record` entirely on a `completed` scope. close audit.
 - **warning**: incomplete verification or zero commands. document in gap registry.
 - **minor**: cosmetic (suggested_commit missing). Note in lessons learned.
-
-**Threshold note (v0.43.0 → v0.44.x):**
-
-In v0.43.0, `record.verified !== true` is a **warning** because discipline is
-being established. After ≥3 workflows in your project have shipped with valid
-Records — meaning the team has proven the convention works — upgrade to
-**block** by:
-
-1. Setting `STELOW_VALIDATE=1` in your environment (runtime validation).
-2. Enabling the pre-commit hook (`scripts/pre-commit-record.sh`).
-3. Reporting `record.verified !== true` as **block** in this audit step.
-
-The threshold is project-level, not per-cycle. Once you have infrastructure in
-place (validation + hook), treat incomplete records as blockers — because the
-tools to prevent them exist, and skipping them is now a choice, not a gap.
 
 Note: `record` field uses snake_case (`completed_at`, `files_count`,
 `commands_count`, `suggested_commit`) to match the rest of `stelow.json`

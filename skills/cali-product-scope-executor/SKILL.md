@@ -622,11 +622,14 @@ if (wf?.scopes) {
 "
 ```
 
-**Enforcement ladder:**
-- **v1 (now, shipped):** convention only. `cali-product-execution-critique` SKILL flags scopes with `status: 'completed'` AND `record.verified !== true` as a critique finding. No block; just visibility.
-- **v2 (next cycle):** TypeBox schema in `stelow.schema.json` adds `record` as required field for `status: 'completed'`. `npm run typecheck` fails on missing/partial Record. Optional pre-commit hook blocks commit if any completed scope lacks `record.verified: true`.
-
-**Why v1 first:** discipline first, enforcement later. Forcing schema before teams have internalized the Record template produces `verified: true` without substance — false confidence, real cost. Matches Skill-Steward ADR 0023 ("migrate only current/new evidence first; do not run a broad archive churn pass").
+**Enforcement:**
+- By default, `record` is an advisory convention. `cali-product-execution-critique`
+  Criterion 6 flags scopes with `status: 'completed'` AND `record.verified !== true`.
+- `STELOW_VALIDATE=1` enables runtime validation in `writeTracking()`. The
+  `schema-record.ts` validators check every scope's `record` and `tasks`
+  before persisting the tracking file.
+- Pre-commit hook at `scripts/pre-commit-record.sh` blocks commits with
+  unverified completed scopes.
 
 #### 3e-ter. Task tracking — Shape Up hill chart inside a scope
 
@@ -729,7 +732,7 @@ The TS `ScopeTask` interface (`extensions/stelow/types.ts`) plus `scope.tasks` a
 - "Scope 3 closed with 5 of 6 planned tasks done and 1 skipped + 2 discovered (both done). Work was real."
 - "Scope 7 closed with 1 task in `tasks` and the body was 80% unwritten." (catches scope-vs-task confusion early)
 
-This is the machine-checkable proof that the scope was actually executed, not just declared. Combined with `Record Evidence` (Criterion 6), `Tasks Tracking` will become a follow-up criterion in v0.44.0.
+This is the machine-checkable proof that the scope was actually executed, not just declared. Combined with `Record Evidence` (Criterion 6) and `Tasks Tracking` (Criterion 11), the audit cycle ensures scope delivery is verified, not just claimed.
 
 ### Step 4: Execute optimization scopes (optimization → goals tool)
 

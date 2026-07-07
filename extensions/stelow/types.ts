@@ -487,7 +487,7 @@ export interface Scope {
    *     what was actually committed.
    *
    * See `cali-product-scope-executor` SKILL Step 3e-bis for the full
-   * Record template, evidence-ladder rationale, and v2 enforcement plan.
+   * Record template and evidence-ladder rationale.
    */
   record?: ScopeRecord;
 }
@@ -514,39 +514,12 @@ export interface ScopeTask {
   /** Free-form note — required for `source: 'discovered'` explaining
    *  what triggered the discovery. */
   note?: string;
-  /**
-   * Optional. Claim-proof evidence block populated by scope-executor
-   * Step 3e-bis. The full Record body lives in markdown at
-   * `iteration-state-{SCOPE-ID}.md`; this is the machine-checkable
-   * subset that `cali-product-execution-critique` reads.
-   *
-   * Convention (v1, advisory). Field names are snake_case throughout
-   * to match the rest of `stelow.json` schema:
-   *   - `completed_at` set when status transitions to `completed`.
-   *   - `files_count` mirrors `actual_files.length`.
-   *   - `commands_count` is the number of verify commands listed in the
-   *     Record body. Helps detect "verified via vibes" (0 commands).
-   *   - `verified: true` requires the full Verification checklist to
-   *     be ticked in the markdown body.
-   *   - `suggested_commit` is the conventional-commit line the executor
-   *     would write; kept here so execution-critique can compare against
-   *     what was actually committed.
-   *
-   * See `cali-product-scope-executor` SKILL Step 3e-bis for the full
-   * Record template, evidence-ladder rationale, and v2 enforcement plan.
-   */
-  record?: ScopeRecord;
 }
 
 /**
  * Machine-checkable subset of the Record evidence block. Full text
  * lives in `iteration-state-{SCOPE-ID}.md`; this is what `stelow.json`
- * stores for programmatic checks (execution-critique, future typecheck).
- *
- * **Naming convention: snake_case throughout** — matches the existing
- * Scope fields (`target_files`, `actual_files`, `start_sha`,
- * `lock_ttl_seconds`) and the JSON serialization format of `stelow.json`.
- * Mixed casing across `stelow.json` is a footgun for downstream tooling.
+ * stores for programmatic checks (execution-critique, schema validators).
  */
 export interface ScopeRecord {
   /** ISO-8601 timestamp when the scope transitioned to `completed`. */

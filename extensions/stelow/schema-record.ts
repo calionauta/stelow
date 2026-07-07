@@ -1,6 +1,6 @@
 /**
  * Runtime validation for `wf.scopes[i].record` (and adjacent scope fields
- * touched by v0.43.0: `tasks[]`).
+ * Optimistic concurrency for scope fields.
  *
  * **Convention (v2):** when `STELOW_VALIDATE=1` is set in the environment,
  * `extensions/stelow/state.ts#writeTracking` invokes `validateScopeRecord()`

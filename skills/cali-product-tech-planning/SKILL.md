@@ -56,7 +56,7 @@ Read the `references/` files to guide the process:
 | `references/tech-output.md` | Tech plan output format, frontmatter, receipts | **After generation** — formats output |
 | `cali-product-coding-standards` (skill) | Universal coding standards (KISS, DRY, LoB, SoC, Fail Fast, YAGNI) | **During generation** — guides implementation |
 
-## How scopes & tasks flow between planning and execution (v0.43.0)
+## How scopes & tasks flow between planning and execution
 
 **The split (Shape Up hill chart collapsed into scopes):**
 
@@ -78,7 +78,7 @@ Read the `references/` files to guide the process:
 
 **Why this split:** scopes are committed up front (Shape Up's "you can change the hill chart but not the scope shape"). Tasks emerge from reality — they're the visible, low-cost-by-design artifacts of "what we learned by building".
 
-**Rule:** if a discovered task grows large enough to be its own delivery unit, **escalate it as a new scope** in the next cycle. Do not bloat the current scope. The hill chart's job is to make scope size honest, not to encourage scope creep in disguise.
+**Rule:** if a discovered task grows large enough to be its own delivery unit, **escalate it as a new scope**. Do not bloat the current scope. The hill chart's job is to make scope size honest, not to encourage scope creep in disguise.
 
 **See also:**
 - `skills/cali-product-scope-executor/SKILL.md#3e-ter` — task seeding, append, mark-done.
@@ -268,7 +268,7 @@ for SCOPE_LINE in $(grep -n "^### " "$SPEC_TECH" | sed 's/:.*//'); do
   tail -n +$SCOPE_LINE "$SPEC_TECH" | head -50 | grep -q -E "(AC|Acceptance Criteria)" || {
     echo "VALIDATION_FAILED: scope at line $SCOPE_LINE missing AC"; VALID=false;
   }
-  # v0.43.0: Tasks table is recommended (Shape Up hill chart collapse).
+  # Tasks table is recommended (Shape Up hill chart collapse).
   # Not a hard requirement — empty table is allowed when the scope is
   # small enough that the DoD itself is the task list. WARN, not FAIL.
   if ! tail -n +$SCOPE_LINE "$SPEC_TECH" | head -80 | grep -q "^| # .* Task "; then

@@ -248,11 +248,12 @@ export function readGlobalTracking(): TrackingData | null {
 
 export function writeTracking(cwd: string, data: TrackingData): void {
   data.updated = new Date().toISOString();
-  // v0.43.0 Record v2: opt-in runtime validation. When STELOW_VALIDATE=1,
-  // validate every scope's `record` and `tasks` before persisting. Default
-  // OFF — validation has a cost (iteration + type checks per scope) that
+  // Opt-in runtime validation. When STELOW_VALIDATE=1, validate every
+  // scope's `record` and `tasks` before persisting. Default OFF —
+  // validation has a cost (iteration + type checks per scope) that
   // matters on hot paths like /sw-next (single-scope status flip).
-  // Discipline first; opt-in enforcement for projects that want the gate.
+  // Enable when ready; projects with established Record discipline can
+  // enable the gate without breaking existing workflows.
   if (isRuntimeValidationEnabled()) {
     for (const wf of data.workflows) {
       if (!Array.isArray(wf.scopes)) continue;
