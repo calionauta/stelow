@@ -322,6 +322,11 @@ export function getScopeStatusInfo(status) {
  * across all scopes that declared them — a quick at-a-glance signal that
  * the workflow is using the file-overlap prevention layer. When 0, no
  * scope opted in; treat the workflow as freeform.
+ *
+ * v0.43.0+: also computes `taskDone`/`taskTotal` across all scopes
+ * for the pipeline card task summary. Separate from scope progress
+ * because tasks are a sub-item checklist (Shape Up hill chart inside
+ * each scope).
  */
 export function getScopeProgress(workflow) {
   const scopes = workflow.scopes;
@@ -335,7 +340,47 @@ export function getScopeProgress(workflow) {
     (sum, s) => sum + (Array.isArray(s.target_files) ? s.target_files.length : 0),
     0
   );
-  return { total, completed, inProgress, pending, failed, declaredFilesCount };
+  // Task aggregation: sum done/total across all scopes that have tasks[]
+  const taskDone = scopes.reduce((sum, s) => {
+    if (!Array.isArray(s.tasks)) return sum;
+    return sum + s.tasks.filter(t => t.status === 'done').length;
+  }, 0);
+  const taskTotal = scopes.reduce((sum, s) => {
+    if (!Array.isArray(s.tasks)) return sum;
+    return sum + s.tasks.length;
+  }, 0);
+  // Count scopes with discovered tasks for badge
+  const withDiscovered = scopes.filter(s => {
+    if (!Array.isArray(s.tasks)) return false;
+    return s.tasks.some(t => t.source === 'discovered');
+  }).length;
+  return { total, completed, inProgress, pending, failed, declaredFilesCount, taskDone, taskTotal, withDiscovered };
+}
+
+/**
+ * Get a concise task summary text for display in pipeline cards.
+ * Returns empty string when no tasks exist.
+ *
+ * Example: "tasks 12/18" or "tasks 12/18 [+2 discovered]"
+ */
+export function getTaskSummaryText(workflow) {
+  const progress = getScopeProgress(workflow);
+  if (!progress) return '';
+  if (progress.taskTotal === 0) return '';
+  const parts = [`tasks ${progress.taskDone}/${progress.taskTotal}`];
+  if (progress.withDiscovered > 0) {
+    // Count total discovered tasks across scopes
+    let discoveredCount = 0;
+    const scopes = workflow.scopes;
+    if (Array.isArray(scopes)) {
+      for (const s of scopes) {
+        if (!Array.isArray(s.tasks)) continue;
+        discoveredCount += s.tasks.filter(t => t.source === 'discovered').length;
+      }
+    }
+    parts.push(`+${discoveredCount} discovered`);
+  }
+  return parts.join(' · ');
 }
 
 export function getScopeSummaryText(workflow) {
@@ -347,6 +392,9 @@ export function getScopeSummaryText(workflow) {
     `${progress.pending} pending`,
   ];
   if (progress.failed > 0) parts.push(`${progress.failed} failed`);
+  // Append task summary when tasks exist
+  const taskText = getTaskSummaryText(workflow);
+  if (taskText) parts.push(taskText);
   // Surface file-overlap guard usage: when scopes declared target_files
   // the workflow is operating under the prevention protocol (file-locking.md).
   if (progress.declaredFilesCount > 0) {

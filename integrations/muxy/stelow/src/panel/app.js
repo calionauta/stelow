@@ -17,6 +17,7 @@ import {
   getIntentBadge,
   getScopeStatusInfo,
   getScopeSummaryText,
+  getTaskSummaryText,
   getActiveWorkflow,
   getWorkflowCommand,
   isWorkflowCommandEnabled,
@@ -387,35 +388,76 @@ export class PipelinePanel {
     const { scope, workflow, project } = entry;
     const projectLabel = project ? project.split('/').filter(Boolean).slice(-2).join('/') : '?';
     const rec = scope.record;
-    return h('div', {
-      class: 'scope-card',
-      style: 'padding:8px;border:1px solid var(--muxy-border,#333);border-radius:6px;background:var(--muxy-background,#000a);display:flex;flex-direction:column;gap:4px',
-    },
-      h('div', { class: 'scope-card-id', style: 'font-family:monospace;font-size:10px;opacity:0.6' }, scope.id ?? '?'),
-      h('div', { class: 'scope-card-name', style: 'font-weight:600;font-size:13px' }, scope.name ?? '(unnamed)'),
-      h('div', { class: 'scope-card-meta', style: 'font-size:10px;opacity:0.7;display:flex;flex-wrap:wrap;gap:4px' },
-        h('span', { class: 'scope-card-workflow', title: workflow?.name ?? '' }, workflow?.name ?? '?'),
-        scope.type ? h('span', { style: 'opacity:0.6' }, ` \u00b7 ${scope.type}`) : null,
+    const hasDiscovered = scope.discovered_tasks_count > 0 ||
+      (Array.isArray(scope.tasks) && scope.tasks.some(t => t.source === 'discovered'));
+    const discoveredCount = scope.discovered_tasks_count ??
+      (Array.isArray(scope.tasks) ? scope.tasks.filter(t => t.source === 'discovered').length : 0);
+    const tasks = Array.isArray(scope.tasks) ? scope.tasks : [];
+    // Toggle expand on click — store inline state on the scope object
+    scope._expanded = scope._expanded ?? false;
+
+    return h('div', { class: 'scope-card', style: 'padding:0;border:1px solid var(--muxy-border,#333);border-radius:6px;background:var(--muxy-background,#000a);display:flex;flex-direction:column;gap:0;' },
+      // Clickable header
+      h('div', {
+        style: 'padding:8px;cursor:pointer;user-select:none;display:flex;flex-direction:column;gap:4px;',
+        onclick: () => { scope._expanded = !scope._expanded; this.render(); },
+        title: 'Click to expand/collapse tasks',
+      },
+        h('div', { class: 'scope-card-id', style: 'font-family:monospace;font-size:10px;opacity:0.6' }, scope.id ?? '?'),
+        h('div', { class: 'scope-card-name', style: 'font-weight:600;font-size:13px' }, scope.name ?? '(unnamed)'),
+        h('div', { class: 'scope-card-meta', style: 'font-size:10px;opacity:0.7;display:flex;flex-wrap:wrap;gap:4px' },
+          h('span', { class: 'scope-card-workflow', title: workflow?.name ?? '' }, workflow?.name ?? '?'),
+          scope.type ? h('span', { style: 'opacity:0.6' }, ` \u00b7 ${scope.type}`) : null,
+        ),
+        h('div', { class: 'scope-card-project', style: 'font-size:9px;font-family:monospace;opacity:0.5', title: project ?? '' }, projectLabel),
+        scope.iteration !== undefined
+          ? h('div', { class: 'scope-card-iter', style: 'font-size:9px;opacity:0.6' }, `iter ${scope.iteration}/${scope.maxIterations ?? '?'}`)
+          : null,
+        rec
+          ? h('div', {
+              class: 'scope-card-record',
+              title: `verified=${rec.verified}, files=${rec.files_count}, cmds=${rec.commands_count}`,
+              style: `font-size:9px;opacity:${rec.verified ? '0.95' : '0.55'}`,
+            }, rec.verified ? '\u2705 verified' : '\u25cb unverified')
+          : null,
+        // Badge row: discovered badge + task count
+        h('div', { style: 'display:flex;gap:4px;align-items:center;flex-wrap:wrap;' },
+          // Task count line (when tasks are populated). Surfaces Shape Up
+          // hill-chart collapse inside each scope card.
+          tasks.length > 0
+            ? h('div', {
+                class: 'scope-card-tasks',
+                title: `planned=${tasks.filter(t => t.source === 'planned').length}, discovered=${discoveredCount}`,
+                style: 'font-size:9px;opacity:0.6',
+              }, `tasks: ${tasks.filter(t => t.status === 'done').length}/${tasks.length}`)
+            : null,
+          // Improvement 3: discovered badge
+          hasDiscovered
+            ? h('span', {
+                title: `${discoveredCount} discovered task${discoveredCount !== 1 ? 's' : ''} — work that emerged during execution`,
+                style: 'font-size:8px;padding:1px 5px;border-radius:999px;background:#f59e0b22;color:#f59e0b;border:1px solid #f59e0b44;white-space:nowrap;',
+              }, `+${discoveredCount} discovered`)
+            : null,
+        ),
       ),
-      h('div', { class: 'scope-card-project', style: 'font-size:9px;font-family:monospace;opacity:0.5', title: project ?? '' }, projectLabel),
-      scope.iteration !== undefined
-        ? h('div', { class: 'scope-card-iter', style: 'font-size:9px;opacity:0.6' }, `iter ${scope.iteration}/${scope.maxIterations ?? '?'}`)
-        : null,
-      rec
-        ? h('div', {
-            class: 'scope-card-record',
-            title: `verified=${rec.verified}, files=${rec.files_count}, cmds=${rec.commands_count}`,
-            style: `font-size:9px;opacity:${rec.verified ? '0.95' : '0.55'}`,
-          }, rec.verified ? '\u2705 verified' : '\u25cb unverified')
-        : null,
-      // Task count line (when tasks are populated). Surfaces Shape Up
-      // hill-chart collapse inside each scope card.
-      Array.isArray(scope.tasks) && scope.tasks.length > 0
-        ? h('div', {
-            class: 'scope-card-tasks',
-            title: `planned=${scope.tasks.filter(t => t.source === 'planned').length}, discovered=${scope.discovered_tasks_count ?? scope.tasks.filter(t => t.source === 'discovered').length}`,
-            style: 'font-size:9px;opacity:0.6',
-          }, `tasks: ${scope.tasks.filter(t => t.status === 'done').length}/${scope.tasks.length}`)
+      // Improvement 2: expandable task list
+      scope._expanded && tasks.length > 0
+        ? h('div', { style: 'padding:4px 8px 8px 8px;border-top:1px solid var(--muxy-border,#333);display:flex;flex-direction:column;gap:2px;' },
+            ...tasks.map(t => {
+              const statusIcon = t.status === 'done' ? '\u2705' : t.status === 'skipped' ? '\u23ed' : '\u25cb';
+              const sourceLabel = t.source === 'discovered' ? '\ud83d\udd0d' : '';
+              return h('div', {
+                style: 'display:flex;align-items:center;gap:4px;font-size:10px;padding:2px 0;',
+                title: t.source === 'discovered' ? (t.note ?? 'no note') : '',
+              },
+                h('span', { style: 'opacity:0.7;flex-shrink:0;' }, `${sourceLabel}${statusIcon}`),
+                h('span', { style: 'flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;' }, t.name ?? t.id),
+                t.source === 'discovered' && t.note
+                  ? h('span', { style: 'opacity:0.5;font-size:8px;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;' }, t.note)
+                  : null,
+              );
+            }),
+          )
         : null,
     );
   }
@@ -531,6 +573,19 @@ export class PipelinePanel {
     );
   }
 
+  /**
+   * v0.43.0+: render task summary line below scope progress in pipeline card.
+   * Shows "tasks 12/18" or "tasks 12/18 · +3 discovered" when task data exists.
+   */
+  renderTaskMiniSummary(wf) {
+    const taskText = getTaskSummaryText(wf);
+    if (!taskText) return null;
+    return h('div', {
+      class: 'card-task-summary',
+      style: 'font-size:9px;color:var(--muxy-foreground-muted);margin-top:2px;text-align:center;',
+    }, taskText);
+  }
+
   renderScopePlaceholder(wf) {
     const current = wf.currentPhase ?? 0;
     if (current < 11 || wf.status === 'completed' || wf.status === 'archived') return null;
@@ -629,6 +684,7 @@ export class PipelinePanel {
         h('div', { class: 'card-progress-fill', style: `width:${pct}%;background:${barColor};` }),
       ),
       this.renderScopeMiniProgress(wf),
+      this.renderTaskMiniSummary(wf),
       h('div', { class: 'card-badges' },
         intentBadge ? h('span', { class: cls('badge', intentBadge.class) }, `${intentBadge.icon} ${intentBadge.label}`) : null,
         h('span', { class: cls('badge', badge.class) }, badge.label),

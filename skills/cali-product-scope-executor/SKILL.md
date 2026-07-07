@@ -665,6 +665,33 @@ if (wf?.scopes) {
 "
 ```
 
+**Re-sync guard (validate tasks were seeded correctly):**
+
+After writing, immediately verify that tasks were populated. If the parse failed
+(spec-tech.md table malformed, empty, or absent), `scope.tasks` stays undefined
+and the scope would show "no tasks" everywhere — Muxy, mermaid, execution-critique.
+Catch this here, not at close time.
+
+```bash
+node -e "
+const fs = require('fs');
+const tracking = JSON.parse(fs.readFileSync('stelow.json', 'utf8'));
+const wf = tracking.workflows.find(w => w.status === 'in-progress');
+if (wf?.scopes) {
+  const scope = wf.scopes.find(s => s.id === '{SCOPE-ID}');
+  if (!scope || !Array.isArray(scope.tasks) || scope.tasks.length === 0) {
+    console.error('[Re-sync guard] SCOPE-{SCOPE-ID}: tasks not seeded! spec-tech.md table may be malformed or empty.');
+    process.exit(1);
+  }
+  console.log('[Re-sync guard] SCOPE-{SCOPE-ID}: ' + scope.tasks.length + ' tasks seeded OK.');
+}
+"
+```
+
+If this guard fails, inspect the spec-tech.md Tasks table and fix the parsing
+before proceeding. Do NOT start execution without seeded tasks — every task
+not discovered will be invisible and uncheckable.
+
 **Appending a discovered task (mid-execution, in iteration feedback):**
 
 When the child LLM discovers new work, append a task with `source: 'discovered'` and a non-empty `note:`.
