@@ -187,6 +187,18 @@ If a scope body in `spec-tech_{v}.md` includes a `[TARGET_FILES]` block:
 
 parse it into `target_files: string[]` on the corresponding `wf.scopes[i]` entry AND into the per-scope `scope-contract.json` (under `target_files`).
 
+**Parse `[LOCK_TTL_SECONDS]` from spec-tech.md (optional convention):**
+
+Same scope body may declare a lock TTL override:
+
+```
+[LOCK_TTL_SECONDS] 7200
+[TARGET_FILES]
+- src/migration/**
+```
+
+Parse the integer value into `wf.scopes[i].lock_ttl_seconds: number` (optional). Default is 1800 (30 min); see `references/cli-tools/file-locking.md#ttl-configuration` for range / clamping rules. At Step 3c, the orchestrator exports this to `$LOCK_TTL_SECONDS` for the acquire snippet.
+
 Convention is **advisory** — no enforcement at the tracking layer. The file-reservation lock protocol (see `references/cli-tools/file-locking.md` in `stelow-product-orchestrator`) uses these declared paths at scope-execution time. If undeclared, the post-execution `actual_files ∩ declared` diff in Step 8 still flags undeclared writes.
 
 ### Step 2d: Complete Human-in-loop execution mode
@@ -277,6 +289,14 @@ Record this SHA in `iteration-state-{SCOPE-ID}.md` so the post-execution `git di
 If the scope declared `[TARGET_FILES]` (see Step 2e) AND the orchestrator plans parallel dispatch, acquire locks via the protocol in `references/cli-tools/file-locking.md`:
 
 ```bash
+# Resolve TTL from `[LOCK_TTL_SECONDS]` block if present; default 1800.
+# Validated by file-locking.md; here we just export to env for the acquire snippet.
+if [ -n "${LOCK_TTL_BLOCK:-}" ]; then
+  export LOCK_TTL_SECONDS="$LOCK_TTL_BLOCK"   # bash escapes; the acquire snippet re-validates
+else
+  unset LOCK_TTL_SECONDS
+fi
+
 # Check existing locks for any of this scope's target_files
 LOCK_DIR=".stelow/${DATE}/${DIR}/locks"
 mkdir -p "$LOCK_DIR"

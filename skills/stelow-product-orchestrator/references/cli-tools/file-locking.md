@@ -62,7 +62,7 @@ EXP=$(date -u -d "+${TTL} seconds" +%Y-%m-%dT%H:%M:%S.%3NZ)
 if ln "$LOCK_FILE" "$LOCK_FILE.locktmp" 2>/dev/null; then
   rm "$LOCK_FILE.locktmp"
   cat > "$LOCK_FILE" <<EOF
-{"scope_id":"$SCOPE_ID","file":"$FILE_PATH","acquired_at":"$NOW","expires_at":"$EXP","ttl_seconds":$TTL}
+{"scope_id":"$SCOPE_ID","file":"$FILE_PATH","acquired_at":"$NOW","expires_at":"$EXP","ttl_seconds":$TTL_REQUESTED}
 EOF
   echo "LOCK ACQUIRED: $FILE_PATH"
 else
@@ -71,7 +71,7 @@ else
   if [ -n "$EXISTING_EXP" ] && [ "$(date -u -d "$EXISTING_EXP" +%s)" -lt "$(date -u +%s)" ]; then
     # Stale — steal
     cat > "$LOCK_FILE" <<EOF
-{"scope_id":"$SCOPE_ID","file":"$FILE_PATH","acquired_at":"$NOW","expires_at":"$EXP","ttl_seconds":$TTL}
+{"scope_id":"$SCOPE_ID","file":"$FILE_PATH","acquired_at":"$NOW","expires_at":"$EXP","ttl_seconds":$TTL_REQUESTED}
 EOF
     echo "STALE LOCK STOLEN: $FILE_PATH"
   else
