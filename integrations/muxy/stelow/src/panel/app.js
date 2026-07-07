@@ -380,7 +380,11 @@ export class PipelinePanel {
         h('span', {}, col.label),
         h('span', { class: 'scope-column-count' }, String(entries.length)),
       ),
-      ...entries.map(entry => this.renderScopeCard(entry)),
+      // Scrollable card area — prevents column from growing unbounded when
+      // scope cards expand with many tasks
+      h('div', { style: 'overflow-y:auto;max-height:calc(100vh - 200px);display:flex;flex-direction:column;gap:8px;padding:2px' },
+        ...entries.map(entry => this.renderScopeCard(entry)),
+      ),
     );
   }
 
@@ -396,6 +400,10 @@ export class PipelinePanel {
     // Toggle expand on click — store inline state on the scope object
     scope._expanded = scope._expanded ?? false;
 
+    // Find the spec-tech artifact for this scope's workflow (if cached)
+    const wfArtifactData = this.artifactMap.get(workflow?.name ?? '');
+    const specTechFile = wfArtifactData?.artifacts?.plans?.find(f => f.includes('spec-tech'));
+
     return h('div', { class: 'scope-card', style: 'padding:0;border:1px solid var(--muxy-border,#333);border-radius:6px;background:var(--muxy-background,#000a);display:flex;flex-direction:column;gap:0;' },
       // Clickable header
       h('div', {
@@ -408,6 +416,17 @@ export class PipelinePanel {
         h('div', { class: 'scope-card-meta', style: 'font-size:10px;opacity:0.7;display:flex;flex-wrap:wrap;gap:4px' },
           h('span', { class: 'scope-card-workflow', title: workflow?.name ?? '' }, workflow?.name ?? '?'),
           scope.type ? h('span', { style: 'opacity:0.6' }, ` \u00b7 ${scope.type}`) : null,
+          // Link to the source-of-truth spec-tech.md (opens artifact preview inline)
+          specTechFile
+            ? h('span', {
+                style: 'font-size:9px;cursor:pointer;opacity:0.6;text-decoration:underline;',
+                onclick: (e) => {
+                  e.stopPropagation();
+                  this.openFilePreview(wfArtifactData, 'plans', specTechFile);
+                },
+                title: 'Open spec-tech.md — the source-of-truth markdown with all scope tasks',
+              }, '\ud83d\udcc4 spec-tech')
+            : null,
         ),
         h('div', { class: 'scope-card-project', style: 'font-size:9px;font-family:monospace;opacity:0.5', title: project ?? '' }, projectLabel),
         scope.iteration !== undefined
@@ -440,9 +459,9 @@ export class PipelinePanel {
             : null,
         ),
       ),
-      // Improvement 2: expandable task list
+      // Improvement 2: expandable task list with scroll for many tasks
       scope._expanded && tasks.length > 0
-        ? h('div', { style: 'padding:4px 8px 8px 8px;border-top:1px solid var(--muxy-border,#333);display:flex;flex-direction:column;gap:2px;' },
+        ? h('div', { style: 'padding:4px 8px 8px 8px;border-top:1px solid var(--muxy-border,#333);display:flex;flex-direction:column;gap:2px;max-height:300px;overflow-y:auto;' },
             ...tasks.map(t => {
               const statusIcon = t.status === 'done' ? '\u2705' : t.status === 'skipped' ? '\u23ed' : '\u25cb';
               const sourceLabel = t.source === 'discovered' ? '\ud83d\udd0d' : '';
