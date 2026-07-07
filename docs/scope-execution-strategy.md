@@ -118,23 +118,32 @@ REPORT   Step 8: 4-class classification
 
 ## Optional enhancements (not required)
 
-| Tool | Where it adds value | Cost |
+| Tool | Where it adds value | Auto-install? |
 |---|---|---|
-| **cymbal** | `[TARGET_FILES]` authoring: `cymbal impact <scope>` → symbols/functions affected → author populates the block with informed paths instead of guessing | install `cymbal` (Homebrew tap); LLM still author of record |
-| **sem** | Step 8 4-class report: `sem diff $start_sha HEAD` → entity-level changes (functions added/removed/modified) per scope, instead of file-path-only. Much clearer human decision support. | install `sem` (Homebrew); fallback to `git diff` is already documented |
+| **cymbal** | `[TARGET_FILES]` authoring: `cymbal impact <scope>` → symbols/functions affected → author populates the block with informed paths instead of guessing | Detected + offered during `scripts/setup.sh` (macOS/brew only, default Y) |
+| **sem** | Step 8 4-class report: `sem diff $start_sha HEAD` → entity-level changes (functions added/removed/modified) per scope, instead of file-path-only. Much clearer human decision support. | Detected + offered during `scripts/setup.sh` (macOS/brew only, default Y) |
 
-Both are OFF by default. Toggle via `.stelow/config.json#enhancements` when needed:
+### Detection at setup time
+
+`scripts/setup.sh` runs after every install/upgrade. It detects both tools via `command -v` and:
+
+- **Already installed** → logs ✅, no action.
+- **Not installed + macOS + Homebrew** → prompts (interactive) or auto-installs (non-interactive/CI). Default `[Y]`.
+- **Not installed + other platform** → logs install URLs (cymbal GitHub, sem GitHub), skips. User can install manually.
+
+Detection state is persisted to `.stelow/tools.json`:
 
 ```json
 {
-  "enhancements": {
-    "cymbal_for_target_files": true,
-    "sem_for_overlap_report": true
-  }
+  "cymbal": true,
+  "sem": false,
+  "detected_at": "2026-07-06T20:48:11Z"
 }
 ```
 
-(Today this config key is not yet read. Add when implementing each enhancement.)
+Downstream stages read this file to decide whether to call `cymbal` / `sem` or fall back to plain `git` / `find`. The fallback paths are always implemented — these tools enrich, never gate, the workflow.
+
+Both tools are OFF by default at the workflow-level (a stage that wants to use cymbal must opt in explicitly). The setup detection only ensures the binary is present; usage is per-stage.
 
 ---
 
