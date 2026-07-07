@@ -12,8 +12,7 @@
 [![Pi](https://img.shields.io/badge/Deep%20integration-Pi-8B5CF6)](https://pi.dev)
 [![Muxy](https://img.shields.io/badge/Webview%20panel-Muxy.app-10B981)](https://muxy.app)
 [![Herdr](https://img.shields.io/badge/Split%20pane%20TUI-Herdr-EA580C)](https://herdr.dev)
-> ⚠️ **Heads-up: GitHub rename done; npm never published.**
-> The repository moved from `calionauta/stelow` (was `renatocaliari/stelow` — GitHub redirects handle this).
+> ⚠️ **Heads-up: npm package canonical; never published.**
 > The npm package `@calionauta/stelow` is the canonical name. There is **no published npm release** at any name — install via `pi install git:github.com/calionauta/stelow` (or `npx skills add ...`).
 
 [![CLI](https://img.shields.io/badge/Works%20on-Any%20CLI-3B82F6)](https://github.com/calionauta/stelow#cli-compatibility)
