@@ -2,53 +2,170 @@
 
 All notable changes to `@calionauta/stelow` will be documented in this file.
 
-> ## [Unreleased] — npm name aligned to GitHub
+> **Note on the `npm` package name.** `@calionauta/stelow` is the canonical
+> name (set in `package.json`). The package **was never published** to
+> npmjs.com at any name (confirmed via `npm view @calionauta/stelow`
+> and `npm view @renatocaliari/stelow` both returning 404 at release
+> time). Installers in this repo use the git URL
+> (`git:github.com/calionauta/stelow`); the `name` field is a
+> future-facing label for any eventual publish.
 >
-> The GitHub repository URL is `calionauta/stelow` (formerly
-> the old name on GitHub; redirects handle the URL alias).
+> External references that were intentionally preserved (NOT bug, NOT
+> regression):
 >
-> The npm package **was never published** to npmjs.com at any name — the
-> `name` fields in `package.json` and `extensions/stelow/package.json`
-> have been aligned to `@calionauta/stelow` so a future `npm publish`
-> will use the canonical name. Installers in this repo use the git URL
-> (`git:github.com/calionauta/stelow`) and are not affected by the name
-> field.
->
-> External references that were intentionally preserved:
->
->   - `CHANGELOG.md` historic entries: the published-npm artifact name at
->     that point in history (records what *would* have shipped).
 >   - `docs/design/stelow-board-herdr.md`: a future separate project.
->   - `skills/cali-product-discovery/SKILL.md` (lines 95, 101, 107): credits
->     to a third-party author's repositories (not stelow).
+>   - `skills/cali-product-discovery/SKILL.md` (lines 95, 101, 107):
+>     credits to a third-party author's repositories (not stelow).
 >   - `setup.sh` line 70 (`pi-tool-repair-layer`): a separate upstream
 >     package with its own naming.
+>   - `docs/archive/`: 2026-05-20 archive snapshot.
 
-## [0.41.2] - 2026-07-06
+## [0.42.0] - 2026-07-06
 
-Scope-execution overlap rework: kill the aspirational "file-overlap guard" heuristic, ship a CLI-agnostic prevention layer (file-reservation locks) + ground-truth post-hoc detection (`git diff --name-only`). No `git worktree` requirement; no per-CLI hook integration; no merge complexity.
+Scope-execution rework + cross-platform tooling + state.ts refactor +
+canonical-name alignment. **No npm publish at any name; install via
+`pi install git:github.com/calionauta/stelow` or `npx skills add ...`.
+No deprecation window, no migration cosmetics, no cosupport tickets.**
+
+### Highlights
+
+- **Scope-execution prevention + audit pipeline.** Drop the aspirational
+  "file-overlap guard" heuristic (which was never implemented). Ship a
+  CLI-agnostic prevention layer (file-reservation locks) + ground-truth
+  post-hoc detection (`git diff --name-only`). No `git worktree`
+  requirement; no per-CLI hook integration; no merge complexity.
+- **Cross-platform install for cymbal + sem.** Auto-detect macOS /
+  Linuxbrew / Windows PowerShell / winget / Chocolatey / curl|sh. Default
+  `[Y]` prompts; non-interactive shells auto-install.
+- **Ataraxy-Labs sem.** The `sem` binary moved to
+  [Ataraxy-Labs/sem](https://github.com/Ataraxy-Labs/sem); setup.sh now
+  detects via command-set probe (not `--version` text grep, which had a
+  false-negative on the real binary).
+- **state.ts slimmed.** Two-level refactor: (a) `readJson<T>()` /
+  `writeJson()` private helpers replace 12 hand-rolled sites; (b)
+  inbox / provenance / scope-execution concerns extracted to their own
+  modules (`extensions/stelow/inbox.ts`, `provenance.ts`, `scope.ts`).
+  state.ts shrunk 1011 → 819 lines; concerns isolated; 1034 tests pass.
+
+### Added (scope-execution)
+
+- **`[TARGET_FILES]` convention block** in `spec-tech.md` scope bodies.
+  Parsed into `wf.scopes[i].target_files` and
+  `scope-contract.json#target_files`. Convention over config: trailing
+  `/**` ⇒ prefix match, trailing `/*` ⇒ single-level match, otherwise
+  exact.
+- **File-reservation lock protocol**
+  (`skills/stelow-product-orchestrator/references/cli-tools/file-locking.md`,
+  synced to 25 skill mirrors via `sync-cli-tools.sh`). CLI-agnostic
+  prevention for parallel scope execution. Atomic acquire via `ln`
+  (EEXIST-safe), TTL-based stale-lock stealing, `sha1sum(12)` lock file
+  naming. Optional `[LOCK_TTL_SECONDS]` block per scope; default 1800s.
+  No hooks, no `git worktree`, no per-CLI integration.
+- **`Scope` interface** in `extensions/stelow/types.ts` extended with
+  `target_files?: string[]`, `actual_files?: string[]`,
+  `start_sha?: string`, `lock_ttl_seconds?: number`.
+- **4-class overlap classification function**
+  (`classifyOverlap()` in `extensions/stelow/scope.ts`) — same logic
+  Step 8 used to run inline, now extracted + testable + reused. Classes:
+  (a) undeclared writes (declared ≠ actual), (b) real inter-scope
+  overlaps, (c) stale locks, (d) clean.
+- **`matchesDeclaredGlob`** pure helper (also in `scope.ts`) — covers
+  the `/**` / `/*` / exact cases. Used by `classifyOverlap`; exported
+  for tooling reuse.
+- **Lock acquisition / release steps** in `scope-executor` SKILL
+  Steps 3c / 3e. Defensive: scope declares `[TARGET_FILES]` AND the
+  orchestrator plans parallel dispatch ⇒ acquire / release.
+- **13 new integration tests** in
+  `tests/integration/scope-overlap-classify.test.ts` covering glob
+  match (3 modes) + all 4 classes + combinations + edge cases (missing
+  lockDir, malformed locks, contractless scopes, empty input).
+  Total: **1034 / 1034 passing** across 33 files.
+- **`scope-actual-files.json` artifact** documented in `subagents.md`
+  Input Files table. Replaces the phantom `sibling-scopes.json` claim.
+
+### Added (tooling + install)
+
+- **`scripts/setup.sh` detects + offers cymbal + sem install** (default
+  `[Y]`, non-interactive auto-Y). Persists state to
+  `.stelow/tools.json` so downstream stages know what's available without
+  re-detecting. Read by `extensions/stelow/index.ts` consumers.
+- **Cross-platform install cascade** for both tools:
+  `brew` (macOS + Linuxbrew) → PowerShell `install.ps1` (Windows,
+  cymbal) → `winget install AtaraxyLabs.sem` / `choco install sem`
+  (Windows, sem) → `curl | sh` (unix universal) → manual URL on
+  failure.
+- **`sem` detection fix** — `verify_at_ataraxy()` probes `sem help`
+  output for Ataraxy's distinctive command set (impact / blame /
+  entities / context / xref / mcp / setup / unsetup; ≥3 matches
+  required). GNU Parallel's `sem` symlink (different help text)
+  correctly excluded.
+- **Muxy panel enhancement** —
+  `integrations/muxy/stelow/src/panel/data.js` `getScopeProgress()`
+  adds `declaredFilesCount` field; `app.js` tooltip surfaces
+  "Using file-reservation lock protocol for parallel scope prevention"
+  when declared paths are active.
+
+### Added (testing infra)
+
+- **Muxy panel test update** — `tests/unit/muxy-workflow-data.test.ts`
+  now expects the new `declaredFilesCount` field on
+  `getScopeProgress()` (1034/1034 pass).
+
+### Refactored (state.ts)
+
+- **`extensions/stelow/state.ts` slimmed 1011 → 819 lines.**
+  - **DRY helpers (file-private):**
+    `readJson<T>(path): T | null` replaces 6 `JSON.parse(readFileSync(...))`
+    sites. `writeJson(path, data)` replaces 4
+    `JSON.stringify(..., null, 2) + writeFileSync` pairs. Both added
+    at top of state.ts; never re-exported.
+  - **Extracted modules:**
+    `inbox.ts` (93 lines, 7 functions + 2 constants),
+    `provenance.ts` (53 lines, 3 functions + 1 constant),
+    `scope.ts` (195 lines, 3 functions + 2 types).
+  - **Public API preserved** via `export { ... } from "./..."`
+    re-exports in state.ts. 0 caller breakage; 1034 tests pass.
+
+### Removed
+
+- **All `git worktree` references** from stelow docs. Stelow stance:
+  sequential default + audit + opt-in file-reservation locks. No
+  worktree recommendation (merge complexity burden not justified for
+  the 2-3 parallel scope scale).
+- **`sibling-scopes.json` (never-implemented phantom artifact)**
+  replaced by `scope-actual-files.json` (real, generated by
+  `git diff --name-only`).
+
+### npm name alignment
+
+- The `name` field in `package.json` and
+  `extensions/stelow/package.json` is now `@calionauta/stelow`.
+  Confirmed at release time that the package was **never published**
+  to npmjs.com (both `@calionauta/stelow` and the historical
+  `@renatocaliari/stelow` return 404 on `npm view`). No deprecation
+  notice or migration window is required.
+- In-repo references to GitHub URLs were canonicalized to
+  `calionauta/stelow` (README badges, schema URLs, setup.sh install
+  lines, plugin paths, documentation). Plugin manifest `name` fields
+  remain as `@calionauta/stelow` to match.
+
+### Notes for next cycle
+
+- **Herdr plugin manifest**
+  (`integrations/herdr/stelow/herdr-plugin.toml`) doesn't have a
+  `[version]` line that `scripts/version-sync.mjs` can patch. Pre-existing
+  limitation; tracked separately.
+- **schema-fencing for `target_files` glob** — the convention is
+  prefix-match only (`/**` and `/*`). Glob characters like `?` or
+  `[abc]` are not yet supported. Tracked as a hardening item.
+- **Cross-CLI smoke testing** for the per-CLI PARALLEL dispatch
+  table (pi / opencode / claude-code / codex) — currently verified by
+  docs reading. End-to-end test against each CLI binary is not in the
+  test suite.
+
+## [0.41.0] - 2026-07-06
 
 ### Added
-
-- **`[TARGET_FILES]` convention block** — optional markdown block in `spec-tech.md` scope bodies. Parsed into `wf.scopes[i].target_files` and `scope-contract.json#target_files`. Convention over config: `**` glob tail = prefix match, exact otherwise.
-- **File-reservation lock protocol** (`skills/stelow-product-orchestrator/references/cli-tools/file-locking.md`, synced to 26 skill mirrors) — CLI-agnostic prevention for parallel scope execution. Atomic file-lock via `ln` (EEXIST-safe), TTL-based stale-lock stealing, `sha1sum` lock file naming. No hooks, no `git worktree`, no per-CLI integration.
-- **`Scope` interface** in `extensions/stelow/types.ts` extended with `target_files?: string[]`, `actual_files?: string[]`, `start_sha?: string`.
-- **Lock acquisition step** in `scope-executor` SKILL Step 3c — pre-dispatch lock acquisition for declared `target_files`. Lock conflict → orchestrator decides (sequential re-dispatch or wait).
-- **Lock release step** in `scope-executor` SKILL Step 3e — release acquired locks on scope completion.
-- **4-class overlap report** in `scope-executor` SKILL Step 8 — (a) undeclared writes, (b) real inter-scope overlaps, (c) stale locks, (d) clean. Replaces the binary "overlap or not" with actionable classification.
-- **`scope-contract.json` schema extension** documented in subagents.md Input Files table — `target_files?` field added to the existing `acceptance_criteria`, `verify_commands`, `stop_rules` row.
-
-### Changed
-
-- **Removed ALL `git worktree` references** from `skills/stelow-product-orchestrator/SKILL.md`, `stages/execution.md`, `skills/cali-product-scope-executor/SKILL.md`. Stelow stance: sequential default + audit + opt-in file-reservation locks. No worktree recommendation (merge complexity burden not justified).
-- **Replaced "file-overlap guard" heuristic claim with post-hoc `git diff --name-only` capture** — previously a documented-but-unimplemented LLM heuristic; now observation of actual changes. Audit (post-execution), not prediction.
-- **Per-CLI PARALLEL dispatch table** in `subagents.md` (synced to 27 mirrors) — explicit `tasks[]/concurrency` syntax for pi-subagents, single-response `Promise.all` workaround for opencode (PR #14196), multi-Task-per-turn for claude-code, `codex exec &` for codex, `&`+`wait` generic. No worktree pointers.
-- **Scope-executor SKILL Step 2e** — `target_files` example populated in tracking-init snippet. `[TARGET_FILES]` parse convention documented.
-- **Scope-executor SKILL Step 3c** — added pre-execution lock acquisition snippet (defensive, opt-in if `target_files` declared AND parallel dispatch).
-- **Scope-executor SKILL Step 3e** — added post-execution lock release note + `start_sha` capture.
-- **Scope-executor SKILL Step 8** — pairwise inter-scope overlap computation (4-class report) replacing single-pair-overlap report.
-- **README Evidence row "Research vs code parallelism" + Limitation #16** — reworded to reflect observed-reality detection + sequential default + audit (not predicted heuristic).
-- **Replaced `sibling-scopes.json` phantom-claim artifact** with `scope-actual-files.json` (real, generated by `git diff --name-only`).
 
 ## [0.41.0] - 2026-07-06
 
