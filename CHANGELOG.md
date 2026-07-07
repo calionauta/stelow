@@ -188,17 +188,12 @@ No deprecation window, no migration cosmetics, no cosupport tickets.**
 
 ### Notes for next cycle
 
-- **Herdr plugin manifest**
-  (`integrations/herdr/stelow/herdr-plugin.toml`) doesn't have a
-  `[version]` line that `scripts/version-sync.mjs` can patch. Pre-existing
-  limitation; tracked separately.
+- **Herdr plugin manifest** (`integrations/herdr/stelow/herdr-plugin.toml`)
+  doesn't have a `[version]` line that `scripts/version-sync.mjs` can
+  patch. Pre-existing limitation; tracked separately.
 - **schema-fencing for `target_files` glob** — the convention is
   prefix-match only (`/**` and `/*`). Glob characters like `?` or
   `[abc]` are not yet supported. Tracked as a hardening item.
-- **Cross-CLI smoke testing** for the per-CLI PARALLEL dispatch
-  table (pi / opencode / claude-code / codex) — currently verified by
-  docs reading. End-to-end test against each CLI binary is not in the
-  test suite.
 
 ## [0.41.0] - 2026-07-06
 
