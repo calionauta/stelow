@@ -2,6 +2,43 @@
 
 All notable changes to `@calionauta/stelow` will be documented in this file.
 
+## [0.42.1] - 2026-07-07
+
+Two patches addressing items deferred from the v0.42.0 release notes:
+
+### Fixed
+
+- **`scripts/version-sync.mjs` idempotent TOML rewrite.** The script's TOML
+  rewrite used `updated === content` to detect "no match", but that
+  check returns a false negative when the file is **already** at the
+  target version (e.g., running `npm version 0.42.1` when
+  `herdr-plugin.toml` already reads `version = "0.42.0"`).
+  `String.prototype.replace` returns the original string both when
+  no match exists AND when the replacement was a no-op — so we'd
+  mistake idempotency for a missing line.
+  Fix: use a regex + `.test()` to distinguish "no match found" from
+  "replacement was a no-op". Idempotent runs now succeed quietly.
+  Symptom: v0.42.0 release shipped with a "Failed to sync
+  herdr-plugin.toml" log line. Manifest was always correct — this
+  was just a noisy false negative.
+
+### Added
+
+- **`tests/integration/cli-dispatch-syntax.test.ts`** (10 cases): validates
+  the per-CLI PARALLEL dispatch table from `subagents.md`. Two layers:
+  1. **Binary availability check** for pi (built-in + pi-subagents
+     extension), opencode, codex, claude-code (optional).
+  2. **Static call-shape validation** for each documented PARALLEL
+     invocation shape (tasks[] + concurrency for pi-subagents,
+     multi-Task-per-turn for claude-code, parallel codex-exec
+     subagents, opencode PR #14196 shape, generic `&`/`wait`).
+  Includes a `resolveCli()` helper that actively skips `node_modules/.bin`
+  directories when searching PATH — prevents a known shadowing issue
+  where vitest's modified PATH included a local older
+  `pi-coding-agent@0.73.1` dev dep that shadowed the global runtime.
+  Real LLM session-launching smoke tests are explicitly out of scope
+  (require a live model session; documented as different test class).
+
 > **Note on the `npm` package name.** `@calionauta/stelow` is the canonical
 > name (set in `package.json`). The package **was never published** to
 > npmjs.com at any name (confirmed via `npm view @calionauta/stelow`
