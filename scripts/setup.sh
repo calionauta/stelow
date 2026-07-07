@@ -105,13 +105,22 @@ esac
 
 # ---------------------------------------------------------------------------
 # Tool verification helpers — distinguish the real tool from collisions.
-# GNU Parallel ships a `sem` binary too; we verify via `sem --version` output.
+# GNU Parallel ships a `sem` binary too; we verify by looking for Ataraxy's
+# distinctive command set (impact, blame, context, entities, xref, mcp, ...).
 # cymbal has no known collision; presence check suffices.
 # ---------------------------------------------------------------------------
 verify_at_ataraxy() {
   command -v sem &> /dev/null || return 1
-  sem --version 2>/dev/null | grep -qi 'ataraxy\|entity' || return 1
-  return 0
+  # Ataraxy's sem lists >=3 distinctive commands in `sem help`. GNU Parallel
+  # `sem` is a symlink to `parallel`, whose help text is entirely different.
+  local ataraxy_cmds=0
+  local cmd
+  for cmd in impact blame entities context xref mcp setup unsetup; do
+    if sem help 2>/dev/null | grep -qE "^[[:space:]]+${cmd}[[:space:]]"; then
+      ataraxy_cmds=$(( ataraxy_cmds + 1 ))
+    fi
+  done
+  [ $ataraxy_cmds -ge 3 ]
 }
 
 HAS_CYMBAL=false
