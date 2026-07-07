@@ -2,6 +2,24 @@
 
 All notable changes to `@calionauta/stelow` will be documented in this file.
 
+## [0.43.1] - 2026-07-07
+
+Task visibility + CI fix — Muxy pipeline card shows task progress, scope cards are expandable with inline task list + link to spec-tech.md, discovered-task badge, and re-sync guard in scope-executor. CI pi-dependent tests now skip (not fail) in CI runners without global `pi` binary.
+
+### Added
+
+- **Pipeline card task summary** (`data.js`, `app.js`): kanban card shows "tasks 12/18" or "tasks 12/18 · +3 discovered" below scope progress. Quick signal on execution flow without opening scope view.
+- **Expandable scope card** (`app.js`): click scope card header in scope view to reveal inline task list with status icons (✅/◌/⏭), discovered-task note, and scroll for 20+ tasks (max-height:300px). Columns also scroll (max-height:calc(100vh-200px)) instead of unbounded grow.
+- **"📄 spec-tech" link** on each scope card: opens the approved spec-tech.md artifact preview inline — the source-of-truth markdown with Tasks table.
+- **Discovered-task badge**: yellow "+N discovered" badge on scope cards when scope has tasks with `source:'discovered'`. Signals unplanned work emerged during execution.
+- **Re-sync guard** (`SKILL.md` Step 3e-ter): post-seed validation that exits 1 if `tasks[]` wasn't populated (malformed spec-tech table). Prevents silent empty-task scopes.
+- **`getTaskSummaryText()` helper** (`data.js`): extracted task aggregation for reuse across card views.
+
+### Fixed
+
+- **CI failing on pi-dependent tests** (`cli-dispatch-syntax.test.ts`): both "pi is on PATH" and "pi-subagents extension is discoverable" now skip when `CI` env var is set. Local dev still validates pi is installed.
+- **Scope column unbounded grow**: columns now have `overflow-y:auto` with `max-height:calc(100vh-200px)` instead of native flex grow.
+
 ## [0.43.0] - 2026-07-07
 
 Record evidence convention (v1) + glob pattern expansion + Shape Up task tracking + Muxy cross-workflow scope view. No npm publish at any name; install via `pi install git:github.com/calionauta/stelow` or `npx skills add ...`.
