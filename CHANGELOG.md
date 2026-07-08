@@ -2,6 +2,22 @@
 
 All notable changes to `@calionauta/stelow` will be documented in this file.
 
+## [0.43.3] - 2026-07-08
+
+Docs-only: subagents.md corrected with real CLI commands based on official docs research + universal fallback for any CLI/agent.
+
+### Changed
+
+- **subagents.md Agent Types table**: Fixed planner contradiction (marked "NOT used"), added context-builder/oracle/researcher, added context default column.
+- **Worker → Delegate**: Creative/exploration tasks (proposal generation, consolidation) now use `delegate` instead of `worker`. Worker's [system] prompt is biased toward implementation.
+- **CLI commands corrected per official docs**:
+  - OpenCode: marked as **archived** (successor: Crush). No `delegate_task` — native mechanism is `agent({ prompt })`.
+  - Claude Code: no literal `Task()` function. Uses `--bg`, `--agents JSON`, `/batch`.
+  - Codex: no `/agent <task>` command. Uses TOML config files + natural language delegation.
+- **New "Fallback — pi without pi-subagents" section**: capability comparison, detection, fallback shapes for context/reads/acceptance/parallelism.
+- **New "Per-CLI Fallback Reference" section**: expanded per-CLI instructions with how to pass files, context type, agent type support, worked examples.
+- **New "Universal Fallback" section**: deterministic write + read pattern that works on ANY CLI/agent. Decision flow diagram covers all degradation paths.
+
 ## [0.43.2] - 2026-07-07
 
 Robustness pass: seed + re-sync guard merged into single `node -e`, shape validation (source/status/id) at seed time, discovered append guard rejects missing note. New e2e test (18 cases) covering seed → stelow.json → Muxy display pipeline. All tests green: 36 files, 1051 passing.
