@@ -1381,10 +1381,10 @@ export function registerCommands(pi: ExtensionAPI): void {
  */
 export function getCommandFilesForCLI(cli: string): Array<{ path: string; content: string }> {
   const commandFiles: Array<{ path: string; content: string }> = [];
-  
+
   for (const cmd of WORKFLOW_COMMANDS) {
     const desc = `${cmd.description}. Usage: ${cmd.usage || cmd.name}`;
-    
+
     switch (cli) {
       case "opencode":
       case "claude-code":
@@ -1393,15 +1393,9 @@ export function getCommandFilesForCLI(cli: string): Array<{ path: string; conten
           content: generateSkillFile(cmd.name, desc, cmd.piOnly || false),
         });
         break;
-      case "codex":
-        commandFiles.push({
-          path: `commands/${cmd.name}.md`,
-          content: generateCommandFile(cmd.name, desc, cmd.piOnly || false),
-        });
-        break;
     }
   }
-  
+
   return commandFiles;
 }
 
@@ -1424,28 +1418,6 @@ description: ${description}
 
 /skill:stelow-product-orchestrator
 
-${name} {args}
-`;
-  return banner;
-}
-
-function generateCommandFile(name: string, description: string, piOnly: boolean): string {
-  const banner = piOnly
-    ? `---
-name: ${name}
-description: [Pi only] ${description}
----
-
-@agent
-> ⚠️ This command requires the Pi extension. Use the skill instead.
-/skill:stelow-product-orchestrator
-`
-    : `---
-name: ${name}
-description: ${description}
----
-
-@agent
 ${name} {args}
 `;
   return banner;

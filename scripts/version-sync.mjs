@@ -4,7 +4,7 @@
  *
  * Keeps version numbers in sync between:
  * - Main package.json
- * - .claude-plugin/, .codex-plugin/, .opencode-plugin/ manifests
+ * - .claude-plugin/, .opencode-plugin/ manifests
  * - integrations/herdr/stelow/herdr-plugin.toml (TOML format)
  *
  * Run automatically via `npm version` lifecycle hook.
@@ -25,8 +25,6 @@ const ROOT = join(__dirname, "..");
 const JSON_TARGETS = [
   join(ROOT, ".claude-plugin/plugin.json"),
   join(ROOT, ".claude-plugin/marketplace.json"),
-  join(ROOT, ".codex-plugin/plugin.json"),
-  join(ROOT, ".codex-plugin/marketplace.json"),
   join(ROOT, ".opencode-plugin/plugin.json"),
 ];
 
@@ -55,7 +53,7 @@ function readVersion(filePath) {
 function writeVersion(filePath, version) {
   const content = readFileSync(filePath, "utf-8");
   const pkg = JSON.parse(content);
-  // marketplace.json files use metadata.version (Claude/Codex schema);
+  // marketplace.json files use metadata.version (Claude schema);
   // plugin.json files use a root-level version. Prefer metadata when
   // present, fall back to root.
   if (pkg.metadata && typeof pkg.metadata === "object") {

@@ -16,8 +16,6 @@ version_files:
   - package.json
   - .claude-plugin/plugin.json
   - .claude-plugin/marketplace.json
-  - .codex-plugin/plugin.json
-  - .codex-plugin/marketplace.json
   - .opencode-plugin/plugin.json
 
 # Command to run tests before release
