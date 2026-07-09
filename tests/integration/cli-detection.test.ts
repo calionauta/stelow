@@ -1,273 +1,168 @@
 /**
- * Integration Tests: CLI Detection
- * 
- * Tests for detectCLI() and getCLICapabilites() with mocked environment.
- * Validates PRODUCT_WORKFLOW_CLI override and fallback behavior.
- * 
- * Reference: docs/2026-05-20/multi-cli-plan/plans/spec-tech_multi-cli-impl-v1.md
+ * CLI Detection integration tests — narrowed to Pi + generic in v0.45.0.
+ *
+ * Pre-v0.45.0 this file covered 5 CLIs (pi, opencode, claude-code, codex,
+ * generic). Per the v0.45.0 Pi-first narrowing — see
+ * docs/archive/2026-07-09-deprecated-multi-cli-integration/ — only Pi has
+ * a maintained harness adapter. Any agent that reads `~/.agents/skills/<name>/`
+ * picks up the orchestrator skill via the agentskills.io standard.
  */
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { CLI } from '../../extensions/stelow/types';
 
-// Import the functions under test
-import { detectCLI, getCLICapabilites } from '../../extensions/stelow/state';
-import { getCLICapabilities } from '../../extensions/stelow/types';
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import {
+  detectCLI,
+  getCLICapabilites,
+} from "../../extensions/stelow/state";
+import { getCLICapabilities } from "../../extensions/stelow/types";
 
-describe('CLI Detection Integration Tests', () => {
-  // Store original env
-  const originalEnv = { ...process.env };
+describe("CLI Detection Integration Tests", () => {
+  let originalEnv: string | undefined;
 
   beforeEach(() => {
-    // Reset env before each test
-    process.env = { ...originalEnv };
+    originalEnv = process.env.PRODUCT_WORKFLOW_CLI;
     delete process.env.PRODUCT_WORKFLOW_CLI;
   });
 
   afterEach(() => {
-    // Restore env
-    process.env = { ...originalEnv };
+    if (originalEnv === undefined) {
+      delete process.env.PRODUCT_WORKFLOW_CLI;
+    } else {
+      process.env.PRODUCT_WORKFLOW_CLI = originalEnv;
+    }
   });
 
-  // ── detectCLI() with Env Override ──────────────────────────────────
-
-  describe('detectCLI() env override', () => {
-    it('returns "pi" when PRODUCT_WORKFLOW_CLI=pi', () => {
-      process.env.PRODUCT_WORKFLOW_CLI = 'pi';
-      expect(detectCLI()).toBe('pi');
+  describe("detectCLI()", () => {
+    it("returns 'pi' when PRODUCT_WORKFLOW_CLI=pi", () => {
+      process.env.PRODUCT_WORKFLOW_CLI = "pi";
+      expect(detectCLI()).toBe("pi");
     });
 
-    it('returns "opencode" when PRODUCT_WORKFLOW_CLI=opencode', () => {
-      process.env.PRODUCT_WORKFLOW_CLI = 'opencode';
-      expect(detectCLI()).toBe('opencode');
+    it("returns 'generic' when PRODUCT_WORKFLOW_CLI=generic", () => {
+      process.env.PRODUCT_WORKFLOW_CLI = "generic";
+      expect(detectCLI()).toBe("generic");
     });
 
-    it('returns "claude-code" when PRODUCT_WORKFLOW_CLI=claude-code', () => {
-      process.env.PRODUCT_WORKFLOW_CLI = 'claude-code';
-      expect(detectCLI()).toBe('claude-code');
+    it("is case-insensitive", () => {
+      process.env.PRODUCT_WORKFLOW_CLI = "PI";
+      expect(detectCLI()).toBe("pi");
     });
 
-    it('returns "generic" when PRODUCT_WORKFLOW_CLI=generic', () => {
-      process.env.PRODUCT_WORKFLOW_CLI = 'generic';
-      expect(detectCLI()).toBe('generic');
+    it("trims whitespace", () => {
+      process.env.PRODUCT_WORKFLOW_CLI = "  pi  ";
+      expect(detectCLI()).toBe("pi");
     });
 
-    it('is case-insensitive', () => {
-      process.env.PRODUCT_WORKFLOW_CLI = 'CLAUDE-CODE';
-      expect(detectCLI()).toBe('claude-code');
+    it("returns 'generic' for unknown CLI values", () => {
+      process.env.PRODUCT_WORKFLOW_CLI = "unknown-cli";
+      expect(detectCLI()).toBe("generic");
     });
 
-    it('trims whitespace', () => {
-      process.env.PRODUCT_WORKFLOW_CLI = '  pi  ';
-      expect(detectCLI()).toBe('pi');
-    });
-
-    it('returns "generic" for unknown CLI values', () => {
-      process.env.PRODUCT_WORKFLOW_CLI = 'unknown-cli';
-      expect(detectCLI()).toBe('generic');
-    });
-
-    it('returns "generic" for empty PRODUCT_WORKFLOW_CLI', () => {
-      process.env.PRODUCT_WORKFLOW_CLI = '';
+    it("returns 'generic' for empty PRODUCT_WORKFLOW_CLI", () => {
+      process.env.PRODUCT_WORKFLOW_CLI = "";
       expect(detectCLI()).toBeDefined();
     });
 
-    it('returns "generic" for whitespace-only PRODUCT_WORKFLOW_CLI', () => {
-      process.env.PRODUCT_WORKFLOW_CLI = '   ';
+    it("returns 'generic' for whitespace-only PRODUCT_WORKFLOW_CLI", () => {
+      process.env.PRODUCT_WORKFLOW_CLI = "   ";
       expect(detectCLI()).toBeDefined();
     });
   });
 
-  // ── getCLICapabilities() Tests ─────────────────────────────────────
-
-  describe('getCLICapabilities()', () => {
-    it('returns full capabilities for "pi" CLI', () => {
-      const caps = getCLICapabilities('pi');
-      
-      expect(caps.cli).toBe('pi');
+  describe("getCLICapabilities()", () => {
+    it("returns full capabilities for 'pi' CLI", () => {
+      const caps = getCLICapabilities("pi");
+      expect(caps.cli).toBe("pi");
       expect(caps.hasPluginSystem).toBe(true);
-      expect(caps.pluginFormat).toBe('npm');
-      expect(caps.hasSessionStart).toBe(true);
-      expect(caps.hasToolCall).toBe(true);
-      expect(caps.hasTurnEnd).toBe(true);
-      expect(caps.hasSubagent).toBe(true);
       expect(caps.hasAskUserQuestion).toBe(true);
       expect(caps.hasGoals).toBe(true);
       expect(caps.hasIntercom).toBe(true);
       expect(caps.hasSupervise).toBe(true);
-      expect(caps.hasTUI).toBe(true);
-      expect(caps.hasNotifications).toBe(true);
-      expect(caps.hasSelectList).toBe(true);
-      expect(caps.hasStatusLine).toBe(true);
-      expect(caps.hasMCPSupport).toBe(true);
     });
 
-    it('returns correct capabilities for "opencode" CLI', () => {
-      const caps = getCLICapabilities('opencode');
-      
-      expect(caps.cli).toBe('opencode');
-      expect(caps.hasPluginSystem).toBe(true);
-      expect(caps.pluginFormat).toBe('npm');
-      expect(caps.hasSessionStart).toBe(true);
-      expect(caps.hasToolCall).toBe(true);
-      expect(caps.hasTurnEnd).toBe(true);
-      expect(caps.hasPreCompact).toBe(true);
-      expect(caps.hasSubagent).toBe(true);
+    it("returns minimal capabilities for 'generic' CLI", () => {
+      const caps = getCLICapabilities("generic");
+      expect(caps.cli).toBe("generic");
+      expect(caps.hasPluginSystem).toBe(false);
       expect(caps.hasAskUserQuestion).toBe(false);
       expect(caps.hasGoals).toBe(false);
-      expect(caps.hasTUI).toBe(true);
-      expect(caps.hasNotifications).toBe(true);
-      expect(caps.hasMCPSupport).toBe(true);
-    });
-
-    it('returns correct capabilities for "claude-code" CLI', () => {
-      const caps = getCLICapabilities('claude-code');
-      
-      expect(caps.cli).toBe('claude-code');
-      expect(caps.hasPluginSystem).toBe(true);
-      expect(caps.pluginFormat).toBe('marketplace');
-      expect(caps.hasSessionStart).toBe(true);
-      expect(caps.hasToolCall).toBe(true);
-      expect(caps.hasTurnEnd).toBe(true);
-      expect(caps.hasPreCompact).toBe(true);
-      expect(caps.hasSubagent).toBe(true);
-      expect(caps.hasTUI).toBe(true);
-      expect(caps.hasNotifications).toBe(true);
-      expect(caps.hasMCPSupport).toBe(true);
-    });
-
-    it('returns minimal capabilities for "generic" CLI', () => {
-      const caps = getCLICapabilities('generic');
-      
-      expect(caps.cli).toBe('generic');
-      expect(caps.hasPluginSystem).toBe(false);
-      expect(caps.pluginFormat).toBeNull();
-      expect(caps.hasCommands).toBe(true); // Base capability
-      expect(caps.hasSubagent).toBe(true); // Base capability
-      expect(caps.hasTUI).toBe(false);
-      expect(caps.hasNotifications).toBe(false);
-      expect(caps.hasMCPSupport).toBe(false);
-    });
-
-    it('hasCommands is true for all CLIs', () => {
-      const clis: CLI[] = ['pi', 'opencode', 'claude-code', 'generic'];
-      for (const cli of clis) {
-        expect(getCLICapabilities(cli).hasCommands).toBe(true);
-      }
-    });
-
-    it('commandPrefix is "/" for all CLIs', () => {
-      const clis: CLI[] = ['pi', 'opencode', 'claude-code', 'generic'];
-      for (const cli of clis) {
-        expect(getCLICapabilities(cli).commandPrefix).toBe('/');
-      }
-    });
-
-    it('all CLIs except generic have distinct capabilities', () => {
-      const clis: CLI[] = ['pi', 'opencode', 'claude-code', 'generic'];
-      const capsMap = clis.map(cli => JSON.stringify(getCLICapabilities(cli)));
-      const uniqueCaps = new Set(capsMap);
-      expect(uniqueCaps.size).toBe(clis.length); // All should be unique
     });
   });
 
-  // ── getCLICapabilites() Wrapper Tests ──────────────────────────────
-
-  describe('getCLICapabilites() (wrapper from state.ts)', () => {
-    it('returns capabilities for specified CLI', () => {
-      const caps = getCLICapabilites('pi');
-      expect(caps.cli).toBe('pi');
+  describe("Capability comparison: pi vs generic", () => {
+    it("pi has AskUserQuestion; generic does not", () => {
+      expect(getCLICapabilities("pi").hasAskUserQuestion).toBe(true);
+      expect(getCLICapabilities("generic").hasAskUserQuestion).toBe(false);
     });
 
-    it('detects CLI when not specified', () => {
+    it("pi has Goals; generic does not", () => {
+      expect(getCLICapabilities("pi").hasGoals).toBe(true);
+      expect(getCLICapabilities("generic").hasGoals).toBe(false);
+    });
+
+    it("pi has Intercom; generic does not", () => {
+      expect(getCLICapabilities("pi").hasIntercom).toBe(true);
+      expect(getCLICapabilities("generic").hasIntercom).toBe(false);
+    });
+
+    it("both have hasCommands=true", () => {
+      expect(getCLICapabilities("pi").hasCommands).toBe(true);
+      expect(getCLICapabilities("generic").hasCommands).toBe(true);
+    });
+
+    it("both have commandPrefix='/'", () => {
+      expect(getCLICapabilities("pi").commandPrefix).toBe("/");
+      expect(getCLICapabilities("generic").commandPrefix).toBe("/");
+    });
+
+    it("pi has pluginFormat='npm'; generic is null", () => {
+      expect(getCLICapabilities("pi").pluginFormat).toBe("npm");
+      expect(getCLICapabilities("generic").pluginFormat).toBeNull();
+    });
+
+    it("pi has more total capabilities than generic", () => {
+      const piCount = Object.values(getCLICapabilities("pi")).filter(
+        (v) => v === true,
+      ).length;
+      const genCount = Object.values(getCLICapabilities("generic")).filter(
+        (v) => v === true,
+      ).length;
+      expect(piCount).toBeGreaterThan(genCount);
+    });
+  });
+
+  describe("getCLICapabilites wrapper", () => {
+    it("returns capabilities for specified CLI", () => {
+      const caps = getCLICapabilites("pi");
+      expect(caps.cli).toBe("pi");
+    });
+
+    it("detects CLI when not specified", () => {
       const caps = getCLICapabilites();
-      expect(caps).toBeDefined();
-      expect(caps.cli).toBeDefined();
+      expect(["pi", "generic"]).toContain(caps.cli);
     });
 
-    it('returns same result as direct getCLICapabilities call', () => {
-      const capsFromWrapper = getCLICapabilites('claude-code');
-      const capsFromDirect = getCLICapabilities('claude-code');
-      expect(capsFromWrapper).toEqual(capsFromDirect);
-    });
-  });
-
-  // ── Integration: detectCLI + getCLICapabilities ────────────────────
-
-  describe('Integration: detectCLI + getCLICapabilities', () => {
-    it('PRODUCT_WORKFLOW_CLI=pi produces matching capabilities', () => {
-      process.env.PRODUCT_WORKFLOW_CLI = 'pi';
-      const detected = detectCLI();
-      const caps = getCLICapabilities(detected);
-      expect(detected).toBe('pi');
-      expect(caps.cli).toBe('pi');
-      expect(caps.hasGoals).toBe(true); // Pi-specific
-    });
-
-    it('PRODUCT_WORKFLOW_CLI=opencode produces opencode capabilities', () => {
-      process.env.PRODUCT_WORKFLOW_CLI = 'opencode';
-      const detected = detectCLI();
-      const caps = getCLICapabilities(detected);
-      expect(detected).toBe('opencode');
-      expect(caps.pluginFormat).toBe('npm');
-      expect(caps.hasPreCompact).toBe(true);
-    });
-
-    it('PRODUCT_WORKFLOW_CLI=claude-code produces claude-code capabilities', () => {
-      process.env.PRODUCT_WORKFLOW_CLI = 'claude-code';
-      const detected = detectCLI();
-      const caps = getCLICapabilities(detected);
-      expect(detected).toBe('claude-code');
-      expect(caps.pluginFormat).toBe('marketplace');
-    });
-
-    it('PRODUCT_WORKFLOW_CLI=generic produces generic capabilities', () => {
-      process.env.PRODUCT_WORKFLOW_CLI = 'generic';
-      const detected = detectCLI();
-      const caps = getCLICapabilities(detected);
-      expect(detected).toBe('generic');
-      expect(caps.hasPluginSystem).toBe(false);
-      expect(caps.hasMCPSupport).toBe(false);
+    it("matches getCLICapabilities directly", () => {
+      const wrapper = getCLICapabilites("pi");
+      const direct = getCLICapabilities("pi");
+      expect(wrapper).toEqual(direct);
     });
   });
 
-  // ── Capability Feature Detection ──────────────────────────────────────
-
-  describe('Capability feature detection', () => {
-    it('pi has the most capabilities (richest feature set)', () => {
-      const piCaps = getCLICapabilities('pi');
-      // Pi-specific capabilities that others don't have
-      expect(piCaps.hasAskUserQuestion).toBe(true);
-      expect(piCaps.hasGoals).toBe(true);
-      expect(piCaps.hasIntercom).toBe(true);
-      expect(piCaps.hasSupervise).toBe(true);
+  describe("Integration: detectCLI + capabilities", () => {
+    it("when PRODUCT_WORKFLOW_CLI=pi, caps match pi", () => {
+      process.env.PRODUCT_WORKFLOW_CLI = "pi";
+      const detected = detectCLI();
+      const caps = getCLICapabilities(detected);
+      expect(detected).toBe("pi");
+      expect(caps.hasGoals).toBe(true);
     });
 
-    it('only pi has ask_user_question capability', () => {
-      const clis: CLI[] = ['opencode', 'claude-code', 'generic'];
-      for (const cli of clis) {
-        expect(getCLICapabilities(cli).hasAskUserQuestion).toBe(false);
-      }
-    });
-
-    it('only pi has intercom capability', () => {
-      const clis: CLI[] = ['opencode', 'claude-code', 'generic'];
-      for (const cli of clis) {
-        expect(getCLICapabilities(cli).hasIntercom).toBe(false);
-      }
-    });
-
-    it('all CLIs except generic have MCP support', () => {
-      const clis: CLI[] = ['pi', 'opencode', 'claude-code'];
-      for (const cli of clis) {
-        expect(getCLICapabilities(cli).hasMCPSupport).toBe(true);
-      }
-    });
-
-    it('pluginFormat varies by CLI', () => {
-      expect(getCLICapabilities('pi').pluginFormat).toBe('npm');
-      expect(getCLICapabilities('opencode').pluginFormat).toBe('npm');
-      expect(getCLICapabilities('claude-code').pluginFormat).toBe('marketplace');
-      expect(getCLICapabilities('generic').pluginFormat).toBeNull();
+    it("when PRODUCT_WORKFLOW_CLI=generic, caps reflect generic", () => {
+      process.env.PRODUCT_WORKFLOW_CLI = "generic";
+      const detected = detectCLI();
+      const caps = getCLICapabilities(detected);
+      expect(detected).toBe("generic");
+      expect(caps.pluginFormat).toBeNull();
     });
   });
 });

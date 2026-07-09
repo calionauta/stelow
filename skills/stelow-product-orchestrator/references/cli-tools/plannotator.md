@@ -8,7 +8,7 @@
 > See `stages/gate.md` for what the gate DOES and DOES NOT catch.
 > Alternative: manual review with approval tracking.
 
-## Primary Path (pi, stelow stages)
+## Pi-native path
 
 Use the `plannotator` tool registered by the stelow extension. This is the **recommended**
 path — it works when bash is blocked (gate/int-gate stages).
@@ -20,10 +20,12 @@ plannotator filePath=.stelow/.../plans/spec-product_v1.md
 The tool spawns the CLI binary with `--gate --json`, blocks until the user decides,
 and returns a structured JSON decision.
 
-## Fallback: CLI Binary (bash)
+## Universal fallback (CLI binary)
 
-When the `plannotator` tool is unavailable (e.g., subagent without extension), fall
-back to the standalone CLI binary via bash:
+When the `plannotator` tool is unavailable (e.g., a subagent without the extension),
+fall back to the standalone CLI binary via bash. The CLI ships as
+`@plannotator/pi-extension` (the package name covers the CLI binary, even when used
+without the extension).
 
 ```bash
 plannotator annotate <file>.md --gate --json
@@ -41,34 +43,9 @@ plannotator annotate <file>.md --gate --json
 | Annotated | `{"decision":"annotated","feedback":"..."}` |
 | Dismissed | `{"decision":"dismissed"}` |
 
-## Available Commands by CLI (Reference)
+## Generic fallback (no Plannotator available)
 
-| CLI | Command | Package | Available |
-|-----|---------|---------|-----------|
-| pi | `plannotator annotate <file>.md --gate` | @plannotator/pi-extension | ✅ |
-| opencode | `@plannotator/opencode` plugin | @plannotator/opencode | ✅ |
-| claude-code | `plannotator annotate <file>.md --gate` (hook) | @backnotprop/plannotator | ✅ |
-| generic | Manual review with receipt file | — | ✅ |
-
-### opencode
-
-```bash
-# Install plugin first:
-# Add to opencode.json: "plugin": ["@plannotator/opencode@latest"]
-
-# Then use via plugin API
-```
-
-### claude-code
-
-```bash
-# Via hook (auto-configured with plugin)
-/plannotator annotate <file>.md --gate
-```
-
-### generic (Fallback)
-
-When Plannotator is not available:
+When Plannotator is not available at all:
 
 1. Open the file manually in browser or editor
 2. Review and annotate manually
@@ -80,7 +57,7 @@ approved: true
 approved_via: manual review
 ```
 
-### Tool Failure Path
+## Tool Failure Path
 
 If the `plannotator` tool returns `decision: "error"`:
 
@@ -107,8 +84,6 @@ The automated gate tool failed. This file needs human review before proceeding.
 
 > **Key rule:** The gate is NEVER skipped. Degrade to manual review but still block.
 
----
-
 ## When to Use
 
 | Stage | Purpose | File |
@@ -117,9 +92,7 @@ The automated gate tool failed. This file needs human review before proceeding.
 | Interface | Interface proposals approval | `interfaces/interfaces_v{N}.md` |
 | Tech Planning | Plan approval | `plans/spec-tech_v{N}.md` |
 
----
-
-## ⚠️ CRITICAL: --gate Flag (pi, claude-code)
+## ⚠️ CRITICAL: --gate Flag
 
 **The `--gate` flag is MANDATORY for blocking behavior.**
 
@@ -129,8 +102,6 @@ The automated gate tool failed. This file needs human review before proceeding.
 | ❌ No blocking | ✅ Blocks until approval |
 | ❌ Opens in background | ✅ Opens as active review |
 | ❌ Can be skipped | ✅ Forces decision |
-
----
 
 ## After Approval
 
@@ -155,8 +126,6 @@ approved_via: plannotator --gate
 
 ### 3. File is frozen
 Future changes require new version + new gate.
-
----
 
 ## Fallback (Generic)
 

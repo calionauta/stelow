@@ -25,18 +25,19 @@ This tool is **not installed by default** and is **not a replacement** for:
 
 ## Install
 
-**Pi:**
+**Pi-native path:**
 
 ```bash
 pi install git:github.com/cursor/plugins
 # Then use via skill reference
 ```
 
-**Other CLIs (OpenCode, Claude Code):**
+**Universal fallback for any other agent:**
 
 ```bash
-npx skills add cursor/plugins -a <cli> -g
-# Example: npx skills add cursor/plugins -a opencode -g
+npx skills add cursor/plugins -g
+# The skill auto-registers into the agent's ~/.agents/skills directory.
+# Invoke the skill by name in chat (or via the agent's skill tool).
 ```
 
 ## How to invoke

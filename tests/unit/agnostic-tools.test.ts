@@ -19,8 +19,6 @@ import { parse as parseYAML } from "yaml";
 
 // ── REAL adapter imports (no mocks) ────────────────────────────────
 import { PiAdapter } from "../../extensions/stelow/adapters/pi/index";
-import { OpenCodeAdapter } from "../../extensions/stelow/adapters/opencode/index";
-import { ClaudeCodeAdapter } from "../../extensions/stelow/adapters/claude-code/index";
 import { GenericAdapter } from "../../extensions/stelow/adapters/base";
 import { createStagesGuard, loadStages } from "../../extensions/stelow/adapters/stages-guard";
 import type { StagesConfig, StageState } from "../../extensions/stelow/adapters/stages-guard";
@@ -72,42 +70,6 @@ describe("toAgnosticName() per adapter", () => {
 
   it("PiAdapter identity for unknown tool names", () => {
     expect(pi.toAgnosticName("some_random_tool")).toBe("some_random_tool");
-  });
-
-  // OpenCodeAdapter
-  const opencode = new OpenCodeAdapter();
-
-  it("OpenCodeAdapter maps Grep → grep", () => {
-    expect(opencode.toAgnosticName("Grep")).toBe("grep");
-  });
-
-  it("OpenCodeAdapter maps Glob → ls", () => {
-    expect(opencode.toAgnosticName("Glob")).toBe("ls");
-  });
-
-  it("OpenCodeAdapter maps WebSearch → web_search", () => {
-    expect(opencode.toAgnosticName("WebSearch")).toBe("web_search");
-  });
-
-  it("OpenCodeAdapter identity for built-in tools", () => {
-    expect(opencode.toAgnosticName("read")).toBe("read");
-    expect(opencode.toAgnosticName("bash")).toBe("bash");
-  });
-
-  // ClaudeCodeAdapter
-  const claude = new ClaudeCodeAdapter();
-
-  it("ClaudeCodeAdapter maps Grep → grep", () => {
-    expect(claude.toAgnosticName("Grep")).toBe("grep");
-  });
-
-  it("ClaudeCodeAdapter maps Glob → ls", () => {
-    expect(claude.toAgnosticName("Glob")).toBe("ls");
-  });
-
-  it("ClaudeCodeAdapter identity for built-in tools", () => {
-    expect(claude.toAgnosticName("read")).toBe("read");
-    expect(claude.toAgnosticName("write")).toBe("write");
   });
 
   // GenericAdapter — identity for everything

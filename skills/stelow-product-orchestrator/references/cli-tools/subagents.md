@@ -16,15 +16,13 @@
 
 > Delegate parallel work to built-in subagents with task handoff. Alternative: execute directly with context preservation.
 
-## Available Commands by CLI
+## Available Invocations
 
-| CLI | Command | Package | Available | Context behavior |
-|-----|---------|---------|-----------|-----------------|
-| pi | `subagent({ agent, task })` | pi built-in | ✅ | **Always isolated context** (separate `pi` process). No `context` parameter. |
-| pi | `subagent({ agent, task, context, reads, acceptance })` | pi-subagents (`npm:pi-subagents`) | ✅ | Adds `context: "fresh" \| "fork"` param (default **`fresh`**), `reads`, `acceptance`, parent-child contracts. Use this when stelow needs deterministic fresh-context semantics. |
-| opencode | `agent({ prompt })` built-in tool | Built-in | ⚠️ (archived) | Always runs in its own session — no `fork`/`fresh` distinction. Successor: **Crush**. |
-| claude-code | `/background` or `--bg` flag | Built-in | ✅ | Always runs in its own context window — no `fork`/`fresh` distinction. |
-| generic | Execute directly with file-based handoff | — | ✅ | — |
+| Surface | Invocation | Context behavior |
+|---------|------------|-----------------|
+| **Pi-native (recommended)** | `subagent({ agent, task, context: "fresh", reads, acceptance })` via pi-subagents (`npm:pi-subagents`) | Deterministic fresh-context semantics; explicit `context: "fresh"` overrides packaged-agent defaults (see below) |
+| **Pi built-in (fallback)** | `subagent({ agent, task })` | Always isolated context — separate `pi` process; no `context` param |
+| **Universal fallback (any agent)** | Execute directly in current session with file-based handoff (`write` artifact → next stage reads it) | Fresh-context by construction (no parent history crosses the file boundary) |
 
 ## Command Details
 
@@ -55,43 +53,6 @@ subagent({
 | `scout`, `reviewer`, `researcher`, `delegate`, `context-builder` | `fresh` (no `defaultContext`) | No override needed |
 
 Stelow ALWAYS passes explicit `context: "fresh"` to defend against packaged agents that default to fork. This is the documented contract — no reliance on per-agent defaults.
-
-### opencode (archived — successor: Crush)
-
-**Subagent mechanism:** Uses an `agent` built-in tool — the orchestrator LLM calls `agent({ prompt: "..." })` to spawn a sub-task. No explicit `agent` type parameter; the role is embedded in the prompt text.
-
-```json
-{
-  "name": "agent",
-  "arguments": {
-    "prompt": "You are a codebase recon agent. Find relevant files for: [objective]."
-  }
-}
-```
-
-> **⚠️ Project archived.** OpenCode development has moved to **Crush** (`github.com/opencode-ai/crush`). The `agent` tool pattern may change. When detected, prefer [Headless CLI fallback](#fallback--headless-cli-any-harness) or [Universal Fallback](#universal-fallback-any-cliagent) for stability.
-
-**Agent type routing:** Not explicitly supported — embed the role instruction in the `prompt` string (no separate `agent` type param like pi-subagents).
-
-### claude-code
-
-**Subagent mechanism:** Claude Code does NOT expose a literal `Task()` function to the orchestrator LLM. Instead, subagents are managed through:
-
-| Method | Usage |
-|--------|-------|
-| **Natural language delegation** | Simply instruct the agent (e.g., "Use a subagent to research this") — Claude auto-delegates internally |
-| **`/background` or `--bg` flag** | Force a task into a detached background session: `claude --bg "analyze logs for errors"` or `/background "analyze logs"` |
-| **`--agents` JSON** | Define custom agents via JSON: `claude --agents '{"researcher":{"description":"...","prompt":"You are a research expert..."}}'` |
-| **`/batch`** | Auto-decompose task into isolated worktrees and run in parallel: `/batch "refactor all services"` |
-
-**Context:** Always isolated per session. Child does NOT inherit parent conversation history.
-
-**Agent type routing:** No built-in `scout`/`worker`/`reviewer` types. Embed the role in the prompt text or define via `--agents` JSON.
-
-**Parallel:**
-- Background sessions (`--bg` or `/background`) run independently
-- `/batch` auto-parallelizes with git worktree isolation
-- List: `claude agents` | Attach: `claude attach <id>` | Stop: `claude stop <id>`
 
 ### generic (Fallback)
 
@@ -192,14 +153,12 @@ subagent({
 
 **Do NOT rely on LLM translation of intent.** Read `detected_cli` from `.stelow/{date}/{dir}/index.json` (populated by `setup.md`) and emit the **direct invocation syntax** for that CLI. Each CLI below shows the literal call shape the orchestrator must use. The skill author writes the template; the orchestrator selects the row.
 
-**Universal rule across all CLIs:** every stelow subagent invocation passes `context: "fresh"` (pi-subagents) OR relies on the CLI's always-isolated semantics (built-in pi, opencode, claude-code). The result is the same: child sees only what was explicitly handed to it.
+**Universal rule across all agents:** every stelow subagent invocation passes `context: "fresh"` (pi-subagents extension) OR relies on file-based handoff (any other agent). The result is the same: the child receives only what was explicitly handed to it.
 
 | `detected_cli` | **Required** invocation | Why this exact shape |
 |---|---|---|
 | `pi` (built-in) | `subagent({ agent, task, reads })` | Built-in `subagent()` always runs in isolated `pi` process. No `context` param exists — no way to inherit parent history. Pass `reads` for inputs. |
 | `pi` (pi-subagents) | `subagent({ agent, task, reads, context: "fresh", acceptance? })` | `context: "fresh"` is **mandatory** to override packaged `worker`/`planner`/`oracle` defaults (`defaultContext: "fork"`). Without it, worker silently runs fork and inherits parent's context rot. |
-| `opencode` | **Archived** — use Headless CLI or Universal Fallback. Former syntax: `agent({ prompt })` built-in tool. | Project moved to **Crush**. Embed role + files in `prompt` string. No separate agent type param. |
-| `claude-code` | **Natural language delegation** (auto) or `--bg` / `--agents` JSON / `/batch` | No literal subagent function. Child runs in isolated session. Define custom agents via `--agents` JSON or TOML. |
 | `generic` | Execute directly in current session; save output to file; next stage reads file. | No subagent support. File-based handoff IS fresh-context by construction. |
 
 ### PARALLEL dispatch (per-CLI, verified 2026)
@@ -210,8 +169,8 @@ subagent({
 |---|---|---|
 | `pi` (built-in) | Multiple `subagent(...)` calls in same turn | Runtime queues serially by default — no true concurrency |
 | `pi` (pi-subagents, nicobailon) | `subagent({ tasks: [...], concurrency: N, context: "fresh" })` | Native fan-out via `tasks[]` array + `concurrency`. Each child gets fresh context. |
-| `opencode` | **Archived** — no reliable parallel subagent. Use headless `&` + `wait`. | Project moved to Crush. No native parallel mechanism documented. |
-| `claude-code` | `/background` multiple times, or `/batch` for auto-parallelization with git worktree isolation | `/batch` auto-decomposes tasks. Background sessions via `--bg` run independently. List: `claude agents`. |
+| `generic` | `cmd_a & cmd_b & wait` (POSIX) | Shell-based fan-out; each process is independent. |
+
 | `generic` | `cmd_a & cmd_b & wait` (POSIX) | Shell-based fan-out; each process is independent. |
 
 **Parallel scope prevention (CLI-agnostic):**
@@ -478,103 +437,22 @@ The orchestrator reads `detected_cli` from `.stelow/{date}/{dir}/index.json`. Wh
 
 ---
 
-## Per-CLI Fallback Reference: opencode, claude-code
+## Per-harness fallback rule (any agent)
 
-When the workflow is running on opencode or claude-code (not pi), the subagent invocation differs per CLI. These CLIs have **built-in agent orchestration** but do NOT support `context`, `reads`, `acceptance`, or `tasks[]`+`concurrency` — those are pi-subagents-only features.
+For agents that lack a native `subagent` tool (any agent without pi-subagents),
+the orchestrator must embed ALL relevant context (file paths, decisions, acceptance
+criteria, appetite, review_mode) directly in the prompt string. The child starts
+empty — if you don't tell it, it won't know.
 
-**Universal rule for non-pi CLIs:** All three CLIs spawn child agents in **always-isolated sessions** — no `fork`/`fresh` distinction exists. The child always starts clean. This is equivalent to `context: "fresh"` on pi, but with fewer input-passing options and NO explicit agent type routing.
-
-> **⚠️ Responsibility shift:** Since these CLIs don't support `reads` or `context` params, the **orchestrator must embed ALL relevant context** (file paths, decisions, acceptance criteria, appetite, review_mode) directly in the prompt string. The child starts empty — if you don't tell it, it won't know. There is no `reads` to fall back on.
-
-**How to pass files (since `reads` is unavailable):**
+**How to pass files when `reads` is unavailable:**
 - **In the prompt string:** Reference file paths: `"Read .stelow/.../spec-product.md, then..."`
-- **As attached files:** Some CLIs support file attachment mechanisms (see per-CLI details below)
 - **Embed content inline:** For small inputs, paste the relevant content directly in the prompt
 
-### opencode (archived — successor: Crush)
+### Headless CLI fallback (any agent)
 
-| Aspect | Detail |
-|--------|--------|
-| Status | **Archived.** Development moved to **Crush** (`github.com/opencode-ai/crush`). |
-| Subagent invocation | `agent({ prompt: "..." })` — built-in tool. No explicit agent type param. |
-| Context | **Always isolated** — separate session, no parent history |
-| `reads` equivalent | Embed file paths in `prompt` string |
-| Agent types | ❌ Not supported — embed role in prompt text |
-| `context` param | ❌ Not applicable — always isolated |
-| `acceptance` | ❌ Not supported — use parent-controlled re-delegation loop |
-| Parallel | **No reliable parallel.** Use headless `&` + `wait` or Universal Fallback. |
-
-**Worked example:**
-
-```json
-// opencode equivalent:
-{
-  "name": "agent",
-  "arguments": {
-    "prompt": "Generate interface proposal.\n\nRead .stelow/{date}/{dir}/plans/spec-product_{v}.md and tech-recon.md first.\nThe spec has appetite, review_mode, domains_detected in frontmatter.\nYou are a product designer exploring creative approaches.\n\nSave output to interfaces/interfaces_v{N}.md"
-  }
-}
-```
-
-### claude-code
-
-| Aspect | Detail |
-|--------|--------|
-| Subagent invocation | **No literal function.** Use natural language, `/background`, `--bg`, or `--agents` JSON |
-| Context | **Always isolated** — separate context window, no parent history |
-| `reads` equivalent | Reference file paths in prompt text. Filesystem is auto-accessible via CWD. |
-| Agent types | ❌ Not supported natively — define via `--agents` JSON or embed role in prompt |
-| `context` param | ❌ Not applicable — always isolated |
-| `acceptance` | ❌ Not supported — use parent-controlled re-delegation loop |
-| Parallel | `/background` multiple times, or `/batch` for auto-parallelization with git worktree isolation |
-
-**Worked example — spawning a background agent:**
-
-```bash
-# claude-code: spawn background agent via CLI
-claude --bg "Generate interface proposal.
-
-Read .stelow/{date}/{dir}/plans/spec-product_{v}.md and tech-recon.md first.
-The spec has appetite, review_mode, domains_detected in frontmatter.
-You are a product designer exploring creative approaches.
-
-Save output to interfaces/interfaces_v{N}.md"
-```
-
-**Worked example — custom agent via `--agents` JSON:**
-
-```bash
-claude --agents '{
-  "proposal-designer": {
-    "description": "Generates interface proposals from spec-product.md",
-    "prompt": "You are a product designer. Generate interface proposals from spec-product.md."
-  }
-}' \
-  --bg "Run proposal-designer on .stelow/{date}/{dir}/plans/spec-product_{v}.md"
-```
-
-### Generic fallback (no native subagent)
-
-If the CLI has no subagent mechanism at all, use [Universal Fallback](#universal-fallback-any-cliagent) — which covers every possible CLI/agent through a single, deterministic pattern.
-
----
-
-## Fallback — Headless CLI (any harness)
-
-When no native `subagent` tool is available (e.g. pi without `pi-subagents` extension,
-or a generic CLI), spawn the harness itself as a headless subprocess.
-Each CLI's non-interactive mode (`-p`/`--print`) runs a prompt and exits —
-this IS a subagent, just called via CLI instead of a tool.
+When no native `subagent` tool is available, spawn the harness itself as a headless subprocess. Each agent's non-interactive mode (`-p` / `--print`) runs a prompt and exits — this IS a subagent, just called via CLI instead of a tool.
 
 **No model flag needed** — uses the user's default model.
-
-### Per-CLI command
-
-| CLI | Command |
-|-----|---------|
-| pi | `pi --print \"$task\"` |
-| Claude Code | `claude -p \"$task\"` |
-| OpenCode | `opencode -p \"$task\"` |
 
 ### Usage pattern
 
@@ -583,17 +461,17 @@ this IS a subagent, just called via CLI instead of a tool.
 pi --print "generate report and save to output.md"
 
 # Or with structured output for verification:
-claude -p --output-format json \
+pi --print --output-format json \
   'Read output.md. Return JSON: { valid: bool, issues: [] }'
 ```
 
 ### When to use
 
-| Scenario | Native subagent | Headless CLI fallback |
-|----------|----------------|----------------------|
+| Scenario | Native subagent (pi) | Headless CLI fallback |
+|----------|----------------------|----------------------|
 | Extension installed | ✅ Preferred | ❌ Not needed |
 | Extension missing | ❌ Fails | ✅ Works |
-| Agent type routing | ✅ Builtin (scout/researcher/worker/etc) | ⚠️ No agent type — must instruct role in prompt text |
+| Agent type routing | ✅ Built-in (scout/researcher/worker/etc) | ⚠️ No agent type — must instruct role in prompt text |
 | Need structured output | ✅ Works | ⚠️ Requires prompt instruction |
 | Pipeline of tasks | ✅ Subagent returns control | ✅ Command exits, next runs |
 | Parallel fan-out | ✅ Built-in | ⚠️ Background each with `&` + wait |
@@ -690,9 +568,7 @@ When deciding which subagent mechanism to use, follow this priority — the deci
    │   ├── pi-subagents installed?  →  ✅ USE: subagent({ agent, task, reads, context:"fresh", acceptance? })
    │   └── pi-subagents missing?    →  ⚠️ USE: subagent({ agent, task }) — embed file paths in task, no acceptance
    │
-   ├── opencode detected?           →  ⚠️ Archived. USE: headless CLI or universal fallback
-   │
-   ├── claude-code detected?        →  ⚠️ USE: --bg / --agents JSON / /batch (no agent types, embed role in prompt)
+   ├── any other agent detected?    →  ⚠️ USE: Headless CLI fallback OR Universal Fallback (no native subagent assumed)
    │
    ├── generic / unknown detected?  →  ❌ USE: Universal Fallback (write + read, file-based handoff)
    │
@@ -702,6 +578,6 @@ When deciding which subagent mechanism to use, follow this priority — the deci
 **Summary by quality (best → universal):**
 1. ✅ **pi-subagents** — agent types, context control, `reads`, `acceptance`, native parallelism
 2. ⚠️ **pi built-in (no pi-subagents)** — same agent types, always-isolated, no `reads`/`acceptance`
-3. ⚠️ **claude-code / opencode** — agent types NOT supported natively. Embed role + context in prompt
+3. ⚠️ **Any other agent** — no native subagent assumed; use headless CLI or Universal Fallback
 4. ⚠️ **Headless CLI** (any harness) — no agent types, parallel via `&` + `wait`
-5. ❌ **Universal Fallback** — no delegation, synchronous, same session. Works on EVERY CLI
+5. ❌ **Universal Fallback** — no delegation, synchronous, same session. Works on EVERY agent

@@ -2,7 +2,15 @@
 
 ## Overview
 
-Product planning workflow system for AI coding agents (Pi, OpenCode, Claude Code).
+Product planning workflow system for AI coding agents. Shipped as a
+**Pi-first** extension; the orchestrator skill + 24 partner skills work in
+any agent that reads `~/.agents/skills/<name>/SKILL.md` (the
+[agentskills.io](https://agentskills.io/) standard adopted by Pi, Claude
+Code, Codex, Cursor, Continue, OpenCode, and others).
+
+See `cli-agents/COMMANDS.md` for the extension guide and
+`docs/archive/2026-07-09-deprecated-multi-cli-integration/` for the pre-v0.45.0
+multi-CLI surface (kept for archaeology, not for use).
 
 ## System Layers
 
@@ -342,4 +350,74 @@ const _phaseTodosCache = new CacheManager<PhaseTodo[]>(
 ```
 
 **Note:** These are optional optimizations. The current implementation is readable and works well.
+
+---
+
+## Adding a Harness Adapter
+
+Anyone can open a PR to add first-class harness support. The contract is
+small enough to fit on a napkin. Adapter PRs that match this shape will
+land without further architectural negotiation.
+
+### When you need an adapter
+
+You need an adapter (vs the universal skill-only path) when the harness
+exposes things the extension can hook into:
+
+- Native slash commands (vs file-based command generators)
+- TUI overlay (status line, notification panel)
+- Lifecycle hooks (session start, turn end, tool call, pre-compact)
+- Structured prompts (`ask_user_question` equivalent)
+- Subagent primitives that take a context flag (`context: "fresh"`) and
+  acceptance contracts
+
+If the harness only has agentskills support, the skills already work — no
+adapter required.
+
+### Files to touch
+
+For a new harness `<h>`:
+
+| File | Change |
+|---|---|
+| `extensions/stelow/types.ts` | Add `<h>` to the `CLI` union; add an entry to `getCLICapabilities` overrides |
+| `extensions/stelow/state.ts` | Add `<h>` to `CLI_DETECTION_SIGNALS`; extend `detectCLI()` if needed |
+| `extensions/stelow/adapters/cli-adapter.ts` | Add `case "<h>": return create<H>Adapter();` to `createAdapter()` |
+| `extensions/stelow/adapters/ui-factory.ts` | Add the same `case` to `createUIAdapter()` |
+| `extensions/stelow/adapters/<h>/{index,ui}.ts` | New — implements `BaseAdapter` + `UIAdapter` |
+| `extensions/stelow/adapters/commands/dispatcher.ts` | Optionally extend `generateCommandFiles()` if `<h>` has a file-format command system |
+| `scripts/generate-cli-commands.ts` | Optionally extend if `<h>` needs generated command files |
+| `scripts/version-sync.mjs` | If `<h>` ships a plugin manifest, list it under `JSON_TARGETS` |
+| `.release.yml` | Same manifest under `version_files` |
+| `install.sh` | Optionally add `install_<h>()` and route through `install_for_cli()` |
+
+The unconditional fallback is `GenericAdapter` (`extensions/stelow/adapters/generic.ts`)
+which provides no-op implementations for every method. Subclassing it gets
+you a working adapter shell with no behavior; override only the methods
+your harness supports.
+
+### What the orchestrator skill expects
+
+The orchestrator reads `references/cli-tools/*.md` files. Each file has two
+sections: a **Pi-native path** and a **universal fallback**. If the adapter
+shadows the Pi-native methods, the orchestrator's behavior matches the
+harness; otherwise it transparently falls back to universal instructions.
+The adapter does not need to mirror the universal fallback — that's the
+fallback path.
+
+### Reference implementation
+
+Tags `v0.43.4` and earlier contained the OpenCode/Claude Code adapters
+(snapshot at `docs/archive/2026-07-09-deprecated-multi-cli-integration/v0.43.4-multi-cli-surface.tar.gz`).
+Read `extensions/stelow/adapters/opencode/index.ts` (310 lines, fully
+populated) before writing yours — it covers every BaseAdapter method.
+
+### Why the contract is stable
+
+The contract (BaseAdapter methods, UIAdapter methods, getCLICapabilities
+shape, detector signals) was defined in v0.32 and has not changed since.
+Adding a new adapter does not require touching 4 files per command
+anymore: every `/sw-*` command flows from a single `WORKFLOW_COMMANDS`
+list in `dispatcher.ts`. This is the simplification the v0.45.0 narrowing
+bought us.
 

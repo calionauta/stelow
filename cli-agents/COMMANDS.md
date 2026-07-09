@@ -1,97 +1,140 @@
-# stelow Commands
+# CLI Agent Support — Architecture & Extension Guide
 
-> **Auto-generated** — `cli-agents/{opencode,claude}/commands/` are generated
-> from the dispatcher single source of truth (`extensions/stelow/adapters/commands/dispatcher.ts`).
-> Run `npm run generate-cli-commands` or `npx tsx scripts/generate-cli-commands.ts` after adding a command to the dispatcher.
+> **stelow is Pi-first.** This directory explains why, and how to extend.
 >
-> This file documents the authoritative state. See each CLI's `commands/` directory for the actual `.md` files.
-> Install via `./install.sh` — it copies command files to each CLI's config directory.
+> See `architecture.md` (top-level) for the broader module breakdown and
+> `docs/archive/2026-07-09-deprecated-multi-cli-integration/README.md`
+> for the historical multi-CLI surface (pre-v0.45.0) and the rationale for
+> narrowing.
 
-## Support Levels
+## What ships
 
-| Level | Harness | What it means |
-|-------|---------|---------------|
-| **✅ Full** | Pi (pi.dev) | Extension `extensions/stelow/` runs in-process. Auto-sync, stage guards, `ask_user_question`, goals, supervision, subagent contracts, TUI. **Guarantees apply.** |
-| **⚠️ Reduced** | OpenCode, Claude Code | Command files delegate to `/skill:stelow-product-orchestrator`. No extension, no auto-sync, no gates. LLM must execute bash steps manually. **No extension-level guarantees.** |
-| **❌ Removed** | Codex | Not actively maintained. Use the orchestrator skill directly if needed. |
+- **1 Pi adapter** — `extensions/stelow/adapters/pi/` provides the native slash
+  commands (`/sw-*`), TUI overlay, lifecycle hooks, and CLI detection.
+- **1 Generic adapter** — `extensions/stelow/adapters/generic.ts` provides
+  no-op implementations for the universal fallback when no specific agent has
+  the extension loaded.
 
-## Command Matrix (15 commands)
+That's the entire harness surface. There are no per-harness command files
+or per-harness plugin manifests in the shipped release.
 
-| Command | Pi | OpenCode | Claude Code |
-|---------|----|----------|-------------|
-| `/sw-start` | ✅ Native | ⚠️ Skill | ⚠️ Skill |
-| `/sw-abort` | ✅ Native | ⚠️ Skill | ⚠️ Skill |
-| `/sw-pause` | ✅ Native | ⚠️ Skill | ⚠️ Skill |
-| `/sw-resume` | ✅ Native | ⚠️ Skill | ⚠️ Skill |
-| `/sw-status` | ✅ Native | ⚠️ Skill | ⚠️ Skill |
-| `/sw-ls` | ✅ Native | ⚠️ Skill | ⚠️ Skill |
-| `/sw-setphase` | ✅ Native | ⚠️ Skill | ⚠️ Skill |
-| `/sw-next` | ✅ Native | ⚠️ Skill | ⚠️ Skill |
-| `/sw-complete` | ✅ Native | ⚠️ Skill | ⚠️ Skill |
-| `/sw-info` | ✅ Native | ⚠️ Skill | ⚠️ Skill |
-| `/sw-rename` | ✅ Native | ⚠️ Skill | ⚠️ Skill |
-| `/sw-archive` | ✅ Native | ⚠️ Skill | ⚠️ Skill |
-| `/sw-unarchive` | ✅ Native | ⚠️ Skill | ⚠️ Skill |
-| `/sw-inbox` | ✅ Native | ⚠️ Skill | ⚠️ Skill |
+## Why this is narrow on purpose
 
-- **✅ Native** — Registered via `pi.registerCommand()`. Full TUI overlays, state hooks, interactive pickers.
-- **⚠️ Skill** — Command file delegates to `/skill:stelow-product-orchestrator <command>`. Works but with reduced guarantees (no auto-sync, no tool blocking, no `ask_user_question`).
+The 25 skills + the orchestrator skill land at `~/.agents/skills/<name>/SKILL.md`,
+which is the [agentskills.io](https://agentskills.io/) standard adopted by
+Pi, Claude Code, Codex, Cursor, Continue, OpenCode, and others. **Any
+agentskills-compatible agent picks the orchestrator up automatically** —
+no per-harness wiring required.
 
-## What Reduced Support Means
+The pre-v0.45.0 release shipped slash-command files for three other agents
+plus an OpenCode TypeScript plugin. In practice they were a maintenance tax
+disproportionate to their value:
 
-Commands in OpenCode and Claude Code delegate to the orchestrator skill and **work**. However, several features depend on the Pi extension (`extensions/stelow/`) and are **unavailable** in other harnesses:
+- Skill-level integration was already harness-agnostic (skills land in the
+  standard directory).
+- The OpenCode plugin was a TypeScript app with its own build step (`tsc +
+  bundle`) that registered as a separate npm extension.
+- The handlers reused the same `WORKFLOW_COMMANDS` driver the Pi adapter
+  consumes, so wiring changes had to touch 4 files per command.
 
-| Feature | Pi | OpenCode / Claude Code |
-|---------|----|----------------------|
-| Auto-sync scopes from spec-tech.md | ✅ Automatic via `readTracking()`/`writeTracking()` | ❌ LLM must run bash snippets |
-| Stage guard / tool blocking | ✅ Blocks tools by phase | ❌ All tools available at all phases |
-| `ask_user_question` tool | ✅ Structured questions | ❌ Falls back to chat prose |
-| Goals tool | ✅ Optimization goals | ❌ Not available |
-| Supervision mode | ✅ Autonomous overnight execution | ❌ Not available |
-| TUI footer / notifications | ✅ Phase progress in footer | ❌ No status display |
+By v0.44.x the per-harness code had become a maintenance bottleneck. v0.45.0
+removes it.
 
-## Per-CLI Architecture
+## How to extend
 
-### Pi — 15 commands (Native extension)
-- Extension: `extensions/stelow/` (loaded via `pi` config or `install.sh`)
-- Skills: `~/.agents/skills/` (20 flat skills via `install.sh`) or `~/.pi/agent/git/.../skills/` (via `pi install git:...`)
-- Command registration: `registerCommands()` iterates `WORKFLOW_COMMANDS` → `HANDLER_BY_NAME` → `pi.registerCommand()`
-- Script: `scripts/generate-cli-commands.ts` is NOT needed for Pi (extension handles registration natively)
+Anyone can add first-class support for a new agent harness via a PR. The
+contract is stable:
 
-### OpenCode, Claude Code — 15 commands each (Skill delegation, reduced support)
-- Markdown files generated from dispatcher into `cli-agents/{cli}/commands/sw-*.md`
-- Each file contains frontmatter (`name`, `description`) and body that invokes `/skill:stelow-product-orchestrator <command>`
-- `install.sh` copies them to: `~/.config/opencode/commands/`, `~/.claude/commands/`
-- No extension-level guarantees — see "What Reduced Support Means" above
+### 1. Create the adapter directory
 
-## Adding a New Command
+```
+extensions/stelow/adapters/<harness>/
+  ├── index.ts     # exports create<Harness>Adapter(): CLIAdapter
+  └── ui.ts        # exports create<Harness>UIAdapter(): UIAdapter
+```
 
-1. Add the entry to `WORKFLOW_COMMANDS` in `adapters/commands/dispatcher.ts`
-2. Add the handler key to `HANDLER_BY_NAME` in `commands.ts`
-3. Add the handler function (`cmdNewCommand`) in `commands.ts`
-4. Run `npx tsx scripts/generate-cli-commands.ts` to regenerate all CLI `.md` files
-5. Update this COMMANDS.md matrix
-6. Test: `npm run build` must pass cleanly
+Both files subclass `BaseAdapter` (`extensions/stelow/adapters/base.ts`) and
+implement `UIAdapter` (`extensions/stelow/adapters/ui-adapter.ts`) respectively.
 
-## Troubleshooting
+### 2. Wire it into the types
 
-| Problem | Cause | Fix |
-|---------|-------|-----|
-| `/sw-start` not found in OpenCode | Command files not installed | `cp cli-agents/opencode/commands/sw-*.md ~/.config/opencode/commands/` |
-| `/sw-inbox` not responding | CLI doesn't support `piOnly` commands | Use Pi CLI or `/skill:stelow-product-orchestrator` in other CLIs |
-| Pi footer shows wrong phase number | `PHASE_NAMES` has 15 entries, `stages.yaml` has 7 | See [stages-mismatch](#stages-mismatch) below |
-| Tools blocked after advancing phase | `stages-guard` caches state at session start | Restart Pi session |
+`extensions/stelow/types.ts`:
 
-## Stages / Phases Mismatch (Known Issue)
+```typescript
+export type CLI = "pi" | "<harness>" | "generic";
 
-The project has two independent phase systems:
+const overrides: Record<CLI, Partial<CLICapabilities>> = {
+  "pi": { /* ... full feature set ... */ },
+  "<harness>": {
+    hasPluginSystem: true,
+    hasSubagent: true,
+    // ... whatever the harness supports
+  },
+  "generic": {},
+};
+```
 
-| System | File | Entries | Used by |
-|--------|------|---------|---------|
-| Workflow phases | `types.ts` → `PHASE_NAMES` | 15 (Triage, ItemSelect, Setup, Context, Shape, Critique, Gate, Scope, Interface, Int.Gate, Selection, Planning, Execution, Verification, Audit) | `/sw-next`, `/sw-setphase`, footer display |
-| Stages guard | `stages.yaml` | 7 (triage, setup, selection, shape, gate, execution, audit) | `PreToolUse` hook — blocks `edit`/`write`/`bash` in early stages |
+### 3. Add detection
 
-**Known issues:**
-- `stages-guard` caches the stage at session start and never re-reads `current-stage.json`
-- No code synchronizes `current-stage.json` with the workflow phase
-- To unblock tools manually: edit `.stelow/state/current-stage.json` to `"execution"` and restart Pi
+`extensions/stelow/state.ts:CLI_DETECTION_SIGNALS`:
+
+```typescript
+"<harness>": {
+  dirs: ["~/<harness-config-dir>"],
+  cmds: ["<harness-binary>"],
+  confidence: "high",
+},
+```
+
+And extend `detectCLI()` if needed.
+
+### 4. Add to factories
+
+- `extensions/stelow/adapters/cli-adapter.ts:createAdapter()` — add `case "<harness>": return create<Harness>Adapter();`
+- `extensions/stelow/adapters/ui-factory.ts:createUIAdapter()` — same shape
+- `extensions/stelow/adapters/commands/dispatcher.ts:getCommandSystem()` — if the harness has a command-file format
+
+### 5. (Optional) Update detection / sync scripts
+
+- `scripts/version-sync.mjs` — list any plugin manifests the harness ships
+- `scripts/generate-cli-commands.ts` — re-implement with the new format
+- `.release.yml` — list the same manifests in `version_files`
+- `install.sh` — add a per-harness install function if the agent needs special setup
+
+### 6. Reference prior implementations
+
+The git history at tag `v0.43.4` (or the snapshot at
+`docs/archive/2026-07-09-deprecated-multi-cli-integration/v0.43.4-multi-cli-surface.tar.gz`)
+contains the prior OpenCode/Claude Code adapter source (~900 lines combined).
+Read those for an end-to-end example of the full adapter pattern.
+
+## Writing a new harness command
+
+After the adapter ships, adding a new `/sw-<cmd>` slash command requires
+**one** edit, not four:
+
+1. Add a `CommandDescriptor` entry to `WORKFLOW_COMMANDS` in
+   `extensions/stelow/adapters/commands/dispatcher.ts`.
+2. Pi picks it up automatically through `extensions/stelow/commands.ts`.
+
+For agents that consume command files (slash-command syntax in
+`~/.config/<harness>/commands/`), the `dispatcher.ts:generateCommandFiles()`
+hook can be extended to emit a per-harness variant from the same descriptor
+list. The pre-v0.45.0 archive shows the opencode/claude-code pattern as a
+starting point.
+
+## Why no per-harness install script anymore
+
+The shipped `install.sh`:
+
+1. Builds the Pi extension (`extensions/stelow/`)
+2. Installs npm packages (`pi-subagents`, `pi-intercom`, `plannotator`, …)
+3. Copies the 25 skills to `~/.agents/skills/`
+
+That's it. Step 3 is what makes agentskills-compatible agents work — no
+per-harness flag is needed because they all read from the same directory.
+
+If your adapter needs agent-specific install steps (e.g., wrapper script
+registration in `~/.config/<harness>/`), add a `install_<harness>()` function
+in `install.sh` and route through `install_for_cli()`. Pre-v0.45.0 had three
+such functions; their structure is the right starting point.

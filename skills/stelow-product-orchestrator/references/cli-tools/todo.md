@@ -73,8 +73,7 @@ All CLIs MUST persist the checklist to file:
 | CLI | Tool (for display) | Persistence | Strategy |
 |-----|--------------------|-------------|----------|
 | Pi + rpiv-todo | `todo` | ✅ Branch replay | Use tool for sidebar + write checklist.md for persistence |
-| Claude Code | `TodoWrite` | ❌ Session only | Write checklist.md, read on resume |
-| OpenCode | `TodoWrite` | ❌ Session only | Write checklist.md, read on resume |
+| Any other agent | n/a (or built-in `TodoWrite`) | ❌ Session only | Write checklist.md, read on resume |
 
 CLI native todos are for **DISPLAY** only. `checklist.md` is always the source of truth.
 
@@ -127,48 +126,6 @@ todo({ action: "update", id: todoId, status: "completed" })
 todo({ action: "list" })
 // ALSO write checklist.md:
 write({ path: ".stelow/{date}/{dir}/checklist.md", content: checklistContent })
-```
-
-### claude-code
-
-**Tool:** `TodoWrite`
-
-```typescript
-TodoWrite({
-  todos: [
-    {
-      content: "[PHASE-1] Task description",
-      activeForm: "Executing [PHASE-1] Task description",
-      status: "in_progress"
-    }
-  ]
-})
-
-// ALSO write checklist.md:
-write({ path: ".stelow/{date}/{dir}/checklist.md", content: checklistContent })
-```
-
-### opencode
-
-**Tool:** `TodoWrite` (same schema as Claude Code)
-
-```typescript
-TodoWrite({
-  todos: [
-    {
-      content: "[PHASE-1] Task description",
-      activeForm: "Executing [PHASE-1] Task description",
-      status: "pending"
-    }
-  ]
-})
-
-// ALSO write checklist.md:
-write({ path: ".stelow/{date}/{dir}/checklist.md", content: checklistContent })
-```
-
-// Read on session start to restore context
-read({ path: ".stelow/{date}/{dir}/checklist.md" })
 ```
 
 ### generic (Fallback)

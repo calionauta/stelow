@@ -2,6 +2,61 @@
 
 All notable changes to `@calionauta/stelow` will be documented in this file.
 
+## [0.45.0] - 2026-07-09
+
+**Major narrowing release.** Removed all non-Pi CLI integrations and reframed the shipped surface as Pi-first. The 25 skills + orchestrator skill remain agent-agnostic via the [agentskills.io](https://agentskills.io/) standard.
+
+**Rationale (from `@calionauta`):**
+> The pre-v0.45.0 release shipped per-harness command files and a partial OpenCode plugin. In practice, those integrations were a maintenance tax disproportionate to their value: each new command required touching four files (Pi extension + per-harness generators + dispatcher), and the OpenCode plugin was a TypeScript app that needed a build step. Most of those integrations worked at the "skill delegation" level anyway, and skills already work natively on any agent that reads `~/.agents/skills/<name>/SKILL.md`. Now I can focus on the complete integration with Pi to have one that works really well rather than several more-or-less, and keep refining the orchestrator skill (which any agent can pick up automatically).
+>
+> Anyone wanting first-class support (TUI / gates / auto-sync) for a new agent can PR an `extensions/stelow/adapters/<harness>/` following the BaseAdapter pattern documented in `architecture.md`. The 0.43.x-era adapter source is preserved at `v0.43.4`.
+
+### Breaking
+
+- **Removed non-Pi CLI integrations.** The following directories and code are deleted from the shipped release:
+  - `cli-agents/{opencode,claude,codex}/` — 47 command files + 4 install scripts + 1 OpenCode README
+  - `cli-agents/opencode/plugin/` — 9 source files + 5 dist artifacts + lockfile (the TypeScript OpenCode plugin)
+  - `extensions/stelow/adapters/opencode/{index,ui}.ts` — 451 lines of OpenCode adapter
+  - `extensions/stelow/adapters/claude-code/{index,ui}.ts` — 460 lines of Claude Code adapter
+  - `.claude-plugin/{plugin,marketplace}.json` — orphan metadata
+  - `.opencode-plugin/plugin.json` — orphan metadata
+- **Public type change:** `type CLI = "pi" | "generic"` (was `"pi" | "opencode" | "claude-code" | "generic"`). External code that imports `CLI` from `extensions/stelow/types.ts` needs to drop the opencode/claude-code branches. This is the only public type change.
+- **`extensions/stelow/state.ts:detectCLI`** returns `"pi"` or `"generic"` only. The `"generic"` default is safer — agents that don't carry the extension should not be assumed to support Pi tool primitives.
+- **`extensions/stelow/adapters/cli-adapter.ts:createAdapter`** / **`extensions/stelow/adapters/ui-factory.ts:createUIAdapter`** / **`extensions/stelow/adapters/commands/dispatcher.ts:getCommandSystem`** only route `pi` vs `generic` now.
+- **`getCommandFilesForCLI()` and `generateSkillFile()`/`generateCommandFile()` helpers** removed from `extensions/stelow/commands.ts` (dead after the adapter deletions).
+- **`scripts/generate-cli-commands.ts`** is now a no-op stub (preserved as `npm run generate-cli-commands` to keep automation working).
+- **`scripts/version-sync.mjs`** only syncs the herdr TOML manifest. Plugin-manifest entries for claude/opencode are removed.
+- **`install.sh`** lost the `has_cli opencode|claude-code`, `install_opencode()`, `install_claude_code()`, `install_opencode_commands()`, `install_claude_code_commands()`, `install_codex_commands()` paths — and the corresponding Step 3 routes. `install_skills_flat()` and the universal `~/.agents/skills/` path remain (the path that any agent reads automatically).
+- **`.release.yml`**, **`package.json`** (scripts.version), **`.gitignore`** all stripped of non-Pi manifest references.
+- **`COMMANDS.md`, `architecture.md`, `README.md`, `docs/INSTALLATION.md`, `docs/PORTABILITY.md`** rewritten to reflect Pi-first framing. **`docs/PORTABILITY.md`** deleted (its content moved into `cli-agents/COMMANDS.md`).
+- **`cli-agents/COMMANDS.md`** rewritten: the harness-membership matrix is gone. The new file explains why stelow is Pi-only + how to add a new harness adapter (with the full extension contract).
+
+### Migration path
+
+If you depend on one of the removed harnesses:
+
+1. **For skill-level functionality:** nothing to do. The skills still work via the universal `npx skills add calionauta/stelow -g` install path (or `./install.sh --minimal`). The orchestrator's `/sw-*` slash commands route through the orchestrator skill in any agent that reads `~/.agents/skills/`.
+2. **For adapter-level functionality** (native slash commands, TUI overlay, lifecycle hooks, ask_user_question, subagent acceptance contracts): open an adapter PR following the contract in `cli-agents/COMMANDS.md#how-to-extend`. The v0.43.4 source tree (or the snapshot at `docs/archive/2026-07-09-deprecated-multi-cli-integration/v0.43.4-multi-cli-surface.tar.gz`) is the cleanest reference implementation to branch from.
+3. **`CLI` type imports:** rename `"opencode"` / `"claude-code"` cases to `"generic"` in any external code that consumed the type, since `generic` now means "any agent that does not have the Pi extension loaded". The Universal Fallback instructions cover every harness through that single path.
+
+### Archived for archaeology
+
+- `docs/archive/2026-07-09-deprecated-multi-cli-integration/v0.43.4-multi-cli-surface.tar.gz` — snapshot of the pre-v0.45.0 multi-CLI surface (cli-agents + adapters + manifests). Read `docs/archive/2026-07-09-deprecated-multi-cli-integration/README.md` first for the rationale and deprecation lore.
+- The full pre-v0.45.0 source is also available via `git tag v0.43.4`.
+
+### Added
+
+- **`cli-agents/COMMANDS.md`** is now an architecture/extension guide: explains why the surface narrowed, lists the entire shipped adapter surface (PiAdapter + GenericAdapter only), and provides a step-by-step recipe for adding a new harness adapter. The recipe is the contract the v0.32 type layer established.
+- **`architecture.md`** adds an "Adding a Harness Adapter" section so contributors can map the recipe onto the codebase without reading the prior implementations.
+- **`docs/archive/2026-07-09-deprecated-multi-cli-integration/`** — a single `README.md` explaining the deprecation plus a `v0.43.4-multi-cli-surface.tar.gz` snapshot. The tarball is gitignored-friendly; the folder itself is the user-facing pointer.
+- **`extensions/stelow/adapters/index.ts`** no longer re-exports the opencode/claude-code exports. Single source-of-truth for downstream consumers.
+
+### Changed
+
+- **15 skill `references/cli-tools/*.md` files** rewritten to a "Pi-native path + Universal Fallback" structure. No per-CLI rows. The 20+ per-skill mirrors propagated automatically via `./scripts/sync-cli-tools.sh`.
+- **`install.sh` simplicity:** `has_pi()` collapses the previous `has_cli` matrix. Pi is the only harness with special install handling; every other agent picks up skills from `~/.agents/skills/`.
+- **`scripts/version-sync.mjs`** trimmed to the herdr TOML target. Plugin manifests for other harnesses (when they re-appear via future adapter PRs) can opt in individually.
+
 ## [0.44.1] - 2026-07-09
 
 Patch release: complete the codex-removal cleanup that v0.44.0 started. **No breaking changes from v0.44.0** — purely housekeeping.

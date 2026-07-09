@@ -11,6 +11,9 @@ cd stelow
 Interactive full setup. Installs 25 skills, Pi extension (if detected), and offers
 optional dependencies (cymbal, ctx7) with step-by-step confirmation.
 
+> **v0.45.0 narrowed the shipped surface to Pi-only.** Skills remain agent-agnostic —
+> see `cli-agents/COMMANDS.md` for the extension guide and the rationale for narrowing.
+
 ---
 
 ## Architecture
@@ -18,18 +21,19 @@ optional dependencies (cymbal, ctx7) with step-by-step confirmation.
 ```
 stelow/          ← Source
 └── skills/                     ← 25 skills flat
-    ├── stelow/   ← Orchestrator
+    ├── stelow-product-orchestrator/   ← Orchestrator
     ├── cali-product-shape-up/
-    └── ... (21 more)
+    └── ... (23 more)
 
 ~/.agents/skills/               ← Install target
-├── stelow/       ← Copied
-├── cali-product-shape-up/      ← Copied
+├── stelow-product-orchestrator/       ← Copied
+├── cali-product-shape-up/             ← Copied
 └── ... (25 total)
 ```
 
 **Skills installed (25 total):**
-- `stelow` — orchestrator (15 stages)
+
+- 1 orchestrator: `stelow-product-orchestrator` (15 stages)
 - 10 workflow stage skills (shape-up, interface-alternatives, plan-critique, codebase-critique, ux-critique, tech-planning, testing-ai-code, testing-execution, scope-executor, execution-critique)
 - 5 strategic analysis skills (job-to-be-done, discovery, opportunity-mapping, multi-method-market-analysis, evolutionary-principles)
 - 1 code-standards skill
@@ -43,14 +47,14 @@ stelow/          ← Source
 ./install.sh                    # Interactive full setup (default)
 ./install.sh --minimal          # Skills only, no optional deps
 ./install.sh update             # Update skills
-./install.sh remove             # Uninstall from all detected CLIs
+./install.sh remove             # Uninstall from all detected agents
 ./install.sh --help             # Show help
 
 # Non-interactive (CI), install everything
 ASSUME_YES=1 ./install.sh
 
-# Limit to one CLI
-PRODUCT_WORKFLOW_CLI=opencode ./install.sh
+# Limit to Pi
+PRODUCT_WORKFLOW_CLI=pi ./install.sh
 ```
 
 **Full setup flow:**
@@ -66,162 +70,83 @@ PRODUCT_WORKFLOW_CLI=opencode ./install.sh
 
 ---
 
-## Distribution para Harnesess
+## Distribution for any agentskills-compatible agent
 
-O install.sh coloca skills em `~/.agents/skills/`. Para distribuir para cada harness, use **agent-sync**:
+The installer places skills in `~/.agents/skills/`. Any agent that reads from this
+directory (the [agentskills.io](https://agentskills.io/) standard) automatically picks
+them up — no per-agent install required.
 
-```bash
-# Instala agent-sync
-pipx install agent-sync
-
-# Configura distribuição
-agent-sync setup
-
-# Distribui para cada CLI
-agent-sync push
-```
-
-**Alternativa manual:** Configure cada harness para ler de `~/.agents/skills/`:
-
-| CLI | Configuração |
-|-----|-------------|
-| **Pi** | `~/.pi/agent/settings.json` → `"skills": ["~/.agents/skills"]` |
-| **OpenCode** | `~/.config/opencode/opencode.json` → skills paths |
-| **Claude Code** | `~/.claude/settings.json` → skills paths |
-
----
-
-## Skills Only (Sem CLI)
-
-Para instalar skills sem o installer:
+To install skills without the installer (any agent, no extension):
 
 ```bash
 npx skills add calionauta/stelow -g
 ```
 
-Instala skills para `~/.agents/skills/` — funciona em qualquer CLI.
+That's it. The skills land in the standard directory and any compatible agent loads
+them on next session.
 
 ---
 
-## Manual Setup por CLI
-
-<details>
-<summary><strong>Pi</strong></summary>
+## Skills-only mode (no Pi extension)
 
 ```bash
-# Install (skills + extension)
-./install.sh
-
-# Update
-./install.sh update
-
-# Remove
-./install.sh remove
-
-# Skills only (no extension, no optional deps)
 ./install.sh --minimal
 ```
 
-</details>
-
-<details>
-<summary><strong>OpenCode</strong></summary>
-
-```bash
-# Instala skills
-npx skills add calionauta/stelow -a opencode -g
-
-# Configura ~/.agents/skills/
-# Adicionar em ~/.config/opencode/opencode.json:
-# "skills": { "paths": ["~/.agents/skills"] }
-```
-
-</details>
-
-<details>
-<summary><strong>Claude Code</strong></summary>
-
-```bash
-# Plugin marketplace
-claude plugin marketplace add https://github.com/calionauta/stelow
-claude plugin install stelow@marketplace-name
-
-# Ou apenas skills
-npx skills add calionauta/stelow -a claude-code -g
-```
-
-</details>
-
----
-
-> **Note:** Codex support was removed in v0.44.0. Existing users can invoke `/skill:stelow-product-orchestrator` directly via chat. See [`cli-agents/COMMANDS.md`](../cli-agents/COMMANDS.md#support-levels) for the full support matrix.
+This skips the Pi extension and optional npm packages, leaving the 25 skills in
+`~/.agents/skills/`. Works in any agent that reads from there.
 
 ---
 
 ## Agent Instructions Setup
 
-O installer **não modifica** seu AGENTS.md/CLAUDE.md automaticamente. Adicione manualmente:
+The installer **does not modify** your `AGENTS.md` / `CLAUDE.md` automatically. The
+orchestrator skill is loaded automatically via its `SKILL.md` frontmatter; you can
+add a one-line reminder if you want to make the trigger explicit.
 
 ```markdown
 ## stelow Integration
 
-When working on software projects, trigger the product workflow:
-
-1. **Trigger:** Use `/skill stelow`
-2. **Process:** Follow the structured workflow (Setup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Plan.Gate → Execution → Verification → Diff.Gate → Audit)
-3. **Execute:** Only after visual review gate (Plannotator approval)
+For product-workflow tasks (plans, critiques, scopes, executions), invoke
+`stelow-product-orchestrator` and follow its stage routing.
 ```
 
-| CLI | File |
-|-----|------|
-| **Pi** | `~/.pi/agent/AGENTS.md` |
-| **OpenCode** | `~/.config/opencode/AGENTS.md` or project `AGENTS.md` |
-| **Claude Code** | `~/.claude/CLAUDE.md` or project `CLAUDE.md` |
-
 ---
 
-## Required npm Packages (Pi Only)
+## Required npm Packages (Pi only)
 
-Pi requer npm packages para deep integration (slash commands, TUI, event hooks):
+The Pi extension surfaces additional features (slash commands, TUI overlay, event
+hooks, structured questions) through a few npm packages. None are required for the
+skills to work; they activate only when Pi is detected.
 
-| Package | Purpose | Can use `git:`? |
-|---------|---------|-----------------|
-| `pi-subagents` | Parallel subagent orchestration | ✅ `git:github.com/nicobailon/pi-subagents` |
-| `pi-intercom` | Session-to-session coordination | ✅ `git:github.com/nicobailon/pi-intercom` |
-| `pi-supervisor` | Conversation supervision | ✅ `git:github.com/tintinweb/pi-supervisor` |
-| `@juicesharp/rpiv-ask-user-question` | Question UI component | ✅ `git:github.com/juicesharp/rpiv-mono` |
-| `@plannotator/pi-extension` | Visual plan annotation | ✅ `git:github.com/backnotprop/plannotator` |
+| Package | Purpose |
+|---------|---------|
+| `pi-subagents` | Parallel subagent orchestration |
+| `pi-intercom` | Session-to-session coordination |
+| `pi-supervisor` | Conversation supervision |
+| `@juicesharp/rpiv-ask-user-question` | Question UI component |
+| `@plannotator/pi-extension` | Visual plan annotation |
 
-Other CLIs (OpenCode, Claude Code) usam apenas skills — zero npm.
-
----
-
-## Third-Party Dependency Management
-
-Third-party npm dependencies existem **apenas para Pi**. Para proteção contra supply chain risks, veja [docs/SECURITY.md](docs/SECURITY.md).
-
-**On pinning:** Not recommended for actively maintained packages. A 2026 study ([Pinning Is Futile, arXiv 2502.06662](https://arxiv.org/abs/2502.06662)) found that pinning *increases* vulnerability exposure.
-
-**Skills-only mode (avoids npm entirely):**
+For Pi-only package installation:
 
 ```bash
-./install.sh --minimal
+pi install npm:@calionauta/stelow
 ```
 
-This applies only to **Pi** — other CLIs have zero npm dependencies.
+This installs the extension and its peer dependencies in one step.
 
 ---
 
-## Third-Party Skills
+## Third-Party Skill Registry
 
- Algumas fases do workflow referenciam skills externas:
+Some phases of the workflow reference third-party skills:
 
-| Skill | Required for | Install (Pi) | Install (Other CLIs) |
-|-------|-------------|--------------|----------------------|
-| `pi-agent-codebase-workflows` | safe-change (Phase 2) | `pi install git:github.com/PriNova/pi-agent-codebase-workflows` | `npx skills add Prinova/pi-agent-codebase-workflows -a <cli> -g` |
-| `thermo-nuclear` (codequality-review) | optional ultra-strict final gate for high-risk or Complete-appetite code changes | `pi install git:github.com/cursor/plugins` | `npx skills add cursor/plugins -a <cli> -g` |
+| Skill | Required for | Install |
+|-------|-------------|---------|
+| `pi-agent-codebase-workflows` (safe-change) | Phase 2 impact analysis | `npx skills add Prinova/pi-agent-codebase-workflows -g` |
+| `thermo-nuclear` (code-quality-review) | optional ultra-strict final gate | `npx skills add cursor/plugins -g` |
 
-Replace `<cli>` with: `opencode` or `claude-code`.
+Both work in any agent via the same `npx skills add ... -g` invocation.
 
 ---
 

@@ -2,13 +2,25 @@
 
 Automated web browser for live testing, accessibility checks, and visual inspection.
 
-## CLI Compatibility
+## How to invoke
 
-| CLI | Command | Available | Notes |
-|-----|---------|-----------|-------|
-| pi | `agent_browser({...})` or CLI args | ✅ Native extension | Full support |
-| opencode | — | ❌ | No native browser tool |
-| claude-code | — | ❌ | No native browser tool |
+### Pi-native path
+The `agent_browser` tool registered by the stelow extension handles invocation and result parsing. Use it when available.
+
+```typescript
+agent_browser({ args: ["open", "--url", "{URL}", "--", "snapshot", "-i"] })
+```
+
+### Universal fallback for any agent
+For any agent that does not have the stelow extension loaded, use the `agent-browser` CLI directly via bash:
+
+```bash
+npx -y @earendil-works/pi-agent-browser open --url "{URL}" -- snapshot -i
+```
+
+The `npx` invocation downloads the binary on first run. Subsequent calls reuse the cache. Watch for the same-level `--` separator that splits the open command from the snapshot subcommand.
+
+> Note: the LLM CLI ecosystem does not have a standardized browser tool. If neither path is available, fall back to source-level review for CSS/HTML audit and skip the rendered-UI verification tier.
 
 ## When to Use
 
@@ -68,7 +80,6 @@ agent_browser({
 
 ## Limitations
 
-- **pi.dev only** — other CLIs cannot run agent-browser
 - **Requires live server** — URL must be deployed or running locally (`localhost`)
 - **Token cost** — browsing adds latency + tokens
 - **Not deterministic** — rendered state varies by browser, viewport, timing

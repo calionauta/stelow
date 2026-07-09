@@ -1,20 +1,21 @@
 /**
  * Integration Tests: CLI Dispatch Syntax Smoke Test
  *
- * Validates that each CLI's documented PARALLEL dispatch invocation
- * shape (in `subagents.md`) at least passes parser-level validation. Does
- * NOT launch real subagents — that requires a live model session which
- * isn't appropriate for unit/integration CI.
+ * Validates that the documented PARALLEL dispatch invocation
+ * shape (in `subagents.md`) for the surviving CLIs (`pi`, `generic`)
+ * at least passes parser-level validation. Does NOT launch real
+ * subagents — that requires a live model session which isn't
+ * appropriate for unit/integration CI.
  *
  * What "passes parser-level validation" means per CLI:
  *   - `pi-subagents`  : shape conforms to the documented `subagent({})`
- *                       tool-call object structure (validated against
- *                       the tool's own JSON schema if accessible).
+ *                       tool-call object structure.
  *   - `pi` (built-in) : binary is invokable (--version or --help).
- *   - `opencode`      : binary is invokable.
- *   - `codex`         : binary is invokable.
- *   - `claude-code`   : binary is OPTIONAL — checked with skip on missing.
  *   - `generic`       : shell-level (no binary to test).
+ *
+ * **v0.45.0 narrowing:** opencode/claude-code/codex dispatch shapes
+ * were removed when those harnesses lost dedicated integration.
+ * See `docs/archive/2026-07-09-deprecated-multi-cli-integration/`.
  *
  * Reference: docs/scope-execution-strategy.md + subagents.md PARALLEL
  * dispatch table.
@@ -26,14 +27,13 @@ import { execSync } from "node:child_process";
 /**
  * Resolve a CLI binary by reading the user's original PATH (NOT vitest's
  * test-runner PATH, which has node_modules/.bin prepended and shadows
- * real installed binaries). Parse PATH, split on `:`, skip dirs that point
- * inside the test cwd (where node_modules/.bin lives).
+ * real installed binaries). Skip dirs that point inside the test cwd
+ * (where node_modules/.bin lives).
  */
 function resolveCli(name: string): string | null {
   const paths = (process.env.PATH ?? "").split(":");
   for (const dir of paths) {
     if (!dir) continue;
-    // Skip vendored / local-shadowed paths (anywhere under cwd).
     if (dir.includes("/node_modules/")) continue;
     if (dir === "." || dir.endsWith("/.")) continue;
     const candidate = `${dir}/${name}`;
@@ -51,12 +51,6 @@ function commandExists(name: string): boolean {
   return resolveCli(name) !== null;
 }
 
-/**
- * Run `--version` (or fallback) using the resolved binary path.
- * Skips dev-dependency shims under node_modules/.bin that can shadow
- * the real binary (a known issue when the test runs from a project
- * that has pi-coding-agent as a dev dep at an older version).
- */
 function probeCli(name: string, args = "--version"): string | null {
   const resolved = resolveCli(name);
   if (!resolved) return null;
@@ -73,24 +67,26 @@ function probeCli(name: string, args = "--version"): string | null {
   }
 }
 
-describe("PARALLEL dispatch — CLI binary availability", () => {
+describe("PARALLEL dispatch — CLI binary availability (pi only)", () => {
   // pi-dependent tests are skipped in CI (no global pi binary available)
   // but run locally where pi is expected to be installed.
   const isCI = !!process.env.CI;
 
-  (isCI ? it.skip : it)("pi (built-in) is on PATH and answers --version", () => {
-    if (!commandExists("pi")) {
-      // pi is the stelow primary runtime; absence is a hard fail.
-      throw new Error("pi is not on PATH. Install via `npm install -g @earendil-works/pi-coding-agent`.");
-    }
-    const out = probeCli("pi");
-    expect(out).not.toBeNull();
-    expect(out!.length).toBeGreaterThan(0);
-  });
+  (isCI ? it.skip : it)(
+    "pi (built-in) is on PATH and answers --version",
+    () => {
+      if (!commandExists("pi")) {
+        throw new Error(
+          "pi is not on PATH. Install via `npm install -g @earendil-works/pi-coding-agent`.",
+        );
+      }
+      const out = probeCli("pi");
+      expect(out).not.toBeNull();
+      expect(out!.length).toBeGreaterThan(0);
+    },
+  );
 
   (isCI ? it.skip : it)("pi-subagents extension is discoverable", () => {
-    // We don't probe the runtime here (would require an active session);
-    // we only verify the extension is installed where stelow expects it.
     const home = process.env.HOME ?? "/tmp";
     const candidates = [
       `${home}/.pi/agent/npm/node_modules/pi-subagents`,
@@ -105,38 +101,10 @@ describe("PARALLEL dispatch — CLI binary availability", () => {
     });
     expect(found).toBe(true);
   });
-
-  it(
-    "opencode is on PATH and answers --help",
-    () => {
-      if (!commandExists("opencode")) return; // skip on systems without opencode
-      const out = probeCli("opencode", "--help");
-      expect(out).not.toBeNull();
-    },
-  );
-
-  it(
-    "codex is on PATH and answers --help",
-    () => {
-      if (!commandExists("codex")) return; // skip if not installed
-      const out = probeCli("codex", "--help");
-      expect(out).not.toBeNull();
-    },
-  );
-
-  it(
-    "claude-code is OPTIONAL; absent is fine",
-    () => {
-      // Stelow's Table marks claude-code as Optional. The CI doesn't have
-      // it installed. We document that absence is non-fatal.
-      // No assertion — just confirms the test can run whether claude is
-      // present or not.
-    },
-  );
 });
 
 /**
- * Static validation of the documented call shapes.
+ * Static validation of the documented call shapes for the surviving CLIs.
  * These tests don't invoke the subagents — they validate that a
  * TypeScript-constructed call-shape OBJECT is well-formed per the
  * shape documented in subagents.md PARALLEL dispatch table.
@@ -154,7 +122,6 @@ describe("PARALLEL dispatch — call shape validation (static)", () => {
       concurrency: 2,
       context: "fresh" as const,
     };
-    // Validate the shape conforms to spec
     expect(Array.isArray(shape.tasks)).toBe(true);
     expect(shape.tasks.length).toBeGreaterThan(0);
     for (const t of shape.tasks) {
@@ -166,53 +133,35 @@ describe("PARALLEL dispatch — call shape validation (static)", () => {
     expect(shape.context).toBe("fresh");
   });
 
-  it("claude-code shape: parallel Task calls each with subagent_type + prompt", () => {
-    const calls = [
-      { subagent_type: "general-purpose", prompt: "review correctness" },
-      { subagent_type: "general-purpose", prompt: "review tests" },
-    ];
-    expect(calls.length).toBeGreaterThan(1); // parallel requires 2+
-    for (const c of calls) {
-      expect(typeof c.subagent_type).toBe("string");
-      expect(typeof c.prompt).toBe("string");
-    }
-  });
-
-  it("codex shape: parallel TOML subagents with unique names", () => {
-    // Codex uses TOML config for subagent definitions; multiple
-    // subagents can run concurrently via parallel cli invocations.
-    // At the dispatch level, this is reflected as parallel `codex
-    // exec` invocations. We validate the structural shape.
-    const agents = [
-      { name: "scout-frontend", prompt: "audit src/frontend" },
-      { name: "scout-backend", prompt: "audit src/backend" },
-    ];
-    const names = new Set(agents.map((a) => a.name));
-    expect(names.size).toBe(agents.length); // unique names
-  });
-
-  it("opencode shape: parallel Task calls in single response", () => {
-    // Per PR #14196, opencode parallel-dispatches when multiple Task
-    // calls land in the same LLM response. The shape is an array of
-    // Task tool calls.
-    const tasks = [
-      { tool: "Task", input: { agent: "scout", prompt: "scan x" } },
-      { tool: "Task", input: { agent: "scout", prompt: "scan y" } },
-    ];
-    expect(tasks.length).toBeGreaterThan(1);
-    for (const t of tasks) {
-      expect(t.tool).toBe("Task");
-      expect(typeof t.input.agent).toBe("string");
-      expect(typeof t.input.prompt).toBe("string");
-    }
-  });
-
-  it("generic shape: shell-level fan-out (\"&\" + \"wait\")", () => {
+  it("generic shape: shell-level fan-out ('&' + 'wait')", () => {
     // Generic fallback is shell-level: spawn N commands with `&`,
     // wait for completion. Validate syntactic shell construction.
     const commands = ["cmd_a", "cmd_b", "cmd_c"];
     const fannedOut = commands.map((c) => `${c} &`).join(" ");
     const withWait = `${fannedOut}wait`;
     expect(withWait).toMatch(/^[a-z_]+ & [a-z_]+ & [a-z_]+ &wait$/);
+  });
+
+  it("generic shape: falls back to file-based handoff (no subagent call)", () => {
+    // Per cli-tools/subagents.md, the generic fallback never invokes
+    // a subagent function — it writes a handoff file and the next
+    // stage reads it. Validate that no subagent call shape leaks.
+    const handoff: { subagent?: never; file: string } = {
+      file: ".stelow/2026-07-09/abc/handoff.md",
+    };
+    expect(handoff.subagent).toBeUndefined();
+    expect(handoff.file).toMatch(/^\.stelow\/.+\/handoff\.md$/);
+  });
+
+  it("pi shape: built-in subagent runs in its own context window", () => {
+    // The pi built-in subagent has no special parameters; child
+    // sessions are always isolated. The only contract is that the
+    // parent must NOT pass any context-inheritance flags.
+    const invocation = {
+      prompt: "Review correctness of the auth refactor",
+    };
+    expect(typeof invocation.prompt).toBe("string");
+    // Sanity: no `context` field at all
+    expect(Object.keys(invocation)).toEqual(["prompt"]);
   });
 });

@@ -1,25 +1,27 @@
 /**
  * Integration Tests: Command Dispatcher
- * 
+ *
  * Tests for WORKFLOW_COMMANDS array and getCommandSystem():
  * - WORKFLOW_COMMANDS array structure and content
- * - getCommandSystem() for each CLI
+ * - getCommandSystem() for "pi" (native) and "generic" (no-op)
  * - Command registration system interface compliance
- * - Command file generation for each CLI
- * 
- * Reference: docs/2026-05-20/multi-cli-plan/plans/spec-tech_multi-cli-impl-v1.md
+ * - Command file generation (pi: none, generic: none)
+ *
+ * **v0.45.0 narrowing:** per-harness command-file generators for
+ * opencode/claude-code/codex were removed when those harness directories
+ * were deleted. Only the pi + generic code paths are exercised here.
+ * See `docs/archive/2026-07-09-deprecated-multi-cli-integration/README.md`
+ * for the historical surface and migration notes.
  */
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { CLI } from '../../extensions/stelow/types';
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { CLI } from "../../extensions/stelow/types";
 import {
   WORKFLOW_COMMANDS,
   getCommandSystem,
-  type CommandDescriptor,
   type CommandRegistrationSystem,
-} from '../../extensions/stelow/adapters/commands';
+} from "../../extensions/stelow/adapters/commands";
 
-describe('Command Dispatcher Integration Tests', () => {
-  // Store original env
+describe("Command Dispatcher Integration Tests", () => {
   const originalEnv = { ...process.env };
 
   beforeEach(() => {
@@ -33,62 +35,60 @@ describe('Command Dispatcher Integration Tests', () => {
 
   // ── WORKFLOW_COMMANDS Array Tests ───────────────────────────────────
 
-  describe('WORKFLOW_COMMANDS array', () => {
-    it('is an array of command descriptors', () => {
+  describe("WORKFLOW_COMMANDS array", () => {
+    it("is an array of command descriptors", () => {
       expect(Array.isArray(WORKFLOW_COMMANDS)).toBe(true);
       expect(WORKFLOW_COMMANDS.length).toBeGreaterThan(0);
     });
 
-    it('each command has required properties', () => {
+    it("each command has required properties", () => {
       for (const cmd of WORKFLOW_COMMANDS) {
-        expect(cmd).toHaveProperty('name');
-        expect(cmd).toHaveProperty('description');
-        expect(typeof cmd.name).toBe('string');
-        expect(typeof cmd.description).toBe('string');
+        expect(cmd).toHaveProperty("name");
+        expect(cmd).toHaveProperty("description");
+        expect(typeof cmd.name).toBe("string");
+        expect(typeof cmd.description).toBe("string");
       }
     });
 
-    it('all commands start with "sw-" prefix', () => {
+    it("all commands start with 'sw-' prefix", () => {
       for (const cmd of WORKFLOW_COMMANDS) {
-        expect(cmd.name.startsWith('sw-')).toBe(true);
+        expect(cmd.name.startsWith("sw-")).toBe(true);
       }
     });
 
-    it('contains expected commands', () => {
-      const commandNames = WORKFLOW_COMMANDS.map(cmd => cmd.name);
-      
-      expect(commandNames).toContain('sw-start');
-      expect(commandNames).toContain('sw-abort');
-      expect(commandNames).toContain('sw-pause');
-      expect(commandNames).toContain('sw-resume');
-      expect(commandNames).toContain('sw-status');
-      expect(commandNames).toContain('sw-ls');
-      expect(commandNames).toContain('sw-setphase');
-      expect(commandNames).toContain('sw-next');
-      expect(commandNames).toContain('sw-complete');
-      expect(commandNames).toContain('sw-info');
-      expect(commandNames).toContain('sw-rename');
-      expect(commandNames).toContain('sw-doctor');
-      expect(commandNames).not.toContain('sw-todo');
-      expect(commandNames).toContain('sw-inbox');
-      expect(commandNames).toContain('sw-archive');
-      expect(commandNames).toContain('sw-unarchive');
+    it("contains the expected commands", () => {
+      const names = WORKFLOW_COMMANDS.map((cmd) => cmd.name);
+      for (const expected of [
+        "sw-start",
+        "sw-abort",
+        "sw-pause",
+        "sw-resume",
+        "sw-status",
+        "sw-ls",
+        "sw-setphase",
+        "sw-next",
+        "sw-complete",
+        "sw-info",
+        "sw-rename",
+        "sw-doctor",
+        "sw-inbox",
+        "sw-archive",
+        "sw-unarchive",
+      ]) {
+        expect(names).toContain(expected);
+      }
     });
 
-    it('has 17 commands defined', () => {
-      expect(WORKFLOW_COMMANDS).toHaveLength(17);
-    });
-
-    it('each command has a unique name', () => {
-      const names = WORKFLOW_COMMANDS.map(cmd => cmd.name);
+    it("each command has a unique name", () => {
+      const names = WORKFLOW_COMMANDS.map((cmd) => cmd.name);
       const uniqueNames = new Set(names);
       expect(uniqueNames.size).toBe(WORKFLOW_COMMANDS.length);
     });
 
-    it('optional usage field is a string when present', () => {
+    it("optional usage field is a string when present", () => {
       for (const cmd of WORKFLOW_COMMANDS) {
         if (cmd.usage !== undefined) {
-          expect(typeof cmd.usage).toBe('string');
+          expect(typeof cmd.usage).toBe("string");
         }
       }
     });
@@ -96,34 +96,21 @@ describe('Command Dispatcher Integration Tests', () => {
 
   // ── getCommandSystem() Tests ────────────────────────────────────────
 
-  describe('getCommandSystem()', () => {
-    it('returns a command system for "pi" CLI', () => {
-      const system = getCommandSystem('pi');
+  describe("getCommandSystem()", () => {
+    it("returns a pi command system when cli='pi'", () => {
+      const system = getCommandSystem("pi");
       expect(system).toBeDefined();
-      expect(system.cli).toBe('pi');
+      expect(system.cli).toBe("pi");
     });
 
-    it('returns a command system for "opencode" CLI', () => {
-      const system = getCommandSystem('opencode');
+    it("returns a generic command system when cli='generic'", () => {
+      const system = getCommandSystem("generic");
       expect(system).toBeDefined();
-      expect(system.cli).toBe('opencode');
+      expect(system.cli).toBe("generic");
     });
 
-    it('returns a command system for "claude-code" CLI', () => {
-      const system = getCommandSystem('claude-code');
-      expect(system).toBeDefined();
-      expect(system.cli).toBe('claude-code');
-    });
-
-    it('returns a command system for "generic" CLI', () => {
-      const system = getCommandSystem('generic');
-      expect(system).toBeDefined();
-      expect(system.cli).toBe('generic');
-    });
-
-    it('returns command system matching explicit CLI argument', () => {
-      const clis: CLI[] = ['pi', 'opencode', 'claude-code', 'generic'];
-      
+    it("returns a command system whose cli matches the explicit arg", () => {
+      const clis: CLI[] = ["pi", "generic"];
       for (const cli of clis) {
         const system = getCommandSystem(cli);
         expect(system.cli).toBe(cli);
@@ -131,314 +118,153 @@ describe('Command Dispatcher Integration Tests', () => {
     });
   });
 
-  // ── Command Registration System Interface ────────────────────────────
+  // ── CommandRegistrationSystem Interface Compliance ──────────────────
 
-  describe('CommandRegistrationSystem interface compliance', () => {
+  describe("CommandRegistrationSystem interface compliance", () => {
     const requiredMethods = [
-      'supportsNativeCommands',
-      'registerAll',
-      'registerOne',
-      'getCommandPrefix',
-      'generateCommandFiles',
-    ];
+      "supportsNativeCommands",
+      "registerAll",
+      "registerOne",
+      "getCommandPrefix",
+      "generateCommandFiles",
+    ] as const;
 
-    it('pi command system implements all required methods', () => {
-      const system = getCommandSystem('pi');
+    it("pi command system implements all required methods", () => {
+      const system = getCommandSystem("pi");
       for (const method of requiredMethods) {
-        expect(system).toHaveProperty(method);
-        expect(typeof system[method as keyof CommandRegistrationSystem]).toBe('function');
+        expect(typeof system[method]).toBe("function");
       }
     });
 
-    it('opencode command system implements all required methods', () => {
-      const system = getCommandSystem('opencode');
+    it("generic command system implements all required methods", () => {
+      const system = getCommandSystem("generic");
       for (const method of requiredMethods) {
-        expect(system).toHaveProperty(method);
-        expect(typeof system[method as keyof CommandRegistrationSystem]).toBe('function');
-      }
-    });
-
-    it('claude-code command system implements all required methods', () => {
-      const system = getCommandSystem('claude-code');
-      for (const method of requiredMethods) {
-        expect(system).toHaveProperty(method);
-        expect(typeof system[method as keyof CommandRegistrationSystem]).toBe('function');
-      }
-    });
-
-    it('generic command system implements all required methods', () => {
-      const system = getCommandSystem('generic');
-      for (const method of requiredMethods) {
-        expect(system).toHaveProperty(method);
-        expect(typeof system[method as keyof CommandRegistrationSystem]).toBe('function');
+        expect(typeof system[method]).toBe("function");
       }
     });
   });
 
-  // ── supportsNativeCommands() Tests ──────────────────────────────────
+  // ── supportsNativeCommands() ────────────────────────────────────────
 
-  describe('supportsNativeCommands()', () => {
-    it('pi supports native commands', () => {
-      const system = getCommandSystem('pi');
+  describe("supportsNativeCommands()", () => {
+    it("pi supports native commands (registerCommand via ExtensionAPI)", () => {
+      const system = getCommandSystem("pi");
       expect(system.supportsNativeCommands()).toBe(true);
     });
 
-    it('opencode does not support native commands (uses skills)', () => {
-      const system = getCommandSystem('opencode');
-      expect(system.supportsNativeCommands()).toBe(false);
-    });
-
-    it('claude-code does not support native commands (uses skills)', () => {
-      const system = getCommandSystem('claude-code');
-      expect(system.supportsNativeCommands()).toBe(false);
-    });
-
-    it('generic does not support native commands', () => {
-      const system = getCommandSystem('generic');
+    it("generic does not support native commands", () => {
+      const system = getCommandSystem("generic");
       expect(system.supportsNativeCommands()).toBe(false);
     });
   });
 
-  // ── registerAll() Tests ──────────────────────────────────────────────
+  // ── registerAll() ───────────────────────────────────────────────────
 
-  describe('registerAll()', () => {
-    it('pi registerAll returns all workflow commands', () => {
-      const system = getCommandSystem('pi');
+  describe("registerAll()", () => {
+    it("pi registerAll returns all workflow commands", () => {
+      const system = getCommandSystem("pi");
       const commands = system.registerAll();
-      
       expect(Array.isArray(commands)).toBe(true);
       expect(commands.length).toBe(WORKFLOW_COMMANDS.length);
     });
 
-    it('opencode registerAll returns all workflow commands', () => {
-      const system = getCommandSystem('opencode');
+    it("generic registerAll returns an empty array", () => {
+      const system = getCommandSystem("generic");
       const commands = system.registerAll();
-      
-      expect(Array.isArray(commands)).toBe(true);
-      expect(commands.length).toBe(WORKFLOW_COMMANDS.length);
-    });
-
-    it('claude-code registerAll returns all workflow commands', () => {
-      const system = getCommandSystem('claude-code');
-      const commands = system.registerAll();
-      
-      expect(Array.isArray(commands)).toBe(true);
-      expect(commands.length).toBe(WORKFLOW_COMMANDS.length);
-    });
-
-    it('generic registerAll returns empty array', () => {
-      const system = getCommandSystem('generic');
-      const commands = system.registerAll();
-      
       expect(Array.isArray(commands)).toBe(true);
       expect(commands.length).toBe(0);
     });
   });
 
-  // ── registerOne() Tests ─────────────────────────────────────────────
+  // ── registerOne() ───────────────────────────────────────────────────
 
-  describe('registerOne()', () => {
-    it('pi registerOne returns true for valid command', () => {
-      const system = getCommandSystem('pi');
-      const result = system.registerOne(WORKFLOW_COMMANDS[0]);
-      expect(result).toBe(true);
+  describe("registerOne()", () => {
+    it("pi registerOne returns true for a valid command", () => {
+      const system = getCommandSystem("pi");
+      expect(system.registerOne(WORKFLOW_COMMANDS[0])).toBe(true);
     });
 
-    it('opencode registerOne returns true', () => {
-      const system = getCommandSystem('opencode');
-      const result = system.registerOne(WORKFLOW_COMMANDS[0]);
-      expect(result).toBe(true);
-    });
-
-    it('claude-code registerOne returns true', () => {
-      const system = getCommandSystem('claude-code');
-      const result = system.registerOne(WORKFLOW_COMMANDS[0]);
-      expect(result).toBe(true);
-    });
-
-    it('generic registerOne returns false', () => {
-      const system = getCommandSystem('generic');
-      const result = system.registerOne(WORKFLOW_COMMANDS[0]);
-      expect(result).toBe(false);
+    it("generic registerOne returns false", () => {
+      const system = getCommandSystem("generic");
+      expect(system.registerOne(WORKFLOW_COMMANDS[0])).toBe(false);
     });
   });
 
-  // ── getCommandPrefix() Tests ─────────────────────────────────────────
+  // ── getCommandPrefix() ──────────────────────────────────────────────
 
-  describe('getCommandPrefix()', () => {
-    it('all CLIs return "/" as command prefix', () => {
-      const clis: CLI[] = ['pi', 'opencode', 'claude-code', 'generic'];
-      
-      for (const cli of clis) {
-        const system = getCommandSystem(cli);
-        expect(system.getCommandPrefix()).toBe('/');
+  describe("getCommandPrefix()", () => {
+    it("returns '/' for both pi and generic", () => {
+      for (const cli of ["pi", "generic"] as CLI[]) {
+        expect(getCommandSystem(cli).getCommandPrefix()).toBe("/");
       }
     });
   });
 
-  // ── generateCommandFiles() Tests ────────────────────────────────────
+  // ── generateCommandFiles() ──────────────────────────────────────────
 
-  describe('generateCommandFiles()', () => {
-    it('pi generates no command files (uses native)', () => {
-      const system = getCommandSystem('pi');
-      const files = system.generateCommandFiles();
-      
+  describe("generateCommandFiles()", () => {
+    it("pi generates no command files (uses native registerCommand)", () => {
+      const files = getCommandSystem("pi").generateCommandFiles();
       expect(Array.isArray(files)).toBe(true);
       expect(files.length).toBe(0);
     });
 
-    it('opencode generates 17 command files', () => {
-      const system = getCommandSystem('opencode');
-      const files = system.generateCommandFiles();
-
-      expect(Array.isArray(files)).toBe(true);
-      expect(files.length).toBe(17);
-    });
-
-    it('opencode skill files have skills/ path prefix', () => {
-      const system = getCommandSystem('opencode');
-      const files = system.generateCommandFiles();
-      
-      for (const file of files) {
-        expect(file.path.startsWith('skills/')).toBe(true);
-      }
-    });
-
-    it('opencode skill files contain command name in content', () => {
-      const system = getCommandSystem('opencode');
-      const files = system.generateCommandFiles();
-      
-      const startFile = files.find(f => f.path.includes('sw-start'));
-      expect(startFile).toBeDefined();
-      expect(startFile?.content).toContain('sw-start');
-
-      const doctorFile = files.find(f => f.path.includes('sw-doctor'));
-      expect(doctorFile).toBeDefined();
-      expect(doctorFile?.content).toContain('sw-doctor');
-    });
-
-    it('claude-code generates 17 command files', () => {
-      const system = getCommandSystem('claude-code');
-      const files = system.generateCommandFiles();
-
-      expect(Array.isArray(files)).toBe(true);
-      expect(files.length).toBe(17);
-    });
-
-    it('claude-code skill files have skills/ path prefix', () => {
-      const system = getCommandSystem('claude-code');
-      const files = system.generateCommandFiles();
-      
-      for (const file of files) {
-        expect(file.path.startsWith('skills/')).toBe(true);
-      }
-    });
-
-    it('generic generates no command files', () => {
-      const system = getCommandSystem('generic');
-      const files = system.generateCommandFiles();
-      
+    it("generic generates no command files (no skills/path to write to)", () => {
+      const files = getCommandSystem("generic").generateCommandFiles();
       expect(Array.isArray(files)).toBe(true);
       expect(files.length).toBe(0);
     });
-
-    it('generated files have path and content properties', () => {
-      const system = getCommandSystem('opencode');
-      const files = system.generateCommandFiles();
-      
-      for (const file of files) {
-        expect(file).toHaveProperty('path');
-        expect(file).toHaveProperty('content');
-        expect(typeof file.path).toBe('string');
-        expect(typeof file.content).toBe('string');
-      }
-    });
-  });
-
-  // ── Command File Content Format ──────────────────────────────────────
-
-  describe('Command file content format', () => {
-    it('opencode skill files have frontmatter', () => {
-      const system = getCommandSystem('opencode');
-      const files = system.generateCommandFiles();
-      
-      for (const file of files) {
-        expect(file.content).toContain('---');
-        expect(file.content).toContain('name:');
-        expect(file.content).toContain('description:');
-      }
-    });
-
-    it('claude-code skill files have frontmatter', () => {
-      const system = getCommandSystem('claude-code');
-      const files = system.generateCommandFiles();
-      
-      for (const file of files) {
-        expect(file.content).toContain('---');
-        expect(file.content).toContain('name:');
-        expect(file.content).toContain('description:');
-      }
-    });
-
   });
 
   // ── PRODUCT_WORKFLOW_CLI Override Tests ─────────────────────────────
 
-  describe('PRODUCT_WORKFLOW_CLI override affects getCommandSystem()', () => {
-    it('PRODUCT_WORKFLOW_CLI=pi uses pi command system', () => {
-      process.env.PRODUCT_WORKFLOW_CLI = 'pi';
+  describe("PRODUCT_WORKFLOW_CLI override affects getCommandSystem()", () => {
+    it("PRODUCT_WORKFLOW_CLI=pi uses the pi command system", () => {
+      process.env.PRODUCT_WORKFLOW_CLI = "pi";
       const system = getCommandSystem();
-      expect(system.cli).toBe('pi');
+      expect(system.cli).toBe("pi");
     });
 
-    it('PRODUCT_WORKFLOW_CLI=opencode uses opencode command system', () => {
-      process.env.PRODUCT_WORKFLOW_CLI = 'opencode';
+    it("PRODUCT_WORKFLOW_CLI=generic uses the generic command system", () => {
+      process.env.PRODUCT_WORKFLOW_CLI = "generic";
       const system = getCommandSystem();
-      expect(system.cli).toBe('opencode');
+      expect(system.cli).toBe("generic");
     });
 
-    it('PRODUCT_WORKFLOW_CLI=claude-code uses claude-code command system', () => {
-      process.env.PRODUCT_WORKFLOW_CLI = 'claude-code';
-      const system = getCommandSystem();
-      expect(system.cli).toBe('claude-code');
-    });
-
-    it('explicit CLI argument overrides PRODUCT_WORKFLOW_CLI', () => {
-      process.env.PRODUCT_WORKFLOW_CLI = 'opencode';
-      const system = getCommandSystem('claude-code');
-      expect(system.cli).toBe('claude-code');
+    it("explicit CLI argument overrides PRODUCT_WORKFLOW_CLI", () => {
+      process.env.PRODUCT_WORKFLOW_CLI = "generic";
+      const system = getCommandSystem("pi");
+      expect(system.cli).toBe("pi");
     });
   });
 
   // ── CLI-Specific Command System Differences ─────────────────────────
 
-  describe('CLI-specific command system differences', () => {
-    it('only pi uses native command registration', () => {
-      const piSystem = getCommandSystem('pi');
-      const opencodeSystem = getCommandSystem('opencode');
-      const claudeCodeSystem = getCommandSystem('claude-code');
-      const genericSystem = getCommandSystem('generic');
-
-      expect(piSystem.supportsNativeCommands()).toBe(true);
-      expect(opencodeSystem.supportsNativeCommands()).toBe(false);
-      expect(claudeCodeSystem.supportsNativeCommands()).toBe(false);
-      expect(genericSystem.supportsNativeCommands()).toBe(false);
+  describe("CLI-specific command system differences", () => {
+    it("only pi uses native command registration", () => {
+      expect(getCommandSystem("pi").supportsNativeCommands()).toBe(true);
+      expect(getCommandSystem("generic").supportsNativeCommands()).toBe(false);
     });
 
-    it('opencode and claude-code generate file-based commands', () => {
-      const opencodeSystem = getCommandSystem('opencode');
-      const claudeCodeSystem = getCommandSystem('claude-code');
-
-      expect(opencodeSystem.generateCommandFiles().length).toBe(17);
-      expect(claudeCodeSystem.generateCommandFiles().length).toBe(17);
+    it("both pi and generic generate no command files (extension-side path)", () => {
+      expect(getCommandSystem("pi").generateCommandFiles().length).toBe(0);
+      expect(getCommandSystem("generic").generateCommandFiles().length).toBe(0);
     });
 
-    it('pi and generic generate no command files', () => {
-      const piSystem = getCommandSystem('pi');
-      const genericSystem = getCommandSystem('generic');
-
-      expect(piSystem.generateCommandFiles().length).toBe(0);
-      expect(genericSystem.generateCommandFiles().length).toBe(0);
+    it("pi and generic both return '/' as the command prefix", () => {
+      const clis: CLI[] = ["pi", "generic"];
+      for (const cli of clis) {
+        expect(getCommandSystem(cli).getCommandPrefix()).toBe("/");
+      }
     });
+  });
+
+  // ── Type-level Sanity ───────────────────────────────────────────────
+
+  it("pi and generic systems satisfy the CommandRegistrationSystem type", () => {
+    const pi: CommandRegistrationSystem = getCommandSystem("pi");
+    const generic: CommandRegistrationSystem = getCommandSystem("generic");
+    expect(pi).toBeDefined();
+    expect(generic).toBeDefined();
   });
 });

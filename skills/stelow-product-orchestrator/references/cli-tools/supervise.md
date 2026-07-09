@@ -31,9 +31,7 @@ run the harness non-interactively with a verification prompt:
 
 ```bash
 # Pattern (adapt per CLI):
-#   pi:    pi --print "..."
-#   claude: claude -p "..."
-#   opencode: opencode -p "..."
+#   pi: pi --print "..."
 
 pi --print --output-format json "
 Read the current scope state in .stelow/<date>/<hash>/plans/scopes/.
@@ -54,7 +52,7 @@ Return JSON only:
 |-----|-----------------|-------------------|
 | pi | `pi --print "$prompt"` | `--output-format json` or prompt-instructed |
 | Claude Code | `claude -p "$prompt"` | `--output-format json` |
-| OpenCode | `opencode -p "$prompt"` | Prompt-instructed (ask for JSON) |
+| Universal fallback | Agent's own headless mode, if exposed | Prompt-instructed (ask for JSON) |
 
 ### Decision matrix
 
@@ -154,7 +152,8 @@ Each CLI adapter calls its own non-interactive command:
 ```typescript
 // PiAdapter: execSync(\`pi --print \${JSON.stringify(task)}\`)
 // ClaudeCodeAdapter: execSync(\`claude -p \${JSON.stringify(task)}\`)
-// OpenCodeAdapter: execSync(\`opencode -p \${JSON.stringify(task)}\`)
+// Historical: removed adapters used per-agent headless commands. The stelow
+// extension ships PiAdapter + GenericAdapter only.
 ```
 
 The verification prompt is constructed by the calling code (skill/stage)

@@ -283,7 +283,7 @@ All 25 skills are flat in `skills/` directory, ready for `~/.agents/skills/`. Th
 
 **Each skill is fully self-contained** - the installer copies the complete directory tree including its own `references/cli-tools/`, `references/`, and `stages/` files. This means:
 - ✅ **Skills work standalone** - invoke any sub-skill (e.g., `cali-product-shape-up`, `cali-product-plan-critique`) independently of the orchestrator
-- ✅ **Portable across CLIs** - Pi, OpenCode, Claude Code all reference skills by name (`~/.agents/skills/`)
+- ✅ **Portable across agents** - Pi, Claude Code, Codex, Cursor, Continue, OpenCode, and others all reference skills by name (`~/.agents/skills/`)
 - ✅ **References resolve locally** - every `references/cli-tools/*.md` path is relative to the skill's own directory
 - ❌ **Not in `~/.agents/skills/`?** Use `./install.sh` or `npx skills add calionauta/stelow -g`
 
@@ -347,7 +347,7 @@ This package works across **multiple coding agents** - not just pi.dev. See the 
 |----------------|--------------------|-------------|
 | **New to CLIs** (no Node, no agent) | `curl -fsSL https://raw.githubusercontent.com/.../setup.sh \| sh` | Node.js + pi.dev + all extensions + 25 skills |
 | **Already use pi.dev** | `git clone ... && ./install.sh` | 25 skills + TUI overlay + slash commands |
-| **Use OpenCode / Claude Code** | `git clone ... && ./install.sh` | 25 skills + command files (no TUI) |
+| **Use another agent** (Claude Code, Codex, Cursor, OpenCode, etc.) | `npx skills add calionauta/stelow -g` | 25 skills — universal path, no extension guarantees |
 | **Any CLI (skills only)** | `npx skills add calionauta/stelow -g` | 25 skills + cross-CLI support |
 
 ### Intent-Aware Start
@@ -382,23 +382,26 @@ Per-agent configuration files (commands, install scripts) are in [`cli-agents/`]
 
 ## 📦 Installation
 
-### CLI Compatibility
+### Compatibility
 
-Not every feature works on every CLI. Here's what to expect:
+The shipped extension is Pi-first. The skills work in any agent that
+reads `~/.agents/skills/<name>/SKILL.md` — the agentskills.io standard.
 
-| Feature | pi.dev | OpenCode | Claude Code |
-|---------|--------|----------|------------|
-| **Skills (all 25)** | ✅ | ✅ | ✅ |
-| **`/sw-*` commands (15)** | ✅ Native | ⚠️ Skill delegation | ⚠️ Skill delegation |
-| **TUI overlay (real-time status)** | ✅ Native extension | ❌ | ❌ |
-| **Plannotator visual gate** | ✅ Extension | ⚠️ Manual | ⚠️ Manual |
-| **Deep hooks (events, gates, auto-sync scopes)** | ✅ Extension | ❌ | ❌ |
-| **`ask_user_question` (structured prompts)** | ✅ Native | ⚠️ Falls back to chat prose | ⚠️ Falls back to chat prose |
-| **Supervision / overnight execution** | ✅ Via pi-supervisor | ❌ | ❌ |
+| Feature | Pi (extension) | Any agentskills-compatible agent |
+|---|---|---|
+| **25 skills (orchestrator + 24 partners)** | ✅ | ✅ (universal path) |
+| **`/sw-*` slash commands (15)** | ✅ Native | ⚠️ Skill delegation via `~/.agents/skills/stelow-product-orchestrator` |
+| **TUI overlay (real-time status, notification panel)** | ✅ | ❌ |
+| **Plannotator visual gate** | ✅ | ⚠️ Manual (CLI binary via bash) |
+| **Lifecycle hooks (session start, turn end, tool call)** | ✅ | ❌ |
+| **Auto-sync scopes from spec-tech.md** | ✅ Extension | ❌ (skill instructs `bash` snippet) |
+| **`ask_user_question` (structured prompts)** | ✅ | ⚠️ Falls back to chat prose |
+| **Subagent delegation with `context: "fresh"` + `acceptance` contracts** | ✅ Via `pi-subagents` | ⚠️ Native subagent only; no acceptance contract |
+| **Supervision / overnight execution** | ✅ Via `pi-supervisor` | ❌ |
 
-> **Bottom line:** The **25 skills run identically on every supported CLI** — they execute the full Shape Up workflow (plans, critique, scopes, everything). The deep integration features (real-time TUI overlay, slash commands, lifecycle hooks, Plannotator gate, auto-sync scopes from spec-tech.md) are native to pi.dev, which has the extension system to support them. Two CLI-agnostic surfaces also read workflow state from `.stelow/` files on disk: the [Muxy.app](https://muxy.app/) webview panel (macOS terminal multiplexer) and the [Herdr](https://herdr.dev) split-pane TUI plugin (terminal multiplexer). Both work with any CLI. All CLIs can still complete the workflow; on non-Pi CLIs it happens via chat and command files rather than extensions.
+> **Bottom line:** The **25 skills run identically in any agent that reads `~/.agents/skills/`** — they execute the full Shape Up workflow (plans, critique, scopes, everything). The deep integration features (TUI overlay, slash commands, lifecycle hooks, Plannotator gate, auto-sync scopes, ask_user_question, subagent acceptance contracts) are native to Pi, which has the extension system to support them. Two agent-agnostic surfaces also read workflow state from `.stelow/` files on disk: the [Muxy.app](https://muxy.app/) webview panel and the [Herdr](https://herdr.dev) split-pane TUI plugin. Both work with any agent. On any agent, the workflow runs from chat + skill invocation; on Pi, it also runs from slash commands + TUI.
 >
-> **Codex support removed in v0.44.0.** Pre-existing users can still use the orchestrator skill directly via chat. See [`cli-agents/COMMANDS.md`](cli-agents/COMMANDS.md#support-levels) for the full support matrix.
+> **v0.45.0 narrowed the shipped surface to Pi-only.** Skills remain agent-agnostic. To add first-class support (TUI / gates / auto-sync) for a new agent, follow the [Adapter extension guide](cli-agents/COMMANDS.md#how-to-extend).
 
 ### Auto-sync scopes from spec-tech.md
 
@@ -408,7 +411,7 @@ A common pain point used to be initializing `wf.scopes[]` in `stelow.json` — i
 - **When:** First read/write after a workflow enters Execution phase with empty scopes (idempotent).
 - **Re-sync on v2+:** Tracks `wf.specTechFile` — if spec-tech bumps to v2, scopes are re-synced automatically.
 - **Mirror parity:** Pi (TypeScript) and Muxy (JavaScript / Electron sandbox) run separate parsers. They're tested in `tests/unit/parse-scopes-from-spec-tech.test.ts` against identical fixtures.
-- **Reduced-CLI note:** OpenCode / Claude Code users get the same auto-sync via the Pi extension if running in pi.dev; in those harnesses, use the skill path which writes scopes through a bash snippet (less clean).
+- **Agents without the Pi extension** see the auto-sync happen via the skill's instructions (a bash snippet parses spec-tech.md and writes `wf.scopes[]` to `stelow.json`). Less clean than the extension path but consistent across agents.
 
 Known gaps (race window, legacy workflows without `dirHash`, phase-number drift) are tracked in [`docs/scope-lifecycle-gaps.md`](docs/scope-lifecycle-gaps.md).
 
@@ -424,9 +427,9 @@ stelow is designed to be **self-contained** — the 25 skills + installer cover 
 | [npx skills](https://github.com/vercel-labs/skills) | Optional | Stack-matched skill discovery during execution setup | Part of Node.js ecosystem (`npx` bundled with npm) | Skip — workflow runs without stack-matched skills |
 | [ctx7](https://github.com/upstash/context7) | Optional | Current library doc fetching during execution setup | `npx @vedanth/context7` (auto-install via npx) | Skip — docs not fetched (less informed execution) |
 | [sem](https://github.com/Ataraxy-Labs/sem) | Optional | Entity-level diff in Execution Critique (functions, types, methods instead of raw lines); enhanced changelog + bump detection in releases | `curl -fsSL https://raw.githubusercontent.com/Ataraxy-Labs/sem/main/install.sh \| sh` (macOS / Linux), `winget install AtaraxyLabs.sem` (Windows), `brew install sem-cli` (macOS / Linuxbrew) | `git diff` — raw line-level only, no structural awareness |
-| [plannotator](https://plannotator.ai/) | Optional | Visual review gate annotation | Pi: `@plannotator/pi-extension` · OpenCode: `@plannotator/opencode` · Claude Code: `@backnotprop/plannotator` | Manual review with approval receipt file — no structured annotation |
-| [safe-change (pi-agent-codebase-workflows)](https://github.com/PriNova/pi-agent-codebase-workflows) | Optional | Pre-execution code safety checks | `npx skills add Prinova/pi-agent-codebase-workflows -g` (works on Pi, OpenCode, Claude Code) | Skip — pre-execution check omitted |
-| Subagents (built-in to supported CLIs) | Optional | Parallel reviewer orchestration during Plan Critique | `subagent({ agent, task })` — built-in on Pi, OpenCode, Claude Code | Sequential execution — slower, same outcome (single-context review) |
+| [plannotator](https://plannotator.ai/) | Optional | Visual review gate annotation | Pi: `@plannotator/pi-extension` (other agents: `plannotator annotate ... --gate --json` via bash) | Manual review with approval receipt file — no structured annotation |
+| [safe-change (pi-agent-codebase-workflows)](https://github.com/PriNova/pi-agent-codebase-workflows) | Optional | Pre-execution code safety checks | `npx skills add Prinova/pi-agent-codebase-workflows -g` (works in any agent that installs from skill registries) | Skip — pre-execution check omitted |
+| Subagents (built-in to any agent) | Optional | Parallel reviewer orchestration during Plan Critique | `subagent(...)` / agent native subagent | Sequential execution — slower, same outcome (single-context review) |
 | [pi-subagents](https://github.com/nicobailon/pi-subagents) | **Recommended for Pi** | `context: "fresh"` enforcement (defeats packaged `worker`/`planner`/`oracle` defaults), `reads` parameter, `acceptance` contracts (child self-corrects in same context for scope execution), parallel fanout | `npm:pi-subagents` | Without it: scope-executor falls back to parent-controlled loop (slower); no `reads` (subagent relies on task-string context); no explicit `context: "fresh"` override |
 | [pi-intercom](https://github.com/nicobailon/pi-intercom) | Optional (Pi only) | Session-to-session coordination | `npm:pi-intercom` | Skip — no intercom capability |
 | [pi-supervisor](https://github.com/tintinweb/pi-supervisor) | Optional (Pi only) | Conversation supervision during execution | `npm:pi-supervisor` | Skip — no supervision; rely on `stages-guard` for invariant enforcement |
@@ -461,7 +464,7 @@ curl -fsSL https://raw.githubusercontent.com/calionauta/stelow/main/setup.sh | s
 | 10 | Muxy detection | detects `/Applications/Muxy.app` or `muxy` binary; prints install link if absent (cannot auto-install — Muxy is macOS-only, distributed via GitHub releases) | macOS |
 | 11 | Pulse (optional) | copies Pulse scripts to project's `.stelow/pulse/` and creates inbox. Or run standalone: `./scripts/setup-pulse.sh` (no pi required — works in CI/CD or before pi is installed) | All CLIs (cron/launchd/systemd/Task Scheduler) |
 
-> **Not using pi.dev?** Skills land in `~/.agents/skills/` and work on OpenCode and Claude Code too. You just won't get the Pi-only extensions or TUI overlay. The workflow itself runs fine.
+> **Not using pi.dev?** Skills land in `~/.agents/skills/` and work on any agent that reads them. You just won't get the Pi-only extensions or TUI overlay. The workflow itself runs fine — see [agentskills.io](https://agentskills.io/) for the cross-agent standard.
 >
 > **Muxy.app can't be auto-installed.** It's a macOS-only app (SwiftUI + libghostty), open-source under MIT license, distributed via [GitHub releases](https://github.com/muxy-app/muxy/releases). Path A detects whether it's present and tells you how to install if not. Once installed, load the stelow extension from `integrations/muxy/stelow/`.
 
@@ -475,9 +478,9 @@ cd stelow
 
 The installer auto-detects your CLIs and installs skills + extensions + slash commands. Skills go to `~/.agents/skills/`.
 
-### 📋 Path C: Other CLI (OpenCode / Claude Code)
+### 📋 Path C: Any other agent (universal)
 
-The **skills** are the core of this project - they work on **any** supported agent (Pi, OpenCode, Claude Code).
+The **skills** are the core of this project - they work on **any** agent that reads `~/.agents/skills/<name>/SKILL.md` (the agentskills.io standard).
 
 ```bash
 git clone https://github.com/calionauta/stelow.git
@@ -495,7 +498,7 @@ npx skills add calionauta/stelow -g
 
 This installs all 25 skills to `~/.agents/skills/` - works on any CLI.
 
-> For CLI-specific setup (OpenCode config, Claude Code plugin), see [docs/INSTALLATION.md](docs/INSTALLATION.md).
+> For per-agent configuration (if your agent needs more than the universal skill path), see [docs/INSTALLATION.md](docs/INSTALLATION.md).
 
 ### Manual setup & dependencies
 
@@ -532,7 +535,7 @@ This project distributes exclusively via GitHub (no npm) — see [docs/SECURITY.
 | `/sw-doctor [--fix]` | Diagnose workflow health. Detects zombie workflows, index mismatches, orphaned entries. |
 | `/sw-unlock` | Disable stage guard for current session (debug only). |
 
-> All 15 commands work in **Pi** natively (via `pi.registerCommand()`). In **OpenCode and Claude Code**, all 15 commands work via Skill delegation — the `.md` files in `cli-agents/<cli>/commands/sw-*.md` invoke `/skill:stelow-product-orchestrator <command>` and route through the orchestrator. The exceptions are `/sw-inbox` and `/sw-pulse` (when present), which are marked `piOnly` because they operate on filesystem state with native TUI notifications; in non-Pi CLIs, the agent falls back to reading files directly.
+> All 15 commands work in **Pi** natively (via `pi.registerCommand()`). In any other agent, the same 15 commands route through the **orchestrator skill** — invoke `/skill:stelow-product-orchestrator <command>` and the skill handles phase routing, gate calls, and state writes. The exceptions are `/sw-inbox` and `/sw-pulse`, which are marked `piOnly` because they operate on filesystem state with native TUI notifications; in non-Pi agents, the agent falls back to reading files directly.
 
 ---
 
@@ -586,9 +589,7 @@ When working on software projects, trigger the product workflow:
 | CLI | File |
 |-----|------|
 | **Pi** | `~/.pi/agent/AGENTS.md` |
-| **OpenCode** | `~/.config/opencode/AGENTS.md` or project `AGENTS.md` |
-| **Claude Code** | `~/.claude/CLAUDE.md` or project `CLAUDE.md` |
-| **Other (Codex, etc.)** | Follow the harness's AGENTS.md convention or use the orchestrator skill directly via chat |
+| **Any agentskills-compatible agent** | The orchestrator skill reads `~/.agents/skills/stelow-product-orchestrator/SKILL.md` automatically |
 
 ---
 
@@ -607,7 +608,7 @@ Muxy plugin           |  Herdr Extension
 
 Herdr Extension
 
-Both integrations share the same workflow state (`.stelow/`), both work with any supported CLI (Pi, OpenCode, Claude Code), neither requires pi.dev.
+Both integrations share the same workflow state (`.stelow/`), both work with any agent (Pi, or any agent that reads `~/.agents/skills/`), neither requires pi.dev.
 
 ### Muxy Webview Panel
 

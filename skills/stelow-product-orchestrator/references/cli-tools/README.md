@@ -1,53 +1,39 @@
 # CLI Tools Reference
 
-This directory contains tool abstractions for multiple AI coding agent harnesses.
+This directory contains tool abstractions for the stelow orchestrator. Each file
+documents how to invoke a specific tool for two surfaces:
 
-## CLI Detection Strategy
+1. **Pi-native path** — the registered tool name (e.g. `ask_user_question`,
+   `subagent`, `plannotator`, `todo`) that the stelow extension provides
+   as a first-class wrapper around the underlying CLI binary or subagent
+   harness.
 
-### Environment Variable (Primary)
+2. **Universal fallback** — the equivalent CLI invocation a non-Pi agent
+   can use directly via the standard `bash` / `read` / `write` / `edit`
+   tools. This works in any agent that follows the
+   [agentskills.io](https://agentskills.io/) standard (Pi, Claude Code,
+   Codex, Cursor, Continue, OpenCode) since the skills are installed at
+   `~/.agents/skills/<name>/` and the agent picks them up automatically.
 
-Set `PRODUCT_WORKFLOW_CLI` to specify the harness:
+## Detection Strategy
 
-| Value | Harness |
-|-------|---------|
-| `pi` | Pi coding agent |
-| `opencode` | OpenCode |
-| `claude-code` | Claude Code |
-| `generic` | Generic fallback (default if detection fails) |
+The orchestrator picks the path at runtime via two mechanisms:
 
-**Important:** Default is `generic`, NOT a specific CLI.
+1. **`PRODUCT_WORKFLOW_CLI` env var** — explicit override.
+   - `pi` → use Pi-native paths
+   - `generic` → use universal fallback for every tool
+   - any other value → log warning, fall back to `generic`
+2. **Directory probe** — if env var unset, check `~/.pi/`. If present, use Pi-native paths; otherwise `generic`.
 
-- If we don't know the harness, we fall back to generic instructions
-- Generic means "use built-in tools with standard names"
-- This is safer than assuming a specific harness
+Default is `generic`, not `pi`. This is intentional: the Pi-native wrapper
+tools (`ask_user_question`, `subagent`, etc.) only exist when the stelow
+extension has loaded. Until that happens, every agent looks identical to
+the orchestrator and gets the universal-fallback instructions.
 
-### Automatic Detection (Fallback)
-
-When `PRODUCT_WORKFLOW_CLI` is not set:
-
-1. **Check platform-specific files:**
-   - `~/.pi/` → `pi`
-   - `~/.opencode/` → `opencode`
-   - `~/.claude/` → `claude-code`
-
-2. **Check skill naming patterns:**
-   - All our skills start with `cali-*` prefix
-   - This pattern indicates our workflow is installed
-   - Does NOT indicate specific harness (works in any that supports npm packages)
-
-3. **Default to `generic`:**
-   - No detection succeeded
-   - Use built-in tool names (read, bash, write, edit)
-   - Fall back to generic instructions in each tool file
-
-### Why `generic` is Safer
-
-| Approach | Risk |
-|----------|------|
-| Default to `pi` | Assumes specific harness, may use wrong tools |
-| Default to `generic` | ✅ Safe, uses standard tool names |
-
----
+> **Important:** Default is `generic`, NOT a specific CLI.
+> - If we don't know the agent, we fall back to universal instructions
+> - Universal means "use built-in tools with standard names"
+> - This is safer than assuming a specific tool registry
 
 ## Tool Files Pattern
 
@@ -59,36 +45,33 @@ Each tool file follows this structure:
 ## Quick Summary
 > One-line description for LLM to find equivalent when unavailable.
 
-## Available Commands by CLI
+## Pi-native path
 
-| CLI | Command | Available |
-|-----|---------|-----------|
-| pi | `specific command` | ✅ |
-| opencode | `specific command` | ✅ |
-| claude-code | `specific command` | ✅ |
+The `tool_name` registered by the stelow extension is the recommended
+invocation when the agent has the extension loaded.
 
-## Command Details
-
-### pi
 ```typescript
-// command format
+tool_name({ ... })
 ```
 
-### opencode
-```typescript
-// command format
+The wrapper handles subprocess management + result parsing, so the LLM
+sees a single tool call that maps to one or more CLI invocations.
+
+## Universal fallback
+
+For agents without the extension, fall back to the equivalent CLI
+binary or shell construct. Use the same tool namespace (bash, read,
+write, edit, glob, grep) the agent already provides.
+
+```bash
+cli-binary ...args
 ```
 
-### claude-code
-```typescript
-// command format
-```
+## Failure modes
 
-## Fallback (Generic)
-
-When CLI not detected or tool unavailable:
-
-> {quick_summary}
+- Tool returns `decision: error` → see tool-specific fallback (manual
+  receipt file, fail open to bash + retry once, etc.).
+- Agent has no shell access → see tool-specific fallback.
 ```
 
 ---
@@ -107,8 +90,9 @@ When CLI not detected or tool unavailable:
 | `stage-status.md` | Workflow status commands (`/sw-setphase`, `/sw-next`, `/sw-status`) |
 | `context-efficiency.md` | Token-saving strategies (truncation, batching, caching) |
 | `codequality-review.md` | Ultra-strict code quality review |
-| `todo.md` | Phase task management with CLI-specific commands |
+| `todo.md` | Phase task management |
 | `agent_browser.md` | Automated web browser for UI verification |
+| `file-locking.md` | Convention-based scope locking (no git worktrees) |
 
 > **See also:** `references/permissions.md` (stage permissions) and `references/capabilities.md` (allowed tools per stage)
 
@@ -119,11 +103,11 @@ When CLI not detected or tool unavailable:
 In skills, reference tools like this:
 
 ```markdown
-> **Tools:** See `references/cli-tools/{tool-name}.md` for command patterns.
+> **Tools:** See `references/cli-tools/{tool-name}.md` for invocation patterns.
 ```
 
 The LLM should:
-1. Check `PRODUCT_WORKFLOW_CLI` environment variable
-2. Load the appropriate tool file
-3. Use the CLI-specific command
-4. Fall back to generic if CLI not detected
+1. Check whether `ask_user_question`, `subagent`, `plannotator`, `todo` etc. are
+   available in its tool registry.
+2. If yes, use the Pi-native path.
+3. If no, fall back to the universal CLI invocation in the tool's file.

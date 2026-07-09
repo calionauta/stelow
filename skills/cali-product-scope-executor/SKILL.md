@@ -355,9 +355,9 @@ The delegation mechanism varies by harness. The contract data stays the same; on
 | Harness | Delegation pattern | Self-correction mechanism |
 |---------|-------------------|--------------------------|
 | **pi** (pi-subagents) | `subagent({ agent, task, acceptance })` | `acceptance.maxFinalizationTurns` — runtime reopens child session for self-correction |
-| **opencode** | `subagent({ agent, task })` | Parent controls loop — re-delegate with feedback on failure |
-| **claude-code** | `subagent({ agent, task })` | Parent controls loop — re-delegate with feedback on failure |
-| **generic** | Execute directly, save to files | Manual iteration in parent context |
+| **Pi (with pi-subagents)** | `subagent({ agent, task, context: "fresh", acceptance })` | Child self-validates; parent receives structured result |
+| **Pi (built-in subagent)** | `subagent({ agent, task })` | Always-isolated child; parent reads checkpoint after child returns |
+| **Universal fallback** | Execute directly in current session, save outputs to files | Manual iteration in parent context |
 
 **Example: pi-subagents (acceptance-native)**
 
