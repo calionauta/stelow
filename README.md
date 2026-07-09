@@ -2,7 +2,7 @@
   <img src="./logo.svg" alt="Stelow logo" width="400">
 </p>
 
-# stelow · opinionated agentic product workflow
+# stelow · opinionated agentic product workflow, pi-first
 
 [![Ask DeepWiki](https://img.shields.io/badge/Ask%20DeepWiki-007ACC)](https://deepwiki.com/calionauta/stelow)
 [![Ask zRead](https://img.shields.io/badge/Ask%20zRead-10B981)](https://zread.ai/calionauta/stelow)
