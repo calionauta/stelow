@@ -115,12 +115,6 @@ describe('Command Dispatcher Integration Tests', () => {
       expect(system.cli).toBe('claude-code');
     });
 
-    it('returns a command system for "codex" CLI', () => {
-      const system = getCommandSystem('codex');
-      expect(system).toBeDefined();
-      expect(system.cli).toBe('codex');
-    });
-
     it('returns a command system for "generic" CLI', () => {
       const system = getCommandSystem('generic');
       expect(system).toBeDefined();
@@ -128,7 +122,7 @@ describe('Command Dispatcher Integration Tests', () => {
     });
 
     it('returns command system matching explicit CLI argument', () => {
-      const clis: CLI[] = ['pi', 'opencode', 'claude-code', 'codex', 'generic'];
+      const clis: CLI[] = ['pi', 'opencode', 'claude-code', 'generic'];
       
       for (const cli of clis) {
         const system = getCommandSystem(cli);
@@ -172,14 +166,6 @@ describe('Command Dispatcher Integration Tests', () => {
       }
     });
 
-    it('codex command system implements all required methods', () => {
-      const system = getCommandSystem('codex');
-      for (const method of requiredMethods) {
-        expect(system).toHaveProperty(method);
-        expect(typeof system[method as keyof CommandRegistrationSystem]).toBe('function');
-      }
-    });
-
     it('generic command system implements all required methods', () => {
       const system = getCommandSystem('generic');
       for (const method of requiredMethods) {
@@ -204,11 +190,6 @@ describe('Command Dispatcher Integration Tests', () => {
 
     it('claude-code does not support native commands (uses skills)', () => {
       const system = getCommandSystem('claude-code');
-      expect(system.supportsNativeCommands()).toBe(false);
-    });
-
-    it('codex does not support native commands (uses commands dir)', () => {
-      const system = getCommandSystem('codex');
       expect(system.supportsNativeCommands()).toBe(false);
     });
 
@@ -245,14 +226,6 @@ describe('Command Dispatcher Integration Tests', () => {
       expect(commands.length).toBe(WORKFLOW_COMMANDS.length);
     });
 
-    it('codex registerAll returns all workflow commands', () => {
-      const system = getCommandSystem('codex');
-      const commands = system.registerAll();
-      
-      expect(Array.isArray(commands)).toBe(true);
-      expect(commands.length).toBe(WORKFLOW_COMMANDS.length);
-    });
-
     it('generic registerAll returns empty array', () => {
       const system = getCommandSystem('generic');
       const commands = system.registerAll();
@@ -283,12 +256,6 @@ describe('Command Dispatcher Integration Tests', () => {
       expect(result).toBe(true);
     });
 
-    it('codex registerOne returns true', () => {
-      const system = getCommandSystem('codex');
-      const result = system.registerOne(WORKFLOW_COMMANDS[0]);
-      expect(result).toBe(true);
-    });
-
     it('generic registerOne returns false', () => {
       const system = getCommandSystem('generic');
       const result = system.registerOne(WORKFLOW_COMMANDS[0]);
@@ -300,7 +267,7 @@ describe('Command Dispatcher Integration Tests', () => {
 
   describe('getCommandPrefix()', () => {
     it('all CLIs return "/" as command prefix', () => {
-      const clis: CLI[] = ['pi', 'opencode', 'claude-code', 'codex', 'generic'];
+      const clis: CLI[] = ['pi', 'opencode', 'claude-code', 'generic'];
       
       for (const cli of clis) {
         const system = getCommandSystem(cli);
@@ -367,23 +334,6 @@ describe('Command Dispatcher Integration Tests', () => {
       }
     });
 
-    it('codex generates 17 command files', () => {
-      const system = getCommandSystem('codex');
-      const files = system.generateCommandFiles();
-
-      expect(Array.isArray(files)).toBe(true);
-      expect(files.length).toBe(17);
-    });
-
-    it('codex command files have commands/ path prefix', () => {
-      const system = getCommandSystem('codex');
-      const files = system.generateCommandFiles();
-      
-      for (const file of files) {
-        expect(file.path.startsWith('commands/')).toBe(true);
-      }
-    });
-
     it('generic generates no command files', () => {
       const system = getCommandSystem('generic');
       const files = system.generateCommandFiles();
@@ -430,14 +380,6 @@ describe('Command Dispatcher Integration Tests', () => {
       }
     });
 
-    it('codex command files have @agent directive', () => {
-      const system = getCommandSystem('codex');
-      const files = system.generateCommandFiles();
-      
-      for (const file of files) {
-        expect(file.content).toContain('@agent');
-      }
-    });
   });
 
   // ── PRODUCT_WORKFLOW_CLI Override Tests ─────────────────────────────
@@ -461,12 +403,6 @@ describe('Command Dispatcher Integration Tests', () => {
       expect(system.cli).toBe('claude-code');
     });
 
-    it('PRODUCT_WORKFLOW_CLI=codex uses codex command system', () => {
-      process.env.PRODUCT_WORKFLOW_CLI = 'codex';
-      const system = getCommandSystem();
-      expect(system.cli).toBe('codex');
-    });
-
     it('explicit CLI argument overrides PRODUCT_WORKFLOW_CLI', () => {
       process.env.PRODUCT_WORKFLOW_CLI = 'opencode';
       const system = getCommandSystem('claude-code');
@@ -481,24 +417,20 @@ describe('Command Dispatcher Integration Tests', () => {
       const piSystem = getCommandSystem('pi');
       const opencodeSystem = getCommandSystem('opencode');
       const claudeCodeSystem = getCommandSystem('claude-code');
-      const codexSystem = getCommandSystem('codex');
       const genericSystem = getCommandSystem('generic');
 
       expect(piSystem.supportsNativeCommands()).toBe(true);
       expect(opencodeSystem.supportsNativeCommands()).toBe(false);
       expect(claudeCodeSystem.supportsNativeCommands()).toBe(false);
-      expect(codexSystem.supportsNativeCommands()).toBe(false);
       expect(genericSystem.supportsNativeCommands()).toBe(false);
     });
 
-    it('opencode, claude-code, and codex generate file-based commands', () => {
+    it('opencode and claude-code generate file-based commands', () => {
       const opencodeSystem = getCommandSystem('opencode');
       const claudeCodeSystem = getCommandSystem('claude-code');
-      const codexSystem = getCommandSystem('codex');
 
       expect(opencodeSystem.generateCommandFiles().length).toBe(17);
       expect(claudeCodeSystem.generateCommandFiles().length).toBe(17);
-      expect(codexSystem.generateCommandFiles().length).toBe(17);
     });
 
     it('pi and generic generate no command files', () => {

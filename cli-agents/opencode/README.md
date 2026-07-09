@@ -1,48 +1,31 @@
-# OpenCode Plugin for stelow
+# stelow for OpenCode (Reduced Support)
 
-This plugin provides stelow commands and TUI integration for OpenCode.
+Command files that delegate to the stelow orchestrator skill.
+No plugin, no TUI — just markdown command files.
 
 ## Installation
 
 ```bash
-cd cli-agents/opencode/plugin
-npm install
-npm run build
+cd cli-agents/opencode
+chmod +x install.sh
+./install.sh
 ```
 
-Then add to your `opencode.json`:
-
-```json
-{
-  "plugin": [
-    "@cali/stelow-pw-opencode"
-  ]
-}
-```
+This copies `commands/sw-*.md` to `~/.opencode/commands/`.
 
 ## Available Commands
 
-| Command | Description |
-|---------|-------------|
-| `/sw-start` | Start a new workflow |
-| `/sw-status` | Show current status |
-| `/sw-help` | Get help |
+All 15 `/sw-*` commands delegate to `/skill:stelow-product-orchestrator`.
+Commands work, but without Pi's extension guarantees:
 
-## TUI Features
+| Missing feature | Impact |
+|----------------|--------|
+| Auto-sync scopes | LLM must run bash snippets manually |
+| Stage guard / tool blocking | All tools available at all phases |
+| `ask_user_question` tool | Falls back to chat prose |
+| Goals / supervision / subagent contracts | Only basic subagent support |
+| TUI footer / notifications | No status display |
 
-- Workflow status in sidebar footer
-- Phase progress indicator
-- Toast notifications on phase changes
-
-## Development
-
-```bash
-npm run dev    # Watch mode
-npm run build  # Production build
-npm run typecheck  # Type checking
-```
-
-## Dependencies
-
-- `@opencode-ai/plugin` - OpenCode plugin API
-- `@opentui/core`, `@opentui/solid` - UI components (peer dependencies)
+**For full functionality, use pi.dev.** The extension at `extensions/stelow/`
+provides auto-sync, gates, tool enforcement, and rich TUI — unavailable
+in OpenCode's plugin model.

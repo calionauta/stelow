@@ -46,11 +46,6 @@ describe('CLI Detection Integration Tests', () => {
       expect(detectCLI()).toBe('claude-code');
     });
 
-    it('returns "codex" when PRODUCT_WORKFLOW_CLI=codex', () => {
-      process.env.PRODUCT_WORKFLOW_CLI = 'codex';
-      expect(detectCLI()).toBe('codex');
-    });
-
     it('returns "generic" when PRODUCT_WORKFLOW_CLI=generic', () => {
       process.env.PRODUCT_WORKFLOW_CLI = 'generic';
       expect(detectCLI()).toBe('generic');
@@ -140,21 +135,6 @@ describe('CLI Detection Integration Tests', () => {
       expect(caps.hasMCPSupport).toBe(true);
     });
 
-    it('returns correct capabilities for "codex" CLI', () => {
-      const caps = getCLICapabilities('codex');
-      
-      expect(caps.cli).toBe('codex');
-      expect(caps.hasPluginSystem).toBe(true);
-      expect(caps.pluginFormat).toBe('json');
-      expect(caps.hasSessionStart).toBe(true);
-      expect(caps.hasToolCall).toBe(true);
-      expect(caps.hasTurnEnd).toBe(true);
-      expect(caps.hasPreCompact).toBe(true);
-      expect(caps.hasSubagent).toBe(true);
-      expect(caps.hasNotifications).toBe(false); // Codex doesn't have notifications
-      expect(caps.hasMCPSupport).toBe(true);
-    });
-
     it('returns minimal capabilities for "generic" CLI', () => {
       const caps = getCLICapabilities('generic');
       
@@ -169,21 +149,21 @@ describe('CLI Detection Integration Tests', () => {
     });
 
     it('hasCommands is true for all CLIs', () => {
-      const clis: CLI[] = ['pi', 'opencode', 'claude-code', 'codex', 'generic'];
+      const clis: CLI[] = ['pi', 'opencode', 'claude-code', 'generic'];
       for (const cli of clis) {
         expect(getCLICapabilities(cli).hasCommands).toBe(true);
       }
     });
 
     it('commandPrefix is "/" for all CLIs', () => {
-      const clis: CLI[] = ['pi', 'opencode', 'claude-code', 'codex', 'generic'];
+      const clis: CLI[] = ['pi', 'opencode', 'claude-code', 'generic'];
       for (const cli of clis) {
         expect(getCLICapabilities(cli).commandPrefix).toBe('/');
       }
     });
 
     it('all CLIs except generic have distinct capabilities', () => {
-      const clis: CLI[] = ['pi', 'opencode', 'claude-code', 'codex', 'generic'];
+      const clis: CLI[] = ['pi', 'opencode', 'claude-code', 'generic'];
       const capsMap = clis.map(cli => JSON.stringify(getCLICapabilities(cli)));
       const uniqueCaps = new Set(capsMap);
       expect(uniqueCaps.size).toBe(clis.length); // All should be unique
@@ -240,15 +220,6 @@ describe('CLI Detection Integration Tests', () => {
       expect(caps.pluginFormat).toBe('marketplace');
     });
 
-    it('PRODUCT_WORKFLOW_CLI=codex produces codex capabilities', () => {
-      process.env.PRODUCT_WORKFLOW_CLI = 'codex';
-      const detected = detectCLI();
-      const caps = getCLICapabilities(detected);
-      expect(detected).toBe('codex');
-      expect(caps.pluginFormat).toBe('json');
-      expect(caps.hasNotifications).toBe(false);
-    });
-
     it('PRODUCT_WORKFLOW_CLI=generic produces generic capabilities', () => {
       process.env.PRODUCT_WORKFLOW_CLI = 'generic';
       const detected = detectCLI();
@@ -272,21 +243,21 @@ describe('CLI Detection Integration Tests', () => {
     });
 
     it('only pi has ask_user_question capability', () => {
-      const clis: CLI[] = ['opencode', 'claude-code', 'codex', 'generic'];
+      const clis: CLI[] = ['opencode', 'claude-code', 'generic'];
       for (const cli of clis) {
         expect(getCLICapabilities(cli).hasAskUserQuestion).toBe(false);
       }
     });
 
     it('only pi has intercom capability', () => {
-      const clis: CLI[] = ['opencode', 'claude-code', 'codex', 'generic'];
+      const clis: CLI[] = ['opencode', 'claude-code', 'generic'];
       for (const cli of clis) {
         expect(getCLICapabilities(cli).hasIntercom).toBe(false);
       }
     });
 
     it('all CLIs except generic have MCP support', () => {
-      const clis: CLI[] = ['pi', 'opencode', 'claude-code', 'codex'];
+      const clis: CLI[] = ['pi', 'opencode', 'claude-code'];
       for (const cli of clis) {
         expect(getCLICapabilities(cli).hasMCPSupport).toBe(true);
       }
@@ -296,7 +267,6 @@ describe('CLI Detection Integration Tests', () => {
       expect(getCLICapabilities('pi').pluginFormat).toBe('npm');
       expect(getCLICapabilities('opencode').pluginFormat).toBe('npm');
       expect(getCLICapabilities('claude-code').pluginFormat).toBe('marketplace');
-      expect(getCLICapabilities('codex').pluginFormat).toBe('json');
       expect(getCLICapabilities('generic').pluginFormat).toBeNull();
     });
   });

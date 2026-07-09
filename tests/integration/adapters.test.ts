@@ -61,7 +61,7 @@ function createAdapter(cli?: CLI): CLIAdapter {
 
 function detectCLIFromEnv(): CLI {
   const envCli = process.env.PRODUCT_WORKFLOW_CLI;
-  if (envCli && ['pi', 'opencode', 'claude-code', 'codex', 'generic'].includes(envCli)) {
+  if (envCli && ['pi', 'opencode', 'claude-code', 'generic'].includes(envCli)) {
     return envCli as CLI;
   }
   return 'generic';
@@ -107,11 +107,6 @@ describe('CLI Adapter Factory Integration Tests', () => {
     it('returns an adapter for "claude-code" CLI', () => {
       const adapter = createAdapter('claude-code');
       expect(adapter.name).toBe('claude-code');
-    });
-
-    it('returns an adapter for "codex" CLI', () => {
-      const adapter = createAdapter('codex');
-      expect(adapter.name).toBe('codex');
     });
 
     it('returns a generic adapter for unknown CLI', () => {
@@ -161,13 +156,6 @@ describe('CLI Adapter Factory Integration Tests', () => {
 
     it('claude-code adapter implements all required interface methods', () => {
       const adapter = createAdapter('claude-code');
-      for (const method of requiredMethods) {
-        expect(adapter).toHaveProperty(method);
-      }
-    });
-
-    it('codex adapter implements all required interface methods', () => {
-      const adapter = createAdapter('codex');
       for (const method of requiredMethods) {
         expect(adapter).toHaveProperty(method);
       }
@@ -224,15 +212,6 @@ describe('CLI Adapter Factory Integration Tests', () => {
       expect(adapter.capabilities.hasPreCompact).toBe(expected.hasPreCompact);
     });
 
-    it('codex adapter capabilities match expected codex capabilities', () => {
-      const adapter = createAdapter('codex');
-      const expected = getCLICapabilities('codex');
-
-      expect(adapter.capabilities.cli).toBe(expected.cli);
-      expect(adapter.capabilities.pluginFormat).toBe(expected.pluginFormat);
-      expect(adapter.capabilities.hasNotifications).toBe(expected.hasNotifications);
-    });
-
     it('generic adapter capabilities match expected generic capabilities', () => {
       const adapter = createAdapter('generic');
       const expected = getCLICapabilities('generic');
@@ -243,7 +222,7 @@ describe('CLI Adapter Factory Integration Tests', () => {
     });
 
     it('all adapters have matching cli name and capabilities.cli', () => {
-      const clis: CLI[] = ['pi', 'opencode', 'claude-code', 'codex', 'generic'];
+      const clis: CLI[] = ['pi', 'opencode', 'claude-code', 'generic'];
       
       for (const cli of clis) {
         const adapter = createAdapter(cli);
@@ -281,14 +260,6 @@ describe('CLI Adapter Factory Integration Tests', () => {
       expect(adapter.hasCapability('hasMCPSupport')).toBe(true);
       expect(adapter.hasCapability('hasPreCompact')).toBe(true);
       expect(adapter.hasCapability('hasAskUserQuestion')).toBe(false);
-    });
-
-    it('codex adapter correctly reports codex-specific capabilities', () => {
-      const adapter = createAdapter('codex');
-      
-      expect(adapter.hasCapability('hasMCPSupport')).toBe(true);
-      expect(adapter.hasCapability('hasPreCompact')).toBe(true);
-      expect(adapter.hasCapability('hasNotifications')).toBe(false);
     });
 
     it('generic adapter reports minimal capabilities', () => {
@@ -336,17 +307,6 @@ describe('CLI Adapter Factory Integration Tests', () => {
       expect(toolNames).toContain('bash');
     });
 
-    it('codex adapter returns expected tools', () => {
-      const adapter = createAdapter('codex');
-      const tools = adapter.getAvailableTools();
-      
-      expect(tools.length).toBeGreaterThan(0);
-      const toolNames = tools.map(t => t.name);
-      expect(toolNames).toContain('read');
-      expect(toolNames).toContain('write');
-      expect(toolNames).toContain('bash');
-    });
-
     it('generic adapter returns basic tools only', () => {
       const adapter = createAdapter('generic');
       const tools = adapter.getAvailableTools();
@@ -364,7 +324,7 @@ describe('CLI Adapter Factory Integration Tests', () => {
 
   describe('getCommandPrefix()', () => {
     it('all adapters return "/" as command prefix', () => {
-      const clis: CLI[] = ['pi', 'opencode', 'claude-code', 'codex', 'generic'];
+      const clis: CLI[] = ['pi', 'opencode', 'claude-code', 'generic'];
       
       for (const cli of clis) {
         const adapter = createAdapter(cli);
@@ -392,13 +352,6 @@ describe('CLI Adapter Factory Integration Tests', () => {
 
     it('claude-code adapter returns commands array', () => {
       const adapter = createAdapter('claude-code');
-      const commands = adapter.registerCommands();
-      
-      expect(Array.isArray(commands)).toBe(true);
-    });
-
-    it('codex adapter returns commands array', () => {
-      const adapter = createAdapter('codex');
       const commands = adapter.registerCommands();
       
       expect(Array.isArray(commands)).toBe(true);
@@ -519,11 +472,7 @@ describe('CLI Adapter Factory Integration Tests', () => {
       expect(adapter.name).toBe('claude-code');
     });
 
-    it('PRODUCT_WORKFLOW_CLI=codex creates codex adapter', () => {
-      process.env.PRODUCT_WORKFLOW_CLI = 'codex';
-      const adapter = createAdapter();
-      expect(adapter.name).toBe('codex');
-    });
+
 
     it('explicit CLI argument overrides PRODUCT_WORKFLOW_CLI', () => {
       process.env.PRODUCT_WORKFLOW_CLI = 'opencode';

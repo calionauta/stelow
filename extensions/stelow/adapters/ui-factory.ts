@@ -10,7 +10,6 @@ import { UIAdapter } from "./ui-adapter";
 import { createPiUIAdapter } from "./pi/ui";
 import { createOpenCodeUIAdapter } from "./opencode/ui";
 import { createClaudeCodeUIAdapter } from "./claude-code/ui";
-import { createCodexUIAdapter } from "./codex/ui";
 
 // ── Factory Function ──────────────────────────────────────────────────
 
@@ -27,8 +26,6 @@ export function createUIAdapter(cli: CLI = "generic"): UIAdapter {
       return createOpenCodeUIAdapter();
     case "claude-code":
       return createClaudeCodeUIAdapter();
-    case "codex":
-      return createCodexUIAdapter();
     default:
       // Return a generic no-op adapter
       return createGenericUIAdapter();

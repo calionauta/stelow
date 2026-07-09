@@ -82,11 +82,6 @@ export {
   createClaudeCodeUIAdapter,
 } from "./claude-code/ui";
 
-export {
-  CodexUIAdapter,
-  createCodexUIAdapter,
-} from "./codex/ui";
-
 // ── Pi Adapter ───────────────────────────────────────────────────────
 
 export {
@@ -119,13 +114,6 @@ export {
   getCommandSystem,
   installCommandFiles,
 } from "./commands";
-
-// ── Codex Adapter ───────────────────────────────────────────────────
-
-export {
-  CodexAdapter,
-  createCodexAdapter,
-} from "./codex";
 
 // ── Stages Guard ────────────────────────────────────────────────────
 

@@ -161,8 +161,6 @@ export function getCommandSystem(cli?: CLI): CommandRegistrationSystem {
       return getOpenCodeCommandSystem();
     case "claude-code":
       return getClaudeCodeCommandSystem();
-    case "codex":
-      return getCodexCommandSystem();
     default:
       return getGenericCommandSystem();
   }
@@ -286,49 +284,6 @@ name: ${cmd.name}
 description: ${cmd.description}
 ---
 
-// Usage: ${cmd.usage || cmd.description}
-${cmd.name} {args}
-`;
-}
-
-// ── Codex Command System ──────────────────────────────────────────────
-
-function getCodexCommandSystem(): CommandRegistrationSystem {
-  return {
-    cli: "codex" as CLI,
-    
-    supportsNativeCommands(): boolean {
-      return false; // Codex uses commands/ directory
-    },
-    
-    registerAll(): CommandDescriptor[] {
-      return WORKFLOW_COMMANDS;
-    },
-    
-    registerOne(_descriptor: CommandDescriptor): boolean {
-      return true;
-    },
-    
-    getCommandPrefix(): string {
-      return "/";
-    },
-    
-    generateCommandFiles(): Array<{ path: string; content: string }> {
-      return WORKFLOW_COMMANDS.map(cmd => ({
-        path: `commands/${cmd.name}.md`,
-        content: generateCodexCommandFile(cmd),
-      }));
-    },
-  };
-}
-
-function generateCodexCommandFile(cmd: CommandDescriptor): string {
-  return `---
-name: ${cmd.name}
-description: ${cmd.description}
----
-
-@agent
 // Usage: ${cmd.usage || cmd.description}
 ${cmd.name} {args}
 `;

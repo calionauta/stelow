@@ -21,7 +21,6 @@ import { parse as parseYAML } from "yaml";
 import { PiAdapter } from "../../extensions/stelow/adapters/pi/index";
 import { OpenCodeAdapter } from "../../extensions/stelow/adapters/opencode/index";
 import { ClaudeCodeAdapter } from "../../extensions/stelow/adapters/claude-code/index";
-import { CodexAdapter } from "../../extensions/stelow/adapters/codex/index";
 import { GenericAdapter } from "../../extensions/stelow/adapters/base";
 import { createStagesGuard, loadStages } from "../../extensions/stelow/adapters/stages-guard";
 import type { StagesConfig, StageState } from "../../extensions/stelow/adapters/stages-guard";
@@ -109,21 +108,6 @@ describe("toAgnosticName() per adapter", () => {
   it("ClaudeCodeAdapter identity for built-in tools", () => {
     expect(claude.toAgnosticName("read")).toBe("read");
     expect(claude.toAgnosticName("write")).toBe("write");
-  });
-
-  // CodexAdapter
-  const codex = new CodexAdapter();
-
-  it("CodexAdapter maps Grep → grep", () => {
-    expect(codex.toAgnosticName("Grep")).toBe("grep");
-  });
-
-  it("CodexAdapter maps Glob → ls", () => {
-    expect(codex.toAgnosticName("Glob")).toBe("ls");
-  });
-
-  it("CodexAdapter maps WebSearch → web_search", () => {
-    expect(codex.toAgnosticName("WebSearch")).toBe("web_search");
   });
 
   // GenericAdapter — identity for everything

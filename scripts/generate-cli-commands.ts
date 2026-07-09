@@ -103,24 +103,6 @@ description: ${c.piOnly ? "[Pi only] " : ""}${c.description}
 ${c.name} {args}
 `,
   },
-  {
-    name: "codex",
-    dir: join(PROJECT_ROOT, "cli-agents", "codex", "commands"),
-    format: "command",
-    fileHeader: (c) => `---
-name: ${c.name}
-description: ${c.piOnly ? "[Pi only] " : ""}${c.description}
----
-
-@agent
-`,
-    fileBody: (c) => c.piOnly
-      ? `> ⚠️ This command requires the Pi extension. Use the skill instead.
-/skill:stelow-product-orchestrator ${c.name}
-`
-      : `${c.name} {args}
-`,
-  },
 ];
 
 // ── Generate ────────────────────────────────────────────────────────

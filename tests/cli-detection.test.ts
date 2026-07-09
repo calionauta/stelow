@@ -58,11 +58,6 @@ describe('CLI Detection', () => {
       expect(detectCLI()).toBe('claude-code');
     });
 
-    it('respects PRODUCT_WORKFLOW_CLI env var when set to "codex"', () => {
-      process.env.PRODUCT_WORKFLOW_CLI = 'codex';
-      expect(detectCLI()).toBe('codex');
-    });
-
     it('respects PRODUCT_WORKFLOW_CLI env var when set to "generic"', () => {
       process.env.PRODUCT_WORKFLOW_CLI = 'generic';
       expect(detectCLI()).toBe('generic');
@@ -151,20 +146,6 @@ describe('CLI Detection', () => {
       expect(caps.hasMCPSupport).toBe(true);
     });
 
-    it('returns correct capabilities for "codex" CLI', () => {
-      const caps = getCLICapabilities('codex');
-      expect(caps.cli).toBe('codex');
-      expect(caps.hasPluginSystem).toBe(true);
-      expect(caps.pluginFormat).toBe('json');
-      expect(caps.hasSessionStart).toBe(true);
-      expect(caps.hasToolCall).toBe(true);
-      expect(caps.hasTurnEnd).toBe(true);
-      expect(caps.hasPreCompact).toBe(true);
-      expect(caps.hasSubagent).toBe(true);
-      expect(caps.hasNotifications).toBe(false); // Codex doesn't have notifications
-      expect(caps.hasMCPSupport).toBe(true);
-    });
-
     it('returns minimal capabilities for "generic" CLI', () => {
       const caps = getCLICapabilities('generic');
       expect(caps.cli).toBe('generic');
@@ -178,21 +159,21 @@ describe('CLI Detection', () => {
     });
 
     it('hasCommands is true for all CLIs', () => {
-      const clis: CLI[] = ['pi', 'opencode', 'claude-code', 'codex', 'generic'];
+      const clis: CLI[] = ['pi', 'opencode', 'claude-code', 'generic'];
       for (const cli of clis) {
         expect(getCLICapabilities(cli).hasCommands).toBe(true);
       }
     });
 
     it('commandPrefix is "/" for all CLIs', () => {
-      const clis: CLI[] = ['pi', 'opencode', 'claude-code', 'codex', 'generic'];
+      const clis: CLI[] = ['pi', 'opencode', 'claude-code', 'generic'];
       for (const cli of clis) {
         expect(getCLICapabilities(cli).commandPrefix).toBe('/');
       }
     });
 
     it('returns distinct capabilities for each CLI', () => {
-      const clis: CLI[] = ['pi', 'opencode', 'claude-code', 'codex', 'generic'];
+      const clis: CLI[] = ['pi', 'opencode', 'claude-code', 'generic'];
       const capsMap = clis.map(cli => JSON.stringify(getCLICapabilities(cli)));
       const uniqueCaps = new Set(capsMap);
       expect(uniqueCaps.size).toBe(clis.length); // All should be unique
@@ -225,7 +206,7 @@ describe('CLI Detection', () => {
   describe('Capability comparisons', () => {
     it('pi has the most capabilities', () => {
       const piCaps = getCLICapabilities('pi');
-      const otherClis: CLI[] = ['opencode', 'claude-code', 'codex', 'generic'];
+      const otherClis: CLI[] = ['opencode', 'claude-code', 'generic'];
       
       for (const cli of otherClis) {
         const otherCaps = getCLICapabilities(cli);
@@ -238,21 +219,21 @@ describe('CLI Detection', () => {
     });
 
     it('only pi has ask_user_question capability', () => {
-      const clis: CLI[] = ['opencode', 'claude-code', 'codex', 'generic'];
+      const clis: CLI[] = ['opencode', 'claude-code', 'generic'];
       for (const cli of clis) {
         expect(getCLICapabilities(cli).hasAskUserQuestion).toBe(false);
       }
     });
 
     it('only pi has intercom capability', () => {
-      const clis: CLI[] = ['opencode', 'claude-code', 'codex', 'generic'];
+      const clis: CLI[] = ['opencode', 'claude-code', 'generic'];
       for (const cli of clis) {
         expect(getCLICapabilities(cli).hasIntercom).toBe(false);
       }
     });
 
     it('all CLIs except generic have MCP support', () => {
-      const clis: CLI[] = ['pi', 'opencode', 'claude-code', 'codex'];
+      const clis: CLI[] = ['pi', 'opencode', 'claude-code'];
       for (const cli of clis) {
         expect(getCLICapabilities(cli).hasMCPSupport).toBe(true);
       }
@@ -262,7 +243,6 @@ describe('CLI Detection', () => {
       expect(getCLICapabilities('pi').pluginFormat).toBe('npm');
       expect(getCLICapabilities('opencode').pluginFormat).toBe('npm');
       expect(getCLICapabilities('claude-code').pluginFormat).toBe('marketplace');
-      expect(getCLICapabilities('codex').pluginFormat).toBe('json');
       expect(getCLICapabilities('generic').pluginFormat).toBeNull();
     });
   });
@@ -294,15 +274,6 @@ describe('CLI Detection', () => {
       const caps = getCLICapabilities(detected);
       expect(detected).toBe('claude-code');
       expect(caps.pluginFormat).toBe('marketplace');
-    });
-
-    it('when PRODUCT_WORKFLOW_CLI=codex, capabilities reflect codex', () => {
-      process.env.PRODUCT_WORKFLOW_CLI = 'codex';
-      const detected = detectCLI();
-      const caps = getCLICapabilities(detected);
-      expect(detected).toBe('codex');
-      expect(caps.pluginFormat).toBe('json');
-      expect(caps.hasNotifications).toBe(false);
     });
 
     it('when PRODUCT_WORKFLOW_CLI=generic, capabilities reflect generic', () => {

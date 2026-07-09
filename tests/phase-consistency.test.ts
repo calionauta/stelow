@@ -235,27 +235,6 @@ describe("Phase Consistency", () => {
     });
   });
 
-  describe("OpenCode plugin generated file is in sync", () => {
-    it("plugin should start at Setup and end at Audit (skip Triage/ItemSelect)", () => {
-      const content = readFileSync(PLUGIN_GENERATED_PATH, "utf-8");
-      expect(content).toContain('1: "Setup"');
-      expect(content).toContain('15: "Audit"');
-      expect(content).not.toMatch(/Triage/);
-      expect(content).not.toMatch(/ItemSelect/);
-    });
-
-    it("plugin MAX_PHASE matches last key (15 = Audit)", () => {
-      const content = readFileSync(PLUGIN_GENERATED_PATH, "utf-8");
-      expect(content).toMatch(/export const MAX_PHASE = 15;/);
-    });
-
-    it("plugin has the same number of entries as PHASE_NAMES minus 2 (skipped)", () => {
-      const content = readFileSync(PLUGIN_GENERATED_PATH, "utf-8");
-      const entries = content.match(/"([^"]+)"/g);
-      expect(entries?.length).toBe(phaseNames.length - 2);
-    });
-  });
-
   describe("STAGE comments in types.ts reference correct indices", () => {
     it("phase index comments should match array positions", () => {
       const content = readFileSync(TYPES_PATH, "utf-8");

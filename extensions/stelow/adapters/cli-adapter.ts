@@ -183,8 +183,6 @@ export function createAdapter(cli?: CLI): CLIAdapter {
       return createOpenCodeAdapter();
     case "claude-code":
       return createClaudeCodeAdapter();
-    case "codex":
-      return createCodexAdapter();
     default:
       return makeGenericAdapter();
   }
@@ -216,15 +214,6 @@ function createClaudeCodeAdapter(): CLIAdapter {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const { createClaudeCodeAdapter: makeClaudeCodeAdapter } = require("./claude-code/index.ts");
   return makeClaudeCodeAdapter();
-}
-
-/**
- * Create the Codex adapter.
- */
-function createCodexAdapter(): CLIAdapter {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { createCodexAdapter: makeCodexAdapter } = require("./codex/index.ts");
-  return makeCodexAdapter();
 }
 
 /**
