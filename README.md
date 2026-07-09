@@ -12,7 +12,7 @@
 [![Pi](https://img.shields.io/badge/Deep%20integration-Pi-8B5CF6)](https://pi.dev)
 [![Muxy](https://img.shields.io/badge/Webview%20panel-Muxy.app-10B981)](https://muxy.app)
 [![Herdr](https://img.shields.io/badge/Split%20pane%20TUI-Herdr-EA580C)](https://herdr.dev)
-[![CLI](https://img.shields.io/badge/Works%20on-Any%20CLI-3B82F6)](https://github.com/calionauta/stelow#cli-compatibility)
+[![CLI](https://img.shields.io/badge/Skills%20run%20on-Any%20CLI-3B82F6)](https://github.com/calionauta/stelow#cli-compatibility)
 
 I'm trying to make ai agents behave less like coding assistants and more like cross-functional product team.
 
@@ -341,7 +341,7 @@ All 25 skills are flat in `skills/` directory, ready for `~/.agents/skills/`. Th
 
 ## 🚀 Quick Start
 
-This package works across **multiple coding agents** - not just pi.dev. See the compatibility table in [Installation](#-installation) to pick your path.
+This package is **built Pi-first** — but the 25 skills work across any agentskills-compatible agent (Claude Code, Codex, Cursor, OpenCode…). See the compatibility table in [Installation](#-installation) to pick your path; Pi gets the deepest integration, other harnesses get the skills + CLI fallback.
 
 | Your situation | Recommended command | What you get |
 |----------------|--------------------|-------------|
@@ -436,7 +436,7 @@ stelow is designed to be **self-contained** — the 25 skills + installer cover 
 | [Muxy.app](https://muxy.app/) + stelow Muxy extension | Optional (macOS) | Webview panel showing workflow state with phase progress and quick actions | Install Muxy.app, then load extension from `integrations/muxy/stelow/` | No webview — read `.stelow/` files directly or use Herdr split-pane TUI |
 | [herdr](https://herdr.dev/) + stelow plugin | Optional | Split-pane TUI showing workflow state with click-to-drill | `herdr plugin install calionauta/stelow` | No TUI — read `.stelow/` files directly or use Muxy webview panel |
 
-**Design principle:** stelow is **harness-agnostic**. Zero external tools are required to run the full product workflow. Each optional integration enhances a specific phase but never blocks progress. The installer (`./install.sh`) auto-installs Pi npm packages when Pi is detected — other tools (cymbal, ctx7) remain user-managed.
+**Design principle:** stelow is **Pi-first, skills-agnostic**. The 25 skills run identically in any agent that reads `~/.agents/skills/` — the full Shape Up workflow (plans, critique, scopes) works everywhere. The deep integration layer (TUI overlay, `/sw-*` slash commands, lifecycle hooks, Plannotator gate, auto-sync scopes, subagent acceptance contracts, supervision) is native to Pi, which has the extension system to support it. Other harnesses get the skills + CLI fallback; Pi gets the full experience. No external tool is *required* to run the workflow — each optional integration enhances a phase but never blocks progress. The installer (`./install.sh`) auto-installs Pi npm packages when Pi is detected — other tools (cymbal, ctx7) remain user-managed.
 
 For every external tool above, the workflow teaches the agent the **specific fallback strategy** in `skills/stelow-product-orchestrator/references/cli-tools/<tool>.md`. When a tool is unavailable, the orchestrator instructs the agent to use harness-native capabilities (built-in `subagent()`, `git grep`, terminal-based review with approval receipts) rather than skipping the workflow step entirely. Degraded capability is the trade-off — see the Fallback column above for what you lose without each tool.
 
