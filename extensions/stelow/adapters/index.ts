@@ -72,16 +72,6 @@ export {
   setPiContext,
 } from "./pi/ui";
 
-export {
-  OpenCodeUIAdapter,
-  createOpenCodeUIAdapter,
-} from "./opencode/ui";
-
-export {
-  ClaudeCodeUIAdapter,
-  createClaudeCodeUIAdapter,
-} from "./claude-code/ui";
-
 // ── Pi Adapter ───────────────────────────────────────────────────────
 
 export {
@@ -90,20 +80,6 @@ export {
   getPiAdapter,
   setPiAPI,
 } from "./pi";
-
-// ── OpenCode Adapter ─────────────────────────────────────────────────
-
-export {
-  OpenCodeAdapter,
-  createOpenCodeAdapter,
-} from "./opencode";
-
-// ── Claude Code Adapter ──────────────────────────────────────────────
-
-export {
-  ClaudeCodeAdapter,
-  createClaudeCodeAdapter,
-} from "./claude-code";
 
 // ── Command Dispatcher ────────────────────────────────────────────────
 

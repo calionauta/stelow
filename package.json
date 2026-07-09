@@ -1,6 +1,6 @@
 {
   "name": "@calionauta/stelow",
-  "version": "0.44.1",
+  "version": "0.45.0",
   "description": "stelow — opinionated product workflow. stellar clarity. low friction.",
   "keywords": [
     "pi-skill",
@@ -80,7 +80,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",
     "version:sync": "node scripts/version-sync.mjs",
-    "version": "npm run version:sync && git add -f .claude-plugin/plugin.json .claude-plugin/marketplace.json .opencode-plugin/plugin.json integrations/herdr/stelow/herdr-plugin.toml"
+    "version": "npm run version:sync && git add -f integrations/herdr/stelow/herdr-plugin.toml"
   },
   "devDependencies": {
     "@marcfargas/pi-test-harness": "^0.5.0",

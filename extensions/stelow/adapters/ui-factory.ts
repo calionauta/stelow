@@ -1,6 +1,6 @@
 /**
  * UI Adapter Factory
- * 
+ *
  * Factory function to create the appropriate UI adapter based on CLI.
  */
 
@@ -8,8 +8,6 @@ import type { CLI } from "../types";
 import type { SelectOption, StatusInfo } from "./cli-adapter";
 import { UIAdapter } from "./ui-adapter";
 import { createPiUIAdapter } from "./pi/ui";
-import { createOpenCodeUIAdapter } from "./opencode/ui";
-import { createClaudeCodeUIAdapter } from "./claude-code/ui";
 
 // ── Factory Function ──────────────────────────────────────────────────
 
@@ -22,10 +20,6 @@ export function createUIAdapter(cli: CLI = "generic"): UIAdapter {
   switch (cli) {
     case "pi":
       return createPiUIAdapter();
-    case "opencode":
-      return createOpenCodeUIAdapter();
-    case "claude-code":
-      return createClaudeCodeUIAdapter();
     default:
       // Return a generic no-op adapter
       return createGenericUIAdapter();

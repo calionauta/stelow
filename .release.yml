@@ -14,9 +14,7 @@ suffix: alpha
 # Default: [] (auto-detect package.json, pyproject.toml, Cargo.toml)
 version_files:
   - package.json
-  - .claude-plugin/plugin.json
-  - .claude-plugin/marketplace.json
-  - .opencode-plugin/plugin.json
+  - integrations/herdr/stelow/herdr-plugin.toml
 
 # Command to run tests before release
 # Default: "" (no tests)

@@ -40,22 +40,13 @@ get_project_skills() {
 }
 
 # CLI Detection
-has_cli() {
-  local name="$1"
-  case "$name" in
-    pi)          [[ -d "$HOME/.pi" ]] || command -v pi &>/dev/null ;;
-    opencode)    [[ -d "$HOME/.config/opencode" ]] || command -v opencode &>/dev/null ;;
-    claude-code) [[ -d "$HOME/.claude" ]] || command -v claude &>/dev/null ;;
-  esac
+has_pi() {
+  [[ -d "$HOME/.pi" ]] || command -v pi &>/dev/null
 }
 
 detect_all_clis() {
   if [[ -n "${PRODUCT_WORKFLOW_CLI:-}" ]]; then echo "$PRODUCT_WORKFLOW_CLI"; return; fi
-  local clis=""
-  has_cli pi          && clis+="pi "
-  has_cli opencode    && clis+="opencode "
-  has_cli claude-code && clis+="claude-code "
-  echo "${clis:-generic}"
+  if has_pi; then echo "pi"; else echo "generic"; fi
 }
 
 # Print manual AGENTS.md setup instructions
@@ -64,9 +55,7 @@ print_agents_setup() {
   log_info "${BOLD}━━ Manual setup ━━${RESET}"
   log_info "Add this to your agent's AGENTS.md / CLAUDE.md:"
   echo ""
-  if has_cli pi;          then log_info "  - Pi:          ~/.pi/agent/AGENTS.md"; fi
-  if has_cli opencode;    then log_info "  - OpenCode:    ~/.config/opencode/AGENTS.md"; fi
-  if has_cli claude-code; then log_info "  - Claude Code: ~/.claude/CLAUDE.md or ./CLAUDE.md"; fi
+  if has_pi; then log_info "  - Pi:          ~/.pi/agent/AGENTS.md"; fi
   echo ""
   cat << 'EOF'
 \`\`\`
@@ -96,8 +85,6 @@ EOF
 install_for_cli() {
   case "$1" in
     pi) install_pi ;;
-    opencode) install_opencode ;;
-    claude-code) install_claude_code ;;
     *) install_generic ;;
   esac
 }
@@ -239,7 +226,7 @@ install_pi() {
   # Skills are served from ~/.agents/skills/ (kept fresh by extension sync).
   _configure_pi_skills_filter
 
-  # Install skills flat (for non-Pi CLIs: OpenCode, Claude Code)
+  # Install skills flat (for any agent that reads ~/\.agents/skills/)
   install_skills_flat
 
   # Install supporting packages
@@ -270,79 +257,6 @@ install_pi() {
   log_success "  v Pi done"
 }
 
-# OpenCode
-install_opencode() {
-  log_info "  -> Installing for OpenCode..."
-  if ! command -v opencode &>/dev/null; then log_warn "    opencode not found. Skipping."; return; fi
-
-  # Install skills (flat to ~/.agents/skills/)
-  install_skills_flat
-
-  # Copy command files to OpenCode commands directory
-  local cmd_src="$SCRIPT_DIR/cli-agents/opencode/commands"
-  local cmd_dst="$HOME/.config/opencode/commands"
-  if [[ -d "$cmd_src" ]]; then
-    mkdir -p "$cmd_dst"
-    cp "$cmd_src"/sw-*.md "$cmd_dst/" 2>/dev/null || true
-    log_success "    Installed $(ls "$cmd_dst"/sw-*.md 2>/dev/null | wc -l | tr -d ' ') command files"
-  fi
-
-  # Configure OpenCode to use ~/.agents/skills/
-  local cfg="$HOME/.config/opencode/opencode.json"
-  if [[ -f "$cfg" ]] && command -v jq &>/dev/null; then
-    if jq -e '.skills.paths // [] | index("~/.agents/skills") == -1' "$cfg" &>/dev/null; then
-      log_info "    Adding ~/.agents/skills to OpenCode config..."
-      local tmp=$(mktemp)
-      jq '.skills.paths = (.skills.paths // []) + ["~/.agents/skills"]' "$cfg" > "$tmp" && mv "$tmp" "$cfg"
-    fi
-  fi
-
-  log_success "  v OpenCode done"
-}
-
-# Claude Code
-install_claude_code() {
-  log_info "  -> Installing for Claude Code..."
-  if ! command -v claude &>/dev/null; then log_warn "    claude not found. Skipping."; return; fi
-
-  # Install skills (flat to ~/.agents/skills/)
-  install_skills_flat
-
-  # Copy command files to Claude Code commands directory
-  local cmd_src="$SCRIPT_DIR/cli-agents/claude/commands"
-  local cmd_dst="$HOME/.claude/commands"
-  if [[ -d "$cmd_src" ]]; then
-    mkdir -p "$cmd_dst"
-    cp "$cmd_src"/sw-*.md "$cmd_dst/" 2>/dev/null || true
-    log_success "    Installed $(ls "$cmd_dst"/sw-*.md 2>/dev/null | wc -l | tr -d ' ') command files"
-  fi
-
-  # Configure Claude Code to use ~/.agents/skills/
-  local cfg="$HOME/.claude/settings.json"
-  if [[ -f "$cfg" ]] && command -v jq &>/dev/null; then
-    if jq -e '.skills.paths // [] | index("~/.agents/skills") == -1' "$cfg" &>/dev/null; then
-      log_info "    Adding ~/.agents/skills to Claude Code config..."
-      local tmp=$(mktemp)
-      jq '.skills.paths = (.skills.paths // []) + ["~/.agents/skills"]' "$cfg" > "$tmp" && mv "$tmp" "$cfg"
-    fi
-  fi
-
-  log_info "    Adding plugin marketplace..."
-  if claude plugin marketplace add "$SCRIPT_DIR" 2>/dev/null; then
-    log_info "    Plugin marketplace added. Install:"
-    log_info "      claude plugin install stelow@marketplace-name"
-  elif claude plugin marketplace add "$GITHUB_REPO" 2>/dev/null; then
-    log_info "    Plugin marketplace added from GitHub. Install:"
-    log_info "      claude plugin install stelow@marketplace-name"
-  else
-    log_info "    Add marketplace manually:"
-    log_info "      claude plugin marketplace add $GITHUB_REPO"
-    log_info "      claude plugin install stelow@marketplace-name"
-  fi
-
-  log_success "  v Claude Code done"
-}
-
 # Generic (no CLI detected)
 install_generic() {
   log_info "  -> Installing skills for all agents..."
@@ -371,19 +285,6 @@ update_all() {
   local clis=$(detect_all_clis)
   for cli in $clis; do
     case "$cli" in
-      opencode|claude-code)
-        local cmd_dir
-        case "$cli" in
-          opencode) cmd_dir="$HOME/.config/opencode/commands" ;;
-          claude-code) cmd_dir="$HOME/.claude/commands" ;;
-        esac
-        local cmd_src="$SCRIPT_DIR/cli-agents/$cli/commands"
-        if [[ -d "$cmd_src" ]]; then
-          mkdir -p "$cmd_dir"
-          cp "$cmd_src"/sw-*.md "$cmd_dir/" 2>/dev/null || true
-          log_success "  - $cli: $(ls "$cmd_dir"/sw-*.md 2>/dev/null | wc -l | tr -d ' ') command files"
-        fi
-        ;;
       pi)
         if command -v pi &>/dev/null; then
           log_info "  Reinstalling Pi extension (git package)..."
@@ -437,15 +338,6 @@ uninstall_all() {
           fi
         fi
         log_success "  v Pi" ;;
-      opencode)
-        local cfg="$HOME/.config/opencode/opencode.json"
-        if [[ -f "$cfg" ]] && command -v jq &>/dev/null; then
-          jq 'delpaths([["skills","paths"]])' "$cfg" > "${cfg}.tmp" && mv "${cfg}.tmp" "$cfg" 2>/dev/null || true
-        fi
-        log_success "  v OpenCode" ;;
-      claude-code)
-        claude plugin uninstall "stelow" 2>/dev/null || true
-        log_success "  v Claude Code" ;;
       esac
   done
 
@@ -502,13 +394,6 @@ setup_full() {
     echo ""
   fi
 
-  # Step 3: Command files for other CLIs
-  for cli in $clis; do
-    case "$cli" in
-      opencode) install_opencode_commands ;;
-      claude-code) install_claude_code_commands ;;
-    esac
-  done
 
   # Step 4: cymbal (codebase navigation)
   log_info "[3/5] cymbal — codebase navigation for Tech Preview"
@@ -597,36 +482,8 @@ install_cymbal() {
 
 install_cymbal_hooks() {
   if command -v cymbal &>/dev/null; then
-    cymbal hook install opencode 2>/dev/null || true
-    cymbal hook install claude-code 2>/dev/null || true
     log_success "  cymbal agent hooks installed."
   fi
-}
-
-install_opencode_commands() {
-  local cmd_src="$SCRIPT_DIR/cli-agents/opencode/commands"
-  local cmd_dst="$HOME/.config/opencode/commands"
-  if [[ -d "$cmd_src" ]]; then
-    mkdir -p "$cmd_dst"
-    cp "$cmd_src"/sw-*.md "$cmd_dst/" 2>/dev/null || true
-    log_success "  OpenCode: $(ls "$cmd_dst"/sw-*.md 2>/dev/null | wc -l | tr -d ' ') command files"
-  fi
-}
-
-install_claude_code_commands() {
-  local cmd_src="$SCRIPT_DIR/cli-agents/claude/commands"
-  local cmd_dst="$HOME/.claude/commands"
-  if [[ -d "$cmd_src" ]]; then
-    mkdir -p "$cmd_dst"
-    cp "$cmd_src"/sw-*.md "$cmd_dst/" 2>/dev/null || true
-    log_success "  Claude Code: $(ls "$cmd_dst"/sw-*.md 2>/dev/null | wc -l | tr -d ' ') command files"
-  fi
-}
-
-install_codex_commands() {
-  # Codex support removed in v0.44.0. Function kept as a no-op so any
-  # legacy callers don't break; will be removed in v0.45.0.
-  :
 }
 
 # ── Main ───────────────────────────────────────────────────────────────
@@ -648,7 +505,7 @@ Commands:
 
 Environment:
   ASSUME_YES=1     Auto-confirm all prompts (non-interactive)
-  PRODUCT_WORKFLOW_CLI  Limit to one CLI (pi|opencode|claude-code)
+  PRODUCT_WORKFLOW_CLI  Limit to one CLI (pi)
 
 What gets installed (full):
 

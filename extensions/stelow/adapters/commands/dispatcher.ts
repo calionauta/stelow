@@ -153,14 +153,10 @@ export interface CommandRegistrationSystem {
  */
 export function getCommandSystem(cli?: CLI): CommandRegistrationSystem {
   const detected = cli || detectCLI();
-  
+
   switch (detected) {
     case "pi":
       return getPiCommandSystem();
-    case "opencode":
-      return getOpenCodeCommandSystem();
-    case "claude-code":
-      return getClaudeCodeCommandSystem();
     default:
       return getGenericCommandSystem();
   }
@@ -196,97 +192,6 @@ function getPiCommandSystem(): CommandRegistrationSystem {
       return [];
     },
   };
-}
-
-// ── OpenCode Command System ───────────────────────────────────────────
-
-function getOpenCodeCommandSystem(): CommandRegistrationSystem {
-  return {
-    cli: "opencode" as CLI,
-    
-    supportsNativeCommands(): boolean {
-      return false; // OpenCode uses skill files
-    },
-    
-    registerAll(): CommandDescriptor[] {
-      // OpenCode uses skills/ directory
-      return WORKFLOW_COMMANDS;
-    },
-    
-    registerOne(_descriptor: CommandDescriptor): boolean {
-      // Commands are file-based
-      return true;
-    },
-    
-    getCommandPrefix(): string {
-      return "/";
-    },
-    
-    generateCommandFiles(): Array<{ path: string; content: string }> {
-      return WORKFLOW_COMMANDS.map(cmd => ({
-        path: `skills/${cmd.name}.md`,
-        content: generateOpenCodeSkillFile(cmd),
-      }));
-    },
-  };
-}
-
-function generateOpenCodeSkillFile(cmd: CommandDescriptor): string {
-  return `---
-name: ${cmd.name}
-description: ${cmd.description}
----
-
-// Usage: ${cmd.usage || cmd.description}
-
-/skill:stelow-product-orchestrator
-
-// Command: ${cmd.name}
-// This skill delegates to the product-workflow skill
-${cmd.name} {args}
-`;
-}
-
-// ── Claude Code Command System ────────────────────────────────────────
-
-function getClaudeCodeCommandSystem(): CommandRegistrationSystem {
-  return {
-    cli: "claude-code" as CLI,
-    
-    supportsNativeCommands(): boolean {
-      return false; // Claude Code uses skills/
-    },
-    
-    registerAll(): CommandDescriptor[] {
-      return WORKFLOW_COMMANDS;
-    },
-    
-    registerOne(_descriptor: CommandDescriptor): boolean {
-      return true;
-    },
-    
-    getCommandPrefix(): string {
-      return "/";
-    },
-    
-    generateCommandFiles(): Array<{ path: string; content: string }> {
-      return WORKFLOW_COMMANDS.map(cmd => ({
-        path: `skills/${cmd.name}.md`,
-        content: generateClaudeCodeSkillFile(cmd),
-      }));
-    },
-  };
-}
-
-function generateClaudeCodeSkillFile(cmd: CommandDescriptor): string {
-  return `---
-name: ${cmd.name}
-description: ${cmd.description}
----
-
-// Usage: ${cmd.usage || cmd.description}
-${cmd.name} {args}
-`;
 }
 
 // ── Generic Command System (Fallback) ─────────────────────────────────

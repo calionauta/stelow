@@ -55,16 +55,6 @@ const CLI_DETECTION_SIGNALS: Record<CLI, { dirs: string[]; cmds: string[]; confi
     cmds: ["pi"],
     confidence: "high",
   },
-  "opencode": {
-    dirs: ["~/.config/opencode", "~/.opencode"],
-    cmds: ["opencode"],
-    confidence: "high",
-  },
-  "claude-code": {
-    dirs: ["~/.claude", ".claude-plugin"],
-    cmds: ["claude"],
-    confidence: "high",
-  },
   "generic": {
     dirs: [],
     cmds: [],
@@ -82,7 +72,7 @@ export function detectCLI(): CLI {
   const envCli = process.env.PRODUCT_WORKFLOW_CLI;
   if (envCli && envCli.trim()) {
     const cli = envCli.trim().toLowerCase() as CLI;
-    if (["pi", "opencode", "claude-code", "generic"].includes(cli)) {
+    if (["pi", "generic"].includes(cli)) {
       return cli;
     }
     console.warn(`[stelow] Unknown PRODUCT_WORKFLOW_CLI: ${cli}, defaulting to generic`);
@@ -91,34 +81,19 @@ export function detectCLI(): CLI {
 
   // Fallback: check platform-specific directories (highest confidence)
   const home = homedir();
-  
+
   if (existsSync(join(home, ".pi"))) {
     return "pi";
   }
-  if (existsSync(join(home, ".config", "opencode")) || existsSync(join(home, ".opencode"))) {
-    return "opencode";
-  }
-  if (existsSync(join(home, ".claude")) || existsSync(".claude-plugin")) {
-    return "claude-code";
-  }
+
   // Tertiary: check command availability (lower confidence)
   const { execSync } = require("child_process");
-  
+
   try {
     execSync("pi --version 2>/dev/null", { stdio: "ignore" });
     return "pi";
   } catch { /* not available */ }
-  
-  try {
-    execSync("opencode --version 2>/dev/null", { stdio: "ignore" });
-    return "opencode";
-  } catch { /* not available */ }
-  
-  try {
-    execSync("claude --version 2>/dev/null", { stdio: "ignore" });
-    return "claude-code";
-  } catch { /* not available */ }
-  
+
   // Default to generic (safe fallback)
   return "generic";
 }

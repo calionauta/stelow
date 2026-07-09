@@ -70,7 +70,7 @@ export const STAGE = {
 
 // ── CLI Types ─────────────────────────────────────────────────────
 
-export type CLI = "pi" | "opencode" | "claude-code" | "generic";
+export type CLI = "pi" | "generic";
 
 /**
  * Capabilities supported by each CLI harness.
@@ -154,42 +154,6 @@ export function getCLICapabilities(cli: CLI): CLICapabilities {
       hasNotifications: true,
       hasSelectList: true,
       hasStatusLine: true,
-      hasMCPSupport: true,
-    },
-    "opencode": {
-      hasPluginSystem: true,
-      pluginFormat: "npm",
-      hasSessionStart: true,
-      hasToolCall: true,
-      hasTurnEnd: true,
-      hasPreCompact: true,
-      hasSubagent: true,
-      hasAskUserQuestion: false,
-      hasGoals: false,
-      hasIntercom: false,
-      hasSupervise: false,
-      hasTUI: true,
-      hasNotifications: true,
-      hasSelectList: false,
-      hasStatusLine: false,
-      hasMCPSupport: true,
-    },
-    "claude-code": {
-      hasPluginSystem: true,
-      pluginFormat: "marketplace",
-      hasSessionStart: true,
-      hasToolCall: true,
-      hasTurnEnd: true,
-      hasPreCompact: true,
-      hasSubagent: true,
-      hasAskUserQuestion: false,
-      hasGoals: false,
-      hasIntercom: false,
-      hasSupervise: false,
-      hasTUI: true,
-      hasNotifications: true,
-      hasSelectList: false,
-      hasStatusLine: false,
       hasMCPSupport: true,
     },
     "generic": {},

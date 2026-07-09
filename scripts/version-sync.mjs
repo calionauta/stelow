@@ -4,7 +4,6 @@
  *
  * Keeps version numbers in sync between:
  * - Main package.json
- * - .claude-plugin/, .opencode-plugin/ manifests
  * - integrations/herdr/stelow/herdr-plugin.toml (TOML format)
  *
  * Run automatically via `npm version` lifecycle hook.
@@ -23,9 +22,9 @@ const ROOT = join(__dirname, "..");
 
 // JSON targets (plugin manifests, marketplace.json)
 const JSON_TARGETS = [
-  join(ROOT, ".claude-plugin/plugin.json"),
-  join(ROOT, ".claude-plugin/marketplace.json"),
-  join(ROOT, ".opencode-plugin/plugin.json"),
+  // Add harness plugin manifests here as adapters are merged. The
+  // shipped release (v0.45.0) ships no per-harness plugin manifests —
+  // only the Rust-side herdr integration in TOML.
 ];
 
 // TOML targets (herdr plugin uses Rust convention)
@@ -56,6 +55,9 @@ function writeVersion(filePath, version) {
   // marketplace.json files use metadata.version (Claude schema);
   // plugin.json files use a root-level version. Prefer metadata when
   // present, fall back to root.
+  // Current stelow release only syncs herdr. Plugin marketplace manifests
+  // for individual harnesses (where a user-supplied adapter PRs one) opt
+  // into this list on a case-by-case basis.
   if (pkg.metadata && typeof pkg.metadata === "object") {
     pkg.metadata.version = version;
   } else {

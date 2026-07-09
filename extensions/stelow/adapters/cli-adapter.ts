@@ -1,9 +1,11 @@
 /**
  * CLI Adapter Interface and Factory
- * 
- * This module defines the abstraction layer for multi-CLI support.
- * Each CLI (Pi, OpenCode, Claude Code) implements this interface
- * to provide consistent access to commands, events, tools, and UI.
+ *
+ * This module defines the abstraction layer for harness adapter support.
+ * The shipped extension targets Pi (full integration: TUI, gates, auto-sync).
+ * Other harnesses can pick up the skills via the agentskills.io standard
+ * (`~/.agents/skills/<name>/SKILL.md`). Anyone wanting a full adapter for a
+ * new harness implements `CLIAdapter` + `UIAdapter` and adds a case here.
  */
 
 import type { CLI, CLICapabilities } from "../types";
@@ -175,14 +177,10 @@ export interface CLIAdapter {
  */
 export function createAdapter(cli?: CLI): CLIAdapter {
   const detected = cli || detectCLI();
-  
+
   switch (detected) {
     case "pi":
       return createPiAdapter();
-    case "opencode":
-      return createOpenCodeAdapter();
-    case "claude-code":
-      return createClaudeCodeAdapter();
     default:
       return makeGenericAdapter();
   }
@@ -196,24 +194,6 @@ function createPiAdapter(): CLIAdapter {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const { createPiAdapter: makePiAdapter } = require("./pi/index.ts");
   return makePiAdapter();
-}
-
-/**
- * Create the OpenCode adapter.
- */
-function createOpenCodeAdapter(): CLIAdapter {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { createOpenCodeAdapter: makeOpenCodeAdapter } = require("./opencode/index.ts");
-  return makeOpenCodeAdapter();
-}
-
-/**
- * Create the Claude Code adapter.
- */
-function createClaudeCodeAdapter(): CLIAdapter {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { createClaudeCodeAdapter: makeClaudeCodeAdapter } = require("./claude-code/index.ts");
-  return makeClaudeCodeAdapter();
 }
 
 /**
