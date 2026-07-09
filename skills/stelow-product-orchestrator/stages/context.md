@@ -6,7 +6,7 @@
 **After Setup**, the flow enters Strategic Context to enrich planning with optional context.
 The LLM checks if the user should be offered strategic analysis and/or domain libraries.
 
-**Prerequisites:** Appetite (Lean / Core / Complete) and Review Mode (Auto / Product Spec Gate / Product Spec + Interface Gates / Product Spec + Interface + Scopes / Product Spec + Interface + Tech Review / Product Spec + Interface + Tech Review + Code Diff) must already be declared in `setup:15` and stored in `index.json` (read via `stages.yaml` conventions).
+**Prerequisites:** Appetite (Lean / Core / Complete) and Review Mode (Auto / Product Spec Gate / Product Spec + Interface Gates / Product Spec + Interface + Scopes / Product Spec + Interface + Tech Review / Product Spec + Interface + Tech Review + Code Diff) must already be declared in `setup:15` (Appetite) and `setup:16` (Review Mode), then stored in `index.json` (read via `stages.yaml` conventions).
 
 ### context:5 — Appetite & Review Mode Gate (auto-skip / reduced)
 

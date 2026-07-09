@@ -337,13 +337,16 @@ What would you like to do?`,
 Used by `setup:15` when the human declares the depth of scope to prepare.
 
 > **Trigger:** Before stage selection, after inbox/lessons/session knowledge injection.
+> **⚠️ This is a SEPARATE question from Pattern 8 (Review Mode).** Never combine them into one `ask_user_question` call.
 
 ```typescript
 ask_user_question({
   questions: [{
     question: `How deep should the plan be?
 This sets the appetite — how much scope the LLM should prepare.
-Appetite is declared first, then the mode of interaction is chosen.`,
+Appetite defines scope depth, NOT time or calendar duration.
+Review Mode will be asked separately in the next step.
+`,
     header: "Appetite",
     options: [
       {
@@ -378,13 +381,23 @@ Appetite is declared first, then the mode of interaction is chosen.`,
 
 > **Key rule:** Appetite is FIXED for the cycle. The LLM cannot extend it. If scope doesn't fit, the LLM splits — the human decides whether to accept the split or extend appetite in a NEW cycle.
 
+### Guardrails for LLMs generating appetite questions
+
+When presenting appetite options to the user:
+
+1. **NEVER reference time or calendar duration** (days, weeks, months, sprints, etc.) in the question text, option labels, or descriptions. Appetite defines **scope depth only**.
+2. **NEVER say "Lean = 1 week" or similar time-based framing.** The original Shape Up used appetite as a calendar window (6 weeks), but stelow explicitly departs from that model — appetite caps preparation depth (spec size, number of scopes, interface variants, test layers), not calendar duration. Wall-clock time is not predictable under LLM execution.
+3. The descriptions above use spec page count and scope count as reference. This is intentional — these are scope metrics, not time metrics.
+4. If the user asks "how long will this take?", respond: "Appetite controls preparation depth, not duration. Execution time depends on scope complexity, not the appetite label."
+
 ---
 
 ## Pattern 8: Review Mode
 
-Used by `setup:15` after appetite is declared. Defines which gates and approvals are active.
+Used by `setup:16` after appetite is declared. Defines which gates and approvals are active.
 
 > **Trigger:** After appetite selection, before stage selection.
+> **⚠️ This is a SEPARATE question from Pattern 7 (Appetite).** Always call it as its own `ask_user_question` call. Never combine it with the appetite question.
 
 ```typescript
 ask_user_question({

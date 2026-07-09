@@ -89,8 +89,9 @@ export function buildSkillActivationMessage(
         `\n  2. Lessons learned \u2014 reflect on past cycle patterns` +
         `\n  3. Session knowledge \u2014 passive context notes` +
         `\n  4. Auto-discovery \u2014 existing in-progress workflows` +
-        `\n  5. Appetite & Mode declaration (Patterns 7, 8 \u2014 fixed for the cycle)` +
-        `\n  6. Stage selection (Pattern 5, mode-dependent)`;
+        `\n  5. Appetite declaration (Pattern 7 \u2014 fixed for the cycle)` +
+        `\n  6. Review Mode declaration (Pattern 8 \u2014 fixed for the cycle)` +
+        `\n  7. Stage selection (Pattern 5, mode-dependent)`;
       pipelineSection =
         `\n` +
         `\nAfter setup, auto-advance through context \u2192 shape \u2192 critique \u2192 gate ` +
@@ -121,8 +122,9 @@ export function buildSkillActivationMessage(
         `\n  2. Lessons learned \u2014 reflect on past cycle patterns` +
         `\n  3. Session knowledge \u2014 passive context notes` +
         `\n  4. Auto-discovery \u2014 existing in-progress workflows` +
-        `\n  5. Appetite & Mode declaration (Patterns 7, 8 \u2014 fixed for the cycle)` +
-        `\n  6. Stage selection (Pattern 5, mode-dependent)`;
+        `\n  5. Appetite declaration (Pattern 7 \u2014 fixed for the cycle)` +
+        `\n  6. Review Mode declaration (Pattern 8 \u2014 fixed for the cycle)` +
+        `\n  7. Stage selection (Pattern 5, mode-dependent)`;
       pipelineSection =
         `\n` +
         `\nAfter setup, the pipeline depends on the classification. The stage selection ` +

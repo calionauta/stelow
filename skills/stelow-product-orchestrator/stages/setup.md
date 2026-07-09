@@ -276,11 +276,13 @@ If `GROUP_MODE: true`, prefix the session with:
 
 This propagates to the Shape Up stage: the spec's `## IN` / `## OUT` sections cover the entire group, and each item in the group becomes a dedicated section under `## Solution`. The gate approves the group spec as a whole — individual item veto is treated as a scope adjustment.
 
-### setup:15 — Appetite & Review Mode Declaration
+### setup:15 — Appetite Declaration
 
-**Before stage selection, the human declares appetite and review mode.**
+**Before stage selection, the human declares appetite.**
 
-Appetite defines the **depth of scope** (what the LLM prepares). Review Mode defines the **level of human review** (which gates and approvals are active). They are orthogonal choices.
+Appetite defines the **depth of scope** (what the LLM prepares). Review Mode will be asked separately in `setup:16`.
+
+> **⚠️ IMPORTANT:** Appetite and Review Mode are TWO SEPARATE decisions. Ask them as two separate `ask_user_question` calls. NEVER combine them into one question. Appetite is asked first (here), Review Mode is asked second (setup:16).
 
 #### Step 1: Ask Appetite
 
@@ -293,7 +295,8 @@ ask_user_question({
   questions: [{
     question: `How deep should the plan be?
 This sets the appetite — how much scope the LLM should prepare.
-Appetite is declared first, then the review mode is chosen.`,
+Appetite defines scope depth, NOT time or calendar duration.
+Review Mode will be asked separately in the next step.`,
     header: "Appetite",
     options: [
       { label: "Lean", description: "Quick validation — 1 minimal feature, ~1 page spec, 1-2 scopes. No edge cases." },
@@ -320,6 +323,14 @@ fi
 | Lean | Edge cases, secondary flows, alternative strategies, non-critical integrations. Keep only the happy path. |
 | Core | Low-value variants. Keep the main JTBD, obvious edge cases, and one alternative only if it changes the core flow. |
 | Complete | Cut nothing unless impossible. Keep full edge case mapping, multiple implementation strategies, and domain context. |
+
+### setup:16 — Review Mode Declaration
+
+**After appetite is declared, the human declares review mode.**
+
+Review Mode defines the **level of human review** (which gates and approvals are active). This is a SEPARATE decision from appetite.
+
+> **⚠️ IMPORTANT:** This is the SECOND question. Do NOT ask it together with appetite (setup:15). Always ask appetite first, then ask this question in its own `ask_user_question` call.
 
 #### Step 2: Ask Review Mode
 

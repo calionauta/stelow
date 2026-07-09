@@ -2,6 +2,14 @@
 
 All notable changes to `@calionauta/stelow` will be documented in this file.
 
+## [0.43.4] - 2026-07-09
+
+### Fixed
+
+- **Appetite and Review Mode split into two separate questions.** Previously, `setup:15` asked both appetite and review mode in a single `ask_user_question` call (or the LLM was prompted to combine them), conflating two orthogonal decisions. Now `setup:15` asks Appetite only (Pattern 7) and `setup:16` asks Review Mode only (Pattern 8), with explicit warnings against combining them. The `start-message.ts` activation message no longer says "Appetite & Mode declaration" — instead lists them as separate items.
+
+- **Added guardrails against time/calendar references in appetite options.** The original Shape Up concept equates appetite with calendar time (6 weeks), but stelow explicitly departs from that model — appetite caps preparation depth, not duration. The new "Guardrails for LLMs" section in Pattern 7 prohibits time-based framing (e.g., "Lean = 1 week") and explains that appetite is about scope depth only.
+
 ## [0.43.3] - 2026-07-08
 
 Docs-only: subagents.md corrected with real CLI commands based on official docs research + universal fallback for any CLI/agent.
