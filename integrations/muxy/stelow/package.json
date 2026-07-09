@@ -69,6 +69,7 @@
       "panels:write",
       "commands:exec",
       "panes:read",
+      "panes:write",
       "projects:read",
       "worktrees:read",
       "files:read",

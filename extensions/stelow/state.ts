@@ -8,7 +8,7 @@ import {
   ScopeRecordValidationError,
 } from "./schema-record";
 import { TASK_ICONS } from "./modules/task";
-import { WORKFLOW_DIR, TRACKING_FILE, GLOBAL_TRACKING_FILE, SCHEMA_URL, PHASE_NAMES, getCLICapabilities } from "./types";
+import { WORKFLOW_DIR, TRACKING_FILE, GLOBAL_TRACKING_FILE, SCHEMA_URL, PHASE_NAMES, getCLICapabilities, STAGE } from "./types";
 import { PHASE_TO_STAGE } from "./stages-guard";
 
 // ── Internal helpers (file-private) ────────────────────────────────────
@@ -65,11 +65,6 @@ const CLI_DETECTION_SIGNALS: Record<CLI, { dirs: string[]; cmds: string[]; confi
     cmds: ["claude"],
     confidence: "high",
   },
-  "codex": {
-    dirs: ["~/.codex", ".codex-plugin"],
-    cmds: ["codex"],
-    confidence: "high",
-  },
   "generic": {
     dirs: [],
     cmds: [],
@@ -87,7 +82,7 @@ export function detectCLI(): CLI {
   const envCli = process.env.PRODUCT_WORKFLOW_CLI;
   if (envCli && envCli.trim()) {
     const cli = envCli.trim().toLowerCase() as CLI;
-    if (["pi", "opencode", "claude-code", "codex", "generic"].includes(cli)) {
+    if (["pi", "opencode", "claude-code", "generic"].includes(cli)) {
       return cli;
     }
     console.warn(`[stelow] Unknown PRODUCT_WORKFLOW_CLI: ${cli}, defaulting to generic`);
@@ -106,10 +101,6 @@ export function detectCLI(): CLI {
   if (existsSync(join(home, ".claude")) || existsSync(".claude-plugin")) {
     return "claude-code";
   }
-  if (existsSync(join(home, ".codex")) || existsSync(".codex-plugin")) {
-    return "codex";
-  }
-
   // Tertiary: check command availability (lower confidence)
   const { execSync } = require("child_process");
   
@@ -128,11 +119,6 @@ export function detectCLI(): CLI {
     return "claude-code";
   } catch { /* not available */ }
   
-  try {
-    execSync("codex --version 2>/dev/null", { stdio: "ignore" });
-    return "codex";
-  } catch { /* not available */ }
-
   // Default to generic (safe fallback)
   return "generic";
 }
@@ -238,7 +224,12 @@ function migrateTrackingData(data: any): TrackingData {
 
 export function readTracking(cwd: string): TrackingData | null {
   const raw = readJson<TrackingData>(getTrackingPath(cwd));
-  return raw ? migrateTrackingData(raw) : null;
+  const data = raw ? migrateTrackingData(raw) : null;
+  // Auto-sync scopes on read — covers the case where the LLM wrote to
+  // stelow.json directly via fs.writeFileSync(), bypassing the writeTracking() hook.
+  // The next read after direct-write will populate scopes automatically.
+  if (data) syncScopesIfNeeded(cwd, data);
+  return data;
 }
 
 export function readGlobalTracking(): TrackingData | null {
@@ -248,6 +239,10 @@ export function readGlobalTracking(): TrackingData | null {
 
 export function writeTracking(cwd: string, data: TrackingData): void {
   data.updated = new Date().toISOString();
+
+  // ── Auto-sync scopes from spec-tech.md (convention over configuration) ──
+  syncScopesIfNeeded(cwd, data);
+
   // Runtime validation (on by default). Validate every scope's `record`
   // and `tasks` before persisting. Set STELOW_VALIDATE=0 to disable
   // (e.g. during migration or bulk import). The per-scope iteration/
@@ -736,6 +731,179 @@ export function updateWorkflowIndexJson(
   mkdirSync(dirname(idxPath), { recursive: true });
   writeJson(idxPath, idx);
   return true;
+}
+
+/**
+ * Shared auto-sync loop: for every in-progress workflow in Execution phase+
+ * that has no scopes yet, try to populate them from spec-tech.md.
+ *
+ * Called from both `readTracking()` (covers LLM direct-writes) and
+ * `writeTracking()` (covers the normal phase-transition path).
+ * Idempotent — only triggers once per workflow lifecycle (scopes empty).
+ * Silent on failure (no spec-tech.md, unreadable, malformed).
+ */
+function syncScopesIfNeeded(cwd: string, data: TrackingData): void {
+  for (const wf of data.workflows) {
+    if (wf.status !== "in-progress") continue;
+    if (wf.currentPhase < STAGE.EXECUTION()) continue;
+    if (!wf.dirHash || !wf.created) continue;
+
+    // Check latest spec-tech file version before deciding to sync.
+    // If scopes already exist AND spec-tech version matches, skip.
+    // If spec-tech was updated (v2+), re-sync.
+    const createdDate = new Date(wf.created);
+    const ds = isNaN(createdDate.getTime()) ? getDateStamp() : getDateStamp(createdDate);
+    const plansDir = join(cwd, WORKFLOW_DIR, ds, wf.dirHash, "plans");
+    if (!existsSync(plansDir)) continue;
+    let files: string[];
+    try {
+      files = readdirSync(plansDir)
+        .filter((f) => f.startsWith("spec-tech_") && f.endsWith(".md"))
+        .sort();
+    } catch { continue; }
+    if (files.length === 0) continue;
+    const latest = files[files.length - 1];
+
+    // Skip if scopes already exist AND are from the same spec-tech version
+    if (Array.isArray(wf.scopes) && wf.scopes.length > 0) {
+      if ((wf as any).specTechFile === latest) continue;
+      // spec-tech.md was updated — re-sync below
+    }
+
+    try {
+      const content = readFileSync(join(plansDir, latest), "utf-8");
+      const synced = parseSpecTechScopes(content);
+      if (synced.length > 0) {
+        wf.scopes = synced;
+        wf.specTechFile = latest; // track version
+      }
+    } catch (err) {
+      console.warn(`[stelow] auto-sync scopes failed for ${wf.name}:`, err);
+    }
+  }
+}
+
+/**
+ * Auto-discover scopes for a workflow by parsing its spec-tech.md file.
+ *
+ * Convention over configuration — follows the established directory layout:
+ *   .stelow/{dateStamp}/{dirHash}/plans/spec-tech_*.md
+ *
+ * Returns the parsed Scope[] or null if the spec-tech.md doesn't exist or
+ * cannot be read/parsed. Pure function; no side effects beyond filesystem
+ * reads (find + read spec-tech.md).
+ */
+export function syncScopesFromPlanningFiles(
+  cwd: string,
+  wf: Workflow
+): Scope[] | null {
+  if (!wf.dirHash || !wf.created) return null;
+
+  const createdDate = new Date(wf.created);
+  const ds = isNaN(createdDate.getTime()) ? getDateStamp() : getDateStamp(createdDate);
+  const plansDir = join(cwd, WORKFLOW_DIR, ds, wf.dirHash, "plans");
+
+  if (!existsSync(plansDir)) return null;
+
+  // Find spec-tech_*.md files; sort alphabetically (version order) so we
+  // always parse the latest revision.
+  let files: string[];
+  try {
+    files = readdirSync(plansDir)
+      .filter((f) => f.startsWith("spec-tech_") && f.endsWith(".md"))
+      .sort();
+  } catch {
+    return null;
+  }
+
+  if (files.length === 0) return null;
+
+  const latest = files[files.length - 1];
+  let content: string;
+  try {
+    content = readFileSync(join(plansDir, latest), "utf-8");
+  } catch {
+    return null;
+  }
+
+  return parseSpecTechScopes(content);
+}
+
+/**
+ * Parse [SCOPE-N] blocks from spec-tech.md content into Scope[].
+ *
+ * Convention (matches the scope-executor SKILL Step 1 format):
+ * ```
+ * [SCOPE-1]
+ * [TYPE] feature
+ * [MAX_ITERATIONS] 5
+ * Objective: Implement user login
+ * Dependencies: None
+ * DoD: User can log in with email/password
+ * [TARGET_FILES]
+ * - src/auth/**
+ * ```
+ *
+ * Pure function. No filesystem access.
+ *
+ * @mirror integrations/muxy/stelow/src/panel/data.js :: parseScopesFromSpecTech
+ * If you change this function, update the mirror in data.js and vice versa.
+ * The two runtimes (Node TS vs Electron sandbox JS) cannot share code.
+ */
+export function parseSpecTechScopes(content: string): Scope[] {
+  const scopes: Scope[] = [];
+  const blocks = content.split(/(?=\[SCOPE-\d+\])/);
+
+  for (const block of blocks) {
+    const scopeMatch = block.match(/^\[SCOPE-(\d+)\]/m);
+    if (!scopeMatch) continue;
+
+    const id = `scope-${scopeMatch[1]}`;
+    const typeMatch = block.match(/^\[TYPE\]\s*(\S+)/m);
+    const type = typeMatch ? typeMatch[1].trim() : "feature";
+    const nameMatch = block.match(/^Objective:\s*(.+)/m);
+    const name = nameMatch ? nameMatch[1].trim() : id;
+    const depsMatch = block.match(/^Dependencies:\s*(.+)/m);
+    const maxIterMatch = block.match(/^\[MAX_ITERATIONS\]\s*(\d+)/m);
+
+    // Parse [TARGET_FILES] block: lines starting with "- " until next [ or blank
+    const targetFiles: string[] = [];
+    const tfMatch = block.match(
+      /^\[TARGET_FILES\]\s*\n([\s\S]*?)(?=\n\[|\n$)/m
+    );
+    if (tfMatch) {
+      for (const line of tfMatch[1].trim().split("\n")) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith("- ")) targetFiles.push(trimmed.slice(2));
+      }
+    }
+
+    const scope: Scope = {
+      id,
+      name,
+      type,
+      status: "pending",
+      source: "spec-tech",
+    };
+
+    // Parse Dependencies string: extract SCOPE-N references
+    if (depsMatch) {
+      const deps = depsMatch[1].trim();
+      if (deps && deps.toLowerCase() !== "none") {
+        const depIds = [...deps.matchAll(/SCOPE-(\d+)/g)].map(
+          (m) => `scope-${m[1]}`
+        );
+        if (depIds.length > 0) scope.blockedBy = depIds;
+      }
+    }
+
+    if (targetFiles.length > 0) scope.targetFiles = targetFiles;
+    if (maxIterMatch) scope.maxIterations = parseInt(maxIterMatch[1], 10);
+
+    scopes.push(scope);
+  }
+
+  return scopes;
 }
 
 /**

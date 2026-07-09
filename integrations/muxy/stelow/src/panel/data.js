@@ -38,6 +38,10 @@ export async function loadTrackingData() {
     const res = await muxy.files.read('stelow.json');
     if (!res || !res.content) return null;
     const tracking = JSON.parse(res.content);
+    // Auto-sync scopes from spec-tech.md for workflows in Execution+ phase
+    // with empty scopes. Handles the edge case where the LLM wrote directly
+    // to stelow.json (bypassing the Pi extension's writeTracking() hook).
+    await syncScopesForTracking(tracking);
     const projectPath = await getActiveWorkspacePath().catch(() => null);
     return normalizeTrackingDataForProject(tracking, projectPath);
   } catch {
@@ -916,7 +920,7 @@ function normalizePath(path) {
 }
 
 /**
- * MIRROR of `findProjectWorkflowRoot` in extensions/stelow/workflow-root.ts.
+ * @mirror extensions/stelow/workflow-root.ts :: findProjectWorkflowRoot
  *
  * The extension (Node) and the muxy panel (browser/electron) cannot share
  * TypeScript imports — vite builds the panel separately and the panel uses
@@ -1193,4 +1197,172 @@ export async function renameWorkflowInFiles(oldName, newDisplayName, wf) {
   }
 
   return safeName;
+}
+
+// ── Auto-sync scopes from spec-tech.md ───────────────────────────────
+//
+// @mirror extensions/stelow/state.ts :: syncScopesFromPlanningFiles + parseSpecTechScopes
+// The panel runs in a sandbox without Node.js access, so it cannot import
+// the TS functions. If you change one of these functions, change the other
+// and add a test.
+//
+// Called from loadTrackingData() on every poll cycle. Scans stelow.json
+// for workflows in Execution+ phase with empty scopes, reads the latest
+// spec-tech.md, parses [SCOPE-N] blocks, and writes scopes back.
+
+const EXECUTION_PHASE = 13; // 0-indexed: PHASE_NAMES[13] === 'Execution'
+
+/**
+ * Auto-sync scopes from spec-tech.md into stelow.json for any workflow
+ * in Execution+ phase with empty scopes. Idempotent — only triggers once
+ * per workflow lifecycle.
+ */
+export async function syncScopesForTracking(tracking) {
+  try {
+    if (!tracking?.workflows) return;
+
+    let changed = false;
+
+    for (const wf of tracking.workflows) {
+    if (wf.status !== 'in-progress') continue;
+    if ((wf.currentPhase ?? 0) < EXECUTION_PHASE) continue;
+    if (!wf.dirHash || !wf.created) continue;
+
+    const createdDate = new Date(wf.created);
+    const ds = isNaN(createdDate.getTime())
+      ? new Date().toISOString().slice(0, 10)
+      : createdDate.toISOString().slice(0, 10);
+    const plansDir = `.stelow/${ds}/${wf.dirHash}/plans`;
+
+    let files;
+    try {
+      files = await muxy.files.list(plansDir);
+    } catch {
+      continue;
+    }
+
+    const specTechFiles = files
+      .filter(f => f.startsWith('spec-tech_') && f.endsWith('.md'))
+      .sort();
+    if (specTechFiles.length === 0) continue;
+
+    const latest = specTechFiles[specTechFiles.length - 1];
+
+    // Gap 1 fix: check if spec-tech.md version changed (v2+)
+    if (Array.isArray(wf.scopes) && wf.scopes.length > 0) {
+      if (wf.specTechFile === latest) continue; // already synced from this version
+      // spec-tech.md was updated — fall through to re-sync
+    }
+
+    let content;
+    try {
+      const res = await muxy.files.read(`${plansDir}/${latest}`);
+      if (!res?.content) continue;
+      content = res.content;
+    } catch {
+      continue;
+    }
+
+    const scopes = parseScopesFromSpecTech(content);
+    if (scopes.length > 0) {
+      wf.scopes = scopes;
+      wf.specTechFile = latest; // track which version we synced from
+      changed = true;
+    }
+  }
+
+    if (changed) {
+      tracking.updated = new Date().toISOString();
+      try {
+        await muxy.files.write('stelow.json', JSON.stringify(tracking, null, 2));
+        // Gap 2 fix: write-through to index.json for each workflow that had scopes synced.
+        // Follows the same pattern as persistWorkflowMeta().
+        for (const wf of tracking.workflows) {
+          if (!wf.dirHash || !wf.created) continue;
+          if (!wf.specTechFile) continue; // only workflows that were just synced
+          const ds = getDateStamp(new Date(wf.created));
+          const idxPath = `.stelow/${ds}/${wf.dirHash}/index.json`;
+          try {
+            const idxRes = await muxy.files.read(idxPath);
+            if (idxRes?.content) {
+              const idx = JSON.parse(idxRes.content);
+              idx.scopes = wf.scopes;
+              idx.scopes_count = Array.isArray(wf.scopes) ? wf.scopes.length : 0;
+              idx.updated_at = new Date().toISOString();
+              await muxy.files.write(idxPath, JSON.stringify(idx, null, 2));
+            }
+          } catch { /* skip unreadable index */ }
+        }
+      } catch (err) {
+        console.warn('[stelow] sync-scopes: failed to write back', err);
+      }
+    }
+  } catch (err) {
+    console.warn('[stelow] sync-scopes: unexpected error', err);
+  }
+}
+
+/**
+ * Parse [SCOPE-N] blocks from spec-tech.md content into scope objects.
+ *
+ * MIRROR of `parseSpecTechScopes` in extensions/stelow/state.ts.
+ *
+ * Convention:
+ * ```
+ * [SCOPE-1]
+ * [TYPE] feature
+ * [MAX_ITERATIONS] 5
+ * Objective: Implement user login
+ * Dependencies: None
+ * DoD: User can log in with email/password
+ * [TARGET_FILES]
+ * - src/auth/**
+ * ```
+ */
+export function parseScopesFromSpecTech(content) {
+  const scopes = [];
+  const blocks = content.split(/(?=\[SCOPE-\d+\])/);
+
+  for (const block of blocks) {
+    const scopeMatch = block.match(/^\[SCOPE-(\d+)\]/m);
+    if (!scopeMatch) continue;
+
+    const id = `scope-${scopeMatch[1]}`;
+    const typeMatch = block.match(/^\[TYPE\]\s*(\S+)/m);
+    const type = typeMatch ? typeMatch[1].trim() : 'feature';
+    const nameMatch = block.match(/^Objective:\s*(.+)/m);
+    const name = nameMatch ? nameMatch[1].trim() : id;
+    const depsMatch = block.match(/^Dependencies:\s*(.+)/m);
+    const maxIterMatch = block.match(/^\[MAX_ITERATIONS\]\s*(\d+)/m);
+
+    const targetFiles = [];
+    const tfMatch = block.match(
+      /^\[TARGET_FILES\]\s*\n([\s\S]*?)(?=\n\[|\n$)/m
+    );
+    if (tfMatch) {
+      for (const line of tfMatch[1].trim().split('\n')) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('- ')) targetFiles.push(trimmed.slice(2));
+      }
+    }
+
+    const scope = { id, name, type, status: 'pending', source: 'spec-tech' };
+
+    if (depsMatch) {
+      const deps = depsMatch[1].trim();
+      if (deps && deps.toLowerCase() !== 'none') {
+        const depIds = [...deps.matchAll(/SCOPE-(\d+)/g)].map(
+          m => `scope-${m[1]}`
+        );
+        if (depIds.length > 0) scope.blockedBy = depIds;
+      }
+    }
+
+    if (targetFiles.length > 0) scope.targetFiles = targetFiles;
+    if (maxIterMatch) scope.maxIterations = parseInt(maxIterMatch[1], 10);
+
+    scopes.push(scope);
+  }
+
+  return scopes;
 }

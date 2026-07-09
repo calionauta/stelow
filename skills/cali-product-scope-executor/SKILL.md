@@ -147,30 +147,23 @@ If the user says yes, proceed autonomously. If no, ask what they'd like to adjus
 
 ### Step 2e: Initialize scope tracking in `stelow.json`
 
-Before executing scopes, **write the initial scope list** to the workflow's tracking file. This enables the Muxy extension to display scope progress on the kanban card.
+Before executing scopes, the **extension auto-syncs** the scope list from `spec-tech.md`
+into `stelow.json` by convention — the LLM does NOT need to run a bash snippet for this.
 
-```bash
-# Read current tracking file
-TRACKING_FILE='stelow.json'
+**How it works:** When the extension's `writeTracking()` sees a workflow in Execution phase
+with empty `scopes[]`, it automatically:
+1. Finds the latest `spec-tech_*.md` in `.stelow/{date}/{hash}/plans/`
+2. Parses `[SCOPE-N]` blocks for `id`, `type`, `name`, `blockedBy`, `targetFiles`
+3. Populates `wf.scopes[]` with all scopes set to `status: 'pending'`
+4. Persists to `stelow.json`
 
-# Build scopes array from parsed plan
-node -e "
-const fs = require('fs');
-const tracking = JSON.parse(fs.readFileSync('$TRACKING_FILE', 'utf8'));
-const wf = tracking.workflows.find(w => w.status === 'in-progress');
-if (!wf) { console.error('No active workflow found'); process.exit(1); }
+This follows KISS + DRY + Convention over Configuration:
+- **KISS:** Zero LLM effort. No bash to remember or skip.
+- **DRY:** One centralized TypeScript function replaces ~20 lines of bash SKILL.md
+- **CoC:** spec-tech.md found by convention at `.stelow/{date}/{hash}/plans/spec-tech_*.md`
 
-// Initialize scopes from parsed plan (build this array from Step 1)
-wf.scopes = [
-  { id: 'scope-1', name: 'Auth Foundation', type: 'feature', status: 'pending', target_files: ['src/auth/**', 'src/middleware/auth.ts', 'tests/auth/**'] },
-  { id: 'scope-2', name: 'Token Refresh', type: 'feature', status: 'pending' },
-  // ... one entry per scope from spec-tech.md
-];
-wf.updated = new Date().toISOString();
-fs.writeFileSync('$TRACKING_FILE', JSON.stringify(tracking, null, 2));
-console.log('Scope tracking initialized: ' + wf.scopes.length + ' scopes');
-"
-```
+The auto-sync only fires **once** per workflow (when scopes are empty). After that,
+the LLM must still update scope statuses manually as it executes (see Steps 3c/3e).
 
 **Key:** All scopes start as `status: 'pending'`. Update each scope's status as execution progresses.
 

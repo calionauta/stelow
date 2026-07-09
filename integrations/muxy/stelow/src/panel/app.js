@@ -243,8 +243,8 @@ export class PipelinePanel {
           title: t.label,
           style: [
             'display:flex;align-items:center;gap:5px;padding:6px 10px;border:none;background:transparent',
-            'cursor:pointer;color:inherit;font-size:12px;border-radius:6px 6px 0 0',
-            active ? 'background:var(--muxy-secondary,#333);font-weight:600' : 'opacity:0.7',
+            'cursor:pointer;font-size:12px;border-radius:6px 6px 0 0',
+            active ? 'background:var(--muxy-accent,#3a8);color:var(--muxy-background,#fff);font-weight:600' : 'color:var(--muxy-foreground);opacity:0.7',
           ].join(';'),
         }, icon(t.icon, 11), h('span', {}, t.label));
       }),
@@ -305,36 +305,76 @@ export class PipelinePanel {
    * look". Future when Muxy exposes `projects.read.files`, we can
    * actually aggregate.
    */
+  async openProjectPicker() {
+    const projects = this.projectList ?? [];
+    if (projects.length === 0) return;
+
+    // Sort alphabetically by name, current project first
+    const sorted = [...projects].sort((a, b) => {
+      if (a.isActive) return -1;
+      if (b.isActive) return 1;
+      const nameA = (a.name ?? '').toLowerCase();
+      const nameB = (b.name ?? '').toLowerCase();
+      if (nameA < nameB) return -1;
+      if (nameA > nameB) return 1;
+      return 0;
+    });
+
+    const items = sorted.map(p => ({
+      id: p.id,
+      title: p.name ?? p.path?.split('/').pop() ?? '?',
+      subtitle: p.isActive ? 'current' : (p.path ?? ''),
+    }));
+
+    try {
+      const choice = await muxy.modal.open({
+        placeholder: 'Search projects...',
+        emptyLabel: 'No projects found',
+        noMatchLabel: 'No matching projects',
+        items,
+      });
+
+      if (!choice) return;
+      const selected = sorted.find(p => p.id === choice.id);
+      if (!selected || selected.isActive) return;
+
+      await muxy.worktrees.switchTo(selected.id);
+      // worktree.switched event in start() handles refresh
+    } catch (err) {
+      console.error('[stelow] project switch failed:', err);
+    }
+  }
+
   renderProjectPicker() {
     const projects = this.projectList ?? [];
     if (projects.length === 0) return null;
+
+    const activeProject = projects.find(p => p.isActive);
+    const activeLabel = activeProject
+      ? (activeProject.name ?? activeProject.path?.split('/').pop() ?? 'current')
+      : 'none';
+
     return h('div', {
       class: 'scope-project-picker',
-      style: 'padding:8px 12px;border-bottom:1px solid var(--muxy-border,#2222);display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:11px',
+      style: 'padding:8px 12px;border-bottom:1px solid var(--muxy-border,#2222);display:flex;gap:6px;align-items:center;font-size:11px',
     },
-      h('span', { style: 'opacity:0.6;margin-right:4px' }, 'Project:'),
-      ...projects.map(p => {
-        const isActive = p.isActive;
-        return h('button', {
-          class: cls('project-chip', isActive && 'project-chip-active'),
-          title: p.path,
-          onclick: async () => {
-            if (isActive) return;
-            try {
-              await muxy.worktrees.switchTo(p.id);
-              // The worktree.switched event handler in start() will
-              // call delayedRefresh() which re-renders.
-            } catch (err) {
-              console.error('[stelow] worktree switch failed:', err);
-            }
-          },
-          style: [
-            'padding:3px 8px;border:1px solid var(--muxy-border,#444);border-radius:10px;background:transparent;color:inherit;cursor:pointer',
-            isActive ? 'background:var(--muxy-accent,#3a8);color:var(--muxy-background,#fff);font-weight:600' : '',
-          ].join(';'),
-        }, p.name ?? p.path?.split('/').pop() ?? '?');
-      }),
-      h('span', { style: 'opacity:0.4;margin-left:8px' }, '(click to switch — Muxy files are sandboxed per worktree)'),
+      h('span', { style: 'opacity:0.6;margin-right:4px;white-space:nowrap' }, 'Project:'),
+      h('button', {
+        title: `Click to switch project. ${projects.length} available.`,
+        class: 'project-picker-btn',
+        onclick: () => this.openProjectPicker(),
+        style: [
+          'flex:1;display:flex;align-items:center;gap:6px;padding:4px 8px',
+          'border:1px solid var(--muxy-border,#444);border-radius:6px',
+          'background:var(--muxy-surface);cursor:pointer;color:var(--muxy-foreground);font-size:11px',
+          'transition:border-color 0.1s',
+        ].join(';'),
+        onmouseenter: (e) => { e.target.style.borderColor = 'var(--muxy-accent,#3a8)'; },
+        onmouseleave: (e) => { e.target.style.borderColor = 'var(--muxy-border,#444)'; },
+      },
+        h('span', { style: 'flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap' }, activeLabel),
+        h('span', { style: 'opacity:0.5;font-size:9px' }, `${projects.length} projects ▼`),
+      ),
     );
   }
 
@@ -353,8 +393,8 @@ export class PipelinePanel {
           class: cls('scope-chip', active && 'scope-chip-active'),
           onclick: () => { this.scopeStatusFilter = opt.id; this.render(); },
           style: [
-            'padding:3px 8px;border:1px solid var(--muxy-border,#444);border-radius:10px;background:transparent;color:inherit;cursor:pointer',
-            active ? 'background:var(--muxy-secondary,#333);font-weight:600' : '',
+            'padding:3px 8px;border:1px solid var(--muxy-border,#444);border-radius:10px;background:transparent;cursor:pointer',
+            active ? 'background:var(--muxy-accent,#3a8);color:var(--muxy-background,#fff);font-weight:600' : 'color:var(--muxy-foreground);',
           ].join(';'),
         }, opt.label);
       }),
