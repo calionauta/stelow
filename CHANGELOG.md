@@ -2,6 +2,25 @@
 
 All notable changes to `@calionauta/stelow` will be documented in this file.
 
+## [0.44.1] - 2026-07-09
+
+Patch release: complete the codex-removal cleanup that v0.44.0 started. **No breaking changes from v0.44.0** — purely housekeeping.
+
+### Fixed
+
+- **`install.sh` codex paths** — removed codex from `has_cli()`, `detect_all_clis()`, `install_for_cli()`, update loop, uninstall loop, and Step 3 routes. The standalone `install_codex()` function (50 lines) is removed entirely; `install_codex_commands()` is kept as a no-op for backward-compat and will drop in v0.45.0. Without this fix, `./install.sh` would have hit `codex plugin marketplace add` and `cp cli-agents/codex/commands/...` against non-existent paths.
+- **`commands.ts` dead code** — `getCommandFilesForCLI()` had a `case "codex"` branch and `generateCommandFile()` helper that were never reachable after v0.44.0 dropped codex from `CLI` types.
+
+### Changed
+
+- **15 `cli-tools/*.md` source files** — removed codex from CLI tables, command sections, and per-CLI dispatch tables (LLM-facing guidance). The orchestrator's `subagents.md` had 16 codex references across CLI dispatch tables, fallback reference, and decision flowcharts — all collapsed into the opencode/claude-code/generic pattern.
+- **20+ per-skill mirrors** — propagated automatically via `scripts/sync-cli-tools.sh` (single source of truth).
+- **Architecture + skill docs** — `architecture.md`, orchestrator `SKILL.md` + `references/capabilities.md` + `stages/verification.md`, and `cali-product-scope-executor/SKILL.md` all updated.
+
+### Tests
+
+- **1042 passing** (was 1043) — removed the `'has a row for codex'` assertion in `tests/unit/subagent-context-contract.test.ts` since the table no longer has a codex row.
+
 ## [0.44.0] - 2026-07-09
 
 Codex removed (formalized the long-marked "Removed" status), OpenCode plugin dropped (commands-only support), and scopes now auto-sync from spec-tech.md. **Breaking release** — see migration notes below.
