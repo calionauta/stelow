@@ -407,10 +407,11 @@ fallback path.
 
 ### Reference implementation
 
-Tags `v0.43.4` and earlier contained the OpenCode/Claude Code adapters
-(snapshot at `docs/archive/2026-07-09-deprecated-multi-cli-integration/v0.43.4-multi-cli-surface.tar.gz`).
-Read `extensions/stelow/adapters/opencode/index.ts` (310 lines, fully
-populated) before writing yours — it covers every BaseAdapter method.
+Tags `v0.43.4` and earlier contained reference adapter implementations for other agents.
+The most complete reference (310 lines, fully populated, covering every BaseAdapter method)
+is preserved at `docs/archive/2026-07-09-deprecated-multi-cli-integration/v0.43.4-multi-cli-surface.tar.gz` — extract `cli-agents/opencode/plugin/` or `extensions/stelow/adapters/opencode/index.ts` from it before writing yours.
+
+For an in-tree starting point, look at the shipped PiAdapter at `extensions/stelow/adapters/pi/` — it covers every BaseAdapter method with concrete implementations specific to the Pi runtime.
 
 ### Why the contract is stable
 

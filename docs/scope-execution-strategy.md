@@ -38,7 +38,7 @@ IF parallel dispatch AND target_files undeclared
 ```
 
 - **Mechanism:** atomic `ln` (EEXIST-safe) + sha1 of file path → JSON metadata with TTL. See `file-locking.md` for full protocol.
-- **CLI-agnostic:** works on pi / opencode / codex / claude-code without runtime hooks, per-CLI flags, or `git worktree` isolation.
+- **CLI-agnostic:** works in any agent (including agents that read `~/.agents/skills/` but have no extension integration) without runtime hooks, per-CLI flags, or `git worktree` isolation.
 - **When violated:** any of: agent doesn't follow the read-before-write protocol, lock TTL expires mid-edit, two scopes declare the same file. Layer 3 catches.
 
 ## Layer 3 — Audit (always active)

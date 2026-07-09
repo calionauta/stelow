@@ -150,7 +150,7 @@ Add other known packages as they are encountered. Do not pad the list with low-q
 
 ## Phase 5: Submit to existing community lists
 
-These are the lists that are general or pi-relevant, filtered to exclude opencode-only, codex-only, and claude-only catalogues. Submit in the order given, lowest friction first.
+These are the general lists plus any catalogue that mentions skills, plugins, or extensions (since stelow is published as skills + Pi extension). Submit in the order given, lowest friction first.
 
 ### 5.1 Tier 1 — high reach, direct fit
 

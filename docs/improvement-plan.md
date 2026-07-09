@@ -110,7 +110,7 @@ Users often don't know these tools exist or what they'd gain. The workflow falls
 - Install: `brew install 1broseidon/tap/cymbal` (macOS), `go install` (Linux), or binary download
 - Size: ~30MB, no runtime dependencies
 - Self-indexes on first use (no manual `cymbal index .`)
-- Agent hooks available: `cymbal hook install opencode|claude-code` (injects reminder into session start)
+- Agent hooks available: cymbal's `hook install` targets agents that the user has installed; agents that read `~/.agents/skills/` but have no explicit hook integration still benefit from cymbal on the user's side
 - `pi-cymbal` extension available for deeper Pi integration
 
 **npx skills:**
@@ -179,12 +179,13 @@ install_ctx7() {
 }
 ```
 
-#### Step 3: Install cymbal agent hooks
+#### Step 3: Install cymbal agent hooks (if applicable)
 
 ```bash
+# v0.45.0: this is now an opt-in step. Each user's harness integration is theirs;
+# see cymbal docs for the per-hook install command for their specific agent.
 if command -v cymbal &>/dev/null; then
-  cymbal hook install opencode 2>/dev/null || true
-  cymbal hook install claude-code 2>/dev/null || true
+  cymbal hook install <agent-name> 2>/dev/null || true
 fi
 ```
 
@@ -305,15 +306,11 @@ If your harness supports per-stage model selection (e.g., via `model` parameter 
 
 Look for `stelow.config.yaml` in the project root. If it exists, use its model mappings. If not, use built-in defaults. Never override the harness's configured model.
 
-### Harness Compatibility
+### Per-agent hint handling
 
-| Harness | Can use hints? | Mechanism |
-|---------|---------------|-----------|
-| Pi | ✅ Yes | `ask_user_question` with `model` param |
-| OpenCode | ⚠️ Partially | Via plugin or `opencode.json` config |
-| Claude Code | ⚠️ Partially | Via plugin or `CLAUDE.md` config |
-| LiteLLM | ✅ Yes | Via `model_list` + `router_settings` |
-| OpenRouter | ✅ Yes | Via `models` array with fallbacks |
+Notes left here are from pre-v0.45.0 multi-CLI framing. From v0.45.0 onward, stelow is Pi-first: hint resolution goes through the Pi extension's `ask_user_question` + per-stage model override. Other agents pick up hints via the standard agentskills mechanism (the skill reads `model_hint` from `stages.yaml` and asks the user's harness via its native config file).
+
+For backward reference, the prior matrix listed per-agent mechanisms; that work has been folded into the agentskills standard and the per-harness `~/.agents/skills/<name>/` install path.
 | Generic | ❌ No | Hints are informational only |
 
 ### Expected Impact
@@ -523,7 +520,7 @@ Universal pattern across all harnesses (2026):
 | Setting | Where it lives | How to read |
 |---------|---------------|-------------|
 | Provider API key | Environment variable | `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GOOGLE_API_KEY` |
-| Default model | Harness config file | Pi: `settings.json`, OpenCode: `opencode.json`, Claude: `settings.json` |
+| Default model | Harness config file | Per-agent (consult the agent's docs) |
 | Available models | Harness config + env | Check env vars for configured providers |
 
 ### Implementation

@@ -5,7 +5,6 @@ research/
 progress.md
 context.md
 research.md
-context-opencode-api.md
 
 # Session comparison/proposal drafts (auto-saved brainstorming, not docs)
 .sem/
@@ -31,7 +30,7 @@ stryker-reports/
 !.stelow/state/
 .stelow-global.json
 
-# OpenCode session plans
+# Per-user runtime artifacts (agent-specific)
 .opencode/plans/
 
 # Coverage
@@ -88,10 +87,6 @@ edge-case-review.md
 # Local skills (pi installs here)
 .agents/
 
-# No per-harness plugin configs shipped in v0.45.0+. Re-enable per
-# harness if an adapter PR brings back marketplace manifests.
-# .claude-plugin/
-.opencode-plugin/
 # Old runtime artifacts (pre-rename)
 .cali-product-workflow/
 
