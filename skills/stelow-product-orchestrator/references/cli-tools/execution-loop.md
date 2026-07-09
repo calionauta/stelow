@@ -77,7 +77,7 @@ File: `.stelow/execution/{scopeId}/checkpoint.json`
 ## Protocol (Layer 1 — Generic)
 
 Use when the extension does not support automatic verify.
-Works in any agent (Pi, OpenCode, Claude Code, Codex, generic).
+Works in any agent (Pi, OpenCode, Claude Code, generic).
 
 ### 1. Start scope
 

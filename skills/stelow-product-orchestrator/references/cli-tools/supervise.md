@@ -55,7 +55,6 @@ Return JSON only:
 | pi | `pi --print "$prompt"` | `--output-format json` or prompt-instructed |
 | Claude Code | `claude -p "$prompt"` | `--output-format json` |
 | OpenCode | `opencode -p "$prompt"` | Prompt-instructed (ask for JSON) |
-| Codex | `codex -p "$prompt"` | Prompt-instructed (ask for JSON) |
 
 ### Decision matrix
 
@@ -156,7 +155,6 @@ Each CLI adapter calls its own non-interactive command:
 // PiAdapter: execSync(\`pi --print \${JSON.stringify(task)}\`)
 // ClaudeCodeAdapter: execSync(\`claude -p \${JSON.stringify(task)}\`)
 // OpenCodeAdapter: execSync(\`opencode -p \${JSON.stringify(task)}\`)
-// CodexAdapter: execSync(\`codex -p \${JSON.stringify(task)}\`)
 ```
 
 The verification prompt is constructed by the calling code (skill/stage)

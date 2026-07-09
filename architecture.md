@@ -2,7 +2,7 @@
 
 ## Overview
 
-Product planning workflow system for AI coding agents (Pi, Claude Code, OpenCode, Codex).
+Product planning workflow system for AI coding agents (Pi, OpenCode, Claude Code).
 
 ## System Layers
 

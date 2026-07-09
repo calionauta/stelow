@@ -32,7 +32,7 @@ pi install git:github.com/cursor/plugins
 # Then use via skill reference
 ```
 
-**Other CLIs (OpenCode, Claude Code, Codex):**
+**Other CLIs (OpenCode, Claude Code):**
 
 ```bash
 npx skills add cursor/plugins -a <cli> -g

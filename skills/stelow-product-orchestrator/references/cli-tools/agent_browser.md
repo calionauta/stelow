@@ -9,7 +9,6 @@ Automated web browser for live testing, accessibility checks, and visual inspect
 | pi | `agent_browser({...})` or CLI args | ✅ Native extension | Full support |
 | opencode | — | ❌ | No native browser tool |
 | claude-code | — | ❌ | No native browser tool |
-| codex | — | ❌ | No native browser tool |
 
 ## When to Use
 

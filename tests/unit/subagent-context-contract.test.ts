@@ -144,11 +144,6 @@ describe('Deterministic CLI dispatch table covers all CLIs', () => {
     expect(content).toMatch(/claude-code/i);
   });
 
-  it('has a row for codex', () => {
-    expect(content).toMatch(/codex/i);
-    expect(content).toMatch(/\/agent/);
-  });
-
   it('has a row for generic fallback', () => {
     expect(content).toMatch(/generic/i);
     expect(content).toMatch(/file-based handoff|Execute directly/i);

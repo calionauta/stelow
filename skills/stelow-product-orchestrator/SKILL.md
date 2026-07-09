@@ -380,7 +380,7 @@ The extension handles all three tracking mechanisms (TUI, resume, tool restricti
 
 The single file works on ALL harnesses:
 - **Pi TUI** reads `stelow.json` for status display
-- **Claude Code / OpenCode / Codex** adapters read `stelow.json`
+- **Claude Code / OpenCode** adapters read `stelow.json`
   via `adapters/stages-guard.ts` (auto-detects tracking file format)
 - **Resume** reads the active workflow's `currentPhase` from this file
 - **LLM auto-advance** updates this file via bash (node -e) and proceeds without /sw-next
@@ -396,4 +396,4 @@ Before calling any tool, check:
 ## Cross-CLI Notes
 
 - **Pi:** stages-guard.ts enforces tool restrictions via PreToolUse hooks
-- **Claude/Codex/OpenCode:** Read RULES.md + stages.yaml and self-enforce
+- **Claude/OpenCode:** Read RULES.md + stages.yaml and self-enforce

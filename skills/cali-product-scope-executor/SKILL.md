@@ -357,7 +357,6 @@ The delegation mechanism varies by harness. The contract data stays the same; on
 | **pi** (pi-subagents) | `subagent({ agent, task, acceptance })` | `acceptance.maxFinalizationTurns` — runtime reopens child session for self-correction |
 | **opencode** | `subagent({ agent, task })` | Parent controls loop — re-delegate with feedback on failure |
 | **claude-code** | `subagent({ agent, task })` | Parent controls loop — re-delegate with feedback on failure |
-| **codex** | `subagent({ agent, task })` | Parent controls loop — re-delegate with feedback on failure |
 | **generic** | Execute directly, save to files | Manual iteration in parent context |
 
 **Example: pi-subagents (acceptance-native)**

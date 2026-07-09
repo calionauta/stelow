@@ -13,7 +13,6 @@ Set `PRODUCT_WORKFLOW_CLI` to specify the harness:
 | `pi` | Pi coding agent |
 | `opencode` | OpenCode |
 | `claude-code` | Claude Code |
-| `codex` | Codex CLI |
 | `generic` | Generic fallback (default if detection fails) |
 
 **Important:** Default is `generic`, NOT a specific CLI.
@@ -30,7 +29,6 @@ When `PRODUCT_WORKFLOW_CLI` is not set:
    - `~/.pi/` → `pi`
    - `~/.opencode/` → `opencode`
    - `~/.claude/` → `claude-code`
-   - `~/.codex/` → `codex`
 
 2. **Check skill naming patterns:**
    - All our skills start with `cali-*` prefix
@@ -68,7 +66,6 @@ Each tool file follows this structure:
 | pi | `specific command` | ✅ |
 | opencode | `specific command` | ✅ |
 | claude-code | `specific command` | ✅ |
-| codex | `specific command` | ✅ |
 
 ## Command Details
 
@@ -83,11 +80,6 @@ Each tool file follows this structure:
 ```
 
 ### claude-code
-```typescript
-// command format
-```
-
-### codex
 ```typescript
 // command format
 ```

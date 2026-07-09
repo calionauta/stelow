@@ -11,10 +11,11 @@ stelow is designed to work across different AI coding agents. The workflow logic
 | Harness | Status | Notes |
 |---------|--------|-------|
 | **pi** | ✅ Primary | Full support with TUI, commands, hooks |
-| **opencode** | ⚠️ Partial | Skills work, UI/commands TBD |
-| **claude-code** | ⚠️ Partial | Skills work, UI/commands TBD |
-| **codex** | ⚠️ Partial | Skills work, UI/commands TBD |
+| **opencode** | ⚠️ Reduced | Skill delegation, no extension-level guarantees |
+| **claude-code** | ⚠️ Reduced | Skill delegation, no extension-level guarantees |
 | **generic** | ✅ Fallback | Works with any harness via basic tools |
+
+> **Codex support removed in v0.44.0.** Use the `stelow-product-orchestrator` skill directly via chat.
 
 ---
 
@@ -60,7 +61,6 @@ Each tool file documents:
    - `~/.pi/` → `pi`
    - `~/.opencode/` → `opencode`
    - `~/.claude/` → `claude-code`
-   - `~/.codex/` → `codex`
 3. **Default:** `generic` (uses built-in tool names)
 
 ### Setting the CLI
@@ -104,7 +104,7 @@ Full support including:
 - Commands (`/sw-start`, etc.)
 - Plannotator integration
 
-#### opencode, claude-code, codex
+#### opencode, claude-code
 
 Skills work, but:
 - UI/commands may need adaptation

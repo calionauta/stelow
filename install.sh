@@ -46,7 +46,6 @@ has_cli() {
     pi)          [[ -d "$HOME/.pi" ]] || command -v pi &>/dev/null ;;
     opencode)    [[ -d "$HOME/.config/opencode" ]] || command -v opencode &>/dev/null ;;
     claude-code) [[ -d "$HOME/.claude" ]] || command -v claude &>/dev/null ;;
-    codex)       [[ -d "$HOME/.codex" ]] || command -v codex &>/dev/null ;;
   esac
 }
 
@@ -56,7 +55,6 @@ detect_all_clis() {
   has_cli pi          && clis+="pi "
   has_cli opencode    && clis+="opencode "
   has_cli claude-code && clis+="claude-code "
-  has_cli codex       && clis+="codex "
   echo "${clis:-generic}"
 }
 
@@ -69,7 +67,6 @@ print_agents_setup() {
   if has_cli pi;          then log_info "  - Pi:          ~/.pi/agent/AGENTS.md"; fi
   if has_cli opencode;    then log_info "  - OpenCode:    ~/.config/opencode/AGENTS.md"; fi
   if has_cli claude-code; then log_info "  - Claude Code: ~/.claude/CLAUDE.md or ./CLAUDE.md"; fi
-  if has_cli codex;       then log_info "  - Codex:       ~/.codex/AGENTS.md"; fi
   echo ""
   cat << 'EOF'
 \`\`\`
@@ -101,7 +98,6 @@ install_for_cli() {
     pi) install_pi ;;
     opencode) install_opencode ;;
     claude-code) install_claude_code ;;
-    codex) install_codex ;;
     *) install_generic ;;
   esac
 }
@@ -243,7 +239,7 @@ install_pi() {
   # Skills are served from ~/.agents/skills/ (kept fresh by extension sync).
   _configure_pi_skills_filter
 
-  # Install skills flat (for non-Pi CLIs: OpenCode, Claude Code, Codex)
+  # Install skills flat (for non-Pi CLIs: OpenCode, Claude Code)
   install_skills_flat
 
   # Install supporting packages
@@ -347,49 +343,6 @@ install_claude_code() {
   log_success "  v Claude Code done"
 }
 
-# Codex
-install_codex() {
-  log_info "  -> Installing for Codex..."
-  if ! command -v codex &>/dev/null; then log_warn "    codex not found. Skipping."; return; fi
-
-  # Install skills (flat to ~/.agents/skills/)
-  install_skills_flat
-
-  # Copy command files to Codex commands directory
-  local cmd_src="$SCRIPT_DIR/cli-agents/codex/commands"
-  local cmd_dst="$HOME/.codex/commands"
-  if [[ -d "$cmd_src" ]]; then
-    mkdir -p "$cmd_dst"
-    cp "$cmd_src"/sw-*.md "$cmd_dst/" 2>/dev/null || true
-    log_success "    Installed $(ls "$cmd_dst"/sw-*.md 2>/dev/null | wc -l | tr -d ' ') command files"
-  fi
-
-  # Configure Codex to use ~/.agents/skills/
-  local cfg="$HOME/.codex/settings.json"
-  if [[ -f "$cfg" ]] && command -v jq &>/dev/null; then
-    if jq -e '.skills.paths // [] | index("~/.agents/skills") == -1' "$cfg" &>/dev/null; then
-      log_info "    Adding ~/.agents/skills to Codex config..."
-      local tmp=$(mktemp)
-      jq '.skills.paths = (.skills.paths // []) + ["~/.agents/skills"]' "$cfg" > "$tmp" && mv "$tmp" "$cfg"
-    fi
-  fi
-
-  log_info "    Adding plugin marketplace..."
-  if codex plugin marketplace add "$SCRIPT_DIR" 2>/dev/null; then
-    log_info "    Plugin marketplace added. Install:"
-    log_info "      codex plugin add stelow@marketplace-name"
-  elif codex plugin marketplace add "$GITHUB_REPO" 2>/dev/null; then
-    log_info "    Plugin marketplace added from GitHub. Install:"
-    log_info "      codex plugin add stelow@marketplace-name"
-  else
-    log_info "    Add marketplace manually (plugins feature required):"
-    log_info "      codex plugin marketplace add $GITHUB_REPO"
-    log_info "      codex plugin add stelow@marketplace-name"
-  fi
-
-  log_success "  v Codex done"
-}
-
 # Generic (no CLI detected)
 install_generic() {
   log_info "  -> Installing skills for all agents..."
@@ -418,12 +371,11 @@ update_all() {
   local clis=$(detect_all_clis)
   for cli in $clis; do
     case "$cli" in
-      opencode|claude-code|codex)
+      opencode|claude-code)
         local cmd_dir
         case "$cli" in
           opencode) cmd_dir="$HOME/.config/opencode/commands" ;;
           claude-code) cmd_dir="$HOME/.claude/commands" ;;
-          codex) cmd_dir="$HOME/.codex/commands" ;;
         esac
         local cmd_src="$SCRIPT_DIR/cli-agents/$cli/commands"
         if [[ -d "$cmd_src" ]]; then
@@ -494,10 +446,7 @@ uninstall_all() {
       claude-code)
         claude plugin uninstall "stelow" 2>/dev/null || true
         log_success "  v Claude Code" ;;
-      codex)
-        codex plugin remove "stelow" 2>/dev/null || true
-        log_success "  v Codex" ;;
-    esac
+      esac
   done
 
   echo ""
@@ -558,7 +507,6 @@ setup_full() {
     case "$cli" in
       opencode) install_opencode_commands ;;
       claude-code) install_claude_code_commands ;;
-      codex) install_codex_commands ;;
     esac
   done
 
@@ -676,13 +624,9 @@ install_claude_code_commands() {
 }
 
 install_codex_commands() {
-  local cmd_src="$SCRIPT_DIR/cli-agents/codex/commands"
-  local cmd_dst="$HOME/.codex/commands"
-  if [[ -d "$cmd_src" ]]; then
-    mkdir -p "$cmd_dst"
-    cp "$cmd_src"/sw-*.md "$cmd_dst/" 2>/dev/null || true
-    log_success "  Codex: $(ls "$cmd_dst"/sw-*.md 2>/dev/null | wc -l | tr -d ' ') command files"
-  fi
+  # Codex support removed in v0.44.0. Function kept as a no-op so any
+  # legacy callers don't break; will be removed in v0.45.0.
+  :
 }
 
 # ── Main ───────────────────────────────────────────────────────────────
@@ -704,7 +648,7 @@ Commands:
 
 Environment:
   ASSUME_YES=1     Auto-confirm all prompts (non-interactive)
-  PRODUCT_WORKFLOW_CLI  Limit to one CLI (pi|opencode|claude-code|codex)
+  PRODUCT_WORKFLOW_CLI  Limit to one CLI (pi|opencode|claude-code)
 
 What gets installed (full):
 

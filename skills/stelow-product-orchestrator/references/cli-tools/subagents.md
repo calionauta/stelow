@@ -24,7 +24,6 @@
 | pi | `subagent({ agent, task, context, reads, acceptance })` | pi-subagents (`npm:pi-subagents`) | ✅ | Adds `context: "fresh" \| "fork"` param (default **`fresh`**), `reads`, `acceptance`, parent-child contracts. Use this when stelow needs deterministic fresh-context semantics. |
 | opencode | `agent({ prompt })` built-in tool | Built-in | ⚠️ (archived) | Always runs in its own session — no `fork`/`fresh` distinction. Successor: **Crush**. |
 | claude-code | `/background` or `--bg` flag | Built-in | ✅ | Always runs in its own context window — no `fork`/`fresh` distinction. |
-| codex | Natural language delegation + `/agent` management | Built-in (TOML config) | ✅ | Always runs in its own thread — no `fork`/`fresh` distinction. |
 | generic | Execute directly with file-based handoff | — | ✅ | — |
 
 ## Command Details
@@ -93,31 +92,6 @@ Stelow ALWAYS passes explicit `context: "fresh"` to defend against packaged agen
 - Background sessions (`--bg` or `/background`) run independently
 - `/batch` auto-parallelizes with git worktree isolation
 - List: `claude agents` | Attach: `claude attach <id>` | Stop: `claude stop <id>`
-
-### codex
-
-**Subagent mechanism:** Codex does NOT have a literal `/agent <task>` command. Subagents are spawned through:
-
-| Method | Usage |
-|--------|-------|
-| **Natural language** | Tell Codex "Spawn one agent per point" — it orchestrates internally |
-| **`/agent` slash command** | Switch between or inspect active agent threads within a session |
-| **TOML config files** | Define custom agents in `~/.codex/agents/` or `.codex/agents/` — each file has `name`, `description`, `developer_instructions` |
-| **`spawn_agents_on_csv` tool** | Batch parallel agents from CSV rows |
-
-**TOML agent config example:**
-```toml
-name = "code-reviewer"
-description = "Reviews code for correctness and edge cases"
-[developer_instructions]
-prompt = """You are a code reviewer. Check for correctness, edge cases, regressions."""
-```
-
-**Context:** Always isolated per thread. Child does NOT inherit parent history.
-
-**Agent type routing:** No built-in `scout`/`worker`/`reviewer` types. Define via TOML config or embed role in prompt.
-
-**Parallel:** `max_threads` in `config.toml` (`[agents]` section). `spawn_agents_on_csv` for batch CSV operations.
 
 ### generic (Fallback)
 
@@ -218,7 +192,7 @@ subagent({
 
 **Do NOT rely on LLM translation of intent.** Read `detected_cli` from `.stelow/{date}/{dir}/index.json` (populated by `setup.md`) and emit the **direct invocation syntax** for that CLI. Each CLI below shows the literal call shape the orchestrator must use. The skill author writes the template; the orchestrator selects the row.
 
-**Universal rule across all CLIs:** every stelow subagent invocation passes `context: "fresh"` (pi-subagents) OR relies on the CLI's always-isolated semantics (built-in pi, opencode, claude-code, codex). The result is the same: child sees only what was explicitly handed to it.
+**Universal rule across all CLIs:** every stelow subagent invocation passes `context: "fresh"` (pi-subagents) OR relies on the CLI's always-isolated semantics (built-in pi, opencode, claude-code). The result is the same: child sees only what was explicitly handed to it.
 
 | `detected_cli` | **Required** invocation | Why this exact shape |
 |---|---|---|
@@ -226,7 +200,6 @@ subagent({
 | `pi` (pi-subagents) | `subagent({ agent, task, reads, context: "fresh", acceptance? })` | `context: "fresh"` is **mandatory** to override packaged `worker`/`planner`/`oracle` defaults (`defaultContext: "fork"`). Without it, worker silently runs fork and inherits parent's context rot. |
 | `opencode` | **Archived** — use Headless CLI or Universal Fallback. Former syntax: `agent({ prompt })` built-in tool. | Project moved to **Crush**. Embed role + files in `prompt` string. No separate agent type param. |
 | `claude-code` | **Natural language delegation** (auto) or `--bg` / `--agents` JSON / `/batch` | No literal subagent function. Child runs in isolated session. Define custom agents via `--agents` JSON or TOML. |
-| `codex` | **Natural language delegation** (auto) or TOML config agents (`~/.codex/agents/*.toml`) | No literal `/agent` command. Child runs in isolated thread. Define agent via `name`, `description`, `developer_instructions` in TOML. |
 | `generic` | Execute directly in current session; save output to file; next stage reads file. | No subagent support. File-based handoff IS fresh-context by construction. |
 
 ### PARALLEL dispatch (per-CLI, verified 2026)
@@ -239,7 +212,6 @@ subagent({
 | `pi` (pi-subagents, nicobailon) | `subagent({ tasks: [...], concurrency: N, context: "fresh" })` | Native fan-out via `tasks[]` array + `concurrency`. Each child gets fresh context. |
 | `opencode` | **Archived** — no reliable parallel subagent. Use headless `&` + `wait`. | Project moved to Crush. No native parallel mechanism documented. |
 | `claude-code` | `/background` multiple times, or `/batch` for auto-parallelization with git worktree isolation | `/batch` auto-decomposes tasks. Background sessions via `--bg` run independently. List: `claude agents`. |
-| `codex` | `spawn_agents_on_csv` tool for batch CSV operations. TOML agent config for custom agents. | `max_threads` in `config.toml`. `/agent` slash command to manage threads. Natural language orchestration. |
 | `generic` | `cmd_a & cmd_b & wait` (POSIX) | Shell-based fan-out; each process is independent. |
 
 **Parallel scope prevention (CLI-agnostic):**
@@ -506,9 +478,9 @@ The orchestrator reads `detected_cli` from `.stelow/{date}/{dir}/index.json`. Wh
 
 ---
 
-## Per-CLI Fallback Reference: opencode, claude-code, codex
+## Per-CLI Fallback Reference: opencode, claude-code
 
-When the workflow is running on opencode, claude-code, or codex (not pi), the subagent invocation differs per CLI. These CLIs have **built-in agent orchestration** but do NOT support `context`, `reads`, `acceptance`, or `tasks[]`+`concurrency` — those are pi-subagents-only features.
+When the workflow is running on opencode or claude-code (not pi), the subagent invocation differs per CLI. These CLIs have **built-in agent orchestration** but do NOT support `context`, `reads`, `acceptance`, or `tasks[]`+`concurrency` — those are pi-subagents-only features.
 
 **Universal rule for non-pi CLIs:** All three CLIs spawn child agents in **always-isolated sessions** — no `fork`/`fresh` distinction exists. The child always starts clean. This is equivalent to `context: "fresh"` on pi, but with fewer input-passing options and NO explicit agent type routing.
 
@@ -581,33 +553,6 @@ claude --agents '{
   --bg "Run proposal-designer on .stelow/{date}/{dir}/plans/spec-product_{v}.md"
 ```
 
-### codex
-
-| Aspect | Detail |
-|--------|--------|
-| Subagent invocation | **No literal `/agent <task>` command.** Use natural language or TOML agent config files. |
-| Context | **Always isolated** — independent thread, no parent history |
-| `reads` equivalent | Embed file references in prompt string |
-| Agent types | ❌ Not supported natively — define via TOML config (`.codex/agents/*.toml`) |
-| `context` param | ❌ Not applicable — always fresh thread |
-| `acceptance` | ❌ Not supported — use parent-controlled re-delegation loop |
-| Parallel | `spawn_agents_on_csv` tool for batch CSV. TOML agents via config. `max_threads` limit. |
-
-**Worked example — TOML agent config:**
-
-```toml
-# .codex/agents/proposal-designer.toml
-name = "proposal-designer"
-description = "Generates interface proposals from spec-product.md"
-[developer_instructions]
-prompt = """You are a product designer. Generate interface proposals.
-
-Read the spec-product.md file for context (appetite, review_mode, domains_detected).
-Explore creative approaches. Save output to the specified path."""
-```
-
-Then invoke via natural language: "Use proposal-designer to generate interface proposals from spec-product.md"
-
 ### Generic fallback (no native subagent)
 
 If the CLI has no subagent mechanism at all, use [Universal Fallback](#universal-fallback-any-cliagent) — which covers every possible CLI/agent through a single, deterministic pattern.
@@ -630,7 +575,6 @@ this IS a subagent, just called via CLI instead of a tool.
 | pi | `pi --print \"$task\"` |
 | Claude Code | `claude -p \"$task\"` |
 | OpenCode | `opencode -p \"$task\"` |
-| Codex | `codex -p \"$task\"` |
 
 ### Usage pattern
 
@@ -750,8 +694,6 @@ When deciding which subagent mechanism to use, follow this priority — the deci
    │
    ├── claude-code detected?        →  ⚠️ USE: --bg / --agents JSON / /batch (no agent types, embed role in prompt)
    │
-   ├── codex detected?              →  ⚠️ USE: TOML agent config or natural language delegation
-   │
    ├── generic / unknown detected?  →  ❌ USE: Universal Fallback (write + read, file-based handoff)
    │
    └── subagent call failed?        →  ❌ FALLBACK: retry once → Headless CLI → Universal Fallback
@@ -760,6 +702,6 @@ When deciding which subagent mechanism to use, follow this priority — the deci
 **Summary by quality (best → universal):**
 1. ✅ **pi-subagents** — agent types, context control, `reads`, `acceptance`, native parallelism
 2. ⚠️ **pi built-in (no pi-subagents)** — same agent types, always-isolated, no `reads`/`acceptance`
-3. ⚠️ **claude-code / codex / opencode** — agent types NOT supported natively. Embed role + context in prompt
+3. ⚠️ **claude-code / opencode** — agent types NOT supported natively. Embed role + context in prompt
 4. ⚠️ **Headless CLI** (any harness) — no agent types, parallel via `&` + `wait`
 5. ❌ **Universal Fallback** — no delegation, synchronous, same session. Works on EVERY CLI

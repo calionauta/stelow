@@ -2,7 +2,7 @@
  * CLI Adapter Interface and Factory
  * 
  * This module defines the abstraction layer for multi-CLI support.
- * Each CLI (Pi, OpenCode, Claude Code, Codex) implements this interface
+ * Each CLI (Pi, OpenCode, Claude Code) implements this interface
  * to provide consistent access to commands, events, tools, and UI.
  */
 

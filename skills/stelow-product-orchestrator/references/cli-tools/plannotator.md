@@ -48,7 +48,6 @@ plannotator annotate <file>.md --gate --json
 | pi | `plannotator annotate <file>.md --gate` | @plannotator/pi-extension | ✅ |
 | opencode | `@plannotator/opencode` plugin | @plannotator/opencode | ✅ |
 | claude-code | `plannotator annotate <file>.md --gate` (hook) | @backnotprop/plannotator | ✅ |
-| codex | `!plannotator review` | Built-in hook | ✅ |
 | generic | Manual review with receipt file | — | ✅ |
 
 ### opencode
@@ -65,14 +64,6 @@ plannotator annotate <file>.md --gate --json
 ```bash
 # Via hook (auto-configured with plugin)
 /plannotator annotate <file>.md --gate
-```
-
-### codex
-
-```bash
-$plannotator review
-# or
-!plannotator review
 ```
 
 ### generic (Fallback)

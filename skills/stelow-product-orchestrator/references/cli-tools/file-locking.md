@@ -1,6 +1,6 @@
 # File Reservation Locks (parallel scope prevention)
 
-> **Status:** convention. Works on any CLI (pi / opencode / codex / claude-code) without runtime hooks, worktrees, or merge steps.
+> **Status:** convention. Works on any CLI (pi / opencode / claude-code) without runtime hooks, worktrees, or merge steps.
 
 ## Why this exists
 
@@ -136,7 +136,7 @@ claude-code has `--worktree`). Reasons stelow does NOT recommend it:
 - **Composite commits** — agent's atomic commits per scope get scattered across
   branches, then re-interleaved on merge. Audit trail degrades.
 - **Per-CLI flag** — `worktree: true` in pi-subagents, `--worktree` in
-  claude-code, different in codex. Stays harness-specific.
+  claude-code. Stays harness-specific.
 - **Working dir explosion** — `.worktrees/sw-name-date/` directory tree, one per
   parallel dispatch.
 

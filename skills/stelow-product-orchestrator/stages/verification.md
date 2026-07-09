@@ -114,7 +114,7 @@ esac
 
 If running, launch a fresh-context reviewer.
 See `references/cli-tools/subagents.md` for the `subagent()` pattern — this works
-on pi.dev, OpenCode, Claude Code, and Codex (all have native subagent support).
+on pi.dev, OpenCode, and Claude Code (all have native subagent support).
 Run **automatically** with `context: "fresh"` — the fresh session provides
 independent review without the degraded context of the original session.
 This mitigates the shallow review trap (Ox Security 2025) even with the

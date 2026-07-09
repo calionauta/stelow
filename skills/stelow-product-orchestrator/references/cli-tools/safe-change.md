@@ -11,7 +11,7 @@
 pi install git:github.com/PriNova/pi-agent-codebase-workflows
 ```
 
-**Other CLIs (OpenCode, Claude Code, Codex):**
+**Other CLIs (OpenCode, Claude Code):**
 ```bash
 npx skills add Prinova/pi-agent-codebase-workflows -a <cli> -g
 # Example: npx skills add Prinova/pi-agent-codebase-workflows -a opencode -g

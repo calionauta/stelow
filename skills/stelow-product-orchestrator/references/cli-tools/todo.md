@@ -75,7 +75,6 @@ All CLIs MUST persist the checklist to file:
 | Pi + rpiv-todo | `todo` | ✅ Branch replay | Use tool for sidebar + write checklist.md for persistence |
 | Claude Code | `TodoWrite` | ❌ Session only | Write checklist.md, read on resume |
 | OpenCode | `TodoWrite` | ❌ Session only | Write checklist.md, read on resume |
-| Codex | None | N/A | Checklist.md only |
 
 CLI native todos are for **DISPLAY** only. `checklist.md` is always the source of truth.
 
@@ -167,16 +166,6 @@ TodoWrite({
 // ALSO write checklist.md:
 write({ path: ".stelow/{date}/{dir}/checklist.md", content: checklistContent })
 ```
-
-### codex
-
-**Tool:** No native todo tool. Write checklist.md directly:
-
-```typescript
-write({
-  path: ".stelow/{date}/{dir}/checklist.md",
-  content: checklistContent
-})
 
 // Read on session start to restore context
 read({ path: ".stelow/{date}/{dir}/checklist.md" })

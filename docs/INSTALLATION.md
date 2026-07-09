@@ -88,7 +88,6 @@ agent-sync push
 | **Pi** | `~/.pi/agent/settings.json` → `"skills": ["~/.agents/skills"]` |
 | **OpenCode** | `~/.config/opencode/opencode.json` → skills paths |
 | **Claude Code** | `~/.claude/settings.json` → skills paths |
-| **Codex** | `~/.codex/settings.json` → skills paths |
 
 ---
 
@@ -153,19 +152,9 @@ npx skills add calionauta/stelow -a claude-code -g
 
 </details>
 
-<details>
-<summary><strong>Codex</strong></summary>
+---
 
-```bash
-# Plugin marketplace
-codex plugin marketplace add https://github.com/calionauta/stelow
-codex plugin add stelow@marketplace-name
-
-# Ou apenas skills
-npx skills add calionauta/stelow -a codex -g
-```
-
-</details>
+> **Note:** Codex support was removed in v0.44.0. Existing users can invoke `/skill:stelow-product-orchestrator` directly via chat. See [`cli-agents/COMMANDS.md`](../cli-agents/COMMANDS.md#support-levels) for the full support matrix.
 
 ---
 
@@ -188,7 +177,6 @@ When working on software projects, trigger the product workflow:
 | **Pi** | `~/.pi/agent/AGENTS.md` |
 | **OpenCode** | `~/.config/opencode/AGENTS.md` or project `AGENTS.md` |
 | **Claude Code** | `~/.claude/CLAUDE.md` or project `CLAUDE.md` |
-| **Codex** | `~/.codex/AGENTS.md` or project `AGENTS.md` |
 
 ---
 
@@ -204,7 +192,7 @@ Pi requer npm packages para deep integration (slash commands, TUI, event hooks):
 | `@juicesharp/rpiv-ask-user-question` | Question UI component | ✅ `git:github.com/juicesharp/rpiv-mono` |
 | `@plannotator/pi-extension` | Visual plan annotation | ✅ `git:github.com/backnotprop/plannotator` |
 
-Other CLIs (OpenCode, Claude Code, Codex) usam apenas skills — zero npm.
+Other CLIs (OpenCode, Claude Code) usam apenas skills — zero npm.
 
 ---
 
@@ -233,7 +221,7 @@ This applies only to **Pi** — other CLIs have zero npm dependencies.
 | `pi-agent-codebase-workflows` | safe-change (Phase 2) | `pi install git:github.com/PriNova/pi-agent-codebase-workflows` | `npx skills add Prinova/pi-agent-codebase-workflows -a <cli> -g` |
 | `thermo-nuclear` (codequality-review) | optional ultra-strict final gate for high-risk or Complete-appetite code changes | `pi install git:github.com/cursor/plugins` | `npx skills add cursor/plugins -a <cli> -g` |
 
-Replace `<cli>` with: `opencode`, `claude-code`, or `codex`.
+Replace `<cli>` with: `opencode` or `claude-code`.
 
 ---
 
