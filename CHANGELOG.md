@@ -2,6 +2,33 @@
 
 All notable changes to `@calionauta/stelow` will be documented in this file.
 
+## [0.44.0] - 2026-07-09
+
+Codex removed (formalized the long-marked "Removed" status), OpenCode plugin dropped (commands-only support), and scopes now auto-sync from spec-tech.md. **Breaking release** — see migration notes below.
+
+### Breaking
+
+- **Codex support removed.** Already marked "Removed" in `cli-agents/COMMANDS.md`; now formalized. No command files, no adapter, no test cases. Codex users must use the `stelow-product-orchestrator` skill directly via chat.
+- **OpenCode plugin dropped** (`cli-agents/opencode/plugin/` — 9 files, 2,200-line `package-lock.json`). The TypeScript-based TUI plugin added maintenance burden without offering features that the skill-delegated command files don't already cover. OpenCode now uses the same skill-delegation model as Claude Code: copy `cli-agents/opencode/commands/sw-*.md` to `~/.opencode/commands/`. Install: `cli-agents/opencode/install.sh`.
+
+### Added
+
+- **Auto-sync scopes from spec-tech.md** (convention over configuration). The Pi extension's `readTracking()` and `writeTracking()` hooks now auto-populate `wf.scopes[]` from the latest `spec-tech_*.md` for any in-progress workflow in Execution+ phase. **Idempotent** via `wf.specTechFile` version tracking — re-syncs when spec-tech bumps to v2+. The Muxy panel has a JS mirror (`syncScopesForTracking()` in `muxy/.../data.js`) since the Electron sandbox can't import TS. Test parity guaranteed via `tests/unit/parse-scopes-from-spec-tech.test.ts`.
+- **`Workflow.specTechFile` field** (`types.ts`) — tracks which spec-tech version scopes were last synced from. Enables v2+ re-sync.
+- **`panes:write` permission** added to Muxy manifest (required by `muxy.modal.open` in the new project picker).
+- **Muxy project picker upgraded** to native modal: sortable, search, single-click switch (replaces the chip grid). Sort puts active project first; modal abort if user picks the active project.
+- **Muxy tab/scope-chip styling** uses `--muxy-accent` + `--muxy-background` for consistent theming across dark and light themes.
+
+### Changed
+
+- **`cli-agents/COMMANDS.md` rewritten** with explicit "Support Levels" table: Pi ✅ Full, OpenCode/Claude Code ⚠️ Reduced Skill, Codex ❌ Removed. The previous matrix showed all-✅ symbols across all harnesses (misleading).
+- **`cali-product-scope-executor` SKILL.md Step 2e** rewritten. The 20-line bash snippet that initialized scopes is gone — replaced with a paragraph explaining that the extension handles it automatically. KISS + DRY.
+- **`stelow-product-orchestrator` SKILL.md rule 2** now uses 🚨 emoji + explicit "NEVER chat/prose for user-facing questions" warning. Rule violations were the #1 cause of workflow drift per recent retros.
+
+### Documentation
+
+- **`docs/scope-lifecycle-gaps.md`** — gap analysis covering v2 overwrite handling, index.json write-through, concurrent-write race window, legacy workflows without `dirHash`, and TS/JS phase-number drift.
+
 ## [0.43.4] - 2026-07-09
 
 ### Fixed

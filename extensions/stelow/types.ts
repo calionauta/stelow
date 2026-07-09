@@ -580,6 +580,7 @@ export interface Workflow {
   detectedCLI?: string;   // CLI harness detected at workflow creation
   intent?: WorkflowIntent; // Intent category detected at /sw-start
   scopes?: Scope[];       // Tech plan scopes — populated during Execution phase
+  specTechFile?: string;  // Filename of spec-tech.md that scopes were synced from (e.g. "spec-tech_v2.md")
 }
 
 export interface TrackingData {
