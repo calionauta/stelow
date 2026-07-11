@@ -2,6 +2,23 @@
 
 All notable changes to `@calionauta/stelow` will be documented in this file.
 
+## [0.46.0] - 2026-07-11
+
+### Added
+
+- **`feat: add audit trail — full lineage record from origin to delivery`** (f544e4b). A complete lineage record is now tracked from the origin of a request through to delivery, enabling full traceability across the planning workflow.
+
+### Fixed
+
+- **`fix: scope extraction to Planning section only (not Execution)`** (d873690). Scope extraction was incorrectly pulling content from the Execution section; now scoped strictly to the Planning section.
+- **`fix: add generated_at to JSON output + clean up lessons-learned duplicates`** (3c42365). The JSON output now includes a `generated_at` timestamp, and duplicate entries in lessons-learned are properly deduplicated.
+
+### Changed
+
+- **docs(readme): reframe design principle to Pi-first, skills-agnostic** (32f2c28). README reframed to reflect the Pi-first direction while keeping skills harness-agnostic.
+- **docs(gap-analysis): polish post-v0.45.0 cleanup** (a0955b4). Gap analysis document polished after the v0.45.0 narrowing release.
+- **Update project title in README.md** (004227e).
+
 ## [0.45.0] - 2026-07-09
 
 **Major narrowing release.** Removed all non-Pi CLI integrations and reframed the shipped surface as Pi-first. The 25 skills + orchestrator skill remain agent-agnostic via the [agentskills.io](https://agentskills.io/) standard.
