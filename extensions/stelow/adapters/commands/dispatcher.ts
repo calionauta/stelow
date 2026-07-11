@@ -111,6 +111,11 @@ export const WORKFLOW_COMMANDS: CommandDescriptor[] = [
     usage: "/sw-pulse | status | pause | resume | process | log [n]",
     piOnly: true,
   },
+  {
+    name: "sw-audit",
+    description: "Show audit trail — full lineage from origin to delivery",
+    usage: "/sw-audit [--scope <id>] [--format json|markdown]",
+  },
 ];
 
 /**

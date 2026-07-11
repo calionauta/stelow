@@ -20,6 +20,7 @@ import {
 import { updateFooter, notifyPhase, getUIAdapter } from "./ui";
 import { diagnoseWorkflowProject, formatDoctorReport, repairWorkflowProject, countFixable } from "./doctor";
 import cmdStart from "./start";
+import { escapeRegex, convertAuditTrailToJson } from "./audit-trail";
 
 // ── Stages Guard (pure file-state management) ────────────────────────
 import { PHASE_TO_STAGE, syncStagesGuardState } from "./stages-guard";
@@ -1101,6 +1102,73 @@ function cmdUnarchive(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
 export { WORKFLOW_COMMANDS } from "./adapters/commands/dispatcher";
 export type { CommandDescriptor } from "./adapters/commands/dispatcher";
 
+// ── AUDIT ──────────────────────────────────────────────────────────
+
+/**
+ * /sw-audit — Read and display the audit trail for the active workflow.
+ *
+ * Supports:
+ *   /sw-audit                  — show Markdown audit trail
+ *   /sw-audit --format json    — show JSON audit trail
+ *   /sw-audit --scope scope-1  — filter to a single scope
+ *
+ * Output is always sent to chat (stdout). No file output.
+ */
+function cmdAudit(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
+  const wd = resolveProjectDir(ctx.cwd);
+  const parsed = parseArgs(args);
+  const wf = getActiveWorkflow(wd);
+  if (!wf) { noActive(ctx); return; }
+  if (!wf.dirHash || !wf.created) {
+    replyWarn(ctx, "Workflow has no directory hash — cannot locate audit trail.");
+    return;
+  }
+
+  const ds = getDateStamp(new Date(wf.created));
+  const auditPath = join(wd, WORKFLOW_DIR, ds, wf.dirHash, "audit-trail.md");
+
+  if (!existsSync(auditPath)) {
+    replyWarn(ctx, [
+      "📄 No audit trail found for this workflow.",
+      "",
+      "Audit trail is generated during the Audit stage (execution critique).",
+      "To generate it now, run the Audit stage or invoke:",
+      "  /skill:cali-product-execution-critique",
+    ].join("\n"));
+    return;
+  }
+
+  const content = readFileSync(auditPath, "utf-8");
+  const filterScope = parsed.scope;
+  const format = parsed.format || "markdown";
+
+  // ── JSON format ─────────────────────────────────────────────
+  if (format === "json") {
+    const result = convertAuditTrailToJson(content, filterScope);
+    reply(ctx, JSON.stringify(result, null, 2));
+    return;
+  }
+
+  // ── Markdown format (default) ───────────────────────────────
+  if (filterScope) {
+    // Extract only the scope section
+    const scopeRegex = new RegExp(
+      `(### Scope: ${escapeRegex(filterScope)}[\s\S]*?)(?=\n### Scope:|\n## [5\\.])`,
+      "i"
+    );
+    const match = content.match(scopeRegex);
+    if (match) {
+      reply(ctx, `📄 Audit trail — scope: ${filterScope}\n\n${match[1].trim()}`);
+    } else {
+      replyWarn(ctx, `Scope "${filterScope}" not found in audit trail.`);
+    }
+    return;
+  }
+
+  // Full audit trail
+  reply(ctx, content);
+}
+
 // ── PULSE ────────────────────────────────────────────────────────────
 
 // Copy bundled Pulse scripts (.stelow/pulse/) from extension's bundled
@@ -1274,6 +1342,7 @@ const COMMAND_ALIASES: Record<string, string[]> = {
   "sw-unlock":    ["stelow-unlock"],
   "sw-inbox":     ["stelow-inbox"],
   "sw-pulse":     ["stelow-pulse"],
+  "sw-audit":     ["stelow-audit"],
 };
 
 const HANDLER_BY_NAME: Record<string, CmdHandler> = {
@@ -1294,6 +1363,7 @@ const HANDLER_BY_NAME: Record<string, CmdHandler> = {
   "sw-unlock":     cmdUnlock,
   "sw-inbox":      cmdInbox,
   "sw-pulse":      cmdPulse,
+  "sw-audit":      cmdAudit,
   // Aliases
   "stelow-start":     cmdStart,
   "stelow-abort":     cmdAbort,
@@ -1312,6 +1382,7 @@ const HANDLER_BY_NAME: Record<string, CmdHandler> = {
   "stelow-unlock":    cmdUnlock,
   "stelow-inbox":     cmdInbox,
   "stelow-pulse":     cmdPulse,
+  "stelow-audit":     cmdAudit,
 };
 
 function getDescription(cmdName: string): string {

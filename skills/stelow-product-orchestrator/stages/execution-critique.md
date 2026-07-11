@@ -20,5 +20,30 @@ conditional Code Quality Review. If `code-quality-review.md` exists, the audit
 must inspect its findings and convert unresolved P0/P1 gaps into the gap
 registry or lessons learned.
 
+**Audit Trail generation:** After the execution critique completes (all 11 criteria evaluated, gap registry classified, lessons saved), ask the user whether to generate the audit trail:
+
+```
+ask_user_question({
+  questions: [{
+    question: "Generate an audit trail for this workflow?\nThis creates audit-trail.md — a complete lineage record linking all artifacts from origin to delivery.",
+    header: "Audit Trail",
+    options: [
+      { label: "Yes, generate (Recommended)", description: "Creates audit-trail.md in the workflow directory with all 5 layers linked to artifacts." },
+      { label: "Skip", description: "No audit trail generated. You can run /sw-audit later to generate it." }
+    ]
+  }]
+})
+```
+
+**If Review Mode = Auto:** skip the question and generate automatically.
+
+**If user chooses "Yes" (or Auto):**
+1. Read `references/cli-tools/audit-trail-template.md` for the template
+2. Fill placeholders from data already read during this stage (no extra file reads needed)
+3. Write to `.stelow/{YYYY-MM-DD}/{_dir}/audit-trail.md`
+4. Update `index.json` artifacts map: `"audit_trail": "audit-trail.md"`
+5. Confirm to user: `"📄 Audit trail generated: audit-trail.md"`
+
 **Standalone usage:** This skill can be invoked outside the workflow
 by calling `cali-product-execution-critique` with any path, URL, or no input.
+Audit trail generation is skipped in standalone mode (no workflow directory).

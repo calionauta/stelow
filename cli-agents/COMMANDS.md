@@ -123,6 +123,31 @@ hook can be extended to emit a per-harness variant from the same descriptor
 list. The pre-v0.45.0 archive shows the opencode/claude-code pattern as a
 starting point.
 
+## Command reference (shipped)
+
+| Command | Description |
+|---------|-------------|
+| `/sw-start [idea]` | Start new workflow |
+| `/sw-status` | Show active workflow status |
+| `/sw-next` | Advance to next phase |
+| `/sw-pause` | Pause active workflow |
+| `/sw-resume [name=]` | Resume paused workflow |
+| `/sw-abort [name=]` | Abort and archive workflow |
+| `/sw-archive [name=]` | Archive completed or inactive workflow |
+| `/sw-unarchive name=` | Restore archived workflow |
+| `/sw-ls [all\|archived]` | List workflows |
+| `/sw-setphase phase=N` | Jump to specific phase |
+| `/sw-info [name=]` | Print workflow path and resume commands |
+| `/sw-rename <name>` | Rename active workflow |
+| `/sw-complete` | Force-complete active workflow |
+| `/sw-doctor [--fix]` | Diagnose workflow health |
+| `/sw-unlock` | Disable stage guard (debug only) |
+| `/sw-inbox [add\|remove\|clear\|history]` | Manage deferred inbox items |
+| `/sw-pulse [status\|pause\|resume\|process\|log]` | Autonomous inbox processing |
+| `/sw-audit [--scope <id>] [--format json\|markdown]` | Show audit trail — full lineage from origin to delivery |
+
+All commands have `stelow-*` aliases (e.g. `stelow-audit` alongside `sw-audit`).
+
 ## Why no per-harness install script anymore
 
 The shipped `install.sh`:

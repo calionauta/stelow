@@ -1,0 +1,117 @@
+/**
+ * Audit Trail — shared pure functions for /sw-audit command.
+ *
+ * Extracted from commands.ts to enable DRY testing and reuse.
+ * The cmdAudit handler in commands.ts calls these functions.
+ */
+
+// ── Helpers ──────────────────────────────────────────────────────────
+
+/** Escape regex special characters. */
+export function escapeRegex(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+// ── JSON Conversion ──────────────────────────────────────────────────
+
+/**
+ * Convert audit trail Markdown to a structured JSON object.
+ *
+ * Extracts: workflow name, appetite, review mode, intent, scopes with
+ * fields, gates (fired/skipped), and verification results.
+ *
+ * @param content     — raw Markdown from audit-trail.md
+ * @param filterScope — optional scope name to filter (e.g. "scope-1")
+ * @returns structured object ready for JSON.stringify
+ */
+export function convertAuditTrailToJson(
+  content: string,
+  filterScope?: string,
+): Record<string, unknown> {
+  const sections: Record<string, unknown> = {
+    audit_version: 1,
+  };
+
+  // ── Header fields ────────────────────────────────────────────
+  const nameMatch = content.match(/^# Audit Trail: (.+)$/m);
+  if (nameMatch) sections.workflow = nameMatch[1].trim();
+
+  const appetiteMatch = content.match(/\*\*Appetite:\*\* (.+)$/m);
+  if (appetiteMatch) sections.appetite = appetiteMatch[1].trim();
+
+  const reviewMatch = content.match(/\*\*Review Mode:\*\* (.+)$/m);
+  if (reviewMatch) sections.review_mode = reviewMatch[1].trim();
+
+  const intentMatch = content.match(/\*\*Intent:\*\* (.+)$/m);
+  if (intentMatch) sections.intent = intentMatch[1].trim();
+
+  // ── Scope sections ───────────────────────────────────────────
+  // Split on "### Scope:" headers — each block is one scope's data
+  const scopeBlocks = content.split(/^### Scope: /m).slice(1);
+  const scopes: Record<string, unknown>[] = [];
+
+  for (const block of scopeBlocks) {
+    const name = block.split(/\n/)[0].trim();
+    if (filterScope && name !== filterScope) continue;
+
+    // Only extract table rows from this scope block (before next ### or ##)
+    const blockEnd = block.search(/\n### |\n## /);
+    const scopedBlock = blockEnd >= 0 ? block.slice(0, blockEnd) : block;
+
+    const rows: Record<string, string> = {};
+    const tableRows = scopedBlock.match(/\| (.+?) \| (.+?) \|/g) || [];
+    for (const row of tableRows) {
+      const cells = row.split("|").map((c) => c.trim()).filter(Boolean);
+      if (
+        cells.length >= 2 &&
+        cells[0] !== "Field" &&
+        cells[0] !== "Class" &&
+        cells[0] !== "Check"
+      ) {
+        rows[cells[0]] = cells[1];
+      }
+    }
+    scopes.push({ name, fields: rows });
+  }
+  if (scopes.length > 0) sections.scopes = scopes;
+
+  // ── Gates ────────────────────────────────────────────────────
+  const gatesFired = (content.match(/^  - ✅ (.+)$/gm) || []).map((m) =>
+    m.replace(/^  - ✅ /, ""),
+  );
+  const gatesSkipped = (content.match(/^  - 🚫 (.+)$/gm) || []).map((m) =>
+    m.replace(/^  - 🚫 /, ""),
+  );
+  if (gatesFired.length > 0 || gatesSkipped.length > 0) {
+    sections.gates = { fired: gatesFired, skipped: gatesSkipped };
+  }
+
+  // ── Verification ─────────────────────────────────────────────
+  // Only extract rows from the Verification section (## 5.)
+  const verificationStart = content.indexOf("## 5. Verification");
+  if (verificationStart >= 0) {
+    const verificationSection = content.slice(verificationStart);
+    const verificationChecks = [
+      "Test suite",
+      "Code review",
+      "UI audit",
+      "Code quality gate",
+      "Invisible 20%",
+      "Execution critique",
+    ];
+    const verificationRows =
+      verificationSection.match(/\| (.+?) \| (.+?) \|/g) || [];
+    const verification: Record<string, string> = {};
+    for (const row of verificationRows) {
+      const cells = row.split("|").map((c) => c.trim()).filter(Boolean);
+      if (cells.length >= 2 && verificationChecks.includes(cells[0])) {
+        verification[cells[0]] = cells[1];
+      }
+    }
+    if (Object.keys(verification).length > 0) {
+      sections.verification = verification;
+    }
+  }
+
+  return sections;
+}
