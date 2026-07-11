@@ -30,6 +30,7 @@ export function convertAuditTrailToJson(
 ): Record<string, unknown> {
   const sections: Record<string, unknown> = {
     audit_version: 1,
+    generated_at: new Date().toISOString(),
   };
 
   // ── Header fields ────────────────────────────────────────────
