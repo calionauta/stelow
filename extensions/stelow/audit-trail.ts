@@ -46,28 +46,33 @@ export function convertAuditTrailToJson(
   if (intentMatch) sections.intent = intentMatch[1].trim();
 
   // ── Scope sections ───────────────────────────────────────────
-  // Split on "### Scope:" headers — each block is one scope's data
-  const scopeBlocks = content.split(/^### Scope: /m).slice(1);
+  // Only extract scopes from the Planning section (## 3.) — NOT Execution (## 4.).
+  const planningStart = content.indexOf("## 3. Planning");
+  const executionStart = content.indexOf("## 4. Execution");
+  let planningSection = "";
+  if (planningStart >= 0 && executionStart > planningStart) {
+    planningSection = content.slice(planningStart, executionStart);
+  } else if (planningStart >= 0) {
+    planningSection = content.slice(planningStart);
+  }
+  const scopeBlocks = planningSection.split(/^### Scope: /m).slice(1);
   const scopes: Record<string, unknown>[] = [];
+  const SKIP_FIELDS = new Set(["Field", "Class", "Check"]);
 
   for (const block of scopeBlocks) {
     const name = block.split(/\n/)[0].trim();
     if (filterScope && name !== filterScope) continue;
 
-    // Only extract table rows from this scope block (before next ### or ##)
-    const blockEnd = block.search(/\n### |\n## /);
+    // Slice to the table area only (before next ### or ## heading)
+    const blockEnd = block.search(/^### |^## /m);
     const scopedBlock = blockEnd >= 0 ? block.slice(0, blockEnd) : block;
 
     const rows: Record<string, string> = {};
-    const tableRows = scopedBlock.match(/\| (.+?) \| (.+?) \|/g) || [];
+    // Match rows with at least 3 pipes (| Field | Value | Artifact |)
+    const tableRows = scopedBlock.match(/^\| .+? \| .+? \|/gm) || [];
     for (const row of tableRows) {
       const cells = row.split("|").map((c) => c.trim()).filter(Boolean);
-      if (
-        cells.length >= 2 &&
-        cells[0] !== "Field" &&
-        cells[0] !== "Class" &&
-        cells[0] !== "Check"
-      ) {
+      if (cells.length >= 2 && !SKIP_FIELDS.has(cells[0])) {
         rows[cells[0]] = cells[1];
       }
     }
