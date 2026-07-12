@@ -236,7 +236,6 @@ install_pi() {
     # These are optional — the workflow runs without them (with degraded features).
     for pkg in \
       "npm:@tintinweb/pi-subagents" "npm:@tintinweb/pi-tasks" \
-      "npm:pi-intercom" \
       "npm:pi-supervisor" \
       "npm:@juicesharp/rpiv-ask-user-question" \
       "@plannotator/pi-extension"; do
@@ -388,7 +387,7 @@ setup_full() {
     log_info "[2/5] Pi deep integration"
     if confirm "Install Pi extension (gates, TUI, slash commands)?" Y; then
       install_pi_extension
-      if [[ -z "${INSTALL_SKILLS_ONLY:-}" ]] && confirm "Install Pi supporting packages (subagents, intercom, supervisor)?" Y; then
+      if [[ -z "${INSTALL_SKILLS_ONLY:-}" ]] && confirm "Install Pi supporting packages (subagents, supervisor)?" Y; then
         install_pi_packages
       fi
     fi
@@ -456,7 +455,6 @@ install_pi_packages() {
   local pkgs=0
   for pkg in \
     "npm:@tintinweb/pi-subagents" "npm:@tintinweb/pi-tasks" \
-    "npm:pi-intercom" \
     "npm:pi-supervisor" \
     "npm:@juicesharp/rpiv-ask-user-question" \
     "@plannotator/pi-extension"; do

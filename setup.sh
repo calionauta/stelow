@@ -41,7 +41,6 @@ PI_PACKAGES=(
   "npm:@tintinweb/pi-subagents"
   "npm:@tintinweb/pi-tasks"
   "npm:pi-web-access"
-  "npm:pi-intercom"
   "npm:pi-supervisor"
   "npm:pi-agent-browser-native"
   # "npm:pi-autoresearch" — DEPRECATED, use subagent + acceptance with benchmark verify
@@ -734,7 +733,7 @@ print_summary() {
   echo ""
   echo "  ${CYAN}Node.js${RESET}       $(node --version 2>/dev/null || echo 'not found')"
   echo "  ${CYAN}pi.dev${RESET}        $(pi --version 2>/dev/null || echo 'not found')"
-  echo "  ${CYAN}Extensions${RESET}    (subagents, browser, intercom, etc.)"
+  echo "  ${CYAN}Extensions${RESET}    (subagents, tasks, browser, etc.)"
   echo "  ${CYAN}Skills${RESET}        25 product workflow skills"
   echo "  ${CYAN}Settings${RESET}      Optimized configuration"
   echo ""
