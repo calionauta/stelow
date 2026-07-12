@@ -53,6 +53,10 @@ PI_PACKAGES=(
   # Pi tools (file finder)
   {"source":"npm:@ff-labs/pi-fff","extensions":["-src/index.ts"]}
 
+  # Code search & navigation
+  "git:github.com/raphapr/pi-cymbal"
+  "git:github.com/joelhooks/pi-ast-grep"
+
   # Plannotator (visual review gate)
   {"source":"npm:@plannotator/pi-extension","skills":[]}
 

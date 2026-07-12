@@ -9,7 +9,8 @@ cd stelow
 ```
 
 Interactive full setup. Installs 25 skills, Pi extension (if detected), and offers
-optional dependencies (cymbal, ctx7) with step-by-step confirmation.
+optional dependencies (ctx7) with step-by-step confirmation. cymbal (raphapr/pi-cymbal)
+and ast-grep (joelhooks/pi-ast-grep) are installed automatically as Pi packages.
 
 > **v0.45.0 narrowed the shipped surface to Pi-only.** Skills remain agent-agnostic —
 > see `cli-agents/COMMANDS.md` for the extension guide and the rationale for narrowing.
@@ -60,7 +61,7 @@ PRODUCT_WORKFLOW_CLI=pi ./install.sh
 **Full setup flow:**
 1. 25 workflow skills — **always installed**
 2. Pi extension + npm packages — **confirms before installing** (Pi only)
-3. cymbal (codebase navigation) — **confirms before installing**
+3. cymbal (codebase navigation) — **installed automatically** as a Pi package (raphapr/pi-cymbal); requires the cymbal CLI on the host
 4. ctx7 — live library docs via `npx @vedanth/context7` (recommends, requires OAuth)
 5. `./install.sh --minimal` skips all optional steps
 
@@ -126,6 +127,8 @@ skills to work; they activate only when Pi is detected.
 | `pi-supervisor` | Conversation supervision |
 | `@juicesharp/rpiv-ask-user-question` | Question UI component |
 | `@plannotator/pi-extension` | Visual plan annotation |
+| `raphapr/pi-cymbal` | Codebase navigation (`cymbal` CLI required) |
+| `joelhooks/pi-ast-grep` | Structural code search (bundles `sg`) |
 
 For Pi-only package installation:
 

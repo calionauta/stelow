@@ -209,6 +209,53 @@ _configure_pi_skills_filter() {
 }
 
 # Pi
+# ── Pi extensions (single source of truth) ──────────────────────────────
+# All Pi extensions for deep integration. Convention: a full Pi install
+# enables every extension (skills stay active — no filters). cymbal/ast-grep
+# extensions are installed here; their CLI tools are still required on the
+# host (offer_optional_clis installs them, or see README).
+PI_EXTENSIONS=(
+  "npm:@tintinweb/pi-subagents"
+  "npm:@tintinweb/pi-tasks"
+  "npm:pi-web-access"
+  "npm:pi-supervisor"
+  "npm:pi-agent-browser-native"
+  "npm:@juicesharp/rpiv-ask-user-question"
+  "npm:@ff-labs/pi-fff"
+  "npm:@plannotator/pi-extension"
+  "npm:@sting8k/pi-vcc"
+  "npm:pi-hermes-memory"
+  "npm:pi-cache-optimizer"
+  "git:github.com/calionauta/pi-leakguard"
+  "npm:@tomooshi/condensed-milk-pi"
+  "https://github.com/tomooshi/caveman-milk-pi"
+  "git:github.com/PriNova/pi-agent-codebase-workflows"
+  "git:github.com/renatocaliari/pi-tool-repair-layer"
+  "git:github.com/raphapr/pi-cymbal"
+  "git:github.com/joelhooks/pi-ast-grep"
+)
+
+# Install all Pi supporting extensions from the single PI_EXTENSIONS list.
+install_pi_extensions() {
+  log_info "  Installing Pi supporting extensions..."
+  local installed=0
+  for pkg in "${PI_EXTENSIONS[@]}"; do
+    local display
+    if [[ "$pkg" == http* ]]; then
+      display=$(basename "$pkg")
+    else
+      display="${pkg#npm:}"; display="${display#git:}"
+    fi
+    if pi install "$pkg" 2>/dev/null; then
+      log_success "    $display"
+    else
+      log_warn "    $display (may already be installed)"
+    fi
+    ((installed++)) || true
+  done
+  log_success "  $installed Pi extensions processed."
+}
+
 install_pi() {
   log_info "  -> Installing for Pi..."
   if ! command -v pi &>/dev/null; then log_warn "    pi not found. Skipping."; return; fi
@@ -229,24 +276,14 @@ install_pi() {
   # Install skills flat (for any agent that reads ~/\.agents/skills/)
   install_skills_flat
 
-  # Install supporting packages
+  # Install supporting packages (single source of truth: PI_EXTENSIONS)
   if [[ -z "${INSTALL_SKILLS_ONLY:-}" ]]; then
-    log_info "    Installing supporting packages..."
-    # Pi npm packages for deep integration.
-    # These are optional — the workflow runs without them (with degraded features).
-    for pkg in \
-      "npm:@tintinweb/pi-subagents" "npm:@tintinweb/pi-tasks" \
-      "npm:pi-supervisor" \
-      "npm:@juicesharp/rpiv-ask-user-question" \
-      "@plannotator/pi-extension"; do
-      pi install "$pkg" 2>/dev/null || true
-    done
-    
-    # NOTE: cymbal and ctx7 are NOT auto-installed.
-    # They remain user-managed because:
-    # - cymbal requires brew/go/CGO (not npm)
-    # - ctx7 requires OAuth setup (interactive)
-    # The workflow falls back gracefully without them.
+    install_pi_extensions
+    # NOTE: ctx7 is NOT auto-installed (requires OAuth setup, interactive).
+    # cymbal (raphapr/pi-cymbal) and ast-grep (joelhooks/pi-ast-grep) ARE
+    # auto-installed above. The cymbal CLI is still required on the host
+    # (offer_optional_clis installs it, or see README); if absent the
+    # workflow falls back gracefully to bash `cymbal` / find + git log.
   else
     log_info "    INSTALL_SKILLS_ONLY set -- skipping npm packages"
   fi
@@ -257,10 +294,35 @@ install_pi() {
   log_success "  v Pi done"
 }
 
+# ── Optional cross-harness CLIs (generic / non-Pi installs) ─────────────
+# Convention over configuration: we only offer a CLI when a stelow skill or
+# reference actually uses it (detected via grep). Pi auto-installs the
+# cymbal/ast-grep *extensions*; for other harnesses we offer the bare CLIs.
+offer_cli() {
+  local name="$1" pattern="$2" cmd="$3" desc="$4" refs="$5"
+  command -v "$name" &>/dev/null && return            # already installed
+  grep -rqE "$pattern" "$refs" 2>/dev/null || return  # not used by skills → skip
+  log_info "  $desc."
+  if confirm "Install $name CLI?" Y; then
+    eval "$cmd" 2>/dev/null || log_warn "  Could not auto-install $name — see README."
+  fi
+}
+
+offer_optional_clis() {
+  local refs="$SCRIPT_DIR/skills"
+  offer_cli "cymbal"   "cymbal"   "install_cymbal" \
+    "Transforms codebase recon from find/grep to full symbol navigation" "$refs"
+  offer_cli "ast-grep" "ast_grep" "brew install ast-grep" \
+    "Structural (AST-based) code search" "$refs"
+  offer_cli "sem"      "\\bsem\\b"  "curl -fsSL https://raw.githubusercontent.com/Ataraxy-Labs/sem/main/install.sh | sh" \
+    "Entity-level diff for Execution Critique" "$refs"
+}
+
 # Generic (no CLI detected)
 install_generic() {
   log_info "  -> Installing skills for all agents..."
   install_skills_flat
+  offer_optional_clis
   log_success "  v Generic done"
 }
 
@@ -377,37 +439,34 @@ setup_full() {
   echo ""
 
   # Step 1: Skills (always installed)
-  log_info "[1/5] Installing 25 workflow skills..."
+  log_info "[1/4] Installing 25 workflow skills..."
   for cli in $clis; do install_skills_flat; done
   log_success "Skills installed."
   echo ""
 
   # Step 2: Pi extension + packages
   if echo "$clis" | grep -qw "pi"; then
-    log_info "[2/5] Pi deep integration"
+    log_info "[2/4] Pi deep integration"
     if confirm "Install Pi extension (gates, TUI, slash commands)?" Y; then
       install_pi_extension
       if [[ -z "${INSTALL_SKILLS_ONLY:-}" ]] && confirm "Install Pi supporting packages (subagents, supervisor)?" Y; then
-        install_pi_packages
+        install_pi_extensions
       fi
     fi
     echo ""
   fi
 
 
-  # Step 4: cymbal (codebase navigation)
-  log_info "[3/5] cymbal — codebase navigation for Tech Preview"
-  if ! command -v cymbal &>/dev/null; then
-    if confirm "Install cymbal? Transforms codebase recon from find/grep to full symbol navigation." Y; then
-      install_cymbal
-    fi
-  else
-    log_success "  cymbal already installed."
-  fi
+  # Steps 3-4: optional cross-harness CLIs (only those used by stelow skills).
+  # cymbal + sem are offered (used by Tech Preview / Execution Critique skills);
+  # ast-grep is skipped automatically (no skill references it). ctx7 remains a
+  # guided OAuth setup below (not a plain install).
+  log_info "[3/4] Optional CLI tools (cymbal, sem)"
+  offer_optional_clis
   echo ""
 
-  # Step 5: ctx7 (library docs)
-  log_info "[4/5] ctx7 — live library documentation"
+  # Step 4: ctx7 (library docs — guided OAuth, not auto-installed)
+  log_info "[4/4] ctx7 — live library documentation"
   if ! command -v ctx7 &>/dev/null; then
     log_info "  ctx7 provides current API docs during execution (prevents hallucinated APIs)."
     log_info "  Requires OAuth setup (opens browser once)."
@@ -454,20 +513,6 @@ install_pi_extension() {
   _configure_pi_skills_filter
 }
 
-install_pi_packages() {
-  log_info "  Installing Pi supporting packages..."
-  local pkgs=0
-  for pkg in \
-    "npm:@tintinweb/pi-subagents" "npm:@tintinweb/pi-tasks" \
-    "npm:pi-supervisor" \
-    "npm:@juicesharp/rpiv-ask-user-question" \
-    "@plannotator/pi-extension"; do
-    if pi install "$pkg" 2>/dev/null; then
-      ((pkgs++)) || true
-    fi
-  done
-  log_success "  $pkgs Pi packages installed."
-}
 
 install_cymbal() {
   if [[ "$OSTYPE" == "darwin"* ]] && command -v brew &>/dev/null; then
