@@ -377,14 +377,14 @@ setup_full() {
   echo ""
 
   # Step 1: Skills (always installed)
-  log_info "[1/5] Installing 25 workflow skills..."
+  log_info "[1/6] Installing 25 workflow skills..."
   for cli in $clis; do install_skills_flat; done
   log_success "Skills installed."
   echo ""
 
   # Step 2: Pi extension + packages
   if echo "$clis" | grep -qw "pi"; then
-    log_info "[2/5] Pi deep integration"
+    log_info "[2/6] Pi deep integration"
     if confirm "Install Pi extension (gates, TUI, slash commands)?" Y; then
       install_pi_extension
       if [[ -z "${INSTALL_SKILLS_ONLY:-}" ]] && confirm "Install Pi supporting packages (subagents, supervisor)?" Y; then
@@ -396,7 +396,7 @@ setup_full() {
 
 
   # Step 4: cymbal (codebase navigation)
-  log_info "[3/5] cymbal — codebase navigation for Tech Preview"
+  log_info "[3/6] cymbal — codebase navigation for Tech Preview"
   if ! command -v cymbal &>/dev/null; then
     if confirm "Install cymbal? Transforms codebase recon from find/grep to full symbol navigation." Y; then
       install_cymbal
@@ -407,7 +407,7 @@ setup_full() {
   echo ""
 
   # Step 5: ctx7 (library docs)
-  log_info "[4/5] ctx7 — live library documentation"
+  log_info "[4/6] ctx7 — live library documentation"
   if ! command -v ctx7 &>/dev/null; then
     log_info "  ctx7 provides current API docs during execution (prevents hallucinated APIs)."
     log_info "  Requires OAuth setup (opens browser once)."
@@ -420,8 +420,19 @@ setup_full() {
   fi
   echo ""
 
-  # Step 6: Agent-sync (cross-CLI distribution)
-  log_info "[5/5] agent-sync — distribute skills to all harnesses"
+  # Step 6: sem (entity-level diff)
+  log_info "[5/6] sem — entity-level diff for Execution Critique"
+  if ! command -v sem &>/dev/null; then
+    if confirm "Install sem? Replaces git diff with function/type/method-level diff in Execution Critique." Y; then
+      curl -fsSL https://raw.githubusercontent.com/Ataraxy-Labs/sem/main/install.sh | sh 2>/dev/null || log_warn "  Could not auto-install sem. See https://github.com/Ataraxy-Labs/sem"
+    fi
+  else
+    log_success "  sem already installed."
+  fi
+  echo ""
+
+  # Step 7: Agent-sync (cross-CLI distribution)
+  log_info "[6/6] agent-sync — distribute skills to all harnesses"
   if confirm "Install agent-sync for automatic skill distribution to all CLIs?" N; then
     pipx install agent-sync 2>/dev/null || log_warn "  pipx not found. Install manually: pipx install agent-sync"
   fi
@@ -513,6 +524,7 @@ What gets installed (full):
   ✓ Pi extension + npm packages (if Pi detected, with confirmation)
   ✓ cymbal — codebase navigation (with confirmation)
   ✓ ctx7 — live library docs (with confirmation, requires OAuth)
+  ✓ sem — entity-level diff (with confirmation)
   ✓ agent-sync — cross-CLI distribution (with confirmation)
 
 What gets installed (minimal):

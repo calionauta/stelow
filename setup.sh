@@ -45,26 +45,32 @@ PI_PACKAGES=(
   "npm:pi-agent-browser-native"
   # "npm:pi-autoresearch" — DEPRECATED, use subagent + acceptance with benchmark verify
   "npm:pi-rewind-hook"
-  "npm:pi-skillful"
-  "npm:pi-powerline-footer"
 
   # Productivity tools
 
   {"source":"npm:@juicesharp/rpiv-ask-user-question","extensions":["+index.ts"]}
-  "npm:@juicesharp/rpiv-i18n"
 
-  # Pi tools (file finder + wayfinder)
+  # Pi tools (file finder)
   {"source":"npm:@ff-labs/pi-fff","extensions":["-src/index.ts"]}
-  {"source":"npm:@deevus/pi-wayfinder","extensions":["-src/index.ts"]}
 
   # Plannotator (visual review gate)
   {"source":"npm:@plannotator/pi-extension","skills":[]}
 
-  # Themes
-  {"source":"git:https://github.com/hasit/pi-community-themes","themes":["+themes/gruvbox-dark-soft.json"]}
+  # Memory & compaction
+  "npm:@sting8k/pi-vcc"
+  "npm:pi-hermes-memory"
+
+  # Cache
+  "npm:pi-cache-optimizer"
+
+  # Security
+  "git:github.com/calionauta/pi-leakguard"
+
+  # Milk extensions
+  "npm:@tomooshi/condensed-milk-pi"
+  "https://github.com/tomooshi/caveman-milk-pi"
 
   # Git packages
-  "https://github.com/dbachelder/pi-btw"
   "git:github.com/PriNova/pi-agent-codebase-workflows"
   "git:github.com/renatocaliari/pi-tool-repair-layer"
   "git:github.com/calionauta/stelow"
@@ -733,7 +739,7 @@ print_summary() {
   echo ""
   echo "  ${CYAN}Node.js${RESET}       $(node --version 2>/dev/null || echo 'not found')"
   echo "  ${CYAN}pi.dev${RESET}        $(pi --version 2>/dev/null || echo 'not found')"
-  echo "  ${CYAN}Extensions${RESET}    (subagents, tasks, browser, etc.)"
+  echo "  ${CYAN}Extensions${RESET}    (subagents, tasks, memory, cache, security, milk, etc.)"
   echo "  ${CYAN}Skills${RESET}        25 product workflow skills"
   echo "  ${CYAN}Settings${RESET}      Optimized configuration"
   echo ""
