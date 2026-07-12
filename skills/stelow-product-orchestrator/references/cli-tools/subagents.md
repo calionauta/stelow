@@ -205,6 +205,22 @@ For each subagent call:
 
 ---
 
+## Input Files
+
+Subagents should receive inputs as explicit artifacts, not inherited conversation history. The canonical inputs are:
+
+| Artifact | Path | Frontmatter fields | Used by |
+|---|---|---|---|
+| `spec-product.md` | `.stelow/{date}/{dir}/plans/spec-product_{v}.md` | `appetite`, `review_mode`, `domains_detected`, `appetite_fit` | All proposal/review/strategic-context subagents |
+| `tech-recon.md` | `.stelow/{date}/{dir}/tech/tech-recon.md` | — | Interface proposals, alignment checks |
+| `spec-tech.md` | `.stelow/{date}/{dir}/plans/spec-tech_{v}.md` | — | Scope executors |
+| `scope-contract.json` | `.stelow/{date}/{dir}/scopes/{scope-id}.json` | `acceptance_criteria`, `verify_commands` | Scope executors |
+| `index.json` | `.stelow/{date}/{dir}/index.json` | `appetite`, `review_mode`, `domains_detected`, `detected_cli` | Strategic context subagents |
+
+**Why this matters:** `spec-product.md` frontmatter is the **single source of truth** for `appetite`, `review_mode`, and `domains_detected`. Subagents should read it explicitly rather than relying on the orchestrator passing these values in the task string. This makes input auditable, reproducible, and CLI-agnostic.
+
+---
+
 ## Headless CLI fallback (any agent)
 
 When no native subagent tool is available, spawn pi as a headless subprocess:

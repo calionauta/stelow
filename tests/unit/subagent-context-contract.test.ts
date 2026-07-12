@@ -33,8 +33,8 @@ describe("subagent-context-contract", () => {
     expect(content).toMatch(/Universal\s+Fallback/i);
   });
 
-  it("documents the Pi-native path", () => {
-    expect(content).toMatch(/Pi-?native path|Pi-?native\s+\(recommended\)/i);
+  it("documents the Pi subagent invocation path", () => {
+    expect(content).toMatch(/Pi\s*\+\s*tintinweb|Pi\s*\+\s*nicobailon/i);
   });
 
   it("requires explicit `context: \"fresh\"` for packaged agents", () => {
