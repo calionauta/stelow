@@ -38,7 +38,8 @@ done
 # All Pi packages to install
 PI_PACKAGES=(
   # Core extensions
-  "npm:pi-subagents"
+  "npm:@tintinweb/pi-subagents"
+  "npm:@tintinweb/pi-tasks"
   "npm:pi-web-access"
   "npm:pi-intercom"
   "npm:pi-supervisor"
@@ -51,7 +52,6 @@ PI_PACKAGES=(
   # Productivity tools
 
   {"source":"npm:@juicesharp/rpiv-ask-user-question","extensions":["+index.ts"]}
-  "npm:@juicesharp/rpiv-todo"
   "npm:@juicesharp/rpiv-i18n"
 
   # Pi tools (file finder + wayfinder)

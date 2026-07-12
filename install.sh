@@ -235,7 +235,8 @@ install_pi() {
     # Pi npm packages for deep integration.
     # These are optional — the workflow runs without them (with degraded features).
     for pkg in \
-      "npm:pi-subagents" "npm:pi-intercom" \
+      "npm:@tintinweb/pi-subagents" "npm:@tintinweb/pi-tasks" \
+      "npm:pi-intercom" \
       "npm:pi-supervisor" \
       "npm:@juicesharp/rpiv-ask-user-question" \
       "@plannotator/pi-extension"; do
@@ -454,7 +455,8 @@ install_pi_packages() {
   log_info "  Installing Pi supporting packages..."
   local pkgs=0
   for pkg in \
-    "npm:pi-subagents" "npm:pi-intercom" \
+    "npm:@tintinweb/pi-subagents" "npm:@tintinweb/pi-tasks" \
+    "npm:pi-intercom" \
     "npm:pi-supervisor" \
     "npm:@juicesharp/rpiv-ask-user-question" \
     "@plannotator/pi-extension"; do

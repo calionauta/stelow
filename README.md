@@ -33,7 +33,7 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 - **Appetite-scaled interface exploration** - 1, 3, or 5 ASCII archetypes plus hybrid depending on scope depth - no coded mockups wasted.
 - **Product domain libraries** - 8 domains auto-detected from your language (Pricing, Trust, Ads, Promotions, Open Source, Health, Marketplace, Business Models).
 - **Typed technical scopes** - feature, spike, optimize, test-* with dependency mapping and sequencing for autonomous execution.
-- **Acceptance-based scope execution** - each scope is delegated with a contract (criteria, verify commands, stop rules). On acceptance-native harnesses (e.g. pi-subagents), the child self-corrects in the same context before returning. On other harnesses, the parent re-delegates with feedback until criteria pass or max iterations exhaust.
+- **Acceptance-based scope execution** - each scope is delegated with a contract (criteria, verify commands, stop rules). On acceptance-native harnesses (e.g. pi-subagents via tintinweb or nicobailon), the child self-corrects in the same context before returning. On other harnesses, the parent re-delegates with feedback until criteria pass or max iterations exhaust.
 - **Audit gap-to-scope loop** — post-execution audit classifies gaps (FIXED / DOCUMENTED / ESCALATED). ESCALATED gaps become new scopes in the tracking file. `/sw-next` enforces the loop: when pending scopes exist at the Audit phase, it blocks completion and resets to Execution. The cycle repeats until no scopes remain pending.
 - **Audit trail — full lineage record** — after execution, generates `audit-trail.md` linking every decision from origin to delivery: why it exists (appetite, intent), what was decided (IN/OUT, interface selection, trade-offs), what was committed (scopes, gates, dependencies), what actually happened (iterations, discovered tasks, records), and how it was validated (tests, reviews, audit). Every line links to the source artifact. View with `/sw-audit`, filter by scope with `--scope scope-1`, or export as JSON with `--format json`.
 - **Scopes, Tasks & Records — three-layer execution model**. Scopes are appetite-bounded delivery units committed at planning (Lean ≤2, Core ≤5, Complete ≈10). Tasks are sub-item checklists inside a scope — planned tasks seed from the spec-tech table; discovered tasks emerge during execution (always with a `note:` explaining the trigger). Records capture claim-proof evidence (files touched, commands run, verification checklist) before a scope is closed. Validation is ON by default (set `STELOW_VALIDATE=0` to disable). See [`docs/scopes-tasks-flow.md`](docs/scopes-tasks-flow.md) for the full pipeline.
@@ -260,7 +260,7 @@ These loops are **appetite- and mode-respecting by design** — they inherit the
 
 ### 2. ⚡ Execution
 
-**Stages 13-14** — Autonomous scope execution via acceptance contracts: each scope is delegated with criteria, verify commands, and stop rules. Self-correction is harness-dependent - native acceptance loops (pi-subagents) let the child fix gaps in the same context; other harnesses use parent-controlled re-delegation. Optimization scopes use benchmark-driven iteration. Scope completion is gated - `/sw-next` blocks advance to Verification if any scopes remain incomplete.
+**Stages 13-14** — Autonomous scope execution via acceptance contracts: each scope is delegated with criteria, verify commands, and stop rules. Self-correction is harness-dependent - native acceptance loops (pi-subagents via tintinweb/nicobailon) let the child fix gaps in the same context; other harnesses use parent-controlled re-delegation. Optimization scopes use benchmark-driven iteration. Scope completion is gated - `/sw-next` blocks advance to Verification if any scopes remain incomplete.
 
 ### 3. ✅ Verification & Audit
 
@@ -397,7 +397,7 @@ reads `~/.agents/skills/<name>/SKILL.md` — the agentskills.io standard.
 | **Lifecycle hooks (session start, turn end, tool call)** | ✅ | ❌ |
 | **Auto-sync scopes from spec-tech.md** | ✅ Extension | ❌ (skill instructs `bash` snippet) |
 | **`ask_user_question` (structured prompts)** | ✅ | ⚠️ Falls back to chat prose |
-| **Subagent delegation with `context: "fresh"` + `acceptance` contracts** | ✅ Via `pi-subagents` | ⚠️ Native subagent only; no acceptance contract |
+| **Subagent delegation with `context: "fresh"` + `acceptance` contracts** | ✅ Via `pi-subagents` (tintinweb / nicobailon) | ⚠️ Native subagent only; no acceptance contract |
 | **Supervision / overnight execution** | ✅ Via `pi-supervisor` | ❌ |
 
 > **Bottom line:** The **25 skills run identically in any agent that reads `~/.agents/skills/`** — they execute the full Shape Up workflow (plans, critique, scopes, everything). The deep integration features (TUI overlay, slash commands, lifecycle hooks, Plannotator gate, auto-sync scopes, ask_user_question, subagent acceptance contracts) are native to Pi, which has the extension system to support them. Two agent-agnostic surfaces also read workflow state from `.stelow/` files on disk: the [Muxy.app](https://muxy.app/) webview panel and the [Herdr](https://herdr.dev) split-pane TUI plugin. Both work with any agent. On any agent, the workflow runs from chat + skill invocation; on Pi, it also runs from slash commands + TUI.
@@ -431,7 +431,10 @@ stelow is designed to be **self-contained** — the 25 skills + installer cover 
 | [plannotator](https://plannotator.ai/) | Optional | Visual review gate annotation | Pi: `@plannotator/pi-extension` (other agents: `plannotator annotate ... --gate --json` via bash) | Manual review with approval receipt file — no structured annotation |
 | [safe-change (pi-agent-codebase-workflows)](https://github.com/PriNova/pi-agent-codebase-workflows) | Optional | Pre-execution code safety checks | `npx skills add Prinova/pi-agent-codebase-workflows -g` (works in any agent that installs from skill registries) | Skip — pre-execution check omitted |
 | Subagents (built-in to any agent) | Optional | Parallel reviewer orchestration during Plan Critique | `subagent(...)` / agent native subagent | Sequential execution — slower, same outcome (single-context review) |
-| [pi-subagents](https://github.com/nicobailon/pi-subagents) | **Recommended for Pi** | `context: "fresh"` enforcement (defeats packaged `worker`/`planner`/`oracle` defaults), `reads` parameter, `acceptance` contracts (child self-corrects in same context for scope execution), parallel fanout | `npm:pi-subagents` | Without it: scope-executor falls back to parent-controlled loop (slower); no `reads` (subagent relies on task-string context); no explicit `context: "fresh"` override |
+| [pi-subagents](https://github.com/tintinweb/pi-subagents) | **Recommended for Pi** | `Agent()` tool with `inherit_context: false` (fresh by default), `run_in_background: true` for parallelism, `get_subagent_result()` for results. Agents: `general-purpose`, `Explore`, `Plan` + custom `.md` agents. | `npm:@tintinweb/pi-subagents` | Without it: scope-executor falls back to parent-controlled loop (slower); no agent types — embed role in prompt |
+| [pi-subagents (nicobailon — legacy)](https://github.com/nicobailon/pi-subagents) | Alternative | `context: "fresh"` + `acceptance` contracts, `reads` param, parallel fanout via `tasks[]` + `concurrency` | `npm:pi-subagents` | Same degradation as tintinweb |
+
+> **Note:** stelow's cli-tools (`references/cli-tools/subagents.md`) document both tintinweb (current) and nicobailon (legacy) syntax. The orchestrator reads `detected_cli` from `index.json` and emits the correct invocation shape — no skill changes needed when switching extensions.
 | [pi-intercom](https://github.com/nicobailon/pi-intercom) | Optional (Pi only) | Session-to-session coordination | `npm:pi-intercom` | Skip — no intercom capability |
 | [pi-supervisor](https://github.com/tintinweb/pi-supervisor) | Optional (Pi only) | Conversation supervision during execution | `npm:pi-supervisor` | Skip — no supervision; rely on `stages-guard` for invariant enforcement |
 | [Muxy.app](https://muxy.app/) + stelow Muxy extension | Optional (macOS) | Webview panel showing workflow state with phase progress and quick actions | Install Muxy.app, then load extension from `integrations/muxy/stelow/` | No webview — read `.stelow/` files directly or use Herdr split-pane TUI |
@@ -455,7 +458,7 @@ curl -fsSL https://raw.githubusercontent.com/calionauta/stelow/main/setup.sh | s
 |---|---|---|---|
 | 1 | Node.js | v20+ via Homebrew (macOS) or nvm (Linux/Windows) | - |
 | 2 | pi.dev | `@earendil-works/pi-coding-agent` via npm | pi.dev |
-| 3 | Pi extensions | 12 npm packages: pi-subagents, pi-skillful, pi-intercom, pi-supervisor, @plannotator/pi-extension, pi-rewind, pi-powerline-footer, plus 5 harness tooling packages | pi.dev only |
+| 3 | Pi extensions | @tintinweb/pi-subagents, @tintinweb/pi-tasks, pi-skillful, pi-intercom, pi-supervisor, @plannotator/pi-extension, pi-rewind, pi-powerline-footer, plus harness tooling | pi.dev only |
 | 4 | Skills (25) | stelow orchestrator + 24 subskills, copied to `~/.agents/skills/` | **All CLIs** ✅ |
 | 5 | Settings | theme, model defaults, skill shortcuts in `~/.pi/agent/settings.json` | pi.dev |
 | 6 | cymbal | codebase navigation via `brew install 1broseidon/tap/cymbal` (macOS) or `go install` (Linux). Skipped gracefully if brew/Go absent | macOS, Linux |

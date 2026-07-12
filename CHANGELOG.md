@@ -2,6 +2,12 @@
 
 All notable changes to `@calionauta/stelow` will be documented in this file.
 
+## [0.47.0] - 2026-07-12
+
+### Changed
+
+- **`refactor: migrate pi-subagents to tintinweb, pi-tasks replaces rpiv-todo`**. Updated subagents reference from nicobailon/pi-subagents to tintinweb/pi-subagents (`Agent()` tool, `inherit_context: false` = fresh by default). Replaced `@juicesharp/rpiv-todo` with `@tintinweb/pi-tasks` (`TaskCreate`/`TaskList`/`TaskUpdate`). Install scripts (`install.sh`, `setup.sh`) updated to install new packages. Updated README dependencies table and capabilities matrix. `references/cli-tools/subagents.md` and `todo.md` rewritten with both extensions documented; cali-* skill copies are auto-synced via `sync-cli-tools.sh`.
+
 ## [0.46.0] - 2026-07-11
 
 ### Added
