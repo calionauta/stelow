@@ -1,7 +1,7 @@
 ---
 name: stelow-product-job-to-be-done
 description: >
-  [Cali] Complete set of specialized prompts for Jobs To Be Done (JTBD) analysis and discovery,
+  [stelow] Complete set of specialized prompts for Jobs To Be Done (JTBD) analysis and discovery,
   based on the methodology by Cali (Renato Caliari). Use this skill whenever the user wants
   to perform any kind of JTBD analysis: contextual market segmentation, thinking styles
   (Indi Young), JTBD discovery, competitor mapping, job actors, situational variables,
@@ -14,6 +14,8 @@ metadata:
   frequency: monthly
   category: research
   context-cost: low
+  author: calionauta
+  author-url: https://github.com/calionauta
 ---
 
 # Jobs To Be Done — Complete Skill

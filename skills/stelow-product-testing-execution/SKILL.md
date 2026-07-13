@@ -5,6 +5,8 @@ metadata:
   frequency: weekly
   category: code
   context-cost: medium
+  author: calionauta
+  author-url: https://github.com/calionauta
 ---
 
 # Testing Protocol

@@ -1,7 +1,7 @@
 ---
 name: stelow-product-discovery
 description: >
-  [Cali] Complete expert in the short-cycle product learning method,
+  [stelow] Complete expert in the short-cycle product learning method,
   based on the e-book "Guide to Creating Products with Short Learning Cycles" by Cali (Renato Caliari).
   Use this skill whenever the user asks about: idea validation, customer discovery,
   product experimentation, jobs to be done, pricing strategies, business models, marketing channels,
@@ -13,6 +13,8 @@ metadata:
   frequency: monthly
   category: product
   context-cost: low
+  author: calionauta
+  author-url: https://github.com/calionauta
 ---
 
 # Product with Short Learning Cycles

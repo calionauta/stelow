@@ -1,13 +1,15 @@
 ---
 name: stelow-product-coding-standards
 description: >
-  [Cali] Self-contained coding standards for product planning. Universal
+  [stelow] Self-contained coding standards for product planning. Universal
   principles (KISS, DRY, LoB, SoC, Fail Fast, YAGNI, file/function size limits).
   Use when generating or reviewing code within any product planning context.
 metadata:
   frequency: daily
   category: code
   context-cost: low
+  author: calionauta
+  author-url: https://github.com/calionauta
 ---
 
 # Product Coding Standards

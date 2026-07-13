@@ -5,6 +5,8 @@ metadata:
   frequency: rare
   category: research
   context-cost: low
+  author: calionauta
+  author-url: https://github.com/calionauta
 disable-model-invocation: true
 ---
 

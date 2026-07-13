@@ -1,7 +1,7 @@
 ---
 name: stelow-product-ux-critique
 description: >
-  [Cali] Full UX critique for visual interfaces. Accepts a live URL, source code directory,
+  [stelow] Full UX critique for visual interfaces. Accepts a live URL, source code directory,
   or screenshot image. Evaluates accessibility (WCAG AA), Nielsen's 10 heuristics, visual
   hierarchy, cognitive load, consistency, mobile responsiveness, AI slop, emotional journey,
   and design personas — then generates a classified gap report.
@@ -10,6 +10,8 @@ metadata:
   frequency: weekly
   category: product
   context-cost: medium
+  author: calionauta
+  author-url: https://github.com/calionauta
 ---
 
 **Standalone awareness:** inside stelow, appetite gates critique depth (Lean → static a11y baseline, Core → codebase mode, Complete → live site). Standalone defaults to Core appetite (codebase/browserless mode, ~80% coverage). Works with URL, source directory, or screenshot — no stelow dependency for core audit logic.

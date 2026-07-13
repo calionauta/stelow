@@ -1,7 +1,7 @@
 ---
 name: stelow-product-interface-alternatives
 description: >
-  [Cali] Interface alternatives exploration skill. Use when generating interface
+  [stelow] Interface alternatives exploration skill. Use when generating interface
   proposals using the 5-archetype library. Produces 1, 3, or 5 proposals depending
   on appetite, plus hybrid recommendation for Core/Complete. Part of stelow but can
   be used standalone.
@@ -9,6 +9,8 @@ metadata:
   frequency: monthly
   category: product
   context-cost: low
+  author: calionauta
+  author-url: https://github.com/calionauta
 ---
 
 # Interface Alternatives

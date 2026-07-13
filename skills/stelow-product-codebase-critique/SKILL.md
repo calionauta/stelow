@@ -1,7 +1,7 @@
 ---
 name: stelow-product-codebase-critique
 description: >
-  [Cali] Structural critique for codebases. Accepts a directory of source code and
+  [stelow] Structural critique for codebases. Accepts a directory of source code and
   evaluates architecture, data flow, API contracts, performance, theming, responsive
   patterns, and AI slop in code — then generates a classified gap report.
   Part of stelow (pre-implementation codebase review) but usable standalone.
@@ -10,6 +10,8 @@ metadata:
   frequency: weekly
   category: code
   context-cost: medium
+  author: calionauta
+  author-url: https://github.com/calionauta
 ---
 
 # Codebase Critique

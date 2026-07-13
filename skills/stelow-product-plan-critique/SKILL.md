@@ -1,7 +1,7 @@
 ---
 name: stelow-product-plan-critique
 description: >
-  [Cali] Systematic gap analysis for product plans. Accepts a spec-product.md file and
+  [stelow] Systematic gap analysis for product plans. Accepts a spec-product.md file and
   evaluates flows, states, affordances+design quality, data handling, system contracts,
   compositional quality (purpose-layout alignment), and feasibility
   — then generates a classified gap report with actionable questions.
@@ -10,6 +10,8 @@ metadata:
   frequency: weekly
   category: product
   context-cost: medium
+  author: calionauta
+  author-url: https://github.com/calionauta
 ---
 
 # Plan Critique

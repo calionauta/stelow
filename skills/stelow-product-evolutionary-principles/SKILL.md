@@ -1,7 +1,7 @@
 ---
 name: stelow-product-evolutionary-principles
 description: >
-  [Cali] Strategic product evolution and innovation exploration inspired by
+  [stelow] Strategic product evolution and innovation exploration inspired by
   evolutionary systems thinking, novelty search, stepping-stones theory,
   and adaptive product ecosystems.
 
@@ -19,6 +19,8 @@ metadata:
   frequency: rare
   category: research
   context-cost: medium
+  author: calionauta
+  author-url: https://github.com/calionauta
 disable-model-invocation: true
 ---
 

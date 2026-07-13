@@ -1,7 +1,7 @@
 ---
 name: stelow-product-testing-ai-code
 description: >
-  [Cali] AI-aware testing strategy skill for software products.
+  [stelow] AI-aware testing strategy skill for software products.
   Generates AI-aware testing plans, security gates, and risk-based coverage targets.
   Activated automatically when product_type is "software" or "hybrid"; usable standalone.
   Based on empirical research: AgentAssay (2026), MSR 2026, Veracode 2025, CodeRabbit 2025,
@@ -10,6 +10,8 @@ metadata:
   frequency: monthly
   category: code
   context-cost: medium
+  author: calionauta
+  author-url: https://github.com/calionauta
 ---
 
 # AI-Aware Testing Strategy

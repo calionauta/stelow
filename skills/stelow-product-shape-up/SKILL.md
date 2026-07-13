@@ -1,7 +1,7 @@
 ---
 name: stelow-product-shape-up
 description: >
-  [Cali] Shape Up product planning skill. Use when the user wants to shape
+  [stelow] Shape Up product planning skill. Use when the user wants to shape
   a product proposal using the Shape Up method. Produces a shaped proposal
   with problem, solution, scope (IN/OUT), and risks. Part of the
   stelow but can be used standalone.
@@ -9,6 +9,8 @@ metadata:
   frequency: weekly
   category: product
   context-cost: low
+  author: calionauta
+  author-url: https://github.com/calionauta
 ---
 
 # Shape Up Planning

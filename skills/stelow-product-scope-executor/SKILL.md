@@ -1,7 +1,7 @@
 ---
 name: stelow-product-scope-executor
 description: >
-  [Cali] Reads an approved product plan with typed scopes (feature, optimization, spike, test-*)
+  [stelow] Reads an approved product plan with typed scopes (feature, optimization, spike, test-*)
   and routes each scope to its correct executor. Acts as the autonomous overnight
   "set and forget" orchestrator — the pi equivalent of /goal for approved plans.
   For test-* scopes, enforces hard blocks (critical-path tests, security gates).
@@ -10,6 +10,8 @@ metadata:
   frequency: weekly
   category: product
   context-cost: low
+  author: calionauta
+  author-url: https://github.com/calionauta
 ---
 
 # Execution Executor

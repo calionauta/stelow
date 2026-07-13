@@ -1,7 +1,7 @@
 ---
 name: stelow-product-execution-critique
 description: >
-  [Cali] Post-implementation execution critique: verify scope completion, implementation quality,
+  [stelow] Post-implementation execution critique: verify scope completion, implementation quality,
   NFR coverage, edge cases, doc/tests, produce a gap registry with decision matrix.
   Supports 4 modes: workflow (spec-tech.md), plan (spec-product.md), context (dir/URL),
   and standalone (auto-detects via sem diff + git). Falls back to git diff when sem is not installed.
@@ -9,6 +9,8 @@ metadata:
   frequency: weekly
   category: meta
   context-cost: medium
+  author: calionauta
+  author-url: https://github.com/calionauta
 ---
 
 # Execution Critique
