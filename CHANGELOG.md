@@ -2,6 +2,17 @@
 
 All notable changes to `@calionauta/stelow` will be documented in this file.
 
+## [0.49.2] - 2026-07-13
+
+### Changed
+
+- **Author identity consolidation**: updated personal handles and URLs across the project.
+  - Substack: `calirenato82.substack.com` → `calionauta.substack.com` (12 files).
+  - GitHub handle: `renatocaliari` → `calionauta` (package metadata, install scripts, design docs, SKILL.md).
+  - Personal name: "Renato Caliari" / "Cali" / "Cali (Renato Caliari)" → `calionauta` (LICENSE, package.json, setup.sh display name, README author footer, SKILL.md attributions).
+
+Historical CHANGELOG entries referencing the old handles are preserved verbatim.
+
 ## [0.49.1] - 2026-07-13
 
 ### Changed
