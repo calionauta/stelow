@@ -19,6 +19,25 @@ metadata:
 
 This skill executes the Shape Up planning phase.
 
+### Standalone Quick Start
+
+When loaded standalone (via `/skill:cali-product-shape-up`), follow these steps in order:
+
+```
+1. shape:10 — Optional parallel recon (codebase context, brownfield only)
+2. shape:12 — Tech preview (appetite-gated, codebase analysis)
+3. shape:15 — Assumption Check (surface assumptions BEFORE shaping) ← DO NOT SKIP
+4. shape:20 — Shaping
+5. Proposal output with validation
+```
+
+> **Do NOT skip shape:15 (Assumption Check).** It prevents generic requests
+> from being shaped without validating core assumptions first.
+> shape:10 is optional — for brownfield projects, it maps existing code context.
+> For greenfield, skip straight to shape:12.
+
+See the Input Detection section at the bottom for what to do on first load.
+
 ## How to Load
 
 ### Via Orchestrator (recommended)
@@ -173,7 +192,7 @@ before assumptions get baked into a full spec.
 **Read mode:**
 ```bash
 WF_DIR="$(ls -td .stelow/*/*/ 2>/dev/null | head -1)"
-REVIEW_MODE="Product Spec + Interface + Scopes"
+REVIEW_MODE="Auto"
 [ -n "$WF_DIR" ] && REVIEW_MODE=$(grep -oP '"review_mode":\s*"([^"]+)"' "${WF_DIR}index.json" 2>/dev/null | grep -oP '"([^"]+)"$' | tr -d '"' )
 ```
 
@@ -193,7 +212,7 @@ REVIEW_MODE="Product Spec + Interface + Scopes"
 |-------------|----------|
 | **Auto/Product Spec Gate** | Auto-resolve. AI fills assumptions in spec as notes. No questions. |
 | **Product Spec + Interface Gates** | Top-3 most critical assumptions. Each presented with AI recommendation.
-  Use `ask_user_question` (see `references/cli-tools/ask.md`).
+  Use the ask tool (see `references/cli-tools/ask.md`).
   Option format: "{assumption}. Recom: {resolution}" with "(Recommended)" marker. |
 | **Product Spec + Interface + Scopes / Product Spec + Interface + Tech Review** | Top-5 assumptions. User responds to each.
   AI recommendation marked as "(Recommended)". |
@@ -422,7 +441,12 @@ Input:
          Describe the desired outcome, target audience, and any constraints."
 ```
 
-The skill will guide you through Parallel Recon → Shaping → Proposal output.
+The skill will guide you through:
+1. shape:10 — Optional parallel recon (codebase context, brownfield only)
+2. shape:12 — Tech preview (appetite-gated)
+3. shape:15 — Assumption Check (surface assumptions BEFORE shaping)
+4. shape:20 — Shaping
+5. Proposal output with validation
 
 ## Environment Adaptation
 

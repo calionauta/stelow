@@ -1,6 +1,6 @@
 // extensions/stelow/adapters/stages-loader.ts
-// Carrega e parseia stages.yaml para uso dos adapters Pi
-// Espelha types/stages.ts — mantido separado pois adapters são Pi-only
+// Loads and parses stages.yaml for use by Pi adapters
+// Mirrors types/stages.ts — kept separate because adapters are Pi-only
 
 import { readFileSync } from 'fs';
 
@@ -32,7 +32,7 @@ export interface StagesConfig {
 
 export function loadStages(configPath: string): StagesConfig {
   const content = readFileSync(configPath, 'utf-8');
-  // YAML já está instalado em node_modules/
+  // YAML is already installed in node_modules/
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const { parse } = require('yaml');
   return parse(content) as StagesConfig;

@@ -40,6 +40,10 @@ Input received:
   │   └→ 📋 Mode: Plan Audit (source of truth = product spec)
   ├── Is a directory path or URL?
   │   └→ 📁 Mode: Context Audit (source of truth = sem diff + git + session)
+  ├── User described what changed verbally?
+  │   └→ Use description to scope the audit. Still run sem diff / git diff
+  │      to auto-discover changes, but use inline text as the primary
+  │      scope anchor for what to evaluate.
   └── NOTHING / no input?
       └→ 💻 Mode: Standalone Audit (source of truth = auto-discovered)
          Run: sem diff HEAD~1 (or git fallback), git diff, session file list

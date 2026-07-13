@@ -11,16 +11,16 @@ describe('buildSkillActivationMessage', () => {
   });
 
   it('emits USER BRIEF section when draftText present', () => {
-    const msg = buildSkillActivationMessage('wf', 'parágrafo detalhado de 200 chars com contexto completo do que quero construir...', '');
+    const msg = buildSkillActivationMessage('wf', 'detailed paragraph of 200 chars with full context of what I want to build...', '');
     expect(msg).toContain('=== USER BRIEF ===');
-    expect(msg).toContain('parágrafo detalhado de 200 chars');
+    expect(msg).toContain('detailed paragraph of 200 chars');
   });
 
   it('emits SOURCE FILES section when allSrc present', () => {
-    const msg = buildSkillActivationMessage('wf', '', '\n\n=== FILE: brief.md ===\nconteudo do arquivo\n');
+    const msg = buildSkillActivationMessage('wf', '', '\n\n=== FILE: brief.md ===\nfile content\n');
     expect(msg).toContain('=== SOURCE FILES ===');
     expect(msg).toContain('=== FILE: brief.md ===');
-    expect(msg).toContain('conteudo do arquivo');
+    expect(msg).toContain('file content');
   });
 
   it('emits both sections when both present', () => {
@@ -46,11 +46,11 @@ describe('buildSkillActivationMessage', () => {
   });
 
   it('handles unicode and multiline draft text', () => {
-    const draft = 'Linha 1\nLinha 2 com acentos: ção, não, então\nLinha 3';
+    const draft = 'Line 1\nLine 2 with unicode: ★, ☕, 🚀\nLine 3';
     const msg = buildSkillActivationMessage('wf', draft, '');
-    expect(msg).toContain('Linha 1');
-    expect(msg).toContain('ção, não, então');
-    expect(msg).toContain('Linha 3');
+    expect(msg).toContain('Line 1');
+    expect(msg).toContain('★, ☕, 🚀');
+    expect(msg).toContain('Line 3');
   });
 
   it('preserves order: header → brief → files', () => {

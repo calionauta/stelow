@@ -14,10 +14,10 @@ metadata:
 
 # Codebase Critique
 
-> **Foco:** Analisar criticamente a estrutura de um código-fonte — arquitetura,
-> data flow, contratos, performance e anti-patterns.
-> **Input:** Diretório de código-fonte.
-> **Saída:** Relatório classificado com gaps (🚨/🤔/🔎) + recomendações.
+> **Focus:** Critically analyze source code structure — architecture,
+> data flow, API contracts, performance, theming, responsive patterns, and AI slop in code.
+> **Input:** Source code directory.
+> **Output:** Classified gap report (🚨/🤔/🔎) with recommendations.
 
 > **Tools:** See `references/cli-tools/subagents.md` for subagent patterns.
 
@@ -28,12 +28,10 @@ metadata:
 Structural codebase critique — evaluates architecture, data flow, API contracts, performance,
 theming, responsive patterns, and AI slop in code.
 
-## Visão Geral
+This skill performs a source code audit using checklists focused on
+technical and structural aspects (non-visual):
 
-Esta skill executa uma auditoria de código-fonte usando checklists focadas em
-aspectos técnicos e estruturais (não visuais):
-
-| Dimensão | O que avalia |
+| Dimension | What it evaluates |
 |----------|-------------|
 | 🏗️ **Architecture** | Module structure, dependency flow, coupling |
 | 🔄 **Data Flow** | Call chains, state management, event propagation |
@@ -43,8 +41,8 @@ aspectos técnicos e estruturais (não visuais):
 | 📱 **Responsive** | CSS breakpoints, media queries |
 | 🤖 **AI Slop in Code** | Over-generated patterns, redundant code, boilerplate |
 
-**Importante:** Esta skill é para análise de código-fonte de componentes e lógica.
-Se você precisa de auditoria visual de UI (acessibilidade, design, UX), use
+**Important:** This skill is for analyzing source code of components and logic.
+If you need visual UI auditing (accessibility, design, UX), use
 `cali-product-ux-critique` em Codebase mode.
 
 ### Appetite Gate (auto-skip for small scopes)
@@ -54,9 +52,12 @@ Codebase critique is for structural analysis — if the scope is 1 file,
 the value is minimal.
 
 ```bash
-# Read appetite from context (passed by orchestrator or inferred from scope count)
-# Default to Core if unknown
+# Read appetite from stelow context or env var; default Core
+WF_DIR="$(ls -td .stelow/*/*/ 2>/dev/null | head -1)"
 APPETITE="${APPETITE:-Core}"
+if [ -n "$WF_DIR" ] && [ -f "${WF_DIR}index.json" ]; then
+  APPETITE=$(grep -oP '"appetite":\s*"([^"]+)"' "${WF_DIR}index.json" 2>/dev/null | grep -oP '"([^"]+)"$' | tr -d '"' )
+fi
 DIFF_FILES=$(git diff --name-only HEAD~1 2>/dev/null | wc -l | tr -d ' ')
 ```
 
@@ -71,11 +72,11 @@ DIFF_FILES=$(git diff --name-only HEAD~1 2>/dev/null | wc -l | tr -d ' ')
 
 ### Standalone
 ```
-Recebi um diretório de código e quero revisar a arquitetura.
+I received a code directory and want to review the architecture.
 ```
 
 ### Via cali-product-scope-executor
-Quando um scope técnico é executado e precisa de revisão de código-fonte.
+When a technical scope is executed and needs code review.
 
 ### Via stelow (Stage Verification)
 
@@ -89,16 +90,23 @@ performance, theming, responsive patterns, or AI slop need deeper analysis.
 ## 🔀 Input Detection
 
 ```
-Input recebido:
-  ├── É um diretório com código-fonte (sem UI visual)?
+Input received:
+  ├── Is it a source code directory (no visual UI)?
   │   └→ ✅ Mode: Codebase Critique
-  └── É um diretório que contém componentes visuais?
-      └→ Use cali-product-ux-critique (Codebase mode) — também cobre arquitetura
+  ├── Is it a directory containing visual components?
+  │   └→ Use cali-product-ux-critique (Codebase mode) — also covers architecture
+  ├── User described the code/architecture verbally?
+  │   └→ Use description as context anchor. Try to find matching
+  │      source directories in the current workspace. If none found,
+  │      run a lightweight critique based on the description.
+  └── No structured input given?
+      └→ Ask: "What codebase do you want to critique? Provide a directory
+         path or describe the architecture/component."
 ```
 
 ---
 
-## Como Executar
+## How to Run
 
 ### 1. Discover structure
 
@@ -112,7 +120,7 @@ find {INPUT_PATH} -maxdepth 3 -type f \( -name "*.templ" -o -name "*.go" -o -nam
 |------|--------|
 | `references/codebase-audit-dimensions.md` | Architecture, Data Flow, System, Performance, Theming, Responsive, AI Slop |
 | `references/auto-resolve-rules.md` | Rules for auto-resolving gaps with defaults |
-| `references/output-format.md` | Formato do relatório |
+| `references/output-format.md` | Report format |
 
 ### 3. Run critique via subagent
 
@@ -142,12 +150,12 @@ Save to .cali-codebase-critique/critique-report.md.
 
 ### 4. Gap Resolution
 
-| Severidade | Ação |
+| Severity | Action |
 |------------|------|
-| **P0 — Blocking** | Corrigir imediatamente (ex: security, data loss) |
-| **P1 — Major** | Corrigir antes do release |
-| **P2 — Minor** | Próximo ciclo |
-| **P3 — Polish** | Se houver tempo |
+| **P0 — Blocking** | Fix immediately (e.g., security, data loss) |
+| **P1 — Major** | Fix before release |
+| **P2 — Minor** | Next cycle |
+| **P3 — Polish** | If time permits |
 
 ---
 
@@ -160,12 +168,12 @@ Save to .cali-codebase-critique/critique-report.md.
 
 ---
 
-## Integração com outras skills
+## Integration with Other Skills
 
 ### cali-product-scope-executor
 
-Quando um scope técnico é executado, o executor pode delegar a verificação
-de código para esta skill.
+When a technical scope is executed, the executor can delegate code verification
+to this skill.
 
 ### stelow (Stage Verification)
 

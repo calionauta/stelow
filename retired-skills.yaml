@@ -1,20 +1,20 @@
-# retired-skills.yaml — Skills aposentadas/removidas do projeto
+# retired-skills.yaml — Retired/removed skills from the project
 #
-# Lista de skills que FORAM PARTE do projeto mas não fazem mais parte
-# do `skills/` atual. O `syncSkillsFromClone` lê este arquivo e remove
-# cópias obsoletas de `~/.agents/skills/` no próximo session_start.
+# List of skills that WERE PART OF the project but are no longer in
+# the current `skills/` directory. `syncSkillsFromClone` reads this file and removes
+# stale copies from `~/.agents/skills/` on next session_start.
 #
-# Mora na raiz do projeto (não dentro de skills/) porque é consumido
-# por código de ops (sync-skills.ts), nunca pelo LLM em runtime.
+# Lives at project root (not inside skills/) because it is consumed
+# by ops code (sync-skills.ts), never by the LLM at runtime.
 #
-# Formato de cada entrada:
-#   - name:           (obrigatório) nome da skill aposentada
-#     retired_at:     (opcional)   data ISO 8601 do retirement
-#     reason:         (opcional)   superseded | renamed | merged | deleted | experimental
-#     superseded_by:  (opcional)   lista de skills que substituem esta
-#     note:           (opcional)   texto livre explicando o contexto
+# Entry format:
+#   - name:           (required) retired skill name
+#     retired_at:     (optional)   ISO 8601 retirement date
+#     reason:         (optional)   superseded | renamed | merged | deleted | experimental
+#     superseded_by:  (optional)   list of skills that replace this one
+#     note:           (optional)   free text explaining context
 #
-# Apenas `name` é obrigatório — o sync funciona mesmo com entry mínimo.
+# Only `name` is required — sync works even with minimal entries.
 
 version: 1
 
@@ -25,11 +25,11 @@ retired:
     superseded_by:
       - stelow-product-orchestrator
     note: |
-      Renomeada em 2026-06-19 (commit 8c6363e "feat: rename product to stelow").
-      A skill legada escreve artefatos em .cali-product-workflow/ (path antigo).
-      A extension/CLI atual (v0.36.2) escreve em .stelow/. Se você tem uma cópia
-      desta skill em ~/.agents/skills/, ela vai produzir workflows no path errado.
-      Delete-a ou re-rode install.sh para que o prune remova.
+      Renamed in 2026-06-19 (commit 8c6363e "feat: rename product to stelow").
+      The legacy skill writes artifacts to .cali-product-workflow/ (old path).
+      The current extension/CLI (v0.36.2) writes to .stelow/. If you have a copy
+      of this skill in ~/.agents/skills/, it will produce workflows in the wrong path.
+      Delete it or re-run install.sh so the prune removes it.
 
   - name: cali-product-critique
     retired_at: 2026-05-29
@@ -40,10 +40,10 @@ retired:
       - cali-product-ux-critique
       - cali-product-execution-critique
     note: |
-      Skill monolítica original foi dividida em 4 skills de domínio
-      específico (plan, codebase, ux, execution). Cada uma cobre
-      um input distinto (spec, código, URL, post-impl) e gera
-      relatórios de gap classificados.
+      Original monolithic skill was split into 4 domain-specific
+      skills (plan, codebase, ux, execution). Each covers
+      a distinct input (spec, code, URL, post-impl) and generates
+      classified gap reports.
 
   - name: cali-product-interface-brainstorm
     retired_at: 2026-05-31
@@ -51,8 +51,8 @@ retired:
     superseded_by:
       - cali-product-interface-alternatives
     note: |
-      Renomeada em f3f707a como parte do gap A (1 source = 1 truth).
-      Conteúdo e semântica preservados; apenas o nome mudou.
+      Renamed in f3f707a as part of gap A (1 source = 1 truth).
+      Content and semantics preserved; only the name changed.
 
   - name: stelow
     retired_at: 2026-06-22
@@ -60,5 +60,5 @@ retired:
     superseded_by:
       - stelow-product-orchestrator
     note: |
-      Renomeada para stelow-product-orchestrator para seguir convenção
-      cali-product-* e esclarecer função de orquestrador.
+      Renamed to stelow-product-orchestrator to follow the
+      cali-product-* convention and clarify orchestrator role.

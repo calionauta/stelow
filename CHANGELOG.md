@@ -2,6 +2,27 @@
 
 All notable changes to `@calionauta/stelow` will be documented in this file.
 
+## [0.48.0] - 2026-07-13
+
+### Added
+
+- **Standalone fixes for all core skills**. Added Standalone Quick Start guide to `cali-product-shape-up` so the LLM always runs Assumption Check before shaping. Input Detection sections now include inline text (verbal description) branches in `plan-critique`, `codebase-critique`, `ux-critique`, and `execution-critique`, so `/skill:<name> <idea>` works without a file path. Stelow artifact detection (`.stelow/*/*/index.json`) added to `codebase-critique` and `ux-critique` for appetite-aware gating. Workflow context detection added to `testing-execution`. `index.json` adopted as primary appetite source in `interface-alternatives`.
+- **Português → English translation: all project files cleaned**. Skills (`ux-critique`, `codebase-critique`, `opportunity-mapping`), references, extensions (`.ts` comments), ops scripts (`install.sh`, `retired-skills.yaml`), stages (`stages.yaml`), tests (test data), design docs (`stelow-board-herdr.md`), and `CHANGELOG.md` historical entries — all translated to English.
+
+### Changed
+
+- `REVIEW_MODE` default in `cali-product-shape-up` changed from `"Product Spec + Interface + Scopes"` to `"Auto"` for standalone (assumptions resolve internally instead of asking 5 questions).
+- Tool references standardized to CLI-agnostic pattern: `ask_user_question` → `the ask tool` throughout `cali-product-shape-up`.
+- `cali-product-testing-execution` and `cali-product-testing-ai-code` descriptions updated to mention standalone usage.
+- `cali-product-scope-executor` description now says "can be used standalone".
+
+### Fixed
+
+- **Shape-up Input Detection omitted Assumption Check**: standalone flow listed only "Parallel Recon → Shaping → Proposal output", skipping `shape:15`. Now lists all 5 steps.
+- **Orchestrator skill name typos**: `cali-evolutionary-principles` → `cali-product-evolutionary-principles`, `cali-opportunity-mapping` → `cali-product-opportunity-mapping` (lines 72-73).
+- **Orchestrator wrong Int. Gate reference**: line 199 referenced `cali-product-tech-planning` instead of `cali-product-interface-alternatives`.
+- **Quality Floor regression in `ux-critique`**: Core/a11y with 0 UI file changes showed "Skip." — now uses static a11y/lint baseline per quality floor principle.
+
 ## [0.47.0] - 2026-07-12
 
 ### Changed
@@ -791,13 +812,13 @@ No deprecation window, no migration cosmetics, no cosupport tickets.**
 
 ### Fixed (herdr plugin)
 
-- **`herdr plugin action invoke stelow.board.toggle` agora funciona.**
-  `open-board.sh` usava `--plugin stelow-board` (ID errado) e parseava
-  JSON da `herdr pane list` no nó errado (`data.panes` em vez de
-  `data.result.panes`). Script também ignorava `HERDR_PLUGIN_ROOT`
-  — fallback adicionado.
-- **README reorganizado**: keybinds separados do CLI reference, uso
-  TUI é primário, CLI fica em seção de teste/debug.
+- **`herdr plugin action invoke stelow.board.toggle` now works.**
+  `open-board.sh` used `--plugin stelow-board` (wrong ID) and parsed
+  JSON from `herdr pane list` in the wrong node (`data.panes` instead of
+  `data.result.panes`). Script also ignored `HERDR_PLUGIN_ROOT`
+  — fallback added.
+- **README reorganized**: keybinds separated from CLI reference, usage:
+  TUI is primary, CLI stays in test/debug section.
 
 ## [0.36.7] - 2026-06-25
 
@@ -1375,95 +1396,95 @@ The mechanical warnings above (scope count, spec lines) are **indicators**, not 
 
 ### Changed
 - **`status` field normalized across tracking + index.json**: `updateWorkflowIndexJson`
-  agora sincroniza `status` e `workflow_status`. LLMs podem usar `status` em
-  ambos os arquivos sem confundir. Writers diretos (`start.ts`, `archiveWorkflowOnDisk`,
-  `cmdUnarchive`) também escrevem ambos os campos. Readers preferem `status`
-  com fallback para `workflow_status` (backward compat).
+  now synchronizes `status` and `workflow_status`. LLMs can use `status` in
+  both files without confusion. Direct writers (`start.ts`, `archiveWorkflowOnDisk`,
+  `cmdUnarchive`) also write both fields. Readers prefer `status`
+  with fallback to `workflow_status` (backward compat).
 
 ## [0.23.4-alpha] - 2026-06-13
 
 ### Fixed
-- **Skip "Continue?" on fresh workflows**: auto-discovery em `setup.md` agora
-  verifica se `created_at` < 60s atrás. Workflows recém-criados por `/sw-start`
-  pulam a pergunta redundante.
-- **Nota `status` vs `workflow_status` no SKILL.md**: LLMs confundiam os campos
-  do tracking file (`status`) com index.json (`workflow_status`). Template bash
-  agora tem aviso explícito.
+- **Skip "Continue?" on fresh workflows**: auto-discovery in `setup.md` now
+  checks if `created_at` < 60s ago. Workflows freshly created by `/sw-start`
+  skip the redundant question.
+- **Note `status` vs `workflow_status` in SKILL.md**: LLMs were confusing the
+  tracking file (`status`) fields with index.json (`workflow_status`). Bash template
+  now has explicit warning.
 
 ## [0.23.3-alpha] - 2026-06-13
 
 ### Fixed
-- **`getActiveWorkflow` per-worktree isolation**: filtra workflows por `cwd`
-  via `isWorkflowFromProject`. Stale entries de outros Muxy worktrees não
-  bloqueiam mais `/sw-start`. `getAllActiveWorkflows` também filtrado.
-- **`/sw-doctor` agora corrige `local-stale-cwd`**: workflows com `cwd` fora
-  do projeto são arquivados (tracking + index.json) via `--fix` ou prompt
-  interativo.
+- **`getActiveWorkflow` per-worktree isolation**: filters workflows by `cwd`
+  via `isWorkflowFromProject`. Stale entries from other Muxy worktrees no longer
+  block `/sw-start`. `getAllActiveWorkflows` also filtered.
+- **`/sw-doctor` now fixes `local-stale-cwd`**: workflows with `cwd` outside
+  the project are archived (tracking + index.json) via `--fix` or interactive
+  prompt.
 
 ## [0.23.2-alpha] - 2026-06-12
 
 ### Added
-- **`/sw-doctor --fix`**: auto-corrige zombie workflows, index-status-mismatch,
-  e index-phase-mismatch. Suporta flag `--fix` (silencioso) e prompt interativo
-  via TUI select quando issues corrigíveis são detectadas.
-- **Muxy stale indicator**: kanban cards mostram aviso "⚠ Stale (>24h without
-  update)" para workflows travados em `in-progress`.
+- **`/sw-doctor --fix`**: auto-fixes zombie workflows, index-status-mismatch,
+  and index-phase-mismatch. Supports `--fix` flag (silent) and interactive prompt
+  via TUI select when fixable issues are detected.
+- **Muxy stale indicator**: kanban cards show warning "⚠ Stale (>24h without
+  update)" for workflows stuck in `in-progress`.
 
 ### Fixed
-- **`cmdArchive`/`cmdAbort`/`cmdArchive purge`**: agora sincronizam index.json
-  via `updateWorkflowIndexJson` direto por `dirHash`, além da busca por nome
-  em `archiveWorkflowOnDisk`. Garante que index.json nunca fique inconsistente.
-- **`removeWorkflowFromTracking`**: aceita parâmetro `wf` opcional com `dirHash`
-  para fallback direto. Todos os 6 call sites atualizados.
+- **`cmdArchive`/`cmdAbort`/`cmdArchive purge`**: now synchronize index.json
+  via `updateWorkflowIndexJson` directly by `dirHash`, in addition to name lookup
+  in `archiveWorkflowOnDisk`. Ensures index.json never becomes inconsistent.
+- **`removeWorkflowFromTracking`**: accepts optional `wf` parameter with `dirHash`
+  for direct fallback. All 6 call sites updated.
 
 ### Documentation
-- **README**: `/sw-next` documentado com auto-complete; `/sw-doctor` documentado
-  com detecção de zumbis.
+- **README**: `/sw-next` documented with auto-complete; `/sw-doctor` documented
+  with zombie detection.
 
 ## [0.23.1-alpha] - 2026-06-12
 
 ### Fixed
-- **Auto-complete workflow on last `/sw-next`**: `cmdNext` agora finaliza o workflow
-  automaticamente quando `next >= PHASE_NAMES.length`, sem depender de `/sw-complete`
-  manual. Marca todas as fases como "completed", sincroniza index.json e stages guard,
-  e limpa o status da UI.
-- **`turn_end` sync detecta workflow completo**: não hardcoda mais
-  `workflow_status: "in-progress"` no index.json. Se todas as fases estão concluídas,
-  escreve `"completed"`. Inclui guard defensivo `Array.isArray(phases)`.
-- **Zombie workflow detection**: `diagnoseZombieIndexes()` varre todos os
-  `.stelow/<date>/<hash>/index.json` e flagra workflows com
-  `workflow_status: "in-progress"` que não foram atualizados em >24h e não
-  correspondem a nenhum workflow ativo local. Reportado via `/sw-doctor`.
+- **Auto-complete workflow on last `/sw-next`**: `cmdNext` now finalizes the workflow
+  automatically when `next >= PHASE_NAMES.length`, without depending on manual `/sw-complete`.
+  Marks all phases as "completed", synchronizes index.json and stages guard,
+  and clears the UI status.
+- **`turn_end` sync detects completed workflow**: no longer hardcodes
+  `workflow_status: "in-progress"` in index.json. If all phases are completed,
+  writes `"completed"`. Includes defensive guard `Array.isArray(phases)`.
+- **Zombie workflow detection**: `diagnoseZombieIndexes()` scans all
+  `.stelow/<date>/<hash>/index.json` and flags workflows with
+  `workflow_status: "in-progress"` that haven't been updated in >24h and don't
+  match any locally active workflow. Reported via `/sw-doctor`.
 
 ## [0.23.0-alpha] - 2026-06-11
 
 ### Changed
-- **Global ~/.stelow-global.json é índice read-only**: não armazena mais `status`,
-  `currentPhase`, `phases`, `stage`. Estado real sempre lido do arquivo local.
-  Removeu 337 linhas de código de sincronização.
-- **Comandos não escrevem mais estado no global**: pause, resume, setphase, next,
-  complete só alteram tracking local.
-- **Multiple active workflows bloqueado**: `/sw-start` recusa se já existe in-progress;
-  `/sw-resume` recusa se outro workflow já está ativo.
-- **Muxy Done column**: board agora tem coluna `Done` para workflows completed;
+- **Global ~/.stelow-global.json is read-only index**: no longer stores `status`,
+  `currentPhase`, `phases`, `stage`. Real state always read from local file.
+  Removed 337 lines of synchronization code.
+- **Commands no longer write state to global**: pause, resume, setphase, next,
+  complete only change local tracking.
+- **Multiple active workflows blocked**: `/sw-start` refuses if one is already in-progress;
+  `/sw-resume` refuses if another workflow is already active.
+- **Muxy Done column**: board now has `Done` column for completed workflows;
   removed from Verify/Shape.
-- **Muxy multi-worktree**: board opcionalmente mostra workflows de outros worktrees
-  do mesmo repositório, com card identificando o worktree de origem.
+- **Muxy multi-worktree**: board optionally shows workflows from other worktrees
+  of the same repository, with card identifying the source worktree.
 
 ### Added
-- **`/sw-doctor`** command: diagnóstico de tracking health, stale cwd, duplicates,
+- **`/sw-doctor`** command: diagnoses tracking health, stale cwd, duplicates,
   index mismatches, global/missing/local.
-- **Muxy extra workflows**: carrega do global tracking + busca estado real local
-  para exibir multi-worktree.
-- **Helpers de catálogo**: `addToGlobalIndex`, `removeGlobalIndexEntry`,
+- **Muxy extra workflows**: loads from global tracking + fetches real local state
+  to display multi-worktree.
+- **Catalog helpers**: `addToGlobalIndex`, `removeGlobalIndexEntry`,
   `updateGlobalIndexName`.
 
 ### Fixed
-- **session_start** não importa mais do global (que não tem status).
-- **turn_end** não sincroniza global; só index.json.
-- **cmdStatus/cmdGoto** não usam mais status do global.
-- **doctor.ts** adaptado para global index-only.
-- **Muxy stale cwd**: workflow com cwd de outro projeto é escondido e desabilitado.
+- **session_start** no longer imports from global (which has no status).
+- **turn_end** doesn't sync global; only index.json.
+- **cmdStatus/cmdGoto** no longer use status from global.
+- **doctor.ts** adapted for global index-only.
+- **Muxy stale cwd**: workflow with cwd from another project is hidden and disabled.
 
 ## [0.16.1-alpha] - 2026-06-06
 

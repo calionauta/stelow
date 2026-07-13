@@ -1,5 +1,5 @@
 // extensions/stelow/adapters/state-manager.ts
-// Gerencia estado do workflow — transições e histórico
+// Manages workflow state — transitions and history
 // SINGLE SOURCE OF TRUTH: stelow.json
 
 import { readFileSync, writeFileSync, existsSync } from 'fs';
@@ -33,7 +33,7 @@ export function transition(
   const state = loadState(statePath);
   const stage = stages.stages.find(s => s.name === toStage);
 
-  // Atualizar histórico
+  // Update history
   const now = new Date().toISOString();
   if (state.history.length > 0) {
     const last = state.history[state.history.length - 1];

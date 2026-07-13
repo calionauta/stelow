@@ -16,10 +16,10 @@ metadata:
 
 # UX Critique
 
-> **Foco:** Auditoria completa de UX de interfaces — acessibilidade visual, usabilidade, design,
-> jornada emocional e detecção de AI slop.
-> **Inputs:** URL (live site), diretório (código-fonte), ou screenshot (imagem).
-> **Saída:** Relatório classificado com gaps (🚨/🤔/🔎) + recomendações acionáveis.
+> **Focus:** Complete UX audit of interfaces — visual accessibility, usability, design,
+> emotional journey, and AI slop detection.
+> **Inputs:** URL (live site), directory (source code), or screenshot (image).
+> **Output:** Classified report with gaps (🚨/🤔/🔎) + actionable recommendations.
 
 > **Tools:** See `references/cli-tools/agent_browser.md` and `references/cli-tools/subagents.md` for tool patterns.
 
@@ -28,32 +28,13 @@ metadata:
 Full UX audit for visual interfaces — accessibility (WCAG AA), Nielsen heuristics, visual hierarchy,
 cognitive load, consistency, mobile/responsive, AI slop, emotional journey, and design personas.
 
-## Visão Geral
+Accepts **3 input types**, each activating a different subset of dimensions:
 
-Esta skill executa uma auditoria de UX completa focada em **todas as dimensões da experiência**
-que podem ser avaliadas em uma interface visual ou código-fonte de UI:
-
-| Dimensão | O que avalia | Framework |
-|----------|-------------|-----------|
-| **Accessibility (A11y)** | Contraste WCAG AA, ARIA, keyboard nav, alt text, foco, semântica HTML, forms, reduced motion, forced colors, dark mode | WCAG AA / UI Audit |
-| **Nielsen Heuristics** | Visibilidade, consistência, prevenção de erros, liberdade, estética, etc. | Nielsen 10 |
-| **Compositional Quality** | Work-pattern identification, purpose-layout alignment, density strategy, multi-pattern hierarchy | UI Audit |
-| **Interaction States** | 9 estados por componente (idle, hover, active, focus, disabled, loading, empty, error, overflow) — baseline humana vs AI | UI Audit |
-| **Visual Hierarchy** | Primary action, visual weight, spacing, alinhamento, tipografia | UI Audit |
-| **Cognitive Load** | Progressive disclosure, info density, grouping, labeling, decisões | 8-item checklist |
-| **Consistency** | Design tokens, padrões de componentes, ícones, border-radius | UI Audit |
-| **Mobile / Responsive** | Touch targets, breakpoints, text scaling, horizontal scroll | Design Quality |
-| **Emotional Journey** | Peak-End, anxiety valleys, reassurance, progress indicators | Critique Frameworks |
-| **Design Personas** | Alex (power), Jordan (first-timer), Sam (manager), Morgan (a11y), Taylor (mobile) | Critique Frameworks |
-| **AI Slop Detection** | 14 tells + anti-patterns de interfaces geradas por IA (empirically validated: ~10 patterns = ~90% of signal) | Critique Frameworks |
-
-Aceita **3 tipos de input**, cada um ativando um subset diferente das dimensões:
-
-| Input | Detecta | Dimensões cobertas |
+| Input | Detects | Dimensions covered |
 |-------|---------|-------------------|
-| **URL** | `http://` ou `https://` | **Todas** — auditoria completa ao vivo |
-| **Codebase** | Diretório com código-fonte | **~80%** sem browser (exceto contraste exato, keyboard real, screen reader) |
-| **Screenshot** | Arquivo `.png` `.jpg` `.webp` | **~60%** — visual hierarchy, AI slop, contraste estimado, cognitive load |
+| **URL** | `http://` or `https://` | **All** — full live audit |
+| **Codebase** | Source code directory | **~80%** without browser (except exact contrast, real keyboard, screen reader) |
+| **Screenshot** | `.png` `.jpg` `.webp` file | **~60%** — visual hierarchy, AI slop, estimated contrast, cognitive load |
 
 ### Appetite Gate (auto-skip for scopes without UI changes)
 
@@ -61,8 +42,12 @@ Aceita **3 tipos de input**, cada um ativando um subset diferente das dimensões
 and if appetite warrants a full audit.
 
 ```bash
-# Read appetite from context; default Core
+# Read appetite from stelow context or env var; default Core
+WF_DIR="$(ls -td .stelow/*/*/ 2>/dev/null | head -1)"
 APPETITE="${APPETITE:-Core}"
+if [ -n "$WF_DIR" ] && [ -f "${WF_DIR}index.json" ]; then
+  APPETITE=$(grep -oP '"appetite":\s*"([^"]+)"' "${WF_DIR}index.json" 2>/dev/null | grep -oP '"([^"]+)"$' | tr -d '"' )
+fi
 # Check if any visual files changed
 UI_FILES=$(git diff --name-only HEAD~1 2>/dev/null | grep -cE '\.(templ|html|tsx|jsx|css)$' || echo "0")
 ```
@@ -70,34 +55,39 @@ UI_FILES=$(git diff --name-only HEAD~1 2>/dev/null | grep -cE '\.(templ|html|tsx
 | Appetite | UI files changed | Action |
 |----------|-----------------|--------|
 | `Lean` | any | **Static a11y/lint baseline.** No browser/live audit unless upgraded. |
-| `Core` | 0 | **Skip.** |
+| `Core` | 0 | **Static a11y/lint baseline.** No browser. Skip full audit when no UI changed. |
 | `Core` | 1+ | **Codebase mode (~80%).** No browser. Syntactic a11y + AI slop only. |
 | `Complete` | 0 | **Skip** (no UI to audit) |
 | `Complete` | 1+ | **Live Site mode.** Full audit with browser + real a11y. Human reviews report in Product Spec + Interface + Scopes / Product Spec + Interface + Tech Review mode. |
 
 **Rationale:** UX critique with a browser is expensive (opens URL, navigates, captures screenshots). For Lean, keep the static a11y/lint baseline; for Core, use codebase/browserless review; for Complete, run live-site audit when UI exists. Appetite changes audit depth, not whether UI quality matters.
 
-### Standalone (uso avulso)
-Leia este arquivo e pule para o modo relevante.
+### Standalone
+Read this file and jump to the relevant mode.
 
 ### Via cali-product-testing-execution (Phase 3)
-O orchestrator do testing-execution carrega esta skill automaticamente quando `Tem interface visual? → SIM`.
+The testing-execution orchestrator loads this skill automatically when `Has visual UI? → YES`.
 
 ### Via stelow (Stage Verification)
-O stage `ui-quality` em `stages/verification.md` delega para esta skill.
+The `ui-quality` stage in `stages/verification.md` delegates to this skill.
 
 ---
 
 ## 🔀 Input Router
 
 ```
-Input fornecido:
+Provided input:
   ├── Is it a URL (http:// or https://)?
   │   └→ 🌐 Mode: Live Site Audit (all dimensions)
   ├── Is it a source directory or code file?
   │   └→ 📁 Mode: Codebase Audit (~80% coverage)
-  └── Is it an image (.png/.jpg/.webp)?
-      └→ 🖼️ Mode: Screenshot Audit (~60% coverage)
+  ├── Is it an image (.png/.jpg/.webp)?
+  │   └→ 🖼️ Mode: Screenshot Audit (~60% coverage)
+  └── User described the interface/component verbally?
+      └→ Use description as context. Scan current directory for
+         visual source files. If none found, ask: "What interface do
+         you want reviewed? Provide a URL, directory, screenshot, or
+         describe the component."
 ```
 
 ---
@@ -112,7 +102,7 @@ Audita um site ao vivo abrindo no browser e avaliando a UX completa.
 |------|--------|
 | `references/ui-audit-dimensions.md` | Accessibility (WCAG) + Design Quality checklists |
 | `references/ux-frameworks.md` | Nielsen 10, Emotional Journey, Personas |
-| `references/output-format.md` | Formato do relatório |
+| `references/output-format.md` | Report format |
 
 ### 2. Open and explore
 
@@ -135,18 +125,18 @@ with severity-classified findings (P0-P3), dimension tags, and actionable recomm
 
 ### 4. Gap Resolution
 
-| Severidade | Ação |
+| Severity | Action |
 |------------|------|
-| **P0 — Blocking** | Corrigir imediatamente |
-| **P1 — Major** | Corrigir antes do release |
-| **P2 — Minor** | Próximo ciclo |
-| **P3 — Polish** | Se houver tempo |
+| **P0 — Blocking** | Fix immediately |
+| **P1 — Major** | Fix before release |
+| **P2 — Minor** | Next cycle |
+| **P3 — Polish** | If time permits |
 
 ---
 
 ## 📁 Mode: Codebase Audit
 
-Audita código-fonte de componentes de UI sem precisar de browser.
+Audits source code of UI components without needing a browser.
 Cobre ~80% dos issues (AccessGuru arXiv 2025).
 
 ### 1. Read references
@@ -184,13 +174,13 @@ For each issue: severity, dimension, if it can be verified from source or [needs
 
 ### 4. Flag what needs browser
 
-Issues marcados como `[needs browser]` devem ser verificados ao vivo.
+Issues marked as `[needs browser]` must be verified live.
 
 ---
 
 ## 🖼️ Mode: Screenshot Audit
 
-Audita uma imagem de screenshot para análise visual rápida (~60% coverage).
+Audits a screenshot image for quick visual analysis (~60% coverage).
 
 ### 1. Read references
 
@@ -201,7 +191,7 @@ Audita uma imagem de screenshot para análise visual rápida (~60% coverage).
 
 ### 2. Analyze screenshot
 
-Leia o arquivo de imagem para análise visual. Use o subagents tool (see `references/cli-tools/subagents.md`) to audit:
+Read the image file for visual analysis. Use o subagents tool (see `references/cli-tools/subagents.md`) to audit:
 
 ```
 Agent: reviewer
@@ -217,9 +207,9 @@ keyboard, screen reader, focus, interactive states, animation.
 
 ### 3. Limitations
 
-| Cobre | Não cobre |
+| Covers | Does not cover |
 |-------|-----------|
-| Contraste estimado | Contraste exato |
+| Estimated contrast | Exact contrast |
 | Visual hierarchy | Keyboard navigation |
 | AI slop detection | Screen reader |
 | Cognitive load | Focus management |
@@ -244,7 +234,7 @@ keyboard, screen reader, focus, interactive states, animation.
 
 ---
 
-## Integração com outras skills
+## Integration with Other Skills
 
 ### cali-product-testing-execution (Phase 3)
 
@@ -264,18 +254,18 @@ Phase 3: UI/UX Quality
 ### stelow (Stage Verification)
 
 The `ui-quality` stage in `stages/verification.md` delegates to this skill on tiers
-Quick (codebase mode) e Full (live site mode).
+Quick (codebase mode) and Full (live site mode).
 
 ### cali-product-scope-executor
 
 When a visual scope is executed, the executor delegates UX verification to
-esta skill.
+this skill.
 
 ---
 
 ## Environment Adaptation
 
-Se agent_browser não estiver disponível (ex: outros CLIs), use Codebase mode
-(~80% coverage) e note no relatório o que não pôde ser verificado.
+If agent_browser is not available (e.g. other CLIs), use Codebase mode
+(~80% coverage) and note in the report what could not be verified.
 
 See `references/cli-tools/agent_browser.md` for availability details.

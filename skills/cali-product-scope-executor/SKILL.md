@@ -5,6 +5,7 @@ description: >
   and routes each scope to its correct executor. Acts as the autonomous overnight
   "set and forget" orchestrator — the pi equivalent of /goal for approved plans.
   For test-* scopes, enforces hard blocks (critical-path tests, security gates).
+  Part of stelow but can be used standalone.
 metadata:
   frequency: weekly
   category: product

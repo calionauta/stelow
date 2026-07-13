@@ -69,8 +69,8 @@ In the Strategic Context stage, the user can choose strategic analyses **in para
 | Approach | Skill | What It Produces |
 |---|---|---|
 | **Jobs To Be Done** | `cali-product-job-to-be-done` | Contextual segmentation, desired outcomes, job map |
-| **Evolutionary Principles** | `cali-evolutionary-principles` | Stepping-stones, novelty map, evolutionary forces |
-| **Opportunity Mapping** | `cali-opportunity-mapping` | Ranked opportunities, solution candidates |
+| **Evolutionary Principles** | `cali-product-evolutionary-principles` | Stepping-stones, novelty map, evolutionary forces |
+| **Opportunity Mapping** | `cali-product-opportunity-mapping` | Ranked opportunities, solution candidates |
 | **Multi-Method Market Analysis** | `cali-product-multi-method-market-analysis` | PESTLE, Wardley Maps, Foresight, trends |
 | **Product Discovery** | `cali-product-discovery` | Experiment plan, metrics, pricing |
 
@@ -196,7 +196,7 @@ Follow the sequence below. For Shape Up, Critique, Interface, and Int. Gate stag
 1. Shape: see the `cali-product-shape-up` skill for instructions
 2. Critique: see the `cali-product-plan-critique` skill for instructions
 3. Interface: see the `cali-product-interface-alternatives` skill for instructions
-4. Int. Gate: see the `cali-product-tech-planning` skill for instructions
+4. Int. Gate: see the `cali-product-interface-alternatives` skill for instructions
 
 Do NOT use `/skill:` for internal subskills.
 

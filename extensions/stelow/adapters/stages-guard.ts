@@ -1,6 +1,6 @@
 // extensions/stelow/adapters/stages-guard.ts
 // Pi-only enforcement via PreToolUse hooks
-// Lê stages.yaml e current-stage.json para bloquear ferramentas
+// Reads stages.yaml and current-stage.json to block tools
 
 import { parse as parseYAML } from 'yaml';
 import { readFileSync, existsSync } from 'fs';
@@ -87,7 +87,7 @@ export function createStagesGuard(
   state: StageState,
   onBlocked?: (tool: string, stage: string, allowed: string[]) => void
 ) {
-  // Cache para lookup rápido
+  // Cache for fast lookup
   const stageMap = new Map<string, Stage>();
   for (const s of stages.stages) {
     stageMap.set(s.name, s);
@@ -98,7 +98,7 @@ export function createStagesGuard(
     const stage = stageMap.get(stageName);
 
     if (!stage) {
-      // Stage não encontrado — permitir (fallback seguro)
+      // Stage not found — allow (safe fallback)
       return { allowed: true };
     }
 
@@ -116,8 +116,8 @@ export function createStagesGuard(
 
     // VERIFICATION CHECK: allowed_tools
     if (stage.allowed_tools.length > 0 && !stage.allowed_tools.includes(toolName)) {
-      // Tool não está na lista de permitidas, mas não está blocked
-      // Log warning mas permite (opt-in model — só bloqueia o que está em blocked_tools)
+      // Tool is not in the allowed list, but not blocked either
+      // Log warning but allow (opt-in model — only blocks what's in blocked_tools)
       console.warn(
         `[Stages Guard] Tool '${toolName}' not in allowed list for stage '${stageName}'`
       );

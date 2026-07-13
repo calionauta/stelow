@@ -125,12 +125,12 @@ install_skills_flat() {
   log_success "  Installed $installed skills"
   if [[ $skipped -gt 0 ]]; then log_warn "  Skipped $skipped skills (not found)"; fi
 
-  # ── Prune: remove skills órfãs ou retired ──
-  # Duas fontes determinam o que remover:
-  #   1. Skills que não estão mais no projeto (órfãs naturais)
-  #   2. Skills explicitamente listadas em retired-skills.yaml (retirements)
+  # ── Prune: remove orphaned or retired skills ──
+  # Two sources determine what to remove:
+  #   1. Skills no longer in the project (natural orphans)
+  #   2. Skills explicitly listed in retired-skills.yaml (retirements)
   #
-  # Só mexe em skills com prefixo gerenciado.
+  # Only touches skills with managed prefix.
   local retired_list="$SCRIPT_DIR/retired-skills.yaml"
   local pruned=0
   for entry in "$SKILLS_DIR"/*/; do
@@ -139,12 +139,12 @@ install_skills_flat() {
       cali-product-*|cali-pw-*) ;;
       *) continue ;;
     esac
-    # Fonte 1: não está nas skills ativas do projeto (órfã natural)
+    # Source 1: not in the project's active skills (natural orphan)
     local in_project=false
     for s in "${project_skills[@]}"; do
       if [[ "$s" == "$name" ]]; then in_project=true; break; fi
     done
-    # Fonte 2: está em retired-skills.yaml (retirada explícita)
+    # Source 2: listed in retired-skills.yaml (explicit retirement)
     local in_retired=false
     if [[ -f "$retired_list" ]]; then
       local yaml_name

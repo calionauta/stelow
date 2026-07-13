@@ -27,11 +27,11 @@ When `question` tool is not available, use enumerated text in chat (A/B/C/D or 1
 ## Required Input
 
 1. **Ask the user for their inputs** (use `question` tool if available):
-   - **`<INPUT DO USUÁRIO>` (required)**: The core problem, idea, pain point, or strategic question.
+   - **`<USER INPUT>` (required)**: The core problem, idea, pain point, or strategic question.
    - **`<PRODUTOS ATUAIS PARA CLIENTES EXTERNOS>` (optional)**: Current external-facing products or services — used to inspire integration or expansion ideas.
-   - **`<FERRAMENTAS ATUAIS INTERNAS DA ORGANIZAÇÃO>` (optional)**: Internal tools/platforms — used only when the input relates to internal organizational changes.
+   - **`<ORGANIZATION CURRENT INTERNAL TOOLS>` (optional)**: Internal tools/platforms — used only when the input relates to internal organizational changes.
    - Always include option: "I want you to recommend based on context"
-   - Fallback (no question tool): "Forneça o input principal (problema/ideia) e opcionalmente produtos atuais e ferramentas internas"
+   - Fallback (no question tool): "Provide the main input (problem/idea) and optionally current products and internal tools"
 
 ---
 

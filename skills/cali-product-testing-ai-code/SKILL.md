@@ -3,7 +3,7 @@ name: cali-product-testing-ai-code
 description: >
   [Cali] AI-aware testing strategy skill for software products.
   Generates AI-aware testing plans, security gates, and risk-based coverage targets.
-  Activated automatically when product_type is "software" or "hybrid".
+  Activated automatically when product_type is "software" or "hybrid"; usable standalone.
   Based on empirical research: AgentAssay (2026), MSR 2026, Veracode 2025, CodeRabbit 2025,
   LLM4TDD (2023), TDD-with-AI-Agents (2026).
 metadata:

@@ -1,6 +1,6 @@
 # stages.yaml — Metadados de stage
-# Complementa stages/*.md (comportamento), NÃO substitui
-# Source of truth para: tools por stage, transições, supervisor, gates
+# Complements stages/*.md (behavior), does NOT replace them
+# Source of truth for: tools per stage, transitions, supervisor, gates
 #
 # Sincronizado com PHASE_NAMES em extensions/stelow/types.ts
 

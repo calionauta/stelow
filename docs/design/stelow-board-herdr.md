@@ -1,8 +1,8 @@
-# Plano de Implementação: Plugin `stelow-board` para Herdr
+# Implementation Plan: Plugin `stelow-board` for Herdr
 
 **Data:** 2026-06-23
-**Status:** Pesquisa concluída — pronto pra execução após aprovação
-**Propósito:** Construir plugin herdr (Rust + ratatui) que renderiza painel split persistente com lista clicável de projetos/escopos/tarefas do workflow **stelow**, replicando mentalidade Muxy panel dentro do modelo terminal-native do herdr.
+**Status:** Research complete — ready for execution after approval
+**Purpose:** Build a herdr plugin (Rust + ratatui) that renders a persistent split panel with a clickable list of **stelow** workflow projects/scopes/tasks, replicating the Muxy panel mentality inside herdr's terminal-native model.
 
 ---
 
@@ -14,7 +14,7 @@
 > will use English exclusively. Portuguese only in this document and in user-facing
 > UI text rendered by the TUI itself (per project convention: UI text is exempt).
 
-## ⚠️ REGRA DE PRECISÃO CIRÚRGICA
+## ⚠️ SURGICAL PRECISION RULE
 
 > **Every existing line in every file must be preserved untouched.** Only add new
 > content at the specified insertion points. Never remove, rephrase, or restructure
@@ -23,31 +23,31 @@
 
 ---
 
-## 📋 Escopo Geral
+## 📋 General Scope
 
-| # | Tarefa | Arquivos | Prioridade |
+| # | Task | Files | Priority |
 |---|--------|----------|------------|
-| 1 | Criar repo `stelow-board` (plugin herdr) sob `integrations/herdr/stelow-board/` | `Cargo.toml`, `herdr-plugin.toml`, `src/main.rs`, `scripts/open-board.sh` | 🔴 Alta |
-| 2 | Adicionar data layer que lê `.stelow/` do cwd do workspace | `src/data.rs` (novo módulo) | 🔴 Alta |
-| 3 | Implementar state machine de views (Overview → ProjectDetail → ScopeDetail) | `src/app.rs` (novo módulo) | 🔴 Alta |
-| 4 | UI ratatui com 3 estados + hit-test mouse | `src/ui.rs` (novo módulo) | 🔴 Alta |
-| 5 | Action wrapper idempotente (open/focus/close) | `scripts/open-board.sh` | 🟡 Média |
-| 6 | Keybinding opcional `prefix+w` | `herdr-plugin.toml` (decl `[[keys.command]]`) | 🟡 Média |
-| 7 | README com install + keybinds + screenshots ASCII | `README.md` | 🟡 Média |
-| 8 | Publicar no GitHub com topic `herdr-plugin` para auto-index no marketplace | repo público | 🟢 Baixa |
+| 1 | Create `stelow-board` repo (herdr plugin) under `integrations/herdr/stelow-board/` | `Cargo.toml`, `herdr-plugin.toml`, `src/main.rs`, `scripts/open-board.sh` | 🔴 High |
+| 2 | Add data layer that reads `.stelow/` from workspace cwd | `src/data.rs` (new module) | 🔴 High |
+| 3 | Implement view state machine (Overview → ProjectDetail → ScopeDetail) | `src/app.rs` (new module) | 🔴 High |
+| 4 | ratatui UI with 3 states + mouse hit-test | `src/ui.rs` (new module) | 🔴 High |
+| 5 | Idempotent action wrapper (open/focus/close) | `scripts/open-board.sh` | 🟡 Medium |
+| 6 | Optional `prefix+w` keybinding | `herdr-plugin.toml` (decl `[[keys.command]]`) | 🟡 Medium |
+| 7 | README with install + keybinds + ASCII screenshots | `README.md` | 🟡 Medium |
+| 8 | Publish on GitHub with `herdr-plugin` topic for auto-index on marketplace | public repo | 🟢 Low |
 
 ---
 
-## 🏗️ Arquitetura
+## 🏗️ Architecture
 
-### Modelo de execução (resumo da pesquisa)
+### Execution model (research summary)
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
 │ herdr (Rust multiplexer)                                         │
 │ ┌────────────────────────────────────────┐  ┌────────────────┐  │
 │ │ Pane 1 (split esquerdo)                │  │ Pane 2 (split) │  │
-│ │ $ shell normal do usuário              │  │ plugin TUI     │  │
+│ │ $ user's normal shell                  │  │ plugin TUI     │  │
 │ │                                        │  │ (stelow-       │  │
 │ │                                        │  │  board)        │  │
 │ └────────────────────────────────────────┘  └────────────────┘  │
@@ -57,23 +57,23 @@
 └──────────────────────────────────────────────────────────────────┘
 ```
 
-### Fluxo de interação
+### Interaction flow
 
 ```
 1. user: `prefix+w` ou `:plugin action invoke stelow.board.toggle`
 2. herdr: executa `scripts/open-board.sh` (action) OU `[[panes]]` declaration
 3. action script: detecta estado atual via `herdr pane list` JSON
    - no pane existe       → `herdr plugin pane open --placement split`
-   - existe, não focado  → `herdr pane zoom <id> --on` (focus)
-   - existe, já focado   → `herdr pane close <id>` (hide)
+    - exists, not focused → `herdr pane zoom <id> --on` (focus)
+    - exists, focused   → `herdr pane close <id>` (hide)
 4. pane launched: `target/release/stelow-board`
-5. TUI: lê `HERDR_PLUGIN_CONTEXT_JSON` → workspace_cwd → lê `.stelow/` → renderiza
+5. TUI: reads `HERDR_PLUGIN_CONTEXT_JSON` → workspace_cwd → reads `.stelow/` → renders
 6. user clica/tecla → action handler → se for action, invoca via `HERDR_BIN_PATH herdr ...`
 ```
 
 ---
 
-## 🧩 Estrutura de arquivos (artefatos finais em inglês)
+## 🧩 File structure (final artifacts in English)
 
 ```
 stelow-board/
@@ -92,9 +92,9 @@ stelow-board/
 
 ---
 
-## 📐 Detalhamento por tarefa
+## 📐 Task Breakdown
 
-### Tarefa 1: Scaffold + manifest
+### Task 1: Scaffold + manifest
 
 **`herdr-plugin.toml`:**
 ```toml
@@ -150,9 +150,9 @@ lto = "thin"
 strip = true
 ```
 
-### Tarefa 2: Data layer (`src/data.rs`)
+### Task 2: Data layer (`src/data.rs`)
 
-Lê `./.stelow/` (relativo ao `workspace_cwd` do context) e parseia:
+Reads `./.stelow/` (relative to context `workspace_cwd`) and parses:
 
 ```rust
 pub struct Project { pub id: String, pub name: String, pub status: Status, pub scopes: Vec<Scope> }
@@ -163,13 +163,13 @@ pub enum Status   { Done, Active, Pending, Blocked }
 pub fn load_workspace(cwd: &Path) -> Result<Vec<Project>> { ... }
 ```
 
-**Data sources (ordem de prioridade):**
-1. `.stelow/session-knowledge/*.md` — seções `## Project: <id>` parseadas
-2. `.stelow/gap-implementation-plan.md` — lista de gaps como tasks
-3. `.stelow/{date}/` — diretórios de sessão por data
-4. Fallback: estágios hardcoded do workflow (Discovery, Shape Up, Tech Planning, Spec Product, Scope & Execute, Testing, Critique)
+**Data sources (priority order):**
+1. `.stelow/session-knowledge/*.md` — parsed `## Project: <id>` sections
+2. `.stelow/gap-implementation-plan.md` — gap list as tasks
+3. `.stelow/{date}/` — session directories by date
+4. Fallback: hardcoded workflow stages (Discovery, Shape Up, Tech Planning, Spec Product, Scope & Execute, Testing, Critique)
 
-### Tarefa 3: State machine (`src/app.rs`)
+### Task 3: State machine (`src/app.rs`)
 
 ```rust
 pub enum View {
@@ -206,12 +206,12 @@ impl App {
 | `k` / `Up` | prev item |
 | `space` | toggle status (pending ↔ done) |
 | `r` | refresh data |
-| `e` | execute action no item selecionado (chama `herdr plugin action invoke ...`) |
+| `e` | execute action on selected item (calls `herdr plugin action invoke ...`) |
 | `?` | help overlay |
 
-### Tarefa 4: UI ratatui (`src/ui.rs`)
+### Task 4: UI ratatui (`src/ui.rs`)
 
-**3 views** + **hit-test math** retornando `LayoutAreas { overview, detail, hint, footer }`:
+**3 views** + **hit-test math** returning `LayoutAreas { overview, detail, hint, footer }`:
 
 ```rust
 pub struct LayoutAreas {
@@ -247,12 +247,12 @@ pub fn hit_test_list(area: Rect, mouse: MouseEvent) -> Option<usize> {
 }
 ```
 
-**Glyphs clicáveis** (renderizados como parte do texto do item, hit-test distingue por column):
-- `▸` (coluna 1) → drill in
-- `●`/`✓`/`·` (coluna 2) → toggle status
-- O resto da linha → select
+**Clickable glyphs** (rendered as part of item text, hit-test distinguishes by column):
+- `▸` (column 1) → drill in
+- `●`/`✓`/`·` (column 2) → toggle status
+- The rest of the line → select
 
-### Tarefa 5: Action wrapper idempotente (`scripts/open-board.sh`)
+### Task 5: Idempotent action wrapper (`scripts/open-board.sh`)
 
 ```bash
 #!/usr/bin/env bash
@@ -295,23 +295,23 @@ else
 fi
 ```
 
-### Tarefa 6: Keybinding
+### Task 6: Keybinding
 
-Já declarado no manifest (Tarefa 1). User adiciona em `~/.config/herdr/config.toml` se preferir binding local.
+Already declared in the manifest (Task 1). User adds in `~/.config/herdr/config.toml` if they prefer a local binding.
 
-### Tarefa 7: README
+### Task 7: README
 
-- Install via `herdr plugin install stelow-board` (após publicar)
+- Install via `herdr plugin install stelow-board` (after publishing)
 - Local dev: `git clone ... && cd ... && cargo build --release && herdr plugin link .`
 - Keybinds table
-- ASCII screenshots (3 views já documentadas na pesquisa)
+- ASCII screenshots (3 views already documented in the research)
 - License + contributing
 
-### Tarefa 8: Publish
+### Task 8: Publish
 
-- Repo público `github.com/renatocaliari/stelow-board` (ou owner preferido)
+- Public repo `github.com/renatocaliari/stelow-board` (or preferred owner)
 - Topic `herdr-plugin`
-- Index atualiza a cada 30 min → aparece em herdr.dev/plugins/
+- Index updates every 30 min → appears on herdr.dev/plugins/
 
 ---
 
@@ -319,21 +319,21 @@ Já declarado no manifest (Tarefa 1). User adiciona em `~/.config/herdr/config.t
 
 ### Input (env vars do herdr)
 
-| Var | Uso |
-|---|---|
-| `HERDR_BIN_PATH` | path do binário herdr pra invocar CLI portable |
-| `HERDR_PLUGIN_ID` | deve ser `stelow.board` |
-| `HERDR_PLUGIN_ROOT` | path do plugin (cwd default do processo) |
-| `HERDR_PLUGIN_CONFIG_DIR` | config persistente do user (não usar) |
-| `HERDR_PLUGIN_STATE_DIR` | state persistente do plugin (cache de last-fetch) |
-| `HERDR_PLUGIN_CONTEXT_JSON` | parse pra `workspace_cwd` → base path do `.stelow/` |
-| `HERDR_WORKSPACE_ID` | exibir no header |
-| `HERDR_TAB_ID` | (não usado) |
-| `HERDR_PANE_ID` | (não usado) |
+| Var | Usage |
+|---|---|---|
+| `HERDR_BIN_PATH` | path to herdr binary for portable CLI invocation |
+| `HERDR_PLUGIN_ID` | must be `stelow.board` |
+| `HERDR_PLUGIN_ROOT` | plugin path (process default cwd) |
+| `HERDR_PLUGIN_CONFIG_DIR` | user persistent config (not used) |
+| `HERDR_PLUGIN_STATE_DIR` | plugin persistent state (last-fetch cache) |
+| `HERDR_PLUGIN_CONTEXT_JSON` | parsed to `workspace_cwd` → base path of `.stelow/` |
+| `HERDR_WORKSPACE_ID` | display in header |
+| `HERDR_TAB_ID` | (not used) |
+| `HERDR_PANE_ID` | (not used) |
 
 ### Output (callbacks via herdr CLI)
 
-| Action | Comando |
+| Action | Command |
 |---|---|
 | Open pane | `herdr plugin pane open --plugin stelow.board --entrypoint board --placement split --direction right --focus` |
 | Focus pane | `herdr pane zoom <id> --on` |
@@ -344,47 +344,47 @@ Já declarado no manifest (Tarefa 1). User adiciona em `~/.config/herdr/config.t
 
 ### Socket API (raw, se preferir)
 
-- Unix socket em `HERDR_SOCKET_PATH` (Unix) ou named pipe (Windows)
-- Use `HERDR_BIN_PATH` por portabilidade — CLI wrappers são cross-OS
+- Unix socket at `HERDR_SOCKET_PATH` (Unix) or named pipe (Windows)
+- Use `HERDR_BIN_PATH` for portability — CLI wrappers are cross-OS
 
 ---
 
 ## 📊 Data states
 
 | State | Display |
-|---|---|
-| `.stelow/` missing | mostra estágios hardcoded + warning "no workspace data found" |
-| `.stelow/` empty | mostra estágios hardcoded |
-| `.stelow/` parse error | mostra estágios + log de erro no detail card |
-| `.stelow/` valid | parseia e renderiza árvore |
-| No mouse support | keybinds continuam funcionando; hint adapta |
+|---|---|---|
+| `.stelow/` missing | shows hardcoded stages + warning "no workspace data found" |
+| `.stelow/` empty | shows hardcoded stages |
+| `.stelow/` parse error | shows stages + error log in detail card |
+| `.stelow/` valid | parses and renders tree |
+| No mouse support | keybinds continue working; hint adapts |
 
 ## 🎯 Interaction states
 
 | State | Visual |
-|---|---|
-| Item selected | invertido (cor de fundo) |
-| Item hovered (mouse) | borda ou underline |
-| Status Done | `✓` verde |
-| Status Active | `▶` amarelo + bold |
-| Status Pending | `·` cinza |
-| Status Blocked | `!` vermelho + bold |
-| Drill-in available | glyph `▸` clicável |
+|---|---|---|
+| Item selected | inverted (background color) |
+| Item hovered (mouse) | border or underline |
+| Status Done | `✓` green |
+| Status Active | `▶` yellow + bold |
+| Status Pending | `·` gray |
+| Status Blocked | `!` red + bold |
+| Drill-in available | clickable glyph `▸` |
 
 ---
 
 ## ⚖️ Feasibility
 
-| Aspecto | Avaliação |
-|---|---|
-| Stack | ✅ Rust + ratatui (mesma linguagem do herdr; padrão de fato em `herdr-file-viewer`) |
-| Mouse support | ✅ confirmado em `src/app/input/mouse.rs` — herdr forward para pane via protocolo ANSI |
-| Build/install | ✅ `cargo build --release` (3-5min cold, <10s warm com cache) |
-| Runtime | ✅ binário único, zero deps externas |
-| Distribution | ✅ GitHub topic `herdr-plugin` → auto-index em herdr.dev/plugins/ |
-| Risk: herdr API changes | 🟡 mitigar com `min_herdr_version = "0.7.0"` + usar só API documentada |
-| Risk: ratatui version churn | 🟡 fixar major version no Cargo.toml |
-| Risk: terminal mode conflicts | 🟢 cada pane tem seu PTY isolado |
+| Aspect | Assessment |
+|---|---|---|
+| Stack | ✅ Rust + ratatui (same language as herdr; de facto standard in `herdr-file-viewer`) |
+| Mouse support | ✅ confirmed in `src/app/input/mouse.rs` — herdr forwards to pane via ANSI protocol |
+| Build/install | ✅ `cargo build --release` (3-5min cold, <10s warm with cache) |
+| Runtime | ✅ single binary, zero external deps |
+| Distribution | ✅ GitHub topic `herdr-plugin` → auto-index on herdr.dev/plugins/ |
+| Risk: herdr API changes | 🟡 mitigate with `min_herdr_version = "0.7.0"` + use only documented API |
+| Risk: ratatui version churn | 🟡 pin major version in Cargo.toml |
+| Risk: terminal mode conflicts | 🟢 each pane has its own isolated PTY |
 
 ---
 
@@ -392,21 +392,21 @@ Já declarado no manifest (Tarefa 1). User adiciona em `~/.config/herdr/config.t
 
 ### Unit tests (`cargo test`)
 
-- `data.rs`: parse de `.stelow/` com fixtures (válido, vazio, malformado, missing)
+- `data.rs`: parse of `.stelow/` with fixtures (valid, empty, malformed, missing)
 - `app.rs`: state machine transitions (Overview → ProjectDetail → ScopeDetail → back)
-- `ui.rs`: hit-test math (row → item index) com bounds conhecidos
+- `ui.rs`: hit-test math (row → item index) with known bounds
 
 ### Integration test
 
-- Manual: `herdr plugin link .` + `prefix+w` em workspace real
-- Validar: OPEN na primeira vez, FOCUS no segundo, CLOSE no terceiro
-- Validar: click em glyph `▸` faz drill-in
-- Validar: click em status `·` toggle pra `✓`
-- Validar: refresh `[r]` re-lê `.stelow/`
+- Manual: `herdr plugin link .` + `prefix+w` in real workspace
+- Validate: OPEN on first, FOCUS on second, CLOSE on third
+- Validate: clicking glyph `▸` performs drill-in
+- Validate: clicking status `·` toggles to `✓`
+- Validate: refresh `[r]` re-reads `.stelow/`
 
 ### Visual regression
 
-- Screenshots ASCII em 3 estados (já documentados na pesquisa) viram fixtures de teste
+- ASCII screenshots in 3 states (already documented in research) become test fixtures
 
 ---
 
@@ -427,40 +427,40 @@ Task 1: Scaffold + manifest + Cargo.toml
 
 ---
 
-## 🚫 Out of scope (explicitamente)
+## 🚫 Out of scope (explicitly)
 
-- Webview UI (não suportado em herdr plugin v1)
-- Runtime action registration (não parte de v1)
-- Native non-terminal panel (não parte de v1)
-- Multi-workspace aggregation (1 pane = 1 workspace por vez)
-- Persistence de state UI entre sessões (state carrega do `.stelow/` a cada refresh)
-- File watcher / live reload (user tecla `r` pra refresh)
-- Mouse hover effects avançados (reverse-video + glyph basta pra v1)
+- Webview UI (not supported in herdr plugin v1)
+- Runtime action registration (not part of v1)
+- Native non-terminal panel (not part of v1)
+- Multi-workspace aggregation (1 pane = 1 workspace at a time)
+- UI state persistence across sessions (state loads from `.stelow/` on each refresh)
+- File watcher / live reload (user presses `r` to refresh)
+- Advanced mouse hover effects (reverse-video + glyph suffices for v1)
 
 ---
 
 ## 🔗 References
 
 - https://herdr.dev/plugins/ — marketplace live
-- https://herdr.dev/docs/plugins/ — manifest schema completo
-- https://herdr.dev/docs/socket-api/ — protocolo completo, plugin namespace
+- https://herdr.dev/docs/plugins/ — complete manifest schema
+- https://herdr.dev/docs/socket-api/ — complete protocol, plugin namespace
 - https://github.com/ogulcancelik/herdr — host source (Rust)
-- https://github.com/ogulcancelik/herdr-plugin-examples — exemplos: `agent-telegram-notify`, `dev-layout-bootstrap`, `github-link-preview`, `rust-release-check`
-- https://github.com/smarzban/herdr-file-viewer — referência Rust+ratatui em split pane
-- https://github.com/muxy-app/muxy — modelo mental (não diretamente compatível)
-- Pesquisa completa: `.stelow/session-knowledge/2026-06-23-herdr-plugin-research.md` (a criar)
+- https://github.com/ogulcancelik/herdr-plugin-examples — examples: `agent-telegram-notify`, `dev-layout-bootstrap`, `github-link-preview`, `rust-release-check`
+- https://github.com/smarzban/herdr-file-viewer — reference Rust+ratatui in split pane
+- https://github.com/muxy-app/muxy — mental model (not directly compatible)
+- Full research: `.stelow/session-knowledge/2026-06-23-herdr-plugin-research.md` (to be created)
 
 ---
 
-## ❓ Open questions (pro user decidir antes de executar)
+## ❓ Open questions (for the user to decide before executing)
 
-1. **Owner do repo GitHub:** `renatocaliari/stelow-board` ou outro owner?
-2. **Naming do binário:** `stelow-board` (longo) ou `cwb` (curto)?
-3. **Source do data:** priorizar `.stelow/` raw ou criar schema próprio `.stelow/board.json`?
-4. **Detalhe de scope/task:** mostrar campo `detail` se existir, ou só `name` + `status`?
-5. **Auto-refresh:** file watcher em `.stelow/` ou só manual `[r]`?
-6. **Notificações:** usar `herdr notification show` quando stage vira `Blocked`?
-7. **Múltiplos painéis:** suportar mais de 1 pane "Workflow" (1 por workspace) ou singleton global?
+1. **GitHub repo owner:** `renatocaliari/stelow-board` or other owner?
+2. **Binary naming:** `stelow-board` (long) or `cwb` (short)?
+3. **Data source:** prioritize raw `.stelow/` or create custom schema `.stelow/board.json`?
+4. **Scope/task detail:** show `detail` field if it exists, or just `name` + `status`?
+5. **Auto-refresh:** file watcher on `.stelow/` or just manual `[r]`?
+6. **Notifications:** use `herdr notification show` when stage becomes `Blocked`?
+7. **Multiple panels:** support more than 1 "Workflow" pane (1 per workspace) or global singleton?
 
 ---
 

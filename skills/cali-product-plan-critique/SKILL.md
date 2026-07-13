@@ -71,8 +71,16 @@ the plan is solid.
 Input received:
   ├── Is it spec-product*.md?
   │   └→ ✅ Mode: Plan Critique
-  └── Is it another file type?
-      └→ ❌ Wrong input — use cali-product-codebase-critique or cali-product-ux-critique
+  ├── Is it another file type?
+  │   └→ ❌ Wrong input — use cali-product-codebase-critique or cali-product-ux-critique
+  ├── User described the feature/plan verbally?
+  │   └→ Use the description as the expected scope anchor. Read the
+  │      current directory for any spec-product*.md files as reference.
+  │      If none found, run critique based on the verbal description alone.
+  └── No structured input given?
+      └→ Scan current directory for spec-product*.md. If none found,
+         ask: "What product plan do you want to critique? Provide a
+         spec-product*.md path or describe the feature/plan verbally."
 ```
 
 ---

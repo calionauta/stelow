@@ -1,6 +1,6 @@
 ---
 name: cali-product-testing-execution
-description: "Run post-implementation testing protocol. Triggers when: user says 'test this', 'run tests', 'QA', 'dogfood', 'check quality', user finishes implementing a feature, or when a PR is ready for review. Also triggers on mentions of: test coverage, accessibility audit, WCAG, design review, code review, subagent review, UX quality audit. Covers: parallel review via subagents, UX/UI quality audit (via cali-product-ux-critique), accessibility check, and browser testing."
+description: "Run post-implementation testing protocol. Triggers when: user says 'test this', 'run tests', 'QA', 'dogfood', 'check quality', user finishes implementing a feature, or when a PR is ready for review. Also triggers on mentions of: test coverage, accessibility audit, WCAG, design review, code review, subagent review, UX quality audit. Covers: parallel review via subagents, UX/UI quality audit (via cali-product-ux-critique), accessibility check, and browser testing. Part of stelow but usable standalone by stating what needs testing."
 metadata:
   frequency: weekly
   category: code
@@ -329,6 +329,21 @@ Final checklist → All green? Mark complete
 - "Write tests" (writing tests, not running QA)
 - "What testing framework do we use?" (question, not action)
 - "Fix the flaky test" (fixing, not reviewing)
+
+## Input Detection (Standalone Mode)
+
+When called standalone (e.g., "test this", "QA my changes"):
+```
+Input:
+  ├── User said "test this" or "run QA"?
+  │   └→ Run the full Testing Protocol decision tree
+  ├── User provided a specific scope/feature?
+  │   └→ Focus testing on that scope
+  └── User asked about readiness?
+      └→ Run review phases without E2E
+```
+
+**Stelow awareness:** when inside stelow, reads `spec-tech*.md` and `scopes/` from `.stelow/*/*/plans/` for context (scope list, appetite, review mode). When standalone, files are auto-discovered in the current directory. The decision tree and phases work identically in both modes.
 
 ## References
 

@@ -42,7 +42,12 @@ Appetite controls how many interface alternatives are explored. Quality is not c
 | `Complete` | 5 archetypes explored + 1 hybrid recommendation. |
 
 ```bash
-APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "Core")
+WF_DIR="$(ls -td .stelow/*/*/ 2>/dev/null | head -1)"
+APPETITE=$(grep -oP '"appetite":\s*"([^"]+)"' "${WF_DIR}index.json" 2>/dev/null | grep -oP '"([^"]+)"$' | tr -d '"' )
+# Fallback to spec-product.md frontmatter if no index.json
+if [ -z "$APPETITE" ]; then
+  APPETITE=$(grep -oP '^appetite:\s*\K\S+' $(ls -t .stelow/*/*/plans/spec-product*.md 2>/dev/null | head -1) 2>/dev/null || echo "Core")
+fi
 
 case "$APPETITE" in
   Lean)

@@ -121,13 +121,13 @@ describe('Glob pattern consistency', () => {
 
 describe('No Portuguese in English sections (core stage files)', () => {
   const PORTUGUESE_PATTERNS = [
-    /lançando/,        // "lançando" in bash echoes
-    /arquivos/,        // "arquivos" in bash echoes
-    /Humano no loop/,  // Portuguese label
-    /por overhead/,    // Orphaned Portuguese fragment
-    /Visão Geral/,     // "Visão Geral"
-    /Como Ativar/,     // "Como Ativar"
-    /Input recebido/,  // "Input recebido"
+    /lançando/,        // "lançando" command in bash
+    /arquivos/,        // "arquivos" (files) in bash
+    /Humano no loop/,  // "Human in the loop" label
+    /por overhead/,    // Orphaned PT "por overhead"
+    /Visão Geral/,     // "Overview" in PT
+    /Como Ativar/,     // "How to Activate" in PT
+    /Input recebido/,  // "Input received" in PT
   ];
 
   const coreEnglishFiles: { path: string; name: string }[] = [

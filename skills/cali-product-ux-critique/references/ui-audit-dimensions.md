@@ -6,7 +6,7 @@ date: 2026-05-30
 
 # UI Audit Dimensions
 
-2 dimensões para avaliação de qualidade de UI.
+2 dimensions for UI quality assessment.
 
 **Related skills:** `cali-product-interface-alternatives` generates 5 proposal alternatives (Work Pattern Declaration, Design Smell Audit, State Coverage Table). This audit dimension complements that generation workflow — use after proposals are created, or use standalone against existing implementations.
 
@@ -23,7 +23,7 @@ date: 2026-05-30
 
 ### Checklist
 
-| # | Item | Verificação | Modo |
+| # | Item | Check | Modo |
 |---|------|-------------|------|
 | 1 | **Color Contrast** | Contrast ratios ≥ 4.5:1 for normal text, ≥ 3:1 for large text (WCAG AA) | Site / Screenshot |
 | 2 | **ARIA Labels & Roles** | Interactive elements have descriptive aria-label, aria-labelledby, or visible label | Codebase / Site |
