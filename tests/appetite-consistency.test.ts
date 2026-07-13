@@ -91,9 +91,13 @@ describe('Glob pattern consistency', () => {
     expect(content).toMatch(/\.stelow\/\*\/\*\/index\.json/);
   });
 
-  it('gate.md uses consistent double-wildcard glob pattern', () => {
+  it('gate.md uses canonical stelow.json (not legacy index.json fallback glob)', () => {
     const content = readStage('gate.md');
-    expect(content).toMatch(/\.stelow\/\*\/\*\/\$_DIR\/index\.json/);
+    // v0.51.0: gate.md reads REVIEW_MODE via canonical helper. The legacy
+    // `.stelow/*/*/$_DIR/index.json` glob is no longer needed because the helper
+    // reads stelow.json at project root. Verify helper path is present.
+    expect(content).toMatch(/read-config\.sh/);
+    expect(content).toMatch(/stelow_read_review_mode/);
   });
 
   it('scope-executor uses correct path with {_dir} level (not broken single-wildcard)', () => {
@@ -263,10 +267,10 @@ describe('Valid appetite values throughout', () => {
 // ═════════════════════════════════════════════════════════════════════
 
 describe('Gate is Review Mode-aware', () => {
-  it('gate.md reads review_mode from stelow.json (canonical) with index.json fallback', () => {
+  it('gate.md reads review_mode via canonical helper (v0.51.0+)', () => {
     const content = readStage('gate.md');
     expect(content).toMatch(/stelow\.json/);
-    expect(content).toMatch(/"review_mode"/);
+    expect(content).toMatch(/stelow_read_review_mode/);
   });
 
   it('gate.md has review mode-based activation table', () => {

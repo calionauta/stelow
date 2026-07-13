@@ -2,6 +2,16 @@
 
 All notable changes to `@calionauta/stelow` will be documented in this file.
 
+## [0.51.2] - 2026-07-13
+
+### Fixed
+
+- **CI: 2 stale test expectations in `tests/appetite-consistency.test.ts`** — The `gate.md uses consistent double-wildcard glob pattern` and `gate.md reads review_mode from stelow.json` assertions were written for the pre-v0.51.0 gate.md which had inline `grep` + `.stelow/*/*/$_DIR/index.json` fallback glob. After v0.51.0 Wave 2 replaced gate.md with the canonical helper, those patterns disappeared from the markdown. Tests now verify the canonical helper path (`read-config.sh` + `stelow_read_review_mode`) instead of the legacy regex.
+
+### Notes
+
+- No functional change — only test fixture alignment with v0.51.0 canonical-source contract.
+
 ## [0.51.1] - 2026-07-13
 
 ### Changed
