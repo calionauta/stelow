@@ -24,6 +24,7 @@ stryker-reports/
 # Local workflow artifacts (auto-generated at runtime)
 .pi/
 .pi-*
+.pi-subagents/
 # .stelow/ — runtime artifacts (state, session knowledge, plans)
 .stelow/
 !.stelow/.gitkeep
@@ -86,9 +87,6 @@ edge-case-review.md
 
 # Local skills (pi installs here)
 .agents/
-
-# Old runtime artifacts (pre-rename)
-.cali-product-workflow/
 
 # Generated cli-tools (synced from orchestrator at build/install time)
 # The orchestrator is the source of truth; sub-skills get cli-tools via sync-cli-tools.sh

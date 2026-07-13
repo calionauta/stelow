@@ -328,7 +328,7 @@ export default function (pi: ExtensionAPI) {
     try {
       const HOME = homedir();
       const GIT_DIR = join(HOME, ".pi/agent/git/github.com/calionauta/stelow");
-      const MARKER = join(HOME, ".agents/skills/.cali-skill-sync-hash");
+      const MARKER = join(HOME, ".agents/skills/.stelow-skill-sync-hash");
 
       // Fast path: compare git HEAD hash
       const currentHash = execSync(

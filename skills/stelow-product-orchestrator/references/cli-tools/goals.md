@@ -170,7 +170,7 @@ metric command, and stopping condition as task parameters.
 
 ## Pattern for feature goals
 
-Feature scopes use the **iteration loop** (see `cali-product-scope-executor` Step 3), not a direct subagent call.
+Feature scopes use the **iteration loop** (see `stelow-product-scope-executor` Step 3), not a direct subagent call.
 The iteration loop wraps the subagent in implement → verify → review → quality → repeat cycles.
 
 ```typescript
@@ -247,6 +247,6 @@ If both subagent acceptance and goal system are unavailable:
 - Execution stage (see `stages/execution.md`)
 - Verification stage (see `stages/verification.md`)
 - spec-tech scopes
-- Testing strategy (see the `cali-product-testing-ai-code` skill)
-- Testing protocol (see the `cali-product-testing-execution` skill)
+- Testing strategy (see the `stelow-product-testing-ai-code` skill)
+- Testing protocol (see the `stelow-product-testing-execution` skill)
 

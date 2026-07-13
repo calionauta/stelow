@@ -1133,7 +1133,7 @@ function cmdAudit(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
       "",
       "Audit trail is generated during the Audit stage (execution critique).",
       "To generate it now, run the Audit stage or invoke:",
-      "  /skill:cali-product-execution-critique",
+      "  /skill:stelow-product-execution-critique",
     ].join("\n"));
     return;
   }

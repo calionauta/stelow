@@ -52,15 +52,15 @@ function listSkillFiles(skillName: string): string[] {
 
 const SCAN_TARGETS = [
   'stelow-product-orchestrator',
-  'cali-product-shape-up',
-  'cali-product-interface-alternatives',
-  'cali-product-plan-critique',
-  'cali-product-tech-planning',
-  'cali-product-scope-executor',
-  'cali-product-testing-ai-code',
-  'cali-product-execution-critique',
-  'cali-product-codebase-critique',
-  'cali-product-discovery',
+  'stelow-product-shape-up',
+  'stelow-product-interface-alternatives',
+  'stelow-product-plan-critique',
+  'stelow-product-tech-planning',
+  'stelow-product-scope-executor',
+  'stelow-product-testing-ai-code',
+  'stelow-product-execution-critique',
+  'stelow-product-codebase-critique',
+  'stelow-product-discovery',
 ];
 
 function corpus(): string {
@@ -91,12 +91,12 @@ describe('appetite field flow', () => {
   });
 
   it('is READ by shape-up validation guard', () => {
-    const shapeUp = read(join(SKILLS_DIR, 'cali-product-shape-up/SKILL.md'));
+    const shapeUp = read(join(SKILLS_DIR, 'stelow-product-shape-up/SKILL.md'));
     expect(shapeUp).toMatch(/grep -q "appetite:" "\$SPEC"/);
   });
 
   it('is READ by interface-alternatives step 0', () => {
-    const ia = read(join(SKILLS_DIR, 'cali-product-interface-alternatives/SKILL.md'));
+    const ia = read(join(SKILLS_DIR, 'stelow-product-interface-alternatives/SKILL.md'));
     expect(ia).toMatch(/grep -oP.*\^appetite/);
   });
 
@@ -132,17 +132,17 @@ describe('review_mode field flow', () => {
   });
 
   it('is READ by plan-critique from index.json', () => {
-    const pc = read(join(SKILLS_DIR, 'cali-product-plan-critique/SKILL.md'));
+    const pc = read(join(SKILLS_DIR, 'stelow-product-plan-critique/SKILL.md'));
     expect(pc).toMatch(/review_mode/);
   });
 
   it('is READ by tech-planning from index.json', () => {
-    const tp = read(join(SKILLS_DIR, 'cali-product-tech-planning/SKILL.md'));
+    const tp = read(join(SKILLS_DIR, 'stelow-product-tech-planning/SKILL.md'));
     expect(tp).toMatch(/review_mode/);
   });
 
   it('is READ by scope-executor (standalone awareness)', () => {
-    const se = read(join(SKILLS_DIR, 'cali-product-scope-executor/SKILL.md'));
+    const se = read(join(SKILLS_DIR, 'stelow-product-scope-executor/SKILL.md'));
     expect(se).toMatch(/checks review_mode in `index\.json`/);
   });
 });
@@ -221,12 +221,12 @@ describe('No orphaned producer-only fields', () => {
       'stelow-product-orchestrator/stages/execution.md',
       'stelow-product-orchestrator/stages/context.md',
       'stelow-product-orchestrator/stages/ask-patterns.md',
-      'cali-product-shape-up/SKILL.md',
-      'cali-product-interface-alternatives/SKILL.md',
-      'cali-product-plan-critique/SKILL.md',
-      'cali-product-tech-planning/SKILL.md',
-      'cali-product-scope-executor/SKILL.md',
-      'cali-product-testing-ai-code/SKILL.md',
+      'stelow-product-shape-up/SKILL.md',
+      'stelow-product-interface-alternatives/SKILL.md',
+      'stelow-product-plan-critique/SKILL.md',
+      'stelow-product-tech-planning/SKILL.md',
+      'stelow-product-scope-executor/SKILL.md',
+      'stelow-product-testing-ai-code/SKILL.md',
     ]
       .map((p) => read(join(SKILLS_DIR, p)))
       .join('\n');

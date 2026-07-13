@@ -54,7 +54,7 @@ describe("herdr plugin cwd_matches (mirrors Rust implementation)", () => {
 
   test("sibling project is not compatible", () => {
     expect(
-      cwdMatches("/Users/cali/Development/cali-product-workflow", PROJECT)
+      cwdMatches("/Users/cali/Development/stelow-product-workflow", PROJECT)
     ).toBe(false);
   });
 

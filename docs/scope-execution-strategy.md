@@ -168,6 +168,6 @@ Non-empty (a)/(b)/(c) → block advance to Verification until human decides.
 ## Related docs
 
 - `skills/stelow-product-orchestrator/references/cli-tools/file-locking.md` — protocol-level how-to (FS ops, TTL, JSON shape)
-- `skills/cali-product-scope-executor/SKILL.md` — Step 2e (init), Step 3c (acquire), Step 3e (release + capture), Step 8 (report)
+- `skills/stelow-product-scope-executor/SKILL.md` — Step 2e (init), Step 3c (acquire), Step 3e (release + capture), Step 8 (report)
 - `extensions/stelow/types.ts#Scope` — `target_files?`, `actual_files?`, `start_sha?` fields
 - `CHANGELOG.md` — v0.41.2 entry (initial implementation)

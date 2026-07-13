@@ -163,13 +163,13 @@ UI_FILES=$(git diff --name-only HEAD~1 2>/dev/null | grep -cE '\.(templ|html|tsx
 |----------|---------|--------|
 | `Lean` | any | **Static a11y/lint.** No browser/live audit unless upgraded. |
 | `Core` | 0 | **Skip.** No UI. |
-| `Core` | 1+ | **Normal.** Delegate to `cali-product-ux-critique`. Codebase mode (browserless). |
+| `Core` | 1+ | **Normal.** Delegate to `stelow-product-ux-critique`. Codebase mode (browserless). |
 | `Complete` | 0 | **Skip.** No UI. |
 | `Complete` | 1+ | **Live Site mode.** Full browser audit. |
 
-If running, delegate to `cali-product-ux-critique`.
+If running, delegate to `stelow-product-ux-critique`.
 
-See the `cali-product-ux-critique` skill for full instructions.
+See the `stelow-product-ux-critique` skill for full instructions.
 
 **Input routing:**
 - **Source code available** → Codebase mode (browserless, ~80% coverage)
@@ -329,4 +329,4 @@ After all verification steps pass, **automatically proceed to Code Quality Revie
 > [agent_browser.md](references/cli-tools/agent_browser.md). Other CLIs should
 > rely on the Quick Tier and note what couldn't be verified for human review.
 
-See the `cali-product-testing-execution` skill for the full testing protocol reference.
+See the `stelow-product-testing-execution` skill for the full testing protocol reference.

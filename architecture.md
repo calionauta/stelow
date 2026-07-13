@@ -238,7 +238,7 @@ No config files needed. Structure IS the configuration.
 │   ├── plans/              # Technical plans
 │   └── critiques/          # Review outputs
 ├── stelow.json   # Local tracking
-└── cali-pw-global.json      # Global tracking (home)
+└── stelow-global.json      # Global tracking (home)
 ```
 
 ## Extensions

@@ -43,7 +43,7 @@ export function readyScopes(scopes: Scope[]): Scope[] {
 /**
  * Match a single declared glob against a single actual file path.
  *
- * Convention (matches `cali-product-scope-executor` SKILL Step 8):
+ * Convention (matches `stelow-product-scope-executor` SKILL Step 8):
  *   - trailing `/**` ⇒ prefix match (e.g. `src/auth/**` matches `src/auth/foo.ts`)
  *   - trailing `/*`  ⇒ single-level match (e.g. `src/auth/*` matches
  *                      `src/auth/foo.ts` but not `src/auth/sub/bar.ts`)
@@ -207,7 +207,7 @@ function expandBraces(glob: string): string[] {
 }
 
 /**
- * 4-class overlap classification result. See `cali-product-scope-executor`
+ * 4-class overlap classification result. See `stelow-product-scope-executor`
  * SKILL Step 8 for the user-facing rationale; this function computes the
  * underlying data.
  *

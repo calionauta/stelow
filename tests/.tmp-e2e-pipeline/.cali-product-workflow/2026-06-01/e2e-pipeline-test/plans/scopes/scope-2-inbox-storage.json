@@ -1,9 +1,0 @@
-{
-  "id": "scope-2-inbox-storage",
-  "type": "feature",
-  "name": "Inbox File Storage",
-  "dependencies": [
-    "scope-1-inbox-cli"
-  ],
-  "effort": "1 day"
-}

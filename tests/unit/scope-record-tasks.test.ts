@@ -12,7 +12,7 @@
  *   - `source: 'discovered'` MUST carry a `note:` explaining the trigger
  *
  * These tests guard against drift between the TS interfaces and the
- * bash snippets in `cali-product-scope-executor` SKILL Steps 3e / 3e-bis
+ * bash snippets in `stelow-product-scope-executor` SKILL Steps 3e / 3e-bis
  * / 3e-ter.
  */
 

@@ -43,13 +43,13 @@ describe("getRetiredSkillNames", () => {
       [
         "version: 1",
         "retired:",
-        "  - name: cali-product-critique",
+        "  - name: stelow-product-critique",
         "    retired_at: 2026-05-29",
         "    reason: superseded",
         "    superseded_by:",
-        "      - cali-product-plan-critique",
-        "      - cali-product-codebase-critique",
-        "  - name: cali-product-old-thing",
+        "      - stelow-product-plan-critique",
+        "      - stelow-product-codebase-critique",
+        "  - name: stelow-product-old-thing",
         "    retired_at: 2025-12-01",
         "    reason: deleted",
         "",
@@ -58,7 +58,7 @@ describe("getRetiredSkillNames", () => {
 
     const names = getRetiredSkillNames(tmpRoot);
     expect(names).toEqual(
-      new Set(["cali-product-critique", "cali-product-old-thing"])
+      new Set(["stelow-product-critique", "stelow-product-old-thing"])
     );
   });
 
@@ -67,13 +67,13 @@ describe("getRetiredSkillNames", () => {
       retiredFilePath(),
       [
         "retired:",
-        "  - name: cali-product-minimal",
+        "  - name: stelow-product-minimal",
         "",
       ].join("\n")
     );
 
     const names = getRetiredSkillNames(tmpRoot);
-    expect(names).toEqual(new Set(["cali-product-minimal"]));
+    expect(names).toEqual(new Set(["stelow-product-minimal"]));
   });
 
   it("returns empty set when the YAML is malformed (does not throw)", () => {
@@ -98,7 +98,7 @@ describe("getRetiredSkillNames", () => {
       retiredFilePath(),
       [
         "retired:",
-        "  - name: cali-product-valid",
+        "  - name: stelow-product-valid",
         "  - retired_at: 2026-01-01", // no name → ignored
         "  - name: ''", // empty name → ignored
         "  - name: 42", // non-string name → ignored
@@ -107,7 +107,7 @@ describe("getRetiredSkillNames", () => {
     );
 
     const names = getRetiredSkillNames(tmpRoot);
-    expect(names).toEqual(new Set(["cali-product-valid"]));
+    expect(names).toEqual(new Set(["stelow-product-valid"]));
   });
 
   it("works when retired is an empty array", () => {
@@ -129,17 +129,17 @@ describe("getRetiredSkillNames", () => {
       [
         "version: 1",
         "retired:",
-        "  - name: cali-product-critique",
+        "  - name: stelow-product-critique",
         "    retired_at: 2026-05-29",
         "    reason: superseded",
         "    superseded_by:",
-        "      - cali-product-plan-critique",
-        "      - cali-product-codebase-critique",
-        "  - name: cali-product-interface-brainstorm",
+        "      - stelow-product-plan-critique",
+        "      - stelow-product-codebase-critique",
+        "  - name: stelow-product-interface-brainstorm",
         "    retired_at: 2026-05-31",
         "    reason: renamed",
         "    superseded_by:",
-        "      - cali-product-interface-alternatives",
+        "      - stelow-product-interface-alternatives",
         "",
       ].join("\n")
     );
@@ -147,8 +147,8 @@ describe("getRetiredSkillNames", () => {
     const names = getRetiredSkillNames(tmpRoot);
     expect(names).toEqual(
       new Set([
-        "cali-product-critique",
-        "cali-product-interface-brainstorm",
+        "stelow-product-critique",
+        "stelow-product-interface-brainstorm",
       ])
     );
   });

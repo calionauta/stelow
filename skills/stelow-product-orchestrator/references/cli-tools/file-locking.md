@@ -118,7 +118,7 @@ done
 
 | Limitation | Mitigation |
 |---|---|
-| LLM must follow protocol (read before write) | Skill instructions in `cali-product-scope-executor` Step 3c + Step 3e enforce this |
+| LLM must follow protocol (read before write) | Skill instructions in `stelow-product-scope-executor` Step 3c + Step 3e enforce this |
 | TTL-based expiry can race long edits | Default TTL 30 min; expand for large refactors |
 | Lock only protects FILES in `target_files` — agent can still write undeclared files | Post-execution `actual_files ∩ declared_target_files` diff catches this in Step 8 |
 | Doesn't prevent two scopes touching the same FILE but different REGIONS (line-level) | Out of scope — line-level coordination needs AST merging (Phantom-class solution) |

@@ -210,11 +210,11 @@ The pane is split into **two columns**:
     panel shows a hint that scopes will appear there.
 
 ```
-┌─── Stelow — cali-product-workflow · 4 workflow(s) ─────────────────┐
+┌─── Stelow — stelow-product-workflow · 4 workflow(s) ─────────────────┐
 ├────── Workflows (this worktree) ──────┬──────── Detail ───────────┤
 │ ▶ wf-enz84q                (3/3 sc)   │ ● wf-enz84q    ▶ IN PROG  │
 │   wf-eoq7r9                (2/3 sc)   │                            │
-│   wf-31fl47                          │ Prompt: "build cali-pro..  │
+│   wf-31fl47                          │ Prompt: "build stelow-pro..  │
 │                                      │ Stage:  Gate  Scope: —    │
 │                                      ├──────── Scopes (3/3) ──────┤
 │                                      │ ✓ scope-1  Triage Prompt  │
@@ -223,7 +223,7 @@ The pane is split into **two columns**:
 ├─────────── Commands ───────────────────────────────────────────────┤
 │ [Tab/j/k] workflow  [r] refresh  [?] help  [q] quit                │
 ├─────────── Context ────────────────────────────────────────────────┤
-│ ws=...  cwd=/Users/.../cali-product-workflow  auto-refresh 2s     │
+│ ws=...  cwd=/Users/.../stelow-product-workflow  auto-refresh 2s     │
 └────────────────────────────────────────────────────────────────────┘
 ```
 

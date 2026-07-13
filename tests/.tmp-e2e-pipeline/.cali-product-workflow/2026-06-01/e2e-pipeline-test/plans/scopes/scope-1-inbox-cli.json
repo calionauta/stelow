@@ -1,7 +1,0 @@
-{
-  "id": "scope-1-inbox-cli",
-  "type": "feature",
-  "name": "Inbox CLI Command",
-  "dependencies": [],
-  "effort": "2 days"
-}

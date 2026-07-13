@@ -207,14 +207,14 @@ interface SkillDefinition {
 }
 
 const skills: SkillDefinition[] = [
-  { name: 'cali-product-shape-up', path: 'cali-product-shape-up/SKILL.md', requiresGate: false, requiresToolRef: true },
-  { name: 'cali-product-tech-planning', path: 'cali-product-tech-planning/SKILL.md', requiresGate: true, requiresToolRef: true },
-  { name: 'cali-product-interface-alternatives', path: 'cali-product-interface-alternatives/SKILL.md', requiresGate: true, requiresToolRef: true },
-  { name: 'cali-product-plan-critique', path: 'cali-product-plan-critique/SKILL.md', requiresGate: false, requiresToolRef: true },
-  { name: 'cali-product-codebase-critique', path: 'cali-product-codebase-critique/SKILL.md', requiresGate: false, requiresToolRef: true },
-  { name: 'cali-product-ux-critique', path: 'cali-product-ux-critique/SKILL.md', requiresGate: false, requiresToolRef: true },
-  { name: 'cali-product-scope-executor', path: 'cali-product-scope-executor/SKILL.md', requiresGate: false, requiresToolRef: true },
-  { name: 'cali-product-execution-critique', path: 'cali-product-execution-critique/SKILL.md', requiresGate: false, requiresToolRef: true },
+  { name: 'stelow-product-shape-up', path: 'stelow-product-shape-up/SKILL.md', requiresGate: false, requiresToolRef: true },
+  { name: 'stelow-product-tech-planning', path: 'stelow-product-tech-planning/SKILL.md', requiresGate: true, requiresToolRef: true },
+  { name: 'stelow-product-interface-alternatives', path: 'stelow-product-interface-alternatives/SKILL.md', requiresGate: true, requiresToolRef: true },
+  { name: 'stelow-product-plan-critique', path: 'stelow-product-plan-critique/SKILL.md', requiresGate: false, requiresToolRef: true },
+  { name: 'stelow-product-codebase-critique', path: 'stelow-product-codebase-critique/SKILL.md', requiresGate: false, requiresToolRef: true },
+  { name: 'stelow-product-ux-critique', path: 'stelow-product-ux-critique/SKILL.md', requiresGate: false, requiresToolRef: true },
+  { name: 'stelow-product-scope-executor', path: 'stelow-product-scope-executor/SKILL.md', requiresGate: false, requiresToolRef: true },
+  { name: 'stelow-product-execution-critique', path: 'stelow-product-execution-critique/SKILL.md', requiresGate: false, requiresToolRef: true },
 ];
 
 describe('Per-Skill Implementation', () => {
@@ -243,7 +243,7 @@ describe('Per-Skill Implementation', () => {
       }
 
       // ── Scope-executor specific: acceptance-based delegation ──
-      if (skill.name === 'cali-product-scope-executor') {
+      if (skill.name === 'stelow-product-scope-executor') {
         it('should use acceptance-based delegation in Step 3', () => {
           expect(content).toMatch(/acceptance/i);
           expect(content).toMatch(/criteria/i);
@@ -293,7 +293,7 @@ describe('Per-Skill Implementation', () => {
   // Tech Planning has its own gate
   describe('Tech Planning gate', () => {
     const techContent = readFileSync(
-      join(PROJECT_ROOT, 'skills', 'cali-product-tech-planning', 'SKILL.md'),
+      join(PROJECT_ROOT, 'skills', 'stelow-product-tech-planning', 'SKILL.md'),
       'utf8'
     );
     it('should have plannotator --gate or plannotator.md reference', () => {
@@ -308,7 +308,7 @@ describe('Per-Skill Implementation', () => {
 
 describe('Iteration Loop Consistency', () => {
   it('scopes-and-sequencing.md should document [MAX_ITERATIONS]', () => {
-    const path = join(PROJECT_ROOT, 'skills/cali-product-tech-planning/references/scopes-and-sequencing.md');
+    const path = join(PROJECT_ROOT, 'skills/stelow-product-tech-planning/references/scopes-and-sequencing.md');
     const content = readFileSync(path, 'utf8');
     expect(content).toMatch(/MAX_ITERATIONS/);
   });
@@ -323,9 +323,9 @@ describe('Iteration Loop Consistency', () => {
   it('core goals.md files should reference acceptance contract pattern', () => {
     const goalsFiles = [
       join(PROJECT_ROOT, 'skills/stelow-product-orchestrator/references/cli-tools/goals.md'),
-      join(PROJECT_ROOT, 'skills/cali-product-scope-executor/references/cli-tools/goals.md'),
-      join(PROJECT_ROOT, 'skills/cali-product-tech-planning/references/cli-tools/goals.md'),
-      join(PROJECT_ROOT, 'skills/cali-product-testing-ai-code/references/cli-tools/goals.md'),
+      join(PROJECT_ROOT, 'skills/stelow-product-scope-executor/references/cli-tools/goals.md'),
+      join(PROJECT_ROOT, 'skills/stelow-product-tech-planning/references/cli-tools/goals.md'),
+      join(PROJECT_ROOT, 'skills/stelow-product-testing-ai-code/references/cli-tools/goals.md'),
     ];
     goalsFiles.forEach(f => {
       const content = readFileSync(f, 'utf8');
@@ -334,7 +334,7 @@ describe('Iteration Loop Consistency', () => {
   });
 
   it('scope-executor goals.md documents acceptance contract fields', () => {
-    const goalsPath = join(PROJECT_ROOT, 'skills/cali-product-scope-executor/references/cli-tools/goals.md');
+    const goalsPath = join(PROJECT_ROOT, 'skills/stelow-product-scope-executor/references/cli-tools/goals.md');
     const content = readFileSync(goalsPath, 'utf8');
     expect(content).toMatch(/criteria/i);
     expect(content).toMatch(/verify/i);

@@ -19,37 +19,38 @@
 version: 1
 
 retired:
-  - name: cali-product-workflow
+  - name: stelow-product-workflow
     retired_at: 2026-06-24
     reason: renamed
     superseded_by:
       - stelow-product-orchestrator
     note: |
-      Renamed in 2026-06-19 (commit 8c6363e "feat: rename product to stelow").
-      The legacy skill writes artifacts to .cali-product-workflow/ (old path).
-      The current extension/CLI (v0.36.2) writes to .stelow/. If you have a copy
-      of this skill in ~/.agents/skills/, it will produce workflows in the wrong path.
-      Delete it or re-run install.sh so the prune removes it.
+      Renamed in 2026-06-19 (commit 8c6363e "feat: rename product to stelow")
+      and again in 0.48.0 when the legacy runtime state directory
+      `.cali-product-workflow/` was dropped in favor of `.stelow/`.
+      If you have a copy of this skill in ~/.agents/skills/, it will produce
+      workflows in the wrong path. Delete it or re-run install.sh so the
+      prune removes it.
 
-  - name: cali-product-critique
+  - name: stelow-product-critique
     retired_at: 2026-05-29
     reason: superseded
     superseded_by:
-      - cali-product-plan-critique
-      - cali-product-codebase-critique
-      - cali-product-ux-critique
-      - cali-product-execution-critique
+      - stelow-product-plan-critique
+      - stelow-product-codebase-critique
+      - stelow-product-ux-critique
+      - stelow-product-execution-critique
     note: |
       Original monolithic skill was split into 4 domain-specific
       skills (plan, codebase, ux, execution). Each covers
       a distinct input (spec, code, URL, post-impl) and generates
       classified gap reports.
 
-  - name: cali-product-interface-brainstorm
+  - name: stelow-product-interface-brainstorm
     retired_at: 2026-05-31
     reason: renamed
     superseded_by:
-      - cali-product-interface-alternatives
+      - stelow-product-interface-alternatives
     note: |
       Renamed in f3f707a as part of gap A (1 source = 1 truth).
       Content and semantics preserved; only the name changed.
@@ -61,4 +62,129 @@ retired:
       - stelow-product-orchestrator
     note: |
       Renamed to stelow-product-orchestrator to follow the
-      cali-product-* convention and clarify orchestrator role.
+      stelow-product-* convention and clarify orchestrator role.
+
+  # 2026-07-13 (v0.49.0): full cali-product-* → stelow-product-* rename.
+  # All 24 product skills had their prefix changed in a single breaking
+  # release. Listed individually so sync-skills prunes any stale copies
+  # from ~/.agents/skills/ left over from v0.48.x and earlier.
+  - name: cali-product-ads
+    retired_at: 2026-07-13
+    reason: renamed
+    superseded_by:
+      - stelow-product-ads
+  - name: cali-product-business-models
+    retired_at: 2026-07-13
+    reason: renamed
+    superseded_by:
+      - stelow-product-business-models
+  - name: cali-product-codebase-critique
+    retired_at: 2026-07-13
+    reason: renamed
+    superseded_by:
+      - stelow-product-codebase-critique
+  - name: cali-product-coding-standards
+    retired_at: 2026-07-13
+    reason: renamed
+    superseded_by:
+      - stelow-product-coding-standards
+  - name: cali-product-discovery
+    retired_at: 2026-07-13
+    reason: renamed
+    superseded_by:
+      - stelow-product-discovery
+  - name: cali-product-evolutionary-principles
+    retired_at: 2026-07-13
+    reason: renamed
+    superseded_by:
+      - stelow-product-evolutionary-principles
+  - name: cali-product-execution-critique
+    retired_at: 2026-07-13
+    reason: renamed
+    superseded_by:
+      - stelow-product-execution-critique
+  - name: cali-product-health
+    retired_at: 2026-07-13
+    reason: renamed
+    superseded_by:
+      - stelow-product-health
+  - name: cali-product-interface-alternatives
+    retired_at: 2026-07-13
+    reason: renamed
+    superseded_by:
+      - stelow-product-interface-alternatives
+  - name: cali-product-job-to-be-done
+    retired_at: 2026-07-13
+    reason: renamed
+    superseded_by:
+      - stelow-product-job-to-be-done
+  - name: cali-product-marketplace-playbook
+    retired_at: 2026-07-13
+    reason: renamed
+    superseded_by:
+      - stelow-product-marketplace-playbook
+  - name: cali-product-multi-method-market-analysis
+    retired_at: 2026-07-13
+    reason: renamed
+    superseded_by:
+      - stelow-product-multi-method-market-analysis
+  - name: cali-product-open-source
+    retired_at: 2026-07-13
+    reason: renamed
+    superseded_by:
+      - stelow-product-open-source
+  - name: cali-product-opportunity-mapping
+    retired_at: 2026-07-13
+    reason: renamed
+    superseded_by:
+      - stelow-product-opportunity-mapping
+  - name: cali-product-plan-critique
+    retired_at: 2026-07-13
+    reason: renamed
+    superseded_by:
+      - stelow-product-plan-critique
+  - name: cali-product-pricing
+    retired_at: 2026-07-13
+    reason: renamed
+    superseded_by:
+      - stelow-product-pricing
+  - name: cali-product-promotions
+    retired_at: 2026-07-13
+    reason: renamed
+    superseded_by:
+      - stelow-product-promotions
+  - name: cali-product-scope-executor
+    retired_at: 2026-07-13
+    reason: renamed
+    superseded_by:
+      - stelow-product-scope-executor
+  - name: cali-product-shape-up
+    retired_at: 2026-07-13
+    reason: renamed
+    superseded_by:
+      - stelow-product-shape-up
+  - name: cali-product-tech-planning
+    retired_at: 2026-07-13
+    reason: renamed
+    superseded_by:
+      - stelow-product-tech-planning
+  - name: cali-product-testing-ai-code
+    retired_at: 2026-07-13
+    reason: renamed
+    superseded_by:
+      - stelow-product-testing-ai-code
+  - name: cali-product-testing-execution
+    retired_at: 2026-07-13
+    reason: renamed
+    superseded_by:
+      - stelow-product-testing-execution
+  - name: cali-product-trust-building
+    retired_at: 2026-07-13
+    reason: renamed
+    superseded_by:
+      - stelow-product-trust-building
+  - name: cali-product-ux-critique
+    retired_at: 2026-07-13
+    reason: renamed
+    superseded_by:
+      - stelow-product-ux-critique

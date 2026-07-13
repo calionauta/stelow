@@ -53,9 +53,9 @@ flowchart LR
 
 | Skill | Handles | File |
 |---|---|---|
-| `cali-product-tech-planning` | Generates scopes + planned tasks table in spec-tech.md | `skills/cali-product-tech-planning/SKILL.md` |
-| `cali-product-scope-executor` | Seeds tasks, appends discovered, marks done/skipped, creates Record at close | `skills/cali-product-scope-executor/SKILL.md` (Steps 3a-3e, 3e-bis, 3e-ter) |
-| `cali-product-execution-critique` | Criterion 6 (Record) + Criterion 11 (Tasks Tracking) — audits both layers | `skills/cali-product-execution-critique/SKILL.md` |
+| `stelow-product-tech-planning` | Generates scopes + planned tasks table in spec-tech.md | `skills/stelow-product-tech-planning/SKILL.md` |
+| `stelow-product-scope-executor` | Seeds tasks, appends discovered, marks done/skipped, creates Record at close | `skills/stelow-product-scope-executor/SKILL.md` (Steps 3a-3e, 3e-bis, 3e-ter) |
+| `stelow-product-execution-critique` | Criterion 6 (Record) + Criterion 11 (Tasks Tracking) — audits both layers | `skills/stelow-product-execution-critique/SKILL.md` |
 
 ## Field status
 

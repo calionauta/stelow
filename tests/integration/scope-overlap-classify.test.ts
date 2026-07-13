@@ -3,7 +3,7 @@
  *
  * Validates `classifyOverlap()` and `matchesDeclaredGlob()` from
  * `extensions/stelow/state.ts`. These drive the post-execution overlap
- * report in `cali-product-scope-executor` SKILL Step 8.
+ * report in `stelow-product-scope-executor` SKILL Step 8.
  *
  * Test coverage:
  *   - Glob match: trailing `/**`, trailing `/*`, exact

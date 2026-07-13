@@ -23,12 +23,12 @@ and ast-grep (joelhooks/pi-ast-grep) are installed automatically as Pi packages.
 stelow/          ← Source
 └── skills/                     ← 25 skills flat
     ├── stelow-product-orchestrator/   ← Orchestrator
-    ├── cali-product-shape-up/
+    ├── stelow-product-shape-up/
     └── ... (23 more)
 
 ~/.agents/skills/               ← Install target
 ├── stelow-product-orchestrator/       ← Copied
-├── cali-product-shape-up/             ← Copied
+├── stelow-product-shape-up/             ← Copied
 └── ... (25 total)
 ```
 

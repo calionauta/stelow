@@ -2,6 +2,29 @@
 
 All notable changes to `@calionauta/stelow` will be documented in this file.
 
+## [0.49.0] - 2026-07-13
+
+### Changed (BREAKING)
+
+- **Skill prefix renamed: `cali-product-*` → `stelow-product-*`**. All 24 product skills under `skills/` now use the `stelow-product-` prefix. Frontmatter `name:`, internal cross-references, and external invocations (`/skill:stelow-product-shape-up` etc.) are updated throughout the codebase. Skills installed in `~/.agents/skills/` under the old `cali-product-*` name are now orphaned and will be pruned on next session start (`syncSkillsFromClone` + `retired-skills.yaml`).
+- **Runtime state directory renamed: `.cali-product-workflow/` → `.stelow/`**. The legacy filesystem path is no longer preserved. Any in-flight workflow tracked under `.cali-product-workflow/<date>/<dirHash>/` must be moved to `.stelow/<date>/<dirHash>/` manually — the extension will not auto-discover the old path.
+- **Critique output directories renamed**:
+  - `.cali-ux-critique/` → `.stelow-ux-critique/`
+  - `.cali-codebase-critique/` → `.stelow-codebase-critique/`
+  - `.cali-plan-critique/` → `.stelow-plan-critique/`
+- **Build output renamed**: `build/extensions/cali-product-workflow{,-pi}/` → `build/extensions/stelow/` (regenerate via `npm run build`).
+- **`AGENTS.md` policy updated**: the legacy backward-compat note for `cali-product-workflow` / `Cali Product Workflow` names is removed. All runtime paths, skill prefixes, and filesystem artifacts now use the `stelow` prefix exclusively.
+
+### Migration
+
+Users upgrading from ≤0.48.0 must:
+
+1. `npm run build` to regenerate `build/extensions/stelow/`.
+2. Move any in-flight workflow: `mv .cali-product-workflow/* .stelow/` (only after confirming no current run is using it).
+3. Delete old `cali-product-*` skill copies from `~/.agents/skills/` if `install.sh` prune didn't catch them (shouldn't be necessary — `retired-skills.yaml` lists them).
+
+This is a non-cosmetic change: any script, hook, or external tool that hard-codes the old skill names or filesystem paths will break and must be updated.
+
 ## [0.48.0] - 2026-07-13
 
 ### Added

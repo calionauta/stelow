@@ -70,7 +70,7 @@ Move Stage Index, Flow Diagram, Auto-chaining rules to AFTER the boundary. Move 
 
 #### Step 4: Apply same pattern to sub-skills
 
-Each `cali-product-*/SKILL.md` should also have:
+Each `stelow-product-*/SKILL.md` should also have:
 1. Stable prefix (tool defs, immutable rules)
 2. Cache boundary marker
 3. Variable content (stage instructions, conditional logic)
@@ -88,7 +88,7 @@ Each `cali-product-*/SKILL.md` should also have:
 ### Files to Modify
 
 - `skills/stelow/SKILL.md` — reorganize + add boundary
-- `skills/cali-product-*/SKILL.md` — apply same pattern
+- `skills/stelow-product-*/SKILL.md` — apply same pattern
 - `docs/improvement-plan.md` (this file) — track completion
 
 ---
@@ -588,7 +588,7 @@ This does NOT change anything — it only logs what's available. Future stages c
 | `skills/stelow/stages/context.md` | — | — | ✅ | — | Rename Mode → Autonomy Level |
 | `skills/stelow/stages/ask-patterns.md` | — | — | ✅ | — | Rename Mode → Autonomy Level |
 | `skills/stelow/stages/execution.md` | — | — | ✅ | — | Rename Mode references |
-| `skills/cali-product-*/SKILL.md` | ✅ | — | — | — | Add cache boundary |
+| `skills/stelow-product-*/SKILL.md` | ✅ | — | — | — | Add cache boundary |
 | `scripts/setup-full.sh` | ✅ | — | — | — | NEW FILE: auto-dependency installer |
 | `scripts/setup-deps.sh` | ✅ | — | — | — | NEW FILE: dep detection + install |
 | `install.sh` | ✅ | — | — | — | Add --auto-deps flag |

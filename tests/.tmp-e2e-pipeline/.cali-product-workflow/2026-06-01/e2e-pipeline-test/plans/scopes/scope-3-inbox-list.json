@@ -1,9 +1,0 @@
-{
-  "id": "scope-3-inbox-list",
-  "type": "feature",
-  "name": "Inbox List Command",
-  "dependencies": [
-    "scope-2-inbox-storage"
-  ],
-  "effort": "1 day"
-}

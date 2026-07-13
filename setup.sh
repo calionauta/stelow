@@ -83,30 +83,30 @@ PI_PACKAGES=(
 # Skills to install from stelow
 ALL_SKILLS=(
   "stelow"
-  "cali-product-shape-up"
-  "cali-product-interface-alternatives"
-  "cali-product-plan-critique"
-  "cali-product-codebase-critique"
-  "cali-product-ux-critique"
-  "cali-product-coding-standards"
-  "cali-product-tech-planning"
-  "cali-product-job-to-be-done"
-  "cali-product-discovery"
-  "cali-product-opportunity-mapping"
-  "cali-product-multi-method-market-analysis"
-  "cali-product-evolutionary-principles"
-  "cali-product-pricing"
-  "cali-product-ads"
-  "cali-product-trust-building"
-  "cali-product-promotions"
-  "cali-product-business-models"
-  "cali-product-health"
-  "cali-product-marketplace-playbook"
-  "cali-product-open-source"
-  "cali-product-scope-executor"
-  "cali-product-testing-ai-code"
-  "cali-product-testing-execution"
-  "cali-product-execution-critique"
+  "stelow-product-shape-up"
+  "stelow-product-interface-alternatives"
+  "stelow-product-plan-critique"
+  "stelow-product-codebase-critique"
+  "stelow-product-ux-critique"
+  "stelow-product-coding-standards"
+  "stelow-product-tech-planning"
+  "stelow-product-job-to-be-done"
+  "stelow-product-discovery"
+  "stelow-product-opportunity-mapping"
+  "stelow-product-multi-method-market-analysis"
+  "stelow-product-evolutionary-principles"
+  "stelow-product-pricing"
+  "stelow-product-ads"
+  "stelow-product-trust-building"
+  "stelow-product-promotions"
+  "stelow-product-business-models"
+  "stelow-product-health"
+  "stelow-product-marketplace-playbook"
+  "stelow-product-open-source"
+  "stelow-product-scope-executor"
+  "stelow-product-testing-ai-code"
+  "stelow-product-testing-execution"
+  "stelow-product-execution-critique"
 )
 
 # ─── Colors & Output ─────────────────────────────────────────────────────────
@@ -438,8 +438,8 @@ configure_settings() {
       .skillful.toggleSlots //= {
         "1": "stelow",
         "2": "cali-go-stack",
-        "3": "cali-product-coding-standards",
-        "4": "cali-product-testing-execution",
+        "3": "stelow-product-coding-standards",
+        "4": "stelow-product-testing-execution",
         "5": "cali-github-releases"
       } |
       .skillful.toggleModifier //= "alt"
@@ -477,8 +477,8 @@ configure_settings() {
     "toggleSlots": {
       "1": "stelow",
       "2": "cali-go-stack",
-      "3": "cali-product-coding-standards",
-      "4": "cali-product-testing-execution",
+      "3": "stelow-product-coding-standards",
+      "4": "stelow-product-testing-execution",
       "5": "cali-github-releases"
     },
     "toggleModifier": "alt"

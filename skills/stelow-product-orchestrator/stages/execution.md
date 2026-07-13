@@ -203,7 +203,7 @@ APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-
 - ❌ Single-run validation — agents are non-deterministic
 - ❌ Snapshot tests for non-UI components
 
-See the `cali-product-testing-ai-code` skill
+See the `stelow-product-testing-ai-code` skill
 
 ## Execution — AUTOMATIC
 
@@ -219,18 +219,18 @@ After Plannotator approval on spec-tech_v{N}.md:
 
 | Scope Type | Executor | Command |
 |------------|----------|--------|
-| `feature` | goals tool (see `references/cli-tools/goals.md`) + `/supervise` | see the `cali-product-scope-executor` skill for instructions |
-| `optimization` | goals tool (see `references/cli-tools/goals.md`, Optimization Goals) | see the `cali-product-scope-executor` skill for instructions |
-| `spike` | goals tool (see `references/cli-tools/goals.md`) + `/supervise` | see the `cali-product-scope-executor` skill for instructions |
-| `test-*` | goals tool (see `references/cli-tools/goals.md`) + testing gates | see the `cali-product-scope-executor` skill for instructions |
+| `feature` | goals tool (see `references/cli-tools/goals.md`) + `/supervise` | see the `stelow-product-scope-executor` skill for instructions |
+| `optimization` | goals tool (see `references/cli-tools/goals.md`, Optimization Goals) | see the `stelow-product-scope-executor` skill for instructions |
+| `spike` | goals tool (see `references/cli-tools/goals.md`) + `/supervise` | see the `stelow-product-scope-executor` skill for instructions |
+| `test-*` | goals tool (see `references/cli-tools/goals.md`) + testing gates | see the `stelow-product-scope-executor` skill for instructions |
 
 ### Executing Scopes
 
-**Use the `cali-product-scope-executor` skill** — this routes each scope to its correct executor.
+**Use the `stelow-product-scope-executor` skill** — this routes each scope to its correct executor.
 
 **For feature scopes:**
 
-Feature scopes use an **auto-iteration loop** (see `cali-product-scope-executor` Step 3):
+Feature scopes use an **auto-iteration loop** (see `stelow-product-scope-executor` Step 3):
 implement → verify (tests, lint, typecheck) → quality checks → parallel review → evaluate.
 If criteria fail, the next iteration receives accumulated feedback. The loop repeats until
 success or `[MAX_ITERATIONS]` exhaustion (default: 3), then escalates to human.
@@ -239,7 +239,7 @@ success or `[MAX_ITERATIONS]` exhaustion (default: 3), then escalates to human.
 
 Use the goals tool (see `references/cli-tools/goals.md` → Optimization Goals) to create an optimization goal with benchmark verify commands and iteration loop.
 
-**For iteration loops:** feature scopes use `cali-product-scope-executor` Step 3;
+**For iteration loops:** feature scopes use `stelow-product-scope-executor` Step 3;
 optimization scopes use `goals.md` → Optimization Goals section.
 
 ### ⚠️ NEVER ASK
@@ -314,7 +314,7 @@ See `references/cli-tools/codequality-review.md` for the full trigger policy.
 Parallel scope execution defaults to **DAG-independent + sequential** unless
 the orchestrator explicitly pairs scopes for concurrent dispatch. When
 parallel scope execution IS used, file overlap is detected **post-execution**
-via `git diff --name-only` capture (see `cali-product-scope-executor` Step 3e
+via `git diff --name-only` capture (see `stelow-product-scope-executor` Step 3e
 "Persist state" — `actual_files` field) — NOT predicted pre-execution.
 
 This is **audit, not prevention**: stelow surfaces overlap AFTER both scopes

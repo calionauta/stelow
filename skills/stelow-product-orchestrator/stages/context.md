@@ -59,14 +59,14 @@ echo "Proceeding directly to shape:10"
 
 | User Input Signal | Domain | Skill |
 |---|---|---|
-| "price", "pricing", "how much to charge", "subscription" | Pricing | `cali-product-pricing` |
-| "launch", "promotion", "black friday", "coupon", "discount" | Promotions | `cali-product-promotions` |
-| "ad", "ads", "facebook ads", "google ads", "paid traffic" | Ads | `cali-product-ads` |
-| "trust", "guarantee", "social proof", "credibility" | Trust | `cali-product-trust-building` |
-| "business model", "revenue", "monetize", "make money" | Business Models | `cali-product-business-models` |
-| "open source", "community edition" | Open Source | `cali-product-open-source` |
-| "product health", "product metrics", "addiction", "wellbeing" | Health | `cali-product-health` |
-| "marketplace", "marketplace supply", "marketplace demand" | Marketplace | `cali-product-marketplace-playbook` |
+| "price", "pricing", "how much to charge", "subscription" | Pricing | `stelow-product-pricing` |
+| "launch", "promotion", "black friday", "coupon", "discount" | Promotions | `stelow-product-promotions` |
+| "ad", "ads", "facebook ads", "google ads", "paid traffic" | Ads | `stelow-product-ads` |
+| "trust", "guarantee", "social proof", "credibility" | Trust | `stelow-product-trust-building` |
+| "business model", "revenue", "monetize", "make money" | Business Models | `stelow-product-business-models` |
+| "open source", "community edition" | Open Source | `stelow-product-open-source` |
+| "product health", "product metrics", "addiction", "wellbeing" | Health | `stelow-product-health` |
+| "marketplace", "marketplace supply", "marketplace demand" | Marketplace | `stelow-product-marketplace-playbook` |
 
 **Two detection modes:**
 

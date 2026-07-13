@@ -42,13 +42,13 @@ describe('No stale old appetite labels', () => {
     { path: join(STAGES_DIR, 'gate.md'), name: 'gate.md' },
     { path: join(STAGES_DIR, 'setup.md'), name: 'setup.md' },
     { path: join(STAGES_DIR, 'ask-patterns.md'), name: 'ask-patterns.md' },
-    { path: join(SKILLS_DIR, 'cali-product-plan-critique', 'SKILL.md'), name: 'plan-critique/SKILL.md' },
-    { path: join(SKILLS_DIR, 'cali-product-codebase-critique', 'SKILL.md'), name: 'codebase-critique/SKILL.md' },
-    { path: join(SKILLS_DIR, 'cali-product-ux-critique', 'SKILL.md'), name: 'ux-critique/SKILL.md' },
-    { path: join(SKILLS_DIR, 'cali-product-scope-executor', 'SKILL.md'), name: 'scope-executor/SKILL.md' },
-    { path: join(SKILLS_DIR, 'cali-product-execution-critique', 'SKILL.md'), name: 'execution-critique/SKILL.md' },
-    { path: join(SKILLS_DIR, 'cali-product-tech-planning', 'SKILL.md'), name: 'tech-planning/SKILL.md' },
-    { path: join(SKILLS_DIR, 'cali-product-shape-up', 'references', 'proposal-structure.md'), name: 'proposal-structure.md' },
+    { path: join(SKILLS_DIR, 'stelow-product-plan-critique', 'SKILL.md'), name: 'plan-critique/SKILL.md' },
+    { path: join(SKILLS_DIR, 'stelow-product-codebase-critique', 'SKILL.md'), name: 'codebase-critique/SKILL.md' },
+    { path: join(SKILLS_DIR, 'stelow-product-ux-critique', 'SKILL.md'), name: 'ux-critique/SKILL.md' },
+    { path: join(SKILLS_DIR, 'stelow-product-scope-executor', 'SKILL.md'), name: 'scope-executor/SKILL.md' },
+    { path: join(SKILLS_DIR, 'stelow-product-execution-critique', 'SKILL.md'), name: 'execution-critique/SKILL.md' },
+    { path: join(SKILLS_DIR, 'stelow-product-tech-planning', 'SKILL.md'), name: 'tech-planning/SKILL.md' },
+    { path: join(SKILLS_DIR, 'stelow-product-shape-up', 'references', 'proposal-structure.md'), name: 'proposal-structure.md' },
     { path: join(WORKFLOW_DIR, 'references', 'cli-tools', 'supervise.md'), name: 'supervise.md' },
   ];
 
@@ -75,7 +75,7 @@ describe('No stale old appetite labels', () => {
   });
 
   it('scope-executor/SKILL.md has no XL heading (must be Complete)', () => {
-    const content = readSkill('cali-product-scope-executor');
+    const content = readSkill('stelow-product-scope-executor');
     expect(content).not.toMatch(/XL.*Human-in-loop/);
     expect(content).not.toMatch(/Step 2d: XL/);
   });
@@ -97,7 +97,7 @@ describe('Glob pattern consistency', () => {
   });
 
   it('scope-executor uses correct path with {_dir} level (not broken single-wildcard)', () => {
-    const content = readSkill('cali-product-scope-executor');
+    const content = readSkill('stelow-product-scope-executor');
     expect(content).toMatch(/\.stelow\/\*\/\*\/plans/);
     // Single-wildcard allowed only in standalone description line
     const badLines = content.split('\n').filter(l => l.match(/\.stelow\/\*\/plans/) && !l.includes('standalone'));
@@ -164,9 +164,9 @@ describe('No Portuguese in English sections (core stage files)', () => {
 describe('No duplicate Complete rows in appetite tables', () => {
   const filesWithTables: { path: string; name: string }[] = [
     { path: join(STAGES_DIR, 'execution.md'), name: 'execution.md' },
-    { path: join(SKILLS_DIR, 'cali-product-codebase-critique', 'SKILL.md'), name: 'codebase-critique/SKILL.md' },
-    { path: join(SKILLS_DIR, 'cali-product-ux-critique', 'SKILL.md'), name: 'ux-critique/SKILL.md' },
-    { path: join(SKILLS_DIR, 'cali-product-tech-planning', 'SKILL.md'), name: 'tech-planning/SKILL.md' },
+    { path: join(SKILLS_DIR, 'stelow-product-codebase-critique', 'SKILL.md'), name: 'codebase-critique/SKILL.md' },
+    { path: join(SKILLS_DIR, 'stelow-product-ux-critique', 'SKILL.md'), name: 'ux-critique/SKILL.md' },
+    { path: join(SKILLS_DIR, 'stelow-product-tech-planning', 'SKILL.md'), name: 'tech-planning/SKILL.md' },
     { path: join(STAGES_DIR, 'verification.md'), name: 'verification.md' },
   ];
 
@@ -249,7 +249,7 @@ describe('Valid appetite values throughout', () => {
 
   it('proposal-structure.md references only valid appetite values', () => {
     const content = readFileSync(
-      join(SKILLS_DIR, 'cali-product-shape-up', 'references', 'proposal-structure.md'),
+      join(SKILLS_DIR, 'stelow-product-shape-up', 'references', 'proposal-structure.md'),
       'utf-8'
     );
     const appetiteRows = content.match(/\| `(Lean|Core|Complete)` \|/g);
@@ -323,19 +323,19 @@ describe('Default fallback values are Core (not stale M)', () => {
   });
 
   it('tech-planning defaults to Core', () => {
-    const content = readSkill('cali-product-tech-planning');
+    const content = readSkill('stelow-product-tech-planning');
     expect(content).toMatch(/echo "Core"/);
     expect(content).not.toMatch(/echo "M"/);
   });
 
   it('codebase-critique defaults to Core (APPETITE variable)', () => {
-    const content = readSkill('cali-product-codebase-critique');
+    const content = readSkill('stelow-product-codebase-critique');
     expect(content).toMatch(/Core/);
     expect(content).not.toMatch(/APPETITE="M"|APPETITE: M/);
   });
 
   it('scope-executor defaults to Core', () => {
-    const content = readSkill('cali-product-scope-executor');
+    const content = readSkill('stelow-product-scope-executor');
     expect(content).toMatch(/echo "Core"/);
     expect(content).not.toMatch(/echo "M"/);
   });
@@ -371,7 +371,7 @@ describe('Ask patterns completeness', () => {
 
 describe('Appetite_fit check logic (constraint check, not estimation)', () => {
   it('plan-critique uses appetite_fit case-based check, not ordinal mapping', () => {
-    const content = readSkill('cali-product-plan-critique');
+    const content = readSkill('stelow-product-plan-critique');
     expect(content).toMatch(/case "\$FIT" in/);
     expect(content).toMatch(/fits\)/);
     expect(content).toMatch(/cuts_needed\)/);
@@ -382,7 +382,7 @@ describe('Appetite_fit check logic (constraint check, not estimation)', () => {
 
   it('proposal-structure.md uses appetite_fit not complexity_estimate', () => {
     const content = readFileSync(
-      join(SKILLS_DIR, 'cali-product-shape-up', 'references', 'proposal-structure.md'),
+      join(SKILLS_DIR, 'stelow-product-shape-up', 'references', 'proposal-structure.md'),
       'utf-8'
     );
     expect(content).toMatch(/appetite_fit/);
@@ -391,14 +391,14 @@ describe('Appetite_fit check logic (constraint check, not estimation)', () => {
   });
 
   it('shape-up SKILL.md uses appetite_fit not complexity_estimate', () => {
-    const content = readSkill('cali-product-shape-up');
+    const content = readSkill('stelow-product-shape-up');
     expect(content).toMatch(/appetite_fit/);
     expect(content).not.toMatch(/complexity_estimate/);
     expect(content).toMatch(/constraint, not estimate/);
   });
 
   it('scope-executor SKILL.md uses Appetite Fit not Complexity Estimate', () => {
-    const content = readSkill('cali-product-scope-executor');
+    const content = readSkill('stelow-product-scope-executor');
     expect(content).toMatch(/Appetite Fit/);
     expect(content).not.toMatch(/Complexity Estimate/);
   });
@@ -417,14 +417,14 @@ describe('Appetite_fit check logic (constraint check, not estimation)', () => {
 
 describe('Sub-skill cli-tools are present', () => {
   const subSkills = [
-    'cali-product-codebase-critique',
-    'cali-product-ux-critique',
-    'cali-product-plan-critique',
-    'cali-product-scope-executor',
-    'cali-product-tech-planning',
-    'cali-product-shape-up',
-    'cali-product-interface-alternatives',
-    'cali-product-execution-critique',
+    'stelow-product-codebase-critique',
+    'stelow-product-ux-critique',
+    'stelow-product-plan-critique',
+    'stelow-product-scope-executor',
+    'stelow-product-tech-planning',
+    'stelow-product-shape-up',
+    'stelow-product-interface-alternatives',
+    'stelow-product-execution-critique',
   ];
 
   const expectedTools = ['subagents.md', 'todo.md', 'supervise.md'];
@@ -507,7 +507,7 @@ describe('context:5 appetite/mode gate', () => {
 
 describe('Interface exploration is appetite-scaled', () => {
   it('interface skill declares 1/3/5 proposal counts by appetite', () => {
-    const content = readSkill('cali-product-interface-alternatives');
+    const content = readSkill('stelow-product-interface-alternatives');
     expect(content).toMatch(/`Lean`.*1 suggested interface/);
     expect(content).toMatch(/`Core`.*3 archetypes explored \+ 1 hybrid/);
     expect(content).toMatch(/`Complete`.*5 archetypes explored \+ 1 hybrid/);
@@ -527,7 +527,7 @@ describe('Interface exploration is appetite-scaled', () => {
 // ═════════════════════════════════════════════════════════════════════
 
 describe('shape-up step ordering', () => {
-  const content = readSkill('cali-product-shape-up');
+  const content = readSkill('stelow-product-shape-up');
 
   test('shape:10 before shape:12 before shape:15 before shape:20', () => {
     const idx10 = content.indexOf('## shape:10');
@@ -557,7 +557,7 @@ describe('shape-up step ordering', () => {
 // ═════════════════════════════════════════════════════════════════════
 
 describe('tech-planning step ordering', () => {
-  const content = readSkill('cali-product-tech-planning');
+  const content = readSkill('stelow-product-tech-planning');
 
   test('tech:5 before planning:10', () => {
     const idx5 = content.indexOf('### tech:5');
@@ -582,7 +582,7 @@ describe('tech-planning step ordering', () => {
 // ═════════════════════════════════════════════════════════════════════
 
 describe('plan-critique flow step ordering', () => {
-  const content = readSkill('cali-product-plan-critique');
+  const content = readSkill('stelow-product-plan-critique');
 
   test('critique steps in correct order: 20 → 30 → 40 → 45 → 50', () => {
     const idx20 = content.indexOf('### critique:20');
@@ -663,7 +663,7 @@ describe('Mode description sync between ask-patterns and setup', () => {
 // ═════════════════════════════════════════════════════════════════════
 
 describe('Purpose-named CLI tools exist', () => {
-  const cliDir = join(SKILLS_DIR, 'cali-product-tech-planning', 'references', 'cli-tools');
+  const cliDir = join(SKILLS_DIR, 'stelow-product-tech-planning', 'references', 'cli-tools');
 
   test('doc-search.md exists', () => {
     expect(existsSync(join(cliDir, 'doc-search.md'))).toBe(true);
@@ -689,7 +689,7 @@ describe('Purpose-named CLI tools exist', () => {
 // ═════════════════════════════════════════════════════════════════════
 
 describe('plan-critique golden rule has review mode caveat', () => {
-  const content = readSkill('cali-product-plan-critique');
+  const content = readSkill('stelow-product-plan-critique');
 
   test('golden rule caveat mentions Auto/Product Spec Gate modes', () => {
     expect(content).toMatch(/Mode caveat/);
@@ -748,12 +748,12 @@ describe('Quality Floor: appetite never cuts quality', () => {
   // surfaces where a regression would break the Quality Floor.
   const qualityGateFiles: { path: string; name: string }[] = [
     { path: join(STAGES_DIR, 'verification.md'), name: 'verification.md' },
-    { path: join(SKILLS_DIR, 'cali-product-codebase-critique', 'SKILL.md'), name: 'codebase-critique/SKILL.md' },
-    { path: join(SKILLS_DIR, 'cali-product-ux-critique', 'SKILL.md'), name: 'ux-critique/SKILL.md' },
-    { path: join(SKILLS_DIR, 'cali-product-testing-ai-code', 'SKILL.md'), name: 'testing-ai-code/SKILL.md' },
+    { path: join(SKILLS_DIR, 'stelow-product-codebase-critique', 'SKILL.md'), name: 'codebase-critique/SKILL.md' },
+    { path: join(SKILLS_DIR, 'stelow-product-ux-critique', 'SKILL.md'), name: 'ux-critique/SKILL.md' },
+    { path: join(SKILLS_DIR, 'stelow-product-testing-ai-code', 'SKILL.md'), name: 'testing-ai-code/SKILL.md' },
     { path: join(WORKFLOW_DIR, 'references', 'cli-tools', 'codequality-review.md'), name: 'codequality-review.md' },
-    { path: join(SKILLS_DIR, 'cali-product-tech-planning', 'references', 'cli-tools', 'codequality-review.md'), name: 'tech-planning/codequality-review.md' },
-    { path: join(SKILLS_DIR, 'cali-product-shape-up', 'references', 'cli-tools', 'codequality-review.md'), name: 'shape-up/codequality-review.md' },
+    { path: join(SKILLS_DIR, 'stelow-product-tech-planning', 'references', 'cli-tools', 'codequality-review.md'), name: 'tech-planning/codequality-review.md' },
+    { path: join(SKILLS_DIR, 'stelow-product-shape-up', 'references', 'cli-tools', 'codequality-review.md'), name: 'shape-up/codequality-review.md' },
   ];
 
   // Allowlist: legitimate scope-related skips that don't violate the floor.

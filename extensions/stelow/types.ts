@@ -261,7 +261,7 @@ export type ScopeStatus = 'pending' | 'in-progress' | 'completed' | 'escalated' 
  * MUST treat them as `undefined`.
  *
  * Lifecycle:
- *   1. Scope init (Step 2e of `cali-product-scope-executor`): `id`, `name`,
+ *   1. Scope init (Step 2e of `stelow-product-scope-executor`): `id`, `name`,
  *      `type`, `status: 'pending'`, plus optional `targetFiles` from the
  *      `[TARGET_FILES]` block in spec-tech.md.
  *   2. Scope start (Step 3c): `status -> 'in-progress'`, `startSha` captured
@@ -290,7 +290,7 @@ export type ScopeStatus = 'pending' | 'in-progress' | 'completed' | 'escalated' 
  * ```
  *
  * @see docs/scope-execution-strategy.md (high-level pipeline overview)
- * @see skills/cali-product-scope-executor/SKILL.md (Steps 2e / 3c / 3e / 8)
+ * @see skills/stelow-product-scope-executor/SKILL.md (Steps 2e / 3c / 3e / 8)
  * @see skills/stelow-product-orchestrator/references/cli-tools/file-locking.md
  *      (parallel-scope prevention via file-reservation locks)
  */
@@ -418,7 +418,7 @@ export interface Scope {
    * Optional. Claim-proof evidence block populated by scope-executor
    * Step 3e-bis. The full Record body lives in markdown at
    * `iteration-state-{SCOPE-ID}.md`; this is the machine-checkable
-   * subset that `cali-product-execution-critique` reads.
+   * subset that `stelow-product-execution-critique` reads.
    *
    * Convention (v1, advisory). Field names are snake_case throughout
    * to match the rest of `stelow.json` schema:
@@ -432,7 +432,7 @@ export interface Scope {
    *     would write; kept here so execution-critique can compare against
    *     what was actually committed.
    *
-   * See `cali-product-scope-executor` SKILL Step 3e-bis for the full
+   * See `stelow-product-scope-executor` SKILL Step 3e-bis for the full
    * Record template and evidence-ladder rationale.
    */
   record?: ScopeRecord;
@@ -542,6 +542,11 @@ export interface Workflow {
   worktreePath?: string;  // Path to git worktree if created for execution
   dirHash?: string;       // Stable directory name (e.g., pw-ollc-whkaxv) — REQUIRED for rename/archive operations
   detectedCLI?: string;   // CLI harness detected at workflow creation
+  config?: {
+    appetite?: string;
+    review_mode?: string;
+    domains_detected?: string[];
+  };
   intent?: WorkflowIntent; // Intent category detected at /sw-start
   scopes?: Scope[];       // Tech plan scopes — populated during Execution phase
   specTechFile?: string;  // Filename of spec-tech.md that scopes were synced from (e.g. "spec-tech_v2.md")

@@ -1,9 +1,0 @@
-{
-  "id": "scope-4-inbox-perf",
-  "type": "optimization",
-  "name": "Inbox Performance",
-  "dependencies": [
-    "scope-2-inbox-storage"
-  ],
-  "effort": "0.5 day"
-}

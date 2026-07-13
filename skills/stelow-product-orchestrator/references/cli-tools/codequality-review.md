@@ -105,7 +105,7 @@ Expected output should include:
 - dead code, unused exports, TODO comments, placeholders
 - severity classification: P0/P1/P2/P3 or equivalent
 
-Save the report to the stelow verification path above so `cali-product-execution-critique` can consume it.
+Save the report to the stelow verification path above so `stelow-product-execution-critique` can consume it.
 
 ## Fallback (not installed)
 

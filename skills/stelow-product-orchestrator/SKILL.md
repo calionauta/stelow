@@ -68,11 +68,11 @@ In the Strategic Context stage, the user can choose strategic analyses **in para
 
 | Approach | Skill | What It Produces |
 |---|---|---|
-| **Jobs To Be Done** | `cali-product-job-to-be-done` | Contextual segmentation, desired outcomes, job map |
-| **Evolutionary Principles** | `cali-product-evolutionary-principles` | Stepping-stones, novelty map, evolutionary forces |
-| **Opportunity Mapping** | `cali-product-opportunity-mapping` | Ranked opportunities, solution candidates |
-| **Multi-Method Market Analysis** | `cali-product-multi-method-market-analysis` | PESTLE, Wardley Maps, Foresight, trends |
-| **Product Discovery** | `cali-product-discovery` | Experiment plan, metrics, pricing |
+| **Jobs To Be Done** | `stelow-product-job-to-be-done` | Contextual segmentation, desired outcomes, job map |
+| **Evolutionary Principles** | `stelow-product-evolutionary-principles` | Stepping-stones, novelty map, evolutionary forces |
+| **Opportunity Mapping** | `stelow-product-opportunity-mapping` | Ranked opportunities, solution candidates |
+| **Multi-Method Market Analysis** | `stelow-product-multi-method-market-analysis` | PESTLE, Wardley Maps, Foresight, trends |
+| **Product Discovery** | `stelow-product-discovery` | Experiment plan, metrics, pricing |
 
 All execute **concurrently** via subagents tool (see `references/cli-tools/subagents.md`).
 See `stages/context.md` for the full flow.
@@ -85,14 +85,14 @@ Domain playbooks available for tactical reference during planning/execution:
 
 | Library | Skill | Covers |
 |---|---|---|
-| **Ads** | `cali-product-ads` | Transtheoretical Model, 5 awareness stages |
-| **Business Models** | `cali-product-business-models` | Cost reduction, revenue generation |
-| **Health** | `cali-product-health` | Signals in tension, success vs counterbalance |
-| **Marketplace Playbook** | `cali-product-marketplace-playbook` | 19 marketplace stimulation tactics |
-| **Open Source** | `cali-product-open-source` | OSS business models, fair code |
-| **Pricing** | `cali-product-pricing` | Exchange base, consumption, alignment, perception |
-| **Promotions** | `cali-product-promotions` | MAGIC framework, 4 launch strategies |
-| **Trust Building** | `cali-product-trust-building` | 10 pillars, guarantees, perception |
+| **Ads** | `stelow-product-ads` | Transtheoretical Model, 5 awareness stages |
+| **Business Models** | `stelow-product-business-models` | Cost reduction, revenue generation |
+| **Health** | `stelow-product-health` | Signals in tension, success vs counterbalance |
+| **Marketplace Playbook** | `stelow-product-marketplace-playbook` | 19 marketplace stimulation tactics |
+| **Open Source** | `stelow-product-open-source` | OSS business models, fair code |
+| **Pricing** | `stelow-product-pricing` | Exchange base, consumption, alignment, perception |
+| **Promotions** | `stelow-product-promotions` | MAGIC framework, 4 launch strategies |
+| **Trust Building** | `stelow-product-trust-building` | 10 pillars, guarantees, perception |
 
 ---
 
@@ -143,9 +143,9 @@ LLMs suffer from **context rot**: compliance with their own rules drops from
 - Before generating scopes: verify `approved: true` in spec-product.md
 - **Deterministic** — do not rely on memory, read the YAML frontmatter
 - **AI-Aware Testing**: If `product_type: software` or `product_type: hybrid` in frontmatter:
-  - Activate the `cali-product-testing-ai-code` skill to generate testing-strategy.md
+  - Activate the `stelow-product-testing-ai-code` skill to generate testing-strategy.md
   - Add `test-*` scope types to spec-tech.md
-  - See the `cali-product-testing-ai-code` skill
+  - See the `stelow-product-testing-ai-code` skill
 
 ### Supervisor (Execution)
 - **Never activate during stages before Execution.** The supervisor would re-submit Plannotator.
@@ -154,7 +154,7 @@ LLMs suffer from **context rot**: compliance with their own rules drops from
 ### Execution
 - **DO NOT ask** "Would you like to execute?", "Create ordered-execution-goal?", "Review plan first?"
 - **Execution is automatic** after Tech Planning approval. Proceed directly.
-- see the `cali-product-scope-executor` skill for instructions for scope routing.
+- see the `stelow-product-scope-executor` skill for instructions for scope routing.
 - See `stages/execution.md` for details.
 
 ### Workflow Interruption
@@ -193,10 +193,10 @@ After completing each stage, the LLM **must proceed directly to the next stage**
 
 Follow the sequence below. For Shape Up, Critique, Interface, and Int. Gate stages, read the subskill SKILL.md directly. Each subskill has its own **Reference Index** — read the file to see it:
 
-1. Shape: see the `cali-product-shape-up` skill for instructions
-2. Critique: see the `cali-product-plan-critique` skill for instructions
-3. Interface: see the `cali-product-interface-alternatives` skill for instructions
-4. Int. Gate: see the `cali-product-interface-alternatives` skill for instructions
+1. Shape: see the `stelow-product-shape-up` skill for instructions
+2. Critique: see the `stelow-product-plan-critique` skill for instructions
+3. Interface: see the `stelow-product-interface-alternatives` skill for instructions
+4. Int. Gate: see the `stelow-product-interface-alternatives` skill for instructions
 
 Do NOT use `/skill:` for internal subskills.
 
@@ -231,12 +231,12 @@ Tech Planning
     ↓
 [product_type check]
     ↓ software/hybrid
-cali-product-testing-ai-code → testing-strategy.md + test-* scopes
+stelow-product-testing-ai-code → testing-strategy.md + test-* scopes
     ↓
 Execution
 ```
 
-See the `cali-product-testing-ai-code` skill
+See the `stelow-product-testing-ai-code` skill
 
 ### Flow Diagram
 
@@ -292,7 +292,7 @@ audit — Execution Critique
 **Verification** runs automatically after Execution — test suite, code review, UI audit, browser testing.
 **Interface Gate** shows all proposals visually before selection.
 **Execution** runs automatically after Tech Planning — DO NOT ask user what to do next.
-**Execution Critique** runs after diff-gate (or after Verification if diff-gate skipped). Uses the `cali-product-execution-critique` skill for all 8 evaluation criteria.
+**Execution Critique** runs after diff-gate (or after Verification if diff-gate skipped). Uses the `stelow-product-execution-critique` skill for all 8 evaluation criteria.
 **Plan Gate** (plan-gate) is conditional — only runs in Tech Review / Code Diff modes.
 **Diff Gate** (diff-gate) is conditional — only runs in Code Diff mode.
 
