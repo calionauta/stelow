@@ -204,7 +204,8 @@ export default async function cmdStart(
     mkdirSync(join(wfDir, sub), { recursive: true });
   }
 
-  // 9. index.json
+  // 9. index.json (mirror of stelow.json — config block seeded so consumers
+  //    like stages-guard see config from t=0 without waiting for writeTracking).
   writeFileSync(join(wfDir, "index.json"), JSON.stringify({
     version: "1.0", created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
@@ -217,6 +218,7 @@ export default async function cmdStart(
     draft: fullDraft ? truncateText(fullDraft, 50000) : undefined,
     sources,
     detected_cli: detectCLI(),
+    config: { appetite: undefined, review_mode: undefined, domains_detected: [] },
   }, null, 2));
 
   // 10. Global tracking

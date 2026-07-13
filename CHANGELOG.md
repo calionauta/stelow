@@ -2,6 +2,39 @@
 
 All notable changes to `@calionauta/stelow` will be documented in this file.
 
+## [0.51.3] - 2026-07-13
+
+### Changed
+
+- **Hardened `Workflow.config` symmetry across the stack** — appetite and review_mode now flow through identical paths (read canonical source, mirror to index.json, fallback to legacy) in every layer:
+  - **TS extension** (`extensions/stelow/index.ts`): `stages-guard` hook now reads `wf.config.review_mode` directly from `wf` (loaded via `getActiveWorkflow()` from `stelow.json`), not from the `index.json` mirror. Falls back to `index.json` only if `wf.config.review_mode` is missing (pre-v0.50.0 workflow).
+  - **TS write-through** (`extensions/stelow/state.ts`): already symmetric since v0.51.0 — appetite + review_mode + domains_detected all go through the same `updateWorkflowIndexJson` block.
+  - **Bash helper** (`references/cli-tools/read-config.sh`): already symmetric since v0.51.0 — `stelow_read_appetite` and `stelow_read_review_mode` use the same `stelow_config` function with same in-progress filter + legacy fallback.
+  - **`cmdStart` seeding** (`extensions/stelow/start.ts`): the initial `index.json` write now includes `config: { appetite: undefined, review_mode: undefined, domains_detected: [] }` so downstream consumers (stages-guard, TUI, muxy, herdr) see config from `t=0` without waiting for the first `writeTracking()`.
+
+### Added
+
+- **`tests/unit/config-symmetry.test.ts`** — 9 tests verifying:
+  1. TS write-through mirrors appetite AND review_mode identically.
+  2. Bash helper returns identical in-progress filtering for both fields.
+  3. Bash helper returns identical defaults when stelow.json is absent.
+  4. Bash helper returns identical legacy fallback for both fields.
+  5. End-to-end: TS write → bash helper sees same value immediately.
+
+### Tests
+
+- 838 tests passing (was 829 in v0.51.2).
+
+### Why this matters
+
+Before this release, two fragility points existed:
+
+1. **stages-guard hook** read `idx.config.review_mode` from `index.json` mirror. If `writeTracking()` failed (corrupt JSON, disk full, permission), the hook would either not block or block based on stale data. Now reads the canonical `wf.config` directly.
+
+2. **Workflow fresh state** had `index.json` without `config` block until the first `writeTracking()` ran. Hooks reading the mirror got `undefined` instead of explicit defaults. Now seeded at creation.
+
+The bash helper and TS write-through were already symmetric since v0.51.0 — these tests verify that symmetry holds.
+
 ## [0.51.2] - 2026-07-13
 
 ### Fixed
