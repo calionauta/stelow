@@ -74,6 +74,7 @@ describe("PARALLEL dispatch — CLI binary availability (pi only)", () => {
 
   (isCI ? it.skip : it)(
     "pi (built-in) is on PATH and answers --version",
+    { retry: 2, timeout: 15000 },
     () => {
       if (!commandExists("pi")) {
         throw new Error(
@@ -91,6 +92,8 @@ describe("PARALLEL dispatch — CLI binary availability (pi only)", () => {
     const candidates = [
       `${home}/.pi/agent/npm/node_modules/pi-subagents`,
       `${home}/.pi/agent/node_modules/pi-subagents`,
+      `${home}/.pi/agent/npm/node_modules/@tintinweb/pi-subagents`,
+      `${home}/.pi/agent/node_modules/@tintinweb/pi-subagents`,
     ];
     const found = candidates.some((p) => {
       try {

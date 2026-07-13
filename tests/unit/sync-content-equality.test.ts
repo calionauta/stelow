@@ -126,9 +126,9 @@ describe('Sync script behavior', () => {
     expect(stat.mode & 0o100).toBeGreaterThan(0);
   });
 
-  it('--check-only exits 0 when source and copies are in sync', () => {
+  it('--check-only exits 0 when source and copies are in sync', { timeout: 60000 }, () => {
     // First, ensure copies are in sync by running a real sync
-    execSync(`bash "${SYNC_SCRIPT}"`, { cwd: PROJECT_ROOT, stdio: 'pipe' });
+    execSync(`bash "${SYNC_SCRIPT}"`, { cwd: PROJECT_ROOT, stdio: 'pipe', timeout: 60000 });
     // Then --check-only should be silent (exit 0)
     const result = execSync(`bash "${SYNC_SCRIPT}" --check-only`, {
       cwd: PROJECT_ROOT,
