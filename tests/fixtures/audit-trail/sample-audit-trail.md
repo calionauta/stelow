@@ -14,7 +14,7 @@
 - **Appetite:** Core (declared by human)
   → [specs/spec-product_v1.md](specs/spec-product_v1.md) `appetite: Core`
 - **Review Mode:** Product Spec + Interface + Tech Review
-  → [index.json](index.json) `config.review_mode`
+  → [stelow.json](stelow.json) `workflows[].config.review_mode` (canonical as of v0.50.0; mirror to `index.json`)
 - **Domains detected:** auth, security
   → [specs/spec-product_v1.md](specs/spec-product_v1.md) `domains_detected`
 - **Lessons injected:** 2 patterns from previous cycles

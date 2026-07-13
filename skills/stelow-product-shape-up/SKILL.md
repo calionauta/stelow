@@ -87,13 +87,20 @@ stelow context. Both paths produce valid output.
 ```bash
 WF_DIR="$(ls -td .stelow/*/*/ 2>/dev/null | head -1)"
 APPETITE="Core"
-if [ -n "$WF_DIR" ] && [ -f "stelow.json" ]; then
-  APPETITE=$(grep -oP '"appetite":\s*"([^"]+)"' stelow.json 2>/dev/null | grep -oP '"([^"]+)"$' | tr -d '"' || echo "Core")
+if [ -n "$WF_DIR" ]; then
   STELOW_MODE=true
-elif [ -n "$WF_DIR" ] && [ -f "${WF_DIR}index.json" ]; then
-  # Fallback: legacy workflows that only wrote to index.json (pre-v0.50.0)
-  APPETITE=$(grep -oP '"appetite":\s*"([^"]+)"' "${WF_DIR}index.json" 2>/dev/null | grep -oP '"appetite":\s*"([^"]+)"' | grep -oP '"([^"]+)"$' | tr -d '"' || grep -oP '"appetite":\s*"([^"]+)"' "${WF_DIR}index.json" | grep -oP '"[^"]+"$' | tr -d '"' || echo "Core")
-  STELOW_MODE=true
+  # Canonical: source helper from orchestrator references (single source of truth).
+  # See skills/stelow-product-orchestrator/references/cli-tools/read-config.md.
+  # shellcheck disable=SC1091
+  source "$(dirname "${BASH_SOURCE[0]:-$0}")/../../stelow-product-orchestrator/references/cli-tools/read-config.sh" 2>/dev/null || true
+  if command -v stelow_read_appetite >/dev/null 2>&1; then
+    APPETITE=$(stelow_read_appetite)
+  else
+    # Inline fallback if helper not sourced (e.g., isolated skill run)
+    APPETITE=$(grep -oP '"appetite":\s*"([^"]+)"' stelow.json 2>/dev/null | grep -oP '"([^"]+)"$' | tr -d '"' | head -1)
+    [ -z "$APPETITE" ] && APPETITE=$(grep -oP '"appetite":\s*"([^"]+)"' "${WF_DIR}index.json" 2>/dev/null | grep -oP '"([^"]+)"$' | tr -d '"' | head -1)
+    [ -z "$APPETITE" ] && APPETITE="Core"
+  fi
 else
   STELOW_MODE=false
 fi
@@ -199,11 +206,16 @@ before assumptions get baked into a full spec.
 ```bash
 WF_DIR="$(ls -td .stelow/*/*/ 2>/dev/null | head -1)"
 REVIEW_MODE="Auto"
-if [ -n "$WF_DIR" ] && [ -f "stelow.json" ]; then
-  REVIEW_MODE=$(grep -oP '"review_mode":\s*"([^"]+)"' stelow.json 2>/dev/null | grep -oP '"([^"]+)"$' | tr -d '"' || echo "Auto")
-elif [ -n "$WF_DIR" ] && [ -f "${WF_DIR}index.json" ]; then
-  # Fallback: legacy index.json (pre-v0.50.0)
-  REVIEW_MODE=$(grep -oP '"review_mode":\s*"([^"]+)"' "${WF_DIR}index.json" 2>/dev/null | grep -oP '"([^"]+)"$' | tr -d '"' || echo "Auto")
+if [ -n "$WF_DIR" ]; then
+  # shellcheck disable=SC1091
+  source "$(dirname "${BASH_SOURCE[0]:-$0}")/../../stelow-product-orchestrator/references/cli-tools/read-config.sh" 2>/dev/null || true
+  if command -v stelow_read_review_mode >/dev/null 2>&1; then
+    REVIEW_MODE=$(stelow_read_review_mode)
+  else
+    REVIEW_MODE=$(grep -oP '"review_mode":\s*"([^"]+)"' stelow.json 2>/dev/null | grep -oP '"([^"]+)"$' | tr -d '"' | head -1)
+    [ -z "$REVIEW_MODE" ] && REVIEW_MODE=$(grep -oP '"review_mode":\s*"([^"]+)"' "${WF_DIR}index.json" 2>/dev/null | grep -oP '"([^"]+)"$' | tr -d '"' | head -1)
+    [ -z "$REVIEW_MODE" ] && REVIEW_MODE="Auto"
+  fi
 fi
 ```
 

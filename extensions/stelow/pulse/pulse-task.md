@@ -8,9 +8,9 @@ Select: pick the single highest-priority item or group.
 
 Create workflow:
   1. Create .stelow/<YYYY-MM-DD>/<dirHash>/ with:
-     - index.json: review_mode=Auto, appetite=Lean, status=in-progress,
-       current_phase=Setup (index 2), draft = item text
-  2. Add entry to stelow.json
+     - index.json: status=in-progress, current_phase=Setup (index 2), draft = item text
+       (config.appetite/review_mode go in stelow.json#wf.config — canonical as of v0.50.0)
+  2. Add entry to stelow.json with `config: { appetite: "Lean", review_mode: "Auto", domains_detected: [] }`
   3. Remove processed item(s) from inbox (never remove [human-in-the-loop], [hitl], or [human] items)
 
 Output a machine-parseable summary at the very end:

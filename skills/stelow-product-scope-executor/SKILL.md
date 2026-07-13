@@ -133,8 +133,13 @@ Phase 2 (after SCOPE-1):
 **Human-in-loop check for Complete appetite:**
 
 ```bash
-# Try precise path first, then fallback to glob
+# Try precise path first, then fallback to glob. Cross-check with Workflow.config.appetite
+# (canonical source via helper) so the warning matches the active workflow, not stale specs.
 APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/*/*/plans/spec-product_*.md 2>/dev/null || echo "Core")
+# shellcheck disable=SC1091
+source "$(dirname "${BASH_SOURCE[0]:-$0}")/../../stelow-product-orchestrator/references/cli-tools/read-config.sh" 2>/dev/null || true
+WF_APPETITE=$(stelow_read_appetite 2>/dev/null || true)
+[ -n "$WF_APPETITE" ] && APPETITE="$WF_APPETITE"
 if [ "$APPETITE" = "Complete" ]; then
   echo "⚠️ COMPREHENSIVE APPETITE: Human-in-loop mode may be needed for architectural changes."
   echo "Check the workflow's review_mode setting in stelow.json#workflows[].config.review_mode (or .stelow/{date}/{dir}/index.json for legacy workflows)."

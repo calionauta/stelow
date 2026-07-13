@@ -10,15 +10,9 @@
 
 ```bash
 _DIR="{_dir}"
-REVIEW_MODE=""
-if [ -f "stelow.json" ]; then
-  REVIEW_MODE=$(grep -oP '"review_mode"\s*:\s*"\K[^"]+' stelow.json 2>/dev/null | head -1)
-fi
-# Fallback: legacy index.json (pre-v0.50.0)
-if [ -z "$REVIEW_MODE" ]; then
-  INDEX=".stelow/*/*/$_DIR/index.json"
-  REVIEW_MODE=$(grep -oP '"review_mode"\s*:\s*"\K[^"]+' $INDEX 2>/dev/null || echo "Product Spec + Interface + Scopes")
-fi
+# shellcheck disable=SC1091
+source "$(dirname "${BASH_SOURCE[0]:-$0}")/../../references/cli-tools/read-config.sh" 2>/dev/null || true
+REVIEW_MODE=$(stelow_read_review_mode 2>/dev/null || echo "Product Spec + Interface + Scopes")
 [ -z "$REVIEW_MODE" ] && REVIEW_MODE="Product Spec + Interface + Scopes"
 ```
 

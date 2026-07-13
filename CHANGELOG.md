@@ -2,6 +2,32 @@
 
 All notable changes to `@calionauta/stelow` will be documented in this file.
 
+## [0.51.0] - 2026-07-13
+
+### Fixed
+
+- **B1 — Mirror `wf.scopes[]` to `index.json`** (`extensions/stelow/state.ts`) — The TS extension's `updateWorkflowIndexJson()` now mirrors `wf.scopes[]` to `index.json#scopes[]`. Previously the herdr TUI integration always showed empty scopes because no caller was passing scopes to `updateWorkflowIndexJson`. **Bug fixed at the source** (TS layer), not at the consumer layer — Rust doesn't need changes.
+- **B2 — Removed redundant archive writes** (`extensions/stelow/commands.ts`) — 3 sites called `archiveWorkflowOnDisk()` AND `updateWorkflowIndexJson({ workflow_status: "archived" })`. Both write the same field. Now `updateWorkflowIndexJson` is only called as fallback when `archiveWorkflowOnDisk` returns false (covers renamed workflows where name no longer matches).
+- **B3 — `plan-critique` workflow-dir path documented** (`skills/stelow-product-plan-critique/SKILL.md`) — Explicit comment that `stelow.json` is always read from project root (cwd), never from `WF_DIR` (which may point to `.stelow/{date}/{dir}/`).
+
+### Changed
+
+- **Canonical config helper** (`skills/stelow-product-orchestrator/references/cli-tools/read-config.{sh,md}`) — New bash helper `stelow_read_appetite` / `stelow_read_review_mode` / `stelow_read_domains` consolidates 7+ duplicated `grep -oP '"appetite":\s*"([^"]+)"'` patterns. Filters by `status === "in-progress"` to avoid multi-workflow ambiguity (was returning archived configs as defaults). Portable across GNU/BSD grep (no `-P`).
+- **7 skills + 1 stage updated to use helper** — `shape-up`, `tech-planning`, `plan-critique`, `ux-critique`, `codebase-critique`, `interface-alternatives`, `scope-executor`, and `gate.md`. Each skill now sources the helper instead of inlining regex.
+- **Orchestrator example simplified** (`skills/stelow-product-orchestrator/SKILL.md`) — Removed the "sync index.json via bash" section from the stage-advance example. Write-through is automatic via `writeTracking()`.
+- **Pulse instruction updated** (`extensions/stelow/pulse/pulse-task.md`) — `appetite`/`review_mode` go in `stelow.json#wf.config` (canonical), not `index.json`.
+- **Test assertion renamed** (`tests/appetite-consistency.test.ts`) — `gate.md reads review_mode from index.json` → `gate.md reads review_mode from stelow.json (canonical) with index.json fallback`.
+- **Audit trail fixture updated** (`tests/fixtures/audit-trail/sample-audit-trail.md`) — Review Mode link now points to `stelow.json#workflows[].config.review_mode` (canonical as of v0.50.0).
+
+### Added
+
+- **`tests/unit/read-config-helper.test.ts`** — 10 tests covering: in-progress filter, hardcoded defaults, legacy fallback, multi-workflow ambiguity fix (E2), empty config, domains_detected array.
+- **`references/cli-tools/read-config.md`** — Full migration guide explaining why the helper exists and how to inline the function for isolated skill runs.
+
+### Tests
+
+- 829 tests passing (was 818 in v0.50.1).
+
 ## [0.50.1] - 2026-07-13
 
 ### Changed

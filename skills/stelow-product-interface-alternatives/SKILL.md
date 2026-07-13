@@ -45,12 +45,9 @@ Appetite controls how many interface alternatives are explored. Quality is not c
 
 ```bash
 WF_DIR="$(ls -td .stelow/*/*/ 2>/dev/null | head -1)"
-APPETITE=""
-if [ -n "$WF_DIR" ] && [ -f "stelow.json" ]; then
-  APPETITE=$(grep -oP '"appetite":\s*"([^"]+)"' stelow.json 2>/dev/null | grep -oP '"([^"]+)"$' | tr -d '"' )
-elif [ -n "$WF_DIR" ] && [ -f "${WF_DIR}index.json" ]; then
-  APPETITE=$(grep -oP '"appetite":\s*"([^"]+)"' "${WF_DIR}index.json" 2>/dev/null | grep -oP '"([^"]+)"$' | tr -d '"' )
-fi
+# shellcheck disable=SC1091
+source "$(dirname "${BASH_SOURCE[0]:-$0}")/../../stelow-product-orchestrator/references/cli-tools/read-config.sh" 2>/dev/null || true
+APPETITE=$(stelow_read_appetite 2>/dev/null || true)
 # Fallback to spec-product.md frontmatter if no stelow/index
 if [ -z "$APPETITE" ]; then
   APPETITE=$(grep -oP '^appetite:\s*\K\S+' $(ls -t .stelow/*/*/plans/spec-product*.md 2>/dev/null | head -1) 2>/dev/null || echo "Core")

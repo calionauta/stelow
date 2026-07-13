@@ -54,14 +54,11 @@ Codebase critique is for structural analysis — if the scope is 1 file,
 the value is minimal.
 
 ```bash
-# Read appetite from stelow context or env var; default Core
+# Read appetite from stelow context or env var; default Core (via canonical helper).
 WF_DIR="$(ls -td .stelow/*/*/ 2>/dev/null | head -1)"
-APPETITE="${APPETITE:-Core}"
-if [ -n "$WF_DIR" ] && [ -f "stelow.json" ]; then
-  APPETITE=$(grep -oP '"appetite":\s*"([^"]+)"' stelow.json 2>/dev/null | grep -oP '"([^"]+)"$' | tr -d '"' || echo "Core")
-elif [ -n "$WF_DIR" ] && [ -f "${WF_DIR}index.json" ]; then
-  APPETITE=$(grep -oP '"appetite":\s*"([^"]+)"' "${WF_DIR}index.json" 2>/dev/null | grep -oP '"([^"]+)"$' | tr -d '"' || echo "Core")
-fi
+# shellcheck disable=SC1091
+source "$(dirname "${BASH_SOURCE[0]:-$0}")/../../stelow-product-orchestrator/references/cli-tools/read-config.sh" 2>/dev/null || true
+APPETITE="${APPETITE:-$(stelow_read_appetite 2>/dev/null || echo "Core")}"
 DIFF_FILES=$(git diff --name-only HEAD~1 2>/dev/null | wc -l | tr -d ' ')
 ```
 

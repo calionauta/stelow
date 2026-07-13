@@ -263,9 +263,9 @@ describe('Valid appetite values throughout', () => {
 // ═════════════════════════════════════════════════════════════════════
 
 describe('Gate is Review Mode-aware', () => {
-  it('gate.md reads review_mode from index.json', () => {
+  it('gate.md reads review_mode from stelow.json (canonical) with index.json fallback', () => {
     const content = readStage('gate.md');
-    expect(content).toMatch(/REVIEW_MODE=\$.*INDEX/);
+    expect(content).toMatch(/stelow\.json/);
     expect(content).toMatch(/"review_mode"/);
   });
 

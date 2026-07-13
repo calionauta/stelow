@@ -322,12 +322,13 @@ When completing a stage and moving to the next:
 **Auto-advance is the default.** Do NOT ask the user for permission or wait for `/sw-next`.
 Update the tracking file directly via bash, then continue to the next stage in the same response.
 
-**Mechanism (all CLIs):** Update `stelow.json` + sync `index.json` via bash:
+**Mechanism (all CLIs):** Update `stelow.json` only — the TS extension's `writeTracking()` automatically mirrors changes to `index.json` (write-through via `updateWorkflowIndexJson`). No manual sync needed.
+
    ```bash
    node -e "
    const fs = require('fs');
 
-   // 1. Update main tracking file
+   // 1. Update stelow.json (canonical source of truth)
    const file = 'stelow.json';
    const raw = fs.readFileSync(file, 'utf-8');
    const t = JSON.parse(raw);
@@ -349,29 +350,7 @@ Update the tracking file directly via bash, then continue to the next stage in t
    wf.updated = new Date().toISOString();
    t.updated = wf.updated;
    fs.writeFileSync(file, JSON.stringify(t, null, 2));
-   console.log('Main tracking updated:', NEW_SLUG);
-
-   // 2. Sync index.json (secondary source for TUI display)
-   // ⚠️ NOTE: Use `status` in BOTH files — `updateWorkflowIndexJson`
-   //    auto-syncs `workflow_status` as an alias. When completing a
-   //    workflow, set `wf.status = 'completed'` in both tracking and
-   //    index.json. The extension normalizes the field internally.
-   const { execSync } = require('child_process');
-   const dirHash = wf.dirHash;
-   if (dirHash) {
-     const find = execSync('find .stelow -name index.json | head -5', { encoding: 'utf-8' });
-     const matches = find.trim().split('\\n').filter(Boolean);
-     for (const ixPath of matches) {
-       const ix = JSON.parse(fs.readFileSync(ixPath, 'utf-8'));
-       if (ix._dir === dirHash) {
-         ix.current_phase = NEW_SLUG;
-         ix.current_phase_index = NEW;
-         ix.updated_at = new Date().toISOString();
-         fs.writeFileSync(ixPath, JSON.stringify(ix, null, 2));
-         console.log('index.json synced:', ixPath);
-       }
-     }
-   }
+   console.log('Main tracking updated:', NEW_SLUG, '— index.json mirror is automatic.');
    "
    ```
 

@@ -206,8 +206,10 @@ if [ ! -f "go.mod" ] && [ ! -f "package.json" ] && \
   exit 0
 fi
 
-# Read appetite from workflow config (stelow.json = source of truth; index.json = fallback for legacy)
-APPETITE=$(grep -oP '"appetite":\s*"([^"]+)"' stelow.json 2>/dev/null | head -1 | grep -oP '"[^"]+"$' | tr -d '"' || grep -oP '"appetite":\s*"([^"]+)"' .stelow/*/*/index.json 2>/dev/null | head -1 | grep -oP '"[^"]+"$' | tr -d '"' || echo "Core")
+# Read appetite from workflow config (canonical source via helper; index.json = legacy fallback)
+# shellcheck disable=SC1091
+source "$(dirname "${BASH_SOURCE[0]:-$0}")/../../stelow-product-orchestrator/references/cli-tools/read-config.sh" 2>/dev/null || true
+APPETITE=$(stelow_read_appetite 2>/dev/null || echo "Core")
 
 # Read spec-product for IN scope concepts
 SPEC_PRODUCT=$(ls .stelow/*/*/plans/spec-product*.md 2>/dev/null | head -1)
@@ -327,9 +329,15 @@ REVIEW_MODE="Product Spec + Interface + Scopes"
 SPEC_PRODUCT=""
 SPEC_TECH=""
 
+# shellcheck disable=SC1091
+source "$(dirname "${BASH_SOURCE[0]:-$0}")/../../stelow-product-orchestrator/references/cli-tools/read-config.sh" 2>/dev/null || true
 if [ -n "$WF_DIR" ] && [ -f "stelow.json" ]; then
-  REVIEW_MODE=$(grep -oP '"review_mode":\s*"([^"]+)"' stelow.json 2>/dev/null | grep -oP '"([^"]+)"$' | tr -d '"' || echo "Product Spec + Interface + Scopes")
+  REVIEW_MODE=$(stelow_read_review_mode 2>/dev/null || echo "Product Spec + Interface + Scopes")
+  SPEC_PRODUCT=".stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md"
+  SPEC_TECH=".stelow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_{v}.md"
+  STELOW_MODE=true
 elif [ -n "$WF_DIR" ] && [ -f "${WF_DIR}index.json" ]; then
+  # Legacy fallback: pre-v0.50.0 workflows stored config only in index.json
   REVIEW_MODE=$(grep -oP '"review_mode":\s*"([^"]+)"' "${WF_DIR}index.json" 2>/dev/null | grep -oP '"([^"]+)"$' | tr -d '"' )
   SPEC_PRODUCT=".stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md"
   SPEC_TECH=".stelow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_{v}.md"

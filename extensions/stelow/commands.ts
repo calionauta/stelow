@@ -85,10 +85,10 @@ function noActive(ctx: CmdCtx): void {
 
 // ── Helper: remove workflow from both local and global tracking ─────
 function removeWorkflowFromTracking(cwd: string, workflowName: string, wf?: Pick<Workflow, "name" | "dirHash">): void {
-  // Mark archived on disk so reconcileTracking doesn't re-import it
-  archiveWorkflowOnDisk(cwd, workflowName);
-  // Fallback direto via dirHash (mais robusto que busca por nome)
-  if (wf?.dirHash) {
+  // archiveWorkflowOnDisk searches by NAME across all .stelow/{date}/{dir}/index.json.
+  // The dirHash fallback below covers workflows renamed after creation (name no longer matches).
+  if (!archiveWorkflowOnDisk(cwd, workflowName) && wf?.dirHash) {
+    // Direct write via dirHash for renamed workflows
     updateWorkflowIndexJson(cwd, wf as Workflow, {
       workflow_status: "archived",
     });
@@ -960,13 +960,9 @@ function cmdArchive(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
       return;
     }
 
-    // Mark archived: nome-based search + fallback direto via dirHash
-    archiveWorkflowOnDisk(wd, name);
-    if (wf.dirHash) {
-      // Sync via dirHash (mais robusto que busca por nome)
-      updateWorkflowIndexJson(wd, wf, {
-        workflow_status: "archived",
-      });
+    // archiveWorkflowOnDisk searches by NAME; dirHash fallback covers renamed workflows.
+    if (!archiveWorkflowOnDisk(wd, name) && wf.dirHash) {
+      updateWorkflowIndexJson(wd, wf, { workflow_status: "archived" });
     }
 
     if (t && localIdx !== -1) {
@@ -1001,12 +997,9 @@ function cmdArchive(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
     }
   }
   removeGlobalIndexEntry(wd, wf.name);
-  archiveWorkflowOnDisk(wd, wf.name);
-  if (wf.dirHash) {
-    // Sync via dirHash (mais robusto — cobertura extra)
-    updateWorkflowIndexJson(wd, wf, {
-      workflow_status: "archived",
-    });
+  // archiveWorkflowOnDisk searches by NAME; dirHash fallback covers renamed workflows.
+  if (!archiveWorkflowOnDisk(wd, wf.name) && wf.dirHash) {
+    updateWorkflowIndexJson(wd, wf, { workflow_status: "archived" });
   }
 
   ctx.ui?.setStatus("workflow", undefined);

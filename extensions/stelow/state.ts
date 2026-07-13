@@ -726,6 +726,10 @@ export function updateWorkflowIndexJson(
     if (wf.config.review_mode !== undefined) cur.review_mode = wf.config.review_mode;
     if (Array.isArray(wf.config.domains_detected)) cur.domains_detected = [...wf.config.domains_detected];
   }
+  // Write-through Workflow.scopes → index.json (herdr TUI reads scopes from index.json)
+  if (Array.isArray(wf.scopes)) {
+    idx.scopes = JSON.parse(JSON.stringify(wf.scopes));
+  }
   // Sync immutable timestamp from Workflow object to index.json
   if (wf.completedAt && !idx.completed_at) {
     idx.completed_at = wf.completedAt;

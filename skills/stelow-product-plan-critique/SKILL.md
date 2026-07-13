@@ -121,13 +121,11 @@ fi
 WF_DIR="${WF_DIR%/}"  # Strip trailing slash
 SPEC="$WF_DIR/plans/spec-product*.md"
 SPEC_FILE=$(ls $SPEC 2>/dev/null | head -1) || SPEC_FILE=""
-REVIEW_MODE="Product Spec + Interface + Scopes"
-if [ -n "$WF_DIR" ] && [ -f "stelow.json" ]; then
-  REVIEW_MODE=$(grep -oP '"review_mode":\s*"([^"]+)"' stelow.json | grep -oP '"([^"]+)"$' | tr -d '"' )
-elif [ -n "$WF_DIR" ] && [ -f "$WF_DIR/index.json" ]; then
-  # Legacy fallback: pre-v0.50.0 workflows stored config only in index.json
-  REVIEW_MODE=$(grep -oP '"review_mode":\s*"([^"]+)"' "$WF_DIR/index.json" | grep -oP '"([^"]+)"$' | tr -d '"' )
-fi
+
+# Read REVIEW_MODE via canonical helper (filters by in-progress workflow; no head-1 ambiguity).
+# shellcheck disable=SC1091
+source "$(dirname "${BASH_SOURCE[0]:-$0}")/../../stelow-product-orchestrator/references/cli-tools/read-config.sh" 2>/dev/null || true
+REVIEW_MODE=$(stelow_read_review_mode 2>/dev/null || echo "Product Spec + Interface + Scopes")
 APPETITE=$(grep -oP '^appetite:\s*\K\S+' "$SPEC_FILE" 2>/dev/null || echo "Core")
 FIT=$(grep -oP '^appetite_fit:\s*\K\S+' "$SPEC_FILE" 2>/dev/null || echo "fits")
 ```
