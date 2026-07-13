@@ -92,15 +92,8 @@ if [ -n "$WF_DIR" ]; then
   # Canonical: source helper from orchestrator references (single source of truth).
   # See skills/stelow-product-orchestrator/references/cli-tools/read-config.md.
   # shellcheck disable=SC1091
-  source "$(dirname "${BASH_SOURCE[0]:-$0}")/../../stelow-product-orchestrator/references/cli-tools/read-config.sh" 2>/dev/null || true
-  if command -v stelow_read_appetite >/dev/null 2>&1; then
-    APPETITE=$(stelow_read_appetite)
-  else
-    # Inline fallback if helper not sourced (e.g., isolated skill run)
-    APPETITE=$(grep -oP '"appetite":\s*"([^"]+)"' stelow.json 2>/dev/null | grep -oP '"([^"]+)"$' | tr -d '"' | head -1)
-    [ -z "$APPETITE" ] && APPETITE=$(grep -oP '"appetite":\s*"([^"]+)"' "${WF_DIR}index.json" 2>/dev/null | grep -oP '"([^"]+)"$' | tr -d '"' | head -1)
-    [ -z "$APPETITE" ] && APPETITE="Core"
-  fi
+  source "$(dirname "${BASH_SOURCE[0]:-$0}")/../../stelow-product-orchestrator/references/cli-tools/read-config.sh"
+  APPETITE=$(stelow_read_appetite)
 else
   STELOW_MODE=false
 fi
@@ -208,14 +201,8 @@ WF_DIR="$(ls -td .stelow/*/*/ 2>/dev/null | head -1)"
 REVIEW_MODE="Auto"
 if [ -n "$WF_DIR" ]; then
   # shellcheck disable=SC1091
-  source "$(dirname "${BASH_SOURCE[0]:-$0}")/../../stelow-product-orchestrator/references/cli-tools/read-config.sh" 2>/dev/null || true
-  if command -v stelow_read_review_mode >/dev/null 2>&1; then
-    REVIEW_MODE=$(stelow_read_review_mode)
-  else
-    REVIEW_MODE=$(grep -oP '"review_mode":\s*"([^"]+)"' stelow.json 2>/dev/null | grep -oP '"([^"]+)"$' | tr -d '"' | head -1)
-    [ -z "$REVIEW_MODE" ] && REVIEW_MODE=$(grep -oP '"review_mode":\s*"([^"]+)"' "${WF_DIR}index.json" 2>/dev/null | grep -oP '"([^"]+)"$' | tr -d '"' | head -1)
-    [ -z "$REVIEW_MODE" ] && REVIEW_MODE="Auto"
-  fi
+  source "$(dirname "${BASH_SOURCE[0]:-$0}")/../../stelow-product-orchestrator/references/cli-tools/read-config.sh"
+  REVIEW_MODE=$(stelow_read_review_mode)
 fi
 ```
 

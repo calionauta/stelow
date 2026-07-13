@@ -2,6 +2,17 @@
 
 All notable changes to `@calionauta/stelow` will be documented in this file.
 
+## [0.51.1] - 2026-07-13
+
+### Changed
+
+- **Consistency cleanup in `shape-up`** — Removed inline defensive fallback (`grep -oP` regex) for reading appetite/review_mode when the canonical helper is unavailable. The other 6 skills + `gate.md` already trust the helper path unconditionally; `shape-up` was inconsistent. Helper is sourced from a relative path inside the project; if missing, the skill fails loudly (clearer than silent regex).
+
+### Notes
+
+- No functional change for normal skill runs (helper always available inside the project).
+- 829 tests passing.
+
 ## [0.51.0] - 2026-07-13
 
 ### Fixed
