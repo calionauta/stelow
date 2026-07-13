@@ -17,8 +17,9 @@
  *     a TypeBox-based schema + `@sinclair/typebox/value#Check` and ship
  *     typebox as a regular dependency. Single import path.
  *
- * **Pre-commit / CI:** This module is also exposed for `cali-ops-github-releases`
- * pre-commit hooks to validate `stelow.json` before tagging a release.
+ * **Pre-commit / CI:** This module is also exposed for the
+ * `ops-github-releases` skill's pre-commit hooks to validate `stelow.json`
+ * before tagging a release.
  */
 
 import type { ScopeRecord, ScopeTask } from "./types";

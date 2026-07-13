@@ -68,7 +68,7 @@ npm run typecheck        # Type check
 - **Files:** `lowercase-kebab-case` (e.g. `spec-product.md`, not `SpecProduct.md`).
 - **Stage headings:** must use `slug:major.minor` format — see [docs/agents-md-refs/stage-numbering.md](docs/agents-md-refs/stage-numbering.md) for the gap-based numbering rules.
 - **Tool calls in stage files:** never call `ask_user_question`, `subagent`, or `start_supervision` directly. Use the CLI-agnostic reference in `references/cli-tools/{tool}.md` — see [docs/agents-md-refs/tool-reference-pattern.md](docs/agents-md-refs/tool-reference-pattern.md).
-- **Product name:** `stelow` (canonical). All runtime paths, skill prefixes, and filesystem artifacts use the `stelow` prefix — no backward compatibility for legacy `cali-product-workflow` / `Cali Product Workflow` names.
+- **Product name:** `stelow` (canonical). All runtime paths, skill prefixes, and filesystem artifacts use the `stelow` prefix.
 
 ## Versioning
 

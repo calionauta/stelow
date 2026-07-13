@@ -1,8 +1,9 @@
 # ============================================================================
-# Release configuration for cali-ops-github-releases skill
+# Release configuration for ops-github-releases skill
 # ============================================================================
-# This file tells the skill how to create releases for this project.
-# Fields are optional — the skill uses defaults when not specified.
+# This file tells the release skill how to create releases for this
+# project. Fields are optional — the skill uses defaults when not
+# specified.
 # ============================================================================
 
 # Suffix appended to version numbers (e.g. 0.11.1-alpha)

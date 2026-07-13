@@ -136,7 +136,7 @@ install_skills_flat() {
   for entry in "$SKILLS_DIR"/*/; do
     local name="$(basename "$entry")"
     case "$name" in
-      stelow-product-*|cali-pw-*) ;;
+      stelow-product-*) ;;
       *) continue ;;
     esac
     # Source 1: not in the project's active skills (natural orphan)
