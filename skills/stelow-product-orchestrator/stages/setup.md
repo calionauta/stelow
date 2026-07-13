@@ -369,26 +369,27 @@ if ! echo "$VALID_REVIEW_MODES" | grep -qw "{chosen_review_mode}"; then
 fi
 ```
 
-#### Step 3: Store in index.json
+#### Step 3: Store in stelow.json (source of truth) + write-through to index.json
 
-Update the workflow's `index.json` with the config:
+Update the workflow's `stelow.json` with the config — `stelow.json` is the canonical source; `index.json` is mirrored via `updateWorkflowIndexJson()` write-through (no manual edit needed).
 
 ```bash
-INDEX="$(find .stelow/*/*/index.json -type f 2>/dev/null | head -1 | tr -d '\n')"
-if [ -n "$INDEX" ]; then
-  # Read existing, inject config block
-  CONFIG_JSON=$(cat <<EOF
-  "config": {
-    "appetite": "{chosen_appetite}",
-    "review_mode": "{chosen_review_mode}",
-    "domains_detected": []
-  },
-EOF
-  )
-  # Inject config after "detected_cli" line in index.json
-  sed -i '' 's/"detected_cli"/'"$CONFIG_JSON"'"detected_cli"/' "$INDEX"
-  echo "Config saved to $INDEX"
-fi
+# stelow.json is the single source of truth for Workflow.config (v0.50.0+)
+node -e "
+const fs = require('fs');
+const path = 'stelow.json';
+const t = JSON.parse(fs.readFileSync(path, 'utf8'));
+const wf = t.workflows[t.workflows.length - 1];
+wf.config = {
+  appetite: '{chosen_appetite}',
+  review_mode: '{chosen_review_mode}',
+  domains_detected: []
+};
+t.updated = new Date().toISOString();
+fs.writeFileSync(path, JSON.stringify(t, null, 2));
+console.log('Config saved to stelow.json (workflow: ' + wf.name + ')');
+"
+# index.json is automatically updated by the TS extension's writeTracking hook
 ```
 
 #### Step 4: Inject into spec-product.md frontmatter

@@ -186,6 +186,11 @@ export default async function cmdStart(
     dirHash,
     detectedCLI: detectCLI(),
     intent: selectedIntent,
+    config: {
+      appetite: undefined,
+      review_mode: undefined,
+      domains_detected: [],
+    },
   };
 
   tracking.workflows.push(wf);

@@ -87,22 +87,23 @@ describe('proposal-structure.md frontmatter template', () => {
 });
 
 // ═════════════════════════════════════════════════════════════════════
-// 3. SETUP.md WRITES REQUIRED FIELDS TO index.json AND spec-product.md
+// 3. SETUP.md WRITES REQUIRED FIELDS TO stelow.json (canonical) + spec-product.md (as of v0.50.0)
+//    index.json remains a mirrored copy via the TS extension write-through hook.
 // ═════════════════════════════════════════════════════════════════════
 
 describe('setup.md frontmatter injection', () => {
   const setup = read(SETUP_MD);
 
-  it('writes appetite to index.json#config.appetite', () => {
-    expect(setup).toMatch(/"appetite":\s*"\{chosen_appetite\}"/);
+  it('writes appetite to stelow.json#workflows[].config.appetite (canonical)', () => {
+    expect(setup).toMatch(/appetite:\s*'\{chosen_appetite\}'/);
   });
 
-  it('writes review_mode to index.json#config.review_mode', () => {
-    expect(setup).toMatch(/"review_mode":\s*"\{chosen_review_mode\}"/);
+  it('writes review_mode to stelow.json#workflows[].config.review_mode (canonical)', () => {
+    expect(setup).toMatch(/review_mode:\s*'\{chosen_review_mode\}'/);
   });
 
-  it('writes domains_detected to index.json#config.domains_detected (initialized to [])', () => {
-    expect(setup).toMatch(/"domains_detected":\s*\[\]/);
+  it('initializes domains_detected to [] in stelow.json#workflows[].config', () => {
+    expect(setup).toMatch(/domains_detected:\s*\[\]/);
   });
 
   it('instructs spec-product.md frontmatter to include appetite', () => {
@@ -121,13 +122,13 @@ describe('setup.md frontmatter injection', () => {
 describe('ask-patterns.md storage contract', () => {
   const patterns = read(ASK_PATTERNS);
 
-  it('documents storage of appetite in index.json AND spec frontmatter', () => {
-    expect(patterns).toMatch(/config\.appetite/);
+  it('documents storage of appetite in stelow.json (canonical) AND spec frontmatter', () => {
+    expect(patterns).toMatch(/workflows\[\]\.config\.appetite|stelow\.json.*config\.appetite/);
     expect(patterns).toMatch(/spec-product\.md.*frontmatter/);
   });
 
   it('documents storage of review_mode alongside appetite (same pattern)', () => {
-    expect(patterns).toMatch(/config\.review_mode/);
+    expect(patterns).toMatch(/workflows\[\]\.config\.review_mode|stelow\.json.*config\.review_mode/);
   });
 });
 

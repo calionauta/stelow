@@ -215,6 +215,34 @@ export function readGlobalTracking(): TrackingData | null {
 export function writeTracking(cwd: string, data: TrackingData): void {
   data.updated = new Date().toISOString();
 
+  // ── Read-through config from index.json (LLM direct-writes) ──
+  // The LLM writes appetite/review_mode/domains_detected directly into
+  // .stelow/{date}/{hash}/index.json via bash. Mirror those values back
+  // into the Workflow object in stelow.json so the tracking file remains
+  // the single source of truth. Only copies fields that are missing in
+  // wf.config — never overwrites existing TS-side values.
+  for (const wf of data.workflows) {
+    if (!wf.dirHash) continue;
+    if (wf.config && (wf.config.appetite || wf.config.review_mode ||
+        (wf.config.domains_detected && wf.config.domains_detected.length > 0))) {
+      continue; // wf already has config — don't overwrite TS-side state
+    }
+    const createdDate = new Date(wf.created);
+    const ds = isNaN(createdDate.getTime()) ? getDateStamp() : getDateStamp(createdDate);
+    const idxPath = join(cwd, WORKFLOW_DIR, ds, wf.dirHash, "index.json");
+    const idx = readJson<Record<string, unknown>>(idxPath);
+    if (!idx) continue;
+    const idxConfig = idx.config as { appetite?: string; review_mode?: string; domains_detected?: string[] } | undefined;
+    if (!idxConfig) continue;
+    wf.config = wf.config || {};
+    if (!wf.config.appetite && idxConfig.appetite) wf.config.appetite = idxConfig.appetite;
+    if (!wf.config.review_mode && idxConfig.review_mode) wf.config.review_mode = idxConfig.review_mode;
+    if ((!wf.config.domains_detected || wf.config.domains_detected.length === 0) &&
+        Array.isArray(idxConfig.domains_detected) && idxConfig.domains_detected.length > 0) {
+      wf.config.domains_detected = [...idxConfig.domains_detected];
+    }
+  }
+
   // ── Auto-sync scopes from spec-tech.md (convention over configuration) ──
   syncScopesIfNeeded(cwd, data);
 
@@ -690,6 +718,14 @@ export function updateWorkflowIndexJson(
   }
 
   Object.assign(idx, updates);
+  // Write-through Workflow.config → index.json (so TUI/integrations see the same source of truth)
+  if (wf.config) {
+    idx.config = idx.config || {};
+    const cur = idx.config as Record<string, unknown>;
+    if (wf.config.appetite !== undefined) cur.appetite = wf.config.appetite;
+    if (wf.config.review_mode !== undefined) cur.review_mode = wf.config.review_mode;
+    if (Array.isArray(wf.config.domains_detected)) cur.domains_detected = [...wf.config.domains_detected];
+  }
   // Sync immutable timestamp from Workflow object to index.json
   if (wf.completedAt && !idx.completed_at) {
     idx.completed_at = wf.completedAt;

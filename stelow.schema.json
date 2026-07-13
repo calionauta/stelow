@@ -76,6 +76,26 @@
           "$ref": "#/definitions/stage-state",
           "description": "Unified stage tracking — replaces legacy current-stage.json"
         },
+        "config": {
+          "type": "object",
+          "description": "Workflow-level config (appetite, review_mode, domains_detected). Canonical source of truth as of v0.50.0; mirrored to index.json via TS extension write-through.",
+          "properties": {
+            "appetite": {
+              "type": "string",
+              "enum": ["Lean", "Core", "Complete"],
+              "description": "Scope appetite declared by human at setup"
+            },
+            "review_mode": {
+              "type": "string",
+              "description": "Review Mode: Auto / Product Spec Gate / Product Spec + Interface Gates / Product Spec + Interface + Scopes / Product Spec + Interface + Tech Review / Product Spec + Interface + Tech Review + Code Diff"
+            },
+            "domains_detected": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Domains detected during context:20 (e.g., pricing, marketplace, health)"
+            }
+          }
+        },
         "tags": {
           "type": "array",
           "items": {

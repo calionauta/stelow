@@ -87,8 +87,12 @@ stelow context. Both paths produce valid output.
 ```bash
 WF_DIR="$(ls -td .stelow/*/*/ 2>/dev/null | head -1)"
 APPETITE="Core"
-if [ -n "$WF_DIR" ] && [ -f "${WF_DIR}index.json" ]; then
-  APPETITE=$(grep -oP '"appetite":\s*"([^"]+)"' "${WF_DIR}index.json" 2>/dev/null | grep -oP '"([^"]+)"$' | tr -d '"' )
+if [ -n "$WF_DIR" ] && [ -f "stelow.json" ]; then
+  APPETITE=$(grep -oP '"appetite":\s*"([^"]+)"' stelow.json 2>/dev/null | grep -oP '"([^"]+)"$' | tr -d '"' || echo "Core")
+  STELOW_MODE=true
+elif [ -n "$WF_DIR" ] && [ -f "${WF_DIR}index.json" ]; then
+  # Fallback: legacy workflows that only wrote to index.json (pre-v0.50.0)
+  APPETITE=$(grep -oP '"appetite":\s*"([^"]+)"' "${WF_DIR}index.json" 2>/dev/null | grep -oP '"appetite":\s*"([^"]+)"' | grep -oP '"([^"]+)"$' | tr -d '"' || grep -oP '"appetite":\s*"([^"]+)"' "${WF_DIR}index.json" | grep -oP '"[^"]+"$' | tr -d '"' || echo "Core")
   STELOW_MODE=true
 else
   STELOW_MODE=false
@@ -195,7 +199,12 @@ before assumptions get baked into a full spec.
 ```bash
 WF_DIR="$(ls -td .stelow/*/*/ 2>/dev/null | head -1)"
 REVIEW_MODE="Auto"
-[ -n "$WF_DIR" ] && REVIEW_MODE=$(grep -oP '"review_mode":\s*"([^"]+)"' "${WF_DIR}index.json" 2>/dev/null | grep -oP '"([^"]+)"$' | tr -d '"' )
+if [ -n "$WF_DIR" ] && [ -f "stelow.json" ]; then
+  REVIEW_MODE=$(grep -oP '"review_mode":\s*"([^"]+)"' stelow.json 2>/dev/null | grep -oP '"([^"]+)"$' | tr -d '"' || echo "Auto")
+elif [ -n "$WF_DIR" ] && [ -f "${WF_DIR}index.json" ]; then
+  # Fallback: legacy index.json (pre-v0.50.0)
+  REVIEW_MODE=$(grep -oP '"review_mode":\s*"([^"]+)"' "${WF_DIR}index.json" 2>/dev/null | grep -oP '"([^"]+)"$' | tr -d '"' || echo "Auto")
+fi
 ```
 
 **Generate assumption list internally** — check these categories:
@@ -338,7 +347,7 @@ The `appetite_fit` field in the spec frontmatter is the **human-readable summary
 > **If `appetite_fit = reshape`:** the proposal fundamentally exceeds appetite — must be reshaped before continuing.
 > The LLM **never** extends appetite. Appetite is fixed for the cycle.
 >
-> **How to define appetite:** see `references/proposal-structure.md` — Lean / Core / Complete with depth of scope. Mode controls gates/questions independently (stored in `index.json`).
+> **How to define appetite:** see `references/proposal-structure.md` — Lean / Core / Complete with depth of scope. Mode controls gates/questions independently (stored in `stelow.json#config`).
 
 ---
 

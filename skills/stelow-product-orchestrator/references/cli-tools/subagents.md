@@ -215,9 +215,12 @@ Subagents should receive inputs as explicit artifacts, not inherited conversatio
 | `tech-recon.md` | `.stelow/{date}/{dir}/tech/tech-recon.md` | — | Interface proposals, alignment checks |
 | `spec-tech.md` | `.stelow/{date}/{dir}/plans/spec-tech_{v}.md` | — | Scope executors |
 | `scope-contract.json` | `.stelow/{date}/{dir}/scopes/{scope-id}.json` | `acceptance_criteria`, `verify_commands` | Scope executors |
-| `index.json` | `.stelow/{date}/{dir}/index.json` | `appetite`, `review_mode`, `domains_detected`, `detected_cli` | Strategic context subagents |
+| `index.json` | `.stelow/{date}/{dir}/index.json` | `appetite`, `review_mode`, `domains_detected`, `detected_cli` (mirrored from `stelow.json` via write-through as of v0.50.0) | Strategic context subagents (legacy read; preferred: `stelow.json`) |
+| `stelow.json` | `stelow.json` (project root) | `workflows[].config.{appetite,review_mode,domains_detected}`, `workflows[].detected_cli` | Strategic context subagents (canonical source of truth as of v0.50.0) |
 
 **Why this matters:** `spec-product.md` frontmatter is the **single source of truth** for `appetite`, `review_mode`, and `domains_detected`. Subagents should read it explicitly rather than relying on the orchestrator passing these values in the task string. This makes input auditable, reproducible, and CLI-agnostic.
+
+> **v0.50.0 note:** Workflow-level config (`appetite`, `review_mode`, `domains_detected`, `detected_cli`) lives in `stelow.json#workflows[].config` and `stelow.json#workflows[].detected_cli`. The TS extension mirrors these to `index.json` for legacy TUI/integration consumers. Skills reading `index.json` directly continue to work — they see the same values.
 
 ---
 

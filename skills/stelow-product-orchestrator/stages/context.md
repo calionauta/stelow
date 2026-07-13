@@ -88,19 +88,22 @@ ask tool: multiSelect question with detected domain options
 **If user selects libraries:**
 1. Load the selected skill(s) content as additional context
 2. Proceed to Shape Up with domain context enriched
-3. **Persist detected domains** to `index.json#config.domains_detected` (single source of truth — consumed by Shape Up's frontmatter generator and by all subagents via `reads: [spec-product.md]`):
+3. **Persist detected domains** to `stelow.json#workflows[].config.domains_detected` (single source of truth as of v0.50.0 — consumed by Shape Up's frontmatter generator and by all subagents via `reads: [spec-product.md]`; mirrored to `.stelow/{date}/{hash}/index.json#config.domains_detected` via the TS extension write-through hook):
 
 ```bash
-INDEX="$(find .stelow/*/*/index.json -type f 2>/dev/null | head -1 | tr -d '\n')"
-if [ -n "$INDEX" ] && [ -n "{selected_domains_json}" ]; then
-  # Update domains_detected in-place (e.g., ["pricing", "marketplace"])
-  python3 -c "
-import json, sys
-with open('$INDEX') as f: data = json.load(f)
-data.setdefault('config', {})['domains_detected'] = {selected_domains_json}
-with open('$INDEX', 'w') as f: json.dump(data, f, indent=2)
+if [ -n "{selected_domains_json}" ] && [ -f "stelow.json" ]; then
+  # Update Workflow.config.domains_detected in stelow.json
+  node -e "
+const fs = require('fs');
+const t = JSON.parse(fs.readFileSync('stelow.json', 'utf8'));
+const wf = t.workflows[t.workflows.length - 1];
+wf.config = wf.config || {};
+wf.config.domains_detected = {selected_domains_json};
+t.updated = new Date().toISOString();
+fs.writeFileSync('stelow.json', JSON.stringify(t, null, 2));
 "
+  # index.json is automatically updated by the TS extension's writeTracking hook
 fi
 ```
 
-**If nothing detected or user declines:** proceed directly to Shape Up or end (set `domains_detected: []` in index.json).
+**If nothing detected or user declines:** proceed directly to Shape Up or end (set `domains_detected: []` in `stelow.json` via setup or the LLM's default; the TS extension seeds it as `[]` in `cmdStart`).

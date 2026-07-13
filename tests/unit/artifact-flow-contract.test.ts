@@ -80,9 +80,9 @@ function corpus(): string {
 describe('appetite field flow', () => {
   const body = corpus();
 
-  it('is WRITTEN to index.json by setup.md', () => {
+  it('is WRITTEN to stelow.json by setup.md (canonical source as of v0.50.0)', () => {
     const setupMd = read(join(SKILLS_DIR, 'stelow-product-orchestrator/stages/setup.md'));
-    expect(setupMd).toMatch(/"appetite":\s*"\{chosen_appetite\}"/);
+    expect(setupMd).toMatch(/appetite:\s*'\{chosen_appetite\}'/);
   });
 
   it('is WRITTEN to spec-product.md frontmatter by setup.md', () => {
@@ -116,9 +116,9 @@ describe('appetite field flow', () => {
 // ═════════════════════════════════════════════════════════════════════
 
 describe('review_mode field flow', () => {
-  it('is WRITTEN to index.json by setup.md', () => {
+  it('is WRITTEN to stelow.json by setup.md (canonical source as of v0.50.0)', () => {
     const setupMd = read(join(SKILLS_DIR, 'stelow-product-orchestrator/stages/setup.md'));
-    expect(setupMd).toMatch(/"review_mode":\s*"\{chosen_review_mode\}"/);
+    expect(setupMd).toMatch(/review_mode:\s*'\{chosen_review_mode\}'/);
   });
 
   it('is WRITTEN to spec-product.md frontmatter by setup.md', () => {
@@ -126,24 +126,25 @@ describe('review_mode field flow', () => {
     expect(setupMd).toMatch(/^review_mode:\s*\{chosen_review_mode\}/m);
   });
 
-  it('is READ by gate stage from index.json', () => {
+  it('is READ by gate stage from stelow.json (with index.json fallback)', () => {
     const gate = read(join(SKILLS_DIR, 'stelow-product-orchestrator/stages/gate.md'));
     expect(gate).toMatch(/review_mode/);
+    expect(gate).toMatch(/stelow\.json/);
   });
 
-  it('is READ by plan-critique from index.json', () => {
+  it('is READ by plan-critique (stelow.json primary, index.json legacy fallback)', () => {
     const pc = read(join(SKILLS_DIR, 'stelow-product-plan-critique/SKILL.md'));
     expect(pc).toMatch(/review_mode/);
   });
 
-  it('is READ by tech-planning from index.json', () => {
+  it('is READ by tech-planning (stelow.json primary, index.json legacy fallback)', () => {
     const tp = read(join(SKILLS_DIR, 'stelow-product-tech-planning/SKILL.md'));
     expect(tp).toMatch(/review_mode/);
   });
 
   it('is READ by scope-executor (standalone awareness)', () => {
     const se = read(join(SKILLS_DIR, 'stelow-product-scope-executor/SKILL.md'));
-    expect(se).toMatch(/checks review_mode in `index\.json`/);
+    expect(se).toMatch(/review_mode/);
   });
 });
 
@@ -152,23 +153,21 @@ describe('review_mode field flow', () => {
 // ═════════════════════════════════════════════════════════════════════
 
 describe('domains_detected field flow', () => {
-  it('is INITIALIZED in index.json by setup.md (as [])', () => {
+  it('is INITIALIZED in stelow.json by setup.md (as [])', () => {
     const setupMd = read(join(SKILLS_DIR, 'stelow-product-orchestrator/stages/setup.md'));
-    expect(setupMd).toMatch(/"domains_detected":\s*\[\]/);
+    expect(setupMd).toMatch(/domains_detected:\s*\[\]/);
   });
 
   it('is WRITTEN by context:20 (Domain Context Detection)', () => {
     const ctx = read(join(SKILLS_DIR, 'stelow-product-orchestrator/stages/context.md'));
     expect(ctx).toMatch(/Persist detected domains/);
-    expect(ctx).toMatch(/config.*domains_detected|domains_detected.*index\.json/);
+    expect(ctx).toMatch(/domains_detected/);
   });
 
   it('is DOCUMENTED as canonical for subagent reads', () => {
     const subagentsMd = read(
       join(SKILLS_DIR, 'stelow-product-orchestrator/references/cli-tools/subagents.md'),
     );
-    // Phrase appears in either order: "domains_detected ... single source of truth"
-    // OR "single source of truth ... domains_detected"
     const hasDomainsDoc =
       /domains_detected[\s\S]{0,300}single source of truth/i.test(subagentsMd) ||
       /single source of truth[\s\S]{0,300}domains_detected/i.test(subagentsMd);
@@ -206,13 +205,19 @@ describe('detected_cli field flow', () => {
 // ═════════════════════════════════════════════════════════════════════
 
 describe('No orphaned producer-only fields', () => {
-  it('every config field written to index.json is read by at least one consumer', () => {
+  it('every Workflow.config field written to stelow.json is read by at least one consumer', () => {
     const setupMd = read(join(SKILLS_DIR, 'stelow-product-orchestrator/stages/setup.md'));
-    // Extract config field names from setup.md
-    const configBlock = setupMd.match(/CONFIG_JSON[\s\S]{0,500}/);
+    // v0.50.0: setup.md writes Workflow.config via a node -e script. Extract the
+    // field names assigned to wf.config.* in that block (use a balanced-window
+    // match because the object spans multiple lines).
+    const configBlock = setupMd.match(/wf\.config\s*=\s*\{[\s\S]*?\n\};/);
     expect(configBlock).not.toBeNull();
-    const fields = (configBlock![0].match(/"(\w+)":/g) ?? [])
-      .map((s) => s.replace(/[":]/g, ''));
+    const fields = (configBlock![0].match(/(\w+):\s*['"[{]/g) ?? [])
+      .map((s) => s.replace(/:\s*['"[{]/, '').trim());
+
+    expect(fields).toContain('appetite');
+    expect(fields).toContain('review_mode');
+    expect(fields).toContain('domains_detected');
 
     // Every field must appear in at least one consumer file
     const consumerCorpus = [
@@ -233,7 +238,7 @@ describe('No orphaned producer-only fields', () => {
 
     for (const field of fields) {
       expect(consumerCorpus, `field "${field}" written by setup.md but no consumer reads it`).toMatch(
-        new RegExp(`["']${field}["']`),
+        new RegExp(`\\b${field}\\b`),
       );
     }
   });

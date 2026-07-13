@@ -206,8 +206,8 @@ if [ ! -f "go.mod" ] && [ ! -f "package.json" ] && \
   exit 0
 fi
 
-# Read appetite from workflow config
-APPETITE=$(grep -oP '"appetite":\s*"([^"]+)"' .stelow/*/*/index.json 2>/dev/null | head -1 | grep -oP '"[^"]+"$' | tr -d '"' || echo "Core")
+# Read appetite from workflow config (stelow.json = source of truth; index.json = fallback for legacy)
+APPETITE=$(grep -oP '"appetite":\s*"([^"]+)"' stelow.json 2>/dev/null | head -1 | grep -oP '"[^"]+"$' | tr -d '"' || grep -oP '"appetite":\s*"([^"]+)"' .stelow/*/*/index.json 2>/dev/null | head -1 | grep -oP '"[^"]+"$' | tr -d '"' || echo "Core")
 
 # Read spec-product for IN scope concepts
 SPEC_PRODUCT=$(ls .stelow/*/*/plans/spec-product*.md 2>/dev/null | head -1)
@@ -327,7 +327,9 @@ REVIEW_MODE="Product Spec + Interface + Scopes"
 SPEC_PRODUCT=""
 SPEC_TECH=""
 
-if [ -n "$WF_DIR" ] && [ -f "${WF_DIR}index.json" ]; then
+if [ -n "$WF_DIR" ] && [ -f "stelow.json" ]; then
+  REVIEW_MODE=$(grep -oP '"review_mode":\s*"([^"]+)"' stelow.json 2>/dev/null | grep -oP '"([^"]+)"$' | tr -d '"' || echo "Product Spec + Interface + Scopes")
+elif [ -n "$WF_DIR" ] && [ -f "${WF_DIR}index.json" ]; then
   REVIEW_MODE=$(grep -oP '"review_mode":\s*"([^"]+)"' "${WF_DIR}index.json" 2>/dev/null | grep -oP '"([^"]+)"$' | tr -d '"' )
   SPEC_PRODUCT=".stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md"
   SPEC_TECH=".stelow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_{v}.md"

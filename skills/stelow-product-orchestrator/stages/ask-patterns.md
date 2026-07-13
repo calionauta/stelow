@@ -377,7 +377,7 @@ Review Mode will be asked separately in the next step.
 
 **Cut policy:** Lean cuts edge cases, secondary flows, alternative strategies, and non-critical integrations. Core cuts only low-value variants. Complete cuts nothing unless impossible. Quality gates are not cut: build/test/lint/typecheck run for every appetite, and a11y checks run whenever UI files exist; Appetite only changes interface/test exploration depth.
 
-**Storage:** Save to `index.json` as `config.appetite`, and inject into `spec-product.md` frontmatter as `appetite: {chosen_appetite}`. Review Mode follows the same pattern (`config.review_mode` + `review_mode:` in frontmatter). Both are canonical subagent inputs — see `references/cli-tools/subagents.md` (Input Files table).
+**Storage:** Save to `stelow.json` as `workflows[].config.appetite` (single source of truth as of v0.50.0; mirrored to `.stelow/{date}/{hash}/index.json#config` via the TS extension write-through hook), and inject into `spec-product.md` frontmatter as `appetite: {chosen_appetite}`. Review Mode follows the same pattern (`workflows[].config.review_mode` + `review_mode:` in frontmatter). Both are canonical subagent inputs — see `references/cli-tools/subagents.md` (Input Files table).
 
 > **Key rule:** Appetite is FIXED for the cycle. The LLM cannot extend it. If scope doesn't fit, the LLM splits — the human decides whether to accept the split or extend appetite in a NEW cycle.
 
@@ -457,7 +457,7 @@ When the Plan Critique finds gaps via the 7 checklists, each gap is classified a
 - **Product Spec + Interface Gates:** Trivial (🔎) gaps are auto-resolved. Moderate (🤔) and Critical (🚨) gaps are presented to the user in a single batched question. Each option shows the AI's recommended resolution marked as "Recommended." User can accept or override per gap.
 - **Product Spec + Interface + Scopes / Product Spec + Interface + Tech Review / Product Spec + Interface + Tech Review + Code Diff:** Trivial (🔎) gaps are auto-resolved. Moderate (🤔) are batched into one question. Critical (🚨) gaps are presented individually. The AI's recommended resolution is always the first option marked "(Recommended)."
 
-**Storage:** Save to `index.json` as `config.review_mode`.
+**Storage:** Save to `stelow.json` as `workflows[].config.review_mode` (mirror to `index.json` is automatic).
 
 > **Note:** Review Mode does NOT affect supervisor, parallelization, or which skills run. All stages run for all modes — only gates and questions change.
 

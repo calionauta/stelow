@@ -6,12 +6,20 @@
 
 ### gate:1 — Review Mode-Aware Gate Activation
 
-**Read configuration from `index.json` before running the gate.**
+**Read configuration from `stelow.json` (source of truth as of v0.50.0) before running the gate.**
 
 ```bash
 _DIR="{_dir}"
-INDEX=".stelow/*/*/$_DIR/index.json"
-REVIEW_MODE=$(grep -oP '"review_mode"\s*:\s*"\K[^"]+' $INDEX 2>/dev/null || echo "Product Spec + Interface + Scopes")
+REVIEW_MODE=""
+if [ -f "stelow.json" ]; then
+  REVIEW_MODE=$(grep -oP '"review_mode"\s*:\s*"\K[^"]+' stelow.json 2>/dev/null | head -1)
+fi
+# Fallback: legacy index.json (pre-v0.50.0)
+if [ -z "$REVIEW_MODE" ]; then
+  INDEX=".stelow/*/*/$_DIR/index.json"
+  REVIEW_MODE=$(grep -oP '"review_mode"\s*:\s*"\K[^"]+' $INDEX 2>/dev/null || echo "Product Spec + Interface + Scopes")
+fi
+[ -z "$REVIEW_MODE" ] && REVIEW_MODE="Product Spec + Interface + Scopes"
 ```
 
 | Review Mode | Plannotator Gate | Interface Gate (int-gate) | Tech Plan Gate (plan-gate) | Code Diff Gate (diff-gate) |

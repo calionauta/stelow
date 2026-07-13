@@ -2,6 +2,33 @@
 
 All notable changes to `@calionauta/stelow` will be documented in this file.
 
+## [0.50.0] - 2026-07-13
+
+### Breaking Change
+
+- **Consolidate Workflow config in `stelow.json` (single source of truth)** — `appetite`, `review_mode`, and `domains_detected` now live in `stelow.json#workflows[].config` instead of `.stelow/{date}/{hash}/index.json#config`. The TS extension mirrors these values back to `index.json` for legacy TUI/integration consumers, but skills and stages read from `stelow.json` first and only fall back to `index.json` for pre-v0.50.0 workflows.
+
+### Added
+
+- **`Workflow.config` bidirectional sync** (`extensions/stelow/state.ts`) — `writeTracking()` reads `index.json#config` and mirrors it into `wf.config` when the latter is empty (LLM direct-write path); `updateWorkflowIndexJson()` mirrors `wf.config` back to `index.json` (TS write path).
+- **`Workflow.config` initialized at workflow creation** (`extensions/stelow/start.ts`) — `cmdStart()` seeds an empty `config: { appetite: undefined, review_mode: undefined, domains_detected: [] }` on every new workflow.
+- **Schema validation** (`stelow.schema.json`) — `Workflow.config` schema documents the three fields with enums for `appetite` (Lean/Core/Complete) and `review_mode`.
+
+### Changed
+
+- **Skills read from `stelow.json` first, fall back to `index.json`** — `shape-up`, `tech-planning`, `plan-critique`, `ux-critique`, `codebase-critique`, `interface-alternatives`, `execution-critique`. Each bash block now checks `stelow.json` first; if absent or empty, falls back to the legacy `${WF_DIR}index.json` path.
+- **Stage docs reference `stelow.json` as canonical** — `setup.md` (Step 3: Store config), `context.md` (Persist detected domains), `gate.md` (Read configuration), `ask-patterns.md` (Storage contract), `references/cli-tools/subagents.md` (Input Files table), `references/cli-tools/audit-trail-template.md` (Review Mode link).
+
+### Tests
+
+- Updated `spec-frontmatter-contract.test.ts` and `artifact-flow-contract.test.ts` to verify the `stelow.json` canonical-source contract end-to-end (producer + consumers + orphan-field guard).
+- 818 tests passing (was 979 in v0.48.0; reduction reflects skill renames in v0.49.0 + test consolidation).
+
+### Migration
+
+- No user action required for in-flight workflows pre-v0.50.0: legacy `index.json#config` is read on first `writeTracking()` and mirrored into `wf.config`. New workflows after this release start writing to `stelow.json` directly.
+- Integrations consuming `index.json` continue to work — the TS extension writes-through every change.
+
 ## [0.49.2] - 2026-07-13
 
 ### Changed

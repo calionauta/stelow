@@ -122,7 +122,12 @@ WF_DIR="${WF_DIR%/}"  # Strip trailing slash
 SPEC="$WF_DIR/plans/spec-product*.md"
 SPEC_FILE=$(ls $SPEC 2>/dev/null | head -1) || SPEC_FILE=""
 REVIEW_MODE="Product Spec + Interface + Scopes"
-[ -n "$WF_DIR" ] && REVIEW_MODE=$(grep -oP '"review_mode":\s*"([^"]+)"' "$WF_DIR/index.json" | grep -oP '"([^"]+)"$' | tr -d '"' )
+if [ -n "$WF_DIR" ] && [ -f "stelow.json" ]; then
+  REVIEW_MODE=$(grep -oP '"review_mode":\s*"([^"]+)"' stelow.json | grep -oP '"([^"]+)"$' | tr -d '"' )
+elif [ -n "$WF_DIR" ] && [ -f "$WF_DIR/index.json" ]; then
+  # Legacy fallback: pre-v0.50.0 workflows stored config only in index.json
+  REVIEW_MODE=$(grep -oP '"review_mode":\s*"([^"]+)"' "$WF_DIR/index.json" | grep -oP '"([^"]+)"$' | tr -d '"' )
+fi
 APPETITE=$(grep -oP '^appetite:\s*\K\S+' "$SPEC_FILE" 2>/dev/null || echo "Core")
 FIT=$(grep -oP '^appetite_fit:\s*\K\S+' "$SPEC_FILE" 2>/dev/null || echo "fits")
 ```
