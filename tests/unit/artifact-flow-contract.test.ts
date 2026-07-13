@@ -142,9 +142,13 @@ describe('review_mode field flow', () => {
     expect(tp).toMatch(/review_mode/);
   });
 
-  it('is READ by scope-executor (standalone awareness)', () => {
+  it('is READ by scope-executor (standalone awareness + Complete-appetite warning)', () => {
     const se = read(join(SKILLS_DIR, 'stelow-product-scope-executor/SKILL.md'));
     expect(se).toMatch(/review_mode/);
+    // v0.50.0: must reference stelow.json as canonical source (with index.json fallback)
+    expect(se).toMatch(/stelow\.json[\s\S]*workflows\[\]\.config\.review_mode/);
+    // Legacy fallback still documented
+    expect(se).toMatch(/legacy workflows|index\.json[\s\S]*fallback/);
   });
 });
 

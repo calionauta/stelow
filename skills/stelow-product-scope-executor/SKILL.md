@@ -41,7 +41,7 @@ The plan must contain scopes with type annotations:
 
 If the plan has the optional **"Execution routing"** section (from stelow), use it directly. Otherwise, infer routing from `[TYPE]` tags.
 
-**Standalone awareness:** when inside stelow, reads appetite from `.stelow/*/plans/spec-product*.md` and checks review_mode in `index.json`. When standalone, defaults to Core appetite + Product Spec + Interface + Scopes review mode. Scans current directory for `spec-tech*.md` files. The `[TYPE]` routing works identically in both modes — no stelow dependency for scope execution logic.
+**Standalone awareness:** when inside stelow, reads appetite from `.stelow/*/plans/spec-product*.md` and checks review_mode from `stelow.json#workflows[].config.review_mode` (with fallback to `.stelow/*/index.json#config` for pre-v0.50.0 workflows). When standalone, defaults to Core appetite + Product Spec + Interface + Scopes review mode. Scans current directory for `spec-tech*.md` files. The `[TYPE]` routing works identically in both modes — no stelow dependency for scope execution logic.
 
 ---
 
@@ -137,7 +137,7 @@ Phase 2 (after SCOPE-1):
 APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/*/*/plans/spec-product_*.md 2>/dev/null || echo "Core")
 if [ "$APPETITE" = "Complete" ]; then
   echo "⚠️ COMPREHENSIVE APPETITE: Human-in-loop mode may be needed for architectural changes."
-  echo "Check the workflow's review_mode setting in index.json."
+  echo "Check the workflow's review_mode setting in stelow.json#workflows[].config.review_mode (or .stelow/{date}/{dir}/index.json for legacy workflows)."
   echo "In Product Spec + Interface + Tech Review mode, each PR/fork-point requires human approval before merge."
 ```
 

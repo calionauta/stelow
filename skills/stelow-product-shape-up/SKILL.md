@@ -79,7 +79,7 @@ opportunities BEFORE shaping the product spec. This feeds codebase reality
 into the product decision, not after.
 
 **Standalone awareness:** when running inside stelow, this step reads appetite
-from `.stelow/*/index.json`. When standalone, defaults to Core appetite.
+from `stelow.json#workflows[].config.appetite` (with fallback to `.stelow/*/index.json#config` for pre-v0.50.0 workflows). When standalone, defaults to Core appetite.
 Cymbal runs if available + brownfield regardless of mode — it doesn't need
 stelow context. Both paths produce valid output.
 

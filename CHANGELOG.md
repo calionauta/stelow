@@ -2,6 +2,24 @@
 
 All notable changes to `@calionauta/stelow` will be documented in this file.
 
+## [0.50.1] - 2026-07-13
+
+### Changed
+
+- **Prose alignment with v0.50.0 canonical source** — Updated standalone-awareness copy in 5 skills/stages to reference `stelow.json#workflows[].config` as canonical, with `index.json` documented as a legacy mirror for pre-v0.50.0 workflows:
+  - `stelow-product-shape-up/SKILL.md` (Standalone awareness note).
+  - `stelow-product-shape-up/references/proposal-structure.md` (Mode storage contract).
+  - `stelow-product-plan-critique/SKILL.md` (Standalone awareness note).
+  - `stelow-product-tech-planning/SKILL.md` (Standalone awareness note).
+  - `stelow-product-scope-executor/SKILL.md` (Standalone awareness + Complete-appetite warning echo).
+  - `stelow-product-orchestrator/stages/execution.md` (Human-in-loop note).
+- **Test assertion tightening** — `tests/unit/artifact-flow-contract.test.ts` now verifies that scope-executor references both `stelow.json#workflows[].config.review_mode` (canonical) AND the `index.json` legacy fallback path, instead of the previous generic `review_mode` substring match.
+
+### Notes
+
+- No functional code changes. All edits are documentation/prose alignment + 1 test assertion precision.
+- 818 tests passing (unchanged from v0.50.0).
+
 ## [0.50.0] - 2026-07-13
 
 ### Breaking Change

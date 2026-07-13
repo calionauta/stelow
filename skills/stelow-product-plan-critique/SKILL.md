@@ -63,7 +63,7 @@ The workflow loads this skill automatically after Tech Planning, before Plannota
 Before generating technical scopes, tech-planning calls this skill to ensure
 the plan is solid.
 
-**Standalone awareness:** when inside stelow, reads review_mode + spec from `.stelow/*/index.json` and `.stelow/*/plans/spec-product*.md`. When standalone, defaults to Product Spec + Interface + Scopes review mode (maximum product gates) and scans current directory for `spec-product*.md`. File not found → prompt user for path. Appetite defaults to Core, appetite_fit defaults to fits.
+**Standalone awareness:** when inside stelow, reads review_mode from `stelow.json#workflows[].config.review_mode` (with fallback to `.stelow/*/index.json#config` for pre-v0.50.0 workflows) and spec from `.stelow/*/plans/spec-product*.md`. When standalone, defaults to Product Spec + Interface + Scopes review mode (maximum product gates) and scans current directory for `spec-product*.md`. File not found → prompt user for path. Appetite defaults to Core, appetite_fit defaults to fits.
 
 ---
 

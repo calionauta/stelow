@@ -316,7 +316,7 @@ then produce the spec-tech artifact directly in the current context.
 with the product spec — or reveals constraints that invalidate it. This is the
 feedback loop that prevents "tech discovered too late" problems.
 
-**Standalone awareness:** inside stelow, reads mode from `index.json` and specs
+**Standalone awareness:** inside stelow, reads mode from `stelow.json#workflows[].config.review_mode` (with fallback to `.stelow/*/index.json#config` for pre-v0.50.0 workflows) and specs
 from `.stelow/`. When standalone, defaults to Full mode (maximum interaction)
 and reads specs from current directory or prompts for paths.
 

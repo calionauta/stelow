@@ -137,7 +137,7 @@ APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-
 | `Core` | **Activate** | `medium` | No | Standard feature scope. Medium sensitivity balances steering vs autonomy. |
 | `Complete` | **Activate** | `high` | No | High-risk, multi-scope work. High sensitivity ensures drift is caught early. |
 
-> **Human-in-loop is controlled by Review Mode** (from `index.json`), not by appetite.
+> **Human-in-loop is controlled by Review Mode** (from `stelow.json#workflows[].config.review_mode`, mirrored to `index.json`), not by appetite.
 > Review Mode = "Product Spec + Interface + Scopes", "Product Spec + Interface + Tech Review", or "Product Spec + Interface + Tech Review + Code Diff" may add human approval checkpoints per PR.
 
 | Scope Type | Executor | Supervision |
