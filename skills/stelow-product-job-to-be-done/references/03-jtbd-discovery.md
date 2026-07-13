@@ -1,6 +1,6 @@
 # Prompt 3: JTBD Discovery
 
-**Source:** https://calirenato82.substack.com/p/prompt-ia-descoberta-de-jobs-to-be-done
+**Source:** https://calionauta.substack.com/p/prompt-ia-descoberta-de-jobs-to-be-done
 
 **When to use:** To discover and reframe Jobs To Be Done from a solution, action, or outcome.
 Useful when the user has a product/solution idea and wants to understand the underlying jobs.

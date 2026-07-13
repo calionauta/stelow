@@ -2,7 +2,7 @@
 name: stelow-product-discovery
 description: >
   [stelow] Complete expert in the short-cycle product learning method,
-  based on the e-book "Guide to Creating Products with Short Learning Cycles" by Cali (Renato Caliari).
+  based on the e-book "Guide to Creating Products with Short Learning Cycles" by calionauta.
   Use this skill whenever the user asks about: idea validation, customer discovery,
   product experimentation, jobs to be done, pricing strategies, business models, marketing channels,
   early adopters, MVP, product-market fit, pre-sales, launch strategies, product innovation,
@@ -90,23 +90,23 @@ When `question` tool is not available, use enumerated text in chat (A/B/C/D or 1
 
 ## Attribution
 
-This skill is based on the e-book **"Guia para criar produtos com aprendizado em ciclos curtos"** (Guide to Creating Products with Short Learning Cycles) by **Renato Caliari**.
+This skill is based on the e-book **"Guia para criar produtos com aprendizado em ciclos curtos"** (Guide to Creating Products with Short Learning Cycles) by **calionauta**.
 
-**Author**: Renato Caliari  
-**Substack**: [Practical Guide to Validate Ideas](https://calirenato82.substack.com/p/roteiro-pratico-para-validar-ideias)  
-**GitHub**: [@renatocaliari](https://github.com/renatocaliari)
+**Author**: calionauta  
+**Substack**: [Practical Guide to Validate Ideas](https://calionauta.substack.com/p/roteiro-pratico-para-validar-ideias)  
+**GitHub**: [@calionauta](https://github.com/calionauta)
 
 This skill was translated and adapted by permission and attribution to the original author.
 
 ---
 
-**Original Repository**: [github.com/renatocaliari/my-opencode-config](https://github.com/renatocaliari/my-opencode-config)
+**Original Repository**: [github.com/calionauta/my-opencode-config](https://github.com/calionauta/my-opencode-config)
 
 ---
 
 ## Extended Deep-Dives (Optional)
 
-For specialized analysis, these standalone skills are available at [github.com/renatocaliari/agent-sync-public](https://github.com/renatocaliari/agent-sync-public/tree/main/skills):
+For specialized analysis, these standalone skills are available at [github.com/calionauta/agent-sync-public](https://github.com/calionauta/agent-sync-public/tree/main/skills):
 
 | Skill | Description | Lines |
 |-------|-----------|--------|

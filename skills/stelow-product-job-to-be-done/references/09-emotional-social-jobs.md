@@ -1,6 +1,6 @@
 # Prompt 9: Emotional & Social Jobs Discovery
 
-**Source:** https://calirenato82.substack.com/p/prompt-ia-descoberta-de-jobs-emocionais
+**Source:** https://calionauta.substack.com/p/prompt-ia-descoberta-de-jobs-emocionais
 
 **When to use:** To discover emotional jobs (how the person wants to feel/avoid feeling) and
 social jobs (how they want to be perceived/avoid being perceived) related to the functional job.

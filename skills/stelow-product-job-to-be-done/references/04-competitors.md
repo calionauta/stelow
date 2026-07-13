@@ -1,6 +1,6 @@
 # Prompt 4: Competitor Discovery
 
-**Source:** https://calirenato82.substack.com/p/prompt-ia-descoberta-de-competidores
+**Source:** https://calionauta.substack.com/p/prompt-ia-descoberta-de-competidores
 
 **When to use:** To map competitors through the JTBD lens — not limited to product categories,
 but any solution that fulfills the same job. Includes direct, indirect, and hidden competitors.

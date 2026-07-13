@@ -1,6 +1,6 @@
 # Prompt 2: Thinking Styles — Indi Young
 
-**Source:** https://calirenato82.substack.com/p/prompt-ia-thinking-styles-indi-young
+**Source:** https://calionauta.substack.com/p/prompt-ia-thinking-styles-indi-young
 
 **When to use:** To identify significantly different thinking styles of a performer when trying to
 achieve a purpose. Useful for segmenting by behavior/cognition instead of demographics. Run after

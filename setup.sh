@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# 🚀 Cali's Pi Setup — Do Zero ao Um
+# 🚀 calionauta's Pi Setup — Do Zero ao Um
 #
 # Installs EVERYTHING from scratch for non-technical users:
 #   1. Node.js (if needed)
@@ -76,7 +76,7 @@ PI_PACKAGES=(
 
   # Git packages
   "git:github.com/PriNova/pi-agent-codebase-workflows"
-  "git:github.com/renatocaliari/pi-tool-repair-layer"
+  "git:github.com/calionauta/pi-tool-repair-layer"
   "git:github.com/calionauta/stelow"
 )
 
@@ -796,7 +796,7 @@ print_summary() {
 
 main() {
   echo ""
-  echo "${CYAN}${BOLD}🚀 Cali's Pi Setup — Do Zero ao Um${RESET}"
+  echo "${CYAN}${BOLD}🚀 calionauta's Pi Setup — Do Zero ao Um${RESET}"
   echo ""
 
   if [[ "$DRY_RUN" == "true" ]]; then

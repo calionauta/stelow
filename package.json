@@ -13,7 +13,7 @@
     "calionauta"
   ],
   "license": "MIT",
-  "author": "Cali",
+  "author": "calionauta",
   "type": "module",
   "main": "./build/index.js",
   "exports": {

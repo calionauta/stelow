@@ -1,6 +1,6 @@
 # Prompt 1: Contextual Segmentation for Jobs To Be Done
 
-**Source:** https://calirenato82.substack.com/p/prompt-ia-segmentacao-por-contexto
+**Source:** https://calionauta.substack.com/p/prompt-ia-segmentacao-por-contexto
 
 **When to use:** To identify market segments based on situational factors and contextual variables —
 avoiding demographic segmentation. Recommended first step in a JTBD analysis.

@@ -1,6 +1,6 @@
 # Prompt 8: Financial Needs Discovery
 
-**Source:** https://calirenato82.substack.com/p/prompt-ia-descoberta-de-necessidades-financeiras
+**Source:** https://calionauta.substack.com/p/prompt-ia-descoberta-de-necessidades-financeiras
 
 **When to use:** To discover financial success criteria for solution acquisition related to the job.
 Focuses on the perspective of the financial decision maker — whoever approves the solution purchase.

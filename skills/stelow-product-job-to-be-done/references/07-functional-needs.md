@@ -1,6 +1,6 @@
 # Prompt 7: Functional Needs — Desired Outcomes & Success Criteria
 
-**Source:** https://calirenato82.substack.com/p/prompt-ia-descoberta-de-necessidades
+**Source:** https://calionauta.substack.com/p/prompt-ia-descoberta-de-necessidades
 
 **When to use:** To discover functional success criteria (desired outcomes) when executing the job.
 Run AFTER Prompt 6 (Situational Variables) for richer, more specific results.

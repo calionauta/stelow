@@ -2,7 +2,7 @@
 name: stelow-product-job-to-be-done
 description: >
   [stelow] Complete set of specialized prompts for Jobs To Be Done (JTBD) analysis and discovery,
-  based on the methodology by Cali (Renato Caliari). Use this skill whenever the user wants
+  based on the methodology by calionauta. Use this skill whenever the user wants
   to perform any kind of JTBD analysis: contextual market segmentation, thinking styles
   (Indi Young), JTBD discovery, competitor mapping, job actors, situational variables,
   job map steps, functional needs (desired outcomes), financial needs, or emotional/social
@@ -113,12 +113,12 @@ Read the specific prompt file before executing it.
 
 ## Attribution
 
-This skill and all its prompts were developed by **Cali (Renato Caliari)** 🇧🇷 — product strategist and JTBD practitioner from Brazil.
+This skill and all its prompts were developed by **calionauta** 🇧🇷 — product strategist and JTBD practitioner from Brazil.
 
 These prompts are the result of years of experimentation and refinement, documented and shared through:
 
-- 📚 **E-book**: [Jobs To Be Done in Portuguese](https://calirenato82.substack.com/p/e-book-jobs-to-be-done-em-portugues) — comprehensive guide to JTBD methodology
-- 🔗 **Resources**: [Recursos Principais](https://calirenato82.substack.com/p/recursos-principais) — collection of prompts, frameworks, and tools
+- 📚 **E-book**: [Jobs To Be Done in Portuguese](https://calionauta.substack.com/p/e-book-jobs-to-be-done-em-portugues) — comprehensive guide to JTBD methodology
+- 🔗 **Resources**: [Recursos Principais](https://calionauta.substack.com/p/recursos-principais) — collection of prompts, frameworks, and tools
 - ✍️ **Substack**: Regular articles and experiments on JTBD, product strategy, and innovation
 
 The prompts in this skill represent a curated, production-ready selection of the most effective JTBD analyses developed through extensive real-world application.

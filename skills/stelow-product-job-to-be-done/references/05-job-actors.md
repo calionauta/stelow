@@ -1,6 +1,6 @@
 # Prompt 5: Job Actors — All Actors Involved in the Job and Market
 
-**Source:** https://calirenato82.substack.com/p/prompt-ia-descoberta-dos-atores-envolvidos
+**Source:** https://calionauta.substack.com/p/prompt-ia-descoberta-dos-atores-envolvidos
 
 **When to use:** To identify all actors involved in a Job To Be Done: beneficiaries,
 performers, providers, decision makers, buyers, influencers, experts, and more.

@@ -752,7 +752,7 @@ Even with these guardrails, the AI agent still exhibits predictable failure mode
 
 ## About the Author
 
-**[Cali (Renato Caliari)](https://www.linkedin.com/in/calionauta/)**
+**[calionauta](https://www.linkedin.com/in/calionauta/)**
 
 This workflow wasn't designed in a vacuum. It comes from years inside real teams — as a developer, product manager, consultant, and leader across different organizations. The skills, patterns, and disciplines here were tested, broken, and rebuilt in live product environments and real codebases, not conference rooms.
 

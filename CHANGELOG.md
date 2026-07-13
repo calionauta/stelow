@@ -8,7 +8,7 @@ All notable changes to `@calionauta/stelow` will be documented in this file.
 
 - **Skill description branding**: replaced `[Cali]` prefix with `[stelow]` across 14 product skill descriptions. The description now reflects the project brand rather than the author's first name.
 - **Skill authorship metadata**: added `author: calionauta` and `author-url: https://github.com/calionauta` to all 25 SKILL.md frontmatter blocks. Documents project ownership in a machine-readable way.
-- Existing body attributions to Renato Caliari (original content author) are preserved.
+- Existing body attributions to calionauta (original content author) are preserved.
 
 ## [0.49.0] - 2026-07-13
 

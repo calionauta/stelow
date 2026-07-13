@@ -1,6 +1,6 @@
 # Prompt 6: Situational Variables Discovery
 
-**Source:** https://calirenato82.substack.com/p/prompt-ia-descoberta-de-variaveis
+**Source:** https://calionauta.substack.com/p/prompt-ia-descoberta-de-variaveis
 
 **When to use:** To discover the situational factors and variables that influence job execution.
 Feeds directly into Prompt 7 (Functional Needs). Run this before discovering desired outcomes.

@@ -31,5 +31,5 @@ it's not a project management tool. it's not a document generator. it's an orche
 10/ i'm inviting builders (solo or teams, experienced or not) to try it and tell me what sucks. no sales pitch. no landing page. just a workflow and a /sw-start. feedback shapes what comes next.
 
 
-11/ repo: https://github.com/renatocaliari/stelow
+11/ repo: https://github.com/calionauta/stelow
 

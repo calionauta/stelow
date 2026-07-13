@@ -309,7 +309,7 @@ Already declared in the manifest (Task 1). User adds in `~/.config/herdr/config.
 
 ### Task 8: Publish
 
-- Public repo `github.com/renatocaliari/stelow-board` (or preferred owner)
+- Public repo `github.com/calionauta/stelow-board` (or preferred owner)
 - Topic `herdr-plugin`
 - Index updates every 30 min → appears on herdr.dev/plugins/
 
@@ -454,7 +454,7 @@ Task 1: Scaffold + manifest + Cargo.toml
 
 ## ❓ Open questions (for the user to decide before executing)
 
-1. **GitHub repo owner:** `renatocaliari/stelow-board` or other owner?
+1. **GitHub repo owner:** `calionauta/stelow-board` or other owner?
 2. **Binary naming:** `stelow-board` (long) or `cwb` (short)?
 3. **Data source:** prioritize raw `.stelow/` or create custom schema `.stelow/board.json`?
 4. **Scope/task detail:** show `detail` field if it exists, or just `name` + `status`?
@@ -476,7 +476,7 @@ decision based on the plan above.
 
 | # | Original question | Current decision |
 |---|---|---|
-| 1 | Repo owner | **No separate repo.** Plugin lives at `integrations/herdr/stelow-board/` inside the `stelow` monorepo. Distributed via npm (`@renatocaliari/stelow` package, `files[]` includes the plugin). |
+| 1 | Repo owner | **No separate repo.** Plugin lives at `integrations/herdr/stelow-board/` inside the `stelow` monorepo. Distributed via npm (`@calionauta/stelow` package, `files[]` includes the plugin). |
 | 2 | Binary name | **`stelow-board`** (original option 1). |
 | 3 | Data source | **`stelow.json` (root) + `.stelow/<date>/<dirHash>/index.json` per workflow.** No custom schema. The plan envisioned a separate `data.rs`; the implementation keeps everything in `main.rs` (815 lines) because it was simpler. |
 | 4 | Scope/task detail | **Shows status, type, and iteration counter from `Scope` in `index.json`.** No `detail` field in the current schema. |

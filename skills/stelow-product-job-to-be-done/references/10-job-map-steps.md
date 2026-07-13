@@ -1,6 +1,6 @@
 # Prompt 10: Job Map Steps Discovery
 
-**Source:** https://calirenato82.substack.com/p/prompt-ia-descoberta-das-etapas-job
+**Source:** https://calionauta.substack.com/p/prompt-ia-descoberta-das-etapas-job
 
 **When to use:** To map the stages and steps (Job Steps) that make up the Job Map — the complete
 sequence of actions the customer needs to execute to complete the job. Use after defining the job and segment.
