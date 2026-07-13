@@ -25,6 +25,14 @@ Users upgrading from ≤0.48.0 must:
 
 This is a non-cosmetic change: any script, hook, or external tool that hard-codes the old skill names or filesystem paths will break and must be updated.
 
+### Changed (post-release cleanup)
+
+- Removed residual references to optional external skills (not runtime deps of stelow):
+  - `.release.yml`, `extensions/stelow/schema-record.ts`: comments no longer name a specific external release skill.
+  - `setup.sh`: hotkey slots 2 and 5 now point to project skills (`stelow-product-shape-up`, `stelow-product-execution-critique`) instead of external ones (`cali-go-stack`, `cali-github-releases`).
+  - `install.sh`: dropped unused `cali-pw-*` pattern from prune case (no skill was ever shipped under that prefix).
+  - `AGENTS.md`: redundant inline "no BC for legacy names" note removed (covered by the entry above).
+
 ## [0.48.0] - 2026-07-13
 
 ### Added
