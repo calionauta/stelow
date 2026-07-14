@@ -62,6 +62,54 @@ npm run test:skills      # Skill structure tests
 npm run typecheck        # Type check
 ```
 
+## Testing policy
+
+> **Count is not quality. 1000 trivial tests is worse than 50 focused tests.**
+> **Every test must catch a real bug. If you can't name the bug it catches, delete it.**
+
+### Always write tests of these kinds
+
+1. **Mutation-killing tests.** A test that exercises the contract so that mutating the code breaks it. The bug it catches: "I refactored and broke behavior X." If your test passes against a no-op stub of the function, it's worthless.
+
+2. **Edge case tests.** Null, empty, boundary, concurrent, malformed input. These catch the bugs that only manifest in production.
+
+3. **Regression tests for known bugs.** Label them with the bug/issue. If a bug took time to diagnose, write a test that fails when the bug regresses.
+
+4. **Property-based tests.** When the contract is "for any valid input, property P holds" — use fast-check. Catches input combinations your hand-picked cases miss.
+
+5. **Integration tests for real I/O paths.** Anything that touches the filesystem, network, or subprocess must be tested against the real thing — not a mock. Mock the **boundaries** (network ports, time, randomness), not the internals.
+
+### Never write tests of these kinds
+
+1. **Snapshot tests that capture everything.** A snapshot of "whatever the code happens to produce" is a blank check. Snapshots are only useful for stable, intentional outputs (serialized data formats).
+
+2. **Tests that mock the code under test.** If `vi.mock()` mocks the function you're testing, you're testing the mock. Delete the test.
+
+3. **Tests with 0 or 1 assertion that just check "doesn't throw".** `expect(() => fn()).not.toThrow()` proves nothing — it would pass against `function fn() {}`. A test must assert on a specific value.
+
+4. **Tests that duplicate another test's coverage with different inputs.** If test A covers "writes valid JSON" and test B covers "writes valid JSON with extra field", B adds noise, not coverage. Combine or delete.
+
+5. **Tests that depend on `process.env`, global state, or test execution order.** These are flaky. If a test must touch global state, isolate it via temp dirs + `beforeEach` reset, OR delete it.
+
+6. **Tests for behavior that the type system already guarantees.** Don't write `expect(add(1, 2)).toBe(3)` for a function whose return type is `3`. The TS compiler is the test.
+
+### Maintenance rules
+
+- **Run `npx tsx scripts/scan-test-value.ts` before adding a PR with new tests.** If your new test shows up as DELETE or REVIEW, fix it before merging.
+- **Any test that fails in parallel CI (but passes in isolation) is broken. Delete or fix immediately.** Flaky tests teach the team to ignore failures.
+- **Untracked test files (`git status` shows `??`) are WIP. Commit or delete within the same PR that created them.** Stale untracked tests are a code smell.
+- **When deleting a test, state why in the commit message.** The reasoning must be auditable.
+
+### Test value scanner
+
+`scripts/scan-test-value.ts` classifies test files as:
+
+- **DELETE** — likely safe to remove (zero asserts, trivial single-line expects, etc.)
+- **REVIEW** — multiple weak signals; needs manual decision (low assert density + no edge cases, untracked + flaky, etc.)
+- **OK** — high signal: covers mutations, edges, or real I/O
+
+Run before releases. A test file moving from OK to REVIEW over time signals rot.
+
 ## Conventions
 
 - **Commits:** conventional (`feat:`, `fix:`, `chore:`, `refactor:`, `test:`, `docs:`). Squash merge to main.
