@@ -91,17 +91,8 @@ describe('scanWorkflowDirs', () => {
     expect(result[0].dateStamp).toBe('2026-05-20');
   });
 
-  it('extracts name from legacy slug field', () => {
-    // Only slug, no name - tests backward compatibility
-    createWorkflow('2026-05-20', 'sw-test-legacy', { slug: 'legacy-workflow' });
-
-    const result = scanWorkflowDirs(tempDir);
-
-    expect(result[0].name).toBe('legacy-workflow');
-  });
-
-  it('falls back to dirHash when index has no name or slug', () => {
-    // Minimal index with no name/slug fields
+  it('falls back to dirHash when index has no name', () => {
+    // Minimal index with no name field
     createWorkflow('2026-05-20', 'sw-fallback-dir', {});
 
     const result = scanWorkflowDirs(tempDir);

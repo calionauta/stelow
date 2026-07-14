@@ -107,20 +107,6 @@ describe('stelow_read_appetite / stelow_read_review_mode', () => {
     expect(runHelper('echo "$(stelow_read_appetite)"')).toBe('Core');
   });
 
-  it('falls back to legacy index.json when stelow.json has no config', () => {
-    // Active workflow with no config (simulates fresh /sw-start, pre-v0.50.0)
-    writeStelow([{ name: 'active', status: 'in-progress' }]);
-    // Legacy index.json with config
-    const legacyPath = join(tmpDir, '.stelow/2026-07-13/abc123/index.json');
-    mkdirSync(dirname(legacyPath), { recursive: true });
-    writeFileSync(legacyPath, JSON.stringify({
-      name: 'active', workflow_status: 'in-progress',
-      config: { appetite: 'Complete', review_mode: 'Auto' },
-    }, null, 2));
-    expect(runHelper('echo "$(stelow_read_appetite)"')).toBe('Complete');
-    expect(runHelper('echo "$(stelow_read_review_mode)"')).toBe('Auto');
-  });
-
   it('returns [] for domains_detected when not configured', () => {
     writeStelow([{ name: 'active', status: 'in-progress', config: {} }]);
     expect(runHelper('echo "$(stelow_read_domains)"')).toBe('[]');

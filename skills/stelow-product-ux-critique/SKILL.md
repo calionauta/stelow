@@ -47,8 +47,8 @@ and if appetite warrants a full audit.
 # Read appetite from stelow context or env var; default Core (via canonical helper).
 WF_DIR="$(ls -td .stelow/*/*/ 2>/dev/null | head -1)"
 # shellcheck disable=SC1091
-source "$(dirname "${BASH_SOURCE[0]:-$0}")/../../stelow-product-orchestrator/references/cli-tools/read-config.sh" 2>/dev/null || true
-APPETITE="${APPETITE:-$(stelow_read_appetite 2>/dev/null || echo "Core")}"
+source "$(dirname "${BASH_SOURCE[0]:-$0}")/../../stelow-product-orchestrator/references/cli-tools/read-config.sh"
+APPETITE="${APPETITE:-$(stelow_read_appetite)}"
 # Check if any visual files changed
 UI_FILES=$(git diff --name-only HEAD~1 2>/dev/null | grep -cE '\.(templ|html|tsx|jsx|css)$' || echo "0")
 ```

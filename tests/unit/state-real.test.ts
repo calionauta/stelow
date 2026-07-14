@@ -501,8 +501,9 @@ describe('Utility Functions', () => {
       }
     });
 
-    it('adds and removes entries without state fields', () => {
-      addToGlobalIndex({ ...workflow('test', 'in-progress', 1), description: '', phases: [], stage: {} } as unknown as Workflow);
+    it('adds and removes entries', () => {
+      const wf = { ...workflow('test', 'in-progress', 1), cwd: tempDir } as Workflow;
+      addToGlobalIndex(wf);
       let g = readGlobalTracking();
       expect(g?.workflows).toHaveLength(1);
       expect(g?.workflows[0]).not.toHaveProperty('status');
@@ -513,7 +514,8 @@ describe('Utility Functions', () => {
     });
 
     it('renames entry in global index', () => {
-      addToGlobalIndex({ ...workflow('old', 'in-progress', 1), description: '', phases: [], stage: {} } as unknown as Workflow);
+      const wf = { ...workflow('old', 'in-progress', 1), cwd: tempDir } as Workflow;
+      addToGlobalIndex(wf);
       updateGlobalIndexName('old', 'new', tempDir);
       const g = readGlobalTracking();
       expect(g?.workflows[0].name).toBe('new');

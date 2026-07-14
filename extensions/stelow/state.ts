@@ -179,27 +179,14 @@ export { findProjectWorkflowRoot, resolveProjectDir } from "./workflow-root";
 
 // ── Read / Write ─────────────────────────────────────────────────────
 
-/** Normalize legacy "slug" → "name" for old tracking data */
-function migrateWorkflow(wf: any): any {
-  if (wf.slug && !wf.name) {
-    wf.name = wf.slug;
-  }
-  if (wf.name && !wf.slug) {
-    wf.slug = wf.name; // keep backward compat
-  }
-  return wf;
-}
-
-function migrateTrackingData(data: any): TrackingData {
-  if (data?.workflows) {
-    data.workflows = data.workflows.map(migrateWorkflow);
-  }
-  return data as TrackingData;
+/** Cast raw JSON to TrackingData. No field migration. */
+function readTrackingData(raw: unknown): TrackingData {
+  return raw as TrackingData;
 }
 
 export function readTracking(cwd: string): TrackingData | null {
   const raw = readJson<TrackingData>(getTrackingPath(cwd));
-  const data = raw ? migrateTrackingData(raw) : null;
+  const data = raw ? readTrackingData(raw) : null;
   // Auto-sync scopes on read — covers the case where the LLM wrote to
   // stelow.json directly via fs.writeFileSync(), bypassing the writeTracking() hook.
   // The next read after direct-write will populate scopes automatically.
@@ -209,39 +196,11 @@ export function readTracking(cwd: string): TrackingData | null {
 
 export function readGlobalTracking(): TrackingData | null {
   const raw = readJson<TrackingData>(getGlobalTrackingPath());
-  return raw ? migrateTrackingData(raw) : null;
+  return raw ? readTrackingData(raw) : null;
 }
 
 export function writeTracking(cwd: string, data: TrackingData): void {
   data.updated = new Date().toISOString();
-
-  // ── Read-through config from index.json (LLM direct-writes) ──
-  // The LLM writes appetite/review_mode/domains_detected directly into
-  // .stelow/{date}/{hash}/index.json via bash. Mirror those values back
-  // into the Workflow object in stelow.json so the tracking file remains
-  // the single source of truth. Only copies fields that are missing in
-  // wf.config — never overwrites existing TS-side values.
-  for (const wf of data.workflows) {
-    if (!wf.dirHash) continue;
-    if (wf.config && (wf.config.appetite || wf.config.review_mode ||
-        (wf.config.domains_detected && wf.config.domains_detected.length > 0))) {
-      continue; // wf already has config — don't overwrite TS-side state
-    }
-    const createdDate = new Date(wf.created);
-    const ds = isNaN(createdDate.getTime()) ? getDateStamp() : getDateStamp(createdDate);
-    const idxPath = join(cwd, WORKFLOW_DIR, ds, wf.dirHash, "index.json");
-    const idx = readJson<Record<string, unknown>>(idxPath);
-    if (!idx) continue;
-    const idxConfig = idx.config as { appetite?: string; review_mode?: string; domains_detected?: string[] } | undefined;
-    if (!idxConfig) continue;
-    wf.config = wf.config || {};
-    if (!wf.config.appetite && idxConfig.appetite) wf.config.appetite = idxConfig.appetite;
-    if (!wf.config.review_mode && idxConfig.review_mode) wf.config.review_mode = idxConfig.review_mode;
-    if ((!wf.config.domains_detected || wf.config.domains_detected.length === 0) &&
-        Array.isArray(idxConfig.domains_detected) && idxConfig.domains_detected.length > 0) {
-      wf.config.domains_detected = [...idxConfig.domains_detected];
-    }
-  }
 
   // ── Auto-sync scopes from spec-tech.md (convention over configuration) ──
   syncScopesIfNeeded(cwd, data);
@@ -378,15 +337,13 @@ export function findWorkflowIndicesForProject(
   cwd: string,
   name: string
 ): number[] {
-  const exact: number[] = [];
-  const legacy: number[] = [];
+  const indices: number[] = [];
   for (let i = 0; i < workflows.length; i++) {
     const workflow = workflows[i];
     if (workflow.name !== name) continue;
-    if (isSamePath(workflow.cwd, cwd)) exact.push(i);
-    else if (!workflow.cwd?.trim()) legacy.push(i);
+    if (isSamePath(workflow.cwd, cwd)) indices.push(i);
   }
-  return exact.length > 0 ? exact : legacy;
+  return indices;
 }
 
 export function findWorkflowIndexForProject(
@@ -447,7 +404,6 @@ export function generateDirHash(): string {
   return `sw-${ts}-${rand}`;
 }
 
-/** Legacy: placeholder name generator (kept for compatibility) */
 /** Readable date-stamped directory, e.g. "2026-05-16" */
 export function getDateStamp(date?: Date): string {
   return (date || new Date()).toISOString().slice(0, 10);
@@ -552,7 +508,7 @@ export function scanWorkflowDirs(cwd: string): DiskWorkflow[] {
         const raw = readJson<Record<string, any>>(indexPath);
         if (!raw) continue;
         result.push({
-            name: raw.name || raw.slug || wfDir,
+            name: raw.name || wfDir,
             status: raw.status || raw.workflow_status || "unknown",
             // Backward compatibility: old workflows had current_phase_index: 0 for Setup
             // (the bug that was just fixed). If phase name says "setup" but index is 0,
@@ -656,8 +612,7 @@ export function archiveWorkflowOnDisk(cwd: string, workflowName: string): boolea
         if (!existsSync(indexPath)) continue;
         const raw = readJson<Record<string, any>>(indexPath);
         if (!raw) continue;
-        const rawName = raw.name || raw.slug;
-        if (rawName === workflowName) {
+        if (raw.name === workflowName) {
           raw.workflow_status = "archived";
           raw.status = "archived";
           raw.updated_at = new Date().toISOString();

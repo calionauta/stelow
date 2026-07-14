@@ -79,7 +79,7 @@ opportunities BEFORE shaping the product spec. This feeds codebase reality
 into the product decision, not after.
 
 **Standalone awareness:** when running inside stelow, this step reads appetite
-from `stelow.json#workflows[].config.appetite` (with fallback to `.stelow/*/index.json#config` for pre-v0.50.0 workflows). When standalone, defaults to Core appetite.
+from `stelow.json#workflows[].config.appetite`. When standalone, defaults to Core appetite.
 Cymbal runs if available + brownfield regardless of mode — it doesn't need
 stelow context. Both paths produce valid output.
 
@@ -149,8 +149,12 @@ fi
 # Search existing features by workflow name/topic
 # Runs on any appetite (depth = search only, no refs/impact)
 # Finds existing features that could conflict or be reused
-WF_NAME=$(grep -oP '"name":\s*"([^"]+)"' .stelow/*/*/index.json 2>/dev/null | head -1 | grep -oP '"[^"]+"$' | tr -d '"')
-if [ -n "$WF_NAME" ] && [ "$WF_NAME" != "null" ]; then
+WF_NAME=$(node -e "
+  const t = JSON.parse(require('fs').readFileSync('stelow.json','utf8'));
+  const wf = t.workflows.find(w => w.status === 'in-progress');
+  process.stdout.write(wf ? wf.name : '');
+" 2>/dev/null)
+if [ -n "$WF_NAME" ]; then
   for keyword in $WF_NAME; do
     [ ${#keyword} -gt 3 ] && cymbal search --text "$keyword" 2>/dev/null | head -10 >> context/existing-features.md
   done

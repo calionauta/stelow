@@ -38,10 +38,12 @@ const HELPER_PATH = join(
 
 describe('Workflow.config symmetry: TS state.ts + bash helper + index.json mirror', () => {
   let tempDir: string;
+  // Use today's date stamp (UTC) so the path matches new Date().toISOString().slice(0,10)
+  const todayDir = new Date().toISOString().slice(0, 10);
 
   beforeEach(() => {
     tempDir = mkdtempSync(join(tmpdir(), 'stelow-sym-'));
-    mkdirSync(join(tempDir, '.stelow/2026-07-13/abc123'), { recursive: true });
+    mkdirSync(join(tempDir, '.stelow', todayDir, 'abc123'), { recursive: true });
   });
 
   afterEach(() => {
@@ -84,7 +86,7 @@ describe('Workflow.config symmetry: TS state.ts + bash helper + index.json mirro
   }
 
   function readIndexJson(): Record<string, unknown> {
-    const idxPath = join(tempDir, '.stelow/2026-07-13/abc123/index.json');
+    const idxPath = join(tempDir, '.stelow', todayDir, 'abc123/index.json');
     if (!existsSync(idxPath)) return {};
     return JSON.parse(readFileSync(idxPath, 'utf-8'));
   }
@@ -169,18 +171,6 @@ describe('Workflow.config symmetry: TS state.ts + bash helper + index.json mirro
       // No in-progress → both return defaults (not the archived values)
       expect(runHelper('echo "$(stelow_read_appetite)"')).toBe('Core');
       expect(runHelper('echo "$(stelow_read_review_mode)"')).toBe('Product Spec + Interface + Scopes');
-    });
-
-    it('falls back to legacy index.json identically for both fields', () => {
-      // Active workflow with no config (simulates fresh /sw-start, pre-v0.50.0)
-      writeStelow([{ name: 'active', status: 'in-progress' }]);
-      // Legacy index.json with both fields
-      writeFileSync(join(tempDir, '.stelow/2026-07-13/abc123/index.json'), JSON.stringify({
-        name: 'active', workflow_status: 'in-progress',
-        config: { appetite: 'Complete', review_mode: 'Auto' },
-      }));
-      expect(runHelper('echo "$(stelow_read_appetite)"')).toBe('Complete');
-      expect(runHelper('echo "$(stelow_read_review_mode)"')).toBe('Auto');
     });
   });
 

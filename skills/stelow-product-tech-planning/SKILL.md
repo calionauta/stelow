@@ -206,10 +206,10 @@ if [ ! -f "go.mod" ] && [ ! -f "package.json" ] && \
   exit 0
 fi
 
-# Read appetite from workflow config (canonical source via helper; index.json = legacy fallback)
+# Read appetite from workflow config (canonical source via helper)
 # shellcheck disable=SC1091
-source "$(dirname "${BASH_SOURCE[0]:-$0}")/../../stelow-product-orchestrator/references/cli-tools/read-config.sh" 2>/dev/null || true
-APPETITE=$(stelow_read_appetite 2>/dev/null || echo "Core")
+source "$(dirname "${BASH_SOURCE[0]:-$0}")/../../stelow-product-orchestrator/references/cli-tools/read-config.sh"
+APPETITE=$(stelow_read_appetite)
 
 # Read spec-product for IN scope concepts
 SPEC_PRODUCT=$(ls .stelow/*/*/plans/spec-product*.md 2>/dev/null | head -1)
@@ -318,7 +318,7 @@ then produce the spec-tech artifact directly in the current context.
 with the product spec — or reveals constraints that invalidate it. This is the
 feedback loop that prevents "tech discovered too late" problems.
 
-**Standalone awareness:** inside stelow, reads mode from `stelow.json#workflows[].config.review_mode` (with fallback to `.stelow/*/index.json#config` for pre-v0.50.0 workflows) and specs
+**Standalone awareness:** inside stelow, reads mode from `stelow.json#workflows[].config.review_mode` and specs
 from `.stelow/`. When standalone, defaults to Full mode (maximum interaction)
 and reads specs from current directory or prompts for paths.
 
@@ -333,12 +333,6 @@ SPEC_TECH=""
 source "$(dirname "${BASH_SOURCE[0]:-$0}")/../../stelow-product-orchestrator/references/cli-tools/read-config.sh" 2>/dev/null || true
 if [ -n "$WF_DIR" ] && [ -f "stelow.json" ]; then
   REVIEW_MODE=$(stelow_read_review_mode 2>/dev/null || echo "Product Spec + Interface + Scopes")
-  SPEC_PRODUCT=".stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md"
-  SPEC_TECH=".stelow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_{v}.md"
-  STELOW_MODE=true
-elif [ -n "$WF_DIR" ] && [ -f "${WF_DIR}index.json" ]; then
-  # Legacy fallback: pre-v0.50.0 workflows stored config only in index.json
-  REVIEW_MODE=$(grep -oP '"review_mode":\s*"([^"]+)"' "${WF_DIR}index.json" 2>/dev/null | grep -oP '"([^"]+)"$' | tr -d '"' )
   SPEC_PRODUCT=".stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md"
   SPEC_TECH=".stelow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_{v}.md"
   STELOW_MODE=true

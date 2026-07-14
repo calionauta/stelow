@@ -2,6 +2,31 @@
 
 All notable changes to `@calionauta/stelow` will be documented in this file.
 
+## [0.52.0] - 2026-07-14
+
+### Breaking Change
+
+- **Removed all legacy/backward-compat code paths for Workflow.config migration** — v0.50.0 introduced `stelow.json#workflows[].config` as canonical source for `appetite`, `review_mode`, `domains_detected`. v0.51.x added "fallback to index.json" branches everywhere for pre-v0.50.0 workflows. **This release removes all those fallbacks** — workflows created before v0.50.0 must be re-initialized to set config.
+
+### Removed
+
+- **TS read-through fallback** (`extensions/stelow/state.ts`) — `writeTracking()` no longer reads `index.json#config` and mirrors it into `wf.config`. Workflows from pre-v0.50.0 will have `wf.config = undefined`.
+- **Bash helper fallback** (`references/cli-tools/read-config.sh`) — `stelow_read_appetite` / `stelow_read_review_mode` no longer fall back to grepping `.stelow/*/*/index.json`. Helper now exclusively reads from `stelow.json`.
+- **stages-guard fallback** (`extensions/stelow/index.ts`) — Hook reads `wf.config.review_mode` directly. No mirror fallback.
+- **Slug→name migration** (`extensions/stelow/state.ts`) — Removed `migrateTrackingData`/`migrateWorkflow` functions that handled workflows pre-v0.10.0 (which used `slug` field instead of `name`).
+- **Empty-cwd legacy branch** (`extensions/stelow/state.ts`) — `findWorkflowIndicesForProject` no longer falls back to workflows without `cwd` field. All workflows since v0.10 have `cwd`.
+- **Slug reads** in `scanWorkflowDirs`, `archiveWorkflowOnDisk` — Removed `raw.name || raw.slug` patterns.
+- **Doc comments** about legacy workflows pre-v0.50.0 / pre-v0.10.0 — Removed from 5 skills/stages.
+- **Legacy test fixtures** — Removed tests that exercised the fallback paths.
+
+### Migration
+
+Workflows started on v0.50.0 or later are unaffected. Workflows started before v0.50.0 must be re-created (run `/sw-start` again) to set `Workflow.config`. The `stages/setup.md` Step 3 will write the canonical config to `stelow.json#workflows[].config`.
+
+### Tests
+
+- 835 tests passing (was 838 in v0.51.3). Net change: -3 (removed 3 legacy tests) but +0 from fix. Some helper tests refactored.
+
 ## [0.51.3] - 2026-07-13
 
 ### Changed

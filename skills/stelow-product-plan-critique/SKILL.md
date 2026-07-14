@@ -63,7 +63,7 @@ The workflow loads this skill automatically after Tech Planning, before Plannota
 Before generating technical scopes, tech-planning calls this skill to ensure
 the plan is solid.
 
-**Standalone awareness:** when inside stelow, reads review_mode from `stelow.json#workflows[].config.review_mode` (with fallback to `.stelow/*/index.json#config` for pre-v0.50.0 workflows) and spec from `.stelow/*/plans/spec-product*.md`. When standalone, defaults to Product Spec + Interface + Scopes review mode (maximum product gates) and scans current directory for `spec-product*.md`. File not found → prompt user for path. Appetite defaults to Core, appetite_fit defaults to fits.
+**Standalone awareness:** when inside stelow, reads review_mode from `stelow.json#workflows[].config.review_mode` and spec from `.stelow/*/plans/spec-product*.md`. When standalone, defaults to Product Spec + Interface + Scopes review mode (maximum product gates) and scans current directory for `spec-product*.md`. File not found → prompt user for path. Appetite defaults to Core, appetite_fit defaults to fits.
 
 ---
 
@@ -110,15 +110,20 @@ When called via orchestrator, the workflow dir is available from session context
 When standalone, scan for the most recent workflow.
 
 ```bash
-# Try session context first, then scan for most recent
+# Resolve SPEC_FILE from active workflow's dirHash (read from stelow.json).
+# stelow.json is the canonical source — no heuristic scans of index.json.
 WF_DIR=""
-if [ -f "index.json" ] && grep -q '"workflow_status":' index.json 2>/dev/null; then
-  WF_DIR="."
-elif ls .stelow/*/*/index.json 2>/dev/null; then
-  WF_DIR="$(ls -td .stelow/*/*/ 2>/dev/null | head -1)"
+if [ -f "stelow.json" ]; then
+  DIR_HASH=$(node -e "
+    const t = JSON.parse(require('fs').readFileSync('stelow.json','utf8'));
+    const wf = t.workflows.find(w => w.status === 'in-progress');
+    process.stdout.write(wf && wf.dirHash ? wf.dirHash : '');
+  " 2>/dev/null)
+  if [ -n "$DIR_HASH" ]; then
+    WF_DIR=".stelow/*/$DIR_HASH"
+  fi
 fi
 
-WF_DIR="${WF_DIR%/}"  # Strip trailing slash
 SPEC="$WF_DIR/plans/spec-product*.md"
 SPEC_FILE=$(ls $SPEC 2>/dev/null | head -1) || SPEC_FILE=""
 

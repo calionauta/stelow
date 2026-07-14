@@ -91,11 +91,8 @@ describe('Glob pattern consistency', () => {
     expect(content).toMatch(/\.stelow\/\*\/\*\/index\.json/);
   });
 
-  it('gate.md uses canonical stelow.json (not legacy index.json fallback glob)', () => {
+  it('gate.md uses canonical stelow.json (via helper)', () => {
     const content = readStage('gate.md');
-    // v0.51.0: gate.md reads REVIEW_MODE via canonical helper. The legacy
-    // `.stelow/*/*/$_DIR/index.json` glob is no longer needed because the helper
-    // reads stelow.json at project root. Verify helper path is present.
     expect(content).toMatch(/read-config\.sh/);
     expect(content).toMatch(/stelow_read_review_mode/);
   });

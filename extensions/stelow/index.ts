@@ -462,29 +462,11 @@ export default function (pi: ExtensionAPI) {
     if (agnosticTool === "ask" || agnosticTool === "plannotator") {
       const wd = resolveProjectDir(ctx.cwd);
       const wf = getActiveWorkflow(wd);
-      if (wf) {
-        // Read review_mode from the CANONICAL source (wf.config on the active
-        // Workflow object loaded from stelow.json). Falls back to index.json
-        // mirror only if wf.config is missing (pre-v0.50.0 workflow that
-        // hasn't been migrated yet).
-        let reviewMode: string | undefined = wf.config?.review_mode;
-        if (!reviewMode && wf.dirHash) {
-          const createdDate = new Date(wf.created);
-          const ds = isNaN(createdDate.getTime()) ? getDateStamp() : getDateStamp(createdDate);
-          const idxPath = join(wd, WORKFLOW_DIR, ds, wf.dirHash, "index.json");
-          try {
-            const idx = JSON.parse(readFileSync(idxPath, "utf-8"));
-            reviewMode = idx?.config?.review_mode;
-          } catch {
-            // index.json missing or corrupt — don't block
-          }
-        }
-        if (reviewMode === "Auto") {
-          const reason = `🔒 Tool '${tool}' (agnostic: ${agnosticTool}) blocked by Auto review mode. No gates, no questions.`;
-          console.warn(`[AutoMode] Blocked ${tool} → ${agnosticTool} — review_mode=Auto`);
-          ctx.ui?.notify(reason, "warning");
-          return { block: true, reason };
-        }
+      if (wf?.config?.review_mode === "Auto") {
+        const reason = `🔒 Tool '${tool}' (agnostic: ${agnosticTool}) blocked by Auto review mode. No gates, no questions.`;
+        console.warn(`[AutoMode] Blocked ${tool} → ${agnosticTool} — review_mode=Auto`);
+        ctx.ui?.notify(reason, "warning");
+        return { block: true, reason };
       }
     }
 
