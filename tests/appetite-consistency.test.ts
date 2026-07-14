@@ -86,9 +86,12 @@ describe('No stale old appetite labels', () => {
 // ═════════════════════════════════════════════════════════════════════
 
 describe('Glob pattern consistency', () => {
-  it('setup.md uses find with **/*/*/index.json pattern', () => {
+  it('setup.md uses stelow.json (canonical source) for workflow existence + resume', () => {
+    // v0.53.0: index.json removed. setup.md reads directly from stelow.json.
     const content = readStage('setup.md');
-    expect(content).toMatch(/\.stelow\/\*\/\*\/index\.json/);
+    expect(content).toMatch(/stelow\.json/);
+    // Setup no longer references index.json
+    expect(content).not.toMatch(/index\.json/);
   });
 
   it('gate.md uses canonical stelow.json (via helper)', () => {
