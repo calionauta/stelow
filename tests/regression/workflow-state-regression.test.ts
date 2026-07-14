@@ -1,48 +1,45 @@
 /**
  * workflow-state-regression.test.ts
  *
- * Lean contract tests for the state/commands layer modified since v0.11.1-alpha.
+ * Lean contract tests for the state/stages-guard layer as of v0.53.0.
  *
  * Design:
  *   - Zero mocks, zero spies, zero abstractions
  *   - Every test creates REAL temp directories, calls REAL exported functions
- *   - Validates OBSERVABLE output: files on disk, return values, thrown errors
+ *   - Validates OBSERVABLE output: files on disk, return values
  *   - No dependency on ~/.pi, ExtensionAPI, CmdCtx, or runtime plugins
  *   - Each test cleans up after itself
  *
- * Contracts tested:
+ * Contracts tested (post v0.53.0 — index.json removed):
  *   1. PHASE_TO_STAGE — all mappings exist and match PHASE_NAMES
- *   2. scanWorkflowDirs — backward compat: old current_phase_index:0 + "setup" → normalizes to 2
- *   3. updateWorkflowIndexJson — writes correct index.json with merged updates
- *   4. updateWorkflowIndexJson — recovers from corrupt index.json
- *   5. syncStagesGuardState — writes stage INTO stelow.json (single source of truth)
- *   6. cmdStart phase init — new workflow starts at phase 2 (Setup), phases 0-1 completed
+ *   2. syncStagesGuardState — writes stage INTO stelow.json (canonical source)
+ *   3. cmdStart phase init — new workflow starts at phase 2 (Setup)
+ *
+ * Removed contracts (no longer applicable after v0.53.0):
+ *   - scanWorkflowDirs backward compat (index.json gone)
+ *   - updateWorkflowIndexJson write-through (function removed)
+ *   - corrupt index.json recovery (no index.json)
  */
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import {
   writeFileSync,
   readFileSync,
   mkdtempSync,
-  mkdirSync,
   rmSync,
   existsSync,
 } from "node:fs";
-import { join, dirname } from "node:path";
+import { join } from "node:path";
 import { tmpdir } from "node:os";
 
 // ── Imports from production code ─────────────────────────────────────
 
 import {
   PHASE_NAMES,
-  WORKFLOW_DIR,
   TRACKING_FILE,
   STAGE,
   type Workflow,
 } from "../../extensions/stelow/types";
 import {
-  updateWorkflowIndexJson,
-  scanWorkflowDirs,
-  getDateStamp,
   generateDirHash,
 } from "../../extensions/stelow/state";
 import {
@@ -98,6 +95,32 @@ function makeMinimalWorkflow(overrides?: Partial<Workflow>): Workflow {
   };
 }
 
+/** Creates a minimal stelow.json (canonical source) with an in-progress workflow */
+function writeTrackingWithWorkflow(root: string, phase: number = 2) {
+  const trackingPath = join(root, TRACKING_FILE);
+  const now = new Date().toISOString();
+  const tracking = {
+    $schema: "",
+    version: "1.0",
+    created: now,
+    updated: now,
+    workflows: [{
+      name: "test-workflow",
+      description: "regression test",
+      status: "in-progress",
+      currentPhase: phase,
+      phases: PHASE_NAMES.map((name, i) => ({
+        id: `${i}-${name.toLowerCase()}`, name,
+        status: i < phase ? "completed" : i === phase ? "in-progress" : "pending",
+      })),
+      created: now,
+      updated: now,
+    }],
+  };
+  writeFileSync(trackingPath, JSON.stringify(tracking, null, 2));
+  return trackingPath;
+}
+
 // ══════════════════════════════════════════════════════════════════════
 // 1. PHASE_TO_STAGE — every phase has a corresponding stage slug
 // ══════════════════════════════════════════════════════════════════════
@@ -124,225 +147,8 @@ describe("PHASE_TO_STAGE", () => {
 });
 
 // ══════════════════════════════════════════════════════════════════════
-// 2. scanWorkflowDirs — backward compat for old current_phase_index
+// 2. syncStagesGuardState — single canonical source contract
 // ══════════════════════════════════════════════════════════════════════
-
-describe("scanWorkflowDirs — backward compat", () => {
-  let env: TempEnv;
-
-  beforeEach(() => {
-    env = makeTempEnv();
-  });
-
-  afterEach(() => {
-    env.cleanup();
-  });
-
-  it("normalizes current_phase_index:0 + current_phase:setup → 2 (Setup)", () => {
-    // Simulate the BUGGY old format that was being written before the fix.
-    // Old index.json: current_phase_index=0, current_phase="setup"
-    // scanWorkflowDirs should detect this and normalize to 2.
-    const dateStamp = getDateStamp();
-    const dirHash = "sw-oldbug-abc123";
-    const dateDir = join(env.root, WORKFLOW_DIR, dateStamp);
-    const wfDir = join(dateDir, dirHash);
-    mkdirSync(wfDir, { recursive: true });
-
-    // Write old-style index.json with the BUG: current_phase_index=0 for Setup
-    const oldIndex = JSON.stringify({
-      name: "old-workflow",
-      workflow_status: "in-progress",
-      current_phase: "setup",
-      current_phase_index: 0, // ← THE BUG: should be 2
-      created_at: new Date().toISOString(),
-    });
-    writeFileSync(join(wfDir, "index.json"), oldIndex);
-
-    const workflows = scanWorkflowDirs(env.root);
-
-    expect(workflows.length).toBe(1);
-    expect(workflows[0].name).toBe("old-workflow");
-    // CRITICAL: normalization must bump 0→2 when phase name is "setup"
-    expect(workflows[0].currentPhase).toBe(2);
-  });
-
-  it("does NOT normalize current_phase_index:0 for non-setup phases", () => {
-    // If phase is NOT "setup", index 0 should stay as-is (it's Triage)
-    const dateStamp = getDateStamp();
-    const dirHash = "sw-legit-triage";
-    const dateDir = join(env.root, WORKFLOW_DIR, dateStamp);
-    const wfDir = join(dateDir, dirHash);
-    mkdirSync(wfDir, { recursive: true });
-
-    const oldIndex = JSON.stringify({
-      name: "triage-workflow",
-      workflow_status: "in-progress",
-      current_phase: "triage",
-      current_phase_index: 0, // Legitimate: Triage IS index 0
-      created_at: new Date().toISOString(),
-    });
-    writeFileSync(join(wfDir, "index.json"), oldIndex);
-
-    const workflows = scanWorkflowDirs(env.root);
-
-    expect(workflows.length).toBe(1);
-    // Should stay 0 — this is NOT the setup bug
-    expect(workflows[0].currentPhase).toBe(0);
-  });
-
-  it("handles missing current_phase_index with default 0", () => {
-    const dateStamp = getDateStamp();
-    const dirHash = "sw-noindex";
-    const dateDir = join(env.root, WORKFLOW_DIR, dateStamp);
-    const wfDir = join(dateDir, dirHash);
-    mkdirSync(wfDir, { recursive: true });
-
-    const index = JSON.stringify({
-      name: "no-index-workflow",
-      workflow_status: "in-progress",
-      created_at: new Date().toISOString(),
-      // no current_phase_index
-    });
-    writeFileSync(join(wfDir, "index.json"), index);
-
-    const workflows = scanWorkflowDirs(env.root);
-    expect(workflows.length).toBe(1);
-    // Fallback: ?? 0 → 0
-    expect(workflows[0].currentPhase).toBe(0);
-  });
-});
-
-// ══════════════════════════════════════════════════════════════════════
-// 3. updateWorkflowIndexJson — write-through contract
-// ══════════════════════════════════════════════════════════════════════
-
-describe("updateWorkflowIndexJson", () => {
-  let env: TempEnv;
-
-  beforeEach(() => {
-    env = makeTempEnv();
-  });
-
-  afterEach(() => {
-    env.cleanup();
-  });
-
-  it("writes index.json with merged updates", () => {
-    const wf = makeMinimalWorkflow({ cwd: env.root });
-    const ds = getDateStamp(new Date(wf.created));
-
-    // Create the expected directory structure (normally done by cmdStart)
-    const wfDir = join(env.root, WORKFLOW_DIR, ds, wf.dirHash!);
-    mkdirSync(wfDir, { recursive: true });
-    // Write initial index.json (simulating cmdStart)
-    writeFileSync(
-      join(wfDir, "index.json"),
-      JSON.stringify({
-        name: wf.name,
-        workflow_status: wf.status,
-        current_phase: PHASE_NAMES[wf.currentPhase].toLowerCase(),
-        current_phase_index: wf.currentPhase,
-        created_at: wf.created,
-      }),
-    );
-
-    // Now update: simulate cmdNext going from Setup(2) → Shape(4)
-    const result = updateWorkflowIndexJson(env.root, wf, {
-      current_phase: "shape",
-      current_phase_index: STAGE.SHAPE(),
-      workflow_status: "in-progress",
-    });
-
-    expect(result).toBe(true);
-
-    // Read back and verify
-    const saved = JSON.parse(readFileSync(join(wfDir, "index.json"), "utf-8"));
-    expect(saved.name).toBe("test-workflow");
-    expect(saved.current_phase).toBe("shape");
-    expect(saved.current_phase_index).toBe(STAGE.SHAPE());
-    expect(saved.workflow_status).toBe("in-progress");
-    expect(saved.updated_at).toBeDefined();
-    // original field preserved
-    expect(saved.created_at).toBe(wf.created);
-  });
-
-  it("returns false when wf has no dirHash", () => {
-    const wf = makeMinimalWorkflow({ dirHash: undefined, cwd: env.root });
-    const result = updateWorkflowIndexJson(env.root, wf, {
-      workflow_status: "completed",
-    });
-    expect(result).toBe(false);
-  });
-});
-
-// ══════════════════════════════════════════════════════════════════════
-// 4. updateWorkflowIndexJson — corrupt recovery
-// ══════════════════════════════════════════════════════════════════════
-
-describe("updateWorkflowIndexJson — corrupt index recovery", () => {
-  let env: TempEnv;
-
-  beforeEach(() => {
-    env = makeTempEnv();
-  });
-
-  afterEach(() => {
-    env.cleanup();
-  });
-
-  it("rebuilds from workflow state when index.json is corrupt", () => {
-    const wf = makeMinimalWorkflow({ cwd: env.root });
-    const ds = getDateStamp(new Date(wf.created));
-    const wfDir = join(env.root, WORKFLOW_DIR, ds, wf.dirHash!);
-    mkdirSync(wfDir, { recursive: true });
-
-    // Write GARBLED index.json (corrupt JSON)
-    writeFileSync(join(wfDir, "index.json"), "NOT JSON {{{");
-
-    // Call update — should recover gracefully
-    const result = updateWorkflowIndexJson(env.root, wf, {
-      workflow_status: "in-progress",
-    });
-
-    expect(result).toBe(true);
-
-    // Read back — should be valid JSON rebuilt from wf state + merged updates
-    const saved = JSON.parse(readFileSync(join(wfDir, "index.json"), "utf-8"));
-    expect(saved.name).toBe(wf.name);
-    expect(saved.workflow_status).toBe("in-progress");
-    expect(saved.updated_at).toBeDefined();
-  });
-});
-
-// ══════════════════════════════════════════════════════════════════════
-// 5. syncStagesGuardState — writes stage INTO stelow.json (single source of truth)
-// ══════════════════════════════════════════════════════════════════════
-
-/** Creates a minimal tracking file with an in-progress workflow so syncStagesGuardState can find it */
-function writeTrackingWithWorkflow(root: string, phase: number = 2) {
-  const trackingPath = join(root, TRACKING_FILE);
-  const now = new Date().toISOString();
-  const tracking = {
-    $schema: "",
-    version: "1.0",
-    created: now,
-    updated: now,
-    workflows: [{
-      name: "test-workflow",
-      description: "regression test",
-      status: "in-progress",
-      currentPhase: phase,
-      phases: PHASE_NAMES.map((name, i) => ({
-        id: `${i}-${name.toLowerCase()}`, name,
-        status: i < phase ? "completed" : i === phase ? "in-progress" : "pending",
-      })),
-      created: now,
-      updated: now,
-    }],
-  };
-  writeFileSync(trackingPath, JSON.stringify(tracking, null, 2));
-  return trackingPath;
-}
 
 describe("syncStagesGuardState", () => {
   let env: TempEnv;
@@ -503,7 +309,7 @@ describe("syncStagesGuardState", () => {
 });
 
 // ══════════════════════════════════════════════════════════════════════
-// 6. cmdStart phase init contract
+// 3. cmdStart phase init contract
 // ══════════════════════════════════════════════════════════════════════
 
 describe("cmdStart — phase initialization contract", () => {
@@ -533,5 +339,18 @@ describe("cmdStart — phase initialization contract", () => {
     const wf = makeMinimalWorkflow();
     expect(wf.dirHash).toBeDefined();
     expect(wf.dirHash!.length).toBeGreaterThan(0);
+  });
+
+  it("initializes empty config with all fields undefined/empty", () => {
+    // v0.50.0+ contract: every new workflow has config object pre-seeded
+    const wf = makeMinimalWorkflow({
+      config: {
+        appetite: undefined,
+        review_mode: undefined,
+        domains_detected: [],
+      },
+    });
+    expect(wf.config).toBeDefined();
+    expect(wf.config?.domains_detected).toEqual([]);
   });
 });
