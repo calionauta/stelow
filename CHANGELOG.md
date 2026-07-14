@@ -2,6 +2,21 @@
 
 All notable changes to `@calionauta/stelow` will be documented in this file.
 
+## [0.52.1] - 2026-07-14
+
+### Changed
+
+- **Doc drift cleanup post v0.52.0** — Three doc/test strings mentioned removed legacy fallbacks:
+  - `tests/unit/artifact-flow-contract.test.ts`: renamed 3 test cases to remove "with index.json fallback" / "legacy fallback" wording (gate, plan-critique, tech-planning now only read from `stelow.json`).
+  - `tests/unit/read-config-helper.test.ts`: updated module doc comment.
+  - `extensions/stelow/pulse/pulse-task.md`: clarified that `stelow.json` is the canonical source for workflow context (per-workflow `index.json` is a mirror of one entry in `stelow.json#workflows[]`).
+
+### Notes
+
+- No functional changes — only doc/test string alignment with v0.52.0 canonical-source contract.
+- `index.json` remains as per-workflow mirror file (justified: scoped filesystem layout, easier integration consumer access). Not legacy — `updateWorkflowIndexJson()` write-through continues.
+- 835 tests passing.
+
 ## [0.52.0] - 2026-07-14
 
 ### Breaking Change

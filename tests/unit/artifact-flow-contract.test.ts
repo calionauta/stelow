@@ -126,18 +126,18 @@ describe('review_mode field flow', () => {
     expect(setupMd).toMatch(/^review_mode:\s*\{chosen_review_mode\}/m);
   });
 
-  it('is READ by gate stage from stelow.json (with index.json fallback)', () => {
+  it('is READ by gate stage from stelow.json', () => {
     const gate = read(join(SKILLS_DIR, 'stelow-product-orchestrator/stages/gate.md'));
     expect(gate).toMatch(/review_mode/);
     expect(gate).toMatch(/stelow\.json/);
   });
 
-  it('is READ by plan-critique (stelow.json primary, index.json legacy fallback)', () => {
+  it('is READ by plan-critique from stelow.json', () => {
     const pc = read(join(SKILLS_DIR, 'stelow-product-plan-critique/SKILL.md'));
     expect(pc).toMatch(/review_mode/);
   });
 
-  it('is READ by tech-planning (stelow.json primary, index.json legacy fallback)', () => {
+  it('is READ by tech-planning from stelow.json', () => {
     const tp = read(join(SKILLS_DIR, 'stelow-product-tech-planning/SKILL.md'));
     expect(tp).toMatch(/review_mode/);
   });

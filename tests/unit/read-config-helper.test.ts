@@ -9,7 +9,7 @@
  *   1. Reads from in-progress workflow only (avoids stale archived entries)
  *   2. Returns hardcoded default when stelow.json absent
  *   3. Returns hardcoded default when in-progress workflow has no config
- *   4. Falls back to legacy .stelow/{date}/{hash}/index.json for pre-v0.50.0 workflows
+ *   4. Returns default when in-progress workflow has no config
  *   5. domains_detected returns JSON array
  *   6. Empty config.appetite triggers default (not silent empty value)
  *
