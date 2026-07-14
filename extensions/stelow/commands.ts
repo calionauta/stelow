@@ -18,7 +18,8 @@ import {
   removeGlobalIndexEntry, addToGlobalIndex, getDateStamp,
 } from "./state";
 import { updateFooter, notifyPhase, getUIAdapter } from "./ui";
-import { diagnoseWorkflowProject, formatDoctorReport, repairWorkflowProject, countFixable } from "./doctor";
+import { diagnoseWorkflowProject, formatDoctorReport, repairWorkflowProject, countFixable, detectOrphanWorkflows } from "./doctor";
+import { validateWorkflow, WorkflowValidationError } from "./schemas";
 import cmdStart from "./start";
 import { escapeRegex, convertAuditTrailToJson } from "./audit-trail";
 
@@ -352,7 +353,57 @@ function cmdStatus(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
   const wd = resolveProjectDir(ctx.cwd);
   const wf = getActiveWorkflow(wd);
   if (!wf) {
+    // JSON mode emits a structured error so agents can branch on it.
+    if (_args.includes("--json")) {
+      reply(ctx, JSON.stringify({
+        ok: false,
+        error: "no_active_workflow",
+        cwd: wd,
+        hint: "/sw-start @brief.md or /sw-start \"desc\"",
+      }, null, 2));
+      return;
+    }
     replyWarn(ctx, "No active Workflow.\n\n/sw-start /sw-start @brief.md /sw-start \"desc\"");
+    return;
+  }
+
+  // JSON mode (G5A from stelow-reliability plan): tool-friendly snapshot
+  // of workflow state. Enables agents/TUIs to consume status without
+  // parsing human-formatted text.
+  if (_args.includes("--json")) {
+    const completedScopes = wf.scopes?.filter(s => s.status === 'completed').length ?? 0;
+    const snapshot = {
+      ok: true,
+      cwd: wd,
+      workflow: {
+        name: wf.name,
+        dirHash: wf.dirHash,
+        status: wf.status,
+        currentPhase: wf.currentPhase,
+        currentPhaseName: PHASE_NAMES[wf.currentPhase],
+        totalPhases: PHASE_NAMES.length,
+        created: wf.created,
+        updated: wf.updated,
+      },
+      phases: wf.phases.map((p, i) => ({
+        index: i,
+        name: p.name,
+        status: p.status,
+        isCurrent: i === wf.currentPhase,
+      })),
+      scopes: (wf.scopes ?? []).map(s => ({
+        id: s.id,
+        name: s.name,
+        type: s.type,
+        status: s.status,
+      })),
+      scopeProgress: {
+        completed: completedScopes,
+        total: wf.scopes?.length ?? 0,
+        currentPhase: wf.currentPhase === STAGE.EXECUTION(),
+      },
+    };
+    reply(ctx, JSON.stringify(snapshot, null, 2));
     return;
   }
 
@@ -841,6 +892,157 @@ async function cmdDoctor(_pi: ExtensionAPI, _args: string, ctx: CmdCtx): Promise
   }
 }
 
+// ── RECOVER ────────────────────────────────────────────────────────────
+
+/**
+ * /sw-recover — resurrect orphan workflows (G4C from stelow-reliability plan).
+ *
+ * Orphan = workflow directory exists on disk (.stelow/{date}/{dirHash}/)
+ * but has no entry in stelow.json. Typically caused by:
+ *   - manual fs deletion of the tracking entry
+ *   - failed migration where stelow.json was overwritten but dir preserved
+ *   - corrupt JSON where the entry was lost
+ *
+ * Operator-driven (not auto). The command:
+ *   1. Runs the orphan detector.
+ *   2. If no orphans, prints "Nothing to recover" and exits.
+ *   3. Otherwise shows the list with a "Recover" / "Skip" picker.
+ *   4. For each selected orphan, writes a minimal Workflow entry to
+ *      stelow.json using the existing dirHash + the latest spec filename.
+ *      Status defaults to "paused" (operator must review + advance).
+ *
+ * We intentionally do NOT auto-recover. Recovery is destructive-ish
+ * (it mutates tracking) and the operator should see what they are
+ * committing to.
+ */
+async function cmdRecover(_pi: ExtensionAPI, _args: string, ctx: CmdCtx): Promise<void> {
+  const wd = resolveProjectDir(ctx.cwd);
+  const tracking = readTracking(wd);
+  const localWorkflows = tracking?.workflows ?? [];
+  const orphans = detectOrphanWorkflows(wd, localWorkflows);
+
+  if (orphans.length === 0) {
+    reply(ctx, "✅ No orphan workflows detected. Nothing to recover.");
+    return;
+  }
+
+  const lines: string[] = [
+    `🩹 Orphan workflow directories found: ${orphans.length}`,
+    "",
+    "An orphan is a `.stelow/{date}/{dirHash}/` directory with spec files",
+    "but no matching entry in stelow.json. Recovery creates a minimal",
+    "entry pointing at the existing directory so /sw-next can resume it.",
+    "",
+    "Orphans:",
+    ...orphans.map((o, i) =>
+      `  ${i + 1}. ${o.date}/${o.dirHash}\n` +
+      `     path: ${o.path}\n` +
+      `     spec files: ${o.specFiles.join(", ") || "(none)"}`
+    ),
+    "",
+  ];
+  reply(ctx, lines.join("\n"));
+
+  // Interactive picker — one prompt per orphan so the operator can
+  // pick which to recover. /sw-recover --all skips the picker.
+  const args = parseArgs(_args);
+  const recoverAll = args.all !== undefined || args._.includes("all");
+
+  const recovered: string[] = [];
+  const skipped: string[] = [];
+
+  // Build / ensure tracking exists
+  let data = tracking;
+  if (!data) {
+    data = {
+      $schema: "https://calionauta.com/stelow.schema.json",
+      version: "1.0",
+      created: new Date().toISOString(),
+      updated: new Date().toISOString(),
+      workflows: [],
+    };
+  }
+
+  const adapter = getUIAdapter();
+
+  for (const orphan of orphans) {
+    let shouldRecover = recoverAll;
+    if (!recoverAll) {
+      const choice = await adapter.select([
+        { value: "recover", label: "✅ Recover" },
+        { value: "skip", label: "⏭️  Skip" },
+      ], `🩹 Recover ${orphan.date}/${orphan.dirHash}?`);
+      shouldRecover = choice === "recover";
+    }
+    if (!shouldRecover) {
+      skipped.push(orphan.dirHash);
+      continue;
+    }
+
+    // Synthesize a minimal workflow entry. We pick the latest spec
+    // filename (spec-product_v3.md > spec-product_v2.md > v1.md) by
+    // lexical sort. Status defaults to "paused" so the operator
+    // explicitly advances it via /sw-resume.
+    const latestSpec = orphan.specFiles.sort().reverse()[0] ?? "spec-product_v1.md";
+    const baseName = latestSpec.replace(/\.md$/, "").replace(/^spec-product_/, "");
+    const syntheticName = `recovered-${orphan.dirHash.slice(0, 8)}-${baseName}`;
+
+    const synthetic: Workflow = {
+      name: syntheticName,
+      description: `(recovered orphan) ${latestSpec}`,
+      status: "paused",
+      currentPhase: 0,
+      phases: [],
+      stage: {
+        current_stage: "setup",
+        previous_stage: null,
+        transitioned_at: new Date().toISOString(),
+        history: [],
+        supervisor_active: false,
+      },
+      created: new Date().toISOString(),
+      updated: new Date().toISOString(),
+      cwd: wd,
+      dirHash: orphan.dirHash,
+    };
+
+    // Validate per-orphan BEFORE pushing into data.workflows. If the
+    // synthetic entry is invalid (e.g. truncated dirHash creates a
+    // name collision with an existing workflow), we report and skip
+    // that orphan instead of accumulating it in memory and failing
+    // the entire writeTracking call at the end (which would lose
+    // any prior successful recoveries in the same run).
+    try {
+      validateWorkflow(synthetic);
+    } catch (err) {
+      if (err instanceof WorkflowValidationError) {
+        ctx.ui?.notify(
+          `⏭️  Skipping ${orphan.date}/${orphan.dirHash}: synthetic entry invalid — ${err.message}`,
+          "warning",
+        );
+        skipped.push(orphan.dirHash);
+        continue;
+      }
+      throw err;
+    }
+
+    data.workflows.push(synthetic);
+    recovered.push(syntheticName);
+  }
+
+  if (recovered.length > 0) {
+    writeTracking(wd, data);
+    reply(ctx,
+      `\n✅ Recovered ${recovered.length} orphan(s):\n` +
+      recovered.map((n) => `  • ${n}`).join("\n") +
+      (skipped.length > 0 ? `\n\n⏭️  Skipped ${skipped.length}: ${skipped.join(", ")}` : "") +
+      `\n\nNext: /sw-list to verify, /sw-resume <name> to continue.`
+    );
+  } else {
+    reply(ctx, `\n⏭️  Skipped all ${skipped.length} orphans. Nothing changed.`);
+  }
+}
+
 // ── INBOX ─────────────────────────────────────────────────────────────
 
 function cmdInbox(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
@@ -1315,6 +1517,7 @@ const COMMAND_ALIASES: Record<string, string[]> = {
   "sw-doctor":    ["stelow-doctor"],
   "sw-archive":   ["stelow-archive"],
   "sw-unarchive": ["stelow-unarchive"],
+  "sw-recover":   ["stelow-recover"],
   "sw-unlock":    ["stelow-unlock"],
   "sw-inbox":     ["stelow-inbox"],
   "sw-pulse":     ["stelow-pulse"],
@@ -1336,6 +1539,7 @@ const HANDLER_BY_NAME: Record<string, CmdHandler> = {
   "sw-doctor":     cmdDoctor,
   "sw-archive":    cmdArchive,
   "sw-unarchive":  cmdUnarchive,
+  "sw-recover":    cmdRecover,
   "sw-unlock":     cmdUnlock,
   "sw-inbox":      cmdInbox,
   "sw-pulse":      cmdPulse,

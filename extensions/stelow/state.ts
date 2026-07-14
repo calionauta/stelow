@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, writeFileSync, statSync, readdirSync, mkdirSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync, statSync, readdirSync, mkdirSync, renameSync, unlinkSync } from "node:fs";
 import { join, basename, dirname, extname, resolve as resolvePath } from "node:path";
 import { homedir } from "node:os";
 import type { Workflow, TrackingData, Scope, ParsedInput, CLI } from "./types";
@@ -7,6 +7,12 @@ import {
   validateScopeAdditions,
   ScopeRecordValidationError,
 } from "./schema-record";
+import {
+  isWorkflowValidationEnabled,
+  validateWorkflow,
+  WorkflowValidationError,
+} from "./schemas";
+import { acquireFileLock, FileLockError } from "./file-lock";
 import { TASK_ICONS } from "./modules/task";
 import { WORKFLOW_DIR, TRACKING_FILE, GLOBAL_TRACKING_FILE, SCHEMA_URL, PHASE_NAMES, getCLICapabilities, STAGE } from "./types";
 import { PHASE_TO_STAGE } from "./stages-guard";
@@ -29,11 +35,33 @@ function readJson<T = unknown>(path: string): T | null {
 }
 
 /**
- * Persist a value as pretty-printed JSON. Used by every site that
- * previously hand-rolled `writeFileSync(p, JSON.stringify(d, null, 2))`.
+ * Persist a value as pretty-printed JSON atomically.
+ *
+ * Writes to a same-directory temp file then renames over the target.
+ * `rename` is atomic on the same filesystem, so a crash mid-write leaves
+ * the previous file intact (or a stray `.tmp` that callers can detect
+ * and ignore). This prevents partial-write corruption — the dominant
+ * failure mode before v0.x.
+ *
+ * Used by every site that previously hand-rolled
+ * `writeFileSync(p, JSON.stringify(d, null, 2))`.
  */
 function writeJson(path: string, data: unknown): void {
-  writeFileSync(path, JSON.stringify(data, null, 2));
+  const dir = dirname(path);
+  mkdirSync(dir, { recursive: true });
+  const tmp = `${path}.${process.pid}.${Date.now()}.tmp`;
+  try {
+    writeFileSync(tmp, JSON.stringify(data, null, 2));
+    renameSync(tmp, path);
+  } catch (err) {
+    // Best-effort cleanup of stray temp file; never mask original error.
+    if (existsSync(tmp)) {
+      try {
+        unlinkSync(tmp);
+      } catch { /* ignore — original error matters more */ }
+    }
+    throw err;
+  }
 }
 
 // ── 1. CLI detection ──────────────────────────────────────────────────
@@ -186,7 +214,13 @@ function readTrackingData(raw: unknown): TrackingData {
 
 export function readTracking(cwd: string): TrackingData | null {
   const raw = readJson<TrackingData>(getTrackingPath(cwd));
-  const data = raw ? readTrackingData(raw) : null;
+  // Defensive shape check: readJson only validates JSON.parse success.
+  // The file could be valid JSON but not a tracking-shaped object
+  // (e.g. user accidentally wrote an array `[]` or a single object).
+  // Without this check, downstream code (syncScopesIfNeeded) throws
+  // "data.workflows is not iterable". The plan (Aud-1) calls out
+  // this exact gap.
+  const data = raw && isTrackingShape(raw) ? readTrackingData(raw) : null;
   // Auto-sync scopes on read — covers the case where the LLM wrote to
   // stelow.json directly via fs.writeFileSync(), bypassing the writeTracking() hook.
   // The next read after direct-write will populate scopes automatically.
@@ -194,12 +228,69 @@ export function readTracking(cwd: string): TrackingData | null {
   return data;
 }
 
+/**
+ * Type guard: returns true if `data` looks like a TrackingData object.
+ * Cheap structural check (not a deep schema validation — TypeBox does
+ * that on write). Catches the common corruption modes: array root,
+ * primitive root, missing workflows field.
+ */
+function isTrackingShape(data: unknown): data is TrackingData {
+  return (
+    typeof data === "object" &&
+    data !== null &&
+    !Array.isArray(data) &&
+    Array.isArray((data as TrackingData).workflows)
+  );
+}
+
 export function readGlobalTracking(): TrackingData | null {
   const raw = readJson<TrackingData>(getGlobalTrackingPath());
   return raw ? readTrackingData(raw) : null;
 }
 
+/** Read STELOW_LOCK_TTL_MS env override (ms). Default 10000. */
+function getLockTtlMs(): number {
+  const v = process.env.STELOW_LOCK_TTL_MS;
+  if (v === undefined) return 10_000;
+  const n = parseInt(v, 10);
+  return isNaN(n) || n <= 0 ? 10_000 : n;
+}
+
+/** Read STELOW_LOCK_MAX_RETRIES env override. Default 50. */
+function getLockMaxRetries(): number {
+  const v = process.env.STELOW_LOCK_MAX_RETRIES;
+  if (v === undefined) return 50;
+  const n = parseInt(v, 10);
+  return isNaN(n) || n <= 0 ? 50 : n;
+}
+
 export function writeTracking(cwd: string, data: TrackingData): void {
+  // ── File lock (G3A from stelow-reliability plan) ──
+  // Acquire advisory lock to prevent read-modify-write races. The
+  // atomic write (G3B) prevents partial-write corruption, but it does
+  // NOT prevent the lost-update problem: two parallel writers both
+  // read state A, both mutate, both write back — one mutation lost.
+  // The lock serializes the read-modify-write critical section.
+  // Set STELOW_LOCK_MAX_RETRIES=0 to disable (e.g. for tests that
+  // don't share state). The lock is per-cwd, so cross-project writes
+  // do not block each other.
+  const lockRelease = shouldUseLock()
+    ? acquireFileLock(cwd, { ttlMs: getLockTtlMs(), maxRetries: getLockMaxRetries() })
+    : null;
+  try {
+    writeTrackingUnlocked(cwd, data);
+  } finally {
+    lockRelease?.();
+  }
+}
+
+function shouldUseLock(): boolean {
+  const v = process.env.STELOW_LOCK_MAX_RETRIES;
+  if (v === undefined) return true;
+  return parseInt(v, 10) !== 0;
+}
+
+function writeTrackingUnlocked(cwd: string, data: TrackingData): void {
   data.updated = new Date().toISOString();
 
   // ── Auto-sync scopes from spec-tech.md (convention over configuration) ──
@@ -211,6 +302,28 @@ export function writeTracking(cwd: string, data: TrackingData): void {
   // type-check cost is negligible (<1ms per scope) but can matter on
   // hot paths like /sw-next (single-scope status flip).
   if (isRuntimeValidationEnabled()) {
+    // ── Workflow-level validation (G2A from stelow-reliability plan) ──
+    // Validates the full Workflow shape (name, status, phases, scopes
+    // structure) using TypeBox schemas BEFORE the per-scope loop. This
+    // catches structural errors early (e.g. currentPhase: 999, status:
+    // "frobnicated") with full path context. The per-scope loop below
+    // still validates the record/tasks sub-fields that are not part of
+    // the Workflow schema (they live in schema-record.ts).
+    if (isWorkflowValidationEnabled()) {
+      for (const wf of data.workflows) {
+        try {
+          validateWorkflow(wf);
+        } catch (err) {
+          if (err instanceof WorkflowValidationError) {
+            throw new Error(
+              `writeTracking rejected: workflow '${wf.name}' — ${err.message}`,
+            );
+          }
+          throw err;
+        }
+      }
+    }
+
     for (const wf of data.workflows) {
       if (!Array.isArray(wf.scopes)) continue;
       for (const scope of wf.scopes) {
@@ -237,6 +350,17 @@ export function writeTracking(cwd: string, data: TrackingData): void {
 }
 
 export function writeGlobalTracking(data: TrackingData): void {
+  const lockRelease = shouldUseLock()
+    ? acquireFileLock(process.env.HOME || "/tmp", { ttlMs: getLockTtlMs(), maxRetries: getLockMaxRetries() })
+    : null;
+  try {
+    writeGlobalTrackingUnlocked(data);
+  } finally {
+    lockRelease?.();
+  }
+}
+
+function writeGlobalTrackingUnlocked(data: TrackingData): void {
   // Prune to index-only fields to prevent state desync.
   // Global is a catalog; canonical state lives in local tracking.
   data.workflows = data.workflows.map(w => ({

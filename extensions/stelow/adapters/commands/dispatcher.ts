@@ -94,6 +94,11 @@ export const WORKFLOW_COMMANDS: CommandDescriptor[] = [
     usage: "/sw-unarchive name=<workflow>",
   },
   {
+    name: "sw-recover",
+    description: "Recover orphan workflow directories (workflow dirs on disk with no stelow.json entry)",
+    usage: "/sw-recover | /sw-recover all",
+  },
+  {
     name: "sw-unlock",
     description: "Disable stage guard for this session (debug/emergency)",
     usage: "/sw-unlock",

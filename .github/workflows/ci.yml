@@ -12,9 +12,14 @@ concurrency:
 
 jobs:
   typecheck:
-    name: TypeScript Check
-    runs-on: ubuntu-latest
-    
+    name: TypeScript Check (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,9 +40,14 @@ jobs:
         run: npm run typecheck
 
   lint:
-    name: Lint
-    runs-on: ubuntu-latest
-    
+    name: Lint (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -58,9 +68,14 @@ jobs:
         run: npm run lint
 
   test:
-    name: Unit Tests
-    runs-on: ubuntu-latest
-    
+    name: Unit Tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4

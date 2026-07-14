@@ -32,6 +32,21 @@ export interface DoctorReport {
   activeWorkflowName: string | null;
   issues: DoctorIssue[];
   summary: Record<DoctorSeverity, number>;
+  /** Workflow directories found on disk that have no matching entry
+   *  in stelow.json. Each entry: { dirHash, date, path }. Used by
+   *  /sw-recover to surface workflows the operator can resurrect. */
+  orphans: OrphanWorkflow[];
+}
+
+/** Workflow directory on disk (.stelow/{date}/{dirHash}/) with no
+ *  matching entry in stelow.json. */
+export interface OrphanWorkflow {
+  dirHash: string;
+  date: string;
+  /** Absolute path to the workflow directory. */
+  path: string;
+  /** List of spec files found inside (e.g. spec-product_v1.md). */
+  specFiles: string[];
 }
 
 interface WorkflowIndexSnapshot {
@@ -109,6 +124,21 @@ export function diagnoseWorkflowProject(cwd: string): DoctorReport {
   diagnoseGlobalWorkflows(projectDir, localWorkflows, globalWorkflows, issues);
   diagnoseZombieIndexes(projectDir, localWorkflows, issues);
 
+  // Orphan detection (G4A from stelow-reliability plan):
+  // A workflow directory on disk (.stelow/{date}/{dirHash}/) with no
+  // matching entry in stelow.json. Caused by manual fs deletion of the
+  // tracking entry, a failed migration, or a corrupt JSON file. The
+  // recovery path is /sw-recover (operator explicit).
+  const orphans = detectOrphanWorkflows(projectDir, localWorkflows);
+  for (const orphan of orphans) {
+    issues.push({
+      severity: "warn",
+      code: "orphan-workflow-dir",
+      message: `Orphan workflow directory on disk: ${orphan.date}/${orphan.dirHash}`,
+      detail: `path=${orphan.path}\n  spec files: ${orphan.specFiles.join(", ") || "(none)"}\n  Fix: /sw-recover (will create minimal stelow.json entry so the workflow is visible again)`,
+    });
+  }
+
   return {
     projectDir,
     trackingPath,
@@ -120,7 +150,91 @@ export function diagnoseWorkflowProject(cwd: string): DoctorReport {
     activeWorkflowName: activeWorkflow?.name ?? null,
     issues,
     summary: summarizeIssues(issues),
+    orphans,
   };
+}
+
+/**
+ * Walk `.stelow/{date}/{dirHash}/` and return entries that have no
+ * matching workflow in `stelow.json`. A workflow directory is
+ * considered real (not just empty scaffolding) if it has any
+ * `specs/spec-product_*.md` file.
+ */
+export function detectOrphanWorkflows(
+  projectDir: string,
+  localWorkflows: Workflow[]
+): OrphanWorkflow[] {
+  const workflowBase = join(projectDir, WORKFLOW_DIR);
+  if (!existsSync(workflowBase)) return [];
+
+  const knownDirHashes = new Set(
+    localWorkflows
+      .map((w) => w.dirHash)
+      .filter((h): h is string => typeof h === "string" && h.length > 0)
+  );
+
+  const orphans: OrphanWorkflow[] = [];
+  let dates: string[];
+  try {
+    dates = readdirSync(workflowBase);
+  } catch {
+    return [];
+  }
+
+  for (const date of dates) {
+    const dateDir = join(workflowBase, date);
+    let stat;
+    try {
+      stat = statSync(dateDir);
+    } catch {
+      continue;
+    }
+    if (!stat.isDirectory()) continue;
+
+    let dirHashes: string[];
+    try {
+      dirHashes = readdirSync(dateDir);
+    } catch {
+      continue;
+    }
+
+    for (const dirHash of dirHashes) {
+      if (knownDirHashes.has(dirHash)) continue;
+      const wfDir = join(dateDir, dirHash);
+      let dirStat;
+      try {
+        dirStat = statSync(wfDir);
+      } catch {
+        continue;
+      }
+      if (!dirStat.isDirectory()) continue;
+
+      const specsDir = join(wfDir, "specs");
+      let specFiles: string[] = [];
+      if (existsSync(specsDir)) {
+        try {
+          specFiles = readdirSync(specsDir).filter((f) =>
+            f.startsWith("spec-product_") && f.endsWith(".md")
+          );
+        } catch {
+          specFiles = [];
+        }
+      }
+
+      // Only flag directories that have spec files. Empty scaffolds
+      // are not orphans — they are leftover init scaffolding.
+      if (specFiles.length === 0) continue;
+
+      orphans.push({
+        dirHash,
+        date,
+        path: wfDir,
+        specFiles,
+      });
+    }
+  }
+
+  return orphans;
 }
 
 function diagnoseLocalWorkflows(
@@ -434,6 +548,14 @@ export function formatDoctorReport(report: DoctorReport): string {
     `Summary: ${report.summary.ok} ok, ${report.summary.info} info, ` +
     `${report.summary.warn} warn, ${report.summary.error} error`
   );
+
+  if (report.orphans.length > 0) {
+    lines.push(`Orphan workflow dirs: ${report.orphans.length} (run /sw-recover)`);
+    for (const o of report.orphans) {
+      lines.push(`  • ${o.date}/${o.dirHash}  (${o.specFiles.length} spec file(s))`);
+    }
+  }
+
   lines.push("");
 
   const visible = report.issues

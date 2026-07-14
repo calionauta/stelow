@@ -4,6 +4,7 @@ import { execSync, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, writeFileSync, readFileSync, readdirSync, cpSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
+import { safeHook } from "./safe-hook";
 import { Type } from "@mariozechner/pi-ai";
 import { WORKFLOW_DIR, TRACKING_FILE, SCHEMA_URL, PHASE_NAMES } from "./types";
 import { getRetiredSkillNames } from "./sync-skills";
@@ -162,7 +163,11 @@ export default function (pi: ExtensionAPI) {
   // The adapter handles CLI-specific event routing
   // For Pi, we use the PiAdapter which wires directly to pi.on()
   const adapter = createAdapter("pi");
-  
+
+  // safeHook is imported from ./safe-hook. See that file for the
+  // G1A contract (log + return allow on throw). All 5 hook
+  // registrations below use it.
+
   // Pi-specific: set the ExtensionAPI on the adapter
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (adapter as any).setAPI?.(pi);
@@ -180,7 +185,7 @@ export default function (pi: ExtensionAPI) {
   // Note: Input handling is now done in the adapter
   // Keep this for backward compatibility and direct pi.on() usage
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  pi.on("input", async (event: any, ctx: any) => {
+  pi.on("input", safeHook("input", async (event: any, ctx: any) => {
     if (!event.text.startsWith("/sw-start") &&
         !event.text.startsWith("/sw-start")) return;
 
@@ -189,7 +194,7 @@ export default function (pi: ExtensionAPI) {
     if (parsed.sources.length > 0 || parsed.draftText) {
       parsedInputStore.set(sessionId, parsed);
     }
-  });
+  }));
 
   // ── Auto-sync skills from git clone → ~/.agents/skills/ ──────────
   // Optimized: tracks git HEAD hash in a marker file. Skips if nothing changed
@@ -411,7 +416,7 @@ export default function (pi: ExtensionAPI) {
   // ── Session start ✓ ──────────────────────────────────────────────
   // Now uses adapter pattern for abstraction
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  pi.on("session_start", async (_event: any, ctx: any) => {
+  pi.on("session_start", safeHook("session_start", async (_event: any, ctx: any) => {
     const wd = resolveProjectDir(ctx.cwd);
     // Skill sync from git clone (silent, best-effort)
     const synced = syncSkillsFromClone();
@@ -445,11 +450,11 @@ export default function (pi: ExtensionAPI) {
     }
 
     updateFooter(ctx, wd);
-  });
+  }));
 
   // ── Tool call: stages guard + Auto mode enforcement + detection ─────
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  pi.on("tool_call", async (event: any, ctx: any) => {
+  pi.on("tool_call", safeHook("tool_call", async (event: any, ctx: any) => {
     const tool = event.toolName || "";
     const input = event.input as any;
 
@@ -490,11 +495,11 @@ export default function (pi: ExtensionAPI) {
       const wf = getActiveWorkflow(wd);
       if (wf) updateFooter(ctx, wd);
     }
-  });
+  }));
 
   // ── Phase change detection + Gate auto-advance ✓ ───────────────
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  pi.on("turn_end", async (_event: any, ctx: any) => {
+  pi.on("turn_end", safeHook("turn_end", async (_event: any, ctx: any) => {
     if (!ctx.ui) return;
     const wd = resolveProjectDir(ctx.cwd);
 
@@ -534,16 +539,16 @@ export default function (pi: ExtensionAPI) {
     const syncWf = getActiveWorkflow(wd);
     // stelow.json is the canonical source — writeTracking() updates it.
     // No need to mirror to index.json (file no longer exists as of v0.53.0).
-  });
+  }));
 
   // ── UI update on agent end ✓ ─────────────────────────────────────
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  pi.on("agent_end", async (_event: any, ctx: any) => {
+  pi.on("agent_end", safeHook("agent_end", async (_event: any, ctx: any) => {
     if (!ctx.ui) return;
     const wd = resolveProjectDir(ctx.cwd);
     const wf = getActiveWorkflow(wd);
     if (wf) updateFooter(ctx, wd);
-  });
+  }));
   
   // ── Also register adapter-based event handlers ──────────────────
   // These provide a unified interface for all CLIs

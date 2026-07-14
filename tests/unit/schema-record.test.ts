@@ -289,7 +289,7 @@ describe("writeTracking() validation integration", () => {
       status: "completed",
       record: { completed_at: "2026-07-07T10:00:00Z", files_count: -1, commands_count: 0, verified: false },
     });
-    expect(() => writeTracking(tmpDir, data)).toThrow(/scope-1.*files_count/);
+    expect(() => writeTracking(tmpDir, data)).toThrow(/workflow.*test-wf.*files_count/);
   });
 
   it("accepts good records", () => {

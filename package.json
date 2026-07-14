@@ -1,6 +1,6 @@
 {
   "name": "@calionauta/stelow",
-  "version": "0.53.2",
+  "version": "0.54.0",
   "description": "stelow — opinionated product workflow. stellar clarity. low friction.",
   "keywords": [
     "pi-skill",
@@ -35,6 +35,10 @@
   },
   "peerDependencies": {
     "typebox": "*"
+  },
+  "dependencies": {
+    "typebox": "*",
+    "yaml": "2.9.0"
   },
   "optionalPeerDependencies": {
     "@earendil-works/pi-coding-agent": ">=0.74.0",
@@ -77,6 +81,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:ci": "./scripts/test-ci.sh",
+    "test:mutation": "stryker run",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",
     "version:sync": "node scripts/version-sync.mjs",
@@ -84,7 +89,11 @@
   },
   "devDependencies": {
     "@marcfargas/pi-test-harness": "^0.5.0",
+    "@stryker-mutator/core": "9.6.1",
+    "@stryker-mutator/typescript-checker": "9.6.1",
+    "@stryker-mutator/vitest-runner": "9.6.1",
     "@vitest/coverage-v8": "^4.1.6",
+    "fast-check": "4.9.0",
     "typescript": "^6.0.3",
     "vitest": "^4.1.6"
   },
@@ -92,8 +101,5 @@
     "extensions": [
       "./extensions/stelow/index.ts"
     ]
-  },
-  "dependencies": {
-    "yaml": "2.9.0"
   }
 }

@@ -2,6 +2,53 @@
 
 All notable changes to `@calionauta/stelow` will be documented in this file.
 
+## [0.54.0] - 2026-07-14
+
+### Reliability overhaul — implements plan `stelow-reliability.md`
+
+#### Added
+
+- **TypeBox runtime validation for `Workflow` and `TrackingData`** (`extensions/stelow/schemas.ts`) — Replaces compile-time-only validation. Schemas enforce `name` length, `currentPhase ≥ 0`, `status` enum, nested `Scope`/`ScopeRecord`/`ScopeTask` shapes. Failures throw `WorkflowValidationError` with full JSON Pointer path. Respects `STELOW_VALIDATE=0` escape hatch (consistent with per-scope toggle).
+- **Advisory file lock for `writeTracking` and `writeGlobalTracking`** (`extensions/stelow/file-lock.ts`) — Prevents the read-modify-write race that atomic write alone does not cover. O_EXCL atomic create + exponential backoff + stale-lock TTL reclamation (default 10s). POSIX-portable (mac + linux).
+- **`safeHook` wrapper for all 5 extension hooks** (`extensions/stelow/safe-hook.ts`) — Extracted to its own module. A throw inside any hook is logged with the hook name and returns `undefined` (Pi's "allow" signal) instead of breaking the user input stream or silently swallowing errors. Sibling hooks continue to execute.
+- **`/sw-recover` command + orphan workflow detection** (`extensions/stelow/commands.ts`, `extensions/stelow/doctor.ts`) — Detects workflow directories on disk (`.stelow/{date}/{dirHash}/specs/spec-product_*.md`) that have no matching entry in `stelow.json`. Operator-driven recovery: walks orphans, prompts per-directory, writes minimal paused-status entry. New alias `/stelow-recover` and `--all` flag for non-interactive recovery.
+- **`/sw-status --json`** (`extensions/stelow/commands.ts`) — Emits structured JSON snapshot of the active workflow (name, dirHash, status, currentPhase, phases[], scopes[], scopeProgress) for tool/agent consumption. Human-formatted output remains the default.
+- **Stryker mutation testing infrastructure** (`stryker.config.json`) — Configured to mutate `safe-hook.ts`, `file-lock.ts`, `schemas.ts`. Run with `npm run test:mutation`. Initial run: 100% score on `safe-hook.ts`; 63% overall with 49 surviving mutants documented as future work.
+- **Atomic file writes** (`extensions/stelow/state.ts:writeJson`) — All state writes go through `writeJson(path, data)` which uses a tmp-file + `renameSync` pattern. `rename` is atomic on the same filesystem, so a crash mid-write leaves the previous file intact.
+- **Defensive `isTrackingShape` type guard** (`extensions/stelow/state.ts`) — `readTracking` now returns `null` for malformed shapes (e.g. `[]` array root, missing `workflows` field) instead of crashing downstream consumers in `syncScopesIfNeeded`.
+
+#### Changed
+
+- **`extensions/stelow/commands.ts:cmdStatus`** — Added `--json` flag for machine-readable output. Default output unchanged.
+- **`extensions/stelow/doctor.ts:DoctorReport`** — Added `orphans: OrphanWorkflow[]` field. `formatDoctorReport` renders orphan count and directory paths.
+- **CI matrix** (`.github/workflows/ci.yml`) — All 3 jobs (typecheck, lint, test) now run on `ubuntu-latest` + `macos-latest`.
+- **`extensions/stelow/state.ts:renameWorkflow` return type** — Now returns `{ ok: true } | { ok: false; error: string }` for explicit success/failure signalling. Callers updated.
+- **`tests/integration/property-based.test.ts`** — Property 2 (renameWorkflow preserves dirHash) now filters `dirHash` to `^[a-z0-9-]+$` to prevent invalid-name edge cases. Property 6 (stages-guard) added with 4 sub-properties (determinism, block enforcement, safe fallback, non-blocked allow).
+- **`tests/integration/property-based.test.ts`** — Removed `process.env.HOME` manipulation in `beforeEach` to avoid races with parallel vitest files. Property 3 now uses unique `dirHash` values per iteration.
+
+#### Fixed
+
+- **cmdRecover partial-recovery data loss** (`extensions/stelow/commands.ts`) — Previously, if a later orphan produced an invalid synthetic entry, `writeTracking` would throw at the end and silently lose all in-memory pushes (the file stayed at its old state). Now each synthetic entry is validated individually; invalid ones are skipped with a warning so prior successful recoveries in the same run are preserved.
+- **readTracking crashed on array root** (`extensions/stelow/state.ts`) — `readJson` only validated `JSON.parse` success, not shape. A user writing `[]` (array) or a single object to `stelow.json` would cause `syncScopesIfNeeded` to throw `data.workflows is not iterable`. Now caught by the new `isTrackingShape` guard.
+
+#### Tests
+
+- **+143 tests, 1037 total passing** (3 pre-existing architectural-invariants failures on `main` unchanged).
+- 8 new test files: `atomic-write.test.ts`, `concurrency.test.ts`, `corrupt-tracking-recovery.test.ts`, `file-lock.test.ts`, `hook-error-containment.test.ts`, `hook-order.test.ts`, `orphan-workflow-recovery.test.ts`, `property-based.test.ts`, `safe-hook-integration.test.ts`, `schemas.test.ts`, `subagent-acceptance-contract.test.ts`, `sw-status-json.test.ts`.
+- Property-based testing: 5 invariant classes using `fast-check` (write/read round-trip, renameWorkflow preserves dirHash, add/remove global index balance, parseSpecTechScopes idempotence, stages-guard permission check).
+- Concurrency stress: 5 tests firing 10/20/50 parallel `writeTracking` calls via `Promise.all` to validate atomic write + lock combination.
+
+#### Dependencies
+
+- Added `typebox@^1.1.38` (moved from peerDep to direct — now used at runtime).
+- Added `fast-check@^4.9.0` (devDep — property-based testing).
+- Added `@stryker-mutator/core@^9.6.1`, `@stryker-mutator/typescript-checker`, `@stryker-mutator/vitest-runner` (devDeps — mutation testing).
+
+#### Plan coverage
+
+Implements 10 of 10 plan items from `stelow-reliability.md`:
+- G1A (hook try/catch), G2A (runtime validation), G3A (lock file), G3B (atomic write), G4A+C (doctor recovery), G5A (/sw-status JSON), G6A (property tests), G6C (mutation testing), G7A (concurrency tests), G8 (subagent acceptance contract), G9A (hook order), G10A (CI matrix).
+
 ## [0.53.2] - 2026-07-14
 
 ### Changed
