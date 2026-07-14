@@ -161,7 +161,8 @@ describe('Property 2: renameWorkflow preserves dirHash', () => {
         (rawNewName, dirHash) => {
           // Apply toSafeName to model the real rename path
           const newName = toSafeName(rawNewName);
-          if (newName === '') return; // toSafeName can yield empty; skip
+          // renameWorkflow rejects names shorter than 2 chars.
+          if (newName.length < 2) return; // Skip: rename would fail before our invariant can apply
           const oldName = `old-${dirHash}`;
           const initial: TrackingData = {
             $schema: 'https://example.com/schema',

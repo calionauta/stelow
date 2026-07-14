@@ -1,6 +1,6 @@
 {
   "name": "@calionauta/stelow",
-  "version": "0.54.2",
+  "version": "0.54.3",
   "description": "stelow — opinionated product workflow. stellar clarity. low friction.",
   "keywords": [
     "pi-skill",
@@ -71,7 +71,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json && ./scripts/copy-pulse-assets.sh",
-    "prepare": "husky",
+    "prepare": "node -e \"try { require('husky').install() } catch (e) { console.log('husky not installed (e.g. prod install), skipping') }\"",
     "prepublishOnly": "npm run build && npm run generate-cli-commands && ./scripts/sync-cli-tools.sh",
     "generate-cli-commands": "npm exec -- tsx scripts/generate-cli-commands.ts",
     "test": "vitest run",

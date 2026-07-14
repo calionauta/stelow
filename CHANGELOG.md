@@ -2,6 +2,13 @@
 
 All notable changes to `@calionauta/stelow` will be documented in this file.
 
+## [0.54.3] - 2026-07-14
+
+### Fixed
+
+- **`npm install --omit=dev` failed with exit 127** — the `prepare` script ran `husky` which is a devDependency. When pi installs with `--omit=dev` (production flag), husky is missing and the script exits non-zero, breaking the install. Replaced `prepare: "husky"` with a guarded wrapper that logs and skips when husky is absent. Husky stays in devDependencies (correct location).
+- **Property 2 (renameWorkflow preserves dirHash) re-flaky** — fast-check shrank to `("0  ", "aaa")` where `toSafeName("0  ") = "0"` (1 char). renameWorkflow rejects names shorter than 2 chars. Added `if (newName.length < 2) return;` skip-condition so we only test the cases where the rename actually executes.
+
 ## [0.54.2] - 2026-07-14
 
 ### Fixed
