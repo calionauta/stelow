@@ -179,9 +179,22 @@ describe("pi sandbox install", () => {
     expect(sharedResult.loadResult.extensions).toBe(1);
   });
 
-  it("extension loads + skills register", () => {
-    // Stelow ships skills (24+ from skills/stelow-product-*). The
-    // count varies but should be > 0 if they're properly bundled.
-    expect(sharedResult.skills).toBeGreaterThan(0);
+  it("tarball bundles skills/ directory (stow's source of truth for skills)", () => {
+    // DefaultResourceLoader.getSkills() returns 0 in a fresh sandbox
+    // because pi discovers skills from ~/.pi/agent/skills/, which the
+    // sandbox does not have. install.sh (run separately by users)
+    // copies skills from package's skills/ to that dir. So skill
+    // "discovery" is pi's install concern, not stelow's contract.
+    //
+    // What IS stelow's contract: skills/ directory must be in the
+    // tarball (so install.sh can copy them). Verify by counting
+    // SKILL.md files in the tarball.
+    const tarballPath = join(PACKAGE_DIR, sharedResult.tarballName);
+    const out = execSync(
+      `tar -tzf "${tarballPath}" 2>/dev/null | grep -E "^package/skills/.*/SKILL.md$" | wc -l`,
+      { encoding: "utf-8" }
+    ).trim();
+    const skillCount = parseInt(out, 10);
+    expect(skillCount).toBeGreaterThan(20);
   });
 });

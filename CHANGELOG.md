@@ -2,6 +2,12 @@
 
 All notable changes to `@calionauta/stelow` will be documented in this file.
 
+## [0.54.2] - 2026-07-14
+
+### Fixed
+
+- **CI: skills assertion was wrong contract** — `tests/integration/pi-sandbox-install.test.ts` asserted `DefaultResourceLoader.getSkills() > 0`, but skill discovery is pi's install concern (skills live in `~/.pi/agent/skills/`, copied by `install.sh`). The fresh sandbox has no agent dir → returns 0 → CI fails. Replaced with the actual stelow contract: `tar -tzf` should list 20+ `SKILL.md` files in the tarball. Now the test is fast, deterministic, and asserts what stelow actually controls.
+
 ## [0.54.1] - 2026-07-14
 
 ### Added
