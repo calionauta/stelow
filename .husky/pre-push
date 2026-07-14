@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+# Pre-push hook: run rigor quality scan on test files.
+# Tests must score >= 60 (D-grade is the floor).
+# To skip: git push --no-verify
+
+set -e
+echo "🧪 Running rigor test quality scan..."
+bash scripts/rigor-scan.sh 60

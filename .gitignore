@@ -98,3 +98,5 @@ skills/*/references/cli-tools/*.md
 !skills/*/references/cli-tools/doc-search.md
 !skills/*/references/cli-tools/stack-skills.md
 !skills/*/references/cli-tools/cymbal.md
+.rigor-cache.json
+.rigor-history.json

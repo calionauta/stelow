@@ -96,3 +96,6 @@ jobs:
 
       - name: Run tests
         run: npm test
+
+      - name: Rigor test quality scan
+        run: bash scripts/rigor-scan.sh 60

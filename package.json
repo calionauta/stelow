@@ -71,6 +71,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json && ./scripts/copy-pulse-assets.sh",
+    "prepare": "husky",
     "prepublishOnly": "npm run build && npm run generate-cli-commands && ./scripts/sync-cli-tools.sh",
     "generate-cli-commands": "npm exec -- tsx scripts/generate-cli-commands.ts",
     "test": "vitest run",
@@ -82,6 +83,7 @@
     "test:coverage": "vitest run --coverage",
     "test:ci": "./scripts/test-ci.sh",
     "test:mutation": "stryker run",
+    "test:rigor": "bash scripts/rigor-scan.sh 60",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",
     "version:sync": "node scripts/version-sync.mjs",
@@ -96,6 +98,7 @@
     "@stryker-mutator/vitest-runner": "9.6.1",
     "@vitest/coverage-v8": "^4.1.6",
     "fast-check": "4.9.0",
+    "husky": "9.1.7",
     "typescript": "^6.0.3",
     "vitest": "^4.1.6"
   },

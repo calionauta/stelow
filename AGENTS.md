@@ -110,6 +110,44 @@ npm run typecheck        # Type check
 
 Run before releases. A test file moving from OK to REVIEW over time signals rot.
 
+### Rigor quality gate
+
+`npm run test:rigor` runs [rigor](https://github.com/enriquesanchez-elastic/rigor), a Rust-based static analyzer that scores test files 0–100 across 6 categories: Assertion Quality, Error Coverage, Boundary Conditions, Test Isolation, Input Variety, AI Smells.
+
+**Score → Grade scale:**
+
+| Grade | Score | Action |
+|-------|-------|--------|
+| A | 90–100 | Excellent — keep as reference |
+| B | 80–89 | Good — solid baseline for new tests |
+| C | 70–79 | Fair — improvable; fix when touching the file |
+| D | 60–69 | Poor — flagged; CI warns |
+| F | 0–59 | Failing — must delete or rewrite |
+
+**Thresholds:**
+
+- **CI gate**: 60 (anything below fails the build)
+- **Local pre-push** (`.husky/pre-push`): 60 (same)
+- **Release target**: all test files should be B+ (80+)
+
+**Practical reality check:** A-grade (90+) is rare in practice. Most well-written tests will be B (80–89). B is the realistic "good" target. C is acceptable for low-stakes coverage. Anything below C is façade.
+
+**Why A-grade is hard:** Rigor caps each of 6 categories at 25 points. To hit 90+, you need to cover: every throw site (Error Coverage), numeric boundaries (Boundary Conditions), diverse inputs (Input Variety), AND no weak assertions. For general-purpose utility modules (like `state.ts`), this is structurally hard because not every function throws or has numeric boundaries. **Aim for B+, accept C for utility modules, demand A only for security/correctness-critical code.**
+
+**Reference A-grade patterns (canonical examples):**
+
+- `tests/integration/pi-sandbox-install.test.ts` (B: 81) — covers real I/O, no mocks, multiple modules
+- `tests/integration/sw-status-json.test.ts` (B: 84) — strong assertions (`toEqual` on full objects), edge cases
+- `tests/integration/concurrency.test.ts` (B: 80) — property-style parallel writes with assertions on final state
+
+**Anti-patterns to avoid (these drag scores down to F/D):**
+
+- `expect(result).toBeNull()` / `.toBeUndefined()` / `.toBeDefined()` — weak; replaces with `expect(result).toEqual({...specific shape...})`
+- Tests where the only assert is `not.toBeNull()` followed by `find()` without asserting on the found value
+- Mock declared with `vi.fn()` but never verified with `toHaveBeenCalledWith(...)`
+- Single-assertion tests that just check "doesn't throw"
+- Tests that don't reset state in `beforeEach`
+
 ## Conventions
 
 - **Commits:** conventional (`feat:`, `fix:`, `chore:`, `refactor:`, `test:`, `docs:`). Squash merge to main.
