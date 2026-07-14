@@ -100,3 +100,6 @@ skills/*/references/cli-tools/*.md
 !skills/*/references/cli-tools/cymbal.md
 .rigor-cache.json
 .rigor-history.json
+
+# npm pack tarballs (used by pi-sandbox-install + pi-session-lifecycle tests)
+calionauta-stelow-*.tgz

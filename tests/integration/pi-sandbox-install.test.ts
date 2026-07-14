@@ -74,9 +74,13 @@ async function buildSandbox(): Promise<SandboxResult> {
 
   const tarballSrc = join(PACKAGE_DIR, tarballName);
   const sandboxDir = mkdtempSync(join(tmpdir(), "pi-sandbox-"));
+  // Copy the tarball under a unique name inside the sandbox to avoid
+  // collisions when multiple test files (e.g. pi-session-lifecycle)
+  // pack the same source concurrently. We keep the source tarball
+  // on disk (gitignored) so concurrent runs do not race on its
+  // existence. .gitignore excludes `calionauta-stelow-*.tgz`.
   const tarballDest = join(sandboxDir, tarballName);
   copyFileSync(tarballSrc, tarballDest);
-  try { unlinkSync(tarballSrc); } catch { /* best-effort */ }
 
   // 2. Minimal sandbox package.json (without our peer deps — we add them next)
   const pkg = JSON.parse(readFileSync(join(PACKAGE_DIR, "package.json"), "utf-8"));

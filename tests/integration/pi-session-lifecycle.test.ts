@@ -67,9 +67,11 @@ async function buildSandbox(): Promise<Sandbox> {
 
   const tarballSrc = join(PACKAGE_DIR, tarballName);
   const sandboxDir = mkdtempSync(join(tmpdir(), "pi-session-"));
+  // Copy the tarball under a unique name inside the sandbox to avoid
+  // collisions when multiple test files pack the same source
+  // concurrently. We keep the source tarball on disk (gitignored).
   const tarballDest = join(sandboxDir, tarballName);
   copyFileSync(tarballSrc, tarballDest);
-  try { unlinkSync(tarballSrc); } catch { /* best-effort */ }
 
   const pkg = JSON.parse(readFileSync(join(PACKAGE_DIR, "package.json"), "utf-8"));
   const sandboxPkg = {
