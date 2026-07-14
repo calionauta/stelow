@@ -198,7 +198,7 @@ async function triggerAutoRename(ctx: ExtensionContext, currentName: string): Pr
   
   if (result.ok) {
     updateFooter(ctx, wd);
-    getUIAdapter().notify(`✨ Workflow renamed to "${suggestion}"`, "success");
+    getUIAdapter().notify(`✨ Workflow renamed to "${suggestion}"`, "info");
   }
 }
 

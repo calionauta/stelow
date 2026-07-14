@@ -883,7 +883,7 @@ async function cmdDoctor(_pi: ExtensionAPI, _args: string, ctx: CmdCtx): Promise
     if (choice === "fix") {
       const fixes = repairWorkflowProject(wd, report);
       const updated = diagnoseWorkflowProject(wd);
-      ctx.ui?.notify(`✅ Applied ${fixes.length} auto-fix(es)`, "success");
+      ctx.ui?.notify(`✅ Applied ${fixes.length} auto-fix(es)`, "info");
       reply(ctx, formatDoctorReport(updated)
         + `\n\n✅ Applied ${fixes.length} auto-fix(es):\n`
         + fixes.map(f => `  • ${f}`).join("\n")
@@ -1456,7 +1456,7 @@ function cmdPulse(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
           : `bash "${finalPath}" --force`;
         ctx.ui?.notify(`⚡ Pulse processing started (via ${finalShell})...`, "info");
         const output = execSync(cmd, { cwd: wd, encoding: "utf8", timeout: 180000, stdio: ["pipe", "pipe", "pipe"] });
-        ctx.ui?.notify(`✅ Pulse processing complete`, "success");
+        ctx.ui?.notify(`✅ Pulse processing complete`, "info");
         reply(ctx, output.trim() || "✅ Done.");
       } else {
         replyWarn(ctx, `No pulse script found at ${scriptPath} or ${altScript}. Run setup first.`);
@@ -1471,7 +1471,7 @@ function cmdPulse(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
     ctx.ui?.notify(`⚡ Pulse processing started...`, "info");
     try {
       const output = execSync(cmd, { cwd: wd, encoding: "utf8", timeout: 180000, stdio: ["pipe", "pipe", "pipe"] });
-      ctx.ui?.notify(`✅ Pulse processing complete`, "success");
+      ctx.ui?.notify(`✅ Pulse processing complete`, "info");
       reply(ctx, output.trim() || "✅ Done.");
     } catch (e: any) {
       ctx.ui?.notify(`❌ Pulse processing failed`, "error");

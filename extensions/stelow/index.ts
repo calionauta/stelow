@@ -228,7 +228,7 @@ export default function (pi: ExtensionAPI) {
             type: "text",
             text: "Error: plannotator requires a filePath argument.",
           }],
-          details: { decision: "error" },
+          details: { decision: "error", feedback: "" },
         };
       }
 
@@ -239,7 +239,7 @@ export default function (pi: ExtensionAPI) {
             type: "text",
             text: `Error: file not found: ${filePath}`,
           }],
-          details: { decision: "error" },
+          details: { decision: "error", feedback: "" },
         };
       }
 
@@ -263,7 +263,7 @@ export default function (pi: ExtensionAPI) {
               type: "text",
               text: `Plannotator failed: ${result.error.message}`,
             }],
-            details: { decision: "error" },
+            details: { decision: "error", feedback: "" },
           };
         }
 
@@ -302,7 +302,7 @@ export default function (pi: ExtensionAPI) {
               type: "text",
               text: `Plannotator review failed or unavailable.\nstdout: ${stdout}\nstderr: ${stderr}`,
             }],
-            details: { decision: "error" },
+            details: { decision: "error", feedback: "" },
           };
         }
 
@@ -317,7 +317,7 @@ export default function (pi: ExtensionAPI) {
         const msg = err instanceof Error ? err.message : String(err);
         return {
           content: [{ type: "text", text: `Plannotator failed: ${msg}` }],
-          details: { decision: "error" },
+          details: { decision: "error", feedback: "" },
         };
       }
     },
@@ -609,7 +609,7 @@ export default function (pi: ExtensionAPI) {
             passed: true,
             summary: "No verify commands — auto-completed",
           });
-          adapter.showNotification(`✅ Scope ${scopeId}: completed (no verify commands)`, "success");
+          adapter.showNotification(`✅ Scope ${scopeId}: completed (no verify commands)`, "info");
           continue;
         }
 
@@ -636,7 +636,7 @@ export default function (pi: ExtensionAPI) {
           });
 
           console.log(`[stelow] ✅ Scope ${scopeId} completed`);
-          adapter.showNotification(`✅ Scope ${scopeId}: verify passed. All commands OK.`, "success");
+          adapter.showNotification(`✅ Scope ${scopeId}: verify passed. All commands OK.`, "info");
 
         } else if (cp.iteration >= cp.maxIterations - 1) {
           // ── Escalated (max iterations reached) ────────────────

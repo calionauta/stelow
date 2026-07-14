@@ -36,6 +36,7 @@ import {
   removeGlobalIndexEntry,
   renameWorkflow,
   readGlobalTracking,
+  toSafeName,
 } from '../../extensions/stelow/state';
 import {
   validateWorkflow,
@@ -147,11 +148,20 @@ describe('Property 1: write/read round-trip', () => {
 
 describe('Property 2: renameWorkflow preserves dirHash', () => {
   it('after rename, dirHash stays stable', () => {
+    // Generate a random alphanumeric string, then call toSafeName on it
+    // to model the real renameWorkflow behavior (it sanitizes the new
+    // name before storing). The renamed name in tracking must equal
+    // toSafeName(rawNewName), NOT the raw input.
     fc.assert(
       fc.property(
-        fc.string({ minLength: 3, maxLength: 20 }).filter((s) => /^[a-z0-9-]+$/.test(s)),
-        fc.string({ minLength: 1, maxLength: 3 }).filter((s) => /^[a-z0-9-]+$/.test(s)), // dirHash
-        (newName, dirHash) => {
+        fc.string({ minLength: 3, maxLength: 30 })
+          .filter((s) => /^[a-zA-Z0-9 _-]+$/.test(s)),  // generate any sane string
+        fc.string({ minLength: 3, maxLength: 3 })
+          .filter((s) => /^[a-z0-9]+$/.test(s)),       // dirHash: short, no leading dash
+        (rawNewName, dirHash) => {
+          // Apply toSafeName to model the real rename path
+          const newName = toSafeName(rawNewName);
+          if (newName === '') return; // toSafeName can yield empty; skip
           const oldName = `old-${dirHash}`;
           const initial: TrackingData = {
             $schema: 'https://example.com/schema',
@@ -193,7 +203,7 @@ describe('Property 2: renameWorkflow preserves dirHash', () => {
           expect(wf?.dirHash).toBe(dirHash); // INVARIANT
         },
       ),
-      { numRuns: 20 },
+      { numRuns: 50 },
     );
   });
 });
