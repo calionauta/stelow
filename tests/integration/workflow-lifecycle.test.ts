@@ -2,8 +2,8 @@
  * Integration tests: Workflow Lifecycle (post v0.53.0)
  *
  * Tests full workflow lifecycle using the canonical-source contract:
- * - stelow.json is the single source of truth for workflow state
- * - .stelow/{date}/{dirHash}/ contains only artifacts (no index.json)
+ * - stelow.json holds all workflow state (name, status, currentPhase, scopes, etc.)
+ * - .stelow/{date}/{dirHash}/ holds only artifacts (plans, interfaces, critiques)
  *
  * Lifecycle coverage:
  * - Workflow creation (directory + stelow.json entry)
@@ -25,7 +25,7 @@ const DATE = '2026-05-19';
 
 // ── Test Helpers ────────────────────────────────────────────────────
 
-/** Create a workflow dir with artifact subdirs only (no index.json post v0.53.0). */
+/** Create a workflow dir with artifact subdirs only. */
 function createWorkflowDir(baseDir: string, dirHash: string) {
   const workflowDir = join(baseDir, WORKFLOW_DIR, DATE, dirHash);
   for (const sub of ['specs', 'interfaces', 'plans/scopes', 'critiques', 'approvals', 'sessions']) {
@@ -97,7 +97,7 @@ describe('Workflow Lifecycle (post v0.53.0)', () => {
       expect(existsSync(join(wfDir, 'specs'))).toBe(true);
       expect(existsSync(join(wfDir, 'interfaces'))).toBe(true);
       expect(existsSync(join(wfDir, 'plans/scopes'))).toBe(true);
-      // v0.53.0: NO index.json
+      // State lives in stelow.json — workflow dir holds artifacts only
       expect(existsSync(join(wfDir, 'index.json'))).toBe(false);
     });
 

@@ -7,7 +7,7 @@ Triage: group related items, rank by priority.
 Select: pick the single highest-priority item or group.
 
 Create workflow:
-  1. Create .stelow/<YYYY-MM-DD>/<dirHash>/ directories (specs, interfaces, plans/scopes, critiques, approvals, sessions). NO index.json (v0.53.0+) — stelow.json is the single canonical source.
+  1. Create .stelow/<YYYY-MM-DD>/<dirHash>/ directories (specs, interfaces, plans/scopes, critiques, approvals, sessions). Workflow state goes in stelow.json.
   2. Add entry to stelow.json with: status=in-progress, currentPhase=2 (Setup), config: { appetite: "Lean", review_mode: "Auto", domains_detected: [] }, draftContent = item text.
   3. Remove processed item(s) from inbox (never remove [human-in-the-loop], [hitl], or [human] items)
 

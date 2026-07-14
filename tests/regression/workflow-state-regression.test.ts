@@ -1,7 +1,7 @@
 /**
  * workflow-state-regression.test.ts
  *
- * Lean contract tests for the state/stages-guard layer as of v0.53.0.
+ * Lean contract tests for the state/stages-guard layer.
  *
  * Design:
  *   - Zero mocks, zero spies, zero abstractions
@@ -10,15 +10,10 @@
  *   - No dependency on ~/.pi, ExtensionAPI, CmdCtx, or runtime plugins
  *   - Each test cleans up after itself
  *
- * Contracts tested (post v0.53.0 — index.json removed):
+ * Contracts tested:
  *   1. PHASE_TO_STAGE — all mappings exist and match PHASE_NAMES
  *   2. syncStagesGuardState — writes stage INTO stelow.json (canonical source)
  *   3. cmdStart phase init — new workflow starts at phase 2 (Setup)
- *
- * Removed contracts (no longer applicable after v0.53.0):
- *   - scanWorkflowDirs backward compat (index.json gone)
- *   - updateWorkflowIndexJson write-through (function removed)
- *   - corrupt index.json recovery (no index.json)
  */
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import {

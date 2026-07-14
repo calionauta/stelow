@@ -2,6 +2,27 @@
 
 All notable changes to `@calionauta/stelow` will be documented in this file.
 
+## [0.53.2] - 2026-07-14
+
+### Changed
+
+- **Removed all "no index.json" comments in source code** — Replaced negative comments with positive, intent-driven comments that describe what the code DOES (not what it doesn't do). Per KISS principle, code should explain itself without referencing what was removed.
+
+  Affected files:
+  - `tests/integration/workflow-lifecycle.test.ts` (3 comments)
+  - `tests/integration/skill-orchestration.test.ts` (1 comment)
+  - `tests/integration/audit-trail.test.ts` (1 comment)
+  - `tests/regression/workflow-state-regression.test.ts` (header block — removed "Removed contracts" section)
+  - `extensions/stelow/pulse/pulse-task.md` (1 comment)
+
+  Comments now describe the **contract** (workflow state in stelow.json, artifacts in workflow dir) instead of what **doesn't exist** (no index.json).
+
+### Notes
+
+- No functional changes. No code logic touched. Comments only.
+- 778 tests passing.
+- Historical entries in CHANGELOG.md intentionally retain mentions of `index.json` removal as accurate history.
+
 ## [0.53.1] - 2026-07-14
 
 ### Changed

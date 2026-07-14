@@ -51,7 +51,7 @@ function createWorkflowDir(baseDir: string, name: string, dirHash: string) {
   mkdirSync(join(workflowDir, "execution"), { recursive: true });
   mkdirSync(join(workflowDir, "verification"), { recursive: true });
 
-  // v0.53.0: NO index.json. stelow.json is the canonical source.
+  // Workflow state lives in stelow.json; workflow dir holds artifacts only
   void name; void dirHash;
   return workflowDir;
 }
