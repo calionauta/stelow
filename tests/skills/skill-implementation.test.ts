@@ -168,8 +168,9 @@ describe('Main SKILL.md Structure', () => {
       expect(content).toMatch(/interfaces/);
     });
 
-    it('should document index.json', () => {
-      expect(content).toMatch(/index\.json/);
+    it('should document stelow.json (canonical source as of v0.50.0+)', () => {
+      // v0.53.0: index.json removed. SKILL.md should reference stelow.json.
+      expect(content).toMatch(/stelow\.json/);
     });
   });
 

@@ -25,11 +25,8 @@ function createWorkflowDir(baseDir: string, name: string, dirHash: string) {
   mkdirSync(join(workflowDir, 'plans/scopes'), { recursive: true });
   mkdirSync(join(workflowDir, 'critiques'), { recursive: true });
   mkdirSync(join(workflowDir, 'approvals'), { recursive: true });
-  writeFileSync(join(workflowDir, 'index.json'), JSON.stringify({
-    name,
-    _dir: dirHash,
-    workflow_status: "in-progress",
-  }, null, 2));
+  // v0.53.0: NO index.json. stelow.json is the canonical source.
+  void name; void dirHash;
   return workflowDir;
 }
 
@@ -368,17 +365,35 @@ Test
       expect(updated).toContain('approved_at');
     });
 
-    it('should validate workflow status after gate', () => {
-      const indexPath = join(workflowDir, 'index.json');
-      const index = JSON.parse(readFileSync(indexPath, 'utf8'));
+it('should validate workflow status after gate', () => {
+      // v0.53.0: approved status lives in stelow.json (canonical source).
+      // This test verifies the round-trip contract: read stelow.json,
+      // mark approved, write back, verify persistence.
+      const trackingPath = join(tempDir, WORKFLOW_DIR, 'stelow.json');
+      const now = new Date().toISOString();
+      writeFileSync(trackingPath, JSON.stringify({
+        $schema: '', version: '1.0',
+        created: now, updated: now,
+        workflows: [{
+          name: 'test-wf', description: '',
+          status: 'in-progress', currentPhase: 2, phases: [],
+          stage: { current_stage: 'setup', previous_stage: null, transitioned_at: now, history: [], supervisor_active: false },
+          created: now, updated: now, dirHash: 'pw-test-skill-001',
+          detectedCLI: 'pi', intent: 'unknown',
+          config: { appetite: undefined, review_mode: undefined, domains_detected: [] },
+        }],
+      }, null, 2));
 
-      index.approved = true;
-      index.approved_at = "2026-05-19T10:00:00Z";
-      writeFileSync(indexPath, JSON.stringify(index, null, 2));
+      const tracking = JSON.parse(readFileSync(trackingPath, 'utf8'));
+      const wf = tracking.workflows.find((w: { name: string }) => w.name === 'test-wf')!;
+      wf.approved = true;
+      wf.approved_at = "2026-05-19T10:00:00Z";
+      writeFileSync(trackingPath, JSON.stringify(tracking, null, 2));
 
-      const updated = JSON.parse(readFileSync(indexPath, 'utf8'));
-      expect(updated.approved).toBe(true);
-      expect(updated.approved_at).toBeTruthy();
+      const updated = JSON.parse(readFileSync(trackingPath, 'utf8'));
+      const updated_wf = updated.workflows.find((w: { name: string }) => w.name === 'test-wf')!;
+      expect(updated_wf.approved).toBe(true);
+      expect(updated_wf.approved_at).toBeTruthy();
     });
   });
 

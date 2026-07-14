@@ -2,6 +2,26 @@
 
 All notable changes to `@calionauta/stelow` will be documented in this file.
 
+## [0.53.1] - 2026-07-14
+
+### Changed
+
+- **Test fixtures cleanup for v0.53.0 stelow.json-only world** — Removed obsolete `index.json` writes from 5 test files. These tests were passing in v0.53.0 because they wrote `index.json` directly to the filesystem (no production code path involved), but they were testing removed functionality:
+  - `tests/integration/workflow-lifecycle.test.ts` — Rewrote 14 tests to use stelow.json fixtures (not index.json). Tests now verify the canonical-source contract end-to-end.
+  - `tests/integration/skill-orchestration.test.ts` — Removed `index.json` write in helper, updated Plannotator gate flow test to use stelow.json for approved status.
+  - `tests/integration/audit-trail.test.ts` — Removed `index.json` write from setupWorkflowDir helper.
+  - `tests/unit/agnostic-tools.test.ts` — Rewrote 10 tests to test the decision logic directly with workflow object input (no filesystem I/O).
+  - `tests/artifacts/artifact-schema.test.ts` — Removed `index.json schema` describe block (no index.json to test).
+  - `tests/unit/spec-frontmatter-contract.test.ts` — Updated comments to reflect v0.53.0 contract.
+  - `tests/skills/skill-implementation.test.ts` — Updated test to check for `stelow.json` reference (canonical source) instead of `index.json`.
+
+- **`pulse-task.md` aligned with v0.53.0** — Updated instruction to write to `stelow.json#workflows[]` directly. NO `index.json` write.
+
+### Notes
+
+- No code changes (production code unchanged from v0.53.0).
+- 778 tests passing (was 822 in v0.53.0). Net: -44 obsolete test cases removed.
+
 ## [0.53.0] - 2026-07-14
 
 ### Breaking Change

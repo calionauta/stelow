@@ -1,52 +1,40 @@
 /**
- * Integration tests: Workflow Lifecycle
- * 
- * Tests full workflow lifecycle:
- * - Workflow creation (index.json)
- * - Workflow rename (name + filesystem)
- * - Workflow archiving (status update)
- * - Cross-session persistence
+ * Integration tests: Workflow Lifecycle (post v0.53.0)
+ *
+ * Tests full workflow lifecycle using the canonical-source contract:
+ * - stelow.json is the single source of truth for workflow state
+ * - .stelow/{date}/{dirHash}/ contains only artifacts (no index.json)
+ *
+ * Lifecycle coverage:
+ * - Workflow creation (directory + stelow.json entry)
+ * - Workflow rename (name in stelow.json + dirHash stays stable)
+ * - Workflow archiving (status update in stelow.json)
+ * - Cross-session persistence (data survives read/write cycles)
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { 
-  mkdtempSync, rmSync, writeFileSync, readFileSync, 
-  existsSync, mkdirSync 
+import {
+  mkdtempSync, rmSync, writeFileSync, readFileSync,
+  existsSync, mkdirSync,
 } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
 const WORKFLOW_DIR = '.stelow';
 const TRACKING_FILE = 'stelow.json';
+const DATE = '2026-05-19';
 
 // ── Test Helpers ────────────────────────────────────────────────────
 
-function createWorkflowDir(baseDir: string, name: string, dirHash: string) {
-  const workflowDir = join(baseDir, WORKFLOW_DIR, '2026-05-19', dirHash);
-  mkdirSync(join(workflowDir, 'specs'), { recursive: true });
-  mkdirSync(join(workflowDir, 'interfaces'), { recursive: true });
-  mkdirSync(join(workflowDir, 'plans/scopes'), { recursive: true });
-  mkdirSync(join(workflowDir, 'critiques'), { recursive: true });
-  mkdirSync(join(workflowDir, 'approvals'), { recursive: true });
-  mkdirSync(join(workflowDir, 'sessions'), { recursive: true });
-
-  writeFileSync(join(workflowDir, 'index.json'), JSON.stringify({
-    version: "1.0",
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    name,
-    _dir: dirHash,
-    workflow_status: "in-progress",
-    current_phase: "Setup",
-    current_phase_index: 0,
-    artifacts: {},
-    approved: false,
-    approved_at: null,
-  }, null, 2));
-
+/** Create a workflow dir with artifact subdirs only (no index.json post v0.53.0). */
+function createWorkflowDir(baseDir: string, dirHash: string) {
+  const workflowDir = join(baseDir, WORKFLOW_DIR, DATE, dirHash);
+  for (const sub of ['specs', 'interfaces', 'plans/scopes', 'critiques', 'approvals', 'sessions']) {
+    mkdirSync(join(workflowDir, sub), { recursive: true });
+  }
   return workflowDir;
 }
 
-function writeTracking(baseDir: string, data: any) {
+function writeTracking(baseDir: string, data: unknown) {
   const trackingDir = join(baseDir, WORKFLOW_DIR);
   mkdirSync(trackingDir, { recursive: true });
   writeFileSync(join(trackingDir, TRACKING_FILE), JSON.stringify(data, null, 2));
@@ -57,13 +45,42 @@ function readTracking(baseDir: string) {
   return JSON.parse(readFileSync(path, 'utf8'));
 }
 
+function makeWorkflowEntry(overrides?: Partial<Record<string, unknown>>) {
+  const now = new Date().toISOString();
+  return {
+    name: 'test-workflow',
+    description: '',
+    status: 'in-progress',
+    currentPhase: 2,
+    phases: [],
+    stage: {
+      current_stage: 'setup',
+      previous_stage: null,
+      transitioned_at: now,
+      history: [],
+      supervisor_active: false,
+    },
+    created: now,
+    updated: now,
+    dirHash: 'pw-test-abc123',
+    detectedCLI: 'pi',
+    intent: 'unknown',
+    config: {
+      appetite: undefined,
+      review_mode: undefined,
+      domains_detected: [],
+    },
+    ...overrides,
+  };
+}
+
 // ── Workflow Lifecycle Tests ────────────────────────────────────────
 
-describe('Workflow Lifecycle', () => {
+describe('Workflow Lifecycle (post v0.53.0)', () => {
   let tempDir: string;
 
   beforeEach(() => {
-    tempDir = mkdtempSync(join(tmpdir(), 'pw-lifecycle-test-'));
+    tempDir = mkdtempSync(join(tmpdir(), 'pw-lifecycle-'));
   });
 
   afterEach(() => {
@@ -73,343 +90,209 @@ describe('Workflow Lifecycle', () => {
   });
 
   describe('Workflow Creation', () => {
-    it('should create workflow directory structure', () => {
-      const workflowDir = createWorkflowDir(tempDir, 'test-workflow', 'pw-test-abc123');
+    it('creates workflow directory structure with artifact subdirs', () => {
+      const wfDir = createWorkflowDir(tempDir, 'pw-test-abc123');
 
-      expect(existsSync(workflowDir)).toBe(true);
-      expect(existsSync(join(workflowDir, 'specs'))).toBe(true);
-      expect(existsSync(join(workflowDir, 'interfaces'))).toBe(true);
-      expect(existsSync(join(workflowDir, 'plans/scopes'))).toBe(true);
-      expect(existsSync(join(workflowDir, 'index.json'))).toBe(true);
+      expect(existsSync(wfDir)).toBe(true);
+      expect(existsSync(join(wfDir, 'specs'))).toBe(true);
+      expect(existsSync(join(wfDir, 'interfaces'))).toBe(true);
+      expect(existsSync(join(wfDir, 'plans/scopes'))).toBe(true);
+      // v0.53.0: NO index.json
+      expect(existsSync(join(wfDir, 'index.json'))).toBe(false);
     });
 
-    it('should create index.json with correct structure', () => {
-      createWorkflowDir(tempDir, 'my-project', 'pw-my-proj-xyz');
+    it('adds workflow entry to stelow.json (canonical source)', () => {
+      createWorkflowDir(tempDir, 'pw-test-abc123');
+      writeTracking(tempDir, {
+        $schema: '', version: '1.0',
+        created: new Date().toISOString(), updated: new Date().toISOString(),
+        workflows: [makeWorkflowEntry({ name: 'my-project', dirHash: 'pw-my-proj-xyz' })],
+      });
 
-      const indexPath = join(tempDir, WORKFLOW_DIR, '2026-05-19', 'pw-my-proj-xyz', 'index.json');
-      const index = JSON.parse(readFileSync(indexPath, 'utf8'));
-
-      expect(index.name).toBe('my-project');
-      expect(index._dir).toBe('pw-my-proj-xyz');
-      expect(index.workflow_status).toBe('in-progress');
-      expect(index.current_phase_index).toBe(0);
-      expect(index.approved).toBe(false);
-    });
-
-    it('should add workflow to tracking.json', () => {
-      createWorkflowDir(tempDir, 'tracking-test', 'pw-track-001');
-
-      const trackingData = {
-        $schema: "https://example.com/schema",
-        version: "1.0",
-        created: new Date().toISOString(),
-        updated: new Date().toISOString(),
-        workflows: [{
-          name: 'tracking-test',
-          description: '',
-          status: 'in-progress',
-          currentPhase: 0,
-          phases: [
-            { id: '0-setup', name: 'Setup', status: 'in-progress' },
-            { id: '1-context', name: 'Context', status: 'pending' },
-          ],
-          created: new Date().toISOString(),
-          updated: new Date().toISOString(),
-          cwd: tempDir,
-          dirHash: 'pw-track-001',
-        }]
-      };
-
-      writeTracking(tempDir, trackingData);
       const tracking = readTracking(tempDir);
-
       expect(tracking.workflows).toHaveLength(1);
-      expect(tracking.workflows[0].name).toBe('tracking-test');
-      expect(tracking.workflows[0].status).toBe('in-progress');
+      expect(tracking.workflows[0].name).toBe('my-project');
+      expect(tracking.workflows[0].dirHash).toBe('pw-my-proj-xyz');
+      expect(tracking.workflows[0].currentPhase).toBe(2);
+      expect(tracking.workflows[0].config).toBeDefined();
     });
 
-    it('should support multiple workflows in tracking', () => {
-      createWorkflowDir(tempDir, 'workflow-1', 'pw-wf-001');
-      createWorkflowDir(tempDir, 'workflow-2', 'pw-wf-002');
-
-      const trackingData = {
-        $schema: "",
-        version: "1.0",
-        created: "",
-        updated: "",
+    it('supports multiple workflows in stelow.json', () => {
+      createWorkflowDir(tempDir, 'pw-multi-001');
+      writeTracking(tempDir, {
+        $schema: '', version: '1.0',
+        created: new Date().toISOString(), updated: new Date().toISOString(),
         workflows: [
-          { name: 'workflow-1', status: 'in-progress', currentPhase: 2 },
-          { name: 'workflow-2', status: 'completed', currentPhase: 7 },
-        ]
-      };
+          makeWorkflowEntry({ name: 'wf-a', dirHash: 'pw-a' }),
+          makeWorkflowEntry({ name: 'wf-b', dirHash: 'pw-b' }),
+          makeWorkflowEntry({ name: 'wf-c', dirHash: 'pw-c' }),
+        ],
+      });
 
-      writeTracking(tempDir, trackingData);
       const tracking = readTracking(tempDir);
-
-      expect(tracking.workflows).toHaveLength(2);
+      expect(tracking.workflows).toHaveLength(3);
+      expect(tracking.workflows.map(w => w.name)).toEqual(['wf-a', 'wf-b', 'wf-c']);
     });
   });
 
   describe('Workflow Rename', () => {
-    it('should update workflow name in index.json', () => {
-      createWorkflowDir(tempDir, 'old-name', 'pw-old-name-123');
-      
-      const indexPath = join(tempDir, WORKFLOW_DIR, '2026-05-19', 'pw-old-name-123', 'index.json');
-      
-      // Simulate rename
-      const index = JSON.parse(readFileSync(indexPath, 'utf8'));
-      index.name = 'new-name';
-      writeFileSync(indexPath, JSON.stringify(index, null, 2));
+    it('updates workflow name in stelow.json (dirHash stays stable)', () => {
+      createWorkflowDir(tempDir, 'pw-stable-001');
+      writeTracking(tempDir, {
+        $schema: '', version: '1.0',
+        created: new Date().toISOString(), updated: new Date().toISOString(),
+        workflows: [makeWorkflowEntry({ name: 'old-name', dirHash: 'pw-stable-001' })],
+      });
 
-      const updated = JSON.parse(readFileSync(indexPath, 'utf8'));
-      expect(updated.name).toBe('new-name');
-    });
-
-    it('should update workflow name in tracking.json', () => {
-      createWorkflowDir(tempDir, 'old-name', 'pw-old-name-123');
-
-      const trackingData = {
-        $schema: "",
-        version: "1.0",
-        created: "",
-        updated: "",
-        workflows: [{
-          name: 'old-name',
-          status: 'in-progress',
-          currentPhase: 1,
-          phases: [],
-          created: "",
-          updated: "",
-          dirHash: 'pw-old-name-123',
-        }]
-      };
-
-      writeTracking(tempDir, trackingData);
-
-      // Simulate rename in tracking
+      // Rename: update stelow.json only (dirHash stays stable)
       const tracking = readTracking(tempDir);
-      const workflow = tracking.workflows[0];
-      workflow.name = 'new-name';
-      workflow.updated = new Date().toISOString();
+      tracking.workflows[0].name = 'new-name';
+      tracking.workflows[0].updated = new Date().toISOString();
       writeTracking(tempDir, tracking);
 
-      const updated = readTracking(tempDir);
-      expect(updated.workflows[0].name).toBe('new-name');
+      const after = readTracking(tempDir);
+      expect(after.workflows[0].name).toBe('new-name');
+      expect(after.workflows[0].dirHash).toBe('pw-stable-001');
     });
 
-    it('should preserve dirHash after rename', () => {
-      createWorkflowDir(tempDir, 'test-workflow', 'pw-test-dirhash');
-      
-      const indexPath = join(tempDir, WORKFLOW_DIR, '2026-05-19', 'pw-test-dirhash', 'index.json');
-      const index = JSON.parse(readFileSync(indexPath, 'utf8'));
-      
-      expect(index._dir).toBe('pw-test-dirhash');
-      
-      // Rename
-      index.name = 'renamed-workflow';
-      writeFileSync(indexPath, JSON.stringify(index, null, 2));
+    it('preserves dirHash after rename (filesystem path stays stable)', () => {
+      const originalDirHash = 'pw-preserve-123';
+      createWorkflowDir(tempDir, originalDirHash);
 
-      const updated = JSON.parse(readFileSync(indexPath, 'utf8'));
-      expect(updated._dir).toBe('pw-test-dirhash'); // Unchanged!
-    });
-
-    it('should handle name with special characters', () => {
-      const names = [
-        'My Project!',
-        'API v2.0',
-        'Test@123',
-        'spaces  in  name',
-      ];
-
-      names.forEach(name => {
-        const safeName = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-        const dirHash = 'pw-' + safeName + '-test';
-        createWorkflowDir(tempDir, name, dirHash);
-        
-        const indexPath = join(tempDir, WORKFLOW_DIR, '2026-05-19', dirHash, 'index.json');
-        const index = JSON.parse(readFileSync(indexPath, 'utf8'));
-        
-        expect(index.name).toBe(name);
+      writeTracking(tempDir, {
+        $schema: '', version: '1.0',
+        created: new Date().toISOString(), updated: new Date().toISOString(),
+        workflows: [makeWorkflowEntry({ name: 'original', dirHash: originalDirHash })],
       });
+
+      // Simulate rename
+      const tracking = readTracking(tempDir);
+      tracking.workflows[0].name = 'renamed';
+      writeTracking(tempDir, tracking);
+
+      // The filesystem dir (using dirHash) is unchanged
+      const wfDir = join(tempDir, WORKFLOW_DIR, DATE, originalDirHash);
+      expect(existsSync(wfDir)).toBe(true);
+      // Verify the data
+      const final = readTracking(tempDir);
+      expect(final.workflows[0].name).toBe('renamed');
+      expect(final.workflows[0].dirHash).toBe(originalDirHash);
     });
   });
 
   describe('Workflow Archive', () => {
-    it('should update workflow status to archived', () => {
-      createWorkflowDir(tempDir, 'archive-test', 'pw-archive-001');
+    it('updates workflow status to archived in stelow.json', () => {
+      writeTracking(tempDir, {
+        $schema: '', version: '1.0',
+        created: new Date().toISOString(), updated: new Date().toISOString(),
+        workflows: [makeWorkflowEntry({ name: 'to-archive' })],
+      });
 
-      const trackingData = {
-        $schema: "",
-        version: "1.0",
-        created: "",
-        updated: "",
-        workflows: [{
-          name: 'archive-test',
-          status: 'in-progress',
-          currentPhase: 3,
-          phases: [],
-          created: "",
-          updated: "",
-          dirHash: 'pw-archive-001',
-        }]
-      };
-
-      writeTracking(tempDir, trackingData);
-
-      // Simulate archive
       const tracking = readTracking(tempDir);
-      const workflow = tracking.workflows[0];
-      workflow.status = 'archived';
-      workflow.updated = new Date().toISOString();
+      tracking.workflows[0].status = 'archived';
+      tracking.workflows[0].updated = new Date().toISOString();
       writeTracking(tempDir, tracking);
 
-      const updated = readTracking(tempDir);
-      expect(updated.workflows[0].status).toBe('archived');
+      const after = readTracking(tempDir);
+      expect(after.workflows[0].status).toBe('archived');
     });
 
-    it('should preserve archived workflow data', () => {
-      createWorkflowDir(tempDir, 'archived-workflow', 'pw-arch-xyz');
-
-      const trackingData = {
-        $schema: "",
-        version: "1.0",
-        created: "",
-        updated: "",
-        workflows: [{
-          name: 'archived-workflow',
-          status: 'archived',
-          currentPhase: 5,
-          phases: [],
-          created: "2026-05-19T00:00:00Z",
-          updated: new Date().toISOString(),
-          dirHash: 'pw-arch-xyz',
-          description: 'Archived for later review',
-        }]
-      };
-
-      writeTracking(tempDir, trackingData);
+    it('preserves archived workflow data (no field loss)', () => {
+      const wf = makeWorkflowEntry({
+        name: 'preserve-me',
+        dirHash: 'pw-keep',
+        config: { appetite: 'Core', review_mode: 'Auto', domains_detected: ['pricing'] },
+      });
+      writeTracking(tempDir, {
+        $schema: '', version: '1.0',
+        created: new Date().toISOString(), updated: new Date().toISOString(),
+        workflows: [wf],
+      });
 
       const tracking = readTracking(tempDir);
-      expect(tracking.workflows[0].description).toBe('Archived for later review');
-      expect(tracking.workflows[0].currentPhase).toBe(5);
+      tracking.workflows[0].status = 'archived';
+      writeTracking(tempDir, tracking);
+
+      const after = readTracking(tempDir);
+      expect(after.workflows[0].config.appetite).toBe('Core');
+      expect(after.workflows[0].config.domains_detected).toEqual(['pricing']);
+      expect(after.workflows[0].dirHash).toBe('pw-keep');
     });
   });
 
   describe('Cross-Session Persistence', () => {
-    it('should persist workflow between sessions', () => {
-      // Session 1: Create workflow
-      createWorkflowDir(tempDir, 'persistent-workflow', 'pw-persist-001');
-      
-      const trackingData = {
-        $schema: "",
-        version: "1.0",
-        created: "",
-        updated: "",
-        workflows: [{
-          name: 'persistent-workflow',
-          status: 'in-progress',
-          currentPhase: 2,
-          phases: [],
-          created: "",
-          updated: "",
-          dirHash: 'pw-persist-001',
-        }]
-      };
+    it('persists workflow state between read/write cycles', () => {
+      writeTracking(tempDir, {
+        $schema: '', version: '1.0',
+        created: new Date().toISOString(), updated: new Date().toISOString(),
+        workflows: [makeWorkflowEntry({ name: 'persistent' })],
+      });
 
-      writeTracking(tempDir, trackingData);
+      // Simulate new session: read fresh
+      const session1 = readTracking(tempDir);
+      // Modify and write
+      session1.workflows[0].currentPhase = 4; // SHAPE
+      session1.workflows[0].updated = new Date().toISOString();
+      writeTracking(tempDir, session1);
 
-      // Session 2: Read workflow (simulated)
-      const tracking = readTracking(tempDir);
-      expect(tracking.workflows).toHaveLength(1);
-      expect(tracking.workflows[0].name).toBe('persistent-workflow');
-      expect(tracking.workflows[0].currentPhase).toBe(2);
-
-      // Continue workflow
-      tracking.workflows[0].currentPhase = 3;
-      tracking.updated = new Date().toISOString();
-      writeTracking(tempDir, tracking);
-
-      // Session 3: Verify continued state
-      const continued = readTracking(tempDir);
-      expect(continued.workflows[0].currentPhase).toBe(3);
+      // Simulate another session: read again
+      const session2 = readTracking(tempDir);
+      expect(session2.workflows[0].currentPhase).toBe(4);
+      expect(session2.workflows[0].name).toBe('persistent');
     });
 
-    it('should handle concurrent workflow modifications', () => {
-      createWorkflowDir(tempDir, 'workflow-a', 'pw-a-001');
-      createWorkflowDir(tempDir, 'workflow-b', 'pw-b-002');
+    it('handles concurrent modifications correctly (last-write-wins)', () => {
+      writeTracking(tempDir, {
+        $schema: '', version: '1.0',
+        created: new Date().toISOString(), updated: new Date().toISOString(),
+        workflows: [makeWorkflowEntry({ name: 'concurrent' })],
+      });
 
-      const trackingData = {
-        $schema: "",
-        version: "1.0",
-        created: "",
-        updated: "",
-        workflows: [
-          { name: 'workflow-a', status: 'in-progress', currentPhase: 1 },
-          { name: 'workflow-b', status: 'in-progress', currentPhase: 2 },
-        ]
-      };
+      // Both readers get the same initial state
+      const readerA = readTracking(tempDir);
+      const readerB = readTracking(tempDir);
 
-      writeTracking(tempDir, trackingData);
+      // A writes first
+      readerA.workflows[0].currentPhase = 4;
+      writeTracking(tempDir, readerA);
 
-      // Modify workflow-a
-      let tracking = readTracking(tempDir);
-      tracking.workflows[0].currentPhase = 5;
-      tracking.updated = new Date().toISOString();
-      writeTracking(tempDir, tracking);
+      // B writes second (had stale state)
+      readerB.workflows[0].currentPhase = 5;
+      writeTracking(tempDir, readerB);
 
-      // Modify workflow-b
-      tracking = readTracking(tempDir);
-      tracking.workflows[1].currentPhase = 6;
-      tracking.updated = new Date().toISOString();
-      writeTracking(tempDir, tracking);
-
-      // Verify both modifications
       const final = readTracking(tempDir);
-      expect(final.workflows[0].currentPhase).toBe(5);
-      expect(final.workflows[1].currentPhase).toBe(6);
+      expect(final.workflows[0].currentPhase).toBe(5); // B wins
     });
   });
 
-  describe('Artifact Creation', () => {
-    it('should create spec artifact', () => {
-      createWorkflowDir(tempDir, 'spec-test', 'pw-spec-001');
-
-      const specContent = `# Spec Product v1
-
-## Problem
-Test problem statement
-
-## Solution
-Test solution
-
-## Scope
-- IN: Feature A, Feature B
-- OUT: Feature C
-`;
-
-      const specDir = join(tempDir, WORKFLOW_DIR, '2026-05-19', 'pw-spec-001', 'specs');
-      const specPath = join(specDir, 'spec-product_v1.md');
-      writeFileSync(specPath, specContent);
+  describe('Artifact Storage', () => {
+    it('writes spec artifact to .stelow/{date}/{dir}/specs/', () => {
+      const wfDir = createWorkflowDir(tempDir, 'pw-artifact-001');
+      const specPath = join(wfDir, 'specs', 'spec-product_v1.md');
+      writeFileSync(specPath, '# Spec content\n');
 
       expect(existsSync(specPath)).toBe(true);
-      expect(readFileSync(specPath, 'utf8')).toContain('Spec Product v1');
+      expect(readFileSync(specPath, 'utf8').trim()).toBe('# Spec content');
     });
 
-    it('should track artifact in index.json', () => {
-      createWorkflowDir(tempDir, 'artifact-test', 'pw-art-001');
+    it('tracks artifact metadata in stelow.json (no separate file needed)', () => {
+      // v0.53.0: artifact metadata can live in stelow.json OR filesystem conventions.
+      // The filesystem is the canonical artifact store; stelow.json is state.
+      writeTracking(tempDir, {
+        $schema: '', version: '1.0',
+        created: new Date().toISOString(), updated: new Date().toISOString(),
+        workflows: [makeWorkflowEntry({
+          name: 'with-artifacts',
+          dirHash: 'pw-art-001',
+          artifacts: {
+            specs: ['spec-product_v1.md'],
+            critiques: ['critique-report.md'],
+          },
+        })],
+      });
 
-      const indexPath = join(tempDir, WORKFLOW_DIR, '2026-05-19', 'pw-art-001', 'index.json');
-      const index = JSON.parse(readFileSync(indexPath, 'utf8'));
-
-      // Simulate artifact creation
-      index.artifacts = {
-        spec: 'specs/spec-product_v1.md',
-        created_at: new Date().toISOString(),
-      };
-      writeFileSync(indexPath, JSON.stringify(index, null, 2));
-
-      const updated = JSON.parse(readFileSync(indexPath, 'utf8'));
-      expect(updated.artifacts.spec).toBe('specs/spec-product_v1.md');
+      const tracking = readTracking(tempDir);
+      expect(tracking.workflows[0].artifacts.specs).toContain('spec-product_v1.md');
     });
   });
 });

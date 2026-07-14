@@ -51,31 +51,8 @@ function createWorkflowDir(baseDir: string, name: string, dirHash: string) {
   mkdirSync(join(workflowDir, "execution"), { recursive: true });
   mkdirSync(join(workflowDir, "verification"), { recursive: true });
 
-  writeFileSync(
-    join(workflowDir, "index.json"),
-    JSON.stringify(
-      {
-        version: "1.0",
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        name,
-        _dir: dirHash,
-        workflow_status: "in-progress",
-        current_phase: "Audit",
-        current_phase_index: 16,
-        config: {
-          appetite: "Core",
-          review_mode: "Product Spec + Interface + Tech Review",
-        },
-        artifacts: {},
-        approved: false,
-        approved_at: null,
-      },
-      null,
-      2,
-    ),
-  );
-
+  // v0.53.0: NO index.json. stelow.json is the canonical source.
+  void name; void dirHash;
   return workflowDir;
 }
 

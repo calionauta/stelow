@@ -24,7 +24,6 @@ const specProductContent = readFileSync(join(FIXTURES_DIR, 'spec-product_v1.md')
 const specTechContent = readFileSync(join(FIXTURES_DIR, 'spec-tech_v1.md'), 'utf8');
 const interfacesContent = readFileSync(join(FIXTURES_DIR, 'interfaces_v1.md'), 'utf8');
 const approvalContent = readFileSync(join(FIXTURES_DIR, 'spec-product_v1.approved.md'), 'utf8');
-const indexJsonContent = readFileSync(join(FIXTURES_DIR, 'index.json'), 'utf8');
 
 // ── SPEC-PRODUCT.MD ─────────────────────────────────────────────
 
@@ -114,37 +113,6 @@ describe('approval receipt schema', () => {
 
   it('should have hash field', () => {
     expect(approvalContent).toMatch(/hash:/);
-  });
-});
-
-// ── INDEX.JSON ────────────────────────────────────────────────
-
-describe('index.json schema', () => {
-  const parsed = JSON.parse(indexJsonContent);
-
-  it('should have version field', () => {
-    expect(parsed).toHaveProperty('version');
-  });
-
-  it('should have name field', () => {
-    expect(parsed).toHaveProperty('name');
-  });
-
-  it('should have _dir field', () => {
-    expect(parsed).toHaveProperty('_dir');
-  });
-
-  it('should have workflow_status field', () => {
-    expect(parsed).toHaveProperty('workflow_status');
-  });
-
-  it('should have current_phase field', () => {
-    expect(parsed).toHaveProperty('current_phase');
-  });
-
-  it('workflow_status should be valid', () => {
-    const valid = ['in-progress', 'completed', 'archived', 'paused'];
-    expect(valid).toContain(parsed.workflow_status);
   });
 });
 

@@ -11,8 +11,8 @@
  * This test enforces:
  *   1. The shape-up validator script rejects files missing required fields.
  *   2. The proposal-structure template documents all required fields.
- *   3. setup.md writes the required fields to both index.json AND spec
- *      frontmatter.
+ *   3. setup.md writes the required fields to stelow.json (canonical source as of v0.50.0)
+ *      AND spec frontmatter.
  *
  * If these tests fail, a human MUST investigate — it means the
  * frontmatter contract has drifted.
@@ -87,8 +87,8 @@ describe('proposal-structure.md frontmatter template', () => {
 });
 
 // ═════════════════════════════════════════════════════════════════════
-// 3. SETUP.md WRITES REQUIRED FIELDS TO stelow.json (canonical) + spec-product.md (as of v0.50.0)
-//    index.json remains a mirrored copy via the TS extension write-through hook.
+// 3. SETUP.md WRITES REQUIRED FIELDS TO stelow.json (canonical source as of v0.50.0).
+//    v0.53.0: index.json removed. stelow.json is the single canonical source.
 // ═════════════════════════════════════════════════════════════════════
 
 describe('setup.md frontmatter injection', () => {
