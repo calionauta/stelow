@@ -234,15 +234,6 @@ export function writeTracking(cwd: string, data: TrackingData): void {
     }
   }
   writeJson(getTrackingPath(cwd), data);
-
-  // Write-through to index.json for every workflow.
-  // This replaces ~9 explicit updateWorkflowIndexJson calls from commands.ts.
-  // The 3 archive-path calls remain explicit (they fire after workflow is removed from tracking).
-  for (const wf of data.workflows) {
-    if (wf.dirHash) {
-      updateWorkflowIndexJson(cwd, wf, {});
-    }
-  }
 }
 
 export function writeGlobalTracking(data: TrackingData): void {
@@ -457,19 +448,6 @@ export function renameWorkflow(
   // 2. Global index
   updateGlobalIndexName(oldName, finalName, cwd);
 
-  // 3. index.json — use dirHash (NOT name) for filesystem path
-  const ds = getDateStamp(new Date(wf.created));
-  const dirToUse = wf.dirHash || oldName;  // dirHash is stable, name may change
-  const idxPath = join(cwd, WORKFLOW_DIR, ds, dirToUse, "index.json");
-  if (existsSync(idxPath)) {
-    const idx = readJson<Record<string, unknown>>(idxPath);
-    if (idx) {
-      idx.name = finalName;
-      idx.updated_at = new Date().toISOString();
-      writeJson(idxPath, idx);
-    }
-  }
-
   return { ok: true };
 }
 
@@ -488,47 +466,24 @@ interface DiskWorkflow {
 }
 
 /**
- * Scan .stelow/<date>/<dirHash>/index.json on disk and return
- * all workflow entries found, regardless of what the tracking file says.
+ * Scan workflow entries from stelow.json (canonical source).
+ * Returns DiskWorkflow entries compatible with reconcileTracking.
  */
 export function scanWorkflowDirs(cwd: string): DiskWorkflow[] {
-  const result: DiskWorkflow[] = [];
-  const base = join(cwd, WORKFLOW_DIR);
-  if (!existsSync(base)) return result;
-
-  try {
-    const dateDirs = readdirSafe(base);
-    for (const dateDir of dateDirs) {
-      if (!dateDir.match(/^\d{4}-\d{2}-\d{2}$/)) continue;
-      const datePath = join(base, dateDir);
-      const wfDirs = readdirSafe(datePath);
-      for (const wfDir of wfDirs) {
-        const indexPath = join(datePath, wfDir, "index.json");
-        if (!existsSync(indexPath)) continue;
-        const raw = readJson<Record<string, any>>(indexPath);
-        if (!raw) continue;
-        result.push({
-            name: raw.name || wfDir,
-            status: raw.status || raw.workflow_status || "unknown",
-            // Backward compatibility: old workflows had current_phase_index: 0 for Setup
-            // (the bug that was just fixed). If phase name says "setup" but index is 0,
-            // normalize to 2 (correct index for Setup in PHASE_NAMES).
-            currentPhase:
-              raw.current_phase_index === 0 && raw.current_phase === "setup"
-                ? 2
-                : (raw.current_phase_index ?? 0),
-            created: raw.created_at || "",
-            updated: raw.updated_at || "",
-            draftContent: raw.draft,
-            dirHash: wfDir,
-            dateStamp: dateDir,
-            artifacts: raw.artifacts || {},
-          });
-      }
-    }
-  } catch { /* skip unreadable */ }
-
-  return result;
+  const tracking = readTracking(cwd);
+  if (!tracking) return [];
+  const ds = getDateStamp();
+  return tracking.workflows.map(w => ({
+    name: w.name,
+    status: w.status,
+    currentPhase: w.currentPhase ?? 0,
+    created: w.created ?? "",
+    updated: w.updated ?? "",
+    draftContent: w.draftContent,
+    dirHash: w.dirHash ?? "",
+    dateStamp: ds,
+    artifacts: {},
+  }));
 }
 // @lat: [[data-model#Data Flow Patterns#Workflow Scan (Auto-Discovery)]]
 
@@ -591,116 +546,6 @@ export function reconcileTracking(cwd: string): Workflow[] {
   }
 
   return known;
-}
-
-/**
- * Mark a workflow as archived in its index.json on disk.
- * Returns true if found and updated, false if not found.
- */
-export function archiveWorkflowOnDisk(cwd: string, workflowName: string): boolean {
-  const base = join(cwd, WORKFLOW_DIR);
-  if (!existsSync(base)) return false;
-
-  try {
-    const dateDirs = readdirSafe(base);
-    for (const dateDir of dateDirs) {
-      if (!dateDir.match(/^\d{4}-\d{2}-\d{2}$/)) continue;
-      const datePath = join(base, dateDir);
-      const wfDirs = readdirSafe(datePath);
-      for (const wfDir of wfDirs) {
-        const indexPath = join(datePath, wfDir, "index.json");
-        if (!existsSync(indexPath)) continue;
-        const raw = readJson<Record<string, any>>(indexPath);
-        if (!raw) continue;
-        if (raw.name === workflowName) {
-          raw.workflow_status = "archived";
-          raw.status = "archived";
-          raw.updated_at = new Date().toISOString();
-          writeJson(indexPath, raw);
-          return true;
-        }
-      }
-    }
-  } catch { /* skip */ }
-  return false;
-}
-
-/**
- * Centralized write-through to index.json on disk.
- * Merges partial `updates` into the on-disk index.json, reading current state first.
- * Path is derived from wf.dirHash (stable directory name) and wf.created (date stamp).
- * Returns true if written, false if wf.dirHash is missing.
- *
- * Call this on EVERY phase/status mutation so the three state sources stay aligned:
- * - tracking file (stelow.json)
- * - global tracking (~/.stelow-global.json)
- * - index.json (.stelow/<date>/<hash>/index.json)
- */
-export function updateWorkflowIndexJson(
-  cwd: string,
-  wf: Workflow,
-  updates: Record<string, unknown>
-): boolean {
-  if (!wf.dirHash) return false;
-  // Defensive date: avoid RangeError from invalid wf.created
-  const createdDate = new Date(wf.created);
-  const ds = isNaN(createdDate.getTime()) ? getDateStamp() : getDateStamp(createdDate);
-  const idxPath = join(cwd, WORKFLOW_DIR, ds, wf.dirHash, "index.json");
-
-  let idx: Record<string, unknown> = {};
-  const existing = readJson<Record<string, unknown>>(idxPath);
-  if (existing) {
-    idx = existing;
-  } else if (existsSync(idxPath)) {
-    // File exists but is corrupt — warn and rebuild from workflow state
-    console.warn(`[stelow] Corrupt index.json, rebuilding: ${idxPath}`);
-    idx = {
-      name: wf.name,
-      workflow_status: wf.status,
-      current_phase: PHASE_NAMES[wf.currentPhase]?.toLowerCase() || "setup",
-      current_phase_index: wf.currentPhase,
-      created_at: wf.created,
-    };
-  } else {
-    // First-write: seed from workflow state
-    idx = {
-      name: wf.name,
-      workflow_status: wf.status,
-      current_phase: PHASE_NAMES[wf.currentPhase]?.toLowerCase() || "setup",
-      current_phase_index: wf.currentPhase,
-      created_at: wf.created,
-    };
-  }
-
-  Object.assign(idx, updates);
-  // Write-through Workflow.config → index.json (so TUI/integrations see the same source of truth)
-  if (wf.config) {
-    idx.config = idx.config || {};
-    const cur = idx.config as Record<string, unknown>;
-    if (wf.config.appetite !== undefined) cur.appetite = wf.config.appetite;
-    if (wf.config.review_mode !== undefined) cur.review_mode = wf.config.review_mode;
-    if (Array.isArray(wf.config.domains_detected)) cur.domains_detected = [...wf.config.domains_detected];
-  }
-  // Write-through Workflow.scopes → index.json (herdr TUI reads scopes from index.json)
-  if (Array.isArray(wf.scopes)) {
-    idx.scopes = JSON.parse(JSON.stringify(wf.scopes));
-  }
-  // Sync immutable timestamp from Workflow object to index.json
-  if (wf.completedAt && !idx.completed_at) {
-    idx.completed_at = wf.completedAt;
-  }
-  // Normalize status field: LLMs prefer 'status' (tracking file convention),
-  // legacy readers/auto-discovery use 'workflow_status'. Keep both in sync.
-  if (idx.status !== undefined) {
-    idx.workflow_status = idx.status;
-  } else if (idx.workflow_status !== undefined) {
-    idx.status = idx.workflow_status;
-  }
-  idx.updated_at = new Date().toISOString();
-
-  mkdirSync(dirname(idxPath), { recursive: true });
-  writeJson(idxPath, idx);
-  return true;
 }
 
 /**

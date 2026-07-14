@@ -118,18 +118,20 @@ if [ ! -d "$DIR" ]; then
 fi
 ```
 
-Then scan for existing workflows:
+Then scan stelow.json for existing in-progress workflows:
 
 ```bash
-count=0
-for f in .stelow/*/*/index.json; do
-  if [ -f "$f" ] && grep -q '"workflow_status"[[:space:]]*:[[:space:]]*"in-progress"' "$f" 2>/dev/null; then
-    echo "ACTIVE_WORKFLOW_FOUND:$f"
-    cat "$f"
-    count=$((count + 1))
+if [ -f "stelow.json" ]; then
+  ACTIVE_COUNT=$(node -e "
+    const t = JSON.parse(require('fs').readFileSync('stelow.json','utf8'));
+    process.stdout.write(String(t.workflows.filter(w => w.status === 'in-progress').length));
+  " 2>/dev/null)
+  if [ "${ACTIVE_COUNT:-0}" -gt 0 ]; then
+    echo "ACTIVE_WORKFLOW_FOUND"
+  else
+    echo "NEW_WORKFLOW"
   fi
-done
-if [ "$count" -eq 0 ]; then
+else
   echo "NEW_WORKFLOW"
 fi
 ```
@@ -182,35 +184,32 @@ follow this flow INSTEAD OF asking the user:
 **setup:30.10 — Identify workflow directory by name**
 
 ```bash
-# Find workflow by NAME (not _dir) matching the RESUME context
+# Find workflow by NAME in stelow.json (canonical source as of v0.50.0).
 RESUME_WF_NAME="$1"  # e.g., "wf-whkaxv" from [RESUME: workflow wf-whkaxv]
 
-# Scan all index.json files for matching name field
-MATCHED_DIR=""
-for f in .stelow/*/*/index.json; do
-  if [ -f "$f" ]; then
-    WF_NAME=$(grep '"name"' "$f" | grep -oP '"[^"]+"' | head -1 | tr -d '"')
-    if [ "$WF_NAME" = "$RESUME_WF_NAME" ]; then
-      MATCHED_DIR=$(dirname "$f")
-      echo "MATCHED: name=$WF_NAME dir=$MATCHED_DIR"
-      break
-    fi
-  fi
-done
-
-if [ -z "$MATCHED_DIR" ]; then
-  echo "RESUME_FAILED: workflow '$RESUME_WF_NAME' not found in any index.json"
-  echo "Available workflows:"
-  for f in .stelow/*/*/index.json; do
-    [ -f "$f" ] && echo "  - $(grep '"name"' "$f" | grep -oP '"[^"]+"' | head -1 | tr -d '"')"
-  done
+if [ ! -f "stelow.json" ]; then
+  echo "RESUME_FAILED: no stelow.json in current directory"
   exit 1
 fi
 
-WF_DIR="$MATCHED_DIR"
-INDEX="$WF_DIR/index.json"
-_DIR=$(basename "$WF_DIR")  # _dir = directory name (e.g., pw-ollc-whkaxv)
-echo "RESUMING: name=$RESUME_WF_NAME _dir=$_DIR"
+DIR_HASH=$(node -e "
+  const t = JSON.parse(require('fs').readFileSync('stelow.json','utf8'));
+  const wf = t.workflows.find(w => w.name === '$RESUME_WF_NAME');
+  process.stdout.write(wf ? (wf.dirHash || '') : '');
+" 2>/dev/null)
+
+if [ -z "$DIR_HASH" ]; then
+  echo "RESUME_FAILED: workflow '$RESUME_WF_NAME' not found in stelow.json"
+  echo "Available workflows:"
+  node -e "
+    const t = JSON.parse(require('fs').readFileSync('stelow.json','utf8'));
+    t.workflows.forEach(w => process.stdout.write('  - ' + w.name + '\n'));
+  " 2>/dev/null
+  exit 1
+fi
+
+WF_DIR=".stelow/$(date +%Y-%m-%d)/$DIR_HASH"
+echo "RESUMING: name=$RESUME_WF_NAME dirHash=$DIR_HASH wf_dir=$WF_DIR"
 ```
 
 > ⚠️ **CRITICAL**: The `{name}` field (display name, e.g., `wf-whkaxv`) is what the user sees.
@@ -219,8 +218,7 @@ echo "RESUMING: name=$RESUME_WF_NAME _dir=$_DIR"
 
 After identifying the workflow:
 
-1. **Read the full `index.json`** — extract `name`, `current_phase_index`, `current_phase`,
-   `artifacts`, `workflow_status`
+1. **Read full workflow state** from stelow.json (canonical) — name, currentPhase, phases, status, scope, artifacts.
 
 2. **Read session checkpoints** (if they exist):
    ```bash
@@ -369,9 +367,9 @@ if ! echo "$VALID_REVIEW_MODES" | grep -qw "{chosen_review_mode}"; then
 fi
 ```
 
-#### Step 3: Store in stelow.json (source of truth) + write-through to index.json
+#### Step 3: Store in stelow.json (canonical source)
 
-Update the workflow's `stelow.json` with the config — `stelow.json` is the canonical source; `index.json` is mirrored via `updateWorkflowIndexJson()` write-through (no manual edit needed).
+Update the workflow's `stelow.json` with the config — `stelow.json` is the single canonical source of truth (no mirrors as of v0.53.0).
 
 ```bash
 # stelow.json is the single source of truth for Workflow.config (v0.50.0+)
@@ -389,7 +387,7 @@ t.updated = new Date().toISOString();
 fs.writeFileSync(path, JSON.stringify(t, null, 2));
 console.log('Config saved to stelow.json (workflow: ' + wf.name + ')');
 "
-# index.json is automatically updated by the TS extension's writeTracking hook
+# stelow.json is the only file persisted — writeTracking() handles all subsequent updates.
 ```
 
 #### Step 4: Inject into spec-product.md frontmatter

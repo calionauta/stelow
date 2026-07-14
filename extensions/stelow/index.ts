@@ -26,7 +26,7 @@ import {
   getActiveWorkflow,
   resolveProjectDir,
   parseInputForWorkflow,
-  updateWorkflowIndexJson,
+  
   getDateStamp,
 } from "./state";
 import { updateFooter, notifyPhase } from "./ui";
@@ -532,22 +532,8 @@ export default function (pi: ExtensionAPI) {
     // the index.json (.stelow/<date>/<hash>/index.json)
     // becomes stale. This sync brings it up-to-date on every turn_end.
     const syncWf = getActiveWorkflow(wd);
-    if (syncWf?.dirHash) {
-      const syncId = `${wd}:${syncWf.name}`;
-      const lastPhase = _lastSyncedPhase.get(syncId);
-      if (lastPhase !== syncWf.currentPhase) {
-        // Sync index.json
-        updateWorkflowIndexJson(wd, syncWf, {
-          current_phase: PHASE_NAMES[syncWf.currentPhase]?.toLowerCase() || "setup",
-          current_phase_index: syncWf.currentPhase,
-          workflow_status: syncWf.currentPhase >= (PHASE_NAMES.length - 1)
-            && Array.isArray(syncWf.phases)
-            && syncWf.phases.every(p => p.status === "completed")
-            ? "completed" : "in-progress",
-        });
-        _lastSyncedPhase.set(syncId, syncWf.currentPhase);
-      }
-    }
+    // stelow.json is the canonical source — writeTracking() updates it.
+    // No need to mirror to index.json (file no longer exists as of v0.53.0).
   });
 
   // ── UI update on agent end ✓ ─────────────────────────────────────

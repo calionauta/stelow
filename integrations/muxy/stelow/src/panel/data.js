@@ -592,47 +592,35 @@ const ARTIFACT_DIR_LABELS = {
 export { ARTIFACT_DIRS, ARTIFACT_DIR_ICONS, ARTIFACT_DIR_LABELS };
 
 /**
- * Scan session directories and build a map of workflow name → artifacts.
+ * Scan stelow.json (canonical source) and build a map of workflow name → artifacts.
  * Returns Map<wfName, { artifacts: { specs: [], ... }, path: string }>
  */
 export async function scanArtifactDirs() {
   const result = new Map();
   try {
-    const dateDirs = await muxy.files.list('.stelow/');
-    const dateDirPromises = dateDirs
-      .filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d))
-      .map(async dateDir => {
+    const stelowRes = await muxy.files.read('stelow.json');
+    if (!stelowRes?.content) return result;
+    const tracking = JSON.parse(stelowRes.content);
+    const today = new Date().toISOString().slice(0, 10);
+
+    const workflowPromises = (tracking.workflows || []).map(async (wf) => {
+      if (!wf.dirHash) return;
+      const base = `.stelow/${today}/${wf.dirHash}`;
+      const artifacts = {};
+      for (const dir of ARTIFACT_DIRS) {
         try {
-          const sessionDirs = await muxy.files.list(`.stelow/${dateDir}/`);
-          const sessionPromises = sessionDirs.map(async sessionDir => {
-            try {
-              const idxRes = await muxy.files.read(
-                `.stelow/${dateDir}/${sessionDir}/index.json`
-              );
-              if (!idxRes?.content) return;
-              const data = JSON.parse(idxRes.content);
-              if (!data.name) return;
-              const base = `.stelow/${dateDir}/${sessionDir}`;
-              const artifacts = {};
-              for (const dir of ARTIFACT_DIRS) {
-                try {
-                  const files = await muxy.files.list(`${base}/${dir}/`);
-                  artifacts[dir] = files.filter(f => f.endsWith('.md'));
-                } catch {
-                  artifacts[dir] = [];
-                }
-              }
-              // Only store if this name hasn't been seen, or this is newer
-              if (!result.has(data.name)) {
-                result.set(data.name, { artifacts, path: base, date: dateDir });
-              }
-            } catch { /* skip corrupt session */ }
-          });
-          await Promise.all(sessionPromises);
-        } catch { /* skip unreadable date dir */ }
-      });
-    await Promise.all(dateDirPromises);
-  } catch { /* no .stelow dir */ }
+          const files = await muxy.files.list(`${base}/${dir}/`);
+          artifacts[dir] = files.filter(f => f.endsWith('.md'));
+        } catch {
+          artifacts[dir] = [];
+        }
+      }
+      if (!result.has(wf.name)) {
+        result.set(wf.name, { artifacts, path: base, date: today });
+      }
+    });
+    await Promise.all(workflowPromises);
+  } catch { /* no stelow.json */ }
   return result;
 }
 

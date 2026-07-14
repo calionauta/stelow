@@ -2,6 +2,70 @@
 
 All notable changes to `@calionauta/stelow` will be documented in this file.
 
+## [0.53.0] - 2026-07-14
+
+### Breaking Change
+
+- **Eliminated `.stelow/{date}/{hash}/index.json` mirror entirely** — `stelow.json` is now the **single canonical source of truth**. No mirrors, no write-through, no drift detection. All TUI consumers (muxy panel, herdr TUI, doctor, pulse) read directly from `stelow.json`.
+
+### Removed
+
+- `extensions/stelow/state.ts` — `updateWorkflowIndexJson()` function (110+ lines). `archiveWorkflowOnDisk()` function. `scanWorkflowDirs()` rewritten to read `stelow.json` instead of scanning `index.json` files. `writeTracking()` no longer iterates over workflows to mirror state.
+- `extensions/stelow/start.ts` — `cmdStart` no longer writes `index.json` (only `stelow.json`).
+- `extensions/stelow/commands.ts` — 3 sites that called `updateWorkflowIndexJson` after `archiveWorkflowOnDisk`.
+- `extensions/stelow/index.ts` — agent-end hook no longer calls `updateWorkflowIndexJson`.
+- `extensions/stelow/doctor.ts` — `readWorkflowIndexSnapshot()` removed. Drift detection removed (single source = no drift possible). Zombie detection now reads `stelow.json` instead of scanning `index.json` files.
+- `extensions/stelow/pulse/pulse.sh` — existence check now looks for `stelow.json` entry instead of per-workflow `index.json`.
+- `skills/stelow-product-orchestrator/stages/setup.md` — workflow existence checks + resume workflow logic now reads `stelow.json` directly.
+- `integrations/muxy/stelow/src/panel/data.js` — `scanArtifactDirs()` rewritten to read `stelow.json` workflow entries directly.
+- `integrations/herdr/stelow/src/main.rs` — `load_index_json()` removed. `WorkflowEntry` struct now deserializes `draftContent` and `scopes[]` directly from `stelow.json#workflows[].i`.
+- `tests/unit/scan-workflow-dirs.test.ts` — deleted (function now reads from stelow.json).
+- `tests/unit/config-symmetry.test.ts` — rewritten (removed TS write-through tests).
+- `tests/unit/state-real.test.ts` — removed `reconcileTracking`/`archiveWorkflowOnDisk` blocks.
+- `tests/unit/doctor.test.ts` — removed `detects missing index and global mismatch` test.
+
+### Architecture
+
+**Before v0.53.0:**
+
+```
+   stelow.json              index.json (per workflow)
+   ──────────               ────────────────────
+   config (canonical)  →→   config (mirror)
+   scopes (canonical)  →→   scopes (mirror)
+   status (canonical)  →→   status (mirror)
+   ...                     draft (canonical here only!)
+```
+
+Two sources, must be kept in sync via write-through loop, drift detection.
+
+**After v0.53.0:**
+
+```
+   stelow.json
+   ──────────
+   config ✓
+   scopes ✓
+   status ✓
+   draftContent ✓
+   phases ✓
+   artifacts ✓
+   ...all in one place
+```
+
+One source. No sync. No drift. **KISS / DRY / CoC compliant.**
+
+### Migration
+
+- **In-flight workflows**: Nothing to do. `stelow.json` already has all the data. The `index.json` file becomes orphaned but is harmless (no code reads it).
+- **Integrations (muxy, herdr)**: Updated automatically (this release). No user action.
+- **Custom scripts reading `index.json`**: Update to read `stelow.json#workflows[].i` for the workflow of interest (by `name` or `dirHash`).
+- **Filesystem artifacts**: `.stelow/{date}/{hash}/` directory layout unchanged. Plans, interfaces, critiques, scopes still live there. Only the `index.json` file inside is gone.
+
+### Tests
+
+- 806 tests passing (was 835 in v0.52.1). Net change: -29 (removed tests for eliminated code paths).
+
 ## [0.52.1] - 2026-07-14
 
 ### Changed

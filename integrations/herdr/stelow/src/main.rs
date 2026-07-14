@@ -115,15 +115,11 @@ struct WorkflowEntry {
     current_phase: i32,
     #[serde(default, rename = "dirHash")]
     dir_hash: String,
-}
-
-#[derive(Debug, Deserialize)]
-struct TrackingFile {
+    #[serde(default, rename = "draftContent")]
+    draft_content: Option<String>,
     #[serde(default)]
-    workflows: Vec<WorkflowEntry>,
+    scopes: Vec<ScopeEntry>,
 }
-
-// ── index.json shape (per-workflow: draft + scopes) ──
 
 #[derive(Debug, Deserialize)]
 struct ScopeEntry {
@@ -140,14 +136,14 @@ struct ScopeEntry {
 }
 
 #[derive(Debug, Deserialize)]
-struct IndexFile {
+struct TrackingFile {
     #[serde(default)]
-    draft: String,
-    #[serde(default, rename = "current_phase_index")]
-    current_phase_index: i32,
-    #[serde(default)]
-    scopes: Vec<ScopeEntry>,
+    workflows: Vec<WorkflowEntry>,
 }
+
+// ── stelow.json is the canonical source (v0.50.0+). No per-workflow
+//    index.json mirror as of v0.53.0 — draft + scopes come from
+//    stelow.json#workflows[].draftContent and .scopes[] ──
 
 // ── Path normalization (mirrors muxy isWorkflowCwdCompatible) ──
 
@@ -173,34 +169,8 @@ fn cwd_matches(workflow_cwd: &str, project_path: &str) -> bool {
 
 // ── Loading ──────────────────────────────────────────────────────────
 
-fn load_index_json(cwd: &str, dir_hash: &str) -> Option<IndexFile> {
-    // Convention: .stelow/<date>/<dirHash>/index.json (latest if multiple dates).
-    let stelow_dir = PathBuf::from(cwd).join(".stelow");
-    if !stelow_dir.is_dir() { return None; }
-    let date_dirs = fs::read_dir(&stelow_dir).ok()?;
-    let mut candidates: Vec<PathBuf> = Vec::new();
-    for date_entry in date_dirs.flatten() {
-        let date_path = date_entry.path();
-        if !date_path.is_dir() { continue; }
-        // Must match YYYY-MM-DD
-        if let Some(name) = date_path.file_name().and_then(|n| n.to_str()) {
-            if !name.starts_with("20") || name.len() < 10 { continue; }
-        }
-        let idx = date_path.join(dir_hash).join("index.json");
-        if idx.is_file() {
-            candidates.push(idx);
-        }
-    }
-    // Sort by date (lexicographic works for ISO YYYY-MM-DD), pick latest.
-    candidates.sort();
-    let latest = candidates.last()?;
-    let text = fs::read_to_string(latest).ok()?;
-    serde_json::from_str(&text).ok()
-}
-
 fn entry_to_workflow(e: WorkflowEntry, project_path: &str) -> Option<Workflow> {
     // Convention over configuration: filter out archived workflows from list.
-    // (Muxy does the same — isHiddenWorkflowStatus.)
     if matches!(e.status.as_str(), "archived" | "aborted" | "stopped" | "cancelled" | "canceled") {
         return None;
     }
@@ -208,30 +178,22 @@ fn entry_to_workflow(e: WorkflowEntry, project_path: &str) -> Option<Workflow> {
     if !cwd_matches(&e.cwd, project_path) {
         return None;
     }
-    // Load draft + scopes from index.json (if dir_hash present).
-    let (draft, scopes, current_phase_index) = if !e.dir_hash.is_empty() {
-        if let Some(idx) = load_index_json(&e.cwd, &e.dir_hash) {
-            let scopes = idx.scopes.into_iter().map(|s| Scope {
-                id: s.id,
-                name: s.name,
-                scope_type: s.scope_type,
-                status: ScopeStatus::from_str(&s.status),
-                iteration: s.iteration,
-                max_iterations: s.max_iterations,
-            }).collect();
-            (idx.draft, scopes, idx.current_phase_index)
-        } else {
-            (String::new(), Vec::new(), e.current_phase)
-        }
-    } else {
-        (String::new(), Vec::new(), e.current_phase)
-    };
+    // draft + scopes come from stelow.json (canonical source).
+    // Scope type defaults to "feature" since the wire type is preserved on TS side.
+    let scopes: Vec<Scope> = e.scopes.iter().map(|s| Scope {
+        id: s.id.clone(),
+        name: s.name.clone(),
+        scope_type: s.scope_type.clone(),
+        status: ScopeStatus::from_str(&s.status),
+        iteration: s.iteration,
+        max_iterations: s.max_iterations,
+    }).collect();
 
     Some(Workflow {
-        name: e.name,
-        status: if e.status.is_empty() { "unknown".into() } else { e.status },
-        current_phase: current_phase_index,
-        draft,
+        name: e.name.clone(),
+        status: if e.status.is_empty() { "unknown".into() } else { e.status.clone() },
+        current_phase: e.current_phase,
+        draft: e.draft_content.clone().unwrap_or_default(),
         scopes,
     })
 }

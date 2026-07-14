@@ -190,10 +190,7 @@ describe('domains_detected field flow', () => {
 // ═════════════════════════════════════════════════════════════════════
 
 describe('detected_cli field flow', () => {
-  it('is WRITTEN to index.json by start.ts (extension)', () => {
-    const start = read(join(PROJECT_ROOT, 'extensions/stelow/start.ts'));
-    expect(start).toMatch(/detected_cli:\s*detectCLI\(\)/);
-  });
+  
 
   it('is READ by subagents.md dispatch table (per-CLI selection)', () => {
     const subagentsMd = read(

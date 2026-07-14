@@ -10,7 +10,7 @@ import { WORKFLOW_DIR, PHASE_NAMES, STAGE } from "./types";
 import {
   readTracking, writeTracking, readGlobalTracking, writeGlobalTracking,
   getActiveWorkflow, renameWorkflow, toSafeName, reconcileTracking, scanWorkflowDirs,
-  archiveWorkflowOnDisk, updateWorkflowIndexJson, resolveProjectDir,
+  resolveProjectDir,
   parseChecklist,
   readInbox, addToInbox, removeFromInbox, clearInbox,
   readProvenance,
@@ -84,16 +84,7 @@ function noActive(ctx: CmdCtx): void {
 }
 
 // ── Helper: remove workflow from both local and global tracking ─────
-function removeWorkflowFromTracking(cwd: string, workflowName: string, wf?: Pick<Workflow, "name" | "dirHash">): void {
-  // archiveWorkflowOnDisk searches by NAME across all .stelow/{date}/{dir}/index.json.
-  // The dirHash fallback below covers workflows renamed after creation (name no longer matches).
-  if (!archiveWorkflowOnDisk(cwd, workflowName) && wf?.dirHash) {
-    // Direct write via dirHash for renamed workflows
-    updateWorkflowIndexJson(cwd, wf as Workflow, {
-      workflow_status: "archived",
-    });
-  }
-
+function removeWorkflowFromTracking(cwd: string, workflowName: string, _wf?: Pick<Workflow, "name" | "dirHash">): void {
   const t = readTracking(cwd);
   if (t) {
     t.workflows = t.workflows.filter(w => w.name !== workflowName);
@@ -960,11 +951,7 @@ function cmdArchive(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
       return;
     }
 
-    // archiveWorkflowOnDisk searches by NAME; dirHash fallback covers renamed workflows.
-    if (!archiveWorkflowOnDisk(wd, name) && wf.dirHash) {
-      updateWorkflowIndexJson(wd, wf, { workflow_status: "archived" });
-    }
-
+    // Mark workflow as archived in tracking
     if (t && localIdx !== -1) {
       t.workflows[localIdx].status = "archived";
       writeTracking(wd, t);
@@ -997,10 +984,6 @@ function cmdArchive(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
     }
   }
   removeGlobalIndexEntry(wd, wf.name);
-  // archiveWorkflowOnDisk searches by NAME; dirHash fallback covers renamed workflows.
-  if (!archiveWorkflowOnDisk(wd, wf.name) && wf.dirHash) {
-    updateWorkflowIndexJson(wd, wf, { workflow_status: "archived" });
-  }
 
   ctx.ui?.setStatus("workflow", undefined);
   reply(ctx, `📦 Workflow '${wf.name}' archived.`);

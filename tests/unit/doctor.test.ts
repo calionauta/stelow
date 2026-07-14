@@ -92,33 +92,6 @@ describe('sw-doctor diagnostics', () => {
     ]));
   });
 
-  it('detects missing index and global mismatch', () => {
-    const local = wf('missing-index', 'in-progress', 2);
-    const global = wf('missing-index', 'paused', 1, { cwd: projectDir });
-    // Write stelow.json directly (bypassing writeTracking) so index.json is NOT created.
-    writeFileSync(join(projectDir, 'stelow.json'), JSON.stringify({
-      $schema: '',
-      version: '1.0',
-      created: '',
-      updated: '',
-      workflows: [local],
-    }, null, 2));
-    const globalData: TrackingData = {
-      $schema: '',
-      version: '1.0',
-      created: '',
-      updated: '',
-      workflows: [global],
-    };
-    writeGlobalTracking(globalData);
-
-    const report = diagnoseWorkflowProject(projectDir);
-
-    expect(report.issues).toEqual(expect.arrayContaining([
-      expect.objectContaining({ code: 'index-missing' }),
-    ]));
-  });
-
   it('is registered as a workflow command', () => {
     expect(WORKFLOW_COMMANDS.some(cmd => cmd.name === 'sw-doctor')).toBe(true);
   });

@@ -152,32 +152,8 @@ function diagnoseLocalWorkflows(
       });
     }
 
-    const index = readWorkflowIndexSnapshot(projectDir, wf);
-    if (!index) {
-      issues.push({
-        severity: "warn",
-        code: "index-missing",
-        message: `Workflow index.json is missing: ${wf.name}`,
-        detail: wf.dirHash || "missing dirHash",
-      });
-    } else {
-      if (index.status && index.status !== wf.status) {
-        issues.push({
-          severity: "warn",
-          code: "index-status-mismatch",
-          message: `Workflow index status differs from local tracking: ${wf.name}`,
-          detail: `index=${index.status}; local=${wf.status}`,
-        });
-      }
-      if (index.currentPhase !== undefined && index.currentPhase !== wf.currentPhase) {
-        issues.push({
-          severity: "warn",
-          code: "index-phase-mismatch",
-          message: `Workflow index phase differs from local tracking: ${wf.name}`,
-          detail: `index=${index.currentPhase}; local=${wf.currentPhase}`,
-        });
-      }
-    }
+    // v0.53.0: index.json no longer exists. No drift to detect between sources.
+    // stelow.json is the single canonical source.
 
     const targetCwd = wf.cwd || projectDir;
     const globalMatches = globalWorkflows.filter(gw =>
@@ -263,23 +239,8 @@ function globalMatchesLocalWorkflow(globalWorkflow: Workflow, localWorkflow: Wor
   return isSamePath(globalWorkflow.cwd || projectDir, localWorkflow.cwd || projectDir);
 }
 
-function readWorkflowIndexSnapshot(projectDir: string, wf: Workflow): WorkflowIndexSnapshot | null {
-  if (!wf.dirHash || !wf.created) return null;
-  const date = wf.created.slice(0, 10);
-  const indexPath = join(projectDir, WORKFLOW_DIR, date, wf.dirHash, "index.json");
-  if (!existsSync(indexPath)) return null;
-
-  try {
-    const index = JSON.parse(readFileSync(indexPath, "utf8"));
-    return {
-      path: indexPath,
-      status: index.workflow_status ?? index.status,
-      currentPhase: index.current_phase_index ?? index.currentPhase,
-    };
-  } catch {
-    return { path: indexPath };
-  }
-}
+// readWorkflowIndexSnapshot removed in v0.53.0 — stelow.json is canonical source,
+// so there's no second source to drift-detect against.
 
 // ── Repair ───────────────────────────────────────────────────────
 
@@ -415,67 +376,30 @@ export function repairWorkflowProject(cwd: string, report: DoctorReport): string
 const ZOMBIE_STALE_MS = 24 * 60 * 60 * 1000; // 24h sem update = zumbi
 
 /**
- * Scan all index.json files under .stelow/<date>/<hash>/
- * and flag workflows with workflow_status "in-progress" that haven't been
- * updated in >24h. These are workflows that were never finalized (e.g.
- * the session timed out before /sw-complete was typed).
+ * Flag workflows with status "in-progress" that haven't been
+ * updated in >24h. These are workflows that were never finalized
+ * (e.g. the session timed out before /sw-complete was typed).
  *
- * Skips index entries that match an active local workflow (those are
- * legitimately in-progress).
+ * Reads from stelow.json (canonical source) — no filesystem scan needed.
  */
 function diagnoseZombieIndexes(
-  projectDir: string,
+  _projectDir: string,
   localWorkflows: Workflow[],
   issues: DoctorIssue[]
 ): void {
-  const workflowDir = join(projectDir, WORKFLOW_DIR);
-  if (!existsSync(workflowDir)) return;
-
   const now = Date.now();
-
-  // Build set of active local dirHashes (legitimately in-progress)
-  const activeLocalHashes = new Set<string>();
   for (const wf of localWorkflows) {
-    if (wf.dirHash && wf.status === "in-progress") {
-      activeLocalHashes.add(wf.dirHash);
+    if (wf.status !== "in-progress") continue;
+    const updated = new Date(wf.updated || wf.created).getTime();
+    if (isNaN(updated) || now - updated > ZOMBIE_STALE_MS) {
+      issues.push({
+        severity: "error",
+        code: "zombie-workflow",
+        message: `Stale workflow stuck as "in-progress": ${wf.name}`,
+        detail: `last updated=${wf.updated || "unknown"} | dirHash=${wf.dirHash}` +
+          `\n  Fix: run /sw-complete or /sw-archive for workflow '${wf.name}'`,
+      });
     }
-  }
-
-  try {
-    const dates = readdirSync(workflowDir);
-    for (const date of dates) {
-      const dateDir = join(workflowDir, date);
-      if (!statSync(dateDir).isDirectory()) continue;
-
-      const hashes = readdirSync(dateDir);
-      for (const hash of hashes) {
-        const idxPath = join(dateDir, hash, "index.json");
-        if (!existsSync(idxPath)) continue;
-
-        // Skip if this hash belongs to a currently active workflow
-        if (activeLocalHashes.has(hash)) continue;
-
-        try {
-          const idx = JSON.parse(readFileSync(idxPath, "utf8"));
-          if (idx.workflow_status === "in-progress") {
-            const updated = new Date(idx.updated_at || idx.created_at).getTime();
-            if (isNaN(updated) || now - updated > ZOMBIE_STALE_MS) {
-              issues.push({
-                severity: "error",
-                code: "zombie-workflow",
-                message: `Stale workflow stuck as "in-progress": ${idx.name || hash}`,
-                detail: `last updated=${idx.updated_at || "unknown"} | path=.stelow/${date}/${hash}/index.json` +
-                  `\n  Fix: edit index.json and set workflow_status to "completed" or "archived"`,
-              });
-            }
-          }
-        } catch {
-          // Corrupt index.json, skip silently
-        }
-      }
-    }
-  } catch {
-    // Directory unreadable, skip
   }
 }
 

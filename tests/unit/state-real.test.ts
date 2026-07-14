@@ -5,8 +5,6 @@
  * - readTracking / writeTracking
  * - getActiveWorkflow / getAllActiveWorkflows
  * - renameWorkflow
- * - reconcileTracking
- * - archiveWorkflowOnDisk
  * - parseInputForWorkflow
  * 
  * These tests import and exercise REAL code, not mocks.
@@ -23,8 +21,6 @@ import {
   getActiveWorkflow,
   getAllActiveWorkflows,
   renameWorkflow,
-  reconcileTracking,
-  archiveWorkflowOnDisk,
   parseInputForWorkflow,
   generateDirHash,
   hashToWorkflowId,
@@ -275,99 +271,6 @@ describe('REAL State Functions', () => {
       const result = renameWorkflow(tempDir, 'test', 'x');
       expect(result.ok).toBe(false);
       expect((result as { ok: false; error: string }).error).toContain('at least 2 characters');
-    });
-  });
-
-  // ── reconcileTracking ──────────────────────────────────────────────
-
-  describe('reconcileTracking', () => {
-    it('detects workflows on disk not in tracking', () => {
-      // Create workflow on disk
-      const wfDir = join(tempDir, '.stelow', '2026-05-19', 'sw-disk-workflow');
-      mkdirSync(wfDir, { recursive: true });
-      writeFileSync(join(wfDir, 'index.json'), JSON.stringify({
-        name: 'disk-workflow',
-        _dir: 'sw-disk-workflow',
-        workflow_status: 'in-progress',
-        current_phase_index: 2,
-      }));
-
-      // Tracking has no workflows
-      writeTracking(tempDir, {
-        $schema: '',
-        version: '1.0',
-        created: '',
-        updated: '',
-        workflows: []
-      } as TrackingData);
-
-      reconcileTracking(tempDir);
-
-      const tracking = readTracking(tempDir);
-      const diskWorkflow = tracking?.workflows.find(w => w.name === 'disk-workflow');
-      expect(diskWorkflow).toBeDefined();
-      expect(diskWorkflow?.currentPhase).toBe(2);
-    });
-  });
-
-  // ── archiveWorkflowOnDisk ──────────────────────────────────────────
-
-  describe('archiveWorkflowOnDisk', () => {
-    it('archives workflow in index.json', () => {
-      const wfDir = join(tempDir, '.stelow', '2026-05-19', 'sw-archive-test');
-      mkdirSync(wfDir, { recursive: true });
-      writeFileSync(join(wfDir, 'index.json'), JSON.stringify({
-        name: 'test-workflow',
-        _dir: 'sw-archive-test',
-        workflow_status: 'in-progress',
-        current_phase_index: 5,
-      }));
-
-      const result = archiveWorkflowOnDisk(tempDir, 'test-workflow');
-      expect(result).toBe(true);
-
-      const index = JSON.parse(readFileSync(join(wfDir, 'index.json'), 'utf-8'));
-      expect(index.workflow_status).toBe('archived');
-      expect(index.updated_at).toBeDefined();
-    });
-
-    it('returns false when workflow not found', () => {
-      const result = archiveWorkflowOnDisk(tempDir, 'nonexistent-workflow');
-      expect(result).toBe(false);
-    });
-
-    it('returns false when no workflows directory exists', () => {
-      mkdirSync(join(tempDir, '.stelow'), { recursive: true });
-
-      const result = archiveWorkflowOnDisk(tempDir, 'any-workflow');
-      expect(result).toBe(false);
-    });
-
-    it('updates only target workflow in date directory', () => {
-      const wf1 = join(tempDir, '.stelow', '2026-05-19', 'sw-workflow-1');
-      const wf2 = join(tempDir, '.stelow', '2026-05-19', 'sw-workflow-2');
-      mkdirSync(wf1, { recursive: true });
-      mkdirSync(wf2, { recursive: true });
-      
-      writeFileSync(join(wf1, 'index.json'), JSON.stringify({
-        name: 'workflow-1',
-        _dir: 'sw-workflow-1',
-        workflow_status: 'in-progress',
-      }));
-      writeFileSync(join(wf2, 'index.json'), JSON.stringify({
-        name: 'workflow-2',
-        _dir: 'sw-workflow-2',
-        workflow_status: 'in-progress',
-      }));
-
-      const result = archiveWorkflowOnDisk(tempDir, 'workflow-1');
-      expect(result).toBe(true);
-
-      const index1 = JSON.parse(readFileSync(join(wf1, 'index.json'), 'utf-8'));
-      expect(index1.workflow_status).toBe('archived');
-
-      const index2 = JSON.parse(readFileSync(join(wf2, 'index.json'), 'utf-8'));
-      expect(index2.workflow_status).toBe('in-progress');
     });
   });
 

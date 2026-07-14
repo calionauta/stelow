@@ -200,9 +200,10 @@ PROVENANCE_ENTRY="{\"ts\":\"$(date -u '+%Y-%m-%dT%H:%M:%SZ')\",\"item\":\"${ESCA
 echo "$PROVENANCE_ENTRY" >> "$PROVENANCE"
 
 # ── Verify + recover ─────────────────────────────────────────────────
-# Check if claimed workflow dir exists
+# Check if claimed workflow dir exists (stelow.json is the canonical source as of v0.53.0).
+# Verify workflow in stelow.json instead of per-workflow index.json.
 WORKFLOW_EXISTS=false
-if [ "$PI_EXIT" -eq 0 ] && [ -n "$WORKFLOW_DIR" ] && [ -f "$PROJECT_DIR/$WORKFLOW_DIR/index.json" ]; then
+if [ "$PI_EXIT" -eq 0 ] && [ -n "$WORKFLOW_DIR" ] && [ -f "$PROJECT_DIR/stelow.json" ] && grep -q "$WORKFLOW_DIR" "$PROJECT_DIR/stelow.json" 2>/dev/null; then
   WORKFLOW_EXISTS=true
 fi
 
