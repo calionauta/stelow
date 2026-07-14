@@ -57,7 +57,7 @@ artifact links using relative paths from the workflow directory.
 - **Appetite:** {appetite} (declared by human)
   → [specs/spec-product_v{N}.md]({relative_path}) `appetite: {value}`
 - **Review Mode:** {review_mode}
-  → [stelow.json]({relative_path_to_stelow}) `workflows[].config.review_mode` (canonical as of v0.50.0; mirrored to `index.json`)
+  → [stelow.json]({relative_path_to_stelow}) `workflows[].config.review_mode` (canonical source of truth)
 - **Domains detected:** {domains}
   → [specs/spec-product_v{N}.md]({relative_path}) `domains_detected: {value}`
 - **Lessons injected:** {N} patterns from previous cycles

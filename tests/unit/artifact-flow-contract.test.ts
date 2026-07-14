@@ -196,7 +196,8 @@ describe('detected_cli field flow', () => {
     const subagentsMd = read(
       join(SKILLS_DIR, 'stelow-product-orchestrator/references/cli-tools/subagents.md'),
     );
-    expect(subagentsMd).toMatch(/detected_cli.*from.*index\.json/);
+    // v0.53.0: detected_cli now lives in stelow.json, not index.json
+    expect(subagentsMd).toMatch(/detected_cli.*from.*stelow\.json/);
   });
 });
 

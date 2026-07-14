@@ -41,7 +41,7 @@ ask_user_question({
 1. Read `references/cli-tools/audit-trail-template.md` for the template
 2. Fill placeholders from data already read during this stage (no extra file reads needed)
 3. Write to `.stelow/{YYYY-MM-DD}/{_dir}/audit-trail.md`
-4. Update `index.json` artifacts map: `"audit_trail": "audit-trail.md"`
+4. The audit-trail.md path is stored in `stelow.json#workflows[].artifacts` (or .stelow/{date}/{dir}/ is the filesystem convention)
 5. Confirm to user: `"📄 Audit trail generated: audit-trail.md"`
 
 **Standalone usage:** This skill can be invoked outside the workflow

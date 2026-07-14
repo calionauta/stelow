@@ -6,7 +6,7 @@
 **After Setup**, the flow enters Strategic Context to enrich planning with optional context.
 The LLM checks if the user should be offered strategic analysis and/or domain libraries.
 
-**Prerequisites:** Appetite (Lean / Core / Complete) and Review Mode (Auto / Product Spec Gate / Product Spec + Interface Gates / Product Spec + Interface + Scopes / Product Spec + Interface + Tech Review / Product Spec + Interface + Tech Review + Code Diff) must already be declared in `setup:15` (Appetite) and `setup:16` (Review Mode), then stored in `index.json` (read via `stages.yaml` conventions).
+**Prerequisites:** Appetite (Lean / Core / Complete) and Review Mode (Auto / Product Spec Gate / Product Spec + Interface Gates / Product Spec + Interface + Scopes / Product Spec + Interface + Tech Review / Product Spec + Interface + Tech Review + Code Diff) must already be declared in `setup:15` (Appetite) and `setup:16` (Review Mode), then stored in `stelow.json#workflows[].config` (canonical as of v0.50.0).
 
 ### context:5 — Appetite & Review Mode Gate (auto-skip / reduced)
 
@@ -88,7 +88,7 @@ ask tool: multiSelect question with detected domain options
 **If user selects libraries:**
 1. Load the selected skill(s) content as additional context
 2. Proceed to Shape Up with domain context enriched
-3. **Persist detected domains** to `stelow.json#workflows[].config.domains_detected` (single source of truth as of v0.50.0 — consumed by Shape Up's frontmatter generator and by all subagents via `reads: [spec-product.md]`; mirrored to `.stelow/{date}/{hash}/index.json#config.domains_detected` via the TS extension write-through hook):
+3. **Persist detected domains** to `stelow.json#workflows[].config.domains_detected` (single source of truth — consumed by Shape Up's frontmatter generator and by all subagents via `reads: [spec-product.md]`):
 
 ```bash
 if [ -n "{selected_domains_json}" ] && [ -f "stelow.json" ]; then
@@ -102,7 +102,7 @@ wf.config.domains_detected = {selected_domains_json};
 t.updated = new Date().toISOString();
 fs.writeFileSync('stelow.json', JSON.stringify(t, null, 2));
 "
-  # index.json is automatically updated by the TS extension's writeTracking hook
+  # stelow.json is the only file persisted — writeTracking() handles all subsequent updates.
 fi
 ```
 

@@ -141,9 +141,9 @@ fi
 > there should be at most 1 active workflow. If there are more, investigate.
 
 **If 1 or more in-progress workflows exist**:
-1. Read the found `index.json` files
+1. Read the workflow state from `stelow.json` — extract `name`, `currentPhase`, `phases`, `created`.
 
-2. **Freshness check:** extract `created_at` from the index.json.
+2. **Freshness check:** extract `created` from the workflow entry.
    If the workflow was created less than 60 seconds ago (compare against
    current time), it was just started by `/sw-start` — skip the
    "Continue?" question and proceed directly to setup:20.

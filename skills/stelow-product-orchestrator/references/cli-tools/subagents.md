@@ -131,7 +131,7 @@ read({ path: "output.md" })
 
 ## Deterministic CLI dispatch
 
-Read `detected_cli` from `.stelow/{date}/{dir}/index.json`. Emit the literal call shape for that CLI:
+Read `detected_cli` from `stelow.json#workflows[].detected_cli`. Emit the literal call shape for that CLI:
 
 | `detected_cli` | **Required** invocation |
 |---|---|
@@ -149,7 +149,7 @@ Read `detected_cli` from `.stelow/{date}/{dir}/index.json`. Emit the literal cal
 | `pi` (built-in) | Multiple `subagent(...)` calls — queues serially (no true concurrency) |
 | `generic` | `cmd_a & cmd_b & wait` (POSIX) |
 
-**Selection rule:** Read `detected_cli` from `index.json`, pick the row, emit verbatim.
+**Selection rule:** Read `detected_cli` from `stelow.json`, pick the row, emit verbatim.
 
 ---
 
@@ -171,7 +171,7 @@ npm ls pi-subagents 2>/dev/null | grep -q pi-subagents && echo "NICOBAILON" && e
 echo "BUILTIN_ONLY"
 ```
 
-The orchestrator reads `detected_cli` from `index.json` and picks the correct row.
+The orchestrator reads `detected_cli` from `stelow.json` and picks the correct row.
 
 ---
 
@@ -215,12 +215,11 @@ Subagents should receive inputs as explicit artifacts, not inherited conversatio
 | `tech-recon.md` | `.stelow/{date}/{dir}/tech/tech-recon.md` | — | Interface proposals, alignment checks |
 | `spec-tech.md` | `.stelow/{date}/{dir}/plans/spec-tech_{v}.md` | — | Scope executors |
 | `scope-contract.json` | `.stelow/{date}/{dir}/scopes/{scope-id}.json` | `acceptance_criteria`, `verify_commands` | Scope executors |
-| `index.json` | `.stelow/{date}/{dir}/index.json` | `appetite`, `review_mode`, `domains_detected`, `detected_cli` (mirrored from `stelow.json` via write-through as of v0.50.0) | Strategic context subagents (legacy read; preferred: `stelow.json`) |
-| `stelow.json` | `stelow.json` (project root) | `workflows[].config.{appetite,review_mode,domains_detected}`, `workflows[].detected_cli` | Strategic context subagents (canonical source of truth as of v0.50.0) |
+| `stelow.json` | `stelow.json` (project root) | `workflows[].config.{appetite,review_mode,domains_detected}`, `workflows[].detected_cli`, `workflows[].draftContent`, `workflows[].scopes[]` | Strategic context subagents (canonical source of truth) |
 
 **Why this matters:** `spec-product.md` frontmatter is the **single source of truth** for `appetite`, `review_mode`, and `domains_detected`. Subagents should read it explicitly rather than relying on the orchestrator passing these values in the task string. This makes input auditable, reproducible, and CLI-agnostic.
 
-> **v0.50.0 note:** Workflow-level config (`appetite`, `review_mode`, `domains_detected`, `detected_cli`) lives in `stelow.json#workflows[].config` and `stelow.json#workflows[].detected_cli`. The TS extension mirrors these to `index.json` for legacy TUI/integration consumers. Skills reading `index.json` directly continue to work — they see the same values.
+> **v0.53.0:** `stelow.json` is the single source of truth for all workflow state. `.stelow/{date}/{hash}/index.json` no longer exists. Integrations (muxy, herdr) read from `stelow.json` directly.
 
 ---
 
@@ -259,7 +258,7 @@ Steps:
 ## Degradation Ladder
 
 ```
-1. Check detected_cli from index.json
+1. Check detected_cli from stelow.json
    │
    ├── pi detected?
    │   ├── tintinweb?   →  ✅ Agent({ subagent_type, prompt, description })
