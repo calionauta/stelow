@@ -19,6 +19,17 @@ const DOCS = {
   agents: readDoc("AGENTS.md"),
 } as const;
 
+// SW-017: scope parser + lifecycle gap document contract.
+// The Muxy integration tree was removed in v0.55 and SW-002. The
+// `parseSpecTechScopes` JSDoc must not direct maintainers to update a
+// mirror that no longer exists, and `docs/scope-lifecycle-gaps.md` must
+// describe the single canonical TypeScript parser + `wf.specTechFile`
+// version-aware re-sync contract.
+const SW017_SURFACES = {
+  stateTs: readDoc("extensions/stelow/state.ts"),
+  scopeGaps: readDoc("docs/scope-lifecycle-gaps.md"),
+} as const;
+
 describe("documentation contract — v0.55.1 release surface", () => {
   it("exposes a stable PHASE_NAMES list of 17 phases ending at Audit", () => {
     expect(PHASE_NAMES).toHaveLength(17);
@@ -259,5 +270,115 @@ describe("documentation contract edge cases and boundaries", () => {
     expect(captured).toEqual(["docs/INSTALLATION.md", "https://example.com"]);
     const plain = "INSTALLATION.md is at https://example.com";
     expect(Array.from(plain.matchAll(/\[([^\]]+)\]\(([^)]+)\)/g))).toHaveLength(0);
+  });
+});
+
+describe("scope parser + lifecycle gap document contract (SW-017)", () => {
+  // Capture the exact `parseSpecTechScopes` JSDoc block (the comment that
+  // immediately precedes the export function declaration). Using a bounded
+  // capture keeps the contract focused on that single maintenance surface
+  // and avoids accidental matches elsewhere in the file.
+  const parseJsdocMatch = SW017_SURFACES.stateTs.match(
+    /\/\*\*\n([\s\S]*?\n \*\/)\nexport function parseSpecTechScopes/,
+  );
+  const parseJsdoc = parseJsdocMatch ? parseJsdocMatch[1] : "";
+  const stateTsLength = SW017_SURFACES.stateTs.length;
+
+  it("captures the parseSpecTechScopes JSDoc block (test fixture sanity)", () => {
+    expect(parseJsdoc, "parseSpecTechScopes JSDoc block must be parseable").not.toBe("");
+    expect(parseJsdoc).toMatch(/Parse \[SCOPE-N\] blocks/);
+    expect(stateTsLength).toBeGreaterThan(parseJsdoc.length);
+  });
+
+  it("does not direct maintainers to update a removed Muxy/data.js mirror", () => {
+    // The retired Muxy JS mirror path. If this assertion ever fails, the
+    // obsolete "update the mirror in data.js" instruction has resurfaced.
+    expect(parseJsdoc).not.toMatch(/mirror in `?data\.js`?/i);
+    expect(parseJsdoc).not.toMatch(/update the mirror in data\.js/i);
+    expect(parseJsdoc).not.toMatch(/vice versa/i);
+  });
+
+  it("does not claim Node TS and an Electron sandbox share/duplicate parser code", () => {
+    expect(parseJsdoc).not.toMatch(/Electron sandbox/i);
+    expect(parseJsdoc).not.toMatch(/two runtimes/i);
+    expect(parseJsdoc).not.toMatch(/cannot share code/i);
+  });
+
+  it("identifies parseSpecTechScopes as the canonical, filesystem-free parser", () => {
+    // Positive wording: the JSDoc must name the parser and mark it as the
+    // sole implementation that callers should treat as canonical.
+    expect(parseJsdoc).toMatch(/canonical parser/i);
+    expect(parseJsdoc).toMatch(/Pure function\. No filesystem access\./);
+  });
+
+  it("documents the wf.specTechFile version-aware re-sync contract", () => {
+    // The JSDoc must point maintainers at the typed specTechFile field and
+    // describe the re-sync semantics, not the old "idempotent / only
+    // triggers when scopes are empty" wording from the gap document.
+    expect(parseJsdoc).toMatch(/`?wf\.specTechFile`?/);
+    expect(parseJsdoc).toMatch(/re-sync|resync|reparse|re-parse/i);
+    expect(parseJsdoc).not.toMatch(/only triggers when scopes are empty/i);
+  });
+
+  it("does not mention syncScopesForTracking or updateable data.js in the gap document", () => {
+    // The gap document must not point at the deleted JS mirror function.
+    expect(SW017_SURFACES.scopeGaps).not.toMatch(/syncScopesForTracking/);
+    expect(SW017_SURFACES.scopeGaps).not.toMatch(/`?data\.js`? mirror/);
+    expect(SW017_SURFACES.scopeGaps).not.toMatch(/update the mirror/i);
+  });
+
+  it("does not present Muxy panel writes/polling as a current gap", () => {
+    expect(SW017_SURFACES.scopeGaps).not.toMatch(/Muxy panel.*writes? to/i);
+    expect(SW017_SURFACES.scopeGaps).not.toMatch(/Muxy panel.*polling|polling.*Muxy/i);
+    expect(SW017_SURFACES.scopeGaps).not.toMatch(/Muxy panel.*write-through/i);
+    expect(SW017_SURFACES.scopeGaps).not.toMatch(/muxy\.files\.write/);
+  });
+
+  it("does not present per-workflow index.json write-through as a current gap", () => {
+    expect(SW017_SURFACES.scopeGaps).not.toMatch(/index\.json write-through/i);
+    expect(SW017_SURFACES.scopeGaps).not.toMatch(/write to `?\.stelow\/[^`]*?index\.json`?/i);
+  });
+
+  it("does not present hard-coded JS EXECUTION_PHASE drift as a current gap", () => {
+    // The original Gap 5 was about a hard-coded JS EXECUTION_PHASE = 13
+    // mirror. The document must not list it as an open `## Gap N:`
+    // section. Historical mentions in resolved sections are allowed.
+    expect(SW017_SURFACES.scopeGaps).not.toMatch(/EXECUTION_PHASE\s*=\s*13/);
+    expect(SW017_SURFACES.scopeGaps).not.toMatch(
+      /^## Gap \d+:[^\n]*Phase numbering drift between TS and JS/m,
+    );
+  });
+
+  it("does not present a v2-overwrite gap as currently open", () => {
+    // The original Gap 1 is resolved by the wf.specTechFile version check;
+    // the document must not list it as an open `## Gap N:` section or
+    // describe it as "idempotent / only triggers when scopes are empty".
+    expect(SW017_SURFACES.scopeGaps).not.toMatch(/only triggers when `?wf\.scopes`? is empty/i);
+    expect(SW017_SURFACES.scopeGaps).not.toMatch(
+      /^## Gap \d+:\s*spec-tech\.md v2 overwrites existing scopes/m,
+    );
+  });
+
+  it("names the canonical parser and wf.specTechFile re-sync positively", () => {
+    // Positive contract: the gap document must reference the current
+    // implementation rather than only negating the removed-host claims.
+    expect(SW017_SURFACES.scopeGaps).toMatch(/parseSpecTechScopes/);
+    expect(SW017_SURFACES.scopeGaps).toMatch(/wf\.specTechFile/);
+    expect(SW017_SURFACES.scopeGaps).toMatch(/spec-tech_\*\.md/);
+  });
+
+  it("preserves metadata/read-persistence limitations as open gaps", () => {
+    // Source-supported open gaps must remain documented.
+    expect(SW017_SURFACES.scopeGaps).toMatch(/dirHash/);
+    expect(SW017_SURFACES.scopeGaps).toMatch(/in memory only|in-memory/);
+  });
+
+  it("classifies removed-host gaps as resolved or moot in present-tense language", () => {
+    // The document must explicitly mark the removed-host claims as
+    // resolved/moot rather than leaving them as live gaps, AND must
+    // mention that the Muxy/Herdr trees were removed.
+    expect(SW017_SURFACES.scopeGaps).toMatch(/Muxy.*(?:removed|moot)/i);
+    expect(SW017_SURFACES.scopeGaps).toMatch(/v0\.55/);
+    expect(SW017_SURFACES.scopeGaps).toMatch(/SW-002/);
   });
 });
