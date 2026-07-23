@@ -105,7 +105,7 @@ A structured workflow that makes AI think like a product manager:
 
 ### Key Features
 
-- **25 skills total** in this repo: 1 orchestrator + 24 sub-skills (5 strategic approaches + 8 domain tactics + 11 utility skills)
+- **25 skills total** in this repo: 1 orchestrator + 24 sub-skills (broken down by frontmatter category — product: 7, research: 12, code: 4, meta: 1)
 - Part of a broader ecosystem — the orchestrator composes these and can also invoke additional skills from the user's agent environment at runtime
 - Real-time TUI tracking with visual status overlay (`/sw-status`)
 - Gate approval via Plannotator - review, comment, approve or reject before implementation
@@ -268,17 +268,17 @@ These loops are **appetite- and mode-respecting by design** — they inherit the
 
 ## 📋 Skills
 
-All 25 skills are flat in `skills/` directory, ready for `~/.agents/skills/`. The breakdown:
+All 25 skills live flat in `skills/` and install into `~/.agents/skills/`. The total is **1 orchestrator + 24 sub-skills = 25**, grouped by each skill's `metadata.category` frontmatter:
 
-| Role | Count | Skills |
+| Category | Count | Notes |
 |---|---|---|
-| Orchestrator | 1 | `stelow-product-orchestrator` |
-| Strategic approaches | 5 | Job-to-Be-Done, Evolutionary Principles, Opportunity Mapping, Discovery, Multi-Method Market Analysis |
-| Domain tactics | 8 | Pricing, Trust, Ads, Health, Promotions, Business Models, Open Source, Marketplace Playbook |
-| Product workflow | 5 | Shape Up, Plan Critique, Interface Alternatives, Tech Planning, Scope Executor |
-| Code + UX + meta | 6 | Codebase Critique, Coding Standards, Testing AI Code, Testing Execution, UX Critique, Execution Critique |
+| Total | **1 orchestrator + 24 sub-skills = 25** | Every directory is `skills/stelow-product-<name>/SKILL.md` |
+| product (incl. orchestrator) | 8 | |
+| research | 12 | |
+| code | 4 | |
+| meta | 1 | |
 
-5 + 8 + 5 + 6 = 24 sub-skills, plus 1 orchestrator = 25 total.
+The orchestrator (`stelow-product-orchestrator`) is the only `product` skill that is not a sub-skill — it composes the others. The remaining 7 `product` skills plus the 12 `research`, 4 `code`, and 1 `meta` skill are sub-skills (24 total).
 
 **Each skill is fully self-contained** - the installer copies the complete directory tree including its own `references/cli-tools/`, `references/`, and `stages/` files. This means:
 - ✅ **Skills work standalone** - invoke any sub-skill (e.g., `stelow-product-shape-up`, `stelow-product-plan-critique`) independently of the orchestrator
@@ -292,35 +292,30 @@ All 25 skills are flat in `skills/` directory, ready for `~/.agents/skills/`. Th
 |-------|---------|
 | `stelow` | Coordinates the multi-stage workflow (Setup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Plan.Gate → Execution → Verification → Diff.Gate → Audit) |
 
-### 🧠 Product Strategies (5)
+### 🧭 Product (7)
+
+Sub-skills that drive the core product planning stages.
+
+| Skill | Purpose |
+|-------|---------|
+| `stelow-product-discovery` | Product discovery and validation |
+| `stelow-product-shape-up` | Shape Up planning + **Tech Preview** (appetite-gated codebase recon via cymbal) — surfaces codebase reality before product decisions |
+| `stelow-product-interface-alternatives` | Interface alternatives exploration (1/3/5 archetypes by appetite) |
+| `stelow-product-plan-critique` | Product plan gap analysis (flows, states, affordances, data, system, compositional quality, feasibility); mode-dependent resolution |
+| `stelow-product-tech-planning` | Technical scope generation + **Alignment Check** (mode-gated bidirectional product↔tech feedback loop) |
+| `stelow-product-scope-executor` | Autonomous scope execution via acceptance contracts - child self-corrects (harness-dependent), parent evaluates final result |
+| `stelow-product-ux-critique` | Full UX/UI audit (accessibility, Nielsen heuristics, personas, AI slop) |
+
+### 🔬 Research (12)
+
+Domain and market research skills used during Context, Shape, and Scope.
 
 | Skill | Purpose |
 |-------|---------|
 | `stelow-product-job-to-be-done` | Job To Be Done - understand what job users hire the product to do |
-| `stelow-product-discovery` | Product discovery and validation |
 | `stelow-product-opportunity-mapping` | Map opportunities to see where to focus |
 | `stelow-product-multi-method-market-analysis` | Multi-method market analysis |
 | `stelow-product-evolutionary-principles` | Evolutionary principles for sustainable development |
-
-### ⚙️ Workflow Stages (10)
-
-| Skill | Purpose |
-|-------|---------|
-| `stelow-product-shape-up` | Shape Up planning + **Tech Preview** (appetite-gated codebase recon via cymbal) — surfaces codebase reality before product decisions |
-| `stelow-product-interface-alternatives` | Interface alternatives exploration (1/3/5 archetypes by appetite) |
-| `stelow-product-plan-critique` | Product plan gap analysis (flows, states, affordances, data, system, compositional quality, feasibility); mode-dependent resolution |
-| `stelow-product-codebase-critique` | Codebase structural critique (architecture, performance, AI slop) |
-| `stelow-product-ux-critique` | Full UX/UI audit (accessibility, Nielsen heuristics, personas, AI slop) |
-| `stelow-product-tech-planning` | Technical scope generation + **Alignment Check** (mode-gated bidirectional product↔tech feedback loop) |
-| `stelow-product-testing-ai-code` | AI-aware testing strategy with contextual mutation testing evaluation |
-| `stelow-product-testing-execution` | Post-implementation testing protocol |
-| `stelow-product-scope-executor` | Autonomous scope execution via acceptance contracts - child self-corrects (harness-dependent), parent evaluates final result |
-| `stelow-product-execution-critique` | Post-execution audit - classifies gaps as FIXED/DOCUMENTED/ESCALATED; ESCALATED gaps become new scopes |
-
-### 📘 Product Tactics (8)
-
-| Skill | Purpose |
-|-------|---------|
 | `stelow-product-ads` | Advertising and growth channels |
 | `stelow-product-business-models` | Business model canvas and options |
 | `stelow-product-health` | Product health metrics |
@@ -330,11 +325,24 @@ All 25 skills are flat in `skills/` directory, ready for `~/.agents/skills/`. Th
 | `stelow-product-promotions` | Promotions and campaigns |
 | `stelow-product-trust-building` | Trust-building mechanisms |
 
-### 📐 Complementary (1)
+### 🧪 Code (4)
+
+Engineering-oriented skills used during planning, verification, and audit.
 
 | Skill | Purpose |
 |-------|---------|
+| `stelow-product-codebase-critique` | Codebase structural critique (architecture, performance, AI slop) |
 | `stelow-product-coding-standards` | Self-contained coding standards - KISS, DRY, LoB, SoC, Fail Fast, YAGNI, file/function size limits |
+| `stelow-product-testing-ai-code` | AI-aware testing strategy with contextual mutation testing evaluation |
+| `stelow-product-testing-execution` | Post-implementation testing protocol |
+
+### 🧠 Meta (1)
+
+Workflow-level audit and post-execution review.
+
+| Skill | Purpose |
+|-------|---------|
+| `stelow-product-execution-critique` | Post-execution audit - classifies gaps as FIXED/DOCUMENTED/ESCALATED; ESCALATED gaps become new scopes |
 
 ---
 
