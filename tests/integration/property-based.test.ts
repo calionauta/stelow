@@ -150,10 +150,12 @@ describe('Property 1: write/read round-trip', () => {
 }, 60000 /* SW-009: see comment at file head for rationale */);
 
 // ── Property 2: renameWorkflow preserves dirHash ─────────────────
-// SW-009: 60000ms suite-level timeout. Same rationale as Property 1:
-// 50 numRuns of fc.property over a string generator produces enough
-// fs/atomic-write traffic that slow CI runners exceed the global
-// 30000ms ceiling. Local runs complete well under 10ms.
+// SW-009: 120000ms (120s) suite-level timeout. 50 numRuns of fc.property
+// combined with three real-fs calls per iteration (writeTracking,
+// renameWorkflow, readTracking) is the heaviest fs path of the file.
+// Local runs complete in <50ms; cold-cache CI runners have exceeded
+// 60s on shared hosts. 120s gives enough headroom without papering
+// over real regressions. Property 1 only needs 60s.
 describe('Property 2: renameWorkflow preserves dirHash', () => {
   it('after rename, dirHash stays stable', () => {
     // Generate a random alphanumeric string, then call toSafeName on it
@@ -215,7 +217,7 @@ describe('Property 2: renameWorkflow preserves dirHash', () => {
       { numRuns: 50 },
     );
   });
-}, 60000 /* SW-009: see comment at file head for rationale */);
+}, 120000 /* SW-009: 120s absorbs cold-cache CI fs latency for 50 fc.assert iterations of writeTracking/renameWorkflow/readTracking. Property 1 only needs 60s; Property 2's heavier fs path needs more headroom. See comment at file head. */);
 
 // ── Property 3: addToGlobalIndex + removeGlobalIndexEntry balance ─
 
