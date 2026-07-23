@@ -805,6 +805,13 @@ export function syncScopesFromPlanningFiles(
 /**
  * Parse [SCOPE-N] blocks from spec-tech.md content into Scope[].
  *
+ * This is the **sole canonical parser** for spec-tech scopes. The Muxy /
+ * Herdr integration trees were removed in v0.55 and SW-002; there is no
+ * JavaScript mirror or parallel runtime to keep in sync. All hosts
+ * (Pi extension, Fusion plugin, generic adapters) consume the same
+ * TypeScript implementation exported from this module — host-specific
+ * adapters wrap it via `syncScopesFromPlanningFiles` / `syncScopesIfNeeded`.
+ *
  * Convention (matches the scope-executor SKILL Step 1 format):
  * ```
  * [SCOPE-1]
@@ -819,8 +826,13 @@ export function syncScopesFromPlanningFiles(
  *
  * Pure function. No filesystem access.
  *
- * If you change this function, update the mirror in data.js and vice versa.
- * The two runtimes (Node TS vs Electron sandbox JS) cannot share code.
+ * Version-aware re-sync contract: callers detect a newer spec-tech
+ * revision via the workflow's `wf.specTechFile` field (typed in
+ * `extensions/stelow/types.ts`). When the latest `spec-tech_*.md`
+ * filename on disk differs from `wf.specTechFile`, the caller re-parses
+ * the latest file and replaces `wf.scopes` with the parsed result (only
+ * when the parse yields entries). See `syncScopesIfNeeded` in this
+ * module for the implementation.
  */
 export function parseSpecTechScopes(content: string): Scope[] {
   const scopes: Scope[] = [];
