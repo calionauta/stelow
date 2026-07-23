@@ -132,6 +132,11 @@ export type ScopeT = Static<typeof ScopeSchema>;
 // ── Workflow — mirrors types.ts:Workflow ──────────────────────────
 
 export const WorkflowSchema = Type.Object({
+  host: Type.Optional(Type.Object({
+    name: Type.Union([Type.Literal("pi"), Type.Literal("fusion"), Type.Literal("generic")]),
+    version: Type.String(),
+    registeredAt: Type.String(),
+  })),
   name: Type.String({ minLength: 1, maxLength: 100 }),
   description: Type.Optional(Type.String()),
   draftContent: Type.Optional(Type.String()),

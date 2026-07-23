@@ -4,7 +4,6 @@
  *
  * Keeps version numbers in sync between:
  * - Main package.json
- * - integrations/herdr/stelow/herdr-plugin.toml (TOML format)
  *
  * Run automatically via `npm version` lifecycle hook.
  */
@@ -22,15 +21,12 @@ const ROOT = join(__dirname, "..");
 
 // JSON targets (plugin manifests, marketplace.json)
 const JSON_TARGETS = [
-  // Add harness plugin manifests here as adapters are merged. The
-  // shipped release (v0.45.0) ships no per-harness plugin manifests —
-  // only the Rust-side herdr integration in TOML.
+  join(ROOT, "plugins", "fusion-plugin-stelow", "manifest.json"),
+  join(ROOT, "plugins", "fusion-plugin-stelow", "package.json"),
 ];
 
-// TOML targets (herdr plugin uses Rust convention)
-const TOML_TARGETS = [
-  join(ROOT, "integrations/herdr/stelow/herdr-plugin.toml"),
-];
+// No host-specific manifests are version-synchronized.
+const TOML_TARGETS = [];
 
 // Files to sync
 const FILES_TO_SYNC = [
@@ -55,7 +51,7 @@ function writeVersion(filePath, version) {
   // marketplace.json files use metadata.version (Claude schema);
   // plugin.json files use a root-level version. Prefer metadata when
   // present, fall back to root.
-  // Current stelow release only syncs herdr. Plugin marketplace manifests
+  // Host plugin manifests opt into this list explicitly.
   // for individual harnesses (where a user-supplied adapter PRs one) opt
   // into this list on a case-by-case basis.
   if (pkg.metadata && typeof pkg.metadata === "object") {
@@ -67,7 +63,7 @@ function writeVersion(filePath, version) {
   console.log(`  ✅ Synced version to: ${filePath.replace(ROOT + "/", "")}`);
 }
 
-// Write version to TOML target file (herdr plugin uses TOML).
+// Write version to a TOML target file.
 // Naive line-based replace: matches `^version = "..."` in the [package]
 // section. Sufficient for the stelow plugin; if other TOML files
 // with nested version fields need syncing, switch to a TOML parser.

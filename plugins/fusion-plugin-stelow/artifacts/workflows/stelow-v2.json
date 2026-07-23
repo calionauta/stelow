@@ -1,0 +1,441 @@
+{
+  "version": "v2",
+  "name": "Stelow product planning",
+  "columns": [
+    {
+      "id": "triage",
+      "name": "triage",
+      "traits": [
+        {
+          "trait": "intake"
+        }
+      ]
+    },
+    {
+      "id": "select",
+      "name": "select",
+      "traits": [
+        {
+          "trait": "wip"
+        }
+      ]
+    },
+    {
+      "id": "setup",
+      "name": "setup",
+      "traits": [
+        {
+          "trait": "wip"
+        }
+      ]
+    },
+    {
+      "id": "context",
+      "name": "context",
+      "traits": [
+        {
+          "trait": "wip"
+        }
+      ]
+    },
+    {
+      "id": "shape",
+      "name": "shape",
+      "traits": [
+        {
+          "trait": "wip"
+        }
+      ]
+    },
+    {
+      "id": "critique",
+      "name": "critique",
+      "traits": [
+        {
+          "trait": "wip"
+        }
+      ]
+    },
+    {
+      "id": "gate",
+      "name": "gate",
+      "traits": [
+        {
+          "trait": "wip"
+        }
+      ]
+    },
+    {
+      "id": "scope",
+      "name": "scope",
+      "traits": [
+        {
+          "trait": "wip"
+        }
+      ]
+    },
+    {
+      "id": "interface",
+      "name": "interface",
+      "traits": [
+        {
+          "trait": "wip"
+        }
+      ]
+    },
+    {
+      "id": "int-gate",
+      "name": "int-gate",
+      "traits": [
+        {
+          "trait": "wip"
+        }
+      ]
+    },
+    {
+      "id": "selection",
+      "name": "selection",
+      "traits": [
+        {
+          "trait": "wip"
+        }
+      ]
+    },
+    {
+      "id": "planning",
+      "name": "planning",
+      "traits": [
+        {
+          "trait": "wip"
+        }
+      ]
+    },
+    {
+      "id": "plan-gate",
+      "name": "plan-gate",
+      "traits": [
+        {
+          "trait": "wip"
+        }
+      ]
+    },
+    {
+      "id": "execution",
+      "name": "execution",
+      "traits": [
+        {
+          "trait": "wip"
+        }
+      ]
+    },
+    {
+      "id": "verification",
+      "name": "verification",
+      "traits": [
+        {
+          "trait": "wip"
+        }
+      ]
+    },
+    {
+      "id": "diff-gate",
+      "name": "diff-gate",
+      "traits": [
+        {
+          "trait": "wip"
+        }
+      ]
+    },
+    {
+      "id": "audit",
+      "name": "audit",
+      "traits": [
+        {
+          "trait": "complete"
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "start",
+      "kind": "start",
+      "column": "triage"
+    },
+    {
+      "id": "stage-triage",
+      "kind": "prompt",
+      "column": "triage",
+      "config": {
+        "name": "Stelow: triage",
+        "description": "Initial assessment. Determine if this is a valid request.",
+        "prompt": "Load the stelow-product-orchestrator skill and execute only the triage stage. Follow stages.yaml and persist progress in stelow.json."
+      }
+    },
+    {
+      "id": "stage-select",
+      "kind": "prompt",
+      "column": "select",
+      "config": {
+        "name": "Stelow: select",
+        "description": "Item selection. Rank accepted items, user picks one.",
+        "prompt": "Load the stelow-product-orchestrator skill and execute only the select stage. Follow stages.yaml and persist progress in stelow.json."
+      }
+    },
+    {
+      "id": "stage-setup",
+      "kind": "prompt",
+      "column": "setup",
+      "config": {
+        "name": "Stelow: setup",
+        "description": "Setup context. Explore codebase, gather requirements.",
+        "prompt": "Load the stelow-product-orchestrator skill and execute only the setup stage. Follow stages.yaml and persist progress in stelow.json."
+      }
+    },
+    {
+      "id": "stage-context",
+      "kind": "prompt",
+      "column": "context",
+      "config": {
+        "name": "Stelow: context",
+        "description": "Strategic context. Market analysis, JTBD, domain detection. Gated by `context:5` (appetite/review mode): Product Spec Gate+Auto skips; others use reduced ask. See `stages/context.md#context:5`.",
+        "prompt": "Load the stelow-product-orchestrator skill and execute only the context stage. Follow stages.yaml and persist progress in stelow.json."
+      }
+    },
+    {
+      "id": "stage-shape",
+      "kind": "prompt",
+      "column": "shape",
+      "config": {
+        "name": "Stelow: shape",
+        "description": "Shape stage. Define appetite, hill chart, rabbit holes.",
+        "prompt": "Load the stelow-product-orchestrator skill and execute only the shape stage. Follow stages.yaml and persist progress in stelow.json."
+      }
+    },
+    {
+      "id": "stage-critique",
+      "kind": "prompt",
+      "column": "critique",
+      "config": {
+        "name": "Stelow: critique",
+        "description": "Plan critique. Pre-flight check before gate.",
+        "prompt": "Load the stelow-product-orchestrator skill and execute only the critique stage. Follow stages.yaml and persist progress in stelow.json."
+      }
+    },
+    {
+      "id": "stage-gate",
+      "kind": "prompt",
+      "column": "gate",
+      "config": {
+        "name": "Stelow: gate",
+        "description": "Gate review. Visual approval via visual review required. Use `visual_review` tool (not bash).",
+        "prompt": "Load the stelow-product-orchestrator skill and execute only the gate stage. Fusion has no native visual_review tool: complete the canonical fallback by writing .stelow/approvals/{dirHash}/{file}.approved.md before advancing. Follow stages.yaml and persist progress in stelow.json."
+      }
+    },
+    {
+      "id": "stage-scope",
+      "kind": "prompt",
+      "column": "scope",
+      "config": {
+        "name": "Stelow: scope",
+        "description": "Scope adjustment. Add/remove from IN/OUT after gate approval.",
+        "prompt": "Load the stelow-product-orchestrator skill and execute only the scope stage. Follow stages.yaml and persist progress in stelow.json."
+      }
+    },
+    {
+      "id": "stage-interface",
+      "kind": "prompt",
+      "column": "interface",
+      "config": {
+        "name": "Stelow: interface",
+        "description": "Interface alternatives. Appetite-scaled exploration: 1, 3, or 5 proposals + hybrid.",
+        "prompt": "Load the stelow-product-orchestrator skill and execute only the interface stage. Follow stages.yaml and persist progress in stelow.json."
+      }
+    },
+    {
+      "id": "stage-int-gate",
+      "kind": "prompt",
+      "column": "int-gate",
+      "config": {
+        "name": "Stelow: int-gate",
+        "description": "Interface gate. Visual review of all interface proposals. Use `visual_review` tool (not bash).",
+        "prompt": "Load the stelow-product-orchestrator skill and execute only the int-gate stage. Fusion has no native visual_review tool: complete the canonical fallback by writing .stelow/approvals/{dirHash}/{file}.approved.md before advancing. Follow stages.yaml and persist progress in stelow.json."
+      }
+    },
+    {
+      "id": "stage-selection",
+      "kind": "prompt",
+      "column": "selection",
+      "config": {
+        "name": "Stelow: selection",
+        "description": "Interface selection. User picks via structured question.",
+        "prompt": "Load the stelow-product-orchestrator skill and execute only the selection stage. Follow stages.yaml and persist progress in stelow.json."
+      }
+    },
+    {
+      "id": "stage-planning",
+      "kind": "prompt",
+      "column": "planning",
+      "config": {
+        "name": "Stelow: planning",
+        "description": "Tech planning. Typed scopes + sequencing.",
+        "prompt": "Load the stelow-product-orchestrator skill and execute only the planning stage. Follow stages.yaml and persist progress in stelow.json."
+      }
+    },
+    {
+      "id": "stage-plan-gate",
+      "kind": "prompt",
+      "column": "plan-gate",
+      "config": {
+        "name": "Stelow: plan-gate",
+        "description": "Tech plan gate. Visual review of spec-tech.md via visual review. Only in Product Spec + Interface + Tech Review or Code Diff mode.",
+        "prompt": "Load the stelow-product-orchestrator skill and execute only the plan-gate stage. Fusion has no native visual_review tool: complete the canonical fallback by writing .stelow/approvals/{dirHash}/{file}.approved.md before advancing. Follow stages.yaml and persist progress in stelow.json."
+      }
+    },
+    {
+      "id": "stage-execution",
+      "kind": "prompt",
+      "column": "execution",
+      "config": {
+        "name": "Stelow: execution",
+        "description": "Implementation. Execute planned scopes.",
+        "prompt": "Load the stelow-product-orchestrator skill and execute only the execution stage. Follow stages.yaml and persist progress in stelow.json."
+      }
+    },
+    {
+      "id": "stage-verification",
+      "kind": "prompt",
+      "column": "verification",
+      "config": {
+        "name": "Stelow: verification",
+        "description": "Verification. Run full test suite, code review, UI audit, browser testing.",
+        "prompt": "Load the stelow-product-orchestrator skill and execute only the verification stage. Follow stages.yaml and persist progress in stelow.json."
+      }
+    },
+    {
+      "id": "stage-diff-gate",
+      "kind": "prompt",
+      "column": "diff-gate",
+      "config": {
+        "name": "Stelow: diff-gate",
+        "description": "Code diff review. visual review review of working tree diff. Only in Product Spec + Interface + Tech Review + Code Diff mode.",
+        "prompt": "Load the stelow-product-orchestrator skill and execute only the diff-gate stage. Fusion has no native visual_review tool: complete the canonical fallback by writing .stelow/approvals/{dirHash}/{file}.approved.md before advancing. Follow stages.yaml and persist progress in stelow.json."
+      }
+    },
+    {
+      "id": "stage-audit",
+      "kind": "prompt",
+      "column": "audit",
+      "config": {
+        "name": "Stelow: audit",
+        "description": "Final audit. Verify all requirements met.",
+        "prompt": "Load the stelow-product-orchestrator skill and execute only the audit stage. Follow stages.yaml and persist progress in stelow.json."
+      }
+    },
+    {
+      "id": "end",
+      "kind": "end",
+      "column": "audit"
+    }
+  ],
+  "edges": [
+    {
+      "from": "start",
+      "to": "stage-triage"
+    },
+    {
+      "from": "stage-triage",
+      "to": "stage-select",
+      "condition": "success"
+    },
+    {
+      "from": "stage-select",
+      "to": "stage-setup",
+      "condition": "success"
+    },
+    {
+      "from": "stage-setup",
+      "to": "stage-context",
+      "condition": "success"
+    },
+    {
+      "from": "stage-context",
+      "to": "stage-shape",
+      "condition": "success"
+    },
+    {
+      "from": "stage-shape",
+      "to": "stage-critique",
+      "condition": "success"
+    },
+    {
+      "from": "stage-critique",
+      "to": "stage-gate",
+      "condition": "success"
+    },
+    {
+      "from": "stage-gate",
+      "to": "stage-scope",
+      "condition": "success"
+    },
+    {
+      "from": "stage-scope",
+      "to": "stage-interface",
+      "condition": "success"
+    },
+    {
+      "from": "stage-interface",
+      "to": "stage-int-gate",
+      "condition": "success"
+    },
+    {
+      "from": "stage-int-gate",
+      "to": "stage-selection",
+      "condition": "success"
+    },
+    {
+      "from": "stage-selection",
+      "to": "stage-planning",
+      "condition": "success"
+    },
+    {
+      "from": "stage-planning",
+      "to": "stage-plan-gate",
+      "condition": "success"
+    },
+    {
+      "from": "stage-plan-gate",
+      "to": "stage-execution",
+      "condition": "success"
+    },
+    {
+      "from": "stage-execution",
+      "to": "stage-verification",
+      "condition": "success"
+    },
+    {
+      "from": "stage-verification",
+      "to": "stage-diff-gate",
+      "condition": "success"
+    },
+    {
+      "from": "stage-diff-gate",
+      "to": "stage-audit",
+      "condition": "success"
+    },
+    {
+      "from": "stage-audit",
+      "to": "end",
+      "condition": "success"
+    }
+  ],
+  "settings": [
+    {
+      "id": "skillName",
+      "name": "Orchestrator skill",
+      "type": "string",
+      "default": "stelow-product-orchestrator",
+      "description": "Agent Skill loaded by every Stelow stage node."
+    }
+  ]
+}

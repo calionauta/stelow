@@ -1,4 +1,7 @@
 .git/
 node_modules/
 build/
+# Plugin dist/ is shipped via plugins/fusion-plugin-stelow/dist (declared in nested package.json#files)
 dist/
+# Plugin staging leftovers should never be in the tarball
+plugins/fusion-plugin-stelow/.fusion-stelow-stage-*/

@@ -5,8 +5,9 @@
  * Provides a unified interface for all CLI command systems.
  */
 
+import { writeFileSync, mkdirSync, existsSync } from "node:fs";
 import type { CLI, CLICapabilities } from "../../types";
-import { detectCLI } from "../../state";
+import { detectHost } from "../../state";
 
 export interface CommandDescriptor {
   /** Command name with kebab-case prefix (e.g., "sw-start") */
@@ -162,11 +163,13 @@ export interface CommandRegistrationSystem {
  * Get the appropriate command registration system for the current CLI.
  */
 export function getCommandSystem(cli?: CLI): CommandRegistrationSystem {
-  const detected = cli || detectCLI();
+  const detected = cli || detectHost();
 
   switch (detected) {
     case "pi":
       return getPiCommandSystem();
+    case "fusion":
+      return getFusionCommandSystem();
     default:
       return getGenericCommandSystem();
   }
@@ -202,6 +205,70 @@ function getPiCommandSystem(): CommandRegistrationSystem {
       return [];
     },
   };
+}
+
+/**
+ * Filter out Pi-only commands when targeting non-Pi hosts. Pi-only commands
+ * rely on the Pi TUI/state-hooks/auto-sync primitives that Fusion does not
+ * expose (Fusion supervises its own state natively). Surfacing them in
+ * `.fusion/commands/` would emit broken artifacts that point at tools
+ * Fusion doesn't have.
+ */
+function filterForHost(descriptors: CommandDescriptor[], host: CLI): CommandDescriptor[] {
+  if (host === "pi") return descriptors;
+  return descriptors.filter((d) => !d.piOnly);
+}
+
+function getFusionCommandSystem(): CommandRegistrationSystem {
+  return {
+    cli: "fusion",
+    supportsNativeCommands: () => false,
+    registerAll: () => filterForHost(WORKFLOW_COMMANDS, "fusion"),
+    registerOne: (descriptor) => !descriptor.piOnly,
+    getCommandPrefix: () => "/",
+    generateCommandFiles: () => filterForHost(WORKFLOW_COMMANDS, "fusion").map(descriptor => ({
+      path: `.fusion/commands/${descriptor.name}.md`,
+      content: renderCommandFile(descriptor, "fusion"),
+    })),
+  };
+}
+
+function renderCommandFile(descriptor: CommandDescriptor, host: CLI): string {
+  const usage = descriptor.usage ?? `/${descriptor.name}`;
+  return `---
+name: ${descriptor.name}
+description: ${descriptor.description}
+usage: ${usage}
+host: ${host}
+---
+# /${descriptor.name}
+
+${descriptor.description}
+
+Usage: \`${usage}\`
+
+## Fusion dispatch
+
+This file is an executable agent command prompt; Fusion does **not** load the
+Pi extension adapter at runtime.
+
+1. Read \`skills/stelow-product-orchestrator/SKILL.md\` and the current
+   project \`stelow.json\`.
+2. Execute the \`${descriptor.name}\` operation described in
+   \`cli-agents/COMMANDS.md\`, preserving the command arguments supplied
+   after \`/${descriptor.name}\`.
+3. Use Fusion-native tools where the skill names an agnostic tool:
+   \`ask_user_question\` → \`fn_ask_question\`, \`subagent\` →
+   \`fn_spawn_agent\`. Fusion has no native \`visual_review\`; write the
+   documented fallback receipt at
+   \`.stelow/approvals/{dirHash}/{file}.approved.md\`.
+4. Persist workflow state in project-root \`stelow.json\`; do not move it
+   into \`.fusion/\`.
+
+For first-time Fusion setup, validate
+\`.fusion/workflows/stelow-v2.json\` with \`fn_workflow_validate\`, then
+register it with \`fn_workflow_create\`. Do not bypass Fusion validation.
+`;
 }
 
 // ── Generic Command System (Fallback) ─────────────────────────────────
@@ -241,19 +308,17 @@ function getGenericCommandSystem(): CommandRegistrationSystem {
  * @param cli - Target CLI (defaults to detected)
  */
 export function installCommandFiles(baseDir: string, cli?: CLI): void {
-  const { writeFileSync, mkdirSync, existsSync } = require("node:fs");
-  
   const system = getCommandSystem(cli);
   const files = system.generateCommandFiles();
-  
+
   for (const file of files) {
     const fullPath = `${baseDir}/${file.path}`;
     const dir = fullPath.substring(0, fullPath.lastIndexOf("/"));
-    
+
     if (!existsSync(dir)) {
       mkdirSync(dir, { recursive: true });
     }
-    
+
     writeFileSync(fullPath, file.content, "utf8");
     console.log(`[stelow] Installed: ${file.path}`);
   }

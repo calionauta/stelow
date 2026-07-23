@@ -1,6 +1,6 @@
 /**
  * workflow-root.ts — Single source of truth for "what worktree does this cwd
- * belong to?" across the stelow extension, the muxy panel, and the herdr
+ * belong to?" across the stelow extension.
  * split-pane TUI.
  *
  * History: the extension used to climb up to a parent directory whenever the
@@ -16,10 +16,7 @@
  * — the original intent — without conflating it with "user is in a sibling
  * project under a shared parent directory".
  *
- * This is the canonical TypeScript implementation. The muxy panel mirrors
- * it (see integrations/muxy/stelow/src/panel/data.js — search for
- * "MIRROR of workflow-root"). The herdr Rust plugin uses a different
- * mechanism (HERDR_PLUGIN_CONTEXT_JSON.workspace_cwd from herdr runtime)
+ * This is the canonical TypeScript implementation shared by consumers.
  * that achieves the same effect without git calls.
  */
 import { execSync } from "node:child_process";

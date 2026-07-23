@@ -3,8 +3,13 @@ import { rmSync, readFileSync, writeFileSync, existsSync, mkdirSync, copyFileSyn
 import { join } from "node:path";
 import { homedir } from "node:os";
 import { execSync } from "node:child_process";
-// @ts-ignore - Optional peer dependency for Pi environment
-import type { ExtensionAPI, ExtensionCommandContext } from "@earendil-works/pi-coding-agent";
+export interface CommandContext { cwd: string; ui?: any; [key: string]: any }
+export interface CommandHost {
+  registerCommand(name: string, options: { description: string; handler: (args: string, ctx: CommandContext) => Promise<void> }): void;
+  sendUserMessage(message: string, options?: unknown): void;
+}
+type ExtensionAPI = CommandHost;
+type ExtensionCommandContext = CommandContext;
 import type { Workflow, StageState } from "./types";
 import { WORKFLOW_DIR, PHASE_NAMES, STAGE } from "./types";
 import {

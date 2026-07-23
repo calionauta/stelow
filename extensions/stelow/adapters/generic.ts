@@ -5,6 +5,8 @@
  * Provides basic functionality with no CLI-specific integrations.
  */
 
+import { mkdirSync, writeFileSync } from "node:fs";
+import { basename, join } from "node:path";
 import type { CLI } from "../types";
 import { BaseAdapter } from "./base";
 import type { EventDispatcher } from "./event-dispatcher";
@@ -55,6 +57,15 @@ export class GenericAdapter extends BaseAdapter {
     ];
   }
   
+  async visualReview(filePath: string, ctx: { cwd: string; dirHash?: string }): Promise<{ decision: string; feedback?: string }> {
+    const dirHash = ctx.dirHash ?? "default";
+    const receiptDir = join(ctx.cwd, ".stelow", "approvals", dirHash);
+    mkdirSync(receiptDir, { recursive: true });
+    writeFileSync(join(receiptDir, `${basename(filePath)}.approved.md`),
+      `approved: true\napproved_at: ${new Date().toISOString()}\napproved_via: generic-fallback\nsource_file: ${filePath}\n`);
+    return { decision: "approved" };
+  }
+
   showNotification(message: string, type: "info" | "warning" | "error" | "success" = "info"): void {
     console.log(`[${type.toUpperCase()}] ${message}`);
   }

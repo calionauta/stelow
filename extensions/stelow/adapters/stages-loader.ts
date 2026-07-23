@@ -2,7 +2,10 @@
 // Loads and parses stages.yaml for use by Pi adapters
 // Mirrors types/stages.ts — kept separate because adapters are Pi-only
 
-import { readFileSync } from 'fs';
+import { readFileSync } from 'node:fs';
+import { parse as parseYaml } from 'yaml';
+import { join } from 'node:path';
+import type { CLI } from '../types';
 
 export interface StageTransitions {
   next?: string[];
@@ -27,13 +30,21 @@ export interface Stage {
 }
 
 export interface StagesConfig {
+  tools?: Record<string, Partial<Record<CLI, string | null>>>;
   stages: Stage[];
 }
 
 export function loadStages(configPath: string): StagesConfig {
   const content = readFileSync(configPath, 'utf-8');
-  // YAML is already installed in node_modules/
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { parse } = require('yaml');
-  return parse(content) as StagesConfig;
+  return parseYaml(content) as StagesConfig;
+}
+
+/** Resolve a canonical tool name to its host-native implementation. */
+export function resolveTool(
+  agnosticName: string,
+  host: CLI,
+  configPath = join(process.cwd(), 'skills/stelow-product-orchestrator/stages.yaml'),
+): string | null {
+  const mapped = loadStages(configPath).tools?.[agnosticName];
+  return mapped && host in mapped ? mapped[host] ?? null : agnosticName;
 }

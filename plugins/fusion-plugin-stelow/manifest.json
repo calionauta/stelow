@@ -1,0 +1,118 @@
+{
+  "id": "fusion-plugin-stelow",
+  "name": "Stelow",
+  "version": "0.54.3",
+  "description": "Stelow product-planning workflow and skills for Fusion.",
+  "author": "calionauta",
+  "fusionVersion": ">=0.1.0",
+  "skills": [
+    {
+      "skillId": "stelow-product-ads",
+      "name": "stelow-product-ads"
+    },
+    {
+      "skillId": "stelow-product-business-models",
+      "name": "stelow-product-business-models"
+    },
+    {
+      "skillId": "stelow-product-codebase-critique",
+      "name": "stelow-product-codebase-critique"
+    },
+    {
+      "skillId": "stelow-product-coding-standards",
+      "name": "stelow-product-coding-standards"
+    },
+    {
+      "skillId": "stelow-product-discovery",
+      "name": "stelow-product-discovery"
+    },
+    {
+      "skillId": "stelow-product-evolutionary-principles",
+      "name": "stelow-product-evolutionary-principles"
+    },
+    {
+      "skillId": "stelow-product-execution-critique",
+      "name": "stelow-product-execution-critique"
+    },
+    {
+      "skillId": "stelow-product-health",
+      "name": "stelow-product-health"
+    },
+    {
+      "skillId": "stelow-product-interface-alternatives",
+      "name": "stelow-product-interface-alternatives"
+    },
+    {
+      "skillId": "stelow-product-job-to-be-done",
+      "name": "stelow-product-job-to-be-done"
+    },
+    {
+      "skillId": "stelow-product-marketplace-playbook",
+      "name": "stelow-product-marketplace-playbook"
+    },
+    {
+      "skillId": "stelow-product-multi-method-market-analysis",
+      "name": "stelow-product-multi-method-market-analysis"
+    },
+    {
+      "skillId": "stelow-product-open-source",
+      "name": "stelow-product-open-source"
+    },
+    {
+      "skillId": "stelow-product-opportunity-mapping",
+      "name": "stelow-product-opportunity-mapping"
+    },
+    {
+      "skillId": "stelow-product-orchestrator",
+      "name": "stelow-product-orchestrator"
+    },
+    {
+      "skillId": "stelow-product-plan-critique",
+      "name": "stelow-product-plan-critique"
+    },
+    {
+      "skillId": "stelow-product-pricing",
+      "name": "stelow-product-pricing"
+    },
+    {
+      "skillId": "stelow-product-promotions",
+      "name": "stelow-product-promotions"
+    },
+    {
+      "skillId": "stelow-product-scope-executor",
+      "name": "stelow-product-scope-executor"
+    },
+    {
+      "skillId": "stelow-product-shape-up",
+      "name": "stelow-product-shape-up"
+    },
+    {
+      "skillId": "stelow-product-tech-planning",
+      "name": "stelow-product-tech-planning"
+    },
+    {
+      "skillId": "stelow-product-testing-ai-code",
+      "name": "stelow-product-testing-ai-code"
+    },
+    {
+      "skillId": "stelow-product-testing-execution",
+      "name": "stelow-product-testing-execution"
+    },
+    {
+      "skillId": "stelow-product-trust-building",
+      "name": "stelow-product-trust-building"
+    },
+    {
+      "skillId": "stelow-product-ux-critique",
+      "name": "stelow-product-ux-critique"
+    }
+  ],
+  "settingsSchema": {
+    "installProjectIntegration": {
+      "type": "boolean",
+      "label": "Install project integration",
+      "description": "Install Stelow project artifacts and maintain its managed workflow when the full project runtime loads.",
+      "defaultValue": true
+    }
+  }
+}

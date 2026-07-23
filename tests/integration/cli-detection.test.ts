@@ -138,7 +138,7 @@ describe("CLI Detection Integration Tests", () => {
 
     it("detects CLI when not specified", () => {
       const caps = getCLICapabilites();
-      expect(["pi", "generic"]).toContain(caps.cli);
+      expect(["pi", "fusion", "generic"]).toContain(caps.cli);
     });
 
     it("matches getCLICapabilities directly", () => {

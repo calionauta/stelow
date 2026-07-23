@@ -611,98 +611,12 @@ install_safe_change() {
   fi
 }
 
-# Herdr plugin install is intentionally separate from install.sh
-# (which only flattens skills to ~/.agents/skills/). The herdr plugin
-# has its own distribution path: `herdr plugin install` from
-# https://github.com/calionauta/stelow/integrations/herdr/stelow,
-# then `cargo build --release` because Rust needs a local toolchain.
-install_herdr_plugin() {
-  log_step "Step 9/11: Herdr stelow plugin (split-pane TUI)"
-  if [[ "$DRY_RUN" == "true" ]]; then
-    log_info "[dry-run] Would install herdr plugin if herdr CLI detected"
-    record_skip "herdr stelow"
-    return
-  fi
-  if ! command -v herdr &>/dev/null; then
-    log_info "herdr CLI not detected — skipping stelow plugin install."
-    log_info "Install herdr from https://herdr.dev/, then run: herdr plugin install calionauta/stelow"
-    record_skip "herdr stelow (no herdr CLI)"
-    return
-  fi
-
-  if ! confirm_optional "herdr stelow plugin"; then
-    record_skip "herdr stelow"
-    return
-  fi
-
-  # Find the herdr plugins directory
-  local plugin_dir
-  plugin_dir=$(find ~/.config/herdr/plugins -type d -name "stelow" -path "*/integrations/herdr/*" 2>/dev/null | head -1)
-
-  if herdr plugin install calionauta/stelow; then
-    # Discover plugin dir after install. herdr stores it at:
-    #   ~/.config/herdr/plugins/github/stelow-<hash>/integrations/herdr/stelow/
-    # The hash suffix changes per install, so we glob for the directory.
-    local plugin_dir
-    plugin_dir=$(find ~/.config/herdr/plugins -type d \
-      \( -name "stelow" -path "*/integrations/herdr/*" -o \
-         -name "stelow" -path "*/stelow*" \) 2>/dev/null \
-      | head -1)
-
-    if [[ -n "$plugin_dir" ]] && [[ -f "$plugin_dir/Cargo.toml" ]]; then
-      log_info "Building stelow binary (cargo build --release)..."
-      if command -v cargo &>/dev/null; then
-        (cd "$plugin_dir" && cargo build --release 2>&1) && {
-          if [[ -x "$plugin_dir/target/release/stelow" ]]; then
-            log_success "stelow binary built at $plugin_dir/target/release/stelow"
-            record_ok "herdr stelow (built)"
-          else
-            log_warn "Build succeeded but binary not found at target/release/stelow"
-            record_fail "herdr stelow (binary missing after build)"
-          fi
-        } || {
-          log_warn "cargo build --release failed. See above for details."
-          record_fail "herdr stelow (build failed)"
-        }
-      else
-        log_warn "Rust/Cargo not found. Install from https://rustup.rs/ then run: cd '$plugin_dir' && cargo build --release"
-        record_fail "herdr stelow (no cargo)"
-      fi
-    else
-      # Plugin dir not found — install still succeeded but we can't find the source
-      record_ok "herdr stelow"
-      log_info "Plugin installed. To build the binary: find the plugin directory and run 'cargo build --release'"
-    fi
-  else
-    log_warn "stelow plugin install failed. See https://herdr.dev/docs/plugins/ for troubleshooting."
-    record_fail "herdr stelow (plugin install failed)"
-  fi
-}
-
-detect_muxy() {
-  log_step "Step 10/11: Muxy.app detection (macOS-only, open-source under MIT)"
-  if [[ "$DRY_RUN" == "true" ]]; then
-    log_info "[dry-run] Would detect Muxy.app"
-    record_skip "Muxy.app"
-    return
-  fi
-  if [[ -d "/Applications/Muxy.app" ]] || command -v muxy &>/dev/null; then
-    log_success "Muxy.app detected."
-    log_info "To load the stelow extension: Muxy → Extensions modal → Create, pick integrations/muxy/stelow/."
-    log_info "See https://muxy.app/docs/extensions/get-started for details."
-    record_ok "Muxy.app"
-  else
-    log_info "Muxy.app not detected (optional). Install from https://muxy.app/ if you want the webview panel."
-    record_skip "Muxy.app (not installed)"
-  fi
-}
-
 setup_pulse() {
   # Optional Pulse setup — copies the standalone setup-pulse.sh from the
   # package scripts/ directory and runs it for the project at SCRIPT_DIR.
   # Pulse is a background inbox processor (cron/launchd/systemd) and works
   # without an interactive pi session.
-  log_step "Step 11/11: Pulse — autonomous inbox processing (optional)"
+  log_step "Step 9/9: Pulse — autonomous inbox processing (optional)"
   if [[ "$DRY_RUN" == "true" ]]; then
     log_info "[dry-run] Would offer to setup Pulse scripts"
     record_skip "Pulse"
@@ -813,8 +727,6 @@ main() {
   echo "    • cymbal (codebase navigation) — brew/go"
   echo "    • ctx7 (library docs) — OAuth setup"
   echo "    • safe-change (pre-planning regression check)"
-  echo "    • stelow Herdr plugin (if herdr CLI detected)"
-  echo "    • Muxy.app detection (manual install from https://muxy.app/)"
   echo "    • Pulse scripts (autonomous inbox processing, optional)"
   echo ""
 
@@ -836,8 +748,6 @@ main() {
   install_cymbal
   install_ctx7
   install_safe_change
-  install_herdr_plugin
-  detect_muxy
   setup_pulse
   print_summary
 }

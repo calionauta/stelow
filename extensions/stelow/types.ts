@@ -70,7 +70,8 @@ export const STAGE = {
 
 // ── CLI Types ─────────────────────────────────────────────────────
 
-export type CLI = "pi" | "generic";
+export type CLI = "pi" | "fusion" | "generic";
+export type HostName = CLI;
 
 /**
  * Capabilities supported by each CLI harness.
@@ -155,6 +156,17 @@ export function getCLICapabilities(cli: CLI): CLICapabilities {
       hasSelectList: true,
       hasStatusLine: true,
       hasMCPSupport: true,
+    },
+    "fusion": {
+      hasPluginSystem: true,
+      pluginFormat: "json",
+      hasCommands: true,
+      hasSessionStart: true,
+      hasToolCall: true,
+      hasTurnEnd: true,
+      hasSubagent: true,
+      hasAskUserQuestion: true,
+      hasNotifications: true,
     },
     "generic": {},
   };
@@ -410,7 +422,7 @@ export interface Scope {
   /**
    * Optional. Aggregate count of `source: 'discovered'` tasks at
    * close time. Mirrors the increment done in scope-executor Step
-   * 3e-ter bash. Surfaced in Muxy scope cards + execution-critique
+   * 3e-ter bash. Surfaced in workflow scope views + execution-critique
    * for quick "how much new work did reality reveal" signal.
    */
   discovered_tasks_count?: number;
@@ -489,6 +501,12 @@ export interface Phase {
 }
 
 export interface Workflow {
+  /** Host that first registered this workflow. Immutable after first write. */
+  host?: {
+    name: "pi" | "fusion" | "generic";
+    version: string;
+    registeredAt: string;
+  };
   name: string;       // Human-readable display name (may change via rename)
   description: string;
   draftContent?: string;

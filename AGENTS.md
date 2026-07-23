@@ -11,33 +11,13 @@
 
 See [architecture.md](architecture.md) for module layout, data flow, and how to extend. Skills live in `skills/*/SKILL.md`; stages defined in `stages.yaml` (single source of truth). Visual review gates: `gate`, `int-gate`, `plan-gate`, `diff-gate` (Plannotator) — conditional by review mode.
 
-### Critical Muxy extension knowledge
-
-**Permission `files:read` is required but NOT in the pinned schema.**
-The Muxy files API (`muxy.files.read/write/list`) requires
-`files:read` and `files:write` in `manifest.permissions` *per the
-official Muxy docs*. However, the pinned manifest schema at
-`integrations/muxy/stelow/manifest.schema.json` is
-OUTDATED — it was fetched before Muxy added these permissions to
-the schema enum. **Do NOT trust the pinned schema as the source
-of truth for valid permissions.** The source of truth is:
-- https://muxy.app/docs/extensions/files (docs)
-- https://muxy.app/docs/extensions/permissions (permissions list)
-- Muxy.app runtime validator (what actually accepts/rejects)
-
-The pinned schema is only useful for structural validation
-(panel keys, command shapes) — NOT for permission validity.
-If a muxy extension suddenly shows "No workflow data" despite
-correct workspace, check that `files:read` and `files:write`
-are present in package.json muxy.permissions.
-
 ### Top-level layout
 
 | Directory | Purpose |
 |---|---|
 | `skills/` | Stelow skills consumed by pi coding agents (LLM-facing) |
-| `extensions/stelow/` | Pi runtime extension (in-process TS) — single extension, all `/sw-*` commands and hooks live here. Workflow root detection (`workflow-root.ts`) is the source of truth across all integrations; mirror functions exist in `integrations/muxy/` and `integrations/herdr/`. |
-| `integrations/<host>/<plugin>/` | Plugins for **external hosts** (Muxy, Herdr, etc.) — each host has its own incompatible extension model. Shipped via `package.json#files[]` and synced through `scripts/version-sync.mjs`. |
+| `extensions/stelow/` | Host-agnostic core plus adapters. Pi-only hooks, commands, UI, and tools live under `adapters/pi/`; Fusion uses generated artifacts. |
+| `extensions/stelow/adapters/<host>/` | Host-specific runtime specialization behind the stable adapter contract. |
 | `docs/design/` | Design docs, plans, ADR (PT-BR discussion, EN artifacts) |
 | `stelow.schema.json` / `stelow.json` | Workflow tracking schema + runtime state |
 

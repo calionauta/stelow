@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, writeFileSync, statSync, readdirSync, mkdirSync, renameSync, unlinkSync } from "node:fs";
 import { join, basename, dirname, extname, resolve as resolvePath } from "node:path";
 import { homedir } from "node:os";
+import { execSync } from "node:child_process";
 import type { Workflow, TrackingData, Scope, ParsedInput, CLI } from "./types";
 import {
   isRuntimeValidationEnabled,
@@ -66,9 +67,6 @@ function writeJson(path: string, data: unknown): void {
 
 // ── 1. CLI detection ──────────────────────────────────────────────────
 
-/**
- * Detection signals for each CLI.
-
 // ── CLI Detection ────────────────────────────────────────────────────
 
 /**
@@ -83,6 +81,11 @@ const CLI_DETECTION_SIGNALS: Record<CLI, { dirs: string[]; cmds: string[]; confi
     cmds: ["pi"],
     confidence: "high",
   },
+  "fusion": {
+    dirs: ["~/.fusion"],
+    cmds: ["fn"],
+    confidence: "high",
+  },
   "generic": {
     dirs: [],
     cmds: [],
@@ -95,12 +98,14 @@ const CLI_DETECTION_SIGNALS: Record<CLI, { dirs: string[]; cmds: string[]; confi
  * Uses PRODUCT_WORKFLOW_CLI env var (primary) or platform-specific files (fallback).
  * Returns "generic" if detection fails.
  */
-export function detectCLI(): CLI {
-  // Primary: explicit environment variable
-  const envCli = process.env.PRODUCT_WORKFLOW_CLI;
+export function detectHost(): CLI {
+  // Primary: explicit host variables. FUSION_HOST is intentionally checked
+  // first because Fusion embeds the Pi runtime and may expose both signals.
+  if (process.env.FUSION_HOST === "1") return "fusion";
+  const envCli = process.env.STELOW_HOST || process.env.PRODUCT_WORKFLOW_CLI;
   if (envCli && envCli.trim()) {
     const cli = envCli.trim().toLowerCase() as CLI;
-    if (["pi", "generic"].includes(cli)) {
+    if (["pi", "fusion", "generic"].includes(cli)) {
       return cli;
     }
     console.warn(`[stelow] Unknown PRODUCT_WORKFLOW_CLI: ${cli}, defaulting to generic`);
@@ -110,13 +115,14 @@ export function detectCLI(): CLI {
   // Fallback: check platform-specific directories (highest confidence)
   const home = homedir();
 
+  if (existsSync(join(home, ".fusion"))) {
+    return "fusion";
+  }
   if (existsSync(join(home, ".pi"))) {
     return "pi";
   }
 
   // Tertiary: check command availability (lower confidence)
-  const { execSync } = require("child_process");
-
   try {
     execSync("pi --version 2>/dev/null", { stdio: "ignore" });
     return "pi";
@@ -126,15 +132,32 @@ export function detectCLI(): CLI {
   return "generic";
 }
 
+/** @deprecated Use detectHost(). */
+export const detectCLI = detectHost;
+
 /**
  * Get detection info for diagnostics.
  */
 /**
  * Get CLI capabilities for the current or specified CLI.
+ *
+ * Public wrapper around `getCLICapabilities` (from types.ts) that defaults to
+ * the detected host. Tests and adapters import this name; the typo'd alias
+ * `getCLICapabilites` is kept for backward compatibility within this release.
  */
-export function getCLICapabilites(cli?: CLI): ReturnType<typeof getCLICapabilities> {
-  const detected = cli || detectCLI();
+export function getCLICapabilitiesForHost(cli?: CLI): ReturnType<typeof getCLICapabilities> {
+  const detected = cli || detectHost();
   return getCLICapabilities(detected);
+}
+
+/**
+ * @deprecated Use {@link getCLICapabilitiesForHost} instead. Retained for
+ * backward compatibility with existing tests and adapters that import the
+ * typo'd name. Will be removed in the next minor release.
+ */
+// eslint-disable-next-line @typescript-eslint/no-deprecated
+export function getCLICapabilites(cli?: CLI): ReturnType<typeof getCLICapabilities> {
+  return getCLICapabilitiesForHost(cli);
 }
 
 
@@ -195,7 +218,6 @@ function getGlobalTrackingPath(): string {
 //
 // `resolveProjectDir` is the historical name. The canonical implementation
 // lives in `workflow-root.ts` (single source of truth across the extension,
-// muxy panel, and herdr Rust plugin). This file re-exports it under both
 // names so callers don't need to change.
 //
 // Bug fix (v0.36.2): the old in-line implementation climbed up to ANY
@@ -292,6 +314,18 @@ function shouldUseLock(): boolean {
 
 function writeTrackingUnlocked(cwd: string, data: TrackingData): void {
   data.updated = new Date().toISOString();
+
+  const host = detectHost();
+  const version = process.env.STELOW_HOST_VERSION
+    ?? (host === "fusion" ? process.env.FUSION_VERSION : process.env.PI_VERSION)
+    ?? "unknown";
+  for (const workflow of data.workflows) {
+    workflow.host ??= {
+      name: host,
+      version,
+      registeredAt: new Date().toISOString(),
+    };
+  }
 
   // ── Auto-sync scopes from spec-tech.md (convention over configuration) ──
   syncScopesIfNeeded(cwd, data);
@@ -785,7 +819,6 @@ export function syncScopesFromPlanningFiles(
  *
  * Pure function. No filesystem access.
  *
- * @mirror integrations/muxy/stelow/src/panel/data.js :: parseScopesFromSpecTech
  * If you change this function, update the mirror in data.js and vice versa.
  * The two runtimes (Node TS vs Electron sandbox JS) cannot share code.
  */

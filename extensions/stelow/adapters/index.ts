@@ -72,6 +72,8 @@ export {
   setPiContext,
 } from "./pi/ui";
 
+export { FusionAdapter, createFusionAdapter } from "./fusion";
+
 // ── Pi Adapter ───────────────────────────────────────────────────────
 
 export {
@@ -103,6 +105,8 @@ export {
 // ── Stages Loader ───────────────────────────────────────────────────
 
 export {
+  loadStages as loadStagesConfig,
+  resolveTool,
   type Stage,
   type StagesConfig,
   type StageTransitions,

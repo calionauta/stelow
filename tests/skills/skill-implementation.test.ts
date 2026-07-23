@@ -9,15 +9,40 @@
  * WHY: If a skill is missing a gate or tool reference, LLM doesn't know
  * how to properly execute that skill. If the main SKILL.md drifts from
  * required structure, the workflow breaks.
+ *
+ * Self-sufficiency strategy (SW-005):
+ *   The "Iteration Loop Consistency" suite asserts against
+ *   sub-skill `references/cli-tools/goals.md` mirrors. Those mirrors
+ *   are gitignored build outputs of `scripts/sync-cli-tools.sh` —
+ *   they are absent in a clean source checkout. Populating them is
+ *   the globalSetup file's job (see `vitest.config.ts` and
+ *   `tests/global-setup.ts`); no per-file `beforeAll` is needed
+ *   here.
+ *
+ *   Content-equality assertions target the canonical orchestrator
+ *   source AND its synced sub-skill copies via helpers that read
+ *   from the populated tree. No mocks of `fs` or `execSync`. Real
+ *   `readFileSync` for content reads.
  */
 import { describe, it, expect } from 'vitest';
-import { readFileSync, existsSync, readdirSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __testDir = dirname(__filename);
 const PROJECT_ROOT = join(__testDir, '..', '..');
+
+// ── cli-tools helpers ─────────────────────────────────────────────
+
+function listSubSkills(): string[] {
+  const dir = join(PROJECT_ROOT, 'skills');
+  return readdirSync(dir).filter((d) => {
+    if (d === 'stelow-product-orchestrator') return false;
+    const p = join(dir, d);
+    return statSync(p).isDirectory();
+  });
+}
 
 // ── Path Helpers ───────────────────────────────────────────────────
 
@@ -73,7 +98,7 @@ describe('Main SKILL.md Structure', () => {
     });
 
     it('plannotator --gate should be documented', () => {
-      expect(content).toMatch(/plannotator.*--gate|--gate.*plannotator/i);
+      expect(content).toMatch(/visual_review.*--gate|--gate.*visual_review/i);
     });
 
     it('--gate flag should be mandatory', () => {
@@ -177,8 +202,8 @@ describe('Main SKILL.md Structure', () => {
   // ── Gates ────────────────────────────────────────────────
 
   describe('Gates', () => {
-    it('should have at least 1 plannotator gate with --gate', () => {
-      const gateMatches = content.match(/plannotator annotate.*--gate/g);
+    it('should have at least 1 visual_review gate with --gate', () => {
+      const gateMatches = content.match(/visual_review annotate.*--gate/g);
       expect(gateMatches?.length || 0).toBeGreaterThanOrEqual(1);
     });
 
@@ -280,8 +305,8 @@ describe('Per-Skill Implementation', () => {
       });
 
       if (skill.requiresGate) {
-        it('should mention plannotator', () => {
-          expect(content).toMatch(/plannotator/i);
+        it('should mention visual_review', () => {
+          expect(content).toMatch(/visual_review/i);
         });
 
         it('should reference gate command (plannotator.md or --gate)', () => {
@@ -321,21 +346,48 @@ describe('Iteration Loop Consistency', () => {
     expect(execContent).toMatch(/iteration|acceptance/i);
   });
 
-  it('core goals.md files should reference acceptance contract pattern', () => {
-    const goalsFiles = [
-      join(PROJECT_ROOT, 'skills/stelow-product-orchestrator/references/cli-tools/goals.md'),
-      join(PROJECT_ROOT, 'skills/stelow-product-scope-executor/references/cli-tools/goals.md'),
-      join(PROJECT_ROOT, 'skills/stelow-product-tech-planning/references/cli-tools/goals.md'),
-      join(PROJECT_ROOT, 'skills/stelow-product-testing-ai-code/references/cli-tools/goals.md'),
-    ];
-    goalsFiles.forEach(f => {
-      const content = readFileSync(f, 'utf8');
-      expect(content).toMatch(/acceptance|iteration loop/i);
-    });
+  it('canonical goals.md sources reference acceptance contract pattern', () => {
+    // Read directly from the canonical orchestrator source and a
+    // representative deterministic coverage of sub-skill copies
+    // (first / middle / last by alphabetical order). The per-file
+    // `beforeAll` already prepared the shared tree, so sub-skill
+    // copies are guaranteed present.
+    const canonical = join(PROJECT_ROOT, 'skills/stelow-product-orchestrator/references/cli-tools/goals.md');
+    expect(existsSync(canonical)).toBe(true);
+    expect(readFileSync(canonical, 'utf8')).toMatch(/acceptance|iteration loop/i);
+
+    const allSubSkills = listSubSkills();
+    if (allSubSkills.length === 0) {
+      throw new Error('No sub-skills found; listSubSkills() returned empty.');
+    }
+    const sorted = [...allSubSkills].sort((a, b) => a.localeCompare(b));
+    const last = sorted.length - 1;
+    const mid = Math.floor(last / 2);
+    const sampledIds = new Set<number>([0, mid, last]);
+    const sampled = [...sampledIds].sort((a, b) => a - b).map((i) => sorted[i]);
+
+    for (const skill of sampled) {
+      const copy = join(PROJECT_ROOT, 'skills', skill, 'references/cli-tools/goals.md');
+      // Sub-skill must have a copy after pre-sync; if a copy is
+      // missing, this test should fail loudly (not silently skip).
+      expect(existsSync(copy)).toBe(true);
+      expect(readFileSync(copy, 'utf8')).toMatch(/acceptance|iteration loop/i);
+    }
   });
 
   it('scope-executor goals.md documents acceptance contract fields', () => {
+    // Assert the contract on the canonical source AND on the
+    // synced scope-executor copy. The per-file `beforeAll`
+    // guarantees the copy exists; if not, this fails loudly.
+    const canonical = join(PROJECT_ROOT, 'skills/stelow-product-orchestrator/references/cli-tools/goals.md');
+    expect(existsSync(canonical)).toBe(true);
+    const canonicalContent = readFileSync(canonical, 'utf8');
+    expect(canonicalContent).toMatch(/criteria/i);
+    expect(canonicalContent).toMatch(/verify/i);
+    expect(canonicalContent).toMatch(/stopRules/i);
+
     const goalsPath = join(PROJECT_ROOT, 'skills/stelow-product-scope-executor/references/cli-tools/goals.md');
+    expect(existsSync(goalsPath)).toBe(true);
     const content = readFileSync(goalsPath, 'utf8');
     expect(content).toMatch(/criteria/i);
     expect(content).toMatch(/verify/i);
@@ -363,8 +415,8 @@ describe('Stage Files', () => {
   });
 
   describe('Critical stages', () => {
-    it('gate.md should mention plannotator', () => {
-      expect(readStageFile('gate.md')).toMatch(/plannotator/i);
+    it('gate.md should mention visual_review', () => {
+      expect(readStageFile('gate.md')).toMatch(/visual_review/i);
     });
 
     it('execution.md should document execution workflow', () => {

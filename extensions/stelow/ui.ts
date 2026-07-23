@@ -5,8 +5,7 @@
  * Uses the adapter pattern to delegate to CLI-specific implementations.
  */
 
-// @ts-ignore - Optional peer dependency for Pi environment
-import type { ExtensionContext } from "@earendil-works/pi-coding-agent";
+export interface ExtensionContext { cwd: string; ui?: any; [key: string]: any }
 import type { Workflow } from "./types";
 import { PHASE_NAMES } from "./types";
 import { 
@@ -18,7 +17,7 @@ import {
   writeTracking,
   removeGlobalIndexEntry,
 } from "./state";
-import { detectCLI } from "./state";
+import { detectHost } from "./state";
 import { 
   createUIAdapter, 
   type UIAdapter,
@@ -34,7 +33,7 @@ let _uiAdapter: UIAdapter | null = null;
  */
 export function getUIAdapter(): UIAdapter {
   if (!_uiAdapter) {
-    const cli = detectCLI();
+    const cli = detectHost();
     _uiAdapter = createUIAdapter(cli);
   }
   return _uiAdapter;
@@ -43,15 +42,26 @@ export function getUIAdapter(): UIAdapter {
 /**
  * Initialize the UI adapter with Pi context if available.
  * Must be called before using UI functions on Pi.
+ *
+ * Note: returns a Promise so that the lazy ESM `import()` of the Pi UI
+ * adapter can resolve. Existing call sites that don't `await` the result
+ * still work because the returned promise is fire-and-forget; the Pi
+ * adapter only matters when running under Pi, where the caller already
+ * is itself async.
  */
-export function initUIAdapter(ctx: ExtensionContext): void {
+export async function initUIAdapter(ctx: ExtensionContext): Promise<void> {
   const adapter = getUIAdapter();
-  
+
   // Set Pi context if we're on Pi
   if (ctx.ui) {
-    // Import and set Pi context
-    const { setPiContext } = require("./adapters/pi/ui");
-    setPiContext(ctx);
+    // Dynamic ESM import of the Pi UI bridge. Cast through `unknown` to
+    // avoid pulling the full Pi ExtensionContext type into this module's
+    // surface (the canonical type has fields the local ExtensionContext
+    // doesn't model; the bridge module is the boundary).
+    const piUiModule = (await import("./adapters/pi/ui.js")) as unknown as {
+      setPiContext: (ctx: ExtensionContext) => void;
+    };
+    piUiModule.setPiContext(ctx);
   }
 }
 

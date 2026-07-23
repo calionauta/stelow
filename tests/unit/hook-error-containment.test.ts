@@ -3,7 +3,7 @@
  *
  * Verifies the safeHook wrapper is:
  *  - Defined in safe-hook.ts (single source of truth)
- *  - Imported and used by all 5 hooks in index.ts
+ *  - Imported and used by all 5 hooks in Pi hooks
  *  - Wraps with try/catch + console.error + return undefined
  *
  * For behavioral verification (does it actually catch errors?), see
@@ -15,6 +15,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const INDEX_PATH = resolve(__dirname, '..', '..', 'extensions', 'stelow', 'index.ts');
+const HOOKS_PATH = resolve(__dirname, '..', '..', 'extensions', 'stelow', 'adapters', 'pi', 'hooks.ts');
 const SAFE_HOOK_PATH = resolve(__dirname, '..', '..', 'extensions', 'stelow', 'safe-hook.ts');
 
 describe('hook error containment (safeHook wiring)', () => {
@@ -23,13 +24,13 @@ describe('hook error containment (safeHook wiring)', () => {
     expect(src).toMatch(/export function safeHook/);
   });
 
-  it('safeHook is imported by index.ts', () => {
-    const src = readFileSync(INDEX_PATH, 'utf-8');
-    expect(src).toMatch(/import\s*\{\s*safeHook\s*\}\s*from\s*["']\.\/safe-hook["']/);
+  it('safeHook is imported by Pi hooks', () => {
+    const src = readFileSync(HOOKS_PATH, 'utf-8');
+    expect(src).toMatch(/import\s*\{\s*safeHook\s*\}\s*from\s*["'](?:\.\.\/)+safe-hook["']/);
   });
 
-  it('wraps all 5 hook registrations with safeHook in index.ts', () => {
-    const src = readFileSync(INDEX_PATH, 'utf-8');
+  it('wraps all 5 hook registrations with safeHook in Pi hooks', () => {
+    const src = readFileSync(HOOKS_PATH, 'utf-8');
     const hookEvents = ['input', 'session_start', 'tool_call', 'turn_end', 'agent_end'];
     for (const ev of hookEvents) {
       const re = new RegExp(`pi\\.on\\(\\s*["']${ev}["']\\s*,\\s*safeHook\\(`);
@@ -38,7 +39,7 @@ describe('hook error containment (safeHook wiring)', () => {
   });
 
   it('does not register duplicate hook events', () => {
-    const src = readFileSync(INDEX_PATH, 'utf-8');
+    const src = readFileSync(HOOKS_PATH, 'utf-8');
     const regex = /pi\.on\(\s*["']([a-z_]+)["']\s*,/g;
     const counts: Record<string, number> = {};
     let m: RegExpExecArray | null;

@@ -2,54 +2,31 @@
 
 ## Overview
 
-Product planning workflow system for AI coding agents. Shipped as a
-**Pi-first** extension; the orchestrator skill + 24 partner skills work in
-any agent that reads `~/.agents/skills/<name>/SKILL.md` (the
-[agentskills.io](https://agentskills.io/) standard adopted by Pi, Claude
-Code, Codex, Cursor, Continue, OpenCode, and others).
-
-See `cli-agents/COMMANDS.md` for the extension guide and
-`docs/archive/2026-07-09-deprecated-multi-cli-integration/` for the pre-v0.45.0
-multi-CLI surface (kept for archaeology, not for use).
+Stelow is a host-agnostic workflow library. Its 25 agentskills.io skills are
+portable; runtime specialization is isolated behind `CLIAdapter`. Pi provides
+native hooks, commands, and TUI behavior. Fusion uses the compiled,
+dependency-free `plugins/fusion-plugin-stelow/` package plus generated command
+artifacts, while generic hosts use safe fallbacks. Empirical Fusion details are
+in `docs/design/fusion-integration-facts.md`.
 
 ## System Layers
 
+```text
+skills/ (canonical workflow + stages.yaml tool vocabulary)
+  ↓
+extensions/stelow/ (state, schemas, commands, workflow machine)
+  ↓ CLIAdapter
+  ├─ adapters/pi/      native commands, hooks, UI, Plannotator implementation
+  ├─ adapters/fusion   Fusion tool mapping + command/artifact builders
+  └─ adapters/generic  portable no-op fallbacks and approval receipts
+  ↓
+plugins/fusion-plugin-stelow/ (compiled Fusion package + 25 bundled skills)
+  ↓
+stelow.json + .stelow/approvals/ (portable Stelow state contract)
 ```
-┌─────────────────────────────────────────────────────────────┐
-│  SKILL (stelow)                             │
-│  - /sw-start, /sw-next, /sw-inbox                        │
-│  - Phase instructions (triage, shape, gate, etc.)         │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│  EXTENSION (extensions/stelow)               │
-│  - State management                                        │
-│  - Commands (/sw-inbox)                                     │
-│  - UI (footer, overlays)                                   │
-│  - Lifecycle hooks (onTurnEnd, resume)                     │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│  MODULES (extensions/.../modules/)                          │
-│  - File persistence (JSON, Markdown)                       │
-│  - Cache management                                        │
-│  - Task types                                              │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│  FILESYSTEM                                                │
-│  .stelow/                                   │
-│  ├── inbox/items.md          # Deferred items              │
-│  ├── {date}/{hash}/                                          │
-│  │   ├── checklist.md        # Current phase tasks (markdown)        │
-│  │   ├── index.json          # Workflow metadata          │
-│  │   └── tracking.json       # Local tracking             │
-│  └── stelow.json  # Global tracking         │
-└─────────────────────────────────────────────────────────────┘
-```
+
+`extensions/stelow/index.ts` is deliberately a thin bootstrap. Host-specific
+imports and registration belong in the corresponding adapter.
 
 ## Modules
 
@@ -408,6 +385,46 @@ fallback path.
 ### Reference implementation
 
 Tags `v0.43.4` and earlier contained reference adapter implementations for other agents.
+
+## Post-Refactor Host Surface (v0.55+)
+
+The host-agnostic refactor (v0.55) reshaped the adapter surface:
+
+1. **Muxy + Herdr integration trees were deleted.** The full Vite/Tailwind Muxy plugin (`integrations/muxy/stelow/`, ~13 top-level entries) and the Rust+ratatui Herdr plugin (`integrations/herdr/stelow/`, ~6 entries) are gone. The host-agnostic adapter pattern replaces them — see [docs/design/host-agnostic-architecture.md](docs/design/host-agnostic-architecture.md) for the full rationale.
+2. **Pi adapter moved to its own directory.** `extensions/stelow/adapters/pi/` owns all Pi-specific runtime: hooks, commands, UI, tool registration (including Plannotator for `visual_review`), and runtime skill sync.
+3. **Fusion has an adapter and a real plugin.** `extensions/stelow/adapters/fusion.ts` owns host-native tool mapping, while `plugins/fusion-plugin-stelow/` is the compiled external plugin. The build prepares all 25 plugin-local skill trees and canonical settings/workflow artifacts; full project runtime load installs those artifacts and maintains one managed workflow.
+4. **Generic adapter is the safe default.** `extensions/stelow/adapters/generic.ts` provides no-op implementations for every method (universal fallback) — sub-classes get a working shell.
+5. **Detection is centralized.** `detectHost()` in `extensions/stelow/state.ts` resolves via `FUSION_HOST` → `STELOW_HOST` / `PRODUCT_WORKFLOW_CLI` env vars → `~/.fusion` probe → `~/.pi` probe → `pi --version` probe → `generic` fallback.
+6. **`stages.yaml#tools` is the canonical tool vocabulary.** Names follow the Anthropic convention (`ask_user_question`, `visual_review`, `subagent`, `read`, `write`, `edit`, `bash`, `grep`, `ls`, `agent_browser`). Each host entry can resolve to a native tool name or `null` (use stelow's safe fallback).
+
+For the empirical Fusion audit that grounded the Fusion adapter, see [docs/design/fusion-integration-facts.md](docs/design/fusion-integration-facts.md). For the design rationale and host-detection contract, see [docs/design/host-agnostic-architecture.md](docs/design/host-agnostic-architecture.md).
+
+### Fusion plugin lifecycle
+
+`npm run build` first runs `scripts/prepare-fusion-plugin.ts`, which validates
+all canonical skill frontmatter, serializes settings and v2 workflow IR through
+the builders in `extensions/stelow/adapters/commands/fusion-artifacts.ts`, and
+atomically refreshes the plugin resources. TypeScript then emits the standalone
+entry at `plugins/fusion-plugin-stelow/dist/index.js`; it has no runtime SDK or
+private Fusion import.
+
+Fusion resolves each contribution's `skillFiles` relative to the installed
+plugin root. A reduced `fn plugin install`/publish loader can therefore validate
+and load the package without project workflow APIs; `hooks.onLoad` defers the
+project integration in that context. In a full project runtime, `onLoad`:
+
+1. validates the exact bundled settings and workflow bytes;
+2. stages `.fusion/plugins/fusion-plugin-stelow/settings.json` and
+   `.fusion/workflows/stelow-v2.json`;
+3. creates or updates the one project-scoped workflow whose description carries
+   `[managed-by:fusion-plugin-stelow]`; and
+4. commits both files, compensating the workflow mutation and restoring prior
+   bytes if a later rename fails.
+
+Repeated loads preserve the workflow ID and byte-identical files. Duplicate
+managed workflows and unrelated workflows named `Stelow product planning` fail
+closed. Fusion continues to own workflow/task rows and `.fusion/`; Stelow owns
+`stelow.json` and `.stelow/`.
 The most complete reference (310 lines, fully populated, covering every BaseAdapter method)
 is preserved at `docs/archive/2026-07-09-deprecated-multi-cli-integration/v0.43.4-multi-cli-surface.tar.gz` — extract `cli-agents/opencode/plugin/` or `extensions/stelow/adapters/opencode/index.ts` from it before writing yours.
 

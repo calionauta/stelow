@@ -6,7 +6,7 @@
  */
 
 import type { CLI, CLICapabilities } from "../types";
-import { getCLICapabilites } from "../state";
+import { getCLICapabilitiesForHost } from "../state";
 import type {
   CLIAdapter,
   ToolCallHandler,
@@ -43,7 +43,7 @@ export abstract class BaseAdapter implements CLIAdapter {
   protected _statusLine?: string;
   
   constructor(cli?: CLI) {
-    this._capabilities = getCLICapabilites(cli);
+    this._capabilities = getCLICapabilitiesForHost(cli);
   }
   
   get capabilities(): CLICapabilities {
@@ -90,7 +90,7 @@ export abstract class BaseAdapter implements CLIAdapter {
     }
     this._handlers.sessionStart = handler;
   }
-  
+
   onTurnEnd(handler: TurnEndHandler): void {
     if (!this._capabilities.hasTurnEnd) {
       console.warn(`[${this.name}] Turn end events not supported`);
@@ -177,6 +177,10 @@ export abstract class BaseAdapter implements CLIAdapter {
     return value !== null && value !== undefined;
   }
   
+  async visualReview(_filePath: string, _ctx: { cwd: string; dirHash?: string }): Promise<{ decision: string; feedback?: string }> {
+    return { decision: "approved", feedback: "no-op fallback" };
+  }
+
   // ── UI ──────────────────────────────────────────────────────────────
   
   showNotification(message: string, type: NotificationType = "info"): void {

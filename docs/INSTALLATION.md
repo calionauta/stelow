@@ -175,3 +175,70 @@ Git-based distribution is a deliberate security choice:
 - **Maintainer account compromise** — malicious commits to default branch. Mitigate with: signed commits, branch protection, required PR reviews, and Trivy scanning in CI.
 
 **Bottom line:** Git-based distribution solves the risks we *control* (how we ship our code). Risks we *inherit* (maintainer compromise, third-party deps) are shared with all software.
+
+
+## Fusion
+
+### Build and preflight
+
+From a clean Stelow checkout:
+
+```bash
+npm ci
+npm run build
+fn workflow validate --file plugins/fusion-plugin-stelow/artifacts/workflows/stelow-v2.json --json
+fn plugin publish --dry-run plugins/fusion-plugin-stelow
+```
+
+`npm run build` prepares all 25 canonical skill trees, emits settings and v2
+workflow JSON through Stelow's canonical Fusion builders, and compiles the
+loadable JavaScript entry. Workflow validation is dry-run only: it does not
+create a workflow row.
+
+### Install and enable
+
+Install the built plugin directory directly:
+
+```bash
+fn plugin install ./plugins/fusion-plugin-stelow
+fn plugin enable fusion-plugin-stelow
+fn plugin list
+```
+
+For a packed Stelow release, extract the tarball first and point Fusion at the
+nested plugin directory (a raw `.tgz` is not an install target):
+
+```bash
+npm pack
+mkdir /tmp/stelow-package
+# replace the filename with the one printed by npm pack
+tar -xzf calionauta-stelow-*.tgz -C /tmp/stelow-package
+fn plugin install /tmp/stelow-package/package/plugins/fusion-plugin-stelow
+fn plugin enable fusion-plugin-stelow
+```
+
+The install/publish preflight loader has a reduced task-store seam. The plugin
+loads there without writing a workflow and completes project registration when
+a full Fusion project runtime next loads it.
+
+### Installed and project paths
+
+| Content | Path |
+|---|---|
+| Compiled plugin entry | `<installed-plugin-root>/dist/index.js` |
+| Plugin-local skills | `<installed-plugin-root>/skills/stelow-product-*/SKILL.md` |
+| Bundled settings source | `<installed-plugin-root>/artifacts/settings.json` |
+| Bundled workflow source | `<installed-plugin-root>/artifacts/workflows/stelow-v2.json` |
+| Project plugin settings artifact | `.fusion/plugins/fusion-plugin-stelow/settings.json` |
+| Project workflow artifact | `.fusion/workflows/stelow-v2.json` |
+| Managed workflow row | `Stelow product planning` in the current project's Fusion store |
+
+A repeat load keeps the same workflow ID and does not rewrite different bytes.
+Malformed resources, workflow collisions, duplicate managed rows, and failed
+file/store operations fail closed and restore prior state. Stelow workflow state
+remains in `stelow.json` and `.stelow/`; the plugin never writes it into Fusion
+engine or task state.
+
+Fusion-native mappings remain `fn_ask_question` → `ask_user_question` and
+`fn_spawn_agent` → `subagent`. Fusion has no native `visual_review`; Stelow uses
+the `.stelow/approvals/{dirHash}/{file}.approved.md` receipt fallback.

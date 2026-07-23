@@ -1,0 +1,22 @@
+{
+  "name": "fusion-plugin-stelow",
+  "version": "0.54.3",
+  "type": "module",
+  "main": "./dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist/",
+    "manifest.json",
+    "skills/",
+    "artifacts/"
+  ],
+  "dependencies": {},
+  "engines": {
+    "node": ">=20"
+  }
+}

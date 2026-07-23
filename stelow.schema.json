@@ -38,6 +38,17 @@
       "type": "object",
       "required": ["name", "status", "phases"],
       "properties": {
+        "host": {
+          "type": "object",
+          "description": "Host that first registered this workflow (immutable after first write)",
+          "required": ["name", "version", "registeredAt"],
+          "properties": {
+            "name": { "type": "string", "enum": ["pi", "fusion", "generic"] },
+            "version": { "type": "string" },
+            "registeredAt": { "type": "string", "format": "date-time" }
+          },
+          "additionalProperties": false
+        },
         "name": {
           "type": "string",
           "description": "Human-readable workflow identifier (e.g., 'feature-login')"

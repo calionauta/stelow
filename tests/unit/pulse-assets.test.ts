@@ -85,12 +85,12 @@ describe("setup.sh includes Pulse step", () => {
 
   it("setup.sh has Pulse step", () => {
     const content = readFileSync(join(PROJECT_ROOT, "setup.sh"), "utf-8");
-    expect(content).toMatch(/Step 11\/11:.*Pulse/);
+    expect(content).toMatch(/Step 9\/9:.*Pulse/);
     expect(content).toMatch(/setup_pulse\(\)/);
   });
 
-  it("setup.sh calls setup_pulse after detect_muxy", () => {
+  it("setup.sh calls setup_pulse before print_summary", () => {
     const content = readFileSync(join(PROJECT_ROOT, "setup.sh"), "utf-8");
-    expect(content).toMatch(/detect_muxy\n  setup_pulse\n  print_summary/);
+    expect(content).toMatch(/setup_pulse\n  print_summary/);
   });
 });

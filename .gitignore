@@ -1,5 +1,8 @@
 # ==== stelow cleanup ====
 
+# Temporary investigation clones (e.g. tmp/fusion-inspect/ for SW-001)
+tmp/fusion-inspect/
+
 # Session checkpoints and research (local only)
 research/
 progress.md
@@ -87,6 +90,10 @@ edge-case-review.md
 
 # Local skills (pi installs here)
 .agents/
+
+# Generated Fusion plugin tree is tracked (build-time artifact);
+# exclude transient staging leftovers that may appear during prepare.
+plugins/fusion-plugin-stelow/.fusion-stelow-stage-*/
 
 # Generated cli-tools (synced from orchestrator at build/install time)
 # The orchestrator is the source of truth; sub-skills get cli-tools via sync-cli-tools.sh

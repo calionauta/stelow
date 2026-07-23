@@ -2,7 +2,7 @@
  * Provenance log — append-only JSONL history of workflow events.
  *
  * Backed by `.stelow/inbox/history.jsonl` (one JSON object per line).
- * Used for audit, debugging, and the `--stale-workflows` Muxy panel view.
+ * Used for audit, debugging, and workflow diagnostics.
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";

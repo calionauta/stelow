@@ -2,6 +2,16 @@
 
 All notable changes to `@calionauta/stelow` will be documented in this file.
 
+## [0.55.0] - 2026-07-22
+
+### Changed
+
+- Made the core host-agnostic with a thin bootstrap and dedicated Pi hooks, commands, UI, visual-review tool, and runtime skill sync.
+- Added Fusion/generic adapters, canonical `stages.yaml#tools` mappings, generated Fusion command artifacts, and portable `.stelow/approvals/` receipts.
+- Added optional immutable `Workflow.host` registration to TypeScript and JSON schemas.
+- Audited all 25 skills and migrated Pi-specific tool calls to canonical `ask_user_question` and `visual_review` names.
+- Removed the Muxy and Herdr integration trees and their mirror-only tests; host integrations now use the adapter/plugin boundary.
+
 ## [0.54.3] - 2026-07-14
 
 ### Fixed

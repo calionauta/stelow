@@ -9,7 +9,15 @@
  */
 
 import type { CLI, CLICapabilities } from "../types";
-import { detectCLI, getCLICapabilites } from "../state";
+import { detectHost, getCLICapabilitiesForHost } from "../state";
+import { FusionAdapter } from "./fusion";
+
+// Lazy-load the Pi adapter to keep adapters/pi/index.ts loaded only when
+// `detectHost()` resolves to "pi" (we never import it eagerly here because
+// doing so would defeat ESM lazy-loading). The test at the bottom of this
+// file exercises createAdapter("pi") which loads the real module.
+import { createPiAdapter as makePiAdapter } from "./pi/index.js";
+import { createGenericAdapter } from "./generic.js";
 
 // ── Handler Types ────────────────────────────────────────────────────
 
@@ -124,6 +132,9 @@ export interface CLIAdapter {
    */
   hasCapability(capability: keyof CLICapabilities): boolean;
   
+  /** Optional host-native implementation of the visual review contract. */
+  visualReview?(filePath: string, ctx: { cwd: string; dirHash?: string }): Promise<{ decision: string; feedback?: string }>;
+
   // ── UI ─────────────────────────────────────────────────────────────
   
   /**
@@ -176,24 +187,28 @@ export interface CLIAdapter {
  * @returns CLIAdapter instance
  */
 export function createAdapter(cli?: CLI): CLIAdapter {
-  const detected = cli || detectCLI();
+  const detected = cli || detectHost();
 
   switch (detected) {
     case "pi":
       return createPiAdapter();
+    case "fusion":
+      return createFusionAdapter();
     default:
       return makeGenericAdapter();
   }
 }
 
 /**
- * Create the Pi adapter.
+ * Create the Pi adapter. Imported lazily by the adapters/pi module; only
+ * invoked when detectHost() resolves to "pi".
  */
 function createPiAdapter(): CLIAdapter {
-  // Lazy import to avoid circular dependencies
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { createPiAdapter: makePiAdapter } = require("./pi/index.ts");
   return makePiAdapter();
+}
+
+function createFusionAdapter(): CLIAdapter {
+  return new FusionAdapter();
 }
 
 /**
@@ -201,8 +216,6 @@ function createPiAdapter(): CLIAdapter {
  * Used as fallback when no specific CLI is detected.
  */
 function makeGenericAdapter(): CLIAdapter {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { createGenericAdapter } = require("./generic.ts");
   return createGenericAdapter();
 }
 

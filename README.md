@@ -56,6 +56,7 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 - [🎮 Commands](#-commands)
 - [📡 Pulse — Autonomous Inbox Processing](#-pulse--autonomous-inbox-processing)
 - [Setup per CLI](#setup-per-cli)
+- [🌐 Host Support](#-host-support)
 - [🖥️ Visual & TUI Integrations](#️-visual--tui-integrations)
 - [📁 Artifact Directory](#-artifact-directory)
 - [📖 Evidence & Limitations](#-evidence--limitations)
@@ -400,9 +401,9 @@ reads `~/.agents/skills/<name>/SKILL.md` — the agentskills.io standard.
 | **Subagent delegation with `context: "fresh"` + `acceptance` contracts** | ✅ Via `pi-subagents` (tintinweb) | ⚠️ Native subagent only; no acceptance contract |
 | **Supervision / overnight execution** | ✅ Via `pi-supervisor` | ❌ |
 
-> **Bottom line:** The **25 skills run identically in any agent that reads `~/.agents/skills/`** — they execute the full Shape Up workflow (plans, critique, scopes, everything). The deep integration features (TUI overlay, slash commands, lifecycle hooks, Plannotator gate, auto-sync scopes, ask_user_question, subagent acceptance contracts) are native to Pi, which has the extension system to support them. Two agent-agnostic surfaces also read workflow state from `.stelow/` files on disk: the [Muxy.app](https://muxy.app/) webview panel and the [Herdr](https://herdr.dev) split-pane TUI plugin. Both work with any agent. On any agent, the workflow runs from chat + skill invocation; on Pi, it also runs from slash commands + TUI.
+> **Bottom line:** The **25 skills run in any agent that reads agentskills.io skill directories** — they execute the same workflow and keep portable state in `stelow.json` / `.stelow/`. Pi adds its TUI, hooks, and Plannotator implementation. Fusion ships a separate compiled plugin at `plugins/fusion-plugin-stelow/` that contributes the 25 plugin-local skills, installs validated project artifacts, and maintains one project-scoped workflow; `visual_review` remains the portable approval-receipt fallback.
 >
-> **v0.45.0 narrowed the shipped surface to Pi-only.** Skills remain agent-agnostic. To add first-class support (TUI / gates / auto-sync) for a new agent, follow the [Adapter extension guide](cli-agents/COMMANDS.md#how-to-extend).
+> Generic agents retain the skill-only path. First-class host support belongs behind the [Adapter extension guide](cli-agents/COMMANDS.md#how-to-extend), with a host plugin only when that host exposes a plugin contract.
 
 ### Auto-sync scopes from spec-tech.md
 
@@ -435,8 +436,8 @@ stelow is designed to be **self-contained** — the 25 skills + installer cover 
 
 > **Note:** stelow's cli-tools (`references/cli-tools/subagents.md`) document the invocation syntax. The orchestrator reads `detected_cli` from `index.json` and emits the correct shape — no skill changes needed when switching subagent extensions.
 | [pi-supervisor](https://github.com/tintinweb/pi-supervisor) | Optional (Pi only) | Conversation supervision during execution | `npm:pi-supervisor` | Skip — no supervision; rely on `stages-guard` for invariant enforcement |
-| [Muxy.app](https://muxy.app/) + stelow Muxy extension | Optional (macOS) | Webview panel showing workflow state with phase progress and quick actions | Install Muxy.app, then load extension from `integrations/muxy/stelow/` | No webview — read `.stelow/` files directly or use Herdr split-pane TUI |
-| [herdr](https://herdr.dev/) + stelow plugin | Optional | Split-pane TUI showing workflow state with click-to-drill | `herdr plugin install calionauta/stelow` | No TUI — read `.stelow/` files directly or use Muxy webview panel |
+| [Muxy.app](https://muxy.app/) + stelow Muxy extension | Optional (macOS, **deprecated** — removed in v0.55; Muxy support lives outside stelow's repo) | Webview panel showing workflow state with phase progress and quick actions | Install Muxy.app separately; load extension from a community fork if available | No webview — read `.stelow/` files directly. stelow itself ships zero host-coupled UI surfaces post-refactor. |
+| [herdr](https://herdr.dev/) + stelow plugin | Optional (**deprecated** — removed in v0.55) | Split-pane TUI showing workflow state with click-to-drill | `herdr plugin install calionauta/stelow` (community fork) | No TUI — read `.stelow/` files directly. Use `npm run sw-status` for a TUI-free status view. |
 
 **Design principle:** stelow is **Pi-first, skills-agnostic**. The 25 skills run identically in any agent that reads `~/.agents/skills/` — the full Shape Up workflow (plans, critique, scopes) works everywhere. The deep integration layer (TUI overlay, `/sw-*` slash commands, lifecycle hooks, Plannotator gate, auto-sync scopes, subagent acceptance contracts, supervision) is native to Pi, which has the extension system to support it. Other harnesses get the skills + CLI fallback; Pi gets the full experience. No external tool is *required* to run the workflow — each optional integration enhances a phase but never blocks progress. The installer (`./install.sh`) auto-installs Pi npm packages when Pi is detected — including the `raphapr/pi-cymbal` and `joelhooks/pi-ast-grep` extensions. The cymbal/ast-grep **CLIs** and `sem`/`ctx7` remain user-managed (offered interactively during setup, or see the tools table above).
 
@@ -468,7 +469,7 @@ curl -fsSL https://raw.githubusercontent.com/calionauta/stelow/main/setup.sh | s
 
 > **Not using pi.dev?** Skills land in `~/.agents/skills/` and work on any agent that reads them. You just won't get the Pi-only extensions or TUI overlay. The workflow itself runs fine — see [agentskills.io](https://agentskills.io/) for the cross-agent standard.
 >
-> **Muxy.app can't be auto-installed.** It's a macOS-only app (SwiftUI + libghostty), open-source under MIT license, distributed via [GitHub releases](https://github.com/muxy-app/muxy/releases). Path A detects whether it's present and tells you how to install if not. Once installed, load the stelow extension from `integrations/muxy/stelow/`.
+> **Muxy.app + Herdr integrations were removed in v0.55.** The host-agnostic refactor deleted `integrations/muxy/` and `integrations/herdr/`; both projects are now external — see the [migration note](#migration-from-pre-v055) below. If you depend on the Muxy webview panel or the Herdr split-pane TUI, pin to `stelow@0.54.x` or install a community-maintained fork.
 
 ### 📋 Path B: Existing pi.dev User
 
@@ -595,22 +596,21 @@ When working on software projects, trigger the product workflow:
 
 ---
 
-## 🖥️ Visual & TUI Integrations
+## 🖥️ Visual & TUI Integrations (deprecated in v0.55)
 
-Two CLI-agnostic surfaces read workflow state from `.stelow/` files on disk and present it alongside your terminal. Pick one or both — they share no code and don't require each other.
+> **Deprecated in v0.55.** Both the Muxy webview panel and the Herdr split-pane TUI were removed from this repo as part of the host-agnostic refactor (see [migration note](#migration-from-pre-v055)). If you depend on either surface, pin to `stelow@0.54.x` or install a community-maintained fork. stelow itself now ships zero host-coupled UI surfaces; workflow state is read directly from `.stelow/` files via the host-agnostic adapter contract.
 
-| Surface | Host | UI model |
-|---|---|---|
-| **Muxy webview panel** | [Muxy.app](https://muxy.app/) (macOS terminal multiplexer) | `WKWebView` docked/floating panel with HTML/CSS/JS |
-| **Herdr split-pane TUI** | [Herdr](https://herdr.dev) (terminal multiplexer) | Rust+ratatui TUI in split pane (`placement = "split"`) |
+## 🌐 Host Support
 
-Muxy plugin           |  Herdr Extension
-:-------------------------:|:-------------------------:
-![](https://github.com/user-attachments/assets/6254c08e-dc92-4b5d-9fc6-144868e53621)  |  ![](https://github.com/user-attachments/assets/e348fd87-f428-4d33-afd6-e08363d16eab)
+stelow runs on three host surfaces (and any agent that reads `~/.agents/skills/<name>/SKILL.md`):
 
-Herdr Extension
+| Host | Detection | Adapter surface | Notes |
+|---|---|---|---|
+| **Pi** (`@earendil-works/pi-coding-agent`) | `~/.pi` probe or `STELOW_HOST=pi` | `extensions/stelow/adapters/pi/` | Full experience: native `/sw-*` slash commands, TUI overlay, lifecycle hooks, Plannotator visual review. |
+| **Fusion** (the AI-orchestrated task board) | `~/.fusion` probe, `.fusion/` project-local probe, or `STELOW_HOST=fusion` | `extensions/stelow/adapters/fusion.ts` + `plugins/fusion-plugin-stelow/` | Compiled plugin with 25 plugin-local skills, validated project artifacts, and one managed project workflow; `visual_review` uses `.stelow/approvals/{dirHash}/{file}.approved.md`. |
+| **Generic / standalone** (Claude Code, Codex, Cursor, Continue, OpenCode, or any agent reading skills directly) | Default fallback (no probe match) | `extensions/stelow/adapters/generic.ts` | Skills land in `~/.agents/skills/` per the agentskills.io standard; visual_review is a no-op + receipt; subagent is a file-based handoff. |
 
-Both integrations share the same workflow state (`.stelow/`), both work with any agent (Pi, or any agent that reads `~/.agents/skills/`), neither requires pi.dev.
+Detection lives in `extensions/stelow/state.ts#detectHost()` and follows this precedence: `FUSION_HOST=1` → `STELOW_HOST` (or `PRODUCT_WORKFLOW_CLI`) env var → `~/.fusion` probe → `~/.pi` probe → `pi --version` CLI probe → `generic` (safe fallback). See [docs/design/host-agnostic-architecture.md](docs/design/host-agnostic-architecture.md) for the full design rationale.
 
 ### Muxy Webview Panel
 
@@ -627,7 +627,7 @@ The panel shows:
   Escalated / Failed / Completed). Filter strip by status or free-text.
   Project picker for switching between known Muxy projects.
 
-**Install:** Muxy.app (macOS-only) + the stelow Muxy extension at `integrations/muxy/stelow/`. To load the extension in Muxy: open **Extensions modal → Create**, pick the folder, and Muxy auto-detects the built `dist/`. See [Muxy's Get started guide](https://muxy.app/docs/extensions/get-started) for the official workflow.
+**Install (deprecated):** The stelow Muxy extension at `integrations/muxy/stelow/` was removed in v0.55 as part of the host-agnostic refactor (see [migration note](#migration-from-pre-v055)). Pin to `stelow@0.54.x` if you depend on the Muxy webview panel.
 
 ### Herdr Split-Pane TUI
 
@@ -642,7 +642,7 @@ The TUI shows:
 
 **Keybinds:** `prefix+w` toggle · `Tab`/`j`/`k` next/prev workflow · `r` refresh · `?` help · `q`/`Esc` quit. Detail card shows prompt + current stage + scope; click workflow rows to select.
 
-**Install:** `herdr plugin install calionauta/stelow` (or `herdr plugin link integrations/herdr/stelow/` for local dev after `cargo build --release`). Source under `integrations/herdr/stelow/`. See [herdr's plugin docs](https://herdr.dev/docs/plugins/) for the official install/link workflow.
+**Install (deprecated):** The stelow Herdr plugin at `integrations/herdr/stelow/` was removed in v0.55 as part of the host-agnostic refactor (see [migration note](#migration-from-pre-v055)). Pin to `stelow@0.54.x` if you depend on the Herdr split-pane TUI.
 
 ---
 
@@ -689,6 +689,20 @@ All workflow artifacts live under `<project>/.stelow/`. The layout below is gene
 > **Convention:** `{dirHash}` is a stable random identifier (e.g. `sw-abc123-xyz789`) generated at workflow creation. The display name may change via `/sw-rename`, but the directory hash stays constant.
 
 ---
+
+## 🔄 Migration from pre-v0.55
+
+If you upgraded from `stelow < 0.55`, note the breaking changes:
+
+1. **`integrations/muxy/stelow/` and `integrations/herdr/stelow/` were deleted.** Both the Muxy webview panel and the Herdr split-pane TUI integrations were removed as part of the host-agnostic refactor. The host-agnostic adapter pattern replaces them:
+   - **Pi** stays specialized under `extensions/stelow/adapters/pi/`.
+   - **Fusion** uses `extensions/stelow/adapters/fusion.ts` plus the compiled `plugins/fusion-plugin-stelow/` package for skills, validated artifacts, and managed workflow registration.
+   - **Generic / standalone** uses the agentskills.io standard with no host-coupled UI surfaces.
+2. **`PRODUCT_WORKFLOW_CLI` env var is deprecated.** Use `STELOW_HOST` (or `FUSION_HOST=1` for Fusion). Both legacy and new names are accepted; old code keeps working. Plan to migrate before v0.56.
+3. **`pi.*` host-private tool names** in skill prose are replaced by canonical agnostic names per `stages.yaml#tools` (`ask_user_question`, `visual_review`, `subagent`, etc.). Pi-native invocations live in `references/cli-tools/*.md` only.
+4. **Visual review receipt path**: `.plannotator/approvals/` is now a Pi-only compatibility shim; the canonical, host-agnostic path is `.stelow/approvals/{dirHash}/{file}.approved.md`. Non-Pi hosts only write to the host-agnostic path.
+
+For the full design rationale, see [docs/design/host-agnostic-architecture.md](docs/design/host-agnostic-architecture.md) and [docs/design/fusion-integration-facts.md](docs/design/fusion-integration-facts.md).
 
 ## 📖 Evidence & Limitations
 

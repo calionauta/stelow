@@ -15,7 +15,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const INDEX_PATH = resolve(__dirname, '..', '..', 'extensions', 'stelow', 'index.ts');
+const INDEX_PATH = resolve(__dirname, '..', '..', 'extensions', 'stelow', 'adapters', 'pi', 'hooks.ts');
 
 describe('hook registration order in extensions/stelow/index.ts', () => {
   it('registers hooks in the expected order', () => {

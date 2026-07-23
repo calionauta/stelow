@@ -1,16 +1,26 @@
 /**
  * Pi CLI Adapter
- * 
+ *
  * Adapter for the Pi coding agent.
  * Uses Pi's native ExtensionAPI for commands, events, and UI.
- * 
- * Implementation details completed in SCOPE-4 (commands),
- * SCOPE-5 (events), and SCOPE-6 (UI).
+ *
+ * Command behavior lives in `extensions/stelow/commands.ts`; the adapter
+ * only handles registration. The legacy `handleCommand`/per-command handler
+ * stubs are removed — they were dead code reachable only through
+ * `registerCommands().handler`, which the real Pi path (in
+ * `extensions/stelow/adapters/pi/commands.ts` → `registerCommands(pi)`)
+ * never invoked. The actual command dispatch goes through the
+ * `WORKFLOW_COMMANDS` registry + `HANDLER_BY_NAME` map in commands.ts.
  */
 
+import { mkdirSync, writeFileSync } from "node:fs";
+import { basename, join } from "node:path";
 import { execSync } from "node:child_process";
 import type { CLI } from "../../types";
 import { BaseAdapter } from "../base";
+import { registerPiHooks } from "./hooks";
+import { registerPiCommands } from "./commands";
+import { registerPlannotatorTool } from "./tools/plannotator";
 import type {
   CommandRegistration,
   NotificationType,
@@ -18,170 +28,94 @@ import type {
   StatusInfo,
   ToolDefinition,
 } from "../cli-adapter";
-import {
-  WORKFLOW_COMMANDS,
-  type CommandDescriptor,
-} from "../commands/dispatcher";
+import { WORKFLOW_COMMANDS } from "../commands/dispatcher";
 
 // ── Pi Adapter ───────────────────────────────────────────────────────
 
 export class PiAdapter extends BaseAdapter {
   readonly name: CLI = "pi";
-  
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private _pi?: any;
   private _commandsRegistered = false;
-  
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(pi?: any) {
     super("pi");
     this._pi = pi;
   }
-  
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setAPI(pi: any): void {
     this._pi = pi;
     this.initialize();
   }
-  
+
   getCommandPrefix(): string {
     return "/";
   }
-  
+
   initialize(): void {
     if (!this._pi) {
       console.warn("[PiAdapter] ExtensionAPI not set, commands/events won't work");
       return;
     }
-    
-    // Register event handlers
-    if (typeof this._pi.on === "function") {
-      this._pi.on("session_start", async (_event: unknown, ctx: { cwd: string }) => {
-        await this._invokeSessionStart(ctx.cwd);
-      });
-      
-      this._pi.on("tool_call", async (event: { tool?: string; input?: unknown }, ctx: { cwd: string }) => {
-        if (event.tool) {
-          await this._invokeToolCall(event.tool, event.input);
-        }
-      });
-      
-      this._pi.on("turn_end", async (_event: unknown, ctx: { cwd: string }) => {
-        await this._invokeTurnEnd({ cwd: ctx.cwd });
-      });
-      
-      this._pi.on("input", async (event: { text?: string }, ctx: { cwd: string }) => {
-        if (event.text) {
-          await this._invokeInput(event.text, { cwd: ctx.cwd });
-        }
-      });
-    }
-    
+    if (this._initialized) return;
+
+    registerPlannotatorTool(this._pi);
+    registerPiCommands(this._pi);
+    registerPiHooks(this._pi, this);
     super.initialize();
   }
-  
+
+  /**
+   * Register commands for Pi consumption.
+   *
+   * The actual `pi.registerCommand()` call lives in
+   * `extensions/stelow/adapters/pi/commands.ts` (via `registerCommands(pi)`
+   * from `commands.ts`). This method returns the descriptor list for
+   * registry-side introspection only — the Pi `registerCommands` happens
+   * inside `initialize()` above, before any consumer can ask for the
+   * descriptor list. Returning the descriptors here means tests and
+   * downstream tooling can iterate the registered command set without
+   * poking at Pi internals.
+   *
+   * Note: we filter out `piOnly` commands only when a non-Pi host later
+   * asks for the list. For Pi itself, all commands are Pi-compatible by
+   * definition, so we return the full WORKFLOW_COMMANDS array.
+   */
   registerCommands(): CommandRegistration[] {
     if (!this._pi || this._commandsRegistered) return [];
-    
-    // Pi uses native registerCommand() - commands are registered in commands.ts
-    // This adapter provides the registration mechanism for the extension
+
+    // Mark so repeat calls (from a different adapter consumer) are idempotent.
     this._commandsRegistered = true;
-    
-    // Return command descriptors for documentation
-    return WORKFLOW_COMMANDS.map(cmd => ({
+
+    return WORKFLOW_COMMANDS.map((cmd) => ({
       name: cmd.name,
       description: cmd.description,
-      handler: (args: string) => this.handleCommand(cmd.name, args),
+      handler: () => {
+        // No-op: real Pi commands are registered via `registerPiCommands(this._pi)`
+        // which delegates to `commands.ts#registerCommands` and calls
+        // `pi.registerCommand()` directly. This adapter contract only
+        // returns descriptors for inspection.
+      },
     }));
   }
-  
-  /**
-   * Handle a command invocation from Pi.
-   * This is called by commands.ts when a command is triggered.
-   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handleCommand(commandName: string, args: string, ctx?: any): void {
-    // Import the command handlers dynamically to avoid circular dependencies
-    // This will be connected to the actual command handlers in commands.ts
-    const handlers: Record<string, (pi: unknown, args: string, ctx: unknown) => void> = {
-      "sw-start": this.handleStart.bind(this),
-      "sw-abort": this.handleAbort.bind(this),
-      "sw-pause": this.handlePause.bind(this),
-      "sw-resume": this.handleResume.bind(this),
-      "sw-status": this.handleStatus.bind(this),
-      "sw-ls": this.handleList.bind(this),
-      "sw-setphase": this.handleSetPhase.bind(this),
-      "sw-next": this.handleNext.bind(this),
-      "sw-complete": this.handleComplete.bind(this),
-      "sw-info": this.handleGoto.bind(this),
-      "sw-rename": this.handleRename.bind(this),
-      "sw-clean": this.handleClean.bind(this),
-    };
-    
-    const handler = handlers[commandName];
-    if (handler && ctx) {
-      handler(this._pi, args, ctx);
+
+  async visualReview(filePath: string, ctx: { cwd: string; dirHash?: string }): Promise<{ decision: string; feedback?: string }> {
+    const result = execSync(`plannotator annotate ${JSON.stringify(join(ctx.cwd, filePath))} --gate --json`, { cwd: ctx.cwd, encoding: "utf8" });
+    const decision = result.includes('"decision":"approved"') ? "approved" : "unknown";
+    if (decision === "approved") {
+      const hash = ctx.dirHash ?? "default";
+      for (const root of [".stelow/approvals", ".plannotator/approvals"]) {
+        const dir = join(ctx.cwd, root, hash);
+        mkdirSync(dir, { recursive: true });
+        writeFileSync(join(dir, `${basename(filePath)}.approved.md`), `approved: true\napproved_at: ${new Date().toISOString()}\napproved_via: plannotator\nsource_file: ${filePath}\n`);
+      }
     }
+    return { decision };
   }
-  
-  // Command handlers - these delegate to the main command functions
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private handleStart(pi: unknown, args: string, ctx: any): void {
-    // Import and call the actual start command
-    try {
-      const { default: cmdStart } = require("../../start.ts");
-      cmdStart(pi as any, args, ctx);
-    } catch (e) {
-      console.error("[PiAdapter] Failed to load start command:", e);
-    }
-  }
-  
-  private handleAbort(_pi: unknown, _args: string, _ctx: unknown): void {
-    // Commands.ts handles abort - this is a placeholder
-    // The actual command handlers are in commands.ts
-    console.log("[PiAdapter] Abort command delegated to commands.ts");
-  }
-  
-  private handlePause(_pi: unknown, _args: string, _ctx: unknown): void {
-    console.log("[PiAdapter] Pause command delegated to commands.ts");
-  }
-  
-  private handleResume(_pi: unknown, _args: string, _ctx: unknown): void {
-    console.log("[PiAdapter] Resume command delegated to commands.ts");
-  }
-  
-  private handleStatus(_pi: unknown, _args: string, _ctx: unknown): void {
-    console.log("[PiAdapter] Status command delegated to commands.ts");
-  }
-  
-  private handleList(_pi: unknown, _args: string, _ctx: unknown): void {
-    console.log("[PiAdapter] List command delegated to commands.ts");
-  }
-  
-  private handleSetPhase(_pi: unknown, _args: string, _ctx: unknown): void {
-    console.log("[PiAdapter] SetPhase command delegated to commands.ts");
-  }
-  
-  private handleNext(_pi: unknown, _args: string, _ctx: unknown): void {
-    console.log("[PiAdapter] Next command delegated to commands.ts");
-  }
-  
-  private handleComplete(_pi: unknown, _args: string, _ctx: unknown): void {
-    console.log("[PiAdapter] Complete command delegated to commands.ts");
-  }
-  
-  private handleGoto(_pi: unknown, _args: string, _ctx: unknown): void {
-    console.log("[PiAdapter] Goto command delegated to commands.ts");
-  }
-  
-  private handleRename(_pi: unknown, _args: string, _ctx: unknown): void {
-    console.log("[PiAdapter] Rename command delegated to commands.ts");
-  }
-  
-  private handleClean(_pi: unknown, _args: string, _ctx: unknown): void {
-    console.log("[PiAdapter] Clean command delegated to commands.ts");
-  }
-  
+
   getAvailableTools(): ToolDefinition[] {
     return [
       { name: "read", description: "Read file contents" },
@@ -190,7 +124,7 @@ export class PiAdapter extends BaseAdapter {
       { name: "edit", description: "Edit existing files" },
       { name: "subagent", description: "Launch subagent for parallel tasks" },
       { name: "ask_user_question", description: "Ask user a question" },
-      { name: "plannotator", description: "Run plannotator for reviews" },
+      { name: "visual_review", description: "Run the Pi visual review implementation" },
       { name: "goal", description: "Manage goals" },
       { name: "intercom", description: "Send inter-agent messages" },
       { name: "supervise", description: "Supervise subagent execution" },
@@ -201,8 +135,8 @@ export class PiAdapter extends BaseAdapter {
     // Map Pi-specific tool names to agnostic names from stages.yaml.
     // Tools with matching names (read, write, bash, edit) pass through.
     switch (cliName) {
-      case "ask_user_question": return "ask";
-      case "plannotator":       return "plannotator";
+      case "ask_user_question": return "ask_user_question";
+      case "plannotator":       return "visual_review";
       case "subagent":          return "subagent";
       case "goal":              return "goal";
       case "intercom":          return "intercom";
@@ -226,33 +160,33 @@ export class PiAdapter extends BaseAdapter {
       console.log(`[${type.toUpperCase()}] ${message}`);
       return;
     }
-    
+
     // Map notification types to Pi UI
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this._pi.notify(message, (type === "error" ? "error" : "info") as any);
   }
-  
+
   async showSelectList(options: SelectOption[]): Promise<string | null> {
     if (!this._pi?.ui) {
       // Fallback: return first option
       return options[0]?.value || null;
     }
-    
+
     // Pi UI doesn't have a built-in select list
     // Fallback to first option
     console.warn("[PiAdapter] Select list not natively supported, using first option");
     return options[0]?.value || null;
   }
-  
+
   showStatusLine(info: StatusInfo): void {
     if (!this._pi?.ui) return;
-    
+
     // Pi uses custom UI for status lines
     // The main extension handles this via ui.ts
     // This adapter just stores the state
     super.showStatusLine(info);
   }
-  
+
   clearStatusLine(): void {
     super.clearStatusLine();
   }

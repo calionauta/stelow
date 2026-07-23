@@ -103,23 +103,23 @@ describe("CLI Detection", () => {
     });
 
     it("hasCommands is true for both pi and generic", () => {
-      for (const cli of ["pi", "generic"]) {
+      for (const cli of ["pi", "fusion", "generic"]) {
         expect(getCLICapabilities(cli).hasCommands).toBe(true);
       }
     });
 
     it("commandPrefix is '/' for both pi and generic", () => {
-      for (const cli of ["pi", "generic"]) {
+      for (const cli of ["pi", "fusion", "generic"]) {
         expect(getCLICapabilities(cli).commandPrefix).toBe("/");
       }
     });
 
     it("returns distinct capabilities between pi and generic", () => {
-      const capsMap = ["pi", "generic"].map((cli) =>
+      const capsMap = ["pi", "fusion", "generic"].map((cli) =>
         JSON.stringify(getCLICapabilities(cli)),
       );
       const uniqueCaps = new Set(capsMap);
-      expect(uniqueCaps.size).toBe(2);
+      expect(uniqueCaps.size).toBe(3);
     });
   });
 
@@ -131,7 +131,7 @@ describe("CLI Detection", () => {
 
     it("detects CLI when not specified", () => {
       const caps = getCLICapabilites();
-      expect(["pi", "generic"]).toContain(caps.cli);
+      expect(["pi", "fusion", "generic"]).toContain(caps.cli);
     });
 
     it("returns same result as direct getCLICapabilities call", () => {
