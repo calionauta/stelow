@@ -1,7 +1,7 @@
 {
   "id": "fusion-plugin-stelow",
   "name": "Stelow",
-  "version": "0.55.0",
+  "version": "0.55.1",
   "description": "Stelow product-planning workflow and skills for Fusion.",
   "author": "calionauta",
   "fusionVersion": ">=0.1.0",

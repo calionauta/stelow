@@ -30,4 +30,4 @@ export const STELOW_SKILLS: PluginSkillContribution[] = [
 ];
 
 export const STELOW_PLUGIN_ID = 'fusion-plugin-stelow';
-export const STELOW_PLUGIN_VERSION = "0.54.3";
+export const STELOW_PLUGIN_VERSION = "0.55.1";

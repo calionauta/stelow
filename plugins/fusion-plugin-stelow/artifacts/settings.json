@@ -2,14 +2,14 @@
   "stelow": {
     "pluginId": "fusion-plugin-stelow",
     "package": "@calionauta/stelow",
-    "version": "0.54.3",
+    "version": "0.55.1",
     "workflowArtifact": ".fusion/workflows/stelow-v2.json"
   },
   "plugins": {
     "fusion-plugin-stelow": {
       "enabled": true,
       "package": "@calionauta/stelow",
-      "version": "0.54.3",
+      "version": "0.55.1",
       "workflowArtifact": ".fusion/workflows/stelow-v2.json"
     }
   }

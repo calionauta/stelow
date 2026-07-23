@@ -2,6 +2,17 @@
 
 All notable changes to `@calionauta/stelow` will be documented in this file.
 
+## [0.55.1] - 2026-07-23
+
+Vitest CI timeout mitigation for filesystem-heavy integration suites on cold-cache shared runners.
+
+### Fixed
+
+- **Vitest CI timeout mitigation** (`SW-009`) — Raise global Vitest `testTimeout` and `hookTimeout` from 10s to 30s in `vitest.config.ts`; add explicit per-suite limits (120s for `tests/integration/concurrency.test.ts` and `tests/integration/property-based.test.ts` Property 1; 240s for the heavier `renameWorkflow` Property 2 suite) via Vitest's third-positional `describe(name, fn, timeoutMs)` argument. Documented observed cold-cache GitHub Actions shared-runner latency (~111s for the 50-parallel `concurrency.test.ts` ~166s for `property-based.test.ts` Property 2) versus local (~130ms) and the rationale for each specific override. Mitigates the eight `Test timed out in 10000ms` failures observed against `v0.55.0` (`779d4ba`) on `Unit Tests (ubuntu-latest)`.
+- **Plugin version constant refresh** (`SW-010`) — `npm run prepare:fusion-plugin` (called by `npm run build`) now correctly regenerates `plugins/fusion-plugin-stelow/src/skills.ts#STELOW_PLUGIN_VERSION` and the compiled `plugins/fusion-plugin-stelow/dist/skills.d.ts` to match the current `manifest.json#version`. The v0.55.0 published tarball was internally pinned to `0.54.3` at this constant because SW-008's `npm run build` was never run on the release commit; the v0.55.1 release re-bakes it to `0.55.1`.
+
+**Full Changelog:** https://github.com/calionauta/stelow/compare/v0.55.0...v0.55.1
+
 ## [0.55.0] - 2026-07-23
 
 Host-agnostic core, compiled Fusion plugin, artifact validation, and rollback hardening. The 7 commits since `v0.54.3` correspond to the plan-of-record tasks `SW-001` through `SW-007`.
