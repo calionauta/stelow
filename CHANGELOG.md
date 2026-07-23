@@ -2,15 +2,38 @@
 
 All notable changes to `@calionauta/stelow` will be documented in this file.
 
-## [0.55.0] - 2026-07-22
+## [0.55.0] - 2026-07-23
+
+Host-agnostic core, compiled Fusion plugin, artifact validation, and rollback hardening. The 7 commits since `v0.54.3` correspond to the plan-of-record tasks `SW-001` through `SW-007`.
+
+### Added
+
+- **Host-agnostic architecture** (`SW-002`) — `extensions/stelow/adapters/{base,pi,fusion,generic}.ts` with a thin bootstrap. Pi-specific code now lives under `adapters/pi/` (hooks, commands, UI, `plannotator` tool, runtime skill sync). Fusion and generic CLIs receive generated host artifacts and never see Pi primitives.
+- **Fusion host adapter** (`SW-002`) — JSON plugin format, canonical `stages.yaml#tools` mapping (Pi `ask_user_question` → Fusion `fn_ask_question`; supervisor subagent → `fn_spawn_agent`), shared file tools, portable `.stelow/approvals/` receipts.
+- **Compiled Fusion plugin** (`SW-006`) — `plugins/fusion-plugin-stelow/` ships as a dependency-free, standalone bundle: 25 plugin-local skill trees, validated settings + v2 workflow IR, `manifest.json` (`fusionVersion >= 0.1.0`), and a `dist/index.js` entry that has no runtime SDK or private Fusion imports. `scripts/prepare-fusion-plugin.ts` validates skill frontmatter and emits the artifacts through Stelow's canonical Fusion builders; wired into `npm run build` and `npm run prepack`.
+- **Fusion lifecycle contracts** (`SW-006`) — Artifact installation, skill installation, and workflow registration install settings/workflow under `.fusion/`, register exactly one managed workflow, restore prior bytes on rename failure, and fail closed on collisions.
+- **Fusion workflow validation** (`SW-004`) — `validateFusionWorkflowIR()` and `validateFusionSettings()` enforce the Stelow-v2 IR contract before disk writes; an atomic write guard (`writeArtifactAtomically`) wraps Fusion artifact generation in `rename`-based safety.
+- **Fusion visual review receipts** (`SW-004`) — `FusionAdapter` produces host-stamped approval receipts (host metadata + idempotent keys) instead of inheriting the generic fallback.
+- **`Workflow.host` registration** (`SW-002`) — Optional immutable `Workflow.host` field added to the TypeScript and JSON schemas, with cross-host invariant tests guarding the boundary.
+- **Canonical CLI-tool vocabulary** (`SW-002`/`SW-003`) — All 25 skills audited; Pi-specific tool calls migrated to canonical `ask_user_question` and `visual_review` names.
 
 ### Changed
 
-- Made the core host-agnostic with a thin bootstrap and dedicated Pi hooks, commands, UI, visual-review tool, and runtime skill sync.
-- Added Fusion/generic adapters, canonical `stages.yaml#tools` mappings, generated Fusion command artifacts, and portable `.stelow/approvals/` receipts.
-- Added optional immutable `Workflow.host` registration to TypeScript and JSON schemas.
-- Audited all 25 skills and migrated Pi-specific tool calls to canonical `ask_user_question` and `visual_review` names.
-- Removed the Muxy and Herdr integration trees and their mirror-only tests; host integrations now use the adapter/plugin boundary.
+- **Staged adapter routing** (`SW-002`) — `stages.yaml` now drives the canonical tool map; the dispatcher emits host-appropriate primitives at runtime.
+- **CLI-tools fixture resilience** (`SW-005`) — Cli-tools sync moved into a single `vitest` `globalSetup` (`tests/global-setup.ts`) that runs once before any test file. Per-file `beforeAll` hooks no longer race in parallel workers. `sync-content-equality.test.ts` samples deterministically (first / middle / last) and fails loudly when a synced copy is missing or stale, instead of silent early-skip.
+
+### Fixed
+
+- **`cli-tools` full-suite drift** (`SW-005`) — Clean-checkout `vitest run` runs no longer fail in CI because of slice-based sample coverage in `sync-content-equality.test.ts`. Tightened `skill-implementation.test.ts` `goals.md` assertions to assert on both canonical and sampled sub-skill copies. Added isolated temp-fixture regressions covering missing target dir, missing file, differing content, populated state, excluded-file cleanup, and idempotent re-run.
+- **Fusion plugin rollback on artifact-write failure** (`SW-007`) — Removes transaction-created Fusion directories (`workflows/`, `skills/`, `settings.json`) after a failed installation so no `.fusion/` leftovers remain. Adds a stale managed-workflow update path that no longer rewrites a workflow row the registry never created.
+- **Marker-remove collision handling** (`SW-007`) — `cleanupMarker` now refuses to delete a marker owned by a different in-flight install, preventing cross-install clobber.
+- **Fusion plugin audit register + regressions** (`SW-007`) — `docs/audits/sw-006-fusion-plugin-audit.md` records the post-merge audit findings and verification evidence. New regressions cover registration failure, marker removal collisions, and rename-rollback behavior.
+
+### Removed
+
+- **Muxy and Herdr integration trees** (`SW-002`) — Both trees and their mirror-only tests are gone. Host integrations now route exclusively through the adapter/plugin boundary (`adapters/pi/` for Pi, generated Fusion artifacts + `plugins/fusion-plugin-stelow/` for Fusion). Per `.changeset/sw-002-removal.md`, this removal is classified as `minor`.
+
+**Full Changelog:** https://github.com/calionauta/stelow/compare/v0.54.3...v0.55.0
 
 ## [0.54.3] - 2026-07-14
 
