@@ -1,5 +1,7 @@
 # Release Workflow Instructions
 
+> **Canonical source:** `AGENTS.md` → **Versioning**. This file is a **supplementary operator-facing** companion for release agents — useful for the `gh release create --notes-file` invocation shape, the Conventional Commits table, and the Release Note template. **If this file and `AGENTS.md` disagree, `AGENTS.md` wins.** Always re-read `AGENTS.md#Versioning` before cutting a release.
+
 **This file contains instructions for LLMs handling releases in this project.**
 **Read this before making any release-related actions.**
 
@@ -7,72 +9,62 @@
 
 ## Versioning Policy
 
-- **Current version:** `0.1.0-alpha`
-- **Versioning scheme:** Semantic Versioning (SemVer) with pre-release suffix
-- **Do NOT bump to 1.0.0** until the owner explicitly decides to release v1.0.0
-- **Pre-release tags:** `-alpha`, `-beta`, `-rc` (e.g., `0.2.0-alpha`)
+- **Scheme:** Semantic Versioning (`MAJOR.MINOR.PATCH`). No `-alpha`, `-beta`, or `-rc` pre-release suffix is in use.
+- **Distribution:** Stelow ships **via Git/GitHub only** — annotated git tag + `gh release create`. There is **no `npm publish` step**; release agents must not run `npm publish`.
+- **Single source of truth:** the current version is read from `package.json#version`. `npm run version:sync` propagates it to plugin files (`plugins/fusion-plugin-stelow/manifest.json`, `plugins/fusion-plugin-stelow/package.json`). Never guess the version.
+- **Tag and GitHub Release are linked — never one without the other.** A git tag alone does not create a GitHub Release; the GitHub landing page shows only Releases, not tags.
 
 ---
 
-## Release Workflow (Step by Step)
+## Release Workflow
 
-### When to Release
+Follow the canonical 9-step recipe in `AGENTS.md#Versioning` end-to-end:
 
-Release after merging to `main` when:
-- Significant new features added
-- Breaking changes introduced
-- Bug fixes that users need
-- Documentation updates
-- Any change that warrants a release note
+1. **Tests pass.** Run `npm test` (or the targeted impacted suite) on the worktree before bumping anything. Do not cut a release with failing tests.
+2. **Bump version.**
+   ```bash
+   npm version <major.minor.patch> --no-git-tag-version
+   ```
+   This updates `package.json` + `package-lock.json`. (`npm version` runs the `version` lifecycle script, which invokes `version:sync` and propagates the new version into the plugin files.)
+3. **Re-bake the Fusion plugin artifacts.** This step is non-optional after `version:sync`:
+   ```bash
+   npm run prepare:fusion-plugin && npm run build:fusion-plugin
+   ```
+   Re-bakes `plugins/fusion-plugin-stelow/src/skills.ts#STELOW_PLUGIN_VERSION` and the compiled `plugins/fusion-plugin-stelow/artifacts/settings.json` from `manifest.json#version`. SW-008 shipped `v0.55.0` with stale `0.54.3` baked into these files because this step was skipped on the release commit. **Do not skip.**
+4. **Update `CHANGELOG.md`.** Insert a new `## [<version>] - <YYYY-MM-DD>` entry above the previous one, with subsections matching this repo's actual sections (see [Release Note Template](#release-note-template)). End the entry with `**Full Changelog:** https://github.com/calionauta/stelow/compare/v<prev>...v<current>`.
+5. **Verify the six-point version agreement.** All six must equal the new version:
+   - `package.json` → `"version"`
+   - `package-lock.json` → root + `packages.""` `version`
+   - `plugins/fusion-plugin-stelow/manifest.json` → `"version"`
+   - `plugins/fusion-plugin-stelow/package.json` → `"version"`
+   - `plugins/fusion-plugin-stelow/src/skills.ts` → `STELOW_PLUGIN_VERSION` constant
+   - `plugins/fusion-plugin-stelow/dist/skills.d.ts` → matching declaration (re-baked by Step 3)
+6. **Commit the bump.**
+   ```bash
+   git add -A && git commit -m "chore: bump to v<version>"
+   ```
+7. **Tag the release** (annotated — `git cat-file -t v<version>` must return `tag`).
+   ```bash
+   git tag -a v$(node -p "require('./package.json').version") -m "v<version>: <short summary>"
+   ```
+8. **Push** main (fast-forwarded to the release commit) and the tag.
+   ```bash
+   git push origin main --tags
+   ```
+9. **Create the GitHub Release** — required for the GitHub landing page.
+   ```bash
+   gh release create v$(node -p "require('./package.json').version") \
+     --title "v<version>" \
+     --notes-file <changelog-section-file>
+   ```
 
-### Release Steps
-
-**Step 1: Ensure tests pass**
-```bash
-npm run test
-```
-
-**Step 2: Merge to main (if not already)**
-```bash
-git checkout main
-git merge --no-ff feature-branch
-git push origin main
-```
-
-**Step 3: Create GitHub Release**
-```bash
-# Option A: Manual via GitHub CLI
-gh release create v0.2.0-alpha \
-  --title "v0.2.0-alpha: New Testing Skill" \
-  --notes "## What's Changed
-
-## New Features
-- Add cali-product-testing-ai-code skill with 8 test scope types
-
-## Bug Fixes
-- Fix phase reference inconsistencies
-
-## Documentation
-- Update README with new skills
-- Add AGENTS.md testing context
-
-**Full Changelog:** https://github.com/calionauta/stelow/compare/v0.1.0-alpha...v0.2.0-alpha"
-
-# Option B: Use semantic-release (if configured)
-npm run release
-```
-
-**Step 4: Publish to npm (if applicable)**
-```bash
-npm version 0.2.0-alpha
-npm publish --access public --tag alpha
-```
+The "merge to main first" handoff is owned by the SW-N worktree fast-forward (`git update-ref refs/heads/main <release-sha>`), not by anything in this file — see the SW-N executor pattern in `AGENTS.md` and `docs/audits/sw-010-v0.55.1-release-report.md`.
 
 ---
 
 ## Conventional Commits Format
 
-Use this format for commit messages:
+Use this format for commit messages (the type drives the changelog section):
 
 ```
 <type>(<scope>): <description>
@@ -83,30 +75,35 @@ Use this format for commit messages:
 ```
 
 **Types:**
-| Type | When to Use |
-|------|-------------|
-| `feat` | New feature |
-| `fix` | Bug fix |
-| `docs` | Documentation changes |
-| `test` | Adding or updating tests |
-| `refactor` | Code refactoring |
-| `perf` | Performance improvements |
-| `ci` | CI/CD changes |
-| `chore` | Maintenance tasks |
+
+| Type        | When to Use                            | Maps to CHANGELOG section |
+|-------------|----------------------------------------|---------------------------|
+| `feat`      | New feature                            | `Added`                   |
+| `fix`       | Bug fix                                | `Fixed`                   |
+| `docs`      | Documentation changes                  | `Documentation`           |
+| `test`      | Adding or updating tests               | `Under the Hood`          |
+| `refactor`  | Code refactoring (no behavior change)  | `Changed`                 |
+| `perf`      | Performance improvements               | `Changed`                 |
+| `ci`        | CI/CD changes                          | `Under the Hood`          |
+| `chore`     | Maintenance tasks (version bumps, deps)| `Under the Hood`          |
+
+**Scope examples (current repo):** `stages`, `workflow`, `adapter`, `fusion-plugin`, `release`, `skills`, `extensions`, `tests`, `docs`.
 
 **Examples:**
 ```bash
-git commit -m "feat(testing): add TDAD-style impact analysis"
-git commit -m "fix(gate): correct phase reference from 6 to 5"
-git commit -m "docs: update README with new skills count"
+git commit -m "feat(fusion-plugin): add settings.json artifact validation"
+git commit -m "fix(stages): correct phase reference in plan-gate"
+git commit -m "docs(AGENTS): clarify six-point version agreement"
 ```
 
 ---
 
 ## Release Note Template
 
+Save the body of the release note to a temp file and pass it via `--notes-file` (never inline `--notes`; the file is easy to review and re-uses for the `gh release create` call):
+
 ```markdown
-## v{X.Y.Z}-{alpha|beta|rc.N}
+## v{X.Y.Z}
 
 ### Breaking Changes
 - (if any)
@@ -125,85 +122,70 @@ git commit -m "docs: update README with new skills count"
 ### Under the Hood
 - Internal refactoring
 
----
-**Full Changelog:** https://github.com/owner/repo/compare/v{prev}...v{current}
-```
+### Removed
+- Dropped legacy Y (see issue/PR)
 
 ---
-
-## GitHub Actions for Auto-Release (Optional)
-
-To automate releases, add `.github/workflows/release.yml`:
-
-```yaml
-name: Release
-
-on:
-  push:
-    branches:
-      - main
-
-jobs:
-  release:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        
-      - name: Generate changelog
-        uses: requarks/changelog-action@v1
-        id: changelog
-        
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          body: ${{ steps.changelog.outputs.changelog }}
-          prerelease: ${{ contains(matrix.version, 'alpha') || contains(matrix.version, 'beta') }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+**Full Changelog:** https://github.com/calionauta/stelow/compare/v{prev}...v{current}
 ```
+
+Section set mirrors what this repo actually publishes in `CHANGELOG.md` (`Added`, `Changed`, `Fixed`, `Removed`, `Documentation`, `Under the Hood`); trim empty sections before uploading.
 
 ---
 
 ## Version Bump Rules
 
-| Change | Bump |
-|--------|------|
-| Add new feature | Minor (`0.2.0` → `0.3.0`) |
-| Bug fix | Patch (`0.2.0` → `0.2.1`) |
-| Breaking change | Major (`0.2.0` → `1.0.0`) |
-| Pre-release | Add `-alpha.N` or `-beta.N` |
+| Change                | Bump                                  |
+|-----------------------|---------------------------------------|
+| Add new feature       | Minor (`0.55.x` → `0.56.0`)           |
+| Bug fix               | Patch (`0.55.0` → `0.55.1`)           |
+| Breaking change       | Major (`0.x.y` → `1.0.0`)             |
 
-**Do NOT bump to 1.0.0 until owner confirms.**
+`1.0.0` is no longer owner-gated in this repo — AGENTS.md dropped that constraint with the v0.55.x release model. Bump per SemVer and document the rationale in the release commit / changelog.
 
 ---
 
 ## Quick Reference for LLMs
 
-When asked to release, do this sequence:
-
 ```bash
-# 1. Tests first
-npm run test
+# 1. Tests
+npm test
 
-# 2. Commit changes (if any)
-git add -A && git commit -m "<type>(<scope>): <description>"
+# 2. Bump version (runs version:sync via lifecycle)
+npm version <major.minor.patch> --no-git-tag-version
 
-# 3. Merge to main
-git checkout main && git merge --no-ff <branch> && git push
+# 3. Re-bake Fusion plugin artifacts (do NOT skip)
+npm run prepare:fusion-plugin && npm run build:fusion-plugin
 
-# 4. Create release
-gh release create v0.X.Y-alpha --title "v0.X.Y-alpha: <summary>" --notes "<changelog>"
+# 4. CHANGELOG.md
+$EDITOR CHANGELOG.md   # insert ## [<version>] - <YYYY-MM-DD> above previous entry
 
-# 5. Push tags
-git push origin v0.X.Y-alpha
+# 5. Verify six-point version agreement (all six files must match)
+grep -H '"version"' package.json package-lock.json \
+  plugins/fusion-plugin-stelow/manifest.json \
+  plugins/fusion-plugin-stelow/package.json
+grep -H 'STELOW_PLUGIN_VERSION' plugins/fusion-plugin-stelow/src/skills.ts
+
+# 6. Commit + annotated tag + push
+git add -A && git commit -m "chore: bump to v<version>"
+git tag -a v$(node -p "require('./package.json').version") -m "v<version>: <summary>"
+git push origin main --tags
+
+# 7. Create the GitHub Release (--notes-file, not inline --notes)
+gh release create v$(node -p "require('./package.json').version") \
+  --title "v<version>" \
+  --notes-file <changelog-section-file>
+
+# Do NOT run npm publish — distribution is Git/GitHub only
 ```
 
 ---
 
 ## Remember
 
-1. **Keep alpha/beta** — never auto-bump to 1.0.0
-2. **Always include changelog** — tell what changed
-3. **Run tests before release** — never release broken code
-4. **Use conventional commits** — makes changelog generation easier
-5. **Create GitHub release** — not just npm publish
+1. **`AGENTS.md#Versioning` is canonical.** Re-read it before cutting a release; this file is supplementary.
+2. **Distribution is Git/GitHub only — never `npm publish`.** Stelow has no npm distribution channel.
+3. **Always include the changelog in the Release body** — use `--notes-file <changelog-section-file>`, never inline.
+4. **Use conventional commits** — the type drives the CHANGELOG section mapping.
+5. **Tag and GitHub Release are linked — never one without the other.** Both are required for the GitHub landing page.
+6. **Verify the six-point version agreement** before the release commit. SW-008 shipped `v0.55.0` with a stale `0.54.3` baked into `STELOW_PLUGIN_VERSION` and `artifacts/settings.json`; the post-version-sync `prepare:fusion-plugin && build:fusion-plugin` step is the fix.
