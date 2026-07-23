@@ -105,7 +105,13 @@ const trackingArbitrary = () =>
   });
 
 // ── Property 1: writeTracking + readTracking round-trip ──────────
-
+// SW-009: 120000ms (120s) suite-level timeout. fast-check (fc.assert)
+// with 50 numRuns over a tracking-data arbitrary expands into dozens
+// of distinct round-trip assertions per test, and slow CI runners
+// blow past the global 30000ms testTimeout (and the prior 60s
+// per-suite ceiling — observed elapsed ~69.5s) even though the test
+// completes in ~tens-of-ms locally. Per-suite override keeps the
+// global ceiling low while giving this property enough headroom.
 describe('Property 1: write/read round-trip', () => {
   it('valid tracking data survives write → read', async () => {
     await fc.assert(
@@ -142,10 +148,16 @@ describe('Property 1: write/read round-trip', () => {
       { numRuns: 50 },
     );
   });
-});
+}, 120000 /* SW-009: 120s absorbs cold-cache CI fs latency for 50 fc.assert iterations of writeTracking/readTracking. See comment at file head. */);
 
 // ── Property 2: renameWorkflow preserves dirHash ─────────────────
-
+// SW-009: 240000ms (240s) suite-level timeout. 50 numRuns of fc.property
+// combined with three real-fs calls per iteration (writeTracking,
+// renameWorkflow, readTracking) is the heaviest fs path of the file.
+// Local runs complete in <50ms; cold-cache CI runners have exceeded
+// 120s on shared hosts (observed elapsed ~137s). 240s gives enough
+// headroom for environmental variance without papering over real
+// regressions. Property 1 only needs 120s.
 describe('Property 2: renameWorkflow preserves dirHash', () => {
   it('after rename, dirHash stays stable', () => {
     // Generate a random alphanumeric string, then call toSafeName on it
@@ -207,7 +219,7 @@ describe('Property 2: renameWorkflow preserves dirHash', () => {
       { numRuns: 50 },
     );
   });
-});
+}, 240000 /* SW-009: 240s absorbs cold-cache CI fs latency for 50 fc.assert iterations of writeTracking/renameWorkflow/readTracking. Property 1 only needs 120s; Property 2's heavier fs path needs more headroom. See comment at file head. */);
 
 // ── Property 3: addToGlobalIndex + removeGlobalIndexEntry balance ─
 

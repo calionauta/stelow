@@ -59,6 +59,14 @@ afterEach(() => {
   rmSync(workDir, { recursive: true, force: true });
 });
 
+// SW-009: 120000ms (120s) suite-level timeout — see rationale below.
+// This suite was failing `Test timed out in 10000ms` (and later
+// `30000ms`, then `60000ms`) on cold-cache GitHub Actions shared
+// runners while completing in ~130ms locally. The 50-parallel-write
+// test in particular is highly sensitive to environmental variance;
+// observed CI elapsed time was ~67.5s, exceeding the prior 60s
+// ceiling. 120s provides margin for environmental variance without
+// papering over real regressions.
 describe('concurrent writeTracking', () => {
   it('10 parallel writes produce a single valid JSON file with one workflow', async () => {
     const N = 10;
@@ -205,4 +213,4 @@ describe('concurrent writeTracking', () => {
     const tmp = readdirSync(workDir).filter((f) => f.endsWith('.tmp'));
     expect(tmp).toEqual([]);
   });
-});
+}, 120000 /* SW-009: 120s absorbs cold-cache CI fs latency for 50 parallel writeTracking calls. See comment at file head for rationale. */);
