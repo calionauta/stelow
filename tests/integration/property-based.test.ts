@@ -105,7 +105,12 @@ const trackingArbitrary = () =>
   });
 
 // ── Property 1: writeTracking + readTracking round-trip ──────────
-
+// SW-009: 60000ms suite-level timeout. fast-check (fc.assert) with
+// 50 numRuns over a tracking-data arbitrary expands into dozens of
+// distinct round-trip assertions per test, and slow CI runners can
+// blow past the global 30000ms testTimeout even though the test
+// completes in ~tens-of-ms locally. Per-suite override keeps the
+// global ceiling low while giving this property enough headroom.
 describe('Property 1: write/read round-trip', () => {
   it('valid tracking data survives write → read', async () => {
     await fc.assert(
@@ -142,10 +147,13 @@ describe('Property 1: write/read round-trip', () => {
       { numRuns: 50 },
     );
   });
-});
+}, 60000 /* SW-009: see comment at file head for rationale */);
 
 // ── Property 2: renameWorkflow preserves dirHash ─────────────────
-
+// SW-009: 60000ms suite-level timeout. Same rationale as Property 1:
+// 50 numRuns of fc.property over a string generator produces enough
+// fs/atomic-write traffic that slow CI runners exceed the global
+// 30000ms ceiling. Local runs complete well under 10ms.
 describe('Property 2: renameWorkflow preserves dirHash', () => {
   it('after rename, dirHash stays stable', () => {
     // Generate a random alphanumeric string, then call toSafeName on it
@@ -207,7 +215,7 @@ describe('Property 2: renameWorkflow preserves dirHash', () => {
       { numRuns: 50 },
     );
   });
-});
+}, 60000 /* SW-009: see comment at file head for rationale */);
 
 // ── Property 3: addToGlobalIndex + removeGlobalIndexEntry balance ─
 
