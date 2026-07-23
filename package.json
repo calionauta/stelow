@@ -76,7 +76,7 @@
   "scripts": {
     "prepare:fusion-plugin": "npm exec -- tsx scripts/prepare-fusion-plugin.ts",
     "build:fusion-plugin": "tsc -p plugins/fusion-plugin-stelow/tsconfig.json",
-    "build": "npm run prepare:fusion-plugin && npm run build:fusion-plugin && tsc -p tsconfig.build.json && ./scripts/copy-pulse-assets.sh",
+    "build": "./scripts/sync-cli-tools.sh && npm run prepare:fusion-plugin && npm run build:fusion-plugin && tsc -p tsconfig.build.json && ./scripts/copy-pulse-assets.sh",
     "prepare": "node -e \"try { require('husky').install() } catch (e) { console.log('husky not installed (e.g. prod install), skipping') }\"",
     "prepublishOnly": "npm run generate-cli-commands && npm run build && ./scripts/sync-cli-tools.sh",
     "generate-cli-commands": "npm exec -- tsx scripts/generate-cli-commands.ts",

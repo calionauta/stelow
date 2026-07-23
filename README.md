@@ -414,12 +414,10 @@ reads `~/.agents/skills/<name>/SKILL.md` — the agentskills.io standard.
 
 A common pain point used to be initializing `wf.scopes[]` in `stelow.json` — it required the LLM to run a 20-line bash snippet during Execution phase setup, which most agents skipped. **Starting in v0.44.0, scopes auto-sync from `spec-tech.md` by convention:**
 
-- **Shared implementation:** The [Pi adapter](extensions/stelow/adapters/pi/) and the [Fusion adapter](extensions/stelow/adapters/fusion.ts), shipped through the [compiled Fusion plugin](plugins/fusion-plugin-stelow/), both use the host-agnostic `extensions/stelow/state.ts#parseSpecTechScopes` parser. Native hosts therefore share one TypeScript implementation.
-- **How:** A `readTracking()` or `writeTracking()` call finds the latest `.stelow/{date}/{hash}/plans/spec-tech_*.md`; `parseSpecTechScopes` maps its `[SCOPE-N]` blocks to `{ id, type, name, blockedBy, targetFiles, maxIterations }`, and the sync writes them to `stelow.json` with `status: 'pending'`.
+- **How:** Any `readTracking()` or `writeTracking()` call finds the latest `.stelow/{date}/{hash}/plans/spec-tech_*.md`, parses `[SCOPE-N]` blocks into `{ id, type, name, blockedBy, targetFiles, maxIterations }`, and writes them to `stelow.json` with `status: 'pending'`. Pi and Fusion both go through the host-agnostic parser; the compiled Fusion plugin installs the same logic as a managed project-scoped workflow.
 - **When:** First read/write after a workflow enters Execution phase with empty scopes (idempotent).
 - **Re-sync on v2+:** Tracks `wf.specTechFile` — if spec-tech bumps to v2, scopes are re-synced automatically.
-- **Generic fallback:** Agents without a native Pi or Fusion integration follow the [scope-executor skill](skills/stelow-product-scope-executor/SKILL.md), whose `bash` fallback parses `spec-tech.md` and writes `wf.scopes[]` to `stelow.json`.
-- **Regression source:** [`tests/unit/parse-scopes-from-spec-tech.test.ts`](tests/unit/parse-scopes-from-spec-tech.test.ts) exercises the shared TypeScript parser directly, including its edge cases and stable repeated parsing.
+- **Agents without the Pi extension** see the auto-sync happen via the skill's instructions (a bash snippet parses spec-tech.md and writes `wf.scopes[]` to `stelow.json`). Less clean than the extension path but consistent across agents.
 
 Known gaps (race window, legacy workflows without `dirHash`, phase-number drift) are tracked in [`docs/scope-lifecycle-gaps.md`](docs/scope-lifecycle-gaps.md).
 

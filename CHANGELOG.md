@@ -2,6 +2,12 @@
 
 All notable changes to `@calionauta/stelow` will be documented in this file.
 
+## [Unreleased]
+
+### Fixed
+
+- **Fusion plugin cli-tools build drift** (`SW-016`) — Run `scripts/sync-cli-tools.sh` before `prepare:fusion-plugin` so a fresh-checkout `npm run build` preserves all 382 tracked plugin cli-tool references instead of silently deleting them. Added an isolated regression fixture that pins the sync-before-prepare ordering and verifies the generated plugin tree matches tracked HEAD.
+
 ## [0.55.1] - 2026-07-23
 
 Vitest CI timeout mitigation for filesystem-heavy integration suites on cold-cache shared runners.
