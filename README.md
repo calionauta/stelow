@@ -391,7 +391,7 @@ Per-agent configuration files (commands, install scripts) are in [`cli-agents/`]
 
 ### Compatibility
 
-The shipped extension is Pi-first. The skills work in any agent that
+The Pi extension is Pi-native by design. The skills work in any agent that
 reads `~/.agents/skills/<name>/SKILL.md` — the agentskills.io standard.
 
 | Feature | Pi (extension) | Any agentskills-compatible agent |
@@ -611,6 +611,8 @@ Owner paths in this repo:
 
 Detection lives in `extensions/stelow/state.ts#detectHost()` and follows this precedence: `FUSION_HOST=1` → `STELOW_HOST` (or `PRODUCT_WORKFLOW_CLI`) env var → `~/.fusion` probe → `~/.pi` probe → `pi --version` CLI probe → `generic` (safe fallback). See [docs/design/host-agnostic-architecture.md](docs/design/host-agnostic-architecture.md) for the full design rationale.
 
+To add a new host, follow the [Generic and future hosts](cli-agents/COMMANDS.md#generic-and-future-hosts) recipe in the adapter guide.
+
 ---
 
 ## 📁 Artifact Directory
@@ -675,7 +677,7 @@ If you upgraded from `stelow < 0.55`, note the breaking changes:
    - **Pi** stays specialized under `extensions/stelow/adapters/pi/`.
    - **Fusion** uses `extensions/stelow/adapters/fusion.ts` plus the compiled `plugins/fusion-plugin-stelow/` package for skills, validated artifacts, and managed workflow registration.
    - **Generic / standalone** uses the agentskills.io standard with no host-coupled UI surfaces.
-2. **`PRODUCT_WORKFLOW_CLI` env var is deprecated.** Use `STELOW_HOST` (or `FUSION_HOST=1` for Fusion). Both legacy and new names are accepted; old code keeps working. Plan to migrate before v0.56.
+2. **`PRODUCT_WORKFLOW_CLI` env var was renamed to `STELOW_HOST`.** Use `STELOW_HOST` (or `FUSION_HOST=1` for Fusion). The legacy `PRODUCT_WORKFLOW_CLI` name is still accepted by `extensions/stelow/state.ts#detectHost()` for backward compatibility; `STELOW_HOST` is canonical.
 3. **`pi.*` host-private tool names** in skill prose are replaced by canonical agnostic names per `stages.yaml#tools` (`ask_user_question`, `visual_review`, `subagent`, etc.). Pi-native invocations live in `references/cli-tools/*.md` only.
 4. **Visual review receipt path**: All hosts write approval receipts to the portable, host-agnostic path under `.stelow/approvals/{dirHash}/{file}.approved.md`. The older Pi-specific shim at `.plannotator/approvals/` is retained only for backward compatibility.
 
