@@ -6,7 +6,7 @@
 #   1. Node.js (if needed)
 #   2. pi.dev coding agent
 #   3. All extensions
-#   4. stelow (25 skills)
+#   4. stelow (workflow skills)
 #   5. Configures settings.json with optimized defaults
 #
 # Usage:
@@ -81,33 +81,19 @@ PI_PACKAGES=(
 )
 
 # Skills to install from stelow
-ALL_SKILLS=(
-  "stelow"
-  "stelow-product-shape-up"
-  "stelow-product-interface-alternatives"
-  "stelow-product-plan-critique"
-  "stelow-product-codebase-critique"
-  "stelow-product-ux-critique"
-  "stelow-product-coding-standards"
-  "stelow-product-tech-planning"
-  "stelow-product-job-to-be-done"
-  "stelow-product-discovery"
-  "stelow-product-opportunity-mapping"
-  "stelow-product-multi-method-market-analysis"
-  "stelow-product-evolutionary-principles"
-  "stelow-product-pricing"
-  "stelow-product-ads"
-  "stelow-product-trust-building"
-  "stelow-product-promotions"
-  "stelow-product-business-models"
-  "stelow-product-health"
-  "stelow-product-marketplace-playbook"
-  "stelow-product-open-source"
-  "stelow-product-scope-executor"
-  "stelow-product-testing-ai-code"
-  "stelow-product-testing-execution"
-  "stelow-product-execution-critique"
-)
+# Scan filesystem for project skills (source of truth).
+# Returns skill names (directories with SKILL.md under $SCRIPT_DIR/skills/).
+get_project_skills() {
+  local skills=()
+  for dir in "$SCRIPT_DIR/skills/"*/; do
+    local name
+    name="$(basename "$dir")"
+    if [[ -f "$dir/SKILL.md" ]]; then
+      skills+=("$name")
+    fi
+  done
+  printf '%s\n' "${skills[@]}"
+}
 
 # ─── Colors & Output ─────────────────────────────────────────────────────────
 
@@ -145,7 +131,7 @@ for arg in "$@"; do
       echo "  • Node.js >= 20 (if not installed)"
       echo "  • pi.dev coding agent"
       echo "  • Pi extensions and packages"
-      echo "  • 24 stelow skills"
+      echo "  • stelow skills"
       echo "  • Optimized settings.json configuration"
       exit 0
       ;;
@@ -330,7 +316,7 @@ install_extensions() {
 # ─── Skills ──────────────────────────────────────────────────────────────────
 
 install_skills() {
-  log_step "Step 5/11: Installing stelow Skills (25 skills)"
+  log_step "Step 5/11: Installing stelow Skills"
 
   local skills_dir="$HOME/.agents/skills"
   if [[ "$DRY_RUN" == "false" ]]; then
@@ -365,7 +351,10 @@ install_skills() {
     skills_source="$tmp_dir/skills"
   fi
 
-  for skill in "${ALL_SKILLS[@]}"; do
+  local project_skills=()
+  while IFS= read -r s; do project_skills+=("$s"); done < <(get_project_skills)
+
+  for skill in "${project_skills[@]}"; do
     local src="$skills_source/$skill"
     local dst="$skills_dir/$skill"
 
@@ -658,7 +647,7 @@ print_summary() {
   echo "  ${CYAN}Node.js${RESET}       $(node --version 2>/dev/null || echo 'not found')"
   echo "  ${CYAN}pi.dev${RESET}        $(pi --version 2>/dev/null || echo 'not found')"
   echo "  ${CYAN}Extensions${RESET}    (subagents, tasks, memory, cache, security, milk, etc.)"
-  echo "  ${CYAN}Skills${RESET}        25 product workflow skills"
+  echo "  ${CYAN}Skills${RESET}        $(get_project_skills | wc -l | tr -d ' ') product workflow skills"
   echo "  ${CYAN}Settings${RESET}      Optimized configuration"
   echo ""
 
@@ -722,7 +711,7 @@ main() {
   echo "    • Node.js (if needed)"
   echo "    • pi.dev coding agent"
   echo "    • Pi extensions"
-  echo "    • 25 product workflow skills"
+  echo "    • Product workflow skills"
   echo "    • Optimized settings"
   echo "    • cymbal (codebase navigation) — brew/go"
   echo "    • ctx7 (library docs) — OAuth setup"

@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #
 # stelow Installer
-# Flattens 25 skills to ~/.agents/skills/ (DotAgents Protocol).
+# Flattens all project skills to ~/.agents/skills/ (DotAgents Protocol).
 # Distribution to each harness via agent-sync (or manual config).
 #
-# Skills: 1 orchestrator + 24 subskills = 25 total flat
+# Skills are discovered dynamically from skills/ directories containing SKILL.md.
 #
 
 set -euo pipefail
@@ -95,7 +95,7 @@ install_skills_flat() {
   log_info "Syncing cli-tools to sub-skills..."
   "$SCRIPT_DIR/sync-cli-tools.sh" 2>/dev/null || log_warn "  cli-tools sync skipped (non-fatal)"
 
-  log_info "Installing 25 skills to ~/.agents/skills/..."
+  log_info "Installing skills to ~/.agents/skills/..."
   mkdir -p "$SKILLS_DIR"
 
   local installed=0
@@ -173,7 +173,7 @@ install_skills_flat() {
 # ─────────────────────────────────────────────────────────────────────────────
 # Pi discovers skills by directory convention: any skills/ dir in a git clone
 # is auto-discovered. To avoid "Skill conflicts" warnings (Pi sees the same
-# 25 skills from BOTH ~/.agents/skills/ and the git clone), we set
+# skills from BOTH ~/.agents/skills/ and the git clone), we set
 # "skills": [] on the package entry in settings.json.
 #
 # Skills stay fresh via the extension's syncSkillsFromClone(), which runs
@@ -439,7 +439,7 @@ setup_full() {
   echo ""
 
   # Step 1: Skills (always installed)
-  log_info "[1/4] Installing 25 workflow skills..."
+  log_info "[1/4] Installing workflow skills..."
   for cli in $clis; do install_skills_flat; done
   log_success "Skills installed."
   echo ""
@@ -558,7 +558,7 @@ Environment:
 
 What gets installed (full):
 
-  ✓ 25 workflow skills (always)
+  ✓ Workflow skills (always)
   ✓ Pi extension + npm packages (if Pi detected, with confirmation)
   ✓ cymbal — codebase navigation (with confirmation)
   ✓ ctx7 — live library docs (with confirmation, requires OAuth)
@@ -566,7 +566,7 @@ What gets installed (full):
 
 What gets installed (minimal):
 
-  ✓ 25 workflow skills only
+  ✓ Workflow skills only
 
 Examples:
   ./install.sh                         # Interactive full setup
