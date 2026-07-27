@@ -408,7 +408,7 @@ reads `~/.agents/skills/<name>/SKILL.md` — the agentskills.io standard.
 
 > **Bottom line:** The **25 skills run in any agent that reads agentskills.io skill directories** — they execute the same workflow and keep portable state in `stelow.json` / `.stelow/`. Pi adds its TUI, hooks, and Plannotator implementation. Fusion ships a separate compiled plugin at `plugins/fusion-plugin-stelow/` that contributes the 25 plugin-local skills, installs validated project artifacts, and maintains one project-scoped workflow; `visual_review` remains the portable approval-receipt fallback.
 >
-> Generic agents retain the skill-only path. First-class host support belongs behind the [Adapter extension guide](cli-agents/COMMANDS.md#how-to-extend), with a host plugin only when that host exposes a plugin contract.
+> Generic agents retain the skill-only path. First-class host support belongs behind the [Adapter extension guide](cli-agents/COMMANDS.md#generic-and-future-hosts), with a host plugin only when that host exposes a plugin contract.
 
 ### Auto-sync scopes from spec-tech.md
 
