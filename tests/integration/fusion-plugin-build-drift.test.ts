@@ -40,7 +40,7 @@ import { execSync } from 'node:child_process';
 import { cp, mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join, relative } from 'node:path';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { prepareFusionPlugin } from '../../scripts/prepare-fusion-plugin.js';
@@ -50,12 +50,32 @@ const __testDir = dirname(__filename);
 const PROJECT_ROOT = join(__testDir, '..', '..');
 const SYNC_SCRIPT = join(PROJECT_ROOT, 'scripts', 'sync-cli-tools.sh');
 
-const SKILL_SPECIFIC_KEEP = new Set([
-  'dead-code-candidates.md',
-  'cymbal.md',
-  'stack-skills.md',
-  'doc-search.md',
-]);
+// Derive the skill-specific keep-list dynamically from `git ls-files` so the
+// fixture mirrors a real fresh checkout (which contains every tracked file,
+// not just the ones a prior `.gitignore` negation happened to cover). Any
+// tracked `skills/<sub-skill>/references/cli-tools/*.md` file is preserved by
+// the fixture; tracked orchestrator-source files are kept separately because
+// `scripts/sync-cli-tools.sh` only copies from the orchestrator. This avoids
+// the staleness class of bug that produced SW-029 (a tracked file added in a
+// later SW drifted out of a hardcoded keep-list and was over-aggressively
+// deleted by the fixture).
+let SKILL_SPECIFIC_KEEP: Set<string>;
+
+/**
+ * Build the skill-specific keep-list at module-load time. We use the SHARED
+ * `repoRoot` repo's `git ls-files` (the same one the test runs against) so
+ * HEAD's tracked shape — not a stale hand-written constant — drives the
+ * fixture. The orchestrator's source directory is excluded because the
+ * fixture's `if (entry.name === 'stelow-product-orchestrator') continue;`
+ * branch preserves every orchestrator file unconditionally.
+ */
+function buildSkillSpecificKeep(): Set<string> {
+  const out = execSync(
+    `git ls-files 'skills/*/references/cli-tools/*.md' | grep -v 'stelow-product-orchestrator/' | xargs -n1 basename | sort -u`,
+    { cwd: PROJECT_ROOT, stdio: 'pipe', encoding: 'utf8' },
+  );
+  return new Set(out.trim().split('\n').filter(Boolean));
+}
 
 // Track every tmpdir fixture so afterEach can tear it down. NEVER share state
 // across tests — each `it` owns its own root.
@@ -126,8 +146,10 @@ async function buildCleanCheckoutFixture(): Promise<string> {
   );
 
   // skills/ — every sub-skill + orchestrator; cli-tools mirrors removed
-  // (except the 17 orchestrator source files + the 4 gitignore-negated skill
-  // extras that are tracked at HEAD).
+  // (except the 18 orchestrator source files + the tracked skill-specific
+  // extras that are tracked at HEAD). `SKILL_SPECIFIC_KEEP` is derived
+  // dynamically from `git ls-files` so this set self-corrects whenever a
+  // tracked `references/cli-tools/*.md` is added or removed at HEAD.
   await mkdir(join(root, 'skills'), { recursive: true });
   const skillEntries = await readdir(join(PROJECT_ROOT, 'skills'), { withFileTypes: true });
   for (const entry of skillEntries) {
@@ -139,14 +161,24 @@ async function buildCleanCheckoutFixture(): Promise<string> {
       // Orchestrator is the source of truth — keep ALL its cli-tools.
       continue;
     }
-    // Sub-skill: strip the gitignored cli-tools mirrors, keep the
-    // gitignore-negated skill-specific extras.
+    // Sub-skill: strip the gitignored cli-tools mirrors, keep the tracked
+    // skill-specific extras that are present at HEAD. The keep-list is
+    // derived dynamically (see `buildSkillSpecificKeep`) so adding a new
+    // tracked skill-specific file at HEAD does not require updating this
+    // test.
     const cliToolsDir = join(root, 'skills', entry.name, 'references', 'cli-tools');
     let cliToolsEntries: string[] = [];
     try {
       cliToolsEntries = await readdir(cliToolsDir);
     } catch {
       continue; // no cli-tools dir present at HEAD
+    }
+    if (!SKILL_SPECIFIC_KEEP) {
+      // Lazy init: `beforeAll` cannot be used here because this is a per-test
+      // helper (not a test file's setup hook), and module-load ordering would
+      // race against vitest's worker spin-up. Computing it once per call is
+      // cheap (one `git ls-files`) and keeps the helper self-contained.
+      SKILL_SPECIFIC_KEEP = buildSkillSpecificKeep();
     }
     for (const file of cliToolsEntries) {
       if (SKILL_SPECIFIC_KEEP.has(file)) continue;
@@ -263,19 +295,27 @@ describe('SW-016: prepareFusionPlugin must not silently delete tracked cli-tools
     // are missing. The actual count must be strictly less than the expected.
     expect(actual.length).toBeLessThan(expected.length);
     // Every surviving file is one of the 18 orchestrator source files (which
-    // are tracked and present in the fixture) OR one of the 4 gitignore-negated
-    // skill-specific extras. The 360 gitignored mirror files MUST be missing.
+    // are tracked and present in the fixture) OR one of the tracked
+    // skill-specific extras (derived from `git ls-files`, NOT hardcoded).
+    // The 360 gitignored mirror files MUST be missing.
     const orchSourceFiles = await readdir(
       join(root, 'skills', 'stelow-product-orchestrator', 'references', 'cli-tools'),
     );
+    // Derive the tracked skill-specific extras from `git ls-files` and store
+    // them as full relative paths (matching the shape `actual` produces).
+    const trackedSkillSpecific = execSync(
+      `git ls-files 'skills/*/references/cli-tools/*.md' | grep -v 'stelow-product-orchestrator/'`,
+      { cwd: PROJECT_ROOT, stdio: 'pipe', encoding: 'utf8' },
+    )
+      .trim()
+      .split('\n')
+      .filter(Boolean)
+      .map((p) => p.replace(/^skills\//, ''));
     const expectedSurvivors = new Set([
       ...orchSourceFiles.map((f) =>
         join('stelow-product-orchestrator', 'references', 'cli-tools', f),
       ),
-      'stelow-product-execution-critique/references/cli-tools/dead-code-candidates.md',
-      'stelow-product-shape-up/references/cli-tools/cymbal.md',
-      'stelow-product-tech-planning/references/cli-tools/stack-skills.md',
-      'stelow-product-tech-planning/references/cli-tools/doc-search.md',
+      ...trackedSkillSpecific,
     ]);
     expect(actual.length).toBe(expectedSurvivors.size);
     for (const file of actual) {
