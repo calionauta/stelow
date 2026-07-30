@@ -216,6 +216,17 @@ describe("SW-018 generic scope-init fallback runtime", () => {
   let parserMirrorRoot: string;
 
   beforeAll(() => {
+    // Allocate a placeholder mirrorRoot up front so the `afterAll` cleanup
+    // always has a real path to clean up — even when `prepareCanonicalArtifact`
+    // throws below (e.g., missing `node_modules/typescript/bin/tsc`, malformed
+    // `extensions/stelow/state.ts`, or non-zero `tsc` exit). Without this,
+    // `afterAll`'s `rmSync(parserMirrorRoot, ...)` would throw a misleading
+    // `TypeError: The "path" argument must be of type string ... Received
+    // undefined` that masks the real root cause. The `-fallback-` suffix is
+    // intentionally distinct from `prepareCanonicalArtifact`'s own
+    // `build/.sw018-parser-` namespace at the helper's mirrorRoot creation
+    // so the two `mkdtempSync` calls cannot collide on the same prefix.
+    parserMirrorRoot = mkdtempSync(join(repoRoot, "build/.sw018-fallback-"));
     fixtureRoot = mkdtempSync(join(tmpdir(), "sw-018-scope-init-"));
     trackingPath = join(fixtureRoot, "stelow.json");
     plansRoot = join(fixtureRoot, ".stelow/2026-07-23/abc12345/plans");
@@ -228,7 +239,15 @@ describe("SW-018 generic scope-init fallback runtime", () => {
 
   afterAll(() => {
     rmSync(fixtureRoot, { recursive: true, force: true });
-    rmSync(parserMirrorRoot, { recursive: true, force: true });
+    // Defense in depth: only clean up `parserMirrorRoot` if it was actually
+    // assigned to a real path. Without this guard, an uninitialized variable
+    // (e.g., if `beforeAll` throws before its assignment or if a future
+    // regression removes the placeholder initializer above) would cause
+    // `rmSync(undefined, ...)` to throw a misleading TypeError that masks
+    // the real failure.
+    if (typeof parserMirrorRoot === "string" && parserMirrorRoot.length > 0) {
+      rmSync(parserMirrorRoot, { recursive: true, force: true });
+    }
   });
 
   function writeTracking(tracking: FixtureTracking): void {
