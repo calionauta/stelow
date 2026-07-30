@@ -180,6 +180,20 @@ describe("documentation contract — v0.55.1 release surface", () => {
     expect(DOCS.agents).toMatch(/Release-Bump: v<version>/);
   });
 
+  it("AGENTS.md documents the SW-036 dist-skills-drift CI guard (post-build runtime check)", () => {
+    // The §"Versioning" section must pin all four substrings below. Removing
+    // any one of them silently regresses the runtime drift guard because the
+    // post-mortem reference, the script name, the const name, and the
+    // historical-miss rationale (0.54.3) collectively pin the contract.
+    expect(DOCS.agents).toContain("check-dist-skills-drift.sh");
+    expect(DOCS.agents).toContain("STELOW_PLUGIN_VERSION");
+    expect(DOCS.agents).toContain(
+      "docs/agents-md-refs/post-mortems/v0.55.2-release-drift.md",
+    );
+    expect(DOCS.agents).toContain("0.54.3");
+
+  });
+
   it("architecture.md and README do not promote a pre-v0.53 CacheManager or stage table", () => {
     expect(DOCS.architecture).not.toMatch(/15-stage|15 phase/);
     expect(DOCS.architecture).not.toMatch(/Gate never skips/i);

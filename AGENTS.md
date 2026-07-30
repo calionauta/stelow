@@ -204,6 +204,13 @@ Enforcement:
   7. `git tag -a v$(node -p "require('./package.json').version") -m "v<version>: <summary>"`
   8. `git push origin main --tags`
   9. **`gh release create v$(node -p "require('./package.json').version") --title "v<version>" --notes-file <changelog-section>`** — required for GitHub landing page visibility
+- **Build-artifact drift guard (CI runtime check).** After `npm run build`,
+  `scripts/check-dist-skills-drift.sh` runs as a step in the CI `test` job and
+  asserts the compiled `plugins/fusion-plugin-stelow/dist/skills.d.ts#STELOW_PLUGIN_VERSION`
+  matches `manifest.json#version`. The guard catches the SW-008 historical-miss
+  pattern (v0.55.0 shipped with `STELOW_PLUGIN_VERSION="0.54.3"` baked into the
+  dist because the release commit skipped step 3 above). See
+  `docs/agents-md-refs/post-mortems/v0.55.2-release-drift.md` §"Secondary guard".
 - **Never guess the version** — always read `package.json` first.
 
 ## Don'ts
