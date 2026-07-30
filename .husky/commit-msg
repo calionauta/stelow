@@ -1,0 +1,9 @@
+#!/usr/bin/sh
+# .husky/commit-msg
+#
+# SW-034: enforces the Release-Bump / Rollback trailer contract on any commit
+# that edits package.json#version. Delegates to scripts/check-version-coherence.sh.
+#
+# To skip: git commit --no-verify
+set -e
+bash scripts/check-version-coherence.sh --hook=commit-msg "$1"

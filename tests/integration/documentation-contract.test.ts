@@ -161,6 +161,25 @@ describe("documentation contract — v0.55.1 release surface", () => {
     expect(DOCS.agents).toContain("stages.yaml");
   });
 
+  it("AGENTS.md documents the SW-034 Release-Bump/Rollback trailer contract", () => {
+    // Both trailer regex patterns must appear in AGENTS.md §"Versioning".
+    // The patterns are documented with simpler invariants than the shell
+    // regexes themselves (which use POSIX character classes); a substring
+    // match against the canonical example is sufficient to pin the
+    // contract.
+    expect(DOCS.agents).toMatch(/Release-Bump: v<X\.Y\.Z>/);
+    expect(DOCS.agents).toMatch(/Rollback: v<X\.Y\.Z> → v<A\.B\.C> — <reason>/);
+    // Mandatory-reason rule for `Rollback:`.
+    expect(DOCS.agents).toMatch(/mandatory/i);
+    expect(DOCS.agents).toMatch(/non-empty reason/i);
+    // Pointer to the post-mortem that motivated the contract.
+    expect(DOCS.agents).toMatch(/v0\.55\.2-release-drift\.md/);
+    // Pointer to the canonical changeset template.
+    expect(DOCS.agents).toMatch(/sw-034-version-coherence-guard\.md/);
+    // Release-bump trailer invocation in step 6 of the full release workflow.
+    expect(DOCS.agents).toMatch(/Release-Bump: v<version>/);
+  });
+
   it("architecture.md and README do not promote a pre-v0.53 CacheManager or stage table", () => {
     expect(DOCS.architecture).not.toMatch(/15-stage|15 phase/);
     expect(DOCS.architecture).not.toMatch(/Gate never skips/i);

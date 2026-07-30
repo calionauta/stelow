@@ -158,13 +158,49 @@ Run before releases. A test file moving from OK to REVIEW over time signals rot.
 - **Distribution:** Stelow ships **via Git/GitHub only** — there is no
   `npm publish` step. Release agents must not run `npm publish`.
 - **Tag and Release are linked — never create one without the other.** A git tag alone does not create a GitHub Release; the landing page shows only Releases, not tags.
-- **Full release workflow (do NOT skip steps):**
+
+### Commit-message trailer contract
+
+Any commit that edits `package.json#version` **must** carry exactly one of the
+following two trailers:
+
+- `Release-Bump: v<X.Y.Z>` — a legitimate forward version bump. Regex: `^Release-Bump: v[0-9]+\.[0-9]+\.[0-9]+$`.
+- `Rollback: v<X.Y.Z> → v<A.B.C> — <reason>` — a deliberate rollback. Regex:
+  `^Rollback: v[0-9]+\.[0-9]+\.[0-9]+ → v[0-9]+\.[0-9]+\.[0-9]+ — [^[:space:]].*`.
+  The `— <reason>` segment is **mandatory**: a `Rollback:` trailer without a
+  non-empty reason is rejected by the guard.
+
+The contract exists because SW-028 (`27188f7`) deliberately rolled the
+`package.json#version` field back from `v0.55.2` to `v0.55.1` without any
+declared intent in the commit message, and the drift was only caught by
+manual `git show` inspection long after merge. See the post-mortem at
+`docs/agents-md-refs/post-mortems/v0.55.2-release-drift.md` §"Proposed guard"
+for the full rationale.
+
+Enforcement:
+
+- `scripts/check-version-coherence.sh` is the canonical implementation. It
+  runs in two modes:
+  - `--mode=ci` (default) — invoked from `.github/workflows/version-coherence.yml`;
+    fails the PR with a `::error::` annotation when `package.json#version`
+    diverges from the latest annotated tag on `origin/main` and the HEAD
+    commit body lacks one of the trailers above.
+  - `--hook=commit-msg <msg-file>` — invoked from `.husky/commit-msg`; rejects
+    any local commit whose staged `package.json` change lacks one of the
+    trailers above. (Bypass with `git commit --no-verify`.)
+- Annotated-tag-only tag resolution (`git for-each-ref` + `cat-file -t` filter).
+  Lightweight tags and `v<X.Y.Z>-rc.N` pre-release tags are ignored.
+- See `.changeset/sw-034-version-coherence-guard.md` for the canonical
+  frontmatter template that future release notes use to compose the v0.55.3+
+  changelog with the trailer contract documented.
+
+### Full release workflow (do NOT skip steps)
   1. `npm version <major.minor.patch> --no-git-tag-version` — bump `package.json`
   2. `npm run version:sync` — sync plugin files (`manifest.json`, plugin `package.json`)
   3. **`npm run prepare:fusion-plugin && npm run build:fusion-plugin`** — re-bake `plugins/fusion-plugin-stelow/src/skills.ts#STELOW_PLUGIN_VERSION` and the compiled `artifacts/settings.json` from `manifest.json#version`. SW-008 shipped v0.55.0 with stale `0.54.3` baked into these files because this step was skipped on the release commit; SW-010 v0.55.1 fixed it as a side-effect. **Do not skip.**
   4. Update `CHANGELOG.md` — add entry with changes
   5. Verify the six-point version agreement: `package.json`, `package-lock.json`, `manifest.json`, plugin `package.json`, `STELOW_PLUGIN_VERSION` in `src/skills.ts` and `dist/skills.d.ts`. **All six must equal the new version.**
-  6. `git add -A && git commit -m "chore: bump to v<version>"`
+  6. `git add -A && git commit -m "chore: bump to v<version>" -m "Release-Bump: v<version>"`
   7. `git tag -a v$(node -p "require('./package.json').version") -m "v<version>: <summary>"`
   8. `git push origin main --tags`
   9. **`gh release create v$(node -p "require('./package.json').version") --title "v<version>" --notes-file <changelog-section>`** — required for GitHub landing page visibility
