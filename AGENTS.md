@@ -4,22 +4,31 @@
 
 ## Project Overview
 
-**Type:** Workflow CLI for product planning (skills + stages).
+**Type:** Host-agnostic product workflow library (skills + stages + adapters).
 **Stack:** Node 20+, TypeScript 6.0 strict, npm.
+**Hosts:** Pi (native extension), Fusion (compiled plugin at
+`plugins/fusion-plugin-stelow/`), and generic agentskills-compatible agents.
 
 ## Architecture
 
-See [architecture.md](architecture.md) for module layout, data flow, and how to extend. Skills live in `skills/*/SKILL.md`; stages defined in `stages.yaml` (single source of truth). Visual review gates: `gate`, `int-gate`, `plan-gate`, `diff-gate` (Plannotator) — conditional by review mode.
+See [architecture.md](architecture.md) for module layout, data flow, and how to extend. Skills live in `skills/*/SKILL.md`; stages are defined in
+`skills/stelow-product-orchestrator/stages.yaml` (single source of truth). The
+phases in `extensions/stelow/types.ts#PHASE_NAMES` are the canonical
+17-stage state machine. Visual review gates (`gate`, `int-gate`, `plan-gate`,
+`diff-gate`) are conditional by review mode — see `stages.yaml`.
 
 ### Top-level layout
 
 | Directory | Purpose |
 |---|---|
-| `skills/` | Stelow skills consumed by pi coding agents (LLM-facing) |
-| `extensions/stelow/` | Host-agnostic core plus adapters. Pi-only hooks, commands, UI, and tools live under `adapters/pi/`; Fusion uses generated artifacts. |
-| `extensions/stelow/adapters/<host>/` | Host-specific runtime specialization behind the stable adapter contract. |
-| `docs/design/` | Design docs, plans, ADR (PT-BR discussion, EN artifacts) |
-| `stelow.schema.json` / `stelow.json` | Workflow tracking schema + runtime state |
+| `skills/` | Stelow skills consumed by coding agents (LLM-facing content). |
+| `extensions/stelow/` | Host-agnostic core: state, schema, locking, phases, command registry, adapter contract. |
+| `extensions/stelow/adapters/pi/` | Pi-only hooks, native `/sw-*` commands, TUI, Plannotator. |
+| `extensions/stelow/adapters/fusion.ts` | Fusion tool mapping, generated command/workflow/settings resources. |
+| `extensions/stelow/adapters/generic.ts` | Portable no-op fallbacks for non-Pi, non-Fusion agents. |
+| `plugins/fusion-plugin-stelow/` | Compiled Fusion package: 25 plugin-local skills, validated settings/workflow IR, full-runtime project artifact installation, one managed project-scoped workflow, dependency-free `dist/index.js`. |
+| `docs/design/` | Design docs, plans, ADR (PT-BR discussion, EN artifacts). |
+| `stelow.schema.json` / `stelow.json` | Workflow tracking schema + per-project runtime state. |
 
 
 ## Commands
@@ -31,7 +40,14 @@ See [architecture.md](architecture.md) for module layout, data flow, and how to 
 
 > **Command aliases:** `/stelow-*` names are registered alongside `/sw-*` for readability. Both prefixes work.
 
-> **Source of Truth:** Stage/skill counts derive from `stages.yaml` and `ls skills/*/SKILL.md | wc -l`. Never update counts here without verifying.
+> **Source of Truth (do not guess):** Stage/skill/command counts and exposure derive from the canonical sources below, not from this file. The shared
+> documentation regression test in `tests/integration/documentation-contract.test.ts` asserts these counts and pins them to the source files.
+>
+> - **Skills (25)**: `find skills -maxdepth 2 -name SKILL.md -path '*/stelow-product-*' | wc -l` (canonical product-orchestrator + 24 sub-skills).
+> - **Phases (17)**: `extensions/stelow/types.ts#PHASE_NAMES` (the `Triage`..`Audit` array).
+> - **Stage transitions and conditional gates**: `skills/stelow-product-orchestrator/stages.yaml`.
+> - **Commands (19)**: `extensions/stelow/adapters/commands/dispatcher.ts#WORKFLOW_COMMANDS`.
+> - **Fusion commands (16)**: `WORKFLOW_COMMANDS.filter((d) => !d.piOnly).length` (Pi exposes all 19; Fusion emits the 16 non-`piOnly` descriptors).
 
 ```bash
 npm run build            # Compile TypeScript
@@ -139,15 +155,19 @@ Run before releases. A test file moving from OK to REVIEW over time signals rot.
 ## Versioning
 
 - **Single source:** `package.json` → `npm run version:sync` syncs plugin files.
+- **Distribution:** Stelow ships **via Git/GitHub only** — there is no
+  `npm publish` step. Release agents must not run `npm publish`.
 - **Tag and Release are linked — never create one without the other.** A git tag alone does not create a GitHub Release; the landing page shows only Releases, not tags.
 - **Full release workflow (do NOT skip steps):**
   1. `npm version <major.minor.patch> --no-git-tag-version` — bump `package.json`
-  2. `npm run version:sync` — sync plugin files
-  3. Update `CHANGELOG.md` — add entry with changes
-  4. `git add -A && git commit -m "chore: bump to v<version>"`
-  5. `git tag -a v$(node -p "require('./package.json').version") -m "v<version>: <summary>"`
-  6. `git push origin main --tags`
-  7. **`gh release create v$(node -p "require('./package.json').version") --title "v<version>" --notes "<changelog>"`** — required for GitHub landing page visibility
+  2. `npm run version:sync` — sync plugin files (`manifest.json`, plugin `package.json`)
+  3. **`npm run prepare:fusion-plugin && npm run build:fusion-plugin`** — re-bake `plugins/fusion-plugin-stelow/src/skills.ts#STELOW_PLUGIN_VERSION` and the compiled `artifacts/settings.json` from `manifest.json#version`. SW-008 shipped v0.55.0 with stale `0.54.3` baked into these files because this step was skipped on the release commit; SW-010 v0.55.1 fixed it as a side-effect. **Do not skip.**
+  4. Update `CHANGELOG.md` — add entry with changes
+  5. Verify the six-point version agreement: `package.json`, `package-lock.json`, `manifest.json`, plugin `package.json`, `STELOW_PLUGIN_VERSION` in `src/skills.ts` and `dist/skills.d.ts`. **All six must equal the new version.**
+  6. `git add -A && git commit -m "chore: bump to v<version>"`
+  7. `git tag -a v$(node -p "require('./package.json').version") -m "v<version>: <summary>"`
+  8. `git push origin main --tags`
+  9. **`gh release create v$(node -p "require('./package.json').version") --title "v<version>" --notes-file <changelog-section>`** — required for GitHub landing page visibility
 - **Never guess the version** — always read `package.json` first.
 
 ## Don'ts

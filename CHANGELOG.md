@@ -2,6 +2,12 @@
 
 All notable changes to `@calionauta/stelow` will be documented in this file.
 
+## [Unreleased]
+
+### Fixed
+
+- **Fusion plugin cli-tools build drift** (`SW-016`) — Run `scripts/sync-cli-tools.sh` before `prepare:fusion-plugin` so a fresh-checkout `npm run build` preserves all 382 tracked plugin cli-tool references instead of silently deleting them. Added an isolated regression fixture that pins the sync-before-prepare ordering and verifies the generated plugin tree matches tracked HEAD.
+
 ## [0.55.1] - 2026-07-23
 
 Vitest CI timeout mitigation for filesystem-heavy integration suites on cold-cache shared runners.
@@ -543,7 +549,7 @@ This is a non-cosmetic change: any script, hook, or external tool that hard-code
 If you depend on one of the removed harnesses:
 
 1. **For skill-level functionality:** nothing to do. The skills still work via the universal `npx skills add calionauta/stelow -g` install path (or `./install.sh --minimal`). The orchestrator's `/sw-*` slash commands route through the orchestrator skill in any agent that reads `~/.agents/skills/`.
-2. **For adapter-level functionality** (native slash commands, TUI overlay, lifecycle hooks, ask_user_question, subagent acceptance contracts): open an adapter PR following the contract in `cli-agents/COMMANDS.md#how-to-extend`. The v0.43.4 source tree (or the snapshot at `docs/archive/2026-07-09-deprecated-multi-cli-integration/v0.43.4-multi-cli-surface.tar.gz`) is the cleanest reference implementation to branch from.
+2. **For adapter-level functionality** (native slash commands, TUI overlay, lifecycle hooks, ask_user_question, subagent acceptance contracts): open an adapter PR following the contract in `cli-agents/COMMANDS.md#generic-and-future-hosts`. The v0.43.4 source tree (or the snapshot at `docs/archive/2026-07-09-deprecated-multi-cli-integration/v0.43.4-multi-cli-surface.tar.gz`) is the cleanest reference implementation to branch from.
 3. **`CLI` type imports:** rename `"opencode"` / `"claude-code"` cases to `"generic"` in any external code that consumed the type, since `generic` now means "any agent that does not have the Pi extension loaded". The Universal Fallback instructions cover every harness through that single path.
 
 ### Archived for archaeology
