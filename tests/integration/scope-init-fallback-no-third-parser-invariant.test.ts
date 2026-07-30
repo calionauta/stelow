@@ -151,6 +151,16 @@ describe("SW-025 scope-init-fallback no-third-parser invariant", () => {
   let parserMirrorRoot: string;
 
   beforeAll(() => {
+    // Initialize the cleanup-target path BEFORE any step that may throw
+    // (specifically `prepareCanonicalArtifact`, which calls `execFileSync`
+    // on `node_modules/typescript/bin/tsc`). If that step throws and the
+    // `afterAll` cleanup runs against an uninitialized variable, vitest
+    // reports a misleading `TypeError: The "path" argument must be of
+    // type string ... Received undefined` that masks the real cause. By
+    // allocating a real tmpdir placeholder up front, the cleanup is
+    // always able to run (or no-op gracefully via the `afterAll` guard
+    // below if the placeholder was never overwritten by `prepareCanonicalArtifact`).
+    parserMirrorRoot = mkdtempSync(join(repoRoot, "build/.sw025-noparser-fallback-"));
     fixtureRoot = mkdtempSync(join(tmpdir(), "sw-025-noparser-"));
     trackingPath = join(fixtureRoot, "stelow.json");
     plansRoot = join(fixtureRoot, ".stelow/2026-07-23/abc12345/plans");
@@ -158,12 +168,23 @@ describe("SW-025 scope-init-fallback no-third-parser invariant", () => {
     snippet = extractBashSnippet(readFileSync(fallbackPath, "utf8"));
     const artifact = prepareCanonicalArtifact();
     parserPath = artifact.parserPath;
+    // Overwrite the placeholder with the real mirror produced by
+    // `prepareCanonicalArtifact`. If the placeholder was never assigned
+    // (e.g., a future regression removes the initialization above), the
+    // `afterAll` guard below prevents the cleanup from throwing.
     parserMirrorRoot = artifact.mirrorRoot;
   });
 
   afterAll(() => {
     rmSync(fixtureRoot, { recursive: true, force: true });
-    rmSync(parserMirrorRoot, { recursive: true, force: true });
+    // Defense in depth: only clean up `parserMirrorRoot` if it was actually
+    // assigned to a real path. Without this guard, an uninitialized
+    // variable (e.g., if `beforeAll` throws before its assignment) would
+    // cause `rmSync(undefined, ...)` to throw a misleading TypeError that
+    // masks the real failure.
+    if (typeof parserMirrorRoot === "string" && parserMirrorRoot.length > 0) {
+      rmSync(parserMirrorRoot, { recursive: true, force: true });
+    }
   });
 
   function reset(): void {
