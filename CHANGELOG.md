@@ -2,31 +2,11 @@
 
 All notable changes to `@calionauta/stelow` will be documented in this file.
 
-## [0.55.2] - 2026-07-30
-
-Documentation refresh, scope-executor host-routing hardening, and the Fusion plugin build-drift fix landed on top of the v0.55.1 baseline. The net behavior change vs. v0.55.1 is small; most of this release is doc/test surface area.
+## [Unreleased]
 
 ### Fixed
 
 - **Fusion plugin cli-tools build drift** (`SW-016`) — Run `scripts/sync-cli-tools.sh` before `prepare:fusion-plugin` so a fresh-checkout `npm run build` preserves all 382 tracked plugin cli-tool references instead of silently deleting them. Added an isolated regression fixture that pins the sync-before-prepare ordering and verifies the generated plugin tree matches tracked HEAD.
-- **Stale anchor in CHANGELOG v0.43.4 deprecation note** (`SW-024`) — Replace `#how-to-extend` with `#generic-and-future-hosts` in the v0.43.4 deprecation migration guidance so the link points at the current section in `cli-agents/COMMANDS.md` instead of a now-removed heading.
-- **Scope-executor host-routing guidance** (`SW-018`) — Replace the universal "extension auto-syncs" claim in `stelow-product-scope-executor` with per-host scope-initialization guidance covering Pi (native adapter), Fusion (compiled plugin), and Generic (bash fallback). Add a new `references/cli-tools/scope-init-fallback.md` carrying the full contract, runtime-state matrix, and reusable Node.js snippet (no parser-switching fallback) for the post-v0.55 parser-flow.
-- **Scope-init-fallback invariant regressions** (`SW-025`) — Three mutation-killing integration tests pin the SW-018 fallback contract: NaN-date plan-dir resolution (`scope-init-fallback-nan-date-invariant.test.ts`), the no-third-parser invariant (`scope-init-fallback-no-third-parser-invariant.test.ts`), and the JSON.parse trust boundary for tracking input (`scope-init-fallback-tracking-trust-boundary.test.ts`). Replaces hardcoded `25 skills` references in `install.sh`/`setup.sh` with filesystem discovery so future skill tree growth does not silently desync.
-- **Scope-parser stale Muxy mirror claims** (`SW-017`) — Drop the obsolete "update the mirror in data.js / vice versa / Electron sandbox" guidance from `parseSpecTechScopes` JSDoc, mark the function as the sole canonical parser, and document the `wf.specTechFile` version-aware re-sync contract that replaces the old "only triggers when scopes are empty" behavior. `docs/scope-lifecycle-gaps.md` is rewritten around the post-v0.55 host-agnostic reality with explicit "Resolved / removed-host claims" attribution for the retired Muxy/Herdr, `index.json`, race-condition, and `EXECUTION_PHASE`-mirror claims.
-- **`stelow` working tree restored to canonical v0.55.1** (`SW-026`) — Restore the working tree on the default branch from a partially-applied v0.55.1→v0.54.3 rollback that had drifted on top of `66e8384` (SW-024). Restores `package.json` / `package-lock.json` to v0.55.1 baseline, re-creates `docs/audits/sw-010-v0.55.1-release-report.md`, and resets the CHANGELOG v0.55.0 heading date + body to the published draft. Preserves the SW-024 anchor at `CHANGELOG.md:555`, the unreleased SW-016 cli-tools build-drift fix entry, both pre-existing WIP stashes, and the v0.55.0 / v0.55.1 tags.
-
-### Added
-
-- **Shared scope parser documentation** (`SW-014`) — Reframe README scope-sync guidance around the host-agnostic parser, the Fusion integration path, and the generic bash fallback. Adds `tests/unit/parse-scopes-from-spec-tech.test.ts` covering populated, malformed, incomplete, duplicate, and repeated scope parsing.
-- **README skill-count/host-matrix alignment** (`SW-015`) — Replace the obsolete role-based breakdown with product, research, code, and meta categories; reorganize the documented skill lists and correct inclusive / sub-skill counts. Adds `tests/integration/skill-count-readme-contract.test.ts` deriving counts from frontmatter and validating README categorization.
-- **Host-agnostic documentation refresh** (`SW-011`) — Refresh `README.md`, `architecture.md`, and `AGENTS.md` for the v0.55.x release line. Removes obsolete pre-v0.55 surfaces (in-tree Muxy/Herdr integrations, the per-workflow `index.json` mirror, the 15-command Pi-native table, the `modules/cache.ts` module, the pre-v0.53 15-stage table, and the unconditional "Gate never skips" rule); replaces them with source-backed references to the canonical registries (`extensions/stelow/types.ts#PHASE_NAMES`, `skills/stelow-product-orchestrator/stages.yaml`, `extensions/stelow/adapters/commands/dispatcher.ts#WORKFLOW_COMMANDS`, and the compiled `plugins/fusion-plugin-stelow/` package). Adds `tests/integration/documentation-contract.test.ts` as a Vitest regression contract pinning the documented counts, host surfaces, command inventory, approval-receipt path, and Markdown link integrity.
-- **Canonical release-workflow guide** (`SW-013`) — Rewrite `.github/RELEASE_WORKFLOW.md` to mirror the post-SW-011 `AGENTS.md#Versioning` canonical 9-step recipe exactly. Removes the obsolete pre-v0.55 alpha/beta/rc + `npm publish` flow, adds the explicit "Git/GitHub only, never `npm publish`" rule, preserves useful supplementary forms (Conventional Commits table, Release Note Template, Version Bump Rules, Quick Reference, Remember list) updated to the v0.55.x repo state.
-- **Host migration terminology** (`SW-021`) — Reword the README adapter-guide compatibility copy to describe the Pi extension as Pi-native by design and document the per-host adapter protocol.
-- **Compatibility-section anchor fix** (`SW-023`) — Correct the README adapter-guide link so it targets the existing "generic and future hosts" section.
-- **Improvement-plan archival** (`SW-022`) — Mark the June 2026 plan as archived and redirect readers to current architecture documentation; preserve the original investigation for historical reference.
-- **v0.55.1 reconciliation audit** (`SW-012`) — Add `docs/audits/sw-012-v0.55.1-reconciliation-report.md` with provenance capture, classification verdict, restoration intent, version-agreement proof, build-regeneration verification, gate evidence, `.fusion/` runtime-state retention note, and audit-commit metadata.
-
-**Full Changelog:** https://github.com/calionauta/stelow/compare/v0.55.1...v0.55.2
 
 ## [0.55.1] - 2026-07-23
 
