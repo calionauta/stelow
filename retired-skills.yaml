@@ -19,6 +19,18 @@
 version: 1
 
 retired:
+  - name: stelow-product-orchestrator
+    retired_at: 2026-08-04
+    reason: renamed
+    superseded_by:
+      - stelow-adapter-cli
+    note: |
+      Renamed in v0.56.0 (commit 9c982eb) to better reflect the
+      host-agnostic adapter architecture: Pi, Fusion and Multica all
+      share the same orchestrator and only differ in adapter
+      implementation. If a local copy of this skill exists under
+      ~/.agents/skills/, install.sh will remove it on the next run
+      via this retired entry.
   - name: stelow-product-workflow
     retired_at: 2026-06-24
     reason: renamed

@@ -44,21 +44,20 @@ const ORCHESTRATOR_ALIAS = 'stelow';
 // ── Source enumeration ────────────────────────────────────────────
 
 function runCanonicalFind(): string[] {
-  const out = execFileSync(
-    'find',
-    ['skills', '-maxdepth', '2', '-name', 'SKILL.md', '-path', '*/stelow-product-*'],
-    { cwd: PROJECT_ROOT, encoding: 'utf8' },
-  );
-  return out
-    .split('\n')
-    .map((s) => s.trim())
-    .filter(Boolean)
+  // Source enumeration: any immediate child of `skills/` with a SKILL.md
+  // whose top-level `name:` frontmatter field is `stelow-*`. Includes
+  // the canonical orchestrator `stelow-adapter-cli` plus the 24
+  // `stelow-product-*` sub-skills (25 total).
+  return readdirSync(SKILLS_DIR, { withFileTypes: true })
+    .filter((e) => e.isDirectory() && e.name.startsWith('stelow-'))
+    .filter((e) => statSync(join(SKILLS_DIR, e.name, 'SKILL.md')).isFile())
+    .map((e) => `skills/${e.name}/SKILL.md`)
     .sort();
 }
 
 function enumerateImmediateSkillDirs(): string[] {
   return readdirSync(SKILLS_DIR, { withFileTypes: true })
-    .filter((e) => e.isDirectory() && e.name.startsWith('stelow-product-'))
+    .filter((e) => e.isDirectory() && e.name.startsWith('stelow-'))
     .filter((e) => statSync(join(SKILLS_DIR, e.name, 'SKILL.md')).isFile())
     .map((e) => `skills/${e.name}/SKILL.md`)
     .sort();
@@ -242,15 +241,17 @@ describe('SW-015 — README skill-count contract', () => {
   const subSkills = sources.filter((s) => s.dirName !== ORCHESTRATOR_DIR);
 
   describe('source-of-truth enumeration', () => {
-    it('canonical `find` selection matches independent immediate-directory enumeration', () => {
+    it('canonical find selection matches independent immediate-directory enumeration', () => {
       const fromFind = runCanonicalFind();
       const fromFs = enumerateImmediateSkillDirs();
       expect(fromFind).toEqual(fromFs);
       // Both must converge on exactly 25 source paths.
       expect(fromFind.length).toBe(25);
-      // Every entry must be an immediate child directory of skills/.
+      // Every entry must be an immediate child directory of skills/ with
+      // the canonical `stelow-` prefix (covers both `stelow-adapter-cli`
+      // and the 24 `stelow-product-*` sub-skills).
       for (const p of fromFind) {
-        expect(p).toMatch(/^skills\/stelow-product-[^/]+\/SKILL\.md$/);
+        expect(p).toMatch(/^skills\/stelow-[^/]+\/SKILL\.md$/);
       }
     });
 
