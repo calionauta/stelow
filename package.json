@@ -1,0 +1,117 @@
+{
+  "name": "@calionauta/stelow",
+  "version": "0.55.2",
+  "description": "stelow — opinionated product workflow. stellar clarity. low friction.",
+  "keywords": [
+    "pi-skill",
+    "pi-extension",
+    "ai-coding-agent",
+    "workflow",
+    "shape-up",
+    "product-planning",
+    "product-management",
+    "calionauta"
+  ],
+  "license": "MIT",
+  "author": "calionauta",
+  "type": "module",
+  "main": "./build/index.js",
+  "exports": {
+    ".": {
+      "import": "./build/index.js",
+      "types": "./build/index.d.ts"
+    },
+    "./skills": "./skills/",
+    "./extensions": "./extensions",
+    "./adapters": "./build/adapters/index.js",
+    "./fusion-plugin": {
+      "types": "./plugins/fusion-plugin-stelow/dist/index.d.ts",
+      "import": "./plugins/fusion-plugin-stelow/dist/index.js"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/calionauta/stelow.git"
+  },
+  "homepage": "https://github.com/calionauta/stelow#readme",
+  "bugs": {
+    "url": "https://github.com/calionauta/stelow/issues"
+  },
+  "peerDependencies": {
+    "typebox": "*"
+  },
+  "dependencies": {
+    "typebox": "*",
+    "yaml": "2.9.0"
+  },
+  "optionalPeerDependencies": {
+    "@earendil-works/pi-coding-agent": ">=0.74.0",
+    "@earendil-works/pi-tui": "*",
+    "@juicesharp/rpiv-ask-user-question": ">=1.6.0",
+    "@plannotator/pi-extension": ">=0.19.0",
+    "pi-intercom": ">=0.6.0",
+    "pi-subagents": ">=0.24.0",
+    "pi-supervisor": ">=0.4.0",
+    "pi-agent-codebase-workflows": "git:github.com/PriNova/pi-agent-codebase-workflows"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "files": [
+    "build/",
+    ".fusion/commands/",
+    "skills/",
+    "extensions/stelow/",
+    "plugins/fusion-plugin-stelow/",
+    "scripts/",
+    "install.sh",
+    "stelow.schema.json",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "prepare:fusion-plugin": "npm exec -- tsx scripts/prepare-fusion-plugin.ts",
+    "build:fusion-plugin": "tsc -p plugins/fusion-plugin-stelow/tsconfig.json",
+    "build": "./scripts/sync-cli-tools.sh && npm run prepare:fusion-plugin && npm run build:fusion-plugin && tsc -p tsconfig.build.json && ./scripts/copy-pulse-assets.sh",
+    "prepare": "node -e \"try { require('husky').install() } catch (e) { console.log('husky not installed (e.g. prod install), skipping') }\"",
+    "prepublishOnly": "npm run generate-cli-commands && npm run build && ./scripts/sync-cli-tools.sh",
+    "generate-cli-commands": "npm exec -- tsx scripts/generate-cli-commands.ts",
+    "test": "vitest run",
+    "test:unit": "vitest run tests/unit",
+    "test:integration": "vitest run tests/integration",
+    "test:skills": "vitest run tests/skills",
+    "test:artifacts": "vitest run tests/artifacts",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:ci": "./scripts/test-ci.sh",
+    "test:mutation": "stryker run",
+    "test:rigor": "bash scripts/rigor-scan.sh 60",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit",
+    "version:sync": "node scripts/version-sync.mjs",
+    "version": "npm run version:sync",
+    "prepack": "npm run generate-cli-commands && npm run build && ./scripts/sync-cli-tools.sh"
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "0.80.6",
+    "@earendil-works/pi-tui": "0.80.6",
+    "@mariozechner/pi-ai": "0.73.1",
+    "@stryker-mutator/core": "9.6.1",
+    "@stryker-mutator/typescript-checker": "9.6.1",
+    "@stryker-mutator/vitest-runner": "9.6.1",
+    "@vitest/coverage-v8": "^4.1.6",
+    "fast-check": "4.9.0",
+    "husky": "9.1.7",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.6"
+  },
+  "pi": {
+    "extensions": [
+      "./extensions/stelow/index.ts"
+    ]
+  }
+}

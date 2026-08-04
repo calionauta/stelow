@@ -1,0 +1,262 @@
+# stages.yaml — Metadados de stage
+# Complements stages/*.md (behavior), does NOT replace them
+# Source of truth for: tools per stage, transitions, supervisor, gates
+#
+# Sincronizado com PHASE_NAMES em extensions/stelow/types.ts
+
+
+# Canonical tool vocabulary and host-native implementations. A null value
+# means the host uses stelow's safe fallback rather than a native tool.
+tools:
+  ask_user_question:
+    pi: ask_user_question
+    fusion: fn_ask_question
+    generic: ask_user_question
+  visual_review:
+    pi: plannotator
+    fusion: null
+    generic: null
+  subagent:
+    pi: subagent
+    fusion: fn_spawn_agent
+    generic: subagent
+  read: { pi: read, fusion: read, generic: read }
+  write: { pi: write, fusion: write, generic: write }
+  edit: { pi: edit, fusion: edit, generic: edit }
+  bash: { pi: bash, fusion: bash, generic: bash }
+  grep: { pi: grep, fusion: grep, generic: grep }
+  ls: { pi: ls, fusion: ls, generic: ls }
+  agent_browser: { pi: agent_browser, fusion: agent_browser, generic: agent_browser }
+
+stages:
+  - name: triage
+    order: 10
+    model_hint: economy
+    description: Initial assessment. Determine if this is a valid request.
+    blocked_tools: []
+    allowed_tools: [ask_user_question, read, grep, ls]
+    preferred_tools: [ask_user_question]
+    primary_actions: [ask_user_question]
+    transitions:
+      next: [select]
+      accept: [select]
+      reject: []
+
+  - name: select
+    order: 15
+    model_hint: economy
+    description: Item selection. Rank accepted items, user picks one.
+    blocked_tools: []
+    allowed_tools: [ask_user_question, read, grep, ls]
+    preferred_tools: [ask_user_question, read]
+    primary_actions: [ask_user_question]
+    transitions:
+      next: [setup]
+      accept: [setup]
+      reject: [triage]
+
+  - name: setup
+    order: 20
+    model_hint: standard
+    description: Setup context. Explore codebase, gather requirements.
+    blocked_tools: []
+    allowed_tools: [ask_user_question, read, grep, ls, subagent]
+    preferred_tools: [read, grep]
+    primary_actions: [read, grep]
+    transitions:
+      next: [context]
+      accept: [context]
+      reject: [triage]
+
+  - name: context
+    order: 25
+    model_hint: standard
+    description: "Strategic context. Market analysis, JTBD, domain detection. Gated by `context:5` (appetite/review mode): Product Spec Gate+Auto skips; others use reduced ask. See `stages/context.md#context:5`."
+    blocked_tools: []
+    allowed_tools: [ask_user_question, read, grep, ls, write, subagent]
+    preferred_tools: [read, write]
+    primary_actions: [read, write]
+    transitions:
+      next: [shape]
+      accept: [shape]
+      reject: [setup]
+
+  - name: shape
+    order: 40
+    model_hint: best
+    description: Shape stage. Define appetite, hill chart, rabbit holes.
+    blocked_tools: []
+    allowed_tools: [ask_user_question, read, grep, ls, write, subagent]
+    preferred_tools: [read, write]
+    primary_actions: [read, write]
+    transitions:
+      next: [critique]
+      rework: [shape]
+      accept: [critique]
+      reject: [context]
+
+  - name: critique
+    order: 45
+    model_hint: best
+    description: Plan critique. Pre-flight check before gate.
+    blocked_tools: []
+    allowed_tools: [ask_user_question, read, grep, ls, write, subagent]
+    preferred_tools: [read, write]
+    primary_actions: [read, write]
+    transitions:
+      next: [gate]
+      accept: [gate]
+      reject: [shape]
+
+  - name: gate
+    order: 60
+    model_hint: economy
+    description: Gate review. Visual approval via visual review required. Use `visual_review` tool (not bash).
+    blocked_tools: [bash]
+    allowed_tools: [read, ls, grep, ask_user_question, visual_review, edit, write]
+    preferred_tools: [read]
+    primary_actions: [read]
+    requires_approval: true
+    approval_tool: visual_review
+    transitions:
+      next: [scope]
+      accept: [scope]
+      reject: [shape]
+
+  - name: scope
+    order: 70
+    model_hint: economy
+    description: Scope adjustment. Add/remove from IN/OUT after gate approval.
+    blocked_tools: []
+    allowed_tools: [ask_user_question, read, grep, ls, write, subagent]
+    preferred_tools: [read, write]
+    primary_actions: [read, write]
+    transitions:
+      next: [interface]
+      accept: [interface]
+      reject: [gate]
+
+  - name: interface
+    order: 80
+    model_hint: best
+    description: "Interface alternatives. Appetite-scaled exploration: 1, 3, or 5 proposals + hybrid."
+    blocked_tools: []
+    allowed_tools: [ask_user_question, read, grep, ls, write, subagent]
+    preferred_tools: [read, write]
+    primary_actions: [read, write]
+    transitions:
+      next: [int-gate]
+      accept: [int-gate]
+      reject: [scope]
+
+  - name: int-gate
+    order: 90
+    model_hint: economy
+    description: Interface gate. Visual review of all interface proposals. Use `visual_review` tool (not bash).
+    blocked_tools: [bash]
+    allowed_tools: [read, ls, grep, ask_user_question, visual_review, edit, write]
+    preferred_tools: [read]
+    primary_actions: [read]
+    requires_approval: true
+    approval_tool: visual_review
+    transitions:
+      next: [selection]
+      accept: [selection]
+      reject: [interface]
+
+  - name: selection
+    order: 100
+    model_hint: standard
+    description: Interface selection. User picks via structured question.
+    blocked_tools: [bash, write]
+    allowed_tools: [ask_user_question, read, grep, ls, subagent]
+    preferred_tools: [ask_user_question, read]
+    primary_actions: [ask_user_question]
+    transitions:
+      next: [planning]
+      accept: [planning]
+      reject: [interface]
+
+  - name: planning
+    order: 110
+    model_hint: best
+    description: Tech planning. Typed scopes + sequencing.
+    blocked_tools: []
+    allowed_tools: [ask_user_question, read, grep, ls, write, subagent]
+    preferred_tools: [read, write]
+    primary_actions: [read, write]
+    transitions:
+      next: [plan-gate]
+      accept: [plan-gate]
+      reject: [scope]
+
+  - name: plan-gate
+    order: 115
+    model_hint: economy
+    description: "Tech plan gate. Visual review of spec-tech.md via visual review. Only in Product Spec + Interface + Tech Review or Code Diff mode."
+    blocked_tools: [bash]
+    allowed_tools: [read, ls, grep, ask_user_question, visual_review, edit, write]
+    preferred_tools: [read]
+    primary_actions: [read]
+    requires_approval: true
+    approval_tool: visual_review
+    transitions:
+      next: [execution]
+      accept: [execution]
+      reject: [planning]
+
+  - name: execution
+    order: 120
+    model_hint: standard
+    description: Implementation. Execute planned scopes.
+    blocked_tools: []
+    allowed_tools: [edit, write, bash, read, grep, ls, subagent, ask_user_question, agent_browser]
+    preferred_tools: [edit, write, bash]
+    primary_actions: [edit, write, bash]
+    supervisor: true
+    transitions:
+      next: [verification]
+      accept: [verification]
+      rework: [shape]
+
+  - name: verification
+    order: 150
+    model_hint: economy
+    description: "Verification. Run full test suite, code review, UI audit, browser testing."
+    blocked_tools: []
+    allowed_tools: [edit, write, bash, read, grep, ls, subagent, ask_user_question, agent_browser]
+    preferred_tools: [bash, write]
+    primary_actions: [bash, write]
+    transitions:
+      next: [diff-gate]
+      accept: [diff-gate]
+      reject: [execution]
+
+  - name: diff-gate
+    order: 175
+    model_hint: economy
+    description: "Code diff review. visual review review of working tree diff. Only in Product Spec + Interface + Tech Review + Code Diff mode."
+    blocked_tools: []
+    allowed_tools: [read, ls, grep, ask_user_question, bash, visual_review, edit, write]
+    preferred_tools: [read]
+    primary_actions: [read]
+    requires_approval: true
+    approval_tool: visual_review
+    transitions:
+      next: [audit]
+      accept: [audit]
+      annotate: [execution]
+      reject: [execution]
+
+  - name: audit
+    order: 200
+    model_hint: standard
+    description: Final audit. Verify all requirements met.
+    blocked_tools: []
+    allowed_tools: [ask_user_question, read, grep, ls, write]
+    preferred_tools: [read, grep]
+    primary_actions: [read, grep]
+    transitions:
+      next: []
+      accept: []
+      reject: [execution]

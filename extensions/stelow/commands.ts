@@ -1,0 +1,1631 @@
+// @lat: [[architecture#System Layers#Extension Layer]]
+import { rmSync, readFileSync, writeFileSync, existsSync, mkdirSync, copyFileSync } from "node:fs";
+import { join } from "node:path";
+import { homedir } from "node:os";
+import { execSync } from "node:child_process";
+export interface CommandContext { cwd: string; ui?: any; [key: string]: any }
+export interface CommandHost {
+  registerCommand(name: string, options: { description: string; handler: (args: string, ctx: CommandContext) => Promise<void> }): void;
+  sendUserMessage(message: string, options?: unknown): void;
+}
+type ExtensionAPI = CommandHost;
+type ExtensionCommandContext = CommandContext;
+import type { Workflow, StageState } from "./types";
+import { WORKFLOW_DIR, PHASE_NAMES, STAGE } from "./types";
+import {
+  readTracking, writeTracking, readGlobalTracking, writeGlobalTracking,
+  getActiveWorkflow, renameWorkflow, toSafeName, reconcileTracking, scanWorkflowDirs,
+  resolveProjectDir,
+  parseChecklist,
+  readInbox, addToInbox, removeFromInbox, clearInbox,
+  readProvenance,
+  findWorkflowIndexByName, findWorkflowIndexForProject, isWorkflowFromProject, isSamePath,
+  removeGlobalIndexEntry, addToGlobalIndex, getDateStamp,
+} from "./state";
+import { updateFooter, notifyPhase, getUIAdapter } from "./ui";
+import { diagnoseWorkflowProject, formatDoctorReport, repairWorkflowProject, countFixable, detectOrphanWorkflows } from "./doctor";
+import { validateWorkflow, WorkflowValidationError } from "./schemas";
+import cmdStart from "./start";
+import { escapeRegex, convertAuditTrailToJson } from "./audit-trail";
+
+// ── Stages Guard (pure file-state management) ────────────────────────
+import { PHASE_TO_STAGE, syncStagesGuardState } from "./stages-guard";
+
+// ── Import Command Dispatcher for Multi-CLI Support ─────────────────
+import { WORKFLOW_COMMANDS, type CommandDescriptor } from "./adapters/commands/dispatcher";
+
+type CmdCtx = ExtensionCommandContext;
+
+// Pi passes the raw text after the command name as the first argument (a string).
+interface CmdHandler {
+  (pi: ExtensionAPI, args: string, ctx: CmdCtx): void | Promise<void>;
+}
+
+// ── Helper: parse command args ───────────────────────────────────────
+// Pi passes the raw text after the command name as a string.
+// This helper parses key=value pairs (quoted values supported) and also
+// exposes positional tokens via "_" (array).
+function parseArgs(raw: string): Record<string, string> & { _: string[] } {
+  const result = { _: [] as string[] } as Record<string, string> & { _: string[] };
+
+  const trimmed = raw?.trim() ?? "";
+  if (!trimmed) return result;
+
+  // tokenize respecting double quotes
+  const tokens: string[] = [];
+  let buf = "";
+  let inQ = false;
+  for (const ch of trimmed) {
+    if (ch === '"') { inQ = !inQ; continue; }
+    if (ch === " " && !inQ) {
+      if (buf) { tokens.push(buf); buf = ""; }
+      continue;
+    }
+    buf += ch;
+  }
+  if (buf) tokens.push(buf);
+
+  for (const tok of tokens) {
+    const eq = tok.indexOf("=");
+    if (eq > 0) {
+      result[tok.slice(0, eq)] = tok.slice(eq + 1);
+    } else {
+      result._.push(tok);
+    }
+  }
+  return result;
+}
+
+// ── Helper: notify + log ────────────────────────────────────────────
+function reply(ctx: CmdCtx, text: string): void {
+  ctx.ui?.notify(text, "info");
+}
+
+function replyWarn(ctx: CmdCtx, text: string): void {
+  ctx.ui?.notify(text, "warning");
+}
+
+function noActive(ctx: CmdCtx): void {
+  replyWarn(ctx, "No active Workflow. Start with /sw-start");
+}
+
+// ── Helper: remove workflow from both local and global tracking ─────
+function removeWorkflowFromTracking(cwd: string, workflowName: string, _wf?: Pick<Workflow, "name" | "dirHash">): void {
+  const t = readTracking(cwd);
+  if (t) {
+    t.workflows = t.workflows.filter(w => w.name !== workflowName);
+    writeTracking(cwd, t);
+  }
+
+  removeGlobalIndexEntry(cwd, workflowName);
+}
+
+// ── STOP ─────────────────────────────────────────────────────────────
+
+function cmdAbort(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
+  const wd = resolveProjectDir(ctx.cwd);
+  const parsed = parseArgs(args);
+
+  // Gather all workflows from: current dir reconcile + global tracking (same cwd)
+  const fromDisk = reconcileTracking(wd);
+  const fromGlobal = readGlobalTracking()?.workflows
+    .filter(w => !fromDisk.some(dw => dw.name === w.name) && isWorkflowFromProject(w, wd)) ?? [];
+  const allWfs = [...fromDisk, ...fromGlobal];
+  const stoppable = allWfs.filter(w =>
+    w.status === "in-progress" || w.status === "paused"
+  );
+
+  if (stoppable.length === 0) {
+    replyWarn(ctx, "No active or paused workflows to stop.");
+    return;
+  }
+
+  // ── /sw-abort all ───────────────────────────────────────────────
+  if (parsed._.includes("all") || parsed.all !== undefined) {
+    for (const w of stoppable) {
+      removeWorkflowFromTracking(wd, w.name, w);
+    }
+    ctx.ui?.notify(`❌ Stopped ${stoppable.length} workflow(s).`, "info");
+    ctx.ui?.setStatus("workflow", undefined);
+    return;
+  }
+
+  // ── /sw-abort <name1> <name2> ───────────────────────────────────
+  if (parsed._.length > 0) {
+    let count = 0;
+    for (const wfName of parsed._) {
+      const found = stoppable.find(w => w.name === wfName);
+      if (found) {
+        removeWorkflowFromTracking(wd, wfName, found);
+        count++;
+      }
+    }
+    if (count === 0) {
+      replyWarn(ctx, `No workflow found matching: ${parsed._.join(", ")}`);
+    } else {
+      ctx.ui?.notify(`❌ Stopped ${count} workflow(s).`, "info");
+      if (stoppable.some(w => w.name === getActiveWorkflow(wd)?.name)) {
+        ctx.ui?.setStatus("workflow", undefined);
+      }
+    }
+    return;
+  }
+
+  // ── /sw-abort (no args) — picker se >1, direto se for 1 ──────
+  if (stoppable.length === 1) {
+    const wfName = stoppable[0].name;
+    removeWorkflowFromTracking(wd, wfName, stoppable[0]);
+    ctx.ui?.notify(`❌ Workflow '${wfName}' stopped.`, "info");
+    ctx.ui?.setStatus("workflow", undefined);
+    return;
+  }
+
+  // Multiple workflows: show interactive picker
+  showStopPicker(ctx, wd, stoppable);
+}
+
+async function showStopPicker(
+  ctx: CmdCtx, cwd: string, workflows: { name: string; currentPhase: number }[]
+): Promise<void> {
+  const adapter = getUIAdapter();
+  
+  const options = [
+    {
+      value: "__all__",
+      label: "🛑 Stop All",
+      description: `Stop all ${workflows.length} workflow(s)`
+    },
+    ...workflows.map(w => ({
+      value: w.name,
+      label: `☐ ${w.name}`,
+      description: `${PHASE_NAMES[w.currentPhase]} — /sw-abort ${w.name}`
+    })),
+    {
+      value: "__cancel__",
+      label: "Cancel",
+      description: ""
+    }
+  ];
+  
+  const selection = await adapter.select(options, "Select workflow to stop:");
+  
+  if (selection === "__all__") {
+    const diskWfs = reconcileTracking(cwd);
+    const globalWfs = (readGlobalTracking()?.workflows ?? [])
+      .filter(w => !diskWfs.some(dw => dw.name === w.name) && isWorkflowFromProject(w, cwd));
+    const allWfs = [...diskWfs, ...globalWfs].filter(w =>
+      w.status === "in-progress" || w.status === "paused"
+    );
+    for (const w of allWfs) {
+      removeWorkflowFromTracking(cwd, w.name, w);
+    }
+    adapter.notify(`❌ Stopped ${allWfs.length} workflow(s).`, "info");
+    adapter.clearStatus();
+  } else if (selection && selection !== "__cancel__") {
+    // Find workflow in context for dirHash fallback
+    const selWf = reconcileTracking(cwd).find(w => w.name === selection)
+      ?? getActiveWorkflow(cwd);
+    removeWorkflowFromTracking(cwd, selection, selWf ?? undefined);
+    adapter.notify(`❌ Workflow '${selection}' stopped.`, "info");
+    if (!getActiveWorkflow(cwd)) {
+      adapter.clearStatus();
+    }
+  }
+}
+
+// ── Drift Detection ──────────────────────────────────────────────────
+
+/**
+ * Check if tracked/untracked files changed in the repo since HEAD.
+ * Uses git diff --stat + git ls-files for untracked.
+ * If drift found, prompts user via UI adapter to confirm resume.
+ * Returns true if resume should proceed (no drift, or user confirmed).
+ */
+async function checkResumeDrift(cwd: string): Promise<boolean> {
+  try {
+    const diff = execSync(
+      "git diff --stat HEAD 2>/dev/null",
+      { encoding: "utf8", cwd, stdio: ["pipe", "pipe", "ignore"] }
+    ).trim();
+
+    const untracked = execSync(
+      "git ls-files --others --exclude-standard 2>/dev/null",
+      { encoding: "utf8", cwd, stdio: ["pipe", "pipe", "ignore"] }
+    ).trim();
+
+    if (!diff && !untracked) return true; // no drift
+
+    const summary = [
+      diff ? `Modified files:\n${diff}` : "",
+      untracked ? `Untracked files:\n${untracked}` : "",
+    ].filter(Boolean).join("\n\n");
+
+    const adapter = getUIAdapter();
+    const choice = await adapter.select(
+      [
+        {
+          value: "continue",
+          label: "Yes — resume anyway (Recommended)",
+          description: "Proceed with resume. Check plan validity before execution.",
+        },
+        {
+          value: "cancel",
+          label: "No — cancel resume",
+          description: "Don\u2019t resume. Review changes and resume when ready.",
+        },
+      ],
+      `\u26A0\uFE0F Files changed since this workflow was paused.\n\n${summary}\n\nResume anyway?`
+    );
+
+    return choice === "continue";
+  } catch {
+    // git not available or not a repo — allow resume
+    return true;
+  }
+}
+
+// ── PAUSE / RESUME ───────────────────────────────────────────────────
+
+function cmdPause(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
+  const wd = resolveProjectDir(ctx.cwd);
+  const wf = getActiveWorkflow(wd);
+  if (!wf) { noActive(ctx); return; }
+
+  const t = readTracking(wd);
+  if (t) {
+    const idx = t.workflows.findIndex(w => w.name === wf.name);
+    if (idx !== -1) {
+      t.workflows[idx].status = "paused";
+      t.workflows[idx].updated = new Date().toISOString();
+      writeTracking(wd, t);
+    }
+  }
+  // Sync stages guard state
+  syncStagesGuardState(wd, wf.currentPhase);
+
+  ctx.ui?.setStatus("workflow", ctx.ui?.theme?.fg("warning", `⏸ ${wf.name}`));
+  reply(ctx, `⏸ Workflow '${wf.name}' paused.`);
+}
+
+async function cmdResume(pi: ExtensionAPI, args: string, ctx: CmdCtx) {
+  const wd = resolveProjectDir(ctx.cwd);
+  const parsed = parseArgs(args);
+  const name = parsed.name || parsed._[0];
+  const t = readTracking(wd);
+
+  const paused = name
+    ? t?.workflows.find(w => w.name === name && w.status === "paused")
+    : t?.workflows.find(w => w.status === "paused");
+
+  if (!paused) {
+    // Fallback: check for in-progress workflows (e.g. after a crash)
+    const inProgress = name
+      ? t?.workflows.find(w => w.name === name && w.status === "in-progress")
+      : t?.workflows.find(w => w.status === "in-progress");
+
+    if (inProgress) {
+      // Drift check before resume
+      updateFooter(ctx, wd);
+      const proceed = await checkResumeDrift(wd);
+      if (!proceed) {
+        replyWarn(ctx, `Resume cancelled — drift detected in ${inProgress.name}. Review changes and use /sw-resume when ready.`);
+        return;
+      }
+      reply(ctx, `▶️ '${inProgress.name}' resuming from ${PHASE_NAMES[inProgress.currentPhase]}...`);
+      pi.sendUserMessage(
+        `/skill:stelow-product-orchestrator\n\n[RESUME: workflow '${inProgress.name}', current phase: ${inProgress.currentPhase} (${PHASE_NAMES[inProgress.currentPhase]}). Auto-Discovery will find this in-progress workflow. User already confirmed via /sw-resume — proceed without asking, jump to the current phase and continue from there.]`,
+        { deliverAs: "followUp" }
+      );
+      return;
+    }
+
+    replyWarn(ctx, name
+      ? `Workflow '${name}' not found. /sw-ls`
+      : "No paused or active Workflow."
+    );
+    return;
+  }
+
+  // Drift check before resuming paused workflow
+  const proceed = await checkResumeDrift(wd);
+  if (!proceed) {
+    replyWarn(ctx, `Resume cancelled — drift detected in ${paused.name}. Review changes and use /sw-resume when ready.`);
+    return;
+  }
+
+  // Block if resuming a different workflow while another is already active
+  const active = getActiveWorkflow(wd);
+  if (active && active.name !== paused.name) {
+    replyWarn(ctx, `Cannot resume "${paused.name}" — workflow "${active.name}" is already active. Pause, archive, complete or abort it first.`);
+    return;
+  }
+
+  if (t) {
+    const idx = t.workflows.findIndex(w => w.name === paused.name);
+    if (idx !== -1) t.workflows[idx].status = "in-progress";
+    writeTracking(wd, t);
+  }
+  // Sync stages guard state
+  syncStagesGuardState(wd, paused.currentPhase);
+
+  updateFooter(ctx, wd);
+  reply(ctx, `▶️ '${paused.name}' resumed. Stage: ${PHASE_NAMES[paused.currentPhase]}`);
+}
+
+// ── STATUS ───────────────────────────────────────────────────────────
+
+function cmdStatus(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
+  const wd = resolveProjectDir(ctx.cwd);
+  const wf = getActiveWorkflow(wd);
+  if (!wf) {
+    // JSON mode emits a structured error so agents can branch on it.
+    if (_args.includes("--json")) {
+      reply(ctx, JSON.stringify({
+        ok: false,
+        error: "no_active_workflow",
+        cwd: wd,
+        hint: "/sw-start @brief.md or /sw-start \"desc\"",
+      }, null, 2));
+      return;
+    }
+    replyWarn(ctx, "No active Workflow.\n\n/sw-start /sw-start @brief.md /sw-start \"desc\"");
+    return;
+  }
+
+  // JSON mode (G5A from stelow-reliability plan): tool-friendly snapshot
+  // of workflow state. Enables agents/TUIs to consume status without
+  // parsing human-formatted text.
+  if (_args.includes("--json")) {
+    const completedScopes = wf.scopes?.filter(s => s.status === 'completed').length ?? 0;
+    const snapshot = {
+      ok: true,
+      cwd: wd,
+      workflow: {
+        name: wf.name,
+        dirHash: wf.dirHash,
+        status: wf.status,
+        currentPhase: wf.currentPhase,
+        currentPhaseName: PHASE_NAMES[wf.currentPhase],
+        totalPhases: PHASE_NAMES.length,
+        created: wf.created,
+        updated: wf.updated,
+      },
+      phases: wf.phases.map((p, i) => ({
+        index: i,
+        name: p.name,
+        status: p.status,
+        isCurrent: i === wf.currentPhase,
+      })),
+      scopes: (wf.scopes ?? []).map(s => ({
+        id: s.id,
+        name: s.name,
+        type: s.type,
+        status: s.status,
+      })),
+      scopeProgress: {
+        completed: completedScopes,
+        total: wf.scopes?.length ?? 0,
+        currentPhase: wf.currentPhase === STAGE.EXECUTION(),
+      },
+    };
+    reply(ctx, JSON.stringify(snapshot, null, 2));
+    return;
+  }
+
+  reply(ctx, [
+    `◆ Workflow: ${wf.name}`,
+    `Stage: ${wf.currentPhase + 1}/${PHASE_NAMES.length} — ${PHASE_NAMES[wf.currentPhase]}`,
+    wf.draftContent
+      ? `\n📝 ${wf.draftContent.slice(0, 300)}${wf.draftContent.length > 300 ? "..." : ""}`
+      : "",
+    "",
+    "Stages:",
+    ...wf.phases.map((p, i) => {
+      const icon = p.status === "completed" ? "✓" :
+        p.status === "in-progress" ? "◆" : "○";
+      return `${i === wf.currentPhase ? "→ " : "  "}${icon} ${i + 1}. ${p.name}`;
+    }),
+    // Show scope progress during Execution phase
+    ...(wf.scopes && wf.scopes.length > 0 && wf.currentPhase === STAGE.EXECUTION() ? [
+      "",
+      `Scopes: ${wf.scopes.filter(s => s.status === 'completed').length}/${wf.scopes.length} completed`,
+      ...wf.scopes.map(s => {
+        const icon = s.status === 'completed' ? '✓' :
+          s.status === 'in-progress' ? '◆' :
+          s.status === 'escalated' || s.status === 'failed' ? '✗' : '○';
+        return `  ${icon} ${s.name} [${s.type}]`;
+      }),
+    ] : []),
+    "",
+    "/sw-next  /sw-abort"
+  ].join("\n"));
+}
+
+// ── LIST ─────────────────────────────────────────────────────────────
+
+function cmdList(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
+  const wd = resolveProjectDir(ctx.cwd);
+  const parsed = parseArgs(args);
+  const lines: string[] = [];
+
+  // ── /sw-ls path=... ────────────────────────────────────────────
+  if (parsed.path) {
+    const targetDir = parsed.path;
+    const diskWfs = scanWorkflowDirs(targetDir);
+    if (diskWfs.length === 0) {
+      replyWarn(ctx, `No workflows in: ${targetDir}`);
+      return;
+    }
+    lines.push(`📁 ${targetDir}:`);
+    for (const dw of diskWfs) {
+      const icon = dw.status === "in-progress" ? "◆" :
+        dw.status === "paused" ? "⏸" :
+        dw.status === "completed" ? "✓" : "○";
+      const folder = `${dw.dateStamp}/${dw.dirHash}`;
+      lines.push(`  ${icon} ${dw.name}`);
+      lines.push(`     📁 ${folder}`);
+    }
+    reply(ctx, lines.join("\n"));
+    return;
+  }
+
+  // ── /sw-ls all ─────────────────────────────────────────────────
+  if (parsed._.includes("all") || parsed.all !== undefined) {
+    // Scan all directories that have .stelow/ subfolders
+    const globalTracking = readGlobalTracking();
+    const allProjects = new Map<string, string[]>();  // dir → [name, ...]
+
+    // Collect from global tracking
+    if (globalTracking) {
+      for (const w of globalTracking.workflows) {
+        const dir = w.cwd || "?";
+        if (!allProjects.has(dir)) allProjects.set(dir, []);
+        allProjects.get(dir)!.push(w.name);
+      }
+    }
+
+    // Also scan .stelow/ in known common dirs
+    const homeDev = homedir() + "/Development";
+    const candidates = [
+      wd,
+      homeDev,
+      ...Array.from(allProjects.keys()).filter(d => d !== "?" && d !== wd && d !== homeDev),
+    ];
+    const seenInProjects = new Set<string>();
+    for (const dir of [...new Set(candidates)]) {
+      const diskWfs = scanWorkflowDirs(dir);
+      if (diskWfs.length === 0) continue;
+      lines.push(`📁 ${dir}:`);
+      for (const dw of diskWfs) {
+        const key = `${dw.name}:${dw.dirHash}:${dir}`;
+        if (seenInProjects.has(key)) continue;
+        seenInProjects.add(key);
+        const icon = dw.status === "in-progress" ? "◆" :
+          dw.status === "paused" ? "⏸" :
+          dw.status === "completed" ? "✓" : "○";
+        const folder = `${dw.dateStamp}/${dw.dirHash}`;
+        lines.push(`  ${icon} ${dw.name}`);
+        lines.push(`     📁 ${folder}`);
+      }
+      lines.push("");
+    }
+
+    if (lines.length === 0) {
+      replyWarn(ctx, "No Workflows found anywhere.");
+    } else {
+      reply(ctx, lines.join("\n").trimEnd());
+    }
+    return;
+  }
+
+  // ── /sw-ls archived — show archived workflows from disk ───────
+  if (parsed._.includes("archived") || parsed.archived !== undefined) {
+    const diskWfs = scanWorkflowDirs(wd).filter(dw => dw.status === "archived");
+    if (diskWfs.length === 0) {
+      replyWarn(ctx, "No archived workflows.");
+      return;
+    }
+    lines.push(`📁 ${wd} (archived):`);
+    for (const dw of diskWfs) {
+      lines.push(`  ○ ${dw.name}`);
+    }
+    reply(ctx, lines.join("\n"));
+    return;
+  }
+
+  // ── /sw-ls (default) — current dir with disk reconciliation ────
+  const reconciled = reconcileTracking(wd);
+
+  if (reconciled.length > 0) {
+    lines.push(`📁 ${wd}:`);
+    for (const w of reconciled) {
+      const icon = w.status === "in-progress" ? "◆" :
+        w.status === "paused" ? "⏸" :
+        w.status === "completed" ? "✓" : "○";
+      const note = w.status === "archived" ? " (archived)" : "";
+      // Get folder path from disk scan for this workflow
+      const diskWfs = scanWorkflowDirs(wd);
+      const diskWf = diskWfs.find(d => d.name === w.name);
+      const folder = diskWf ? `${diskWf.dateStamp}/${diskWf.dirHash}` : "?";
+      lines.push(`  ${icon} ${w.name}${note}`);
+      lines.push(`     📁 ${folder}`);
+    }
+    lines.push("");
+  }
+
+  // Append other-projects section from global tracking (not in current dir)
+  const gt = readGlobalTracking();
+  if (gt) {
+    const currentKeys = new Set(reconciled.map(w => `${w.name}\0${w.cwd || wd}`));
+    const other = gt.workflows.filter(gw => !currentKeys.has(`${gw.name}\0${gw.cwd || wd}`));
+    if (other.length > 0) {
+      lines.push("🌐 Other Projects:");
+      for (const w of other) {
+        const icon = w.status === "in-progress" ? "◆" :
+          w.status === "paused" ? "⏸" :
+          w.status === "completed" ? "✓" : "○";
+        // Get folder from disk if available
+        const diskWfs = w.cwd ? scanWorkflowDirs(w.cwd) : [];
+        const diskWf = diskWfs.find(d => d.name === w.name);
+        const folder = diskWf ? `${diskWf.dateStamp}/${diskWf.dirHash}` : "?";
+        lines.push(`  ${icon} ${w.name} — ${PHASE_NAMES[w.currentPhase]} (${w.status})`);
+        lines.push(`     📁 ${folder}`);
+      }
+    }
+  }
+
+  if (lines.length === 0) {
+    replyWarn(ctx, "No Workflows found. /sw-start");
+  } else {
+    reply(ctx, lines.join("\n"));
+  }
+}
+
+
+
+// ── SETPHASE ─────────────────────────────────────────────────────────
+
+function cmdSetPhase(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
+  const wd = resolveProjectDir(ctx.cwd);
+  const parsed = parseArgs(args);
+  const raw = parsed.phase;
+  const phaseName = parsed.phasename;
+
+  let phase: number | null = null;
+  if (raw !== undefined) phase = parseInt(String(raw), 10);
+  else if (phaseName) phase = PHASE_NAMES.findIndex(p => p.toLowerCase() === String(phaseName).toLowerCase());
+
+  if (phase === null || isNaN(phase) || phase < 0 || phase >= PHASE_NAMES.length) {
+    replyWarn(ctx, [
+      "Usage: /sw-setphase phase=N",
+      "   or: /sw-setphase phasename=Name",
+      "",
+      ...PHASE_NAMES.map((n, i) => `  ${i}: ${n}`),
+    ].join("\n"));
+    return;
+  }
+
+  const wf = getActiveWorkflow(wd);
+  if (!wf) { noActive(ctx); return; }
+  const oldPhase = wf.currentPhase;
+
+  const t = readTracking(wd);
+  if (t) {
+    const idx = t.workflows.findIndex(w => w.name === wf.name);
+    if (idx !== -1) {
+      t.workflows[idx].currentPhase = phase;
+      t.workflows[idx].phases.forEach((p, i) => {
+        p.status = i < phase ? "completed" : i === phase ? "in-progress" : "pending";
+      });
+      t.workflows[idx].updated = new Date().toISOString();
+      writeTracking(wd, t);
+    }
+  }
+  // Sync wf in-memory so notifyPhase compares correctly
+  wf.currentPhase = phase;
+  updateFooter(ctx, wd);
+  syncStagesGuardState(wd, phase);
+  if (oldPhase !== phase) notifyPhase(ctx, wf, oldPhase);
+  reply(ctx, `▶️ Phase: ${PHASE_NAMES[phase]} (${phase + 1}/${PHASE_NAMES.length})`);
+}
+
+// ── NEXT ─────────────────────────────────────────────────────────────
+
+function cmdNext(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
+  const wd = resolveProjectDir(ctx.cwd);
+  const wf = getActiveWorkflow(wd);
+  if (!wf) { noActive(ctx); return; }
+
+  // ── Phase-skip: some phases are auto-skipped (no user interaction needed) ──
+  // After Setup (2), skip Context (3) — the skill handles context inline.
+  // Add entries here as needed.
+  const SKIP_NEXT: Record<number, number> = {
+    [STAGE.SETUP()]: STAGE.SHAPE(),
+  };
+
+  const target = SKIP_NEXT[wf.currentPhase];
+  let next: number;
+  if (target !== undefined) {
+    next = target;
+    // Mark skipped phases as "completed"
+    for (let i = wf.currentPhase + 1; i < target; i++) {
+      wf.phases[i].status = "completed";
+    }
+  } else {
+    next = wf.currentPhase + 1;
+  }
+
+  // ── Scope completion gate: block advance from Execution if scopes incomplete ──
+  if (wf.currentPhase === STAGE.EXECUTION() && next === STAGE.VERIFICATION()) {
+    const scopes = wf.scopes;
+    if (scopes && scopes.length > 0) {
+      // Optional: parse checklist.md to derive scope completion status
+      if (wf.dirHash) {
+        const ds = getDateStamp(new Date(wf.created));
+        const checklistPath = join(wd, WORKFLOW_DIR, ds, wf.dirHash, "checklist.md");
+        const parsed = parseChecklist(checklistPath);
+        if (Object.keys(parsed).length > 0) {
+          for (const scope of scopes) {
+            // Match scope name from "### SCOPE-1: Name" format
+            for (const [key, info] of Object.entries(parsed)) {
+              if (key.endsWith(`: ${scope.name}`) || key === scope.name) {
+                if (info.total > 0 && info.done === info.total && scope.status !== 'completed') {
+                  scope.status = 'completed';
+                }
+                break;
+              }
+            }
+          }
+        }
+      }
+
+      const incomplete = scopes.filter(s => s.status !== 'completed');
+      if (incomplete.length > 0) {
+        const summary = incomplete.map(s => `  • ${s.name} [${s.status}]`).join('\n');
+        replyWarn(ctx, [
+          `⚠️ Cannot advance to Verification — ${incomplete.length}/${scopes.length} scope(s) not completed:`,
+          summary,
+          '',
+          'Complete or escalate all scopes before advancing. Use /sw-abort to stop.',
+        ].join('\n'));
+        return;
+      }
+    }
+  }
+
+  // ── Audit re-injection loop: if pending scopes exist, loop back to Execution ──
+  if (wf.currentPhase === STAGE.AUDIT() && next >= PHASE_NAMES.length) {
+    const pendingScopes = wf.scopes?.filter(s => s.status === 'pending' || s.status === 'in-progress') ?? [];
+    if (pendingScopes.length > 0) {
+      // Loop back to Execution — scope executor will pick up pending scopes
+      const tLoop = readTracking(wd);
+      if (tLoop) {
+        const idxLoop = tLoop.workflows.findIndex(w => w.name === wf.name);
+        if (idxLoop !== -1) {
+          tLoop.workflows[idxLoop].currentPhase = STAGE.EXECUTION();
+          tLoop.workflows[idxLoop].phases.forEach((p, i) => {
+            p.status = i < STAGE.EXECUTION() ? 'completed' : i === STAGE.EXECUTION() ? 'in-progress' : 'pending';
+          });
+          tLoop.workflows[idxLoop].updated = new Date().toISOString();
+          writeTracking(wd, tLoop);
+        }
+      }
+      wf.currentPhase = STAGE.EXECUTION();
+      updateFooter(ctx, wd);
+      syncStagesGuardState(wd, STAGE.EXECUTION());
+      const summary = pendingScopes.map(s => `  • ${s.name} [${s.status}]`).join('\n');
+      reply(ctx, [
+        `🔄 Audit found ${pendingScopes.length} open scope(s) — looping back to Execution:`,
+        summary,
+        '',
+        'Scope executor will handle these automatically.',
+      ].join('\n'));
+      return;
+    }
+  }
+
+  if (next >= PHASE_NAMES.length) {
+    // Auto-complete — no manual /sw-complete command needed
+    ctx.ui?.setStatus("workflow", undefined);
+    const nowAuto = new Date().toISOString();
+    const tComplete = readTracking(wd);
+    if (tComplete) {
+      const idxComplete = tComplete.workflows.findIndex(w => w.name === wf.name);
+      if (idxComplete !== -1) {
+        tComplete.workflows[idxComplete].status = "completed";
+        tComplete.workflows[idxComplete].phases.forEach(p => { p.status = "completed"; });
+        tComplete.workflows[idxComplete].updated = nowAuto;
+        if (!tComplete.workflows[idxComplete].completedAt) tComplete.workflows[idxComplete].completedAt = nowAuto;
+        writeTracking(wd, tComplete);
+      }
+    }
+    // Sync wf in-memory state
+    wf.phases.forEach(p => { p.status = "completed"; });
+    wf.status = "completed";
+    syncStagesGuardState(wd, PHASE_NAMES.length - 1);
+    updateFooter(ctx, wd);
+    ctx.ui?.notify(`🎉 ${wf.name} completed!`, "info");
+    reply(ctx, "✅ Workflow completo!");
+    return;
+  }
+
+  const oldPhase = wf.currentPhase;
+  const t = readTracking(wd);
+  if (t) {
+    const idx = t.workflows.findIndex(w => w.name === wf.name);
+    if (idx !== -1) {
+      t.workflows[idx].currentPhase = next;
+      t.workflows[idx].phases.forEach((p, i) => {
+        p.status = i < next ? "completed" : i === next ? "in-progress" : "pending";
+      });
+      t.workflows[idx].updated = new Date().toISOString();
+      writeTracking(wd, t);
+    }
+  }
+  // Sync wf in-memory so notifyPhase compares correctly
+  wf.currentPhase = next;
+  updateFooter(ctx, wd);
+  syncStagesGuardState(wd, next);
+  notifyPhase(ctx, wf, oldPhase);
+  reply(ctx, `✅ ${PHASE_NAMES[next]} (${next + 1}/${PHASE_NAMES.length})`);
+}
+
+// ── COMPLETE ─────────────────────────────────────────────────────────
+
+function cmdComplete(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
+  const wd = resolveProjectDir(ctx.cwd);
+  const wf = getActiveWorkflow(wd);
+  if (!wf) { replyWarn(ctx, "No active workflow."); return; }
+
+  ctx.ui?.setStatus("workflow", undefined);
+
+  const now = new Date().toISOString();
+  const t = readTracking(wd);
+  if (t) {
+    const idx = t.workflows.findIndex(w => w.name === wf.name);
+    if (idx !== -1) {
+      t.workflows[idx].status = "completed";
+      t.workflows[idx].updated = now;
+      if (!t.workflows[idx].completedAt) t.workflows[idx].completedAt = now;
+      writeTracking(wd, t);
+    }
+  }
+  // Sync stages guard state
+  syncStagesGuardState(wd, PHASE_NAMES.length - 1);
+
+  ctx.ui?.notify(`🎉 ${wf.name} completed!`, "info");
+}
+
+// ── GOTO ─────────────────────────────────────────────────────────────
+
+function cmdGoto(_pi: ExtensionAPI, args: string, _ctx: CmdCtx) {
+  const wd = resolveProjectDir(_ctx.cwd);
+  const parsed = parseArgs(args);
+  const name = parsed.name || parsed._[0];
+
+  // When a name is given, search global tracking (project-first, then global).
+  // When no name is given, get the active workflow for this project.
+  let wf: Workflow | undefined;
+  if (name) {
+    const gt = readGlobalTracking();
+    if (!gt) { replyWarn(_ctx, "No global workflows."); return; }
+    wf = gt.workflows.find(w => w.name === name && isWorkflowFromProject(w, wd))
+      ?? gt.workflows.find(w => w.name === name);
+  } else {
+    wf = getActiveWorkflow(wd) ?? undefined;
+  }
+
+  if (!wf) {
+    replyWarn(_ctx, `'${name || "active"}' not found. /sw-ls /sw-start`);
+    return;
+  }
+
+  reply(_ctx, [
+    `📍 ${wf.name}`,
+    `Project: ${wf.cwd}`,
+    `Stage: ${PHASE_NAMES[wf.currentPhase]}`,
+    `\ncd ${wf.cwd}\n/sw-resume name=${wf.name}`
+  ].join("\n"));
+}
+
+// ── RENAME ───────────────────────────────────────────────────────────
+
+function cmdRename(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
+  const wd = resolveProjectDir(ctx.cwd);
+  const parsed = parseArgs(args);
+  // Join all positional tokens (like cmdStart) — renameWorkflow toSafeNames internally
+  const newName = parsed.name || (parsed._.length > 0 ? parsed._.join(" ") : undefined);
+  if (!newName || newName.trim().length < 2) {
+    replyWarn(ctx, "Usage: /sw-rename novo-nome");
+    return;
+  }
+
+  const wf = getActiveWorkflow(wd);
+  if (!wf) { noActive(ctx); return; }
+
+  const result = renameWorkflow(wd, wf.name, newName);
+  if (!result.ok) { replyWarn(ctx, `❌ ${result.error}`); return; }
+
+  updateFooter(ctx, wd);
+  ctx.ui?.notify(`✨ Renamed to "${toSafeName(newName)}"`, "info");
+}
+
+// ── DOCTOR ───────────────────────────────────────────────────────────
+
+async function cmdDoctor(_pi: ExtensionAPI, _args: string, ctx: CmdCtx): Promise<void> {
+  const wd = resolveProjectDir(ctx.cwd);
+  const report = diagnoseWorkflowProject(wd);
+  const fixable = countFixable(report);
+  const output = formatDoctorReport(report);
+  const parsed = parseArgs(_args);
+
+  // ── /sw-doctor --fix: auto-apply without asking ──────────────
+  if (parsed.fix !== undefined || parsed._.includes("fix")) {
+    if (fixable === 0) {
+      reply(ctx, output + "\n\nNo fixable issues found. Nothing to fix.");
+      return;
+    }
+    const fixes = repairWorkflowProject(wd, report);
+    // Re-run diagnostics after fixes
+    const updated = diagnoseWorkflowProject(wd);
+    reply(ctx, formatDoctorReport(updated)
+      + `\n\n✅ Applied ${fixes.length} auto-fix(es):\n`
+      + fixes.map(f => `  • ${f}`).join("\n")
+    );
+    return;
+  }
+
+  reply(ctx, output);
+
+  // ── Interactive: if fixable issues exist, offer to fix ───────
+  if (fixable > 0) {
+    const adapter = getUIAdapter();
+    const choice = await adapter.select([
+      { value: "fix", label: `✅ Fix ${fixable} issue(s)` },
+      { value: "skip", label: "Skip" },
+    ], `🩺 ${fixable} fixable issue(s) detected. Apply auto-fixes?`);
+
+    if (choice === "fix") {
+      const fixes = repairWorkflowProject(wd, report);
+      const updated = diagnoseWorkflowProject(wd);
+      ctx.ui?.notify(`✅ Applied ${fixes.length} auto-fix(es)`, "info");
+      reply(ctx, formatDoctorReport(updated)
+        + `\n\n✅ Applied ${fixes.length} auto-fix(es):\n`
+        + fixes.map(f => `  • ${f}`).join("\n")
+      );
+    }
+  }
+}
+
+// ── RECOVER ────────────────────────────────────────────────────────────
+
+/**
+ * /sw-recover — resurrect orphan workflows (G4C from stelow-reliability plan).
+ *
+ * Orphan = workflow directory exists on disk (.stelow/{date}/{dirHash}/)
+ * but has no entry in stelow.json. Typically caused by:
+ *   - manual fs deletion of the tracking entry
+ *   - failed migration where stelow.json was overwritten but dir preserved
+ *   - corrupt JSON where the entry was lost
+ *
+ * Operator-driven (not auto). The command:
+ *   1. Runs the orphan detector.
+ *   2. If no orphans, prints "Nothing to recover" and exits.
+ *   3. Otherwise shows the list with a "Recover" / "Skip" picker.
+ *   4. For each selected orphan, writes a minimal Workflow entry to
+ *      stelow.json using the existing dirHash + the latest spec filename.
+ *      Status defaults to "paused" (operator must review + advance).
+ *
+ * We intentionally do NOT auto-recover. Recovery is destructive-ish
+ * (it mutates tracking) and the operator should see what they are
+ * committing to.
+ */
+async function cmdRecover(_pi: ExtensionAPI, _args: string, ctx: CmdCtx): Promise<void> {
+  const wd = resolveProjectDir(ctx.cwd);
+  const tracking = readTracking(wd);
+  const localWorkflows = tracking?.workflows ?? [];
+  const orphans = detectOrphanWorkflows(wd, localWorkflows);
+
+  if (orphans.length === 0) {
+    reply(ctx, "✅ No orphan workflows detected. Nothing to recover.");
+    return;
+  }
+
+  const lines: string[] = [
+    `🩹 Orphan workflow directories found: ${orphans.length}`,
+    "",
+    "An orphan is a `.stelow/{date}/{dirHash}/` directory with spec files",
+    "but no matching entry in stelow.json. Recovery creates a minimal",
+    "entry pointing at the existing directory so /sw-next can resume it.",
+    "",
+    "Orphans:",
+    ...orphans.map((o, i) =>
+      `  ${i + 1}. ${o.date}/${o.dirHash}\n` +
+      `     path: ${o.path}\n` +
+      `     spec files: ${o.specFiles.join(", ") || "(none)"}`
+    ),
+    "",
+  ];
+  reply(ctx, lines.join("\n"));
+
+  // Interactive picker — one prompt per orphan so the operator can
+  // pick which to recover. /sw-recover --all skips the picker.
+  const args = parseArgs(_args);
+  const recoverAll = args.all !== undefined || args._.includes("all");
+
+  const recovered: string[] = [];
+  const skipped: string[] = [];
+
+  // Build / ensure tracking exists
+  let data = tracking;
+  if (!data) {
+    data = {
+      $schema: "https://calionauta.com/stelow.schema.json",
+      version: "1.0",
+      created: new Date().toISOString(),
+      updated: new Date().toISOString(),
+      workflows: [],
+    };
+  }
+
+  const adapter = getUIAdapter();
+
+  for (const orphan of orphans) {
+    let shouldRecover = recoverAll;
+    if (!recoverAll) {
+      const choice = await adapter.select([
+        { value: "recover", label: "✅ Recover" },
+        { value: "skip", label: "⏭️  Skip" },
+      ], `🩹 Recover ${orphan.date}/${orphan.dirHash}?`);
+      shouldRecover = choice === "recover";
+    }
+    if (!shouldRecover) {
+      skipped.push(orphan.dirHash);
+      continue;
+    }
+
+    // Synthesize a minimal workflow entry. We pick the latest spec
+    // filename (spec-product_v3.md > spec-product_v2.md > v1.md) by
+    // lexical sort. Status defaults to "paused" so the operator
+    // explicitly advances it via /sw-resume.
+    const latestSpec = orphan.specFiles.sort().reverse()[0] ?? "spec-product_v1.md";
+    const baseName = latestSpec.replace(/\.md$/, "").replace(/^spec-product_/, "");
+    const syntheticName = `recovered-${orphan.dirHash.slice(0, 8)}-${baseName}`;
+
+    const synthetic: Workflow = {
+      name: syntheticName,
+      description: `(recovered orphan) ${latestSpec}`,
+      status: "paused",
+      currentPhase: 0,
+      phases: [],
+      stage: {
+        current_stage: "setup",
+        previous_stage: null,
+        transitioned_at: new Date().toISOString(),
+        history: [],
+        supervisor_active: false,
+      },
+      created: new Date().toISOString(),
+      updated: new Date().toISOString(),
+      cwd: wd,
+      dirHash: orphan.dirHash,
+    };
+
+    // Validate per-orphan BEFORE pushing into data.workflows. If the
+    // synthetic entry is invalid (e.g. truncated dirHash creates a
+    // name collision with an existing workflow), we report and skip
+    // that orphan instead of accumulating it in memory and failing
+    // the entire writeTracking call at the end (which would lose
+    // any prior successful recoveries in the same run).
+    try {
+      validateWorkflow(synthetic);
+    } catch (err) {
+      if (err instanceof WorkflowValidationError) {
+        ctx.ui?.notify(
+          `⏭️  Skipping ${orphan.date}/${orphan.dirHash}: synthetic entry invalid — ${err.message}`,
+          "warning",
+        );
+        skipped.push(orphan.dirHash);
+        continue;
+      }
+      throw err;
+    }
+
+    data.workflows.push(synthetic);
+    recovered.push(syntheticName);
+  }
+
+  if (recovered.length > 0) {
+    writeTracking(wd, data);
+    reply(ctx,
+      `\n✅ Recovered ${recovered.length} orphan(s):\n` +
+      recovered.map((n) => `  • ${n}`).join("\n") +
+      (skipped.length > 0 ? `\n\n⏭️  Skipped ${skipped.length}: ${skipped.join(", ")}` : "") +
+      `\n\nNext: /sw-list to verify, /sw-resume <name> to continue.`
+    );
+  } else {
+    reply(ctx, `\n⏭️  Skipped all ${skipped.length} orphans. Nothing changed.`);
+  }
+}
+
+// ── INBOX ─────────────────────────────────────────────────────────────
+
+function cmdInbox(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
+  const wd = resolveProjectDir(ctx.cwd);
+  const parsed = parseArgs(args);
+  const items = readInbox(wd);
+
+  // /sw-inbox add <item>
+  if (parsed.add !== undefined) {
+    const item = parsed.add || parsed._.join(" ");
+    if (!item) {
+      replyWarn(ctx, "Usage: /sw-inbox add <item text>");
+      return;
+    }
+    addToInbox(wd, item);
+    ctx.ui?.notify(`📥 Added to inbox: ${item.slice(0, 50)}`, "info");
+    return;
+  }
+
+  // /sw-inbox remove <item>
+  if (parsed.remove || parsed.rm) {
+    const item = parsed.remove || parsed.rm;
+    removeFromInbox(wd, item);
+    ctx.ui?.notify(`🗑️ Removed from inbox`, "info");
+    return;
+  }
+
+  // /sw-inbox clear
+  if (parsed.clear) {
+    clearInbox(wd);
+    ctx.ui?.notify(`🗑️ Inbox cleared`, "info");
+    return;
+  }
+
+  // /sw-inbox history — show provenance log
+  if (parsed.history !== undefined || parsed.hist || parsed.h) {
+    const log = readProvenance(wd);
+    if (log.length === 0) {
+      reply(ctx, "📋 No inbox history yet.");
+      return;
+    }
+    const limit = parseInt(parsed.n || parsed.limit || "20", 10);
+    const recent = log.slice(-limit).reverse();
+    const lines = ["📋 Inbox history (most recent first):", ""];
+    for (const entry of recent) {
+      const ts = (entry.ts as string || "").slice(0, 19).replace("T", " ");
+      const item = (entry.item as string || "").slice(0, 60);
+      const wf = entry.workflow as string || "";
+      const status = entry.exit_code === 0 ? "✅" : entry.exit_code === undefined ? "⏳" : "❌";
+      const dir = entry.dir as string || "";
+      lines.push(`${status} [${ts}] ${item}`);
+      if (wf && wf !== "unknown") lines.push(`   → ${wf} (${dir})`);
+    }
+    reply(ctx, lines.join("\n"));
+    return;
+  }
+
+  // /sw-inbox (show)
+  if (items.length === 0) {
+    reply(ctx, "📥 Inbox is empty.");
+  } else {
+    const lines = ["📥 Inbox:", "", ...items.map((item, i) => `${i + 1}. ${item}`)];
+    reply(ctx, lines.join("\n"));
+  }
+}
+
+// ── TODO ──────────────────────────────────────────────────────────────
+
+// ── ARCHIVE ──────────────────────────────────────────────────────────
+
+function cmdArchive(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
+  const wd = resolveProjectDir(ctx.cwd);
+  const parsed = parseArgs(args);
+
+  // ── /sw-archive purge — delete archived workflow dirs from disk ──
+  if (parsed._.includes("purge") || parsed.purge !== undefined) {
+    const diskWfs = scanWorkflowDirs(wd).filter(dw => dw.status === "archived");
+    if (diskWfs.length === 0) {
+      replyWarn(ctx, "No archived workflows to purge.");
+      return;
+    }
+    let deleted = 0;
+    for (const dw of diskWfs) {
+      const dirPath = join(wd, WORKFLOW_DIR, dw.dateStamp, dw.dirHash);
+      try {
+        rmSync(dirPath, { recursive: true, force: true });
+        deleted++;
+      } catch { /* skip if can't delete */ }
+      removeWorkflowFromTracking(wd, dw.name, dw);
+    }
+    reply(ctx, `🗑️ Purged ${deleted} archived workflow(s) from disk.`);
+    return;
+  }
+
+  // ── /sw-archive name=X — archive specific workflow ─────────────
+  const name = parsed.name || parsed._[0];
+  if (name) {
+    const t = readTracking(wd);
+    const gt = readGlobalTracking();
+    const localIdx = findWorkflowIndexByName(t?.workflows ?? [], name);
+    const globalIdx = findWorkflowIndexForProject(gt?.workflows ?? [], wd, name);
+    const localWorkflow = localIdx !== -1 ? t!.workflows[localIdx] : null;
+    const globalWorkflow = globalIdx !== -1 ? gt!.workflows[globalIdx] : null;
+    const wf = localWorkflow || globalWorkflow;
+
+    if (!wf) {
+      replyWarn(ctx, `Workflow '${name}' not found in this project. /sw-ls`);
+      return;
+    }
+
+    // Mark workflow as archived in tracking
+    if (t && localIdx !== -1) {
+      t.workflows[localIdx].status = "archived";
+      writeTracking(wd, t);
+    }
+
+    if (localWorkflow) {
+      removeGlobalIndexEntry(wd, localWorkflow.name);
+    } else if (gt && globalIdx !== -1) {
+      removeGlobalIndexEntry(wd, name);
+    }
+
+    reply(ctx, `📦 Workflow '${name}' archived.`);
+    if (name === getActiveWorkflow(wd)?.name) {
+      ctx.ui?.setStatus("workflow", undefined);
+    }
+    return;
+  }
+
+  // ── /sw-archive — archive active workflow ─────────────────────
+  const wf = getActiveWorkflow(wd);
+  if (!wf) { noActive(ctx); return; }
+
+  const t = readTracking(wd);
+  if (t) {
+    const idx = t.workflows.findIndex(w => w.name === wf.name);
+    if (idx !== -1) {
+      t.workflows[idx].status = "archived";
+      t.workflows[idx].updated = new Date().toISOString();
+      writeTracking(wd, t);
+    }
+  }
+  removeGlobalIndexEntry(wd, wf.name);
+
+  ctx.ui?.setStatus("workflow", undefined);
+  reply(ctx, `📦 Workflow '${wf.name}' archived.`);
+}
+
+// ── UNLOCK ───────────────────────────────────────────────────────────
+
+/**
+ * Disable the stage guard for this session by setting the env escape hatch.
+ * Reopen pi to re-enable. Useful for debugging or when the user wants to
+ * keep the workflow metadata but work freely.
+ */
+function cmdUnlock(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
+  process.env.CALI_PW_GUARD = "off";
+  reply(ctx, "🔓 Stages guard disabled for this session. Reopen pi to re-enable.");
+}
+
+// ── UNARCHIVE ────────────────────────────────────────────────────────
+
+function cmdUnarchive(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
+  const wd = resolveProjectDir(ctx.cwd);
+  const parsed = parseArgs(args);
+  const name = parsed.name || parsed._[0];
+
+  if (!name) {
+    replyWarn(ctx, "Usage: /sw-unarchive name=<workflow>");
+    return;
+  }
+
+  // Find archived workflow
+  const diskWfs = scanWorkflowDirs(wd);
+  const archived = diskWfs.find(dw => dw.name === name && dw.status === "archived");
+
+  if (!archived) {
+    replyWarn(ctx, `Archived workflow '${name}' not found. /sw-ls archived`);
+    return;
+  }
+
+  // Update on disk
+  const indexPath = join(wd, WORKFLOW_DIR, archived.dateStamp, archived.dirHash, "index.json");
+  try {
+    const raw = JSON.parse(readFileSync(indexPath, "utf-8"));
+    raw.workflow_status = "paused";
+    raw.status = "paused";
+    raw.updated_at = new Date().toISOString();
+    writeFileSync(indexPath, JSON.stringify(raw, null, 2));
+  } catch {
+    replyWarn(ctx, `Failed to update disk state for '${name}'.`);
+    return;
+  }
+
+  // Update tracking
+  const t = readTracking(wd);
+  if (t) {
+    const idx = t.workflows.findIndex(w => w.name === name);
+    if (idx !== -1) {
+      t.workflows[idx].status = "paused";
+      t.workflows[idx].updated = new Date().toISOString();
+      writeTracking(wd, t);
+    }
+  }
+  const archivedWorkflow: Workflow = {
+    name: archived.name,
+    description: "",
+    draftContent: archived.draftContent,
+    status: archived.status as Workflow["status"],
+    currentPhase: archived.currentPhase,
+    phases: PHASE_NAMES.map((name, i) => ({ id: String(i), name, status: "pending" })),
+    created: archived.created,
+    updated: archived.updated,
+    dirHash: archived.dirHash,
+    stage: {
+      current_stage: "shape",
+      previous_stage: null,
+      transitioned_at: archived.updated,
+      history: [],
+      supervisor_active: false,
+    } satisfies StageState,
+    cwd: wd,
+  };
+  addToGlobalIndex(archivedWorkflow);
+
+  reply(ctx, `📦 Workflow '${name}' unarchived. Use /sw-resume name=${name} to continue.`);
+}
+
+// =============================================================================
+// COMMAND DESCRIPTIONS (Source of Truth)
+// =============================================================================
+
+// Re-export WORKFLOW_COMMANDS for other modules that need command definitions
+// Re-export for external consumers
+export { WORKFLOW_COMMANDS } from "./adapters/commands/dispatcher";
+export type { CommandDescriptor } from "./adapters/commands/dispatcher";
+
+// ── AUDIT ──────────────────────────────────────────────────────────
+
+/**
+ * /sw-audit — Read and display the audit trail for the active workflow.
+ *
+ * Supports:
+ *   /sw-audit                  — show Markdown audit trail
+ *   /sw-audit --format json    — show JSON audit trail
+ *   /sw-audit --scope scope-1  — filter to a single scope
+ *
+ * Output is always sent to chat (stdout). No file output.
+ */
+function cmdAudit(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
+  const wd = resolveProjectDir(ctx.cwd);
+  const parsed = parseArgs(args);
+  const wf = getActiveWorkflow(wd);
+  if (!wf) { noActive(ctx); return; }
+  if (!wf.dirHash || !wf.created) {
+    replyWarn(ctx, "Workflow has no directory hash — cannot locate audit trail.");
+    return;
+  }
+
+  const ds = getDateStamp(new Date(wf.created));
+  const auditPath = join(wd, WORKFLOW_DIR, ds, wf.dirHash, "audit-trail.md");
+
+  if (!existsSync(auditPath)) {
+    replyWarn(ctx, [
+      "📄 No audit trail found for this workflow.",
+      "",
+      "Audit trail is generated during the Audit stage (execution critique).",
+      "To generate it now, run the Audit stage or invoke:",
+      "  /skill:stelow-product-execution-critique",
+    ].join("\n"));
+    return;
+  }
+
+  const content = readFileSync(auditPath, "utf-8");
+  const filterScope = parsed.scope;
+  const format = parsed.format || "markdown";
+
+  // ── JSON format ─────────────────────────────────────────────
+  if (format === "json") {
+    const result = convertAuditTrailToJson(content, filterScope);
+    reply(ctx, JSON.stringify(result, null, 2));
+    return;
+  }
+
+  // ── Markdown format (default) ───────────────────────────────
+  if (filterScope) {
+    // Extract only the scope section
+    const scopeRegex = new RegExp(
+      `(### Scope: ${escapeRegex(filterScope)}[\s\S]*?)(?=\n### Scope:|\n## [5\\.])`,
+      "i"
+    );
+    const match = content.match(scopeRegex);
+    if (match) {
+      reply(ctx, `📄 Audit trail — scope: ${filterScope}\n\n${match[1].trim()}`);
+    } else {
+      replyWarn(ctx, `Scope "${filterScope}" not found in audit trail.`);
+    }
+    return;
+  }
+
+  // Full audit trail
+  reply(ctx, content);
+}
+
+// ── PULSE ────────────────────────────────────────────────────────────
+
+// Copy bundled Pulse scripts (.stelow/pulse/) from extension's bundled
+// `pulse/` directory. Runs once on first /sw-pulse invocation when
+// scripts are missing, so users don't need a separate setup step.
+const PULSE_SCRIPT_FILES = [
+  "pulse.sh",
+  "pulse.ps1",
+  "pulse-task.md",
+  "pulse-system.md",
+  "SETUP.md",
+];
+
+function ensurePulseScripts(pulseDir: string): void {
+  // Skip if user already has the bash script
+  if (existsSync(join(pulseDir, "pulse.sh")) || existsSync(join(pulseDir, "pulse.ps1"))) {
+    return;
+  }
+  // Find bundled location (next to this file: extensions/stelow/pulse/)
+  const bundledDir = join(import.meta.dirname || __dirname, "pulse");
+  if (!existsSync(bundledDir)) {
+    return; // bundled files not shipped — caller will report missing
+  }
+  mkdirSync(pulseDir, { recursive: true });
+  for (const file of PULSE_SCRIPT_FILES) {
+    const src = join(bundledDir, file);
+    const dst = join(pulseDir, file);
+    if (existsSync(src) && !existsSync(dst)) {
+      try {
+        copyFileSync(src, dst);
+      } catch (_e) {
+        // best-effort — don't fail the whole setup if one file fails
+      }
+    }
+  }
+}
+
+function cmdPulse(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
+  const wd = resolveProjectDir(ctx.cwd);
+  const parsed = parseArgs(args);
+  const pulseDir = join(wd, ".stelow", "pulse");
+  const logPath = join(pulseDir, "pulse.log");
+  const pausePath = join(pulseDir, "pulse.pause");
+
+  // Auto-install bundled scripts on first invocation
+  ensurePulseScripts(pulseDir);
+
+  // /sw-pulse status
+  if (parsed.status !== undefined || parsed._.includes("status") || (!parsed.pause && !parsed.resume && !parsed.process && !parsed.log && parsed._.length === 0)) {
+    const paused = existsSync(pausePath);
+    const lastLine = (() => {
+      try {
+        const content = readFileSync(logPath, "utf-8").trim().split("\n").filter(Boolean);
+        return content[content.length - 1] || "Never ran";
+      } catch { return "Never ran"; }
+    })();
+    const inbox = readInbox(wd);
+    const lines = [
+      "📡 Pulse status:",
+      `  ${paused ? "⏸️ PAUSED" : "▶️ Active"}`,
+      `  📥 ${inbox.length} item(s) in inbox`,
+      `  🕐 Last run: ${lastLine.slice(0, 80)}`,
+      "",
+      "Commands:",
+      "  /sw-pulse pause     — pause automatic processing",
+      "  /sw-pulse resume    — resume automatic processing",
+      "  /sw-pulse process   — force processing now",
+      "  /sw-pulse log       — show recent log entries",
+      "  /sw-pulse status    — show this status",
+    ];
+    reply(ctx, lines.join("\n"));
+    return;
+  }
+
+  // /sw-pulse pause
+  if (parsed.pause !== undefined || parsed._.includes("pause")) {
+    mkdirSync(pulseDir, { recursive: true });
+    writeFileSync(pausePath, new Date().toISOString() + "\n");
+    ctx.ui?.notify(`⏸️ Pulse paused — no automatic processing until resumed`, "info");
+    return;
+  }
+
+  // /sw-pulse resume
+  if (parsed.resume !== undefined || parsed._.includes("resume")) {
+    if (existsSync(pausePath)) {
+      rmSync(pausePath);
+      ctx.ui?.notify(`▶️ Pulse resumed — automatic processing active`, "info");
+    } else {
+      replyWarn(ctx, "Pulse is not paused.");
+    }
+    return;
+  }
+
+  // /sw-pulse process
+  if (parsed.process !== undefined || parsed._.includes("process")) {
+    const shell = process.platform === "win32" ? "powershell" : "bash";
+    const scriptPath = join(pulseDir, shell === "powershell" ? "pulse.ps1" : "pulse.sh");
+    const altScript = join(pulseDir, shell === "powershell" ? "pulse.sh" : "pulse.ps1");
+
+    if (!existsSync(scriptPath)) {
+      if (existsSync(altScript)) {
+        // Fall back to the other script if available
+        const finalPath = altScript;
+        const finalShell = shell === "powershell" ? "bash" : "powershell";
+        const cmd = finalShell === "powershell"
+          ? `powershell -ExecutionPolicy Bypass -File "${finalPath}" -Force`
+          : `bash "${finalPath}" --force`;
+        ctx.ui?.notify(`⚡ Pulse processing started (via ${finalShell})...`, "info");
+        const output = execSync(cmd, { cwd: wd, encoding: "utf8", timeout: 180000, stdio: ["pipe", "pipe", "pipe"] });
+        ctx.ui?.notify(`✅ Pulse processing complete`, "info");
+        reply(ctx, output.trim() || "✅ Done.");
+      } else {
+        replyWarn(ctx, `No pulse script found at ${scriptPath} or ${altScript}. Run setup first.`);
+      }
+      return;
+    }
+
+    const cmd = shell === "powershell"
+      ? `powershell -ExecutionPolicy Bypass -File "${scriptPath}" -Force`
+      : `bash "${scriptPath}" --force`;
+
+    ctx.ui?.notify(`⚡ Pulse processing started...`, "info");
+    try {
+      const output = execSync(cmd, { cwd: wd, encoding: "utf8", timeout: 180000, stdio: ["pipe", "pipe", "pipe"] });
+      ctx.ui?.notify(`✅ Pulse processing complete`, "info");
+      reply(ctx, output.trim() || "✅ Done.");
+    } catch (e: any) {
+      ctx.ui?.notify(`❌ Pulse processing failed`, "error");
+      reply(ctx, e.stdout?.trim() || e.message || "Unknown error");
+    }
+    return;
+  }
+
+  // /sw-pulse log [n]
+  if (parsed.log !== undefined || parsed._.includes("log") || parsed._.length > 0 && !isNaN(Number(parsed._[0]))) {
+    const n = parseInt(parsed.log || parsed.n || parsed._.find(t => !isNaN(Number(t))) || "10", 10);
+    try {
+      const content = readFileSync(logPath, "utf-8").trim().split("\n").filter(Boolean);
+      const recent = content.slice(-n);
+      reply(ctx, recent.join("\n") || "📡 No log entries yet.");
+    } catch {
+      reply(ctx, "📡 No log entries yet.");
+    }
+    return;
+  }
+
+  // Fallback: show status
+  replyWarn(ctx, "Usage: /sw-pulse [status|pause|resume|process|log [n]]");
+}
+
+// ── Single source of truth: handler lookups ──────────────────────────
+// Handlers are keyed by command name (derived from WORKFLOW_COMMANDS).
+// When you add a command to dispatcher.ts, add its handler here.
+
+// ── Command aliases: stelow-* alongside sw-* ───────────────────────
+const COMMAND_ALIASES: Record<string, string[]> = {
+  "sw-start":     ["stelow-start"],
+  "sw-abort":     ["stelow-abort"],
+  "sw-pause":     ["stelow-pause"],
+  "sw-resume":    ["stelow-resume"],
+  "sw-status":    ["stelow-status"],
+  "sw-ls":        ["stelow-ls"],
+  "sw-setphase":  ["stelow-setphase"],
+  "sw-next":      ["stelow-next"],
+  "sw-complete":  ["stelow-complete"],
+  "sw-info":      ["stelow-goto"],
+  "sw-rename":    ["stelow-rename"],
+  "sw-doctor":    ["stelow-doctor"],
+  "sw-archive":   ["stelow-archive"],
+  "sw-unarchive": ["stelow-unarchive"],
+  "sw-recover":   ["stelow-recover"],
+  "sw-unlock":    ["stelow-unlock"],
+  "sw-inbox":     ["stelow-inbox"],
+  "sw-pulse":     ["stelow-pulse"],
+  "sw-audit":     ["stelow-audit"],
+};
+
+const HANDLER_BY_NAME: Record<string, CmdHandler> = {
+  "sw-start":      cmdStart,
+  "sw-abort":      cmdAbort,
+  "sw-pause":      cmdPause,
+  "sw-resume":     cmdResume,
+  "sw-status":     cmdStatus,
+  "sw-ls":         cmdList,
+  "sw-setphase":   cmdSetPhase,
+  "sw-next":       cmdNext,
+  "sw-complete":   cmdComplete,
+  "sw-info":       cmdGoto,
+  "sw-rename":     cmdRename,
+  "sw-doctor":     cmdDoctor,
+  "sw-archive":    cmdArchive,
+  "sw-unarchive":  cmdUnarchive,
+  "sw-recover":    cmdRecover,
+  "sw-unlock":     cmdUnlock,
+  "sw-inbox":      cmdInbox,
+  "sw-pulse":      cmdPulse,
+  "sw-audit":      cmdAudit,
+  // Aliases
+  "stelow-start":     cmdStart,
+  "stelow-abort":     cmdAbort,
+  "stelow-pause":     cmdPause,
+  "stelow-resume":    cmdResume,
+  "stelow-status":    cmdStatus,
+  "stelow-ls":        cmdList,
+  "stelow-setphase":  cmdSetPhase,
+  "stelow-next":      cmdNext,
+  "stelow-complete":  cmdComplete,
+  "stelow-goto":      cmdGoto,
+  "stelow-rename":    cmdRename,
+  "stelow-doctor":    cmdDoctor,
+  "stelow-archive":   cmdArchive,
+  "stelow-unarchive": cmdUnarchive,
+  "stelow-unlock":    cmdUnlock,
+  "stelow-inbox":     cmdInbox,
+  "stelow-pulse":     cmdPulse,
+  "stelow-audit":     cmdAudit,
+};
+
+function getDescription(cmdName: string): string {
+  const c = WORKFLOW_COMMANDS.find(e => e.name === cmdName);
+  return c ? `${c.description}. Usage: ${c.usage || c.name}` : "";
+}
+
+// =============================================================================
+// REGISTRATION
+// =============================================================================
+
+/** Get command handler by name. */
+export function getCommandHandler(name: string): CmdHandler | null {
+  return HANDLER_BY_NAME[name] ?? null;
+}
+
+/** Get all command names with descriptions. */
+export function getCommandNames(): Array<{ canonical: string; alias: string; description: string }> {
+  return WORKFLOW_COMMANDS.map(c => ({
+    canonical: c.name,
+    alias: c.name,
+    description: `${c.description}. Usage: ${c.usage || c.name}`,
+  }));
+}
+
+/** Execute a command by name (used by adapters). */
+export function executeCommand(
+  pi: ExtensionAPI,
+  commandName: string,
+  args: string,
+  ctx: CmdCtx
+): void | Promise<void> {
+  const handler = getCommandHandler(commandName);
+  if (handler) handler(pi, args, ctx);
+}
+
+/**
+ * Register commands with the Pi extension.
+ * Derives from WORKFLOW_COMMANDS (single source of truth).
+ */
+export function registerCommands(pi: ExtensionAPI): void {
+  for (const c of WORKFLOW_COMMANDS) {
+    const handler = HANDLER_BY_NAME[c.name];
+    if (!handler) {
+      console.warn(`[stelow] No handler for command: ${c.name}`);
+      continue;
+    }
+    const wrapper = async (args: string, ctx: any) => handler(pi, args ?? "", ctx as CmdCtx);
+    const desc = `${c.description}. Usage: ${c.usage || c.name}`;
+    pi.registerCommand(c.name, { description: desc, handler: wrapper });
+
+    // Register aliases (e.g. stelow-start alongside sw-start)
+    const aliases = COMMAND_ALIASES[c.name];
+    if (aliases) {
+      for (const alias of aliases) {
+        pi.registerCommand(alias, { description: desc, handler: wrapper });
+      }
+    }
+  }
+}
+

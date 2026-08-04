@@ -1,0 +1,252 @@
+import type { CommandHost as ExtensionAPI, CommandContext as ExtensionCommandContext } from "./commands";
+import { mkdirSync, writeFileSync } from "node:fs";
+import { join, basename, extname } from "node:path";
+import { WORKFLOW_DIR, PHASE_NAMES, SCHEMA_URL } from "./types";
+import type { Workflow, WorkflowIntent } from "./types";
+import {
+  parsedInputStore, readTracking, writeTracking,
+  readGlobalTracking, writeGlobalTracking,
+  getActiveWorkflow, getAllActiveWorkflows, resolveProjectDir,
+  toSafeName, generateDirHash, hashToWorkflowId, getDateStamp,
+  readSourceFile, truncateText, detectCLI,
+  readInbox,
+} from "./state";
+import { updateFooter, getUIAdapter, initUIAdapter } from "./ui";
+import { buildSkillActivationMessage } from "./start-message";
+
+// Quick key=value parser for the args string
+function parseArgs(raw: string): Record<string, string> & { _: string[] } {
+  const result = { _: [] as string[] } as Record<string, string> & { _: string[] };
+  const trimmed = raw?.trim() ?? "";
+  if (!trimmed) return result;
+
+  const tokens: string[] = [];
+  let buf = "";
+  let inQ = false;
+  for (const ch of trimmed) {
+    if (ch === '"') { inQ = !inQ; continue; }
+    if (ch === " " && !inQ) {
+      if (buf) { tokens.push(buf); buf = ""; }
+      continue;
+    }
+    buf += ch;
+  }
+  if (buf) tokens.push(buf);
+
+  for (const tok of tokens) {
+    const eq = tok.indexOf("=");
+    if (eq > 0) {
+      result[tok.slice(0, eq)] = tok.slice(eq + 1);
+    } else {
+      result._.push(tok);
+    }
+  }
+  return result;
+}
+
+function reply(ctx: ExtensionCommandContext, text: string): void {
+  ctx.ui?.notify(text, "info");
+}
+
+export default async function cmdStart(
+  pi: ExtensionAPI, rawArgs: string, ctx: ExtensionCommandContext
+): Promise<void> {
+  const wd = resolveProjectDir(ctx.cwd);
+  const parsed = parseArgs(rawArgs);
+  // Cast to any since sessionId is provided at runtime but not in types
+  const sessionId = (ctx as { sessionId?: string }).sessionId || "default";
+  const storeParsed = parsedInputStore.get(sessionId) || { sources: [], draftText: "" };
+
+  // Merge: explicit key=value args take priority over parsed input.
+  // Positional tokens without "=" are joined as the draft description.
+  const positionalDraft = parsed._.length > 0 ? parsed._.join(" ") : "";
+  let draftText = parsed.description || positionalDraft || storeParsed.draftText;
+  const sources = parsed.source ? [parsed.source] : storeParsed.sources;
+  const userGivenName = parsed.name || null;
+
+  // If no draft text and no explicit sources, read from inbox
+  if (!draftText && sources.length === 0) {
+    const inboxItems = readInbox(wd);
+    if (inboxItems.length > 0) {
+      const hasHuman = inboxItems.some(i => /\[(human(-in-the-loop)?|hitl)\]/.test(i));
+      const itemLines = inboxItems.map((item, i) => `${i + 1}. ${item}`).join('\n');
+      draftText = `Inbox items:\n\n${itemLines}`;
+      if (hasHuman) {
+        draftText += '\n\nNOTE: Some items are marked [human-in-the-loop] — these need human review. Consider a Review Mode higher than Auto.';
+      }
+    }
+  }
+
+  // 1. Auto-pause any other in-progress workflows in this project before
+  //    creating a new one. This replaces the previous "block" behavior
+  //    which left "shadow" workflows (in-progress but invisible because the
+  //    LLM/UI only sees the first) when /sw-start was called multiple times
+  //    without explicit archive/abort in between.
+  //
+  // Behavior:
+  //   - 0 in-progress: continue (no-op)
+  //   - 1 in-progress: pause it, then continue
+  //   - 2+ in-progress: pause all, then continue
+  //
+  // The paused workflows stay in stelow.json with status='paused' and are
+  // fully recoverable via /sw-resume (or /sw-archive to clean up).
+  const existing = getAllActiveWorkflows(wd);
+  if (existing.length > 0) {
+    const tracking = readTracking(wd);
+    if (tracking) {
+      const now = new Date().toISOString();
+      let pausedCount = 0;
+      const pausedNames: string[] = [];
+      for (const wf of existing) {
+        const idx = tracking.workflows.findIndex(w => w.name === wf.name);
+        if (idx === -1) continue;
+        tracking.workflows[idx].status = "paused";
+        tracking.workflows[idx].updated = now;
+        pausedCount++;
+        pausedNames.push(wf.name);
+      }
+      if (pausedCount > 0) {
+        writeTracking(wd, tracking);
+        ctx.ui?.notify(
+          `⏸ Paused ${pausedCount} workflow(s) to make room for the new one: ${pausedNames.join(", ")}. ` +
+          `Resume any of them later with /sw-resume <name>.`,
+          "info"
+        );
+      }
+    }
+  }
+
+  // 2. Generate dirHash FIRST (used for untitled ID and directory)
+  const dirHash = generateDirHash();
+
+  // 3. Determine display name (use hash for untitled)
+  const displayName = userGivenName
+    ? toSafeName(userGivenName)
+    : draftText && draftText.length > 3
+      ? toSafeName(draftText)
+      : sources.length > 0
+        ? toSafeName(basename(sources[0], extname(sources[0])))
+        : null;
+
+  const name = (displayName && displayName.length >= 2)
+    ? displayName
+    : hashToWorkflowId(dirHash); // untitled = hash-based ID
+
+  // 4. Load sources
+  let allSrc = "";
+  for (const src of sources) {
+    const content = readSourceFile(src);
+    if (content) allSrc += `\n\n=== FILE: ${src} ===\n${content}\n`;
+  }
+
+  let fullDraft = draftText ? `### Initial Draft\n\n${draftText}\n\n` : "";
+  if (allSrc) fullDraft += allSrc;
+
+  // 5. Intent is deferred to the skill (LLM). The activation message tells
+  //     the skill to classify the brief during setup. Always start at Setup.
+  const selectedIntent: WorkflowIntent = "unknown";
+  const initialPhase = 2; // Setup
+
+  // 6. Initialize tracking
+  let tracking = readTracking(wd);
+  if (!tracking) {
+    tracking = {
+      $schema: SCHEMA_URL, version: "1.0",
+      created: new Date().toISOString(), updated: new Date().toISOString(),
+      workflows: []
+    };
+  }
+
+  const finalName = name; // hash-based untitled is already unique
+
+  // 7. Build workflow object
+  const stageSlug = PHASE_NAMES[initialPhase]?.toLowerCase() || "setup";
+  const wf: Workflow = {
+    name: finalName,
+    description: truncateText(draftText, 500) || "",
+    draftContent: fullDraft ? truncateText(fullDraft, 50000) : undefined,
+    source: sources.length > 0 ? sources[0] : undefined,
+    status: "in-progress",
+    currentPhase: initialPhase,
+    phases: PHASE_NAMES.map((name, i) => ({
+      id: `${i}-${name.toLowerCase()}`, name,
+      status: i < initialPhase ? "completed" : i === initialPhase ? "in-progress" : "pending"
+    })),
+    stage: {
+      current_stage: stageSlug,
+      previous_stage: null,
+      transitioned_at: new Date().toISOString(),
+      history: [],
+      supervisor_active: false,
+    },
+    created: new Date().toISOString(),
+    updated: new Date().toISOString(),
+    cwd: wd,
+    dirHash,
+    detectedCLI: detectCLI(),
+    intent: selectedIntent,
+    config: {
+      appetite: undefined,
+      review_mode: undefined,
+      domains_detected: [],
+    },
+  };
+
+  tracking.workflows.push(wf);
+  writeTracking(wd, tracking);
+
+  // 8. Create directory (hash-based - stable)
+  const ds = getDateStamp();
+  const wfDir = join(wd, WORKFLOW_DIR, ds, dirHash);
+  mkdirSync(wfDir, { recursive: true });
+  for (const sub of ["specs", "interfaces", "plans/scopes", "critiques", "approvals", "sessions"]) {
+    mkdirSync(join(wfDir, sub), { recursive: true });
+  }
+
+  // 9. Global tracking
+  const gt = readGlobalTracking() || {
+    $schema: SCHEMA_URL, version: "1.0",
+    created: new Date().toISOString(), updated: new Date().toISOString(),
+    workflows: []
+  };
+  gt.workflows.push(wf);
+  writeGlobalTracking(gt);
+
+  // 10. UI
+  updateFooter(ctx, wd);
+  parsedInputStore.delete(sessionId);
+
+  // 12. Output - use notify so user sees feedback immediately
+  const isUnnamed = !displayName;
+  const wfId = hashToWorkflowId(dirHash);
+  const displayLabel = isUnnamed ? wfId : finalName;
+
+  // Build folder path for display
+  const dateStamp = getDateStamp();
+  const folderPath = `${WORKFLOW_DIR}/${dateStamp}/${dirHash}`;
+
+  const lines = [
+    `[OK] Workflow '${displayLabel}' started!`,
+    `[DIR] ${folderPath}`,
+    `Stage: ${PHASE_NAMES[wf.currentPhase]}`,
+    `Intent: ${selectedIntent}`,
+  ];
+  if (draftText) {
+    lines.push(`\n[DRAFT]:\n${draftText.slice(0, 300)}${draftText.length > 300 ? "..." : ""}`);
+  }
+  lines.push(
+    "",
+    "------------------------------------------------------------",
+    "[BOT] Skill loaded automatically:",
+    "",
+    "  /skill:stelow-product-orchestrator",
+    "------------------------------------------------------------",
+  );
+  if (isUnnamed) {
+    lines.push("", "[TIP] After Clarify, the workflow will be renamed automatically.");
+  }
+
+  reply(ctx, lines.join("\n"));
+
+  pi.sendUserMessage(buildSkillActivationMessage(displayLabel, draftText, allSrc, selectedIntent, initialPhase), { deliverAs: "followUp" });
+}

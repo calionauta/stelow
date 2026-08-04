@@ -1,0 +1,112 @@
+# ==== stelow cleanup ====
+
+# Temporary investigation clones (e.g. tmp/fusion-inspect/ for SW-001)
+tmp/fusion-inspect/
+
+# Session checkpoints and research (local only)
+research/
+progress.md
+context.md
+research.md
+
+# Session comparison/proposal drafts (auto-saved brainstorming, not docs)
+.sem/
+about-keydiff-*.md
+about-proposal-*.md
+
+# Investigation and migration docs
+docs/investigacao-*.md
+docs/plano-migracao-*.md
+docs/2026-05-20/next-steps/
+
+# Test results (CI output)
+test-results/
+stryker-reports/
+.stryker-tmp/
+
+# Local workflow artifacts (auto-generated at runtime)
+.pi/
+.pi-*
+.pi-subagents/
+# .stelow/ — runtime artifacts (state, session knowledge, plans)
+.stelow/
+!.stelow/.gitkeep
+!.stelow/state/
+.stelow-global.json
+
+# Per-user runtime artifacts (agent-specific)
+.opencode/plans/
+
+# Coverage
+coverage/
+
+# Temporary files
+*.tmp
+*.temp
+.tmp/
+temp/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Build outputs
+dist/
+build/
+
+# Rust build artifacts (herdr plugin)
+target/
+
+# Dependencies
+node_modules/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Git worktrees for parallel execution
+.worktrees/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Lock files
+pnpm-lock.yaml
+# yarn.lock (uncomment if needed)
+# package-lock.json (uncomment if needed)
+
+# Subagent reviewer artifacts
+*reviewer*-findings.md
+gap-analysis.md
+edge-case-review.md
+
+# Local skills (pi installs here)
+.agents/
+
+# Generated Fusion plugin tree is tracked (build-time artifact);
+# exclude transient staging leftovers that may appear during prepare.
+plugins/fusion-plugin-stelow/.fusion-stelow-stage-*/
+
+# Generated cli-tools (synced from orchestrator at build/install time)
+# The orchestrator is the source of truth; sub-skills get cli-tools via sync-cli-tools.sh
+skills/*/references/cli-tools/*.md
+# Keep orchestrator tracked (source of truth)
+!skills/stelow-product-orchestrator/references/cli-tools/*.md
+# Keep skill-specific extras (not in orchestrator)
+!skills/*/references/cli-tools/dead-code-candidates.md
+!skills/*/references/cli-tools/doc-search.md
+!skills/*/references/cli-tools/stack-skills.md
+!skills/*/references/cli-tools/cymbal.md
+.rigor-cache.json
+.rigor-history.json
+
+# npm pack tarballs (used by pi-sandbox-install + pi-session-lifecycle tests)
+calionauta-stelow-*.tgz
