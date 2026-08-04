@@ -206,7 +206,7 @@ Do NOT use `/skill:` for internal subskills.
 
 | Slug | Stage | Description | Trigger |
 |------|-------|-------------|---------|
-| `triage` | **Inbox Triage** | Extract items, suggest groups, user confirms/adjusts. All items accepted. Groups stored in `.stelow/inbox/groups/` | Auto (list detected) |
+| `triage` | **Inbox Triage** | Extract items from the host's inbox surface (Multica `backlog`/`todo`, Fusion inbox, Pi pi-session-state — Stelow no longer mirrors `.stelow/inbox/`), suggest groups, user confirms/adjusts. | Auto (list detected) |
 | `select` | **Item Selection** | Show all candidates (individuals + groups), user picks one and routes remainders | After triage |
 | `setup` | **Project Setup** | Group context injection, appetite/review mode declaration, stages selection, safe-change | — |
 | `context` | **Strategic Context** (optional) | Strategic exploration + domain detection. See `context:5` (appetite/review mode gate), `context:10` (Strategic Approaches — 5 options), `context:20` (Domain Libraries — 8 libraries) | — |

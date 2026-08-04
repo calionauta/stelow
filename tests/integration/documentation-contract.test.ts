@@ -37,20 +37,22 @@ describe("documentation contract — v0.55.1 release surface", () => {
     expect(PHASE_NAMES.at(-1)).toBe("Audit");
   });
 
-  it("exposes 19 WORKFLOW_COMMANDS and 16 non-piOnly descriptors for Fusion", () => {
-    expect(WORKFLOW_COMMANDS).toHaveLength(19);
+  it("exposes 16 WORKFLOW_COMMANDS in the host-agnostic registry (post-v0.57.0)", () => {
+    // v0.57.0: sw-inbox + sw-pulse removed (with Pulse/Inbox/Provenance).
+    // sw-unlock is no longer in WORKFLOW_COMMANDS — it is a Pi-local
+    // descriptor in extensions/stelow/adapters/pi/commands.ts.
+    expect(WORKFLOW_COMMANDS).toHaveLength(16);
     const fusionCount = WORKFLOW_COMMANDS.filter((c) => !c.piOnly).length;
     expect(fusionCount).toBe(16);
-    expect(WORKFLOW_COMMANDS.filter((c) => c.piOnly)).toHaveLength(3);
+    expect(WORKFLOW_COMMANDS.filter((c) => c.piOnly)).toHaveLength(0);
   });
 
-  it("publishes correct command inventory: 19 Pi / 16 Fusion / 0 native generic", () => {
+  it("publishes correct command inventory: 17 Pi / 16 agnostic / 0 native generic", () => {
     const commandNames = WORKFLOW_COMMANDS.map((c) => c.name).join(", ");
-    expect(DOCS.readme).toContain("19 descriptors");
-    expect(DOCS.readme).toContain("16 non-`piOnly`");
-    expect(DOCS.architecture).toMatch(/19 descriptors/);
-    expect(DOCS.architecture).toMatch(/16 descriptors/);
-    expect(DOCS.agents).toContain("19");
+    // Pi gets all 16 agnostic + sw-unlock (Pi-local) = 17.
+    expect(DOCS.readme).toMatch(/16 .*agnostic|16 descriptors|16 commands/);
+    expect(DOCS.readme).toMatch(/\*\*Pi\*\*\s+registers all (16|17)/);
+    expect(DOCS.architecture).toMatch(/16 descriptors|16 agnostic|17 descriptors/);
     expect(DOCS.agents).toContain("16");
     expect(commandNames.length).toBeGreaterThan(0);
   });
@@ -272,16 +274,18 @@ describe("documentation contract edge cases and boundaries", () => {
     }
   });
 
-  it("rejects malformed WORKFLOW_COMMANDS descriptors (bad name shape, dual piOnly values)", () => {
+  it("rejects malformed WORKFLOW_COMMANDS descriptors (bad name shape)", () => {
+    // v0.57.0: WORKFLOW_COMMANDS is fully host-agnostic — no piOnly flags.
     for (const cmd of WORKFLOW_COMMANDS) {
       expect(typeof cmd.name).toBe("string");
       expect(cmd.name).toMatch(/^sw-[a-z0-9-]+$/);
-      if (cmd.piOnly !== undefined) expect(cmd.piOnly).toBe(true);
+      expect(cmd.piOnly, `${cmd.name}: WORKFLOW_COMMANDS is host-agnostic; piOnly descriptors belong in adapters/pi/commands.ts`).toBeUndefined();
     }
   });
 
-  it("Fusion command set is exactly 16 unique descriptors", () => {
-    const fusionNames = WORKFLOW_COMMANDS.filter((c) => !c.piOnly).map((c) => c.name);
+  it("Fusion command set is exactly 16 unique descriptors (post-v0.57.0)", () => {
+    // v0.57.0: all 16 host-agnostic descriptors emit to Fusion (no piOnly filter).
+    const fusionNames = WORKFLOW_COMMANDS.map((c) => c.name);
     expect(fusionNames).toHaveLength(16);
     expect(new Set(fusionNames).size).toBe(fusionNames.length);
   });

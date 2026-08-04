@@ -23,6 +23,7 @@ import {
   type StageState,
 } from '../../extensions/stelow/adapters/stages-guard';
 import { WORKFLOW_COMMANDS } from '../../extensions/stelow/adapters/commands/dispatcher';
+import { PI_LOCAL_COMMANDS } from '../../extensions/stelow/adapters/pi/commands';
 
 const __filename = fileURLToPath(import.meta.url);
 const __testDir = dirname(__filename);
@@ -457,13 +458,28 @@ describe('Stages Guard', () => {
   // ── Dispatcher integration (regression) ─────────────────────────
 
   describe('WORKFLOW_COMMANDS dispatcher', () => {
-    it('includes sw-unlock (so it gets registered with pi)', () => {
+    // v0.57.0: WORKFLOW_COMMANDS is host-agnostic (16 descriptors). The
+    // last piOnly command (`sw-unlock`) was moved to PI_LOCAL_COMMANDS
+    // in extensions/stelow/adapters/pi/commands.ts.
+    it('does NOT include sw-unlock (moved to PI_LOCAL_COMMANDS in v0.57.0)', () => {
       const names = WORKFLOW_COMMANDS.map(c => c.name);
+      expect(names).not.toContain("sw-unlock");
+    });
+
+    it('has zero piOnly descriptors (Pi-only commands live in adapters/pi)', () => {
+      const piOnly = WORKFLOW_COMMANDS.filter(c => c.piOnly === true);
+      expect(piOnly).toHaveLength(0);
+    });
+  });
+
+  describe('PI_LOCAL_COMMANDS (v0.57.0 split)', () => {
+    it('includes sw-unlock (Pi-local descriptor)', () => {
+      const names = PI_LOCAL_COMMANDS.map(c => c.name);
       expect(names).toContain("sw-unlock");
     });
 
     it('sw-unlock is marked piOnly', () => {
-      const cmd = WORKFLOW_COMMANDS.find(c => c.name === "sw-unlock");
+      const cmd = PI_LOCAL_COMMANDS.find(c => c.name === "sw-unlock");
       expect(cmd?.piOnly).toBe(true);
     });
   });

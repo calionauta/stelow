@@ -46,8 +46,9 @@ phases in `extensions/stelow/types.ts#PHASE_NAMES` are the canonical
 > - **Skills (25)**: `find skills -maxdepth 2 -name SKILL.md -path '*/stelow-product-*' | wc -l` (canonical product-orchestrator + 24 sub-skills).
 > - **Phases (17)**: `extensions/stelow/types.ts#PHASE_NAMES` (the `Triage`..`Audit` array).
 > - **Stage transitions and conditional gates**: `skills/stelow-product-orchestrator/stages.yaml`.
-> - **Commands (19)**: `extensions/stelow/adapters/commands/dispatcher.ts#WORKFLOW_COMMANDS`.
-> - **Fusion commands (16)**: `WORKFLOW_COMMANDS.filter((d) => !d.piOnly).length` (Pi exposes all 19; Fusion emits the 16 non-`piOnly` descriptors).
+> - **Commands (16)**: `extensions/stelow/adapters/commands/dispatcher.ts#WORKFLOW_COMMANDS` (host-agnostic; v0.57.0 removed `sw-inbox`/`sw-pulse`).
+> - **Fusion commands (16)**: `WORKFLOW_COMMANDS.length` (v0.57.0 — no `piOnly` descriptors remain in the host-agnostic registry).
+> - **Pi commands (17)**: host-agnostic 16 + 1 Pi-local (`sw-unlock`, registered in `extensions/stelow/adapters/pi/commands.ts#PI_LOCAL_COMMANDS`).
 
 ```bash
 npm run build            # Compile TypeScript

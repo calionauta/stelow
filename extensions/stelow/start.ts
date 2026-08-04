@@ -9,7 +9,6 @@ import {
   getActiveWorkflow, getAllActiveWorkflows, resolveProjectDir,
   toSafeName, generateDirHash, hashToWorkflowId, getDateStamp,
   readSourceFile, truncateText, detectCLI,
-  readInbox,
 } from "./state";
 import { updateFooter, getUIAdapter, initUIAdapter } from "./ui";
 import { buildSkillActivationMessage } from "./start-message";
@@ -64,18 +63,10 @@ export default async function cmdStart(
   const sources = parsed.source ? [parsed.source] : storeParsed.sources;
   const userGivenName = parsed.name || null;
 
-  // If no draft text and no explicit sources, read from inbox
-  if (!draftText && sources.length === 0) {
-    const inboxItems = readInbox(wd);
-    if (inboxItems.length > 0) {
-      const hasHuman = inboxItems.some(i => /\[(human(-in-the-loop)?|hitl)\]/.test(i));
-      const itemLines = inboxItems.map((item, i) => `${i + 1}. ${item}`).join('\n');
-      draftText = `Inbox items:\n\n${itemLines}`;
-      if (hasHuman) {
-        draftText += '\n\nNOTE: Some items are marked [human-in-the-loop] — these need human review. Consider a Review Mode higher than Auto.';
-      }
-    }
-  }
+  // Inbox mirror removed in v0.57.0. Hosts surface their own deferred items
+  // (Multica `backlog`/`todo`, Fusion session-state, Pi pi-session-state).
+  // Without an explicit draft or @file source, /sw-start now opens with an
+  // empty draft and asks the user what to work on.
 
   // 1. Auto-pause any other in-progress workflows in this project before
   //    creating a new one. This replaces the previous "block" behavior

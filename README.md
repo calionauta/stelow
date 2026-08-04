@@ -39,7 +39,7 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 - **Bidirectional product ↔ tech flow** — tech constraints and opportunities inform product decisions *before* execution. Tech Preview uses cymbal for appetite-gated codebase recon; Alignment Check catches product-vs-tech misalignment with mode-dependent resolution (auto or user-flagged).
 - **Stack-matched skills + fresh docs** — during execution setup, the workflow discovers skills (via `npx skills`) optimized for the chosen tech stack and fetches current library docs (via `ctx7`). Both skip if already installed or unavailable. Skills install in project scope only, after user confirmation.
 - **Real-time TUI tracking** - see workflow state as it progresses through all stages.
-- **Pulse — autonomous inbox processing** — background cron-driven system periodically checks your inbox and auto-creates workflows with `review_mode=Auto` (no gates, no questions). Items needing human review skip Pulse and land in the interactive inbox for manual triage, preventing silent loops on ambiguous requests.
+- **Host-owned scheduling** — Stelow ships no scheduler of its own. Each host (Multica autopilot, Fusion scheduler, Pi pi-subagents) drives `/sw-*` invocations from its native event surface. See "Host Installation Guide" below.
 
 ---
 
@@ -53,7 +53,7 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 - [📦 Installation](#-installation)
 - [External Dependencies](#external-dependencies)
 - [🎮 Commands](#-commands)
-- [📡 Pulse — Autonomous Inbox Processing](#-pulse--autonomous-inbox-processing)
+- [🛠️ Host Installation Guide](#️-host-installation-guide)
 - [🌐 Host Support](#-host-support)
 - [📁 Artifact Directory](#-artifact-directory)
 - [📖 Evidence & Limitations](#-evidence--limitations)
@@ -465,7 +465,6 @@ curl -fsSL https://raw.githubusercontent.com/calionauta/stelow/main/setup.sh | s
 | 6 | cymbal | codebase navigation via `brew install 1broseidon/tap/cymbal` (macOS) or `go install` (Linux). Auto-installed as the `raphapr/pi-cymbal` Pi extension when Pi is detected; skipped gracefully if brew/Go absent | macOS, Linux |
 | 7 | ctx7 | library docs fetcher via `npx @vedanth/context7` (interactive OAuth — prompts the user) | All CLIs |
 | 8 | safe-change | pre-planning regression check via `npx skills add PrinNova/pi-agent-codebase-workflows -g` | All CLIs |
-| 9 | Pulse (optional) | copies Pulse scripts to project's `.stelow/pulse/` and creates inbox. Or run standalone: `./scripts/setup-pulse.sh` (no pi required — works in CI/CD or before pi is installed) | All CLIs (cron/launchd/systemd/Task Scheduler) |
 
 > **Not using pi.dev?** Skills land in `~/.agents/skills/` and work on any agent that reads them. You just won't get the Pi-only extensions or TUI overlay. The workflow itself runs fine — see [agentskills.io](https://agentskills.io/) for the cross-agent standard.
 >
@@ -538,11 +537,9 @@ of truth for the 19 descriptors.
 | `/sw-recover` | Recover orphan workflow directories | All |
 | `/sw-audit` | Show audit trail (full lineage, scope, JSON) | All |
 | `/sw-unlock` | Disable stage guard for this session | Pi only |
-| `/sw-inbox` | Manage workflow inbox | Pi only |
-| `/sw-pulse` | Manage automatic inbox processing (Pulse) | Pi only |
 
-- **Pi** registers all 19 descriptors natively via `pi.registerCommand()`.
-- **Fusion** registers the 16 non-`piOnly` descriptors through
+- **Pi** registers all 17 commands natively (16 host-agnostic + the `sw-unlock` Pi-local descriptor) via `pi.registerCommand()`.
+- **Fusion** registers all 16 host-agnostic commands through
   `plugins/fusion-plugin-stelow/`.
 - **Generic** hosts have no native command registry; the orchestrator skill
   routes the same names through the skill.
@@ -552,43 +549,88 @@ package script.
 
 ---
 
-## 📡 Pulse — Autonomous Inbox Processing
+## 🛠️ Host Installation Guide
 
-Pulse is a background system that periodically checks your inbox and creates workflows automatically — no interactive session needed. It runs on a timer (cron, launchd, systemd, Task Scheduler) and processes items with `review_mode=Auto` (no gates, no questions, no Plannotator).
+Stelow is host-agnostic at its core, but each host surface has its own install path. Pick the one that matches where you'll run the workflow.
 
+### Pi (`@earendil-works/pi-coding-agent`)
+
+```bash
+git clone https://github.com/calionauta/stelow.git
+cd stelow
+./setup.sh            # zero-to-running: installs pi + extensions + skills + settings
+# — or, if you already have pi —
+./install.sh          # skills + extensions + slash commands only
 ```
-cron/launchd/systemd (every 30m)
-  → pulse.sh / pulse.ps1
-    → checks inbox (.stelow/inbox/items.md)
-    → runs `pi --print` with triage prompt
-    → creates workflow(s) with review_mode=Auto
-    → logs provenance to .stelow/inbox/history.jsonl
+
+- All 17 `/sw-*` commands register natively via `pi.registerCommand()` (16 host-agnostic + the Pi-local `sw-unlock`).
+- Scheduling/automation: use `pi-subagents` background runs. No `pulse.sh` cron — that responsibility moved to the host in v0.57.0.
+
+### Fusion (the AI-orchestrated task board)
+
+```bash
+git clone https://github.com/calionauta/stelow.git
+cd stelow
+npm ci
+npm run build
+# Install the compiled plugin:
+ls plugins/fusion-plugin-stelow/
 ```
 
-| Command | Purpose |
-|---------|---------|
-| `/sw-pulse status` | Show pulse state (paused, inbox count, last run) |
-| `/sw-pulse pause` | Pause automatic processing |
-| `/sw-pulse resume` | Resume automatic processing |
-| `/sw-pulse process` | Force immediate processing |
-| `/sw-pulse log [n]` | Show last N log entries |
+The compiled plugin (`plugins/fusion-plugin-stelow/`) is the installable
+artifact — drop it into your Fusion plugin registry. The Stelow extension
+is **not** used inside Fusion; only the plugin. See the plugin's own README
+for Fusion-specific commands (16 host-agnostic descriptors; v0.57.0 removed
+the 3 `piOnly` ones — `sw-unlock` lives in the Pi adapter only).
 
-| Flag / Env | Default | Description |
-|------------|---------|-------------|
-| `--max-items N` | `10` | Items per cycle. `0` = uncapped (all). `1` = one at a time |
-| `--force` | — | Skip pause + user-activity checks |
-| `--dry-run` | — | Preview without executing |
-| `PULSE_MODEL` | — | Optional. Override harness's configured model for `pi --print`. If unset, uses whatever the user's harness is configured with (no hardcoded default). |
-| `PULSE_TIMEOUT` | `120` | Max seconds for `pi --print` |
-| `PULSE_USER_ACTIVITY_MINUTES` | `15` | Skip if user modified `stelow.json` recently |
+- Scheduling/automation: Fusion's native scheduler invokes the plugin when
+  its event surface fires. No inbox mirror — Fusion has its own.
 
-**Marking items for human review:** Prefix an inbox item with `[human-in-the-loop]` (or `[hitl]`) — Pulse skips it entirely. Use for items that need human judgement (pricing, partnership, strategy). Items without the marker are processed automatically.
+### Multica
 
-**Conflict prevention:** Pulse detects active user sessions (modified `stelow.json` mtime + interactive `pi` process) and skips automatically. Lock file prevents concurrent runs.
+Set the four required env vars, then import the skill bundle:
 
-**Setup guides:** See `.stelow/pulse/SETUP.md` for macOS (launchd), Linux (systemd/cron), and Windows (Task Scheduler + PowerShell).
+```bash
+export STELOW_MULTICA_HOST=1
+export MULTICA_ISSUE_ID=<issue-uuid>
+export STELOW_WORKFLOW_ID=wf-<name>
+export STELOW_VERSION=0.57.0
 
-**Getting the scripts:** The stelow extension auto-copies Pulse scripts to `.stelow/pulse/` on the first `/sw-pulse` invocation. To pre-stage (no pi required, useful for CI/CD or before the extension is installed): `./scripts/setup-pulse.sh [--project-dir DIR] [--dry-run]`.
+# Offline distribution: ship the prebuilt skill bundle
+multica skill import --file ./build/stelow-skills.tgz
+```
+
+The Multica adapter lives in `extensions/stelow/adapters/multica/` (added in
+v0.57.0). It consumes the Stelow skill bundle, projects state to issue
+metadata, and labels issues with `stelow:<stage>` (one label at a time, see
+the structural invariant).
+
+- Scheduling/automation: Multica autopilot (`run_only` + triggers on
+  `backlog`/`todo` issues). No `pulse.sh` — replaced by the autopilot's
+  trigger system. Delete any pre-v0.57.0 "Stelow Runner" autopilot from the
+  workspace; the adapter now reacts to Multica's native events.
+
+### Generic / standalone (Claude Code, Codex, Cursor, Continue, OpenCode)
+
+```bash
+git clone https://github.com/calionauta/stelow.git
+# Skills land in skills/*/SKILL.md — agentskills.io standard.
+# They auto-install to ~/.agents/skills/ on first agent boot.
+```
+
+- All 25 skills are usable in any compatible agent. There is no native
+  command registry — the orchestrator skill routes `/sw-*` through the
+  skill mechanism.
+- Scheduling/automation: depends on the host. Read your agent's docs for
+  background-task / scheduled-prompt support.
+
+---
+
+**Migration note (v0.57.0):** anyone running `pulse.sh`/`pulse.ps1` from
+cron, systemd, launchd, or Task Scheduler must move to the host's native
+scheduling. See your host's section above. The `.stelow/inbox/items.md`
+mirror is also removed — use Multica's `backlog`/`todo`, Fusion's inbox, or
+Pi's pi-session-state instead.
 
 ---
 
@@ -625,11 +667,15 @@ All workflow artifacts live under `<project>/.stelow/`. The layout below is gene
 |------|----------|---------------|
 | `stelow.json` | Local tracking — workflow metadata, scopes, status | Extension |
 | `~/.stelow-global.json` | Global index — catalog of all workflows across projects | Extension |
-| `inbox/items.md` | Deferred items from previous sessions | Triage / user |
-| `inbox/history.jsonl` | Append-only provenance log (one JSON line per event) | `provenance.ts` |
 | `lessons-learned/` | Cross-cycle patterns generated by Execution Critique | Audit stage |
 | `session-knowledge/` | Passive context notes saved by the user mid-session | User (manual) |
-| `pulse/` | Autonomous inbox processing scripts + config | Pulse setup |
+
+> The Stelow core no longer maintains an inbox mirror (`.stelow/inbox/`)
+> or provenance log (`.stelow/inbox/history.jsonl`) — those were removed in
+> v0.57.0. Hosts own their own inbox surface (Multica `backlog`/`todo`,
+> Fusion inbox, Pi pi-session-state). The workflow's own audit trail lives
+> in `.stelow/{date}/{dirHash}/audit-trail.md` (generated by
+> `audit-trail.ts`, still in core).
 
 ### Per-workflow: `.stelow/{YYYY-MM-DD}/{dirHash}/`
 

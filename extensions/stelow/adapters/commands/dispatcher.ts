@@ -100,24 +100,6 @@ export const WORKFLOW_COMMANDS: CommandDescriptor[] = [
     usage: "/sw-recover | /sw-recover all",
   },
   {
-    name: "sw-unlock",
-    description: "Disable stage guard for this session (debug/emergency)",
-    usage: "/sw-unlock",
-    piOnly: true,
-  },
-  {
-    name: "sw-inbox",
-    description: "Manage workflow inbox",
-    usage: "/sw-inbox | add <text> | remove <text> | clear | history",
-    piOnly: true,
-  },
-  {
-    name: "sw-pulse",
-    description: "Manage automatic inbox processing (Pulse)",
-    usage: "/sw-pulse | status | pause | resume | process | log [n]",
-    piOnly: true,
-  },
-  {
     name: "sw-audit",
     description: "Show audit trail — full lineage from origin to delivery",
     usage: "/sw-audit [--scope <id>] [--format json|markdown]",

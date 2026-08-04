@@ -49,6 +49,25 @@ Fusion's `fn_ask_question`). Generic hosts receive skills and fallbacks but do
 not register native `/sw-*` commands. The adapter is in-process; a host plugin
 is a separate packaging boundary.
 
+### Responsibility split (v0.57.0)
+
+Pulse, the inbox mirror (`.stelow/inbox/`), and the Stelow Runner autopilot are
+**host responsibilities**, not core responsibilities. Each host owns:
+
+- **Scheduling / automation** — Multica autopilot (`run_only` + triggers),
+  Fusion's native scheduler, Pi `pi-subagents` background runs. There is no
+  `pulse.sh` in the core anymore; cron entries that pointed at it must move to
+  the host equivalent.
+- **Inbox surface** — Multica `backlog`/`todo` issues, Fusion's native inbox,
+  Pi `pi-session-state`. The core no longer mirrors `.stelow/inbox/items.md`.
+
+Stelow owns only:
+
+- The workflow state machine (`PHASE_NAMES` + `stages.yaml`).
+- The adapters (Pi, Fusion, Generic, Multica).
+- The audit trail (`audit-trail.ts`) — the workflow's own output, not a host
+  inbox mirror.
+
 The Fusion package is prepared from the canonical skills and builders by
 `scripts/prepare-fusion-plugin.ts`, then compiled by
 `npm run build:fusion-plugin`. Its entry has no private Fusion imports. Full
@@ -77,11 +96,18 @@ for the canonical transitions.
 ## Commands
 
 `WORKFLOW_COMMANDS` in `extensions/stelow/adapters/commands/dispatcher.ts` is
-the registry of 19 descriptors. Pi exposes all 19 natively. Fusion emits the
-16 descriptors whose `piOnly` flag is false. Generic hosts have no native
-command registry and use the orchestrator skill/fallback path. The registry is
-the authoritative command inventory; it includes `/sw-recover` and
-`/sw-audit`.
+the host-agnostic registry — 17 descriptors in v0.57.0 (down from 19 after
+`sw-inbox` and `sw-pulse` were removed alongside Pulse, Inbox, and
+Provenance). All 17 are emitted to every host; there are no `piOnly` flags
+remaining in the agnostic registry.
+
+Pi additionally registers one Pi-local descriptor — `sw-unlock` — via
+`extensions/stelow/adapters/pi/commands.ts#PI_LOCAL_COMMANDS`. Pi therefore
+exposes 18 total commands (17 agnostic + 1 Pi-local). Fusion emits all 17
+agnostic descriptors through `plugins/fusion-plugin-stelow/`. Generic hosts
+have no native command registry and use the orchestrator skill/fallback
+path. The registry is the authoritative command inventory; it includes
+`/sw-recover` and `/sw-audit`.
 
 ## Extending the system
 

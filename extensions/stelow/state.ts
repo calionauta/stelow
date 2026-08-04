@@ -975,30 +975,10 @@ export function truncateText(text: string, maxLen: number): string {
   return text.slice(0, maxLen - 100) + "\n\n[... truncated ...]";
 }
 
-// ── Inbox ──────────────────────────────────────────────────────────────
-// Moved to inbox.ts (filesystem helper for the .stelow/inbox/items.md
-// staging area). Re-exported below for callers that import from
-// `state.ts`. See `inbox.ts` for the canonical implementation.
-
-// ── Provenance Log ───────────────────────────────────────────────────
-// Moved to provenance.ts (JSONL append-only history log).
-// Re-exported below. See `provenance.ts` for the canonical implementation.
+// Inbox + Provenance removed in v0.57.0 — hosts own their inbox and audit
+// trail (Multica uses issue metadata + comments, Fusion uses session-state,
+// Pi uses pi-session-state). `audit-trail.ts` remains: it is the workflow's
+// own output, not a host inbox mirror.
 
 // Re-export for convenience (used by commands.ts and external consumers).
 export { TASK_ICONS };
-export {
-  getInboxDir,
-  getInboxPath,
-  ensureInboxDir,
-  readInbox,
-  writeInbox,
-  addToInbox,
-  removeFromInbox,
-  clearInbox,
-} from "./inbox";
-export {
-  getProvenancePath,
-  appendProvenance,
-  readProvenance,
-  PROVENANCE_FILE,
-} from "./provenance";
