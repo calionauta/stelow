@@ -7,7 +7,7 @@ mkdir -p "$OUT"
 rm -f "$OUT"/*.tgz
 
 count=0
-for skill_dir in "$ROOT"/skills/stelow-product-*; do
+for skill_dir in "$ROOT"/skills/stelow-*; do
   [ -f "$skill_dir/SKILL.md" ] || continue
   name=$(basename "$skill_dir")
   (

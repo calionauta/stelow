@@ -9,7 +9,7 @@ OUT="$TARS/zips"
 mkdir -p "$OUT"
 
 count=0
-for tgz in "$TARS"/stelow-product-*.tgz; do
+for tgz in "$TARS"/stelow-*.tgz; do
   name=$(basename "$tgz" .tgz)
   rm -rf "$TARS/$name" "$OUT/$name.zip"
   mkdir -p "$TARS/$name"
