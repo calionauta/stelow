@@ -11,6 +11,7 @@
 import type { CLI, CLICapabilities } from "../types";
 import { detectHost, getCLICapabilitiesForHost } from "../state";
 import { FusionAdapter } from "./fusion";
+import { createMulticaAdapter } from "./multica/index.js";
 
 // Lazy-load the Pi adapter to keep adapters/pi/index.ts loaded only when
 // `detectHost()` resolves to "pi" (we never import it eagerly here because
@@ -194,6 +195,8 @@ export function createAdapter(cli?: CLI): CLIAdapter {
       return createPiAdapter();
     case "fusion":
       return createFusionAdapter();
+    case "multica":
+      return createMulticaAdapter();
     default:
       return makeGenericAdapter();
   }

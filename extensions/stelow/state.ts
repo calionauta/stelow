@@ -17,6 +17,7 @@ import { acquireFileLock, FileLockError } from "./file-lock";
 import { TASK_ICONS } from "./modules/task";
 import { WORKFLOW_DIR, TRACKING_FILE, GLOBAL_TRACKING_FILE, SCHEMA_URL, PHASE_NAMES, getCLICapabilities, STAGE } from "./types";
 import { PHASE_TO_STAGE } from "./stages-guard";
+import { syncTrackingToMultica } from "./adapters/multica/sync";
 
 // ── Internal helpers (file-private) ────────────────────────────────────
 
@@ -86,6 +87,11 @@ const CLI_DETECTION_SIGNALS: Record<CLI, { dirs: string[]; cmds: string[]; confi
     cmds: ["fn"],
     confidence: "high",
   },
+  "multica": {
+    dirs: ["~/.multica"],
+    cmds: ["multica"],
+    confidence: "high",
+  },
   "generic": {
     dirs: [],
     cmds: [],
@@ -99,17 +105,23 @@ const CLI_DETECTION_SIGNALS: Record<CLI, { dirs: string[]; cmds: string[]; confi
  * Returns "generic" if detection fails.
  */
 export function detectHost(): CLI {
-  // Primary: explicit host variables. FUSION_HOST is intentionally checked
-  // first because Fusion embeds the Pi runtime and may expose both signals.
-  if (process.env.FUSION_HOST === "1") return "fusion";
+  // Explicit Stelow host overrides are authoritative for tests, embedded
+  // hosts, and operators. Otherwise a parent Multica shell would hijack
+  // nested Pi/Fusion subprocesses that intentionally set STELOW_HOST.
   const envCli = process.env.STELOW_HOST || process.env.PRODUCT_WORKFLOW_CLI;
+  if (process.env.FUSION_HOST === "1") return "fusion";
   if (envCli && envCli.trim()) {
     const cli = envCli.trim().toLowerCase() as CLI;
-    if (["pi", "fusion", "generic"].includes(cli)) {
+    if (["pi", "fusion", "multica", "generic"].includes(cli)) {
       return cli;
     }
     console.warn(`[stelow] Unknown PRODUCT_WORKFLOW_CLI: ${cli}, defaulting to generic`);
     return "generic";
+  }
+  // Multica runtime signals are considered only when no explicit Stelow host
+  // was selected. MULTICA_ISSUE_ID is the issue-scoped execution contract.
+  if (process.env.STELOW_MULTICA_HOST === "1") {
+    return "multica";
   }
 
   // Fallback: check platform-specific directories (highest confidence)
@@ -121,6 +133,9 @@ export function detectHost(): CLI {
   if (existsSync(join(home, ".pi"))) {
     return "pi";
   }
+
+  // Multica must not be inferred from the executable alone: the CLI may be
+  // installed for issue administration outside a Multica-managed run.
 
   // Tertiary: check command availability (lower confidence)
   try {
@@ -381,6 +396,7 @@ function writeTrackingUnlocked(cwd: string, data: TrackingData): void {
     }
   }
   writeJson(getTrackingPath(cwd), data);
+  syncTrackingToMultica(data);
 }
 
 export function writeGlobalTracking(data: TrackingData): void {

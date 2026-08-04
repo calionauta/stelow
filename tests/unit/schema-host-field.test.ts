@@ -21,7 +21,7 @@ describe("Workflow.host schema", () => {
     expect(schema.definitions.workflow.properties.host).toEqual(expect.objectContaining({
       type: "object", required: ["name", "version", "registeredAt"], additionalProperties: false,
     }));
-    expect(schema.definitions.workflow.properties.host.properties.name.enum).toEqual(["pi", "fusion", "generic"]);
+    expect(schema.definitions.workflow.properties.host.properties.name.enum).toEqual(["pi", "fusion", "multica", "generic"]);
   });
 
   it("writeTracking registers host once and preserves it", () => {

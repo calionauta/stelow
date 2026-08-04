@@ -73,6 +73,28 @@ export {
 } from "./pi/ui";
 
 export { FusionAdapter, createFusionAdapter } from "./fusion";
+export { MulticaAdapter, createMulticaAdapter } from "./multica/index";
+export type {
+  MulticaAdapterOptions,
+  MulticaCommandRunner,
+} from "./multica/index";
+export {
+  MULTICA_STAGE_STATUS,
+  isMulticaStage,
+  multicaStageLabel,
+  projectWorkflowToMultica,
+} from "./multica/types";
+export type {
+  MulticaIssueStatus,
+  MulticaMetadata,
+  MulticaStage,
+  MulticaWorkflowProjection,
+} from "./multica/types";
+
+export {
+  syncTrackingToMultica,
+  type MulticaSyncResult,
+} from "./multica/sync";
 
 // ── Pi Adapter ───────────────────────────────────────────────────────
 

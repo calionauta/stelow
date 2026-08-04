@@ -43,7 +43,7 @@
           "description": "Host that first registered this workflow (immutable after first write)",
           "required": ["name", "version", "registeredAt"],
           "properties": {
-            "name": { "type": "string", "enum": ["pi", "fusion", "generic"] },
+            "name": { "type": "string", "enum": ["pi", "fusion", "multica", "generic"] },
             "version": { "type": "string" },
             "registeredAt": { "type": "string", "format": "date-time" }
           },

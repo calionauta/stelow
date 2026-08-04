@@ -70,7 +70,7 @@ export const STAGE = {
 
 // ── CLI Types ─────────────────────────────────────────────────────
 
-export type CLI = "pi" | "fusion" | "generic";
+export type CLI = "pi" | "fusion" | "multica" | "generic";
 export type HostName = CLI;
 
 /**
@@ -166,6 +166,13 @@ export function getCLICapabilities(cli: CLI): CLICapabilities {
       hasTurnEnd: true,
       hasSubagent: true,
       hasAskUserQuestion: true,
+      hasNotifications: true,
+    },
+    "multica": {
+      hasPluginSystem: true,
+      pluginFormat: "json",
+      hasCommands: true,
+      hasSubagent: true,
       hasNotifications: true,
     },
     "generic": {},
@@ -503,7 +510,7 @@ export interface Phase {
 export interface Workflow {
   /** Host that first registered this workflow. Immutable after first write. */
   host?: {
-    name: "pi" | "fusion" | "generic";
+    name: "pi" | "fusion" | "multica" | "generic";
     version: string;
     registeredAt: string;
   };

@@ -133,7 +133,7 @@ export type ScopeT = Static<typeof ScopeSchema>;
 
 export const WorkflowSchema = Type.Object({
   host: Type.Optional(Type.Object({
-    name: Type.Union([Type.Literal("pi"), Type.Literal("fusion"), Type.Literal("generic")]),
+    name: Type.Union([Type.Literal("pi"), Type.Literal("fusion"), Type.Literal("multica"), Type.Literal("generic")]),
     version: Type.String(),
     registeredAt: Type.String(),
   })),

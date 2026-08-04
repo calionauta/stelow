@@ -21,6 +21,11 @@ describe("CLI Detection", () => {
   beforeEach(() => {
     originalEnv = process.env.PRODUCT_WORKFLOW_CLI;
     delete process.env.PRODUCT_WORKFLOW_CLI;
+    delete process.env.STELOW_HOST;
+    delete process.env.MULTICA_ISSUE_ID;
+    delete process.env.MULTICA_TASK_ID;
+    delete process.env.MULTICA_WORKSPACE_ID;
+    delete process.env.STELOW_MULTICA_HOST;
   });
 
   afterEach(() => {
@@ -40,6 +45,18 @@ describe("CLI Detection", () => {
     it("respects PRODUCT_WORKFLOW_CLI env var when set to 'generic'", () => {
       process.env.PRODUCT_WORKFLOW_CLI = "generic";
       expect(detectCLI()).toBe("generic");
+    });
+
+    it("prefers an explicit embedded host over inherited Multica signals", () => {
+      process.env.MULTICA_ISSUE_ID = "issue-123";
+      process.env.FUSION_HOST = "1";
+      expect(detectCLI()).toBe("fusion");
+      delete process.env.FUSION_HOST;
+    });
+
+    it("detects Multica when no explicit Stelow host is selected", () => {
+      process.env.STELOW_MULTICA_HOST = "1";
+      expect(detectCLI()).toBe("multica");
     });
 
     it("is case-insensitive for PRODUCT_WORKFLOW_CLI env var", () => {
@@ -131,7 +148,7 @@ describe("CLI Detection", () => {
 
     it("detects CLI when not specified", () => {
       const caps = getCLICapabilites();
-      expect(["pi", "fusion", "generic"]).toContain(caps.cli);
+      expect(["pi", "fusion", "multica", "generic"]).toContain(caps.cli);
     });
 
     it("returns same result as direct getCLICapabilities call", () => {
