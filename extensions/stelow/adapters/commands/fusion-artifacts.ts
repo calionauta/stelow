@@ -31,7 +31,7 @@ export function readPackageMetadata(repoRoot: string): { name: string; version: 
 
 export function readStagesConfig(repoRoot: string): { stages: StageConfig[] } {
   const parsed = parseYaml(
-    readFileSync(join(repoRoot, "skills", "stelow-product-orchestrator", "stages.yaml"), "utf8"),
+    readFileSync(join(repoRoot, "skills", "stelow-adapter-cli", "stages.yaml"), "utf8"),
   ) as {
     stages?: StageConfig[];
   };
@@ -87,8 +87,8 @@ export function buildFusionWorkflowIR(repoRoot: string): FusionWorkflowIR {
       name: `Stelow: ${stage.name}`,
       description: stage.description,
       prompt: stage.requires_approval
-        ? `Load the stelow-product-orchestrator skill and execute only the ${stage.name} stage. Fusion has no native visual_review tool: complete the canonical fallback by writing .stelow/approvals/{dirHash}/{file}.approved.md before advancing. Follow stages.yaml and persist progress in stelow.json.`
-        : `Load the stelow-product-orchestrator skill and execute only the ${stage.name} stage. Follow stages.yaml and persist progress in stelow.json.`,
+        ? `Load the stelow-adapter-cli skill and execute only the ${stage.name} stage. Fusion has no native visual_review tool: complete the canonical fallback by writing .stelow/approvals/{dirHash}/{file}.approved.md before advancing. Follow stages.yaml and persist progress in stelow.json.`
+        : `Load the stelow-adapter-cli skill and execute only the ${stage.name} stage. Follow stages.yaml and persist progress in stelow.json.`,
     },
   }));
   const nodes: FusionWorkflowIR["nodes"] = [
@@ -113,7 +113,7 @@ export function buildFusionWorkflowIR(repoRoot: string): FusionWorkflowIR {
       id: "skillName",
       name: "Orchestrator skill",
       type: "string",
-      default: "stelow-product-orchestrator",
+      default: "stelow-adapter-cli",
       description: "Agent Skill loaded by every Stelow stage node.",
     }],
   };

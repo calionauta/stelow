@@ -18,7 +18,7 @@
  * README parser is scoped to the `## 📋 Skills` section so unrelated
  * category/count mentions elsewhere cannot satisfy the contract. The
  * orchestrator's intentional public display alias `` `stelow` ``
- * (described in `skills/stelow-product-orchestrator/SKILL.md` as
+ * (described in `skills/stelow-adapter-cli/SKILL.md` as
  * `[stelow]`) is the ONLY normalization applied; all sub-skill rows
  * must use exact stelow-product-prefixed directory names.
  *
@@ -38,7 +38,7 @@ const README_PATH = join(PROJECT_ROOT, 'README.md');
 
 type Category = 'product' | 'research' | 'code' | 'meta';
 const ALLOWED_CATEGORIES: readonly Category[] = ['product', 'research', 'code', 'meta'];
-const ORCHESTRATOR_DIR = 'stelow-product-orchestrator';
+const ORCHESTRATOR_DIR = 'stelow-adapter-cli';
 const ORCHESTRATOR_ALIAS = 'stelow';
 
 // ── Source enumeration ────────────────────────────────────────────
@@ -406,7 +406,7 @@ describe('SW-015 — README skill-count contract', () => {
       expect(orchestratorBlock).toBeDefined();
       const rows = parseSkillRowsFromBlock(orchestratorBlock!.body);
       expect(rows).toHaveLength(1);
-      // Intentional public alias: `stelow` → `stelow-product-orchestrator`.
+      // Intentional public alias: `stelow` → `stelow-adapter-cli`.
       const normalized = rows[0] === ORCHESTRATOR_ALIAS ? ORCHESTRATOR_DIR : rows[0];
       expect(normalized).toBe(ORCHESTRATOR_DIR);
     });
@@ -466,12 +466,17 @@ describe('SW-015 — README skill-count contract', () => {
       const orchestratorRows = rowsFor('Orchestrator').map(
         (n) => (n === ORCHESTRATOR_ALIAS ? ORCHESTRATOR_DIR : n),
       );
+      // The orchestrator skill is itself one of the 25 source rows and is
+      // not present in any of the four frontmatter category buckets, so
+      // it is excluded from the product/research/code/meta rows and is
+      // represented only by the Orchestrator block. Drop the orchestrator
+      // row before comparing against the canonical source set — otherwise
+      // it appears in `allRows` AND in `sources`.
       const allRows = [
         ...productRows,
         ...researchRows,
         ...codeRows,
         ...metaRows,
-        ...orchestratorRows,
       ];
       // Each block must be disjoint from the others (no skill appears
       // in two blocks; no duplicates within a block).
@@ -480,10 +485,14 @@ describe('SW-015 — README skill-count contract', () => {
         expect(seen.has(r), `duplicate row "${r}" across blocks`).toBe(false);
         seen.add(r);
       }
-      // Set equality with the canonical source set.
-      const expected = new Set(sources.map((s) => s.dirName));
+      // Set equality with the canonical source set minus the orchestrator
+      // skill (which is its own block, not a sub-skill).
+      const expected = new Set(
+        sources.map((s) => s.dirName).filter((d) => d !== ORCHESTRATOR_DIR),
+      );
       expect(new Set(allRows)).toEqual(expected);
-      expect(allRows).toHaveLength(25);
+      // 25 source rows = 24 sub-skills + 1 orchestrator. Sub-skill count = 24.
+      expect(allRows).toHaveLength(24);
     });
   });
 });

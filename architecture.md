@@ -63,7 +63,7 @@ and [`docs/design/fusion-integration-facts.md`](docs/design/fusion-integration-f
 
 The source of truth is `PHASE_NAMES` in `extensions/stelow/types.ts`, with
 transitions and conditional review gates in
-`skills/stelow-product-orchestrator/stages.yaml`:
+`skills/stelow-adapter-cli/stages.yaml`:
 
 `Triage`, `ItemSelect`, `Setup`, `Context`, `Shape`, `Critique`, `Gate`, `Scope`,
 `Interface`, `Int.Gate`, `Selection`, `Planning`, `Plan.Gate`, `Execution`,
@@ -71,7 +71,7 @@ transitions and conditional review gates in
 
 `Gate`, `Int.Gate`, `Plan.Gate`, and `Diff.Gate` are conditional by review mode;
 the unconditional “never skip” rule from pre-v0.55 is gone. Execution is
-phase 13, Verification 14, and Audit 16. See [`stages.yaml`](skills/stelow-product-orchestrator/stages.yaml)
+phase 13, Verification 14, and Audit 16. See [`stages.yaml`](skills/stelow-adapter-cli/stages.yaml)
 for the canonical transitions.
 
 ## Commands

@@ -23,7 +23,7 @@ retired:
     retired_at: 2026-06-24
     reason: renamed
     superseded_by:
-      - stelow-product-orchestrator
+      - stelow-adapter-cli
     note: |
       Renamed in 2026-06-19 (commit 8c6363e "feat: rename product to stelow")
       and again in 0.48.0 when the legacy runtime state directory
@@ -59,9 +59,9 @@ retired:
     retired_at: 2026-06-22
     reason: renamed
     superseded_by:
-      - stelow-product-orchestrator
+      - stelow-adapter-cli
     note: |
-      Renamed to stelow-product-orchestrator to follow the
+      Renamed to stelow-adapter-cli to follow the
       stelow-product-* convention and clarify orchestrator role.
 
   # 2026-07-13 (v0.49.0): full cali-product-* → stelow-product-* rename.

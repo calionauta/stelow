@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { join } from "node:path";
 import { loadStages, resolveTool } from "../../extensions/stelow/adapters/stages-loader";
 
-const configPath = join(process.cwd(), "skills/stelow-product-orchestrator/stages.yaml");
+const configPath = join(process.cwd(), "skills/stelow-adapter-cli/stages.yaml");
 
 describe("canonical stages tool mapping", () => {
   it("resolves every stage tool for every supported host", () => {

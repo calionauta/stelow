@@ -1,7 +1,7 @@
 {
   "id": "fusion-plugin-stelow",
   "name": "Stelow",
-  "version": "0.55.2",
+  "version": "0.56.0",
   "description": "Stelow product-planning workflow and skills for Fusion.",
   "author": "calionauta",
   "fusionVersion": ">=0.1.0",
@@ -61,10 +61,6 @@
     {
       "skillId": "stelow-product-opportunity-mapping",
       "name": "stelow-product-opportunity-mapping"
-    },
-    {
-      "skillId": "stelow-product-orchestrator",
-      "name": "stelow-product-orchestrator"
     },
     {
       "skillId": "stelow-product-plan-critique",

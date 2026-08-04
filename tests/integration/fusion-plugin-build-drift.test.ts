@@ -66,12 +66,12 @@ let SKILL_SPECIFIC_KEEP: Set<string>;
  * `repoRoot` repo's `git ls-files` (the same one the test runs against) so
  * HEAD's tracked shape — not a stale hand-written constant — drives the
  * fixture. The orchestrator's source directory is excluded because the
- * fixture's `if (entry.name === 'stelow-product-orchestrator') continue;`
+ * fixture's `if (entry.name === 'stelow-adapter-cli') continue;`
  * branch preserves every orchestrator file unconditionally.
  */
 function buildSkillSpecificKeep(): Set<string> {
   const out = execSync(
-    `git ls-files 'skills/*/references/cli-tools/*.md' | grep -v 'stelow-product-orchestrator/' | xargs -n1 basename | sort -u`,
+    `git ls-files 'skills/*/references/cli-tools/*.md' | grep -v 'stelow-adapter-cli/' | xargs -n1 basename | sort -u`,
     { cwd: PROJECT_ROOT, stdio: 'pipe', encoding: 'utf8' },
   );
   return new Set(out.trim().split('\n').filter(Boolean));
@@ -90,7 +90,7 @@ afterEach(async () => {
 /**
  * Build a tmpdir that simulates a fresh-checkout state of the repository:
  *
- *   - skills/stelow-product-orchestrator/references/cli-tools/*  (tracked source of truth, kept)
+ *   - skills/stelow-adapter-cli/references/cli-tools/*  (tracked source of truth, kept)
  *   - skills/<sub-skill>/references/cli-tools/<skill-specific>.md  (gitignore-negated, kept)
  *   - skills/<sub-skill>/references/cli-tools/<other>           (gitignored build output, ABSENT)
  *   - extensions/stelow/, scripts/prepare-fusion-plugin.ts, scripts/sync-cli-tools.sh
@@ -157,7 +157,7 @@ async function buildCleanCheckoutFixture(): Promise<string> {
     await cp(join(PROJECT_ROOT, 'skills', entry.name), join(root, 'skills', entry.name), {
       recursive: true,
     });
-    if (entry.name === 'stelow-product-orchestrator') {
+    if (entry.name === 'stelow-adapter-cli') {
       // Orchestrator is the source of truth — keep ALL its cli-tools.
       continue;
     }
@@ -237,7 +237,7 @@ describe('SW-016: prepareFusionPlugin must not silently delete tracked cli-tools
     // The orchestrator source directory must still hold all 18 files (it is
     // the source of truth and is tracked at HEAD).
     const orchFiles = await readdir(
-      join(root, 'skills', 'stelow-product-orchestrator', 'references', 'cli-tools'),
+      join(root, 'skills', 'stelow-adapter-cli', 'references', 'cli-tools'),
     );
     expect(orchFiles.length).toBeGreaterThanOrEqual(17);
     // The gitignored mirrors must be ABSENT for at least one sub-skill.
@@ -299,12 +299,12 @@ describe('SW-016: prepareFusionPlugin must not silently delete tracked cli-tools
     // skill-specific extras (derived from `git ls-files`, NOT hardcoded).
     // The 360 gitignored mirror files MUST be missing.
     const orchSourceFiles = await readdir(
-      join(root, 'skills', 'stelow-product-orchestrator', 'references', 'cli-tools'),
+      join(root, 'skills', 'stelow-adapter-cli', 'references', 'cli-tools'),
     );
     // Derive the tracked skill-specific extras from `git ls-files` and store
     // them as full relative paths (matching the shape `actual` produces).
     const trackedSkillSpecific = execSync(
-      `git ls-files 'skills/*/references/cli-tools/*.md' | grep -v 'stelow-product-orchestrator/'`,
+      `git ls-files 'skills/*/references/cli-tools/*.md' | grep -v 'stelow-adapter-cli/'`,
       { cwd: PROJECT_ROOT, stdio: 'pipe', encoding: 'utf8' },
     )
       .trim()
@@ -313,7 +313,7 @@ describe('SW-016: prepareFusionPlugin must not silently delete tracked cli-tools
       .map((p) => p.replace(/^skills\//, ''));
     const expectedSurvivors = new Set([
       ...orchSourceFiles.map((f) =>
-        join('stelow-product-orchestrator', 'references', 'cli-tools', f),
+        join('stelow-adapter-cli', 'references', 'cli-tools', f),
       ),
       ...trackedSkillSpecific,
     ]);

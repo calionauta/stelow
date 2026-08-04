@@ -142,7 +142,7 @@ describe("Fusion command artifact generator (edge cases)", () => {
       const command = generateFusionCommands(root).find((path) => path.endsWith("sw-start.md"));
       expect(command).toBeTruthy();
       const content = readFileSync(command!, "utf8");
-      expect(content).toContain("skills/stelow-product-orchestrator/SKILL.md");
+      expect(content).toContain("skills/stelow-adapter-cli/SKILL.md");
       expect(content).toContain("fn_ask_question");
       expect(content).toContain("fn_spawn_agent");
       expect(content).toContain("fn_workflow_validate");

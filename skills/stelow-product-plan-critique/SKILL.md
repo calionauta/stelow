@@ -129,7 +129,7 @@ SPEC_FILE=$(ls $SPEC 2>/dev/null | head -1) || SPEC_FILE=""
 
 # Read REVIEW_MODE via canonical helper (filters by in-progress workflow; no head-1 ambiguity).
 # shellcheck disable=SC1091
-source "$(dirname "${BASH_SOURCE[0]:-$0}")/../../stelow-product-orchestrator/references/cli-tools/read-config.sh" 2>/dev/null || true
+source "$(dirname "${BASH_SOURCE[0]:-$0}")/../../stelow-adapter-cli/references/cli-tools/read-config.sh" 2>/dev/null || true
 REVIEW_MODE=$(stelow_read_review_mode 2>/dev/null || echo "Product Spec + Interface + Scopes")
 APPETITE=$(grep -oP '^appetite:\s*\K\S+' "$SPEC_FILE" 2>/dev/null || echo "Core")
 FIT=$(grep -oP '^appetite_fit:\s*\K\S+' "$SPEC_FILE" 2>/dev/null || echo "fits")

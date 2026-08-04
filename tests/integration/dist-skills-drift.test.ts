@@ -291,7 +291,7 @@ describe('SW-036: guard reads manifest version via Node, tolerates extra fields'
         description: 'Stelow product-planning workflow and skills for Fusion.',
         author: 'calionauta',
         fusionVersion: '>=0.1.0',
-        skills: [{ skillId: 'stelow-product-orchestrator', name: 'stelow-product-orchestrator' }],
+        skills: [{ skillId: 'stelow-adapter-cli', name: 'stelow-adapter-cli' }],
         settingsSchema: { installProjectIntegration: { type: 'boolean', defaultValue: true } },
       }),
     );

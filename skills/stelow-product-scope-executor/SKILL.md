@@ -137,7 +137,7 @@ Phase 2 (after SCOPE-1):
 # (canonical source via helper) so the warning matches the active workflow, not stale specs.
 APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/*/*/plans/spec-product_*.md 2>/dev/null || echo "Core")
 # shellcheck disable=SC1091
-source "$(dirname "${BASH_SOURCE[0]:-$0}")/../../stelow-product-orchestrator/references/cli-tools/read-config.sh" 2>/dev/null || true
+source "$(dirname "${BASH_SOURCE[0]:-$0}")/../../stelow-adapter-cli/references/cli-tools/read-config.sh" 2>/dev/null || true
 WF_APPETITE=$(stelow_read_appetite 2>/dev/null || true)
 [ -n "$WF_APPETITE" ] && APPETITE="$WF_APPETITE"
 if [ "$APPETITE" = "Complete" ]; then
@@ -245,7 +245,7 @@ Same scope body may declare a lock TTL override:
 
 Parse the integer value into `wf.scopes[i].lock_ttl_seconds: number` (optional). Default is 1800 (30 min); see `references/cli-tools/file-locking.md#ttl-configuration` for range / clamping rules. At Step 3c, the orchestrator exports this to `$LOCK_TTL_SECONDS` for the acquire snippet.
 
-Convention is **advisory** — no enforcement at the tracking layer. The file-reservation lock protocol (see `references/cli-tools/file-locking.md` in `stelow-product-orchestrator`) uses these declared paths at scope-execution time. If undeclared, the post-execution `actual_files ∩ declared` diff in Step 8 still flags undeclared writes.
+Convention is **advisory** — no enforcement at the tracking layer. The file-reservation lock protocol (see `references/cli-tools/file-locking.md` in `stelow-adapter-cli`) uses these declared paths at scope-execution time. If undeclared, the post-execution `actual_files ∩ declared` diff in Step 8 still flags undeclared writes.
 
 ### Step 2d: Complete Human-in-loop execution mode
 

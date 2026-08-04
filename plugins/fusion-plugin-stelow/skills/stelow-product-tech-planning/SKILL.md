@@ -208,7 +208,7 @@ fi
 
 # Read appetite from workflow config (canonical source via helper)
 # shellcheck disable=SC1091
-source "$(dirname "${BASH_SOURCE[0]:-$0}")/../../stelow-product-orchestrator/references/cli-tools/read-config.sh"
+source "$(dirname "${BASH_SOURCE[0]:-$0}")/../../stelow-adapter-cli/references/cli-tools/read-config.sh"
 APPETITE=$(stelow_read_appetite)
 
 # Read spec-product for IN scope concepts
@@ -330,7 +330,7 @@ SPEC_PRODUCT=""
 SPEC_TECH=""
 
 # shellcheck disable=SC1091
-source "$(dirname "${BASH_SOURCE[0]:-$0}")/../../stelow-product-orchestrator/references/cli-tools/read-config.sh" 2>/dev/null || true
+source "$(dirname "${BASH_SOURCE[0]:-$0}")/../../stelow-adapter-cli/references/cli-tools/read-config.sh" 2>/dev/null || true
 if [ -n "$WF_DIR" ] && [ -f "stelow.json" ]; then
   REVIEW_MODE=$(stelow_read_review_mode 2>/dev/null || echo "Product Spec + Interface + Scopes")
   SPEC_PRODUCT=".stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md"

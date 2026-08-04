@@ -12,7 +12,7 @@
 ## Architecture
 
 See [architecture.md](architecture.md) for module layout, data flow, and how to extend. Skills live in `skills/*/SKILL.md`; stages are defined in
-`skills/stelow-product-orchestrator/stages.yaml` (single source of truth). The
+`skills/stelow-adapter-cli/stages.yaml` (single source of truth). The
 phases in `extensions/stelow/types.ts#PHASE_NAMES` are the canonical
 17-stage state machine. Visual review gates (`gate`, `int-gate`, `plan-gate`,
 `diff-gate`) are conditional by review mode — see `stages.yaml`.
@@ -45,7 +45,7 @@ phases in `extensions/stelow/types.ts#PHASE_NAMES` are the canonical
 >
 > - **Skills (25)**: `find skills -maxdepth 2 -name SKILL.md -path '*/stelow-product-*' | wc -l` (canonical product-orchestrator + 24 sub-skills).
 > - **Phases (17)**: `extensions/stelow/types.ts#PHASE_NAMES` (the `Triage`..`Audit` array).
-> - **Stage transitions and conditional gates**: `skills/stelow-product-orchestrator/stages.yaml`.
+> - **Stage transitions and conditional gates**: `skills/stelow-adapter-cli/stages.yaml`.
 > - **Commands (19)**: `extensions/stelow/adapters/commands/dispatcher.ts#WORKFLOW_COMMANDS`.
 > - **Fusion commands (16)**: `WORKFLOW_COMMANDS.filter((d) => !d.piOnly).length` (Pi exposes all 19; Fusion emits the 16 non-`piOnly` descriptors).
 
@@ -236,7 +236,7 @@ All optional — workflow runs without them. `scripts/setup.sh` auto-detects + o
 
 ## Token Efficiency
 
-See `skills/stelow-product-orchestrator/references/cli-tools/context-efficiency.md` for patterns:
+See `skills/stelow-adapter-cli/references/cli-tools/context-efficiency.md` for patterns:
 - Batch multi-symbol cymbal lookups (`show X Y Z`)
 - Batch agent_browser extractions (`snapshot` + batch `get text`)
 - Output truncation with `offset/limit` instead of full `read`

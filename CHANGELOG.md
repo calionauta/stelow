@@ -4,6 +4,29 @@ All notable changes to `@calionauta/stelow` will be documented in this file.
 
 ## [Unreleased]
 
+## [0.56.0] - 2026-08-04
+
+### Added
+
+- **Native Multica adapter** — `extensions/stelow/adapters/multica/{index,types,sync}.ts` project the canonical `stelow.json` state to a Multica issue: `metadata.{workflow_id,current_stage,appetite,review_mode,stelow_version,last_transition_at,gate_approved_at*,blocked_reason}`, native status, deduplicated artifact attachments, mutually-exclusive `stelow:<stage>` label, and four gate approval / blocked helpers. Local state remains authoritative; a remote failure never rolls back or corrupts the local workflow file.
+- **Multica host detection** — `detectHost()` now returns `multica` when `STELOW_MULTICA_HOST=1` is set, ahead of filesystem probes. Explicit `STELOW_HOST`/`PRODUCT_WORKFLOW_CLI` overrides win.
+- **Stage label policy** — Board-friendly `stelow:<stage>` label, removed on transition before adding the new one. `multicaStageLabel()` and `MulticaAdapter.setStageLabel()` enforce the invariant.
+- **Artifact dedup** — `MulticaAdapter.attachArtifact()` records a SHA-256 metadata key per attached file, so retrying the same stage does not re-upload the file.
+- **Skill import pipeline** — `scripts/package-multica-skills.sh` (tar) and `scripts/zip-multica-skills.sh` (zip) build 25 portable bundles; `scripts/multica-skills-sync.sh [--apply]` reconciles the workspace (CREATE / OVERWRITE) using `multica skill list` as truth.
+- **Operational doc** — `docs/multica-integration.md` documents runtime contract, stage labels, runner, and import procedure.
+
+### Changed
+
+- **Rename of the canonical orchestrator skill** — `skills/stelow-adapter-cli/` replaces `skills/stelow-product-orchestrator/` (BREAKING). 173 in-repo references (skills, plugins, manifests, generators, install.sh, fusion plugin, tests, docs, AGENTS, RULES) were migrated atomically. `skills-lock.json` and the Fusion plugin manifest track the new id. Stelow Runner must reference `stelow-adapter-cli` from now on.
+- **`Workflow.host` union extended** — `"multica"` is now a valid `Workflow.host.name`. JSON Schema, TypeBox `WorkflowSchema`, and `Workflow.host` field are aligned.
+- **Default `context` stage behavior** — Documented opt-in for `strategic_exploration`; default still flows through to `shape` without the strategic prompt (coming change for v0.57.0 wiring).
+
+### Removed
+
+- **Legacy `stelow-product-orchestrator` skill directory** — All content was moved to `stelow-adapter-cli`. Run `scripts/multica-skills-sync.sh --apply` to migrate the workspace.
+
+## [0.55.1] - 2026-07-23
+
 ### Fixed
 
 - **Fusion plugin cli-tools build drift** (`SW-016`) — Run `scripts/sync-cli-tools.sh` before `prepare:fusion-plugin` so a fresh-checkout `npm run build` preserves all 382 tracked plugin cli-tool references instead of silently deleting them. Added an isolated regression fixture that pins the sync-before-prepare ordering and verifies the generated plugin tree matches tracked HEAD.
@@ -206,7 +229,7 @@ Implements 10 of 10 plan items from `stelow-reliability.md`:
 - `extensions/stelow/index.ts` — agent-end hook no longer calls `updateWorkflowIndexJson`.
 - `extensions/stelow/doctor.ts` — `readWorkflowIndexSnapshot()` removed. Drift detection removed (single source = no drift possible). Zombie detection now reads `stelow.json` instead of scanning `index.json` files.
 - `extensions/stelow/pulse/pulse.sh` — existence check now looks for `stelow.json` entry instead of per-workflow `index.json`.
-- `skills/stelow-product-orchestrator/stages/setup.md` — workflow existence checks + resume workflow logic now reads `stelow.json` directly.
+- `skills/stelow-adapter-cli/stages/setup.md` — workflow existence checks + resume workflow logic now reads `stelow.json` directly.
 - `integrations/muxy/stelow/src/panel/data.js` — `scanArtifactDirs()` rewritten to read `stelow.json` workflow entries directly.
 - `integrations/herdr/stelow/src/main.rs` — `load_index_json()` removed. `WorkflowEntry` struct now deserializes `draftContent` and `scopes[]` directly from `stelow.json#workflows[].i`.
 - `tests/unit/scan-workflow-dirs.test.ts` — deleted (function now reads from stelow.json).
@@ -360,9 +383,9 @@ The bash helper and TS write-through were already symmetric since v0.51.0 — th
 
 ### Changed
 
-- **Canonical config helper** (`skills/stelow-product-orchestrator/references/cli-tools/read-config.{sh,md}`) — New bash helper `stelow_read_appetite` / `stelow_read_review_mode` / `stelow_read_domains` consolidates 7+ duplicated `grep -oP '"appetite":\s*"([^"]+)"'` patterns. Filters by `status === "in-progress"` to avoid multi-workflow ambiguity (was returning archived configs as defaults). Portable across GNU/BSD grep (no `-P`).
+- **Canonical config helper** (`skills/stelow-adapter-cli/references/cli-tools/read-config.{sh,md}`) — New bash helper `stelow_read_appetite` / `stelow_read_review_mode` / `stelow_read_domains` consolidates 7+ duplicated `grep -oP '"appetite":\s*"([^"]+)"'` patterns. Filters by `status === "in-progress"` to avoid multi-workflow ambiguity (was returning archived configs as defaults). Portable across GNU/BSD grep (no `-P`).
 - **7 skills + 1 stage updated to use helper** — `shape-up`, `tech-planning`, `plan-critique`, `ux-critique`, `codebase-critique`, `interface-alternatives`, `scope-executor`, and `gate.md`. Each skill now sources the helper instead of inlining regex.
-- **Orchestrator example simplified** (`skills/stelow-product-orchestrator/SKILL.md`) — Removed the "sync index.json via bash" section from the stage-advance example. Write-through is automatic via `writeTracking()`.
+- **Orchestrator example simplified** (`skills/stelow-adapter-cli/SKILL.md`) — Removed the "sync index.json via bash" section from the stage-advance example. Write-through is automatic via `writeTracking()`.
 - **Pulse instruction updated** (`extensions/stelow/pulse/pulse-task.md`) — `appetite`/`review_mode` go in `stelow.json#wf.config` (canonical), not `index.json`.
 - **Test assertion renamed** (`tests/appetite-consistency.test.ts`) — `gate.md reads review_mode from index.json` → `gate.md reads review_mode from stelow.json (canonical) with index.json fallback`.
 - **Audit trail fixture updated** (`tests/fixtures/audit-trail/sample-audit-trail.md`) — Review Mode link now points to `stelow.json#workflows[].config.review_mode` (canonical as of v0.50.0).
@@ -386,7 +409,7 @@ The bash helper and TS write-through were already symmetric since v0.51.0 — th
   - `stelow-product-plan-critique/SKILL.md` (Standalone awareness note).
   - `stelow-product-tech-planning/SKILL.md` (Standalone awareness note).
   - `stelow-product-scope-executor/SKILL.md` (Standalone awareness + Complete-appetite warning echo).
-  - `stelow-product-orchestrator/stages/execution.md` (Human-in-loop note).
+  - `stelow-adapter-cli/stages/execution.md` (Human-in-loop note).
 - **Test assertion tightening** — `tests/unit/artifact-flow-contract.test.ts` now verifies that scope-executor references both `stelow.json#workflows[].config.review_mode` (canonical) AND the `index.json` legacy fallback path, instead of the previous generic `review_mode` substring match.
 
 ### Notes
@@ -595,7 +618,7 @@ Codex removed (formalized the long-marked "Removed" status), OpenCode plugin dro
 
 ### Breaking
 
-- **Codex support removed.** Already marked "Removed" in `cli-agents/COMMANDS.md`; now formalized. No command files, no adapter, no test cases. Codex users must use the `stelow-product-orchestrator` skill directly via chat.
+- **Codex support removed.** Already marked "Removed" in `cli-agents/COMMANDS.md`; now formalized. No command files, no adapter, no test cases. Codex users must use the `stelow-adapter-cli` skill directly via chat.
 - **OpenCode plugin dropped** (`cli-agents/opencode/plugin/` — 9 files, 2,200-line `package-lock.json`). The TypeScript-based TUI plugin added maintenance burden without offering features that the skill-delegated command files don't already cover. OpenCode now uses the same skill-delegation model as Claude Code: copy `cli-agents/opencode/commands/sw-*.md` to `~/.opencode/commands/`. Install: `cli-agents/opencode/install.sh`.
 
 ### Added
@@ -610,7 +633,7 @@ Codex removed (formalized the long-marked "Removed" status), OpenCode plugin dro
 
 - **`cli-agents/COMMANDS.md` rewritten** with explicit "Support Levels" table: Pi ✅ Full, OpenCode/Claude Code ⚠️ Reduced Skill, Codex ❌ Removed. The previous matrix showed all-✅ symbols across all harnesses (misleading).
 - **`cali-product-scope-executor` SKILL.md Step 2e** rewritten. The 20-line bash snippet that initialized scopes is gone — replaced with a paragraph explaining that the extension handles it automatically. KISS + DRY.
-- **`stelow-product-orchestrator` SKILL.md rule 2** now uses 🚨 emoji + explicit "NEVER chat/prose for user-facing questions" warning. Rule violations were the #1 cause of workflow drift per recent retros.
+- **`stelow-adapter-cli` SKILL.md rule 2** now uses 🚨 emoji + explicit "NEVER chat/prose for user-facing questions" warning. Rule violations were the #1 cause of workflow drift per recent retros.
 
 ### Documentation
 
@@ -860,7 +883,7 @@ No deprecation window, no migration cosmetics, no cosupport tickets.**
   `/**` ⇒ prefix match, trailing `/*` ⇒ single-level match, otherwise
   exact.
 - **File-reservation lock protocol**
-  (`skills/stelow-product-orchestrator/references/cli-tools/file-locking.md`,
+  (`skills/stelow-adapter-cli/references/cli-tools/file-locking.md`,
   synced to 25 skill mirrors via `sync-cli-tools.sh`). CLI-agnostic
   prevention for parallel scope execution. Atomic acquire via `ln`
   (EEXIST-safe), TTL-based stale-lock stealing, `sha1sum(12)` lock file
@@ -1008,7 +1031,7 @@ No deprecation window, no migration cosmetics, no cosupport tickets.**
 
 ### Changed
 
-- **cli-tools distribution** — Removed duplicated `references/cli-tools/` from git tracking (276 files). Sub-skills now get cli-tools generated at build/install time from orchestrator (`stelow-product-orchestrator`), the single source of truth. Added `.npmignore` override so npm tarball includes cli-tools. Updated `install.sh` and Pi extension to regenerate cli-tools on install. CI pipeline generates cli-tools before tests.
+- **cli-tools distribution** — Removed duplicated `references/cli-tools/` from git tracking (276 files). Sub-skills now get cli-tools generated at build/install time from orchestrator (`stelow-adapter-cli`), the single source of truth. Added `.npmignore` override so npm tarball includes cli-tools. Updated `install.sh` and Pi extension to regenerate cli-tools on install. CI pipeline generates cli-tools before tests.
 
 ## [0.40.1] - 2026-07-02
 
@@ -1668,7 +1691,7 @@ the intent — the verification stage was the outlier.
 ## [0.34.1] - 2026-06-22
 
 ### Changed
-- **Skill renamed: `stelow` → `stelow-product-orchestrator`** — Directory,
+- **Skill renamed: `stelow` → `stelow-adapter-cli`** — Directory,
   SKILL.md frontmatter, and all `/skill:stelow` references updated. Old name
   registered in `retired-skills.yaml` for auto-cleanup.
 - **`retired-skills.yaml` moved from `skills/*/` to project root** — Ops-only

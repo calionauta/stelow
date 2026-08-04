@@ -313,7 +313,7 @@ async function cmdResume(pi: ExtensionAPI, args: string, ctx: CmdCtx) {
       }
       reply(ctx, `▶️ '${inProgress.name}' resuming from ${PHASE_NAMES[inProgress.currentPhase]}...`);
       pi.sendUserMessage(
-        `/skill:stelow-product-orchestrator\n\n[RESUME: workflow '${inProgress.name}', current phase: ${inProgress.currentPhase} (${PHASE_NAMES[inProgress.currentPhase]}). Auto-Discovery will find this in-progress workflow. User already confirmed via /sw-resume — proceed without asking, jump to the current phase and continue from there.]`,
+        `/skill:stelow-adapter-cli\n\n[RESUME: workflow '${inProgress.name}', current phase: ${inProgress.currentPhase} (${PHASE_NAMES[inProgress.currentPhase]}). Auto-Discovery will find this in-progress workflow. User already confirmed via /sw-resume — proceed without asking, jump to the current phase and continue from there.]`,
         { deliverAs: "followUp" }
       );
       return;

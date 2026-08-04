@@ -310,7 +310,7 @@ export type ScopeStatus = 'pending' | 'in-progress' | 'completed' | 'escalated' 
  *
  * @see docs/scope-execution-strategy.md (high-level pipeline overview)
  * @see skills/stelow-product-scope-executor/SKILL.md (Steps 2e / 3c / 3e / 8)
- * @see skills/stelow-product-orchestrator/references/cli-tools/file-locking.md
+ * @see skills/stelow-adapter-cli/references/cli-tools/file-locking.md
  *      (parallel-scope prevention via file-reservation locks)
  */
 export interface Scope {

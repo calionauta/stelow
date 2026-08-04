@@ -239,7 +239,7 @@ export default async function cmdStart(
     "------------------------------------------------------------",
     "[BOT] Skill loaded automatically:",
     "",
-    "  /skill:stelow-product-orchestrator",
+    "  /skill:stelow-adapter-cli",
     "------------------------------------------------------------",
   );
   if (isUnnamed) {
