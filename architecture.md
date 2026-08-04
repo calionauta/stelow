@@ -4,21 +4,26 @@
 
 Stelow is a host-agnostic product-planning workflow. The repository contains 25
 portable skills and 17 phases. Runtime state and commands live in
-`extensions/stelow/`; host specialization is behind `CLIAdapter`.
-See the [README](README.md) and [AGENTS.md](AGENTS.md) for the user-facing
-and contributor views, and [`docs/design/host-agnostic-architecture.md`](docs/design/host-agnostic-architecture.md)
+`extensions/stelow/`; host specialization is behind `CLIAdapter`. The
+canonical orchestrator skill is `stelow-adapter-cli` (renamed from
+`stelow-product-orchestrator` in v0.56.0). See the
+[README](README.md) and [AGENTS.md](AGENTS.md) for the user-facing and
+contributor views, and
+[`docs/design/host-agnostic-architecture.md`](docs/design/host-agnostic-architecture.md)
 for the host-agnostic design rationale. Reference for the
 [agentskills.io](https://agentskills.io/) standard, the
-[Plannotator](https://plannotator.ai/) visual review tool, and the
-[Pi](https://pi.dev) host.
+[Plannotator](https://plannotator.ai/) visual review tool, the
+[Pi](https://pi.dev) host, and the
+[Multica](https://multica.ai) host.
 
 ```text
 skills/ + stages.yaml (workflow content and tool vocabulary)
         ↓
-extensions/stelow/ (state, schema, locking, phases, command registry)
-        ↓ CLIAdapter
+extensions/stelow/ (state, schema, locking, phases, command registry, CLIAdapter contract)
+        ↓
   Pi: adapters/pi/ (hooks, TUI, native slash commands, Plannotator)
   Fusion: adapters/fusion.ts (tool mapping and generated resources)
+  Multica: adapters/multica/ (metadata KV, status, stage labels, deduplicated attachments)
   Generic: adapters/generic.ts (safe fallback)
         ↓
 plugins/fusion-plugin-stelow/ (compiled dependency-free Fusion package)
@@ -42,12 +47,41 @@ longer exist.
 
 ## Host adapters
 
-`CLI`/`HostName` are the `"pi" | "fusion" | "generic"` union. Adapter factories
-select the host after `detectHost()`. `stages.yaml` supplies canonical tool
-vocabulary; adapters translate it (for example Pi's `ask_user_question` to
-Fusion's `fn_ask_question`). Generic hosts receive skills and fallbacks but do
-not register native `/sw-*` commands. The adapter is in-process; a host plugin
-is a separate packaging boundary.
+`CLI`/`HostName` is the `"pi" | "fusion" | "multica" | "generic"` union.
+Adapter factories select the host after `detectHost()`. `stages.yaml`
+supplies the canonical tool vocabulary; adapters translate it (for example
+Pi's `ask_user_question` to Fusion's `fn_ask_question`). Generic hosts
+receive skills and fallbacks but do not register native `/sw-*` commands.
+The Multica adapter projects the canonical `stelow.json` state to a Multica
+issue — metadata KV, native status, deduplicated artifact attachments, and a
+mutually-exclusive `stelow:<stage>` label. The adapter is in-process; a host
+plugin is a separate packaging boundary.
+
+### Multica adapter (v0.56.0+)
+
+`extensions/stelow/adapters/multica/{index,types,sync}.ts`:
+
+- `MulticaAdapter` extends `GenericAdapter`; `name: CLI = "multica"`.
+- `projectWorkflowToMultica()` reads `Workflow.stage.current_stage` and
+  emits a `{ metadata, status, stageLabel }` projection. Stale or unknown
+  stages throw — the adapter never silently desynchronizes.
+- `syncTrackingToMultica()` runs after every authoritative local write to
+  `stelow.json`. It is opt-in: it does nothing unless
+  `STELOW_MULTICA_HOST=1` is set. A remote failure is logged and does not
+  roll back the local state.
+- `setStageLabel()` enforces the invariant that an issue carries exactly
+  one `stelow:<stage>` label at a time.
+- `attachArtifact()` records a SHA-256 metadata key per file so retrying a
+  stage does not re-upload the same artifact.
+- `approveGate(gate, ts)` records `<gate>_approved_at` for the four review
+  gates (`gate`, `int-gate`, `plan-gate`, `diff-gate`).
+- `markBlocked(reason)` sets `metadata.blocked_reason` and moves the issue
+  to native status `blocked`.
+
+`detectHost()` returns `multica` ahead of filesystem probes when
+`STELOW_MULTICA_HOST=1` (or `MULTICA_ISSUE_ID`/`MULTICA_TASK_ID`) is set.
+Explicit `STELOW_HOST`/`PRODUCT_WORKFLOW_CLI` overrides still win, so
+nested Pi/Fusion subprocesses are not hijacked by inherited signals.
 
 The Fusion package is prepared from the canonical skills and builders by
 `scripts/prepare-fusion-plugin.ts`, then compiled by
@@ -87,7 +121,9 @@ the authoritative command inventory; it includes `/sw-recover` and
 
 1. Add host-agnostic behavior to the core and update schemas/tests.
 2. Add host-specific behavior under the matching adapter; do not import Pi
-   primitives into Fusion or generic code.
+   primitives into Fusion, Multica or generic code. Each new host adds a
+   `CLI` union member, a `getCLICapabilities()` entry, and a new file under
+   `extensions/stelow/adapters/<host>/`.
 3. Update `stages.yaml` tool mappings and command descriptors when applicable.
 4. Run `npm run version:sync`, `npm run prepare:fusion-plugin`, and the targeted
    contract tests. Keep generated plugin output out of hand-authored guides.

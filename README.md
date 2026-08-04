@@ -2,7 +2,7 @@
   <img src="./logo.svg" alt="Stelow logo" width="400">
 </p>
 
-# stelow · opinionated agentic product workflow, pi-first
+# stelow · opinionated agentic product workflow, host-agnostic
 
 [![Ask DeepWiki](https://img.shields.io/badge/Ask%20DeepWiki-007ACC)](https://deepwiki.com/calionauta/stelow)
 [![Ask zRead](https://img.shields.io/badge/Ask%20zRead-10B981)](https://zread.ai/calionauta/stelow)
@@ -594,22 +594,24 @@ cron/launchd/systemd (every 30m)
 
 ## 🌐 Host Support
 
-stelow runs on three host surfaces (and any agent that reads `~/.agents/skills/<name>/SKILL.md`):
+stelow runs on four host surfaces (and any agent that reads `~/.agents/skills/<name>/SKILL.md`):
 
 | Host | Detection | Adapter surface | Notes |
 |---|---|---|---|
 | **Pi** (`@earendil-works/pi-coding-agent`) | `~/.pi` probe or `STELOW_HOST=pi` | `extensions/stelow/adapters/pi/` | Full experience: native `/sw-*` slash commands, TUI overlay, lifecycle hooks, Plannotator visual review. |
 | **Fusion** (the AI-orchestrated task board) | `~/.fusion` probe, `.fusion/` project-local probe, or `STELOW_HOST=fusion` | `extensions/stelow/adapters/fusion.ts` + `plugins/fusion-plugin-stelow/` | Compiled plugin with 25 plugin-local skills, validated project artifacts, and one managed project workflow; `visual_review` uses `.stelow/approvals/{dirHash}/{file}.approved.md`. |
 | **Generic / standalone** (Claude Code, Codex, Cursor, Continue, OpenCode, or any agent reading skills directly) | Default fallback (no probe match) | `extensions/stelow/adapters/generic.ts` | Skills land in `~/.agents/skills/` per the agentskills.io standard; visual_review is a no-op + receipt; subagent is a file-based handoff. |
+| **Multica** (`multica.ai` workspace) | `STELOW_MULTICA_HOST=1` (or `MULTICA_ISSUE_ID`) + `~/.multica` probe | `extensions/stelow/adapters/multica/{index,types,sync}.ts` | Native issue projection: metadata KV, mutually-exclusive `stelow:<stage>` label, native status, deduplicated artifact attachments, four gate approval / blocked helpers. Local `stelow.json` is the authoritative source; remote failures never roll back. |
 
 Owner paths in this repo:
 
 - `extensions/stelow/adapters/pi/` — Pi-only hooks, native `/sw-*` commands, TUI, Plannotator.
 - `extensions/stelow/adapters/fusion.ts` — Fusion tool mapping and generated resources.
 - `extensions/stelow/adapters/generic.ts` — portable no-op fallbacks.
+- `extensions/stelow/adapters/multica/` — native Multica adapter, projection, label/metadata/status sync.
 - `plugins/fusion-plugin-stelow/` — compiled dependency-free Fusion package.
 
-Detection lives in `extensions/stelow/state.ts#detectHost()` and follows this precedence: `FUSION_HOST=1` → `STELOW_HOST` (or `PRODUCT_WORKFLOW_CLI`) env var → `~/.fusion` probe → `~/.pi` probe → `pi --version` CLI probe → `generic` (safe fallback). See [docs/design/host-agnostic-architecture.md](docs/design/host-agnostic-architecture.md) for the full design rationale.
+Detection lives in `extensions/stelow/state.ts#detectHost()` and follows this precedence: `STELOW_MULTICA_HOST=1` (or `MULTICA_ISSUE_ID`/`MULTICA_TASK_ID`) → `FUSION_HOST=1` → `STELOW_HOST` (or `PRODUCT_WORKFLOW_CLI`) env var → `~/.fusion` probe → `~/.pi` probe → `pi --version` CLI probe → `generic` (safe fallback). The Multica signal is opt-in: the CLI presence alone is not enough to claim the host, so a host shell can run Stelow inside a Multica-managed environment without the adapter hijacking. See [docs/design/host-agnostic-architecture.md](docs/design/host-agnostic-architecture.md) for the full design rationale.
 
 To add a new host, follow the [Generic and future hosts](cli-agents/COMMANDS.md#generic-and-future-hosts) recipe in the adapter guide.
 
