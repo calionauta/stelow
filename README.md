@@ -459,7 +459,7 @@ curl -fsSL https://raw.githubusercontent.com/calionauta/stelow/main/setup.sh | s
 |---|---|---|---|
 | 1 | Node.js | v20+ via Homebrew (macOS) or nvm (Linux/Windows) | - |
 | 2 | pi.dev | `@earendil-works/pi-coding-agent` via npm | pi.dev |
-| 3 | Pi extensions | @tintinweb/pi-subagents, @tintinweb/pi-tasks, pi-supervisor, @plannotator/pi-extension, pi-rewind, pi-hermes-memory, @sting8k/pi-vcc, pi-cache-optimizer, pi-leakguard, @tomooshi/condensed-milk-pi, caveman-milk-pi, rpiv-ask-user-question, pi-fff, raphapr/pi-cymbal, joelhooks/pi-ast-grep | pi.dev only |
+| 3 | Pi extensions | @tintinweb/pi-subagents, @tintinweb/pi-tasks, pi-supervisor, @plannotator/pi-extension, pi-rewind, @sting8k/pi-vcc, pi-cache-optimizer, pi-leakguard, @tomooshi/condensed-milk-pi, caveman-milk-pi, rpiv-ask-user-question, pi-fff, raphapr/pi-cymbal, joelhooks/pi-ast-grep | pi.dev only |
 | 4 | Skills (25) | stelow orchestrator + 24 subskills, copied to `~/.agents/skills/` | **All CLIs** ✅ |
 | 5 | Settings | theme, model defaults, skill shortcuts in `~/.pi/agent/settings.json` | pi.dev |
 | 6 | cymbal | codebase navigation via `brew install 1broseidon/tap/cymbal` (macOS) or `go install` (Linux). Auto-installed as the `raphapr/pi-cymbal` Pi extension when Pi is detected; skipped gracefully if brew/Go absent | macOS, Linux |

@@ -62,7 +62,7 @@ PI_PACKAGES=(
 
   # Memory & compaction
   "npm:@sting8k/pi-vcc"
-  "npm:pi-hermes-memory"
+  
 
   # Cache
   "npm:pi-cache-optimizer"

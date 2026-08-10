@@ -224,7 +224,7 @@ PI_EXTENSIONS=(
   "npm:@ff-labs/pi-fff"
   "npm:@plannotator/pi-extension"
   "npm:@sting8k/pi-vcc"
-  "npm:pi-hermes-memory"
+  
   "npm:pi-cache-optimizer"
   "git:github.com/calionauta/pi-leakguard"
   "npm:@tomooshi/condensed-milk-pi"
