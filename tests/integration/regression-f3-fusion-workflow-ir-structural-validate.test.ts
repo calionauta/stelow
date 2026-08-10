@@ -29,7 +29,7 @@ function validWorkflow(): Record<string, unknown> {
       id: "skill",
       name: "Skill",
       type: "string",
-      default: "stelow-product-orchestrator",
+      default: "stelow-adapter-cli",
       description: "Skill to load",
     }],
   };

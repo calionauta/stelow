@@ -9,9 +9,10 @@
 [![CI](https://github.com/calionauta/stelow/actions/workflows/ci.yml/badge.svg)](https://github.com/calionauta/stelow/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/badge/coverage-70%25-brightgreen)](https://github.com/calionauta/stelow/actions/workflows/ci.yml)
 [![Version](https://img.shields.io/github/v/release/calionauta/stelow?logo=github&label=release)](https://github.com/calionauta/stelow/releases)
-[![Pi](https://img.shields.io/badge/Native-Pi-8B5CF6)](https://pi.dev)
-[![Fusion](https://img.shields.io/badge/Compiled%20plugin-Fusion-2563EB)](https://github.com/calionauta/stelow)
-[![CLI](https://img.shields.io/badge/Skills%20run%20on-Any%20agent-3B82F6)](https://github.com/calionauta/stelow#-host-support)
+[![Pi](https://img.shields.io/badge/Deep%20integration-Pi-8B5CF6)](https://pi.dev)
+[![Muxy](https://img.shields.io/badge/Webview%20panel-Muxy.app-10B981)](https://muxy.app)
+[![Herdr](https://img.shields.io/badge/Split%20pane%20TUI-Herdr-EA580C)](https://herdr.dev)
+[![CLI](https://img.shields.io/badge/Skills%20run%20on-Any%20CLI-3B82F6)](https://github.com/calionauta/stelow#cli-compatibility)
 
 I'm trying to make ai agents behave less like coding assistants and more like cross-functional product team.
 
@@ -28,7 +29,7 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 - **Shape Up methodology for AI agents** - IN/OUT scope boundaries, appetite-driven sizing, risk analysis, focused scoping. Every proposal is a shaped bet, not a wishlist.
 - **Appetite × Review Mode stage control** - Two orthogonal dimensions control the full workflow: how deep to prepare (Appetite: Lean / Core / Complete) and which gates run (Review Mode: Auto / Product Spec Gate / Product Spec + Interface Gates / Product Spec + Interface + Scopes / Product Spec + Interface + Tech Review). The cascade propagates automatically through critique depth, supervisor use, verification rigor, and gate requirements - no manual stage skipping needed.
 - **Adversarial plan critique** - Plans are reviewed for gaps, risks, and assumptions by parallel (fresh context) reviewers, not just approved in chat.
-- **Visual review gate** - Portable `visual_review` opens the full plan for point-by-point comments before implementation, not a rubber-stamp approval. The host-agnostic path writes approval receipts to `.stelow/approvals/{dirHash}/{file}.approved.md`.
+- **Visual review gate** - Plannotator opens the full plan for point-by-point comments before implementation, not a rubber-stamp approval.
 - **Appetite-scaled interface exploration** - 1, 3, or 5 ASCII archetypes plus hybrid depending on scope depth - no coded mockups wasted.
 - **Product domain libraries** - 8 domains auto-detected from your language (Pricing, Trust, Ads, Promotions, Open Source, Health, Marketplace, Business Models).
 - **Typed technical scopes** - feature, spike, optimize, test-* with dependency mapping and sequencing for autonomous execution.
@@ -39,7 +40,7 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 - **Bidirectional product ↔ tech flow** — tech constraints and opportunities inform product decisions *before* execution. Tech Preview uses cymbal for appetite-gated codebase recon; Alignment Check catches product-vs-tech misalignment with mode-dependent resolution (auto or user-flagged).
 - **Stack-matched skills + fresh docs** — during execution setup, the workflow discovers skills (via `npx skills`) optimized for the chosen tech stack and fetches current library docs (via `ctx7`). Both skip if already installed or unavailable. Skills install in project scope only, after user confirmation.
 - **Real-time TUI tracking** - see workflow state as it progresses through all stages.
-- **Host-owned scheduling** — Stelow ships no scheduler of its own. Each host (Multica autopilot, Fusion scheduler, Pi pi-subagents) drives `/sw-*` invocations from its native event surface. See "Host Installation Guide" below.
+- **Pulse — autonomous inbox processing** — background cron-driven system periodically checks your inbox and auto-creates workflows with `review_mode=Auto` (no gates, no questions). Items needing human review skip Pulse and land in the interactive inbox for manual triage, preventing silent loops on ambiguous requests.
 
 ---
 
@@ -53,8 +54,10 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 - [📦 Installation](#-installation)
 - [External Dependencies](#external-dependencies)
 - [🎮 Commands](#-commands)
-- [🛠️ Host Installation Guide](#️-host-installation-guide)
+- [📡 Pulse — Autonomous Inbox Processing](#-pulse--autonomous-inbox-processing)
+- [Setup per CLI](#setup-per-cli)
 - [🌐 Host Support](#-host-support)
+- [🖥️ Visual & TUI Integrations](#️-visual--tui-integrations)
 - [📁 Artifact Directory](#-artifact-directory)
 - [📖 Evidence & Limitations](#-evidence--limitations)
 - [About the Author](#about-the-author)
@@ -105,7 +108,7 @@ A structured workflow that makes AI think like a product manager:
 
 ### Key Features
 
-- **25 skills total** in this repo: 1 orchestrator + 24 sub-skills (broken down by frontmatter category — product: 7, research: 12, code: 4, meta: 1)
+- **25 skills total** in this repo: 1 orchestrator + 24 sub-skills (5 strategic approaches + 8 domain tactics + 11 utility skills)
 - Part of a broader ecosystem — the orchestrator composes these and can also invoke additional skills from the user's agent environment at runtime
 - Real-time TUI tracking with visual status overlay (`/sw-status`)
 - Gate approval via Plannotator - review, comment, approve or reject before implementation
@@ -268,17 +271,17 @@ These loops are **appetite- and mode-respecting by design** — they inherit the
 
 ## 📋 Skills
 
-All 25 skills live flat in `skills/` and install into `~/.agents/skills/`. The total is **1 orchestrator + 24 sub-skills = 25**, grouped by each skill's `metadata.category` frontmatter:
+All 25 skills are flat in `skills/` directory, ready for `~/.agents/skills/`. The breakdown:
 
-| Category | Count | Notes |
+| Role | Count | Skills |
 |---|---|---|
-| Total | **1 orchestrator + 24 sub-skills = 25** | Every directory is `skills/stelow-product-<name>/SKILL.md` |
-| product (incl. orchestrator) | 8 | |
-| research | 12 | |
-| code | 4 | |
-| meta | 1 | |
+| Orchestrator | 1 | `stelow-adapter-cli` |
+| Strategic approaches | 5 | Job-to-Be-Done, Evolutionary Principles, Opportunity Mapping, Discovery, Multi-Method Market Analysis |
+| Domain tactics | 8 | Pricing, Trust, Ads, Health, Promotions, Business Models, Open Source, Marketplace Playbook |
+| Product workflow | 5 | Shape Up, Plan Critique, Interface Alternatives, Tech Planning, Scope Executor |
+| Code + UX + meta | 6 | Codebase Critique, Coding Standards, Testing AI Code, Testing Execution, UX Critique, Execution Critique |
 
-The orchestrator (`stelow-product-orchestrator`) is the only `product` skill that is not a sub-skill — it composes the others. The remaining 7 `product` skills plus the 12 `research`, 4 `code`, and 1 `meta` skill are sub-skills (24 total).
+5 + 8 + 5 + 6 = 24 sub-skills, plus 1 orchestrator = 25 total.
 
 **Each skill is fully self-contained** - the installer copies the complete directory tree including its own `references/cli-tools/`, `references/`, and `stages/` files. This means:
 - ✅ **Skills work standalone** - invoke any sub-skill (e.g., `stelow-product-shape-up`, `stelow-product-plan-critique`) independently of the orchestrator
@@ -292,30 +295,35 @@ The orchestrator (`stelow-product-orchestrator`) is the only `product` skill tha
 |-------|---------|
 | `stelow` | Coordinates the multi-stage workflow (Setup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Plan.Gate → Execution → Verification → Diff.Gate → Audit) |
 
-### 🧭 Product (7)
-
-Sub-skills that drive the core product planning stages.
-
-| Skill | Purpose |
-|-------|---------|
-| `stelow-product-discovery` | Product discovery and validation |
-| `stelow-product-shape-up` | Shape Up planning + **Tech Preview** (appetite-gated codebase recon via cymbal) — surfaces codebase reality before product decisions |
-| `stelow-product-interface-alternatives` | Interface alternatives exploration (1/3/5 archetypes by appetite) |
-| `stelow-product-plan-critique` | Product plan gap analysis (flows, states, affordances, data, system, compositional quality, feasibility); mode-dependent resolution |
-| `stelow-product-tech-planning` | Technical scope generation + **Alignment Check** (mode-gated bidirectional product↔tech feedback loop) |
-| `stelow-product-scope-executor` | Autonomous scope execution via acceptance contracts - child self-corrects (harness-dependent), parent evaluates final result |
-| `stelow-product-ux-critique` | Full UX/UI audit (accessibility, Nielsen heuristics, personas, AI slop) |
-
-### 🔬 Research (12)
-
-Domain and market research skills used during Context, Shape, and Scope.
+### 🧠 Product Strategies (5)
 
 | Skill | Purpose |
 |-------|---------|
 | `stelow-product-job-to-be-done` | Job To Be Done - understand what job users hire the product to do |
+| `stelow-product-discovery` | Product discovery and validation |
 | `stelow-product-opportunity-mapping` | Map opportunities to see where to focus |
 | `stelow-product-multi-method-market-analysis` | Multi-method market analysis |
 | `stelow-product-evolutionary-principles` | Evolutionary principles for sustainable development |
+
+### ⚙️ Workflow Stages (10)
+
+| Skill | Purpose |
+|-------|---------|
+| `stelow-product-shape-up` | Shape Up planning + **Tech Preview** (appetite-gated codebase recon via cymbal) — surfaces codebase reality before product decisions |
+| `stelow-product-interface-alternatives` | Interface alternatives exploration (1/3/5 archetypes by appetite) |
+| `stelow-product-plan-critique` | Product plan gap analysis (flows, states, affordances, data, system, compositional quality, feasibility); mode-dependent resolution |
+| `stelow-product-codebase-critique` | Codebase structural critique (architecture, performance, AI slop) |
+| `stelow-product-ux-critique` | Full UX/UI audit (accessibility, Nielsen heuristics, personas, AI slop) |
+| `stelow-product-tech-planning` | Technical scope generation + **Alignment Check** (mode-gated bidirectional product↔tech feedback loop) |
+| `stelow-product-testing-ai-code` | AI-aware testing strategy with contextual mutation testing evaluation |
+| `stelow-product-testing-execution` | Post-implementation testing protocol |
+| `stelow-product-scope-executor` | Autonomous scope execution via acceptance contracts - child self-corrects (harness-dependent), parent evaluates final result |
+| `stelow-product-execution-critique` | Post-execution audit - classifies gaps as FIXED/DOCUMENTED/ESCALATED; ESCALATED gaps become new scopes |
+
+### 📘 Product Tactics (8)
+
+| Skill | Purpose |
+|-------|---------|
 | `stelow-product-ads` | Advertising and growth channels |
 | `stelow-product-business-models` | Business model canvas and options |
 | `stelow-product-health` | Product health metrics |
@@ -325,30 +333,17 @@ Domain and market research skills used during Context, Shape, and Scope.
 | `stelow-product-promotions` | Promotions and campaigns |
 | `stelow-product-trust-building` | Trust-building mechanisms |
 
-### 🧪 Code (4)
-
-Engineering-oriented skills used during planning, verification, and audit.
+### 📐 Complementary (1)
 
 | Skill | Purpose |
 |-------|---------|
-| `stelow-product-codebase-critique` | Codebase structural critique (architecture, performance, AI slop) |
 | `stelow-product-coding-standards` | Self-contained coding standards - KISS, DRY, LoB, SoC, Fail Fast, YAGNI, file/function size limits |
-| `stelow-product-testing-ai-code` | AI-aware testing strategy with contextual mutation testing evaluation |
-| `stelow-product-testing-execution` | Post-implementation testing protocol |
-
-### 🧠 Meta (1)
-
-Workflow-level audit and post-execution review.
-
-| Skill | Purpose |
-|-------|---------|
-| `stelow-product-execution-critique` | Post-execution audit - classifies gaps as FIXED/DOCUMENTED/ESCALATED; ESCALATED gaps become new scopes |
 
 ---
 
 ## 🚀 Quick Start
 
-This package is **host-agnostic with native Pi, compiled Fusion plugin, and generic agentskills support** — see the [Host Support](#-host-support) table for the current host matrix. The 25 skills work across any agentskills-compatible agent (Claude Code, Codex, Cursor, OpenCode…). Pi gets the deepest integration, Fusion ships a separate compiled plugin, and other harnesses get the skills + CLI fallback.
+This package is **built Pi-first** — but the 25 skills work across any agentskills-compatible agent (Claude Code, Codex, Cursor, OpenCode…). See the compatibility table in [Installation](#-installation) to pick your path; Pi gets the deepest integration, other harnesses get the skills + CLI fallback.
 
 | Your situation | Recommended command | What you get |
 |----------------|--------------------|-------------|
@@ -391,32 +386,33 @@ Per-agent configuration files (commands, install scripts) are in [`cli-agents/`]
 
 ### Compatibility
 
-The Pi extension is Pi-native by design. The skills work in any agent that
+The shipped extension is Pi-first. The skills work in any agent that
 reads `~/.agents/skills/<name>/SKILL.md` — the agentskills.io standard.
 
 | Feature | Pi (extension) | Any agentskills-compatible agent |
 |---|---|---|
 | **25 skills (orchestrator + 24 partners)** | ✅ | ✅ (universal path) |
-| **`/sw-*` slash commands (19 Pi / 16 Fusion)** | ✅ All 19 native | ⚠️ Skill delegation via `~/.agents/skills/stelow-product-orchestrator` (no native command registration) |
+| **`/sw-*` slash commands (15)** | ✅ Native | ⚠️ Skill delegation via `~/.agents/skills/stelow-adapter-cli` |
 | **TUI overlay (real-time status, notification panel)** | ✅ | ❌ |
 | **Plannotator visual gate** | ✅ | ⚠️ Manual (CLI binary via bash) |
 | **Lifecycle hooks (session start, turn end, tool call)** | ✅ | ❌ |
-| **Auto-sync scopes from spec-tech.md** | ✅ Shared parser | ⚠️ Fusion uses the shared parser; generic agents use the skill-instructed `bash` fallback |
+| **Auto-sync scopes from spec-tech.md** | ✅ Extension | ❌ (skill instructs `bash` snippet) |
 | **`ask_user_question` (structured prompts)** | ✅ | ⚠️ Falls back to chat prose |
 | **Subagent delegation with `context: "fresh"` + `acceptance` contracts** | ✅ Via `pi-subagents` (tintinweb) | ⚠️ Native subagent only; no acceptance contract |
 | **Supervision / overnight execution** | ✅ Via `pi-supervisor` | ❌ |
 
 > **Bottom line:** The **25 skills run in any agent that reads agentskills.io skill directories** — they execute the same workflow and keep portable state in `stelow.json` / `.stelow/`. Pi adds its TUI, hooks, and Plannotator implementation. Fusion ships a separate compiled plugin at `plugins/fusion-plugin-stelow/` that contributes the 25 plugin-local skills, installs validated project artifacts, and maintains one project-scoped workflow; `visual_review` remains the portable approval-receipt fallback.
 >
-> Generic agents retain the skill-only path. First-class host support belongs behind the [Adapter extension guide](cli-agents/COMMANDS.md#generic-and-future-hosts), with a host plugin only when that host exposes a plugin contract.
+> Generic agents retain the skill-only path. First-class host support belongs behind the [Adapter extension guide](cli-agents/COMMANDS.md#how-to-extend), with a host plugin only when that host exposes a plugin contract.
 
 ### Auto-sync scopes from spec-tech.md
 
 A common pain point used to be initializing `wf.scopes[]` in `stelow.json` — it required the LLM to run a 20-line bash snippet during Execution phase setup, which most agents skipped. **Starting in v0.44.0, scopes auto-sync from `spec-tech.md` by convention:**
 
-- **How:** Any `readTracking()` or `writeTracking()` call finds the latest `.stelow/{date}/{hash}/plans/spec-tech_*.md`, parses `[SCOPE-N]` blocks into `{ id, type, name, blockedBy, targetFiles, maxIterations }`, and writes them to `stelow.json` with `status: 'pending'`. Pi and Fusion both go through the host-agnostic parser; the compiled Fusion plugin installs the same logic as a managed project-scoped workflow.
+- **How:** Any `readTracking()` or `writeTracking()` call (Pi extension + Muxy panel) finds the latest `.stelow/{date}/{hash}/plans/spec-tech_*.md`, parses `[SCOPE-N]` blocks into `{ id, type, name, blockedBy, targetFiles, maxIterations }`, and writes them to `stelow.json` with `status: 'pending'`.
 - **When:** First read/write after a workflow enters Execution phase with empty scopes (idempotent).
 - **Re-sync on v2+:** Tracks `wf.specTechFile` — if spec-tech bumps to v2, scopes are re-synced automatically.
+- **Mirror parity:** Pi (TypeScript) and Muxy (JavaScript / Electron sandbox) run separate parsers. They're tested in `tests/unit/parse-scopes-from-spec-tech.test.ts` against identical fixtures.
 - **Agents without the Pi extension** see the auto-sync happen via the skill's instructions (a bash snippet parses spec-tech.md and writes `wf.scopes[]` to `stelow.json`). Less clean than the extension path but consistent across agents.
 
 Known gaps (race window, legacy workflows without `dirHash`, phase-number drift) are tracked in [`docs/scope-lifecycle-gaps.md`](docs/scope-lifecycle-gaps.md).
@@ -438,12 +434,14 @@ stelow is designed to be **self-contained** — the 25 skills + installer cover 
 | Subagents (built-in to any agent) | Optional | Parallel reviewer orchestration during Plan Critique | `subagent(...)` / agent native subagent | Sequential execution — slower, same outcome (single-context review) |
 | [pi-subagents](https://github.com/tintinweb/pi-subagents) | **Recommended for Pi** | `Agent()` tool, `inherit_context: false` (fresh by default), `run_in_background: true` for parallelism, `get_subagent_result()` for results, built-in `contact_supervisor` for child↔parent communication. Agents: `general-purpose`, `Explore`, `Plan` + custom `.md` agents. | `npm:@tintinweb/pi-subagents` | Without it: scope-executor falls back to parent-controlled loop (slower); no agent types — embed role in prompt |
 
-> **Note:** stelow's cli-tools (`references/cli-tools/subagents.md`) document the invocation syntax. The orchestrator reads `detected_host` from `state.ts#detectHost()` and emits the correct shape — no skill changes needed when switching host extensions.
+> **Note:** stelow's cli-tools (`references/cli-tools/subagents.md`) document the invocation syntax. The orchestrator reads `detected_cli` from `index.json` and emits the correct shape — no skill changes needed when switching subagent extensions.
 | [pi-supervisor](https://github.com/tintinweb/pi-supervisor) | Optional (Pi only) | Conversation supervision during execution | `npm:pi-supervisor` | Skip — no supervision; rely on `stages-guard` for invariant enforcement |
+| [Muxy.app](https://muxy.app/) + stelow Muxy extension | Optional (macOS, **deprecated** — removed in v0.55; Muxy support lives outside stelow's repo) | Webview panel showing workflow state with phase progress and quick actions | Install Muxy.app separately; load extension from a community fork if available | No webview — read `.stelow/` files directly. stelow itself ships zero host-coupled UI surfaces post-refactor. |
+| [herdr](https://herdr.dev/) + stelow plugin | Optional (**deprecated** — removed in v0.55) | Split-pane TUI showing workflow state with click-to-drill | `herdr plugin install calionauta/stelow` (community fork) | No TUI — read `.stelow/` files directly. Use `npm run sw-status` for a TUI-free status view. |
 
-**Design principle:** stelow is **host-agnostic, skills-agnostic**. The 25 skills run identically in any agent that reads `~/.agents/skills/` — the full Shape Up workflow (plans, critique, scopes) works everywhere. Pi's extension layer adds native `/sw-*` slash commands, TUI overlay, lifecycle hooks, Plannotator visual review, auto-sync scopes, subagent acceptance contracts, and supervision. Fusion ships a separate compiled plugin that contributes the 25 plugin-local skills, validated project artifacts, and one managed workflow. Other harnesses get the skills + CLI fallback. No external tool is *required* to run the workflow — each optional integration enhances a phase but never blocks progress. The installer (`./install.sh`) auto-installs Pi npm packages when Pi is detected — including the `raphapr/pi-cymbal` and `joelhooks/pi-ast-grep` extensions. The cymbal/ast-grep **CLIs** and `sem`/`ctx7` remain user-managed (offered interactively during setup, or see the tools table above).
+**Design principle:** stelow is **Pi-first, skills-agnostic**. The 25 skills run identically in any agent that reads `~/.agents/skills/` — the full Shape Up workflow (plans, critique, scopes) works everywhere. The deep integration layer (TUI overlay, `/sw-*` slash commands, lifecycle hooks, Plannotator gate, auto-sync scopes, subagent acceptance contracts, supervision) is native to Pi, which has the extension system to support it. Other harnesses get the skills + CLI fallback; Pi gets the full experience. No external tool is *required* to run the workflow — each optional integration enhances a phase but never blocks progress. The installer (`./install.sh`) auto-installs Pi npm packages when Pi is detected — including the `raphapr/pi-cymbal` and `joelhooks/pi-ast-grep` extensions. The cymbal/ast-grep **CLIs** and `sem`/`ctx7` remain user-managed (offered interactively during setup, or see the tools table above).
 
-For every external tool above, the workflow teaches the agent the **specific fallback strategy** in `skills/stelow-product-orchestrator/references/cli-tools/<tool>.md`. When a tool is unavailable, the orchestrator instructs the agent to use harness-native capabilities (built-in `subagent()`, `git grep`, terminal-based review with approval receipts) rather than skipping the workflow step entirely. Degraded capability is the trade-off — see the Fallback column above for what you lose without each tool.
+For every external tool above, the workflow teaches the agent the **specific fallback strategy** in `skills/stelow-adapter-cli/references/cli-tools/<tool>.md`. When a tool is unavailable, the orchestrator instructs the agent to use harness-native capabilities (built-in `subagent()`, `git grep`, terminal-based review with approval receipts) rather than skipping the workflow step entirely. Degraded capability is the trade-off — see the Fallback column above for what you lose without each tool.
 
 ### 🚀 Path A: From Zero (pi.dev + Everything)
 
@@ -465,10 +463,13 @@ curl -fsSL https://raw.githubusercontent.com/calionauta/stelow/main/setup.sh | s
 | 6 | cymbal | codebase navigation via `brew install 1broseidon/tap/cymbal` (macOS) or `go install` (Linux). Auto-installed as the `raphapr/pi-cymbal` Pi extension when Pi is detected; skipped gracefully if brew/Go absent | macOS, Linux |
 | 7 | ctx7 | library docs fetcher via `npx @vedanth/context7` (interactive OAuth — prompts the user) | All CLIs |
 | 8 | safe-change | pre-planning regression check via `npx skills add PrinNova/pi-agent-codebase-workflows -g` | All CLIs |
+| 9 | Herdr plugin | stelow split-pane TUI installed via `herdr plugin install calionauta/stelow` — **only if** `herdr` CLI is on PATH | All CLIs (via Herdr) |
+| 10 | Muxy detection | detects `/Applications/Muxy.app` or `muxy` binary; prints install link if absent (cannot auto-install — Muxy is macOS-only, distributed via GitHub releases) | macOS |
+| 11 | Pulse (optional) | copies Pulse scripts to project's `.stelow/pulse/` and creates inbox. Or run standalone: `./scripts/setup-pulse.sh` (no pi required — works in CI/CD or before pi is installed) | All CLIs (cron/launchd/systemd/Task Scheduler) |
 
 > **Not using pi.dev?** Skills land in `~/.agents/skills/` and work on any agent that reads them. You just won't get the Pi-only extensions or TUI overlay. The workflow itself runs fine — see [agentskills.io](https://agentskills.io/) for the cross-agent standard.
 >
-> **The in-tree Muxy and Herdr integrations were removed in v0.55** as part of the host-agnostic refactor; both are now external projects — see the [migration note](#-migration-from-pre-v055) below. If you depend on the Muxy webview panel or the Herdr split-pane TUI, pin to `stelow@0.54.x` or install a community-maintained fork.
+> **Muxy.app + Herdr integrations were removed in v0.55.** The host-agnostic refactor deleted `integrations/muxy/` and `integrations/herdr/`; both projects are now external — see the [migration note](#migration-from-pre-v055) below. If you depend on the Muxy webview panel or the Herdr split-pane TUI, pin to `stelow@0.54.x` or install a community-maintained fork.
 
 ### 📋 Path B: Existing pi.dev User
 
@@ -514,125 +515,90 @@ This project distributes exclusively via GitHub (no npm) — see [docs/SECURITY.
 
 ## 🎮 Commands
 
-The canonical command registry is `WORKFLOW_COMMANDS` in
-`extensions/stelow/adapters/commands/dispatcher.ts` — it is the single source
-of truth for the 19 descriptors.
+### Primary Commands
 
-| Command | Description | Host |
-|---------|-------------|------|
-| `/sw-start` | Start a new product workflow | All |
-| `/sw-abort` | Abort and archive workflow(s) | All |
-| `/sw-pause` | Pause active workflow | All |
-| `/sw-resume` | Resume paused workflow | All |
-| `/sw-status` | Show active workflow status | All |
-| `/sw-ls` | List workflows | All |
-| `/sw-setphase` | Jump to phase | All |
-| `/sw-next` | Advance to next phase | All |
-| `/sw-complete` | Mark active workflow complete | All |
-| `/sw-info` | Go to a workflow | All |
-| `/sw-rename` | Rename active workflow | All |
-| `/sw-doctor` | Diagnose workflow tracking health | All |
-| `/sw-archive` | Archive workflows | All |
-| `/sw-unarchive` | Unarchive a workflow | All |
-| `/sw-recover` | Recover orphan workflow directories | All |
-| `/sw-audit` | Show audit trail (full lineage, scope, JSON) | All |
-| `/sw-unlock` | Disable stage guard for this session | Pi only |
+| Command | Description |
+|---------|-------------|
+| `/sw-start [idea]` | Start new workflow. Auto-detects intent type and routes to appropriate stage pipeline. If called without arguments, reads from inbox (`.stelow/inbox/items.md`). If the input contains multiple items, auto-runs **triage** (group) + **select** (pick one). |
+| `/sw-status` | Show active workflow phase list, stage progress, and scopes. |
+| `/sw-next` | Advance to next stage. Auto-completes workflow on last phase. |
+| `/sw-pause` | Pause active workflow (keeps state for resume). |
+| `/sw-resume [name=]` | Resume paused/in-progress workflow. Checks git drift before resuming. |
+| `/sw-abort [name=]` | Abort and archive active workflow. |
+| `/sw-archive [name=]` | Archive completed or inactive workflow. |
+| `/sw-unarchive name=` | Restore archived workflow to paused state. |
+| `/sw-status` | Display current phase, progress, and scope status. |
+| `/sw-ls [all\|archived]` | List workflows in current project (or all projects). |
+| `/sw-setphase phase=N` | Jump to specific phase by index. |
+| `/sw-info [name=]` | Print workflow path, current stage, and copy-pasteable `cd` + `/sw-resume` commands. |
+| `/sw-rename <name>` | Rename active workflow. |
+| `/sw-complete` | Force-complete active workflow. |
+| `/sw-inbox [add\|remove\|clear\|history]` | View or manage deferred inbox items. |
+| `/sw-pulse` | Manage autonomous inbox processing (see Pulse section below). |
+| `/sw-doctor [--fix]` | Diagnose workflow health. Detects zombie workflows, index mismatches, orphaned entries. |
+| `/sw-unlock` | Disable stage guard for current session (debug only). |
 
-- **Pi** registers all 17 commands natively (16 host-agnostic + the `sw-unlock` Pi-local descriptor) via `pi.registerCommand()`.
-- **Fusion** registers all 16 host-agnostic commands through
-  `plugins/fusion-plugin-stelow/`.
-- **Generic** hosts have no native command registry; the orchestrator skill
-  routes the same names through the skill.
-
-There is no `npm run sw-status` script — `/sw-status` is a host command, not a
-package script.
+> All 15 commands work in **Pi** natively (via `pi.registerCommand()`). In any other agent, the same 15 commands route through the **orchestrator skill** — invoke `/skill:stelow-adapter-cli <command>` and the skill handles phase routing, gate calls, and state writes. The exceptions are `/sw-inbox` and `/sw-pulse`, which are marked `piOnly` because they operate on filesystem state with native TUI notifications; in non-Pi agents, the agent falls back to reading files directly.
 
 ---
 
-## 🛠️ Host Installation Guide
+## 📡 Pulse — Autonomous Inbox Processing
 
-Stelow is host-agnostic at its core, but each host surface has its own install path. Pick the one that matches where you'll run the workflow.
+Pulse is a background system that periodically checks your inbox and creates workflows automatically — no interactive session needed. It runs on a timer (cron, launchd, systemd, Task Scheduler) and processes items with `review_mode=Auto` (no gates, no questions, no Plannotator).
 
-### Pi (`@earendil-works/pi-coding-agent`)
-
-```bash
-git clone https://github.com/calionauta/stelow.git
-cd stelow
-./setup.sh            # zero-to-running: installs pi + extensions + skills + settings
-# — or, if you already have pi —
-./install.sh          # skills + extensions + slash commands only
+```
+cron/launchd/systemd (every 30m)
+  → pulse.sh / pulse.ps1
+    → checks inbox (.stelow/inbox/items.md)
+    → runs `pi --print` with triage prompt
+    → creates workflow(s) with review_mode=Auto
+    → logs provenance to .stelow/inbox/history.jsonl
 ```
 
-- All 17 `/sw-*` commands register natively via `pi.registerCommand()` (16 host-agnostic + the Pi-local `sw-unlock`).
-- Scheduling/automation: use `pi-subagents` background runs. No `pulse.sh` cron — that responsibility moved to the host in v0.57.0.
+| Command | Purpose |
+|---------|---------|
+| `/sw-pulse status` | Show pulse state (paused, inbox count, last run) |
+| `/sw-pulse pause` | Pause automatic processing |
+| `/sw-pulse resume` | Resume automatic processing |
+| `/sw-pulse process` | Force immediate processing |
+| `/sw-pulse log [n]` | Show last N log entries |
 
-### Fusion (the AI-orchestrated task board)
+| Flag / Env | Default | Description |
+|------------|---------|-------------|
+| `--max-items N` | `10` | Items per cycle. `0` = uncapped (all). `1` = one at a time |
+| `--force` | — | Skip pause + user-activity checks |
+| `--dry-run` | — | Preview without executing |
+| `PULSE_MODEL` | — | Optional. Override harness's configured model for `pi --print`. If unset, uses whatever the user's harness is configured with (no hardcoded default). |
+| `PULSE_TIMEOUT` | `120` | Max seconds for `pi --print` |
+| `PULSE_USER_ACTIVITY_MINUTES` | `15` | Skip if user modified `stelow.json` recently |
 
-```bash
-git clone https://github.com/calionauta/stelow.git
-cd stelow
-npm ci
-npm run build
-# Install the compiled plugin:
-ls plugins/fusion-plugin-stelow/
-```
+**Marking items for human review:** Prefix an inbox item with `[human-in-the-loop]` (or `[hitl]`) — Pulse skips it entirely. Use for items that need human judgement (pricing, partnership, strategy). Items without the marker are processed automatically.
 
-The compiled plugin (`plugins/fusion-plugin-stelow/`) is the installable
-artifact — drop it into your Fusion plugin registry. The Stelow extension
-is **not** used inside Fusion; only the plugin. See the plugin's own README
-for Fusion-specific commands (16 host-agnostic descriptors; v0.57.0 removed
-the 3 `piOnly` ones — `sw-unlock` lives in the Pi adapter only).
+**Conflict prevention:** Pulse detects active user sessions (modified `stelow.json` mtime + interactive `pi` process) and skips automatically. Lock file prevents concurrent runs.
 
-- Scheduling/automation: Fusion's native scheduler invokes the plugin when
-  its event surface fires. No inbox mirror — Fusion has its own.
+**Setup guides:** See `.stelow/pulse/SETUP.md` for macOS (launchd), Linux (systemd/cron), and Windows (Task Scheduler + PowerShell).
 
-### Multica
-
-Set the four required env vars, then import the skill bundle:
-
-```bash
-export STELOW_MULTICA_HOST=1
-export MULTICA_ISSUE_ID=<issue-uuid>
-export STELOW_WORKFLOW_ID=wf-<name>
-export STELOW_VERSION=0.57.0
-
-# Offline distribution: ship the prebuilt skill bundle
-multica skill import --file ./build/stelow-skills.tgz
-```
-
-The Multica adapter lives in `extensions/stelow/adapters/multica/` (added in
-v0.57.0). It consumes the Stelow skill bundle, projects state to issue
-metadata, and labels issues with `stelow:<stage>` (one label at a time, see
-the structural invariant).
-
-- Scheduling/automation: Multica autopilot (`run_only` + triggers on
-  `backlog`/`todo` issues). No `pulse.sh` — replaced by the autopilot's
-  trigger system. Delete any pre-v0.57.0 "Stelow Runner" autopilot from the
-  workspace; the adapter now reacts to Multica's native events.
-
-### Generic / standalone (Claude Code, Codex, Cursor, Continue, OpenCode)
-
-```bash
-git clone https://github.com/calionauta/stelow.git
-# Skills land in skills/*/SKILL.md — agentskills.io standard.
-# They auto-install to ~/.agents/skills/ on first agent boot.
-```
-
-- All 25 skills are usable in any compatible agent. There is no native
-  command registry — the orchestrator skill routes `/sw-*` through the
-  skill mechanism.
-- Scheduling/automation: depends on the host. Read your agent's docs for
-  background-task / scheduled-prompt support.
+**Getting the scripts:** The stelow extension auto-copies Pulse scripts to `.stelow/pulse/` on the first `/sw-pulse` invocation. To pre-stage (no pi required, useful for CI/CD or before the extension is installed): `./scripts/setup-pulse.sh [--project-dir DIR] [--dry-run]`.
 
 ---
 
-**Migration note (v0.57.0):** anyone running `pulse.sh`/`pulse.ps1` from
-cron, systemd, launchd, or Task Scheduler must move to the host's native
-scheduling. See your host's section above. The `.stelow/inbox/items.md`
-mirror is also removed — use Multica's `backlog`/`todo`, Fusion's inbox, or
-Pi's pi-session-state instead.
+## Setup per CLI
+
+When working on software projects, trigger the product workflow:
+
+1. **Trigger:** Use `/skill stelow`
+2. **Execute:** Only after visual review gate (Plannotator approval)
+
+| CLI | File |
+|-----|------|
+| **Pi** | `~/.pi/agent/AGENTS.md` |
+| **Any agentskills-compatible agent** | The orchestrator skill reads `~/.agents/skills/stelow-adapter-cli/SKILL.md` automatically |
 
 ---
+
+## 🖥️ Visual & TUI Integrations (deprecated in v0.55)
+
+> **Deprecated in v0.55.** Both the Muxy webview panel and the Herdr split-pane TUI were removed from this repo as part of the host-agnostic refactor (see [migration note](#migration-from-pre-v055)). If you depend on either surface, pin to `stelow@0.54.x` or install a community-maintained fork. stelow itself now ships zero host-coupled UI surfaces; workflow state is read directly from `.stelow/` files via the host-agnostic adapter contract.
 
 ## 🌐 Host Support
 
@@ -644,16 +610,39 @@ stelow runs on three host surfaces (and any agent that reads `~/.agents/skills/<
 | **Fusion** (the AI-orchestrated task board) | `~/.fusion` probe, `.fusion/` project-local probe, or `STELOW_HOST=fusion` | `extensions/stelow/adapters/fusion.ts` + `plugins/fusion-plugin-stelow/` | Compiled plugin with 25 plugin-local skills, validated project artifacts, and one managed project workflow; `visual_review` uses `.stelow/approvals/{dirHash}/{file}.approved.md`. |
 | **Generic / standalone** (Claude Code, Codex, Cursor, Continue, OpenCode, or any agent reading skills directly) | Default fallback (no probe match) | `extensions/stelow/adapters/generic.ts` | Skills land in `~/.agents/skills/` per the agentskills.io standard; visual_review is a no-op + receipt; subagent is a file-based handoff. |
 
-Owner paths in this repo:
-
-- `extensions/stelow/adapters/pi/` — Pi-only hooks, native `/sw-*` commands, TUI, Plannotator.
-- `extensions/stelow/adapters/fusion.ts` — Fusion tool mapping and generated resources.
-- `extensions/stelow/adapters/generic.ts` — portable no-op fallbacks.
-- `plugins/fusion-plugin-stelow/` — compiled dependency-free Fusion package.
-
 Detection lives in `extensions/stelow/state.ts#detectHost()` and follows this precedence: `FUSION_HOST=1` → `STELOW_HOST` (or `PRODUCT_WORKFLOW_CLI`) env var → `~/.fusion` probe → `~/.pi` probe → `pi --version` CLI probe → `generic` (safe fallback). See [docs/design/host-agnostic-architecture.md](docs/design/host-agnostic-architecture.md) for the full design rationale.
 
-To add a new host, follow the [Generic and future hosts](cli-agents/COMMANDS.md#generic-and-future-hosts) recipe in the adapter guide.
+### Muxy Webview Panel
+
+> **Requires [Muxy.app](https://muxy.app/) + the stelow extension loaded.** Muxy is a **macOS terminal multiplexer** — think tmux with a native Mac UI: project-based terminal workspaces, tabs, splits, and custom panels. The webview panel is a Muxy plugin surface, not a web app or a Pi feature.
+
+The panel shows:
+
+- Current phase and progress
+- Phase artifacts and outputs
+- Upcoming tasks
+- Quick actions
+- **Cross-workflow scope view** — flat scope cards across all
+  workflows in the active worktree, grouped by status (Pending / In Progress /
+  Escalated / Failed / Completed). Filter strip by status or free-text.
+  Project picker for switching between known Muxy projects.
+
+**Install (deprecated):** The stelow Muxy extension at `integrations/muxy/stelow/` was removed in v0.55 as part of the host-agnostic refactor (see [migration note](#migration-from-pre-v055)). Pin to `stelow@0.54.x` if you depend on the Muxy webview panel.
+
+### Herdr Split-Pane TUI
+
+> **Requires [Herdr](https://herdr.dev/) + the stelow plugin installed.** Herdr is a **terminal multiplexer** — tmux-style persistence, mouse-native panes, agent state tracking, CLI + socket API. The TUI plugin runs as a Rust binary in a split pane, the same model as `herdr-file-viewer`.
+
+The TUI shows:
+
+- Current stage (Discovery → Shape Up → Tech Planning → ...)
+- Per-stage status (✓ done, ▶ active, · pending, ! blocked)
+- Drill-down: stage → project → scope → task
+- Quick action invocation via `herdr plugin action invoke`
+
+**Keybinds:** `prefix+w` toggle · `Tab`/`j`/`k` next/prev workflow · `r` refresh · `?` help · `q`/`Esc` quit. Detail card shows prompt + current stage + scope; click workflow rows to select.
+
+**Install (deprecated):** The stelow Herdr plugin at `integrations/herdr/stelow/` was removed in v0.55 as part of the host-agnostic refactor (see [migration note](#migration-from-pre-v055)). Pin to `stelow@0.54.x` if you depend on the Herdr split-pane TUI.
 
 ---
 
@@ -667,22 +656,17 @@ All workflow artifacts live under `<project>/.stelow/`. The layout below is gene
 |------|----------|---------------|
 | `stelow.json` | Local tracking — workflow metadata, scopes, status | Extension |
 | `~/.stelow-global.json` | Global index — catalog of all workflows across projects | Extension |
+| `inbox/items.md` | Deferred items from previous sessions | Triage / user |
+| `inbox/history.jsonl` | Append-only provenance log (one JSON line per event) | `provenance.ts` |
 | `lessons-learned/` | Cross-cycle patterns generated by Execution Critique | Audit stage |
 | `session-knowledge/` | Passive context notes saved by the user mid-session | User (manual) |
-
-> The Stelow core no longer maintains an inbox mirror (`.stelow/inbox/`)
-> or provenance log (`.stelow/inbox/history.jsonl`) — those were removed in
-> v0.57.0. Hosts own their own inbox surface (Multica `backlog`/`todo`,
-> Fusion inbox, Pi pi-session-state). The workflow's own audit trail lives
-> in `.stelow/{date}/{dirHash}/audit-trail.md` (generated by
-> `audit-trail.ts`, still in core).
+| `pulse/` | Autonomous inbox processing scripts + config | Pulse setup |
 
 ### Per-workflow: `.stelow/{YYYY-MM-DD}/{dirHash}/`
 
-> The root `stelow.json` is the canonical workflow state. Per-workflow directories hold artifacts and per-workflow approvals; there is no generated per-workflow `index.json` mirror.
-
 | Path | Contents | Generated by | Stage |
 |------|----------|---------------|-------|
+| `index.json` | Workflow metadata (phase, status, artifacts map, config) | Extension | Any |
 | `specs/spec-product_v{N}.md` | Shaped product proposal with IN/OUT, appetite, risks | Shape Up | 4 |
 | `interfaces/interfaces_v{N}.md` | Interface proposals (1–5 archetypes + hybrid) | Interface Alternatives | 8 |
 | `plans/spec-tech_v{N}.md` | Typed scopes, dependencies, tasks table, target files | Tech Planning | 11 |
@@ -696,18 +680,11 @@ All workflow artifacts live under `<project>/.stelow/`. The layout below is gene
 | `group-context/manifest.json` | Triage group manifest (when multiple items grouped) | Triage grouping | 0 |
 | `checklist.md` | Current phase task checklist (Plannotator-visible) | LLM (todo tool) | Any |
 
-### Approval receipts: `.stelow/approvals/{dirHash}/`
+### Plannotator: `.plannotator/approvals/{dirHash}/`
 
 | Path | Contents | Generated by |
 |------|----------|---------------|
-| `gate-approved.md` | Gate approval receipt (timestamp + host + method) | `visual_review` |
-| `int-gate-approved.md` | Interface gate approval receipt | `visual_review` |
-| `plan-gate-approved.md` | Tech plan gate approval receipt | `visual_review` |
-| `diff-gate-approved.md` | Code diff gate approval receipt | `visual_review` |
-
-`.plannotator/approvals/{dirHash}/` is retained only as a Pi-specific
-compatibility/historical path; the portable canonical receipts live under
-`.stelow/approvals/`.
+| `gate-approved.md` | Gate approval receipt with timestamp + method | Plannotator |
 
 > **Convention:** `{dirHash}` is a stable random identifier (e.g. `sw-abc123-xyz789`) generated at workflow creation. The display name may change via `/sw-rename`, but the directory hash stays constant.
 
@@ -715,17 +692,15 @@ compatibility/historical path; the portable canonical receipts live under
 
 ## 🔄 Migration from pre-v0.55
 
-> The in-tree Muxy and Herdr integrations were removed in v0.55 as part of the host-agnostic refactor. Stelow still ships skills, commands, and the Fusion plugin; users who need the Muxy webview panel or the Herdr split-pane TUI must pin to `stelow@0.54.x` or use an external community fork. The remainder of this section is historical migration context only. Users who install the Herdr CLI from [herdr.dev](https://herdr.dev/) can still load a community fork at the published plugin path; this README does not document an in-tree install path.
-
 If you upgraded from `stelow < 0.55`, note the breaking changes:
 
 1. **`integrations/muxy/stelow/` and `integrations/herdr/stelow/` were deleted.** Both the Muxy webview panel and the Herdr split-pane TUI integrations were removed as part of the host-agnostic refactor. The host-agnostic adapter pattern replaces them:
    - **Pi** stays specialized under `extensions/stelow/adapters/pi/`.
    - **Fusion** uses `extensions/stelow/adapters/fusion.ts` plus the compiled `plugins/fusion-plugin-stelow/` package for skills, validated artifacts, and managed workflow registration.
    - **Generic / standalone** uses the agentskills.io standard with no host-coupled UI surfaces.
-2. **`PRODUCT_WORKFLOW_CLI` env var was renamed to `STELOW_HOST`.** Use `STELOW_HOST` (or `FUSION_HOST=1` for Fusion). The legacy `PRODUCT_WORKFLOW_CLI` name is still accepted by `extensions/stelow/state.ts#detectHost()` for backward compatibility; `STELOW_HOST` is canonical.
+2. **`PRODUCT_WORKFLOW_CLI` env var is deprecated.** Use `STELOW_HOST` (or `FUSION_HOST=1` for Fusion). Both legacy and new names are accepted; old code keeps working. Plan to migrate before v0.56.
 3. **`pi.*` host-private tool names** in skill prose are replaced by canonical agnostic names per `stages.yaml#tools` (`ask_user_question`, `visual_review`, `subagent`, etc.). Pi-native invocations live in `references/cli-tools/*.md` only.
-4. **Visual review receipt path**: All hosts write approval receipts to the portable, host-agnostic path under `.stelow/approvals/{dirHash}/{file}.approved.md`. The older Pi-specific shim at `.plannotator/approvals/` is retained only for backward compatibility.
+4. **Visual review receipt path**: `.plannotator/approvals/` is now a Pi-only compatibility shim; the canonical, host-agnostic path is `.stelow/approvals/{dirHash}/{file}.approved.md`. Non-Pi hosts only write to the host-agnostic path.
 
 For the full design rationale, see [docs/design/host-agnostic-architecture.md](docs/design/host-agnostic-architecture.md) and [docs/design/fusion-integration-facts.md](docs/design/fusion-integration-facts.md).
 
@@ -775,7 +750,7 @@ Even with these guardrails, the AI agent still exhibits predictable failure mode
 | 13 | **Pipeline memory loss** - no cross-session memory of own failure patterns | [Flamehaven 2026](https://flamehaven.space/writing/the-two-problems-no-one-talks-about-in-ai-agent-coding-pipelines/) - cross-session memory, MICA governance schema | Execution Critique saves lessons from each cycle. Setup stage automatically reads past lessons with forced reflection. | **Captured and injected, but not verified.** Same model that made mistakes reads the lessons. Context rot can still cause mid-session forgetting. Cannot auto-verify lesson adherence. |
 | 14 | **Code complexity growth** - AI-generated code increases complexity over time | [Cursor Study (MSR 2026)](https://arxiv.org/abs/2511.04427) - static analysis warnings +30%, code complexity +41% after month 2 | Execution Critique includes anti-pattern detection (god functions >100 lines, global mutable state). Optional Code Quality Gate with static analysis. | **Caught too late.** Complexity analysis happens after code is written. No mechanism to prevent complexity during generation - only flag it after. |
 | 15 | **Activity ≠ productivity** - more PRs, more commits does not mean more value delivered | [METR 2025 RCT](https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/) - 19% slower for experienced devs; [Faros AI 2025](https://www.faros.ai/ai-productivity-paradox) - 9% more tasks, 0% DORA improvement | Appetite system anchors scope size to human attention budget. OUT/IN scoping keeps proposals focused. Execution Critique includes "close without follow-up" as valid outcome. | **Honest assessment:** Appetite system mitigates scope bloat, but requires human to set appetite honestly. `appetite_fit` is validated by the Plan Critique stage's fresh-context feasibility reviewer (reusing existing 5-reviewer infrastructure). The appetite system is new - its real-world effectiveness is not yet measured. |
-| 16 | **Coordination overhead** — adding agents to shared-state coding tasks degrades quality | [CooperBench 2026](https://arxiv.org/abs/2601.13295) — 2-agent cooperation: 25% success vs 50% solo; [clawRxiv 2604.00736](https://clawrxiv.io/abs/2604.00736) — overhead hits 50% of tokens at n=7 agents | Parallelism limited to research/review tasks with fresh context, zero inter-agent communication, and independent file outputs. Code execution defaults to sequential. Parallel scope execution is opt-in via post-hoc overlap detection (`git diff --name-only` per scope) + opt-in file-reservation locks (CLI-agnostic prevention, see [file-locking.md](skills/stelow-product-orchestrator/references/cli-tools/file-locking.md)). Full pipeline in [scope-execution-strategy.md](docs/scope-execution-strategy.md). | **Addressed by design — 3-layer pipeline (sequential default + optional prevention + post-hoc audit).** If overlap is detected in the report, human decides next action (merge, sequential re-run, or rework). Detection is observed-reality, not predicted heuristic. |
+| 16 | **Coordination overhead** — adding agents to shared-state coding tasks degrades quality | [CooperBench 2026](https://arxiv.org/abs/2601.13295) — 2-agent cooperation: 25% success vs 50% solo; [clawRxiv 2604.00736](https://clawrxiv.io/abs/2604.00736) — overhead hits 50% of tokens at n=7 agents | Parallelism limited to research/review tasks with fresh context, zero inter-agent communication, and independent file outputs. Code execution defaults to sequential. Parallel scope execution is opt-in via post-hoc overlap detection (`git diff --name-only` per scope) + opt-in file-reservation locks (CLI-agnostic prevention, see [file-locking.md](skills/stelow-adapter-cli/references/cli-tools/file-locking.md)). Full pipeline in [scope-execution-strategy.md](docs/scope-execution-strategy.md). | **Addressed by design — 3-layer pipeline (sequential default + optional prevention + post-hoc audit).** If overlap is detected in the report, human decides next action (merge, sequential re-run, or rework). Detection is observed-reality, not predicted heuristic. |
 
 ### What this means for you
 

@@ -57,7 +57,7 @@ the value is minimal.
 # Read appetite from stelow context or env var; default Core (via canonical helper).
 WF_DIR="$(ls -td .stelow/*/*/ 2>/dev/null | head -1)"
 # shellcheck disable=SC1091
-source "$(dirname "${BASH_SOURCE[0]:-$0}")/../../stelow-product-orchestrator/references/cli-tools/read-config.sh"
+source "$(dirname "${BASH_SOURCE[0]:-$0}")/../../stelow-adapter-cli/references/cli-tools/read-config.sh"
 APPETITE="${APPETITE:-$(stelow_read_appetite)}"
 DIFF_FILES=$(git diff --name-only HEAD~1 2>/dev/null | wc -l | tr -d ' ')
 ```

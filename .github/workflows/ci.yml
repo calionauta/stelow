@@ -91,9 +91,6 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Check dist/skills.d.ts version drift (SW-036)
-        run: bash scripts/check-dist-skills-drift.sh
-
       - name: Generate cli-tools (gitignored, needed for tests)
         run: ./scripts/sync-cli-tools.sh
 

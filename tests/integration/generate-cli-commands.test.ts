@@ -53,7 +53,7 @@ describe("Fusion command artifact generator (edge cases)", () => {
       for (const name of expected) {
         expect(emittedNames, `missing ${name}`).toContain(name);
       }
-      // piOnly commands (currently sw-unlock) MUST NOT appear in Fusion output.
+      // piOnly commands (sw-unlock, sw-inbox, sw-pulse) MUST NOT appear.
       const piOnly = WORKFLOW_COMMANDS.filter((d) => d.piOnly).map((d) => d.name);
       for (const name of piOnly) {
         expect(emittedNames, `piOnly ${name} should be filtered`).not.toContain(name);
@@ -142,7 +142,7 @@ describe("Fusion command artifact generator (edge cases)", () => {
       const command = generateFusionCommands(root).find((path) => path.endsWith("sw-start.md"));
       expect(command).toBeTruthy();
       const content = readFileSync(command!, "utf8");
-      expect(content).toContain("skills/stelow-product-orchestrator/SKILL.md");
+      expect(content).toContain("skills/stelow-adapter-cli/SKILL.md");
       expect(content).toContain("fn_ask_question");
       expect(content).toContain("fn_spawn_agent");
       expect(content).toContain("fn_workflow_validate");

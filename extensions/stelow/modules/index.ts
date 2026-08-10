@@ -12,6 +12,7 @@ export { JsonFileStore } from './file-store';
 export type {
   TaskStatus,
   TaskItem,
+  InboxItem
 } from './task';
 
 export { TASK_ICONS } from './task';

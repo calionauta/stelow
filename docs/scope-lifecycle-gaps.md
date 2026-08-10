@@ -1,83 +1,54 @@
 # Scope Lifecycle — Gap Analysis
 
-After implementing auto-sync (host-agnostic `readTracking()` / `writeTracking()`
-hooks both call `syncScopesIfNeeded`, which calls the single
-`parseSpecTechScopes` implementation in `extensions/stelow/state.ts`), the
-following gaps remain. The Muxy / Herdr integration trees were removed in
-v0.55 and SW-002; this document no longer describes those paths.
+After implementing bidirectional auto-sync (Pi extension `readTracking()`/`writeTracking()` hooks + Muxy panel `syncScopesForTracking()`), the following gaps remain:
 
-## Current behavior (for reference)
-
-For every workflow in `data.workflows`:
-
-1. Skip when `wf.status !== "in-progress"` or `wf.currentPhase < STAGE.EXECUTION()`.
-2. Skip when `!wf.dirHash || !wf.created` (legacy metadata limitation).
-3. Locate the latest `spec-tech_*.md` under `.stelow/{date}/{dirHash}/plans/`.
-4. If `Array.isArray(wf.scopes) && wf.scopes.length > 0` and
-   `wf.specTechFile === latest`, skip (idempotent).
-5. Otherwise, read the latest file, call `parseSpecTechScopes(content)`, and
-   when the parse yields entries, replace `wf.scopes` and set
-   `wf.specTechFile = latest`.
-
-`readTracking()` and `writeTracking()` both invoke this loop. The loop modifies
-the in-memory `TrackingData`; persistence happens when the caller (a command
-handler) invokes `writeTracking()` later. Read-only commands such as
-`/sw-status` benefit from the in-memory scopes for display.
-
-## Gap 1: Legacy workflows without dirHash/created are invisible to sync
+## Gap 1: spec-tech.md v2 overwrites existing scopes
 
 **Severity:** Low
 
-`syncScopesIfNeeded` short-circuits when `!wf.dirHash || !wf.created`.
-Workflows created before either field was added to the schema never get
-auto-synced scopes; they only see scopes if a caller explicitly populates
-`wf.scopes` through other channels (manual edit, seed, etc.).
+The sync functions are **idempotent** — they only trigger when `wf.scopes` is empty. If a workflow reaches Execution, sync populates scopes, and then `spec-tech.md` gets a v2 (new/modified scopes), the sync will NOT re-run because scopes are already populated.
 
-**Impact:** Users who upgraded from pre-`dirHash` versions retain static
-scopes (or no scopes) until the workflow is re-seeded.
+**Impact:** New or modified scopes from `spec-tech_v2.md` are never auto-synced. The LLM would need to manually update `stelow.json`.
 
-**Possible fix:** A one-time backfill that derives `dirHash` from the workflow
-name and `created` from filesystem mtime; out of scope here because it
-changes runtime behavior.
+**Possible fix:** Track `spec-tech-version` on the workflow or scope. If the file version exceeds the tracked version, re-sync. Or check file modification timestamps.
 
-## Gap 2: `readTracking()` syncs in memory only (no immediate persistence)
+## Gap 2: No index.json write-through from Muxy panel
 
-**Severity:** Low (by design)
+**Severity:** Medium
 
-`syncScopesIfNeeded` mutates `data.workflows` in place but does NOT call
-`writeTracking()`. The caller is expected to call `writeTracking()` later
-when its own changes are ready to persist. Read-only commands such as
-`/sw-status` benefit from seeing the freshly synced scopes without paying
-for a disk write.
+The panel's `syncScopesForTracking()` writes to `stelow.json` via `muxy.files.write()`, but does NOT write to `.stelow/{date}/{hash}/index.json`. The Pi extension's `writeTracking()` updates both, so index.json eventually catches up on the next `/sw-*` command. Until then, `scanWorkflowDirs()` (which reads from index.json) won't see the scopes.
 
-**Impact:** If a caller forgets to invoke `writeTracking()` after handling
-a read result that logically depends on the synced scopes, the next
-`readTracking()` will re-do the parse work. There is no correctness loss —
-only a redundant read.
+**Impact:** Artifact scanning and disk-based workflow discovery may show inconsistent scope state.
 
-**Possible fix:** None recommended. Forcing `writeTracking()` from inside
-the read path would couple read and write I/O for callers that explicitly
-want read-only behavior.
+**Possible fix:** Add index.json write-through in `syncScopesForTracking()` (same pattern as `persistWorkflowMeta`).
 
-## Resolved / removed-host claims (kept here only as a regression note)
+## Gap 3: Potential race on concurrent writes
 
-The following were listed as open gaps in earlier versions of this
-document but are no longer accurate against current source:
+**Severity:** Low (theoretically possible, practically mitigated)
 
-- ~~spec-tech.md v2 overwrites existing scopes~~ — **resolved**. The current
-  `wf.specTechFile` check in `syncScopesIfNeeded` skips when the latest
-  filename matches, and re-syncs when the filename changes; the workflow
-  always reflects the latest `spec-tech_*.md`.
-- ~~No `index.json` write-through from Muxy panel~~ — **moot**. The Muxy
-  panel and the per-workflow `index.json` mirror were both removed
-  (SW-002 in v0.55; the `index.json` removal completed in v0.53).
-- ~~Potential race between Pi extension and Muxy panel writes~~ — **moot**.
-  Only the TypeScript implementation exists; there is no second writer
-  from a removed host.
-- ~~Phase numbering drift between TS and JS mirrors~~ — **moot**. The
-  JavaScript `EXECUTION_PHASE` mirror was deleted with the Muxy
-  integration tree; `STAGE.EXECUTION()` is the single source of truth
-  and tracks `PHASE_NAMES` automatically.
+Both Pi extension and Muxy panel write to `stelow.json`. The Pi extension uses `writeFileSync` (blocking, on command execution). The panel uses `muxy.files.write` (async, on 15s poll). The race window is:
 
-If any of these descriptions reappear in this document or in source
-comments, that is a regression; remove them.
+1. Panel polls → reads stelow.json → sync triggers → writes back
+2. Extension writes stelow.json between panel's read and write
+
+**Mitigation:** The panel only writes when `changed = true` (i.e., first sync for a workflow with empty scopes). After initial population, subsequent polls are read-only.
+
+## Gap 4: Legacy workflows without dirHash are invisible to sync
+
+**Severity:** Low
+
+Both `syncScopesFromPlanningFiles()` (TS) and `syncScopesForTracking()` (JS) skip workflows when `!wf.dirHash`. Legacy workflows created before dirHash tracking was added never get auto-synced scopes.
+
+**Impact:** Affects users who upgraded from pre-dirHash versions.
+
+## Gap 5: Phase numbering drift between TS and JS
+
+**Severity:** Low
+
+The JS mirror hardcodes `EXECUTION_PHASE = 13`. The TS source uses `STAGE.EXECUTION()` which derives from `PHASE_NAMES`. If a phase is ever added or removed, the TS version auto-updates but the JS constant would not.
+
+**Mitigation:** Add a comment in both files referencing the mirror, and verify during phase changes.
+
+## (Not a gap) readTracking() syncs in memory only
+
+`readTracking()` calls `syncScopesIfNeeded()` which modifies the in-memory `TrackingData` but does NOT write back to disk. This is by design — the data is returned to the caller (a command handler) which typically calls `writeTracking()` later. Read-only commands like `/sw-status` benefit from the in-memory scopes for display. The Muxy panel independently handles persistence via `syncScopesForTracking()`.

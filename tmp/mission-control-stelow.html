@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mission Control — stelow web</title>
+<style>
+  :root {
+    --bg: #f6f6f9;
+    --bg-card: #ffffff;
+    --bg-alt: #eeeef4;
+    --bg-surface: #fafafe;
+    --text: #16162a;
+    --text-dim: #6b7280;
+    --text-muted: #9ca3af;
+    --border: #e2e2ea;
+    --border-light: #f0f0f5;
+    --accent: #7c3aed;
+    --accent-hover: #6d28d9;
+    --accent-light: #ede9fe;
+    --accent2: #059669;
+    --accent2-light: #d1fae5;
+    --accent3: #d97706;
+    --accent3-light: #fef3c7;
+    --accent4: #dc2626;
+    --accent4-light: #fee2e2;
+    --blue: #2563eb;
+    --blue-light: #dbeafe;
+    --pink: #db2777;
+    --pink-light: #fce7f3;
+    --teal: #0d9488;
+    --teal-light: #ccfbf1;
+    --shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,.08);
+    --shadow-lg: 0 12px 30px rgba(0,0,0,.12);
+    --radius: 12px;
+    --radius-sm: 8px;
+    --radius-xs: 6px;
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
+  }
+  html.dark {
+    --bg: #0b0b14;
+    --bg-card: #14141f;
+    --bg-alt: #1a1a2a;
+    --bg-surface: #10101c;
+    --text: #e2e2ea;
+    --text-dim: #8b8ba3;
+    --text-muted: #6b6b83;
+    --border: #22223a;
+    --border-light: #1a1a2e;
+    --accent: #a78bfa;
+    --accent-hover: #c4b5fd;
+    --accent-light: #2e2a4a;
+    --accent2: #34d399;
+    --accent2-light: #1a3a2e;
+    --accent3: #fbbf24;
+    --accent3-light: #3a2e1a;
+    --accent4: #f87171;
+    --accent4-light: #3a1a1a;
+    --blue: #60a5fa;
+    --blue-light: #1e3a5f;
+    --pink: #f472b6;
+    --pink-light: #3a1a2e;
+    --teal: #2dd4bf;
+    --teal-light: #1a3a35;
+    --shadow: 0 1px 3px rgba(0,0,0,.3), 0 1px 2px rgba(0,0,0,.2);
+    --shadow-md: 0 4px 12px rgba(0,0,0,.35);
+    --shadow-lg: 0 12px 30px rgba(0,0,0,.45);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    padding-bottom: 80px;
+  }
+
+  .theme-toggle {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 100;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+    box-shadow: var(--shadow);
+    transition: all .2s;
+  }
+  .theme-toggle:hover { transform: scale(1.1); box-shadow: var(--shadow-md); }
+
+  .hero {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 60px 24px 32px;
+    text-align: center;
+  }
+  .hero h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    letter-spacing: -.035em;
+    line-height: 1.15;
+    background: linear-gradient(135deg, var(--accent), var(--accent2), var(--blue));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero .subtitle {
+    margin-top: 12px;
+    font-size: 1.05rem;
+    color: var(--text-dim);
+    max-width: 650px;
+    margin-inline: auto;
+    line-height: 1.7;
+  }
+  .hero .meta {
+    margin-top: 20px;
+    font-size: .82rem;
+    color: var(--text-dim);
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .hero .meta span {
+    background: var(--bg-alt);
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+  }
+
+  .container { max-width: 1000px; margin: 0 auto; padding: 0 24px; }
+
+  section { margin: 56px 0; }
+  section > h2 {
+    font-size: 1.7rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  section > .section-desc {
+    color: var(--text-dim);
+    font-size: .95rem;
+    margin-bottom: 24px;
+    max-width: 700px;
+  }
+
+  hr.divider {
+    border: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 56px 0;
+  }
+
+  .badge {
+    display: inline-block;
+    font-size: .7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    padding: 3px 10px;
+    border-radius: 4px;
+  }
+  .badge-purple { background: var(--accent-light); color: var(--accent); }
+  .badge-green { background: var(--accent2-light); color: var(--accent2); }
+  .badge-yellow { background: var(--accent3-light); color: var(--accent3); }
+  .badge-red { background: var(--accent4-light); color: var(--accent4); }
+  .badge-blue { background: var(--blue-light); color: var(--blue); }
+  .badge-pink { background: var(--pink-light); color: var(--pink); }
+  .badge-teal { background: var(--teal-light); color: var(--teal); }
+
+  /* Architecture Diagram */
+  .arch-wrap {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 20px;
+    box-shadow: var(--shadow);
+    overflow-x: auto;
+    margin: 16px 0;
+  }
+
+  .arch-comp {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 700px;
+  }
+  .arch-tier {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .arch-tier-label {
+    font-size: .7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--text-muted);
+    width: 70px;
+    flex-shrink: 0;
+    text-align: right;
+  }
+  .arch-box {
+    background: var(--bg-alt);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px 14px;
+    font-size: .78rem;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: all .15s;
+  }
+  .arch-box:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+  .arch-box.primary { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+  .arch-box.green { background: var(--accent2-light); border-color: var(--accent2); color: var(--accent2); }
+  .arch-box.blue { background: var(--blue-light); border-color: var(--blue); color: var(--blue); }
+  .arch-box.yellow { background: var(--accent3-light); border-color: var(--accent3); color: var(--accent3); }
+  .arch-box.pink { background: var(--pink-light); border-color: var(--pink); color: var(--pink); }
+  .arch-box.teal { background: var(--teal-light); border-color: var(--teal); color: var(--teal); }
+  .arch-box.red { background: var(--accent4-light); border-color: var(--accent4); color: var(--accent4); }
+  .arch-box.outline { background: transparent; border-style: dashed; }
+  .arch-arrow { color: var(--text-muted); font-size: .8rem; }
+  .arch-bracket {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .arch-bracket [class] {
+    height: 2px;
+    background: var(--border);
+    flex: 1;
+  }
+
+  /* UI Mockups */
+  .mockup-wrap {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    margin: 20px 0;
+  }
+  .mockup-header {
+    background: var(--bg-alt);
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .75rem;
+    color: var(--text-muted);
+  }
+  .mockup-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--border);
+  }
+  .mockup-dot.red { background: #ef4444; }
+  .mockup-dot.yellow { background: #eab308; }
+  .mockup-dot.green { background: #22c55e; }
+
+  .mockup-body {
+    padding: 20px;
+    font-family: var(--mono);
+    font-size: .72rem;
+    line-height: 1.6;
+    overflow-x: auto;
+  }
+  .mockup-body .hl { color: var(--accent); font-weight: 600; }
+  .mockup-body .hl2 { color: var(--accent2); font-weight: 600; }
+  .mockup-body .hl3 { color: var(--accent3); font-weight: 600; }
+  .mockup-body .hl4 { color: var(--blue); font-weight: 600; }
+  .mockup-body .dim { color: var(--text-muted); }
+  .mockup-body .tag { 
+    display: inline-block;
+    font-size: .6rem;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    margin-right: 2px;
+  }
+  .mockup-body .tag.green { background: var(--accent2-light); color: var(--accent2); }
+  .mockup-body .tag.yellow { background: var(--accent3-light); color: var(--accent3); }
+  .mockup-body .tag.red { background: var(--accent4-light); color: var(--accent4); }
+  .mockup-body .tag.blue { background: var(--blue-light); color: var(--blue); }
+  .mockup-body .tag.purple { background: var(--accent-light); color: var(--accent); }
+  .mockup-body .bar {
+    display: inline-block;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--accent-light);
+    vertical-align: middle;
+    margin-right: 4px;
+  }
+  .mockup-body .bar.fill { background: var(--accent); }
+
+  /* Card grid */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    transition: all .2s;
+  }
+  .card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+  .card h4 {
+    font-size: .95rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card p {
+    font-size: .88rem;
+    color: var(--text-dim);
+    line-height: 1.55;
+    margin: 0;
+  }
+  .card ul { margin: 8px 0 0 16px; font-size: .85rem; }
+  .card ul li { margin-bottom: 4px; color: var(--text-dim); }
+  .card .card-badge {
+    display: inline-block;
+    font-size: .65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-top: 10px;
+  }
+
+  /* Comparison table */
+  .table-wrap {
+    overflow-x: auto;
+    margin: 16px 0;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .82rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border-light);
+  }
+  th {
+    background: var(--bg-alt);
+    font-weight: 600;
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--text-dim);
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg-alt); }
+  td .check { color: var(--accent2); font-weight: 600; }
+  td .cross { color: var(--accent4); }
+  td .maybe { color: var(--accent3); }
+
+  /* Option cards */
+  .option-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin: 16px 0;
+    box-shadow: var(--shadow);
+    border-top: 4px solid var(--accent);
+    transition: all .2s;
+  }
+  .option-card:hover { box-shadow: var(--shadow-md); }
+  .option-card h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 4px; }
+  .option-card .meta {
+    font-size: .8rem;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+  }
+  .option-card p { font-size: .9rem; color: var(--text); margin-bottom: 8px; }
+  .option-card .tagline {
+    display: inline-block;
+    font-size: .68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    padding: 2px 10px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+  }
+  .option-card .pros-cons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 14px;
+  }
+  .option-card .pros, .option-card .cons {
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    font-size: .85rem;
+  }
+  .option-card .pros { background: var(--accent2-light); }
+  .option-card .cons { background: var(--accent4-light); }
+  .option-card .pros h5, .option-card .cons h5 {
+    font-size: .75rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    margin-bottom: 6px;
+  }
+  .option-card .pros h5 { color: var(--accent2); }
+  .option-card .cons h5 { color: var(--accent4); }
+  .option-card .pros ul, .option-card .cons ul { margin: 0 0 0 14px; }
+  .option-card .pros li, .option-card .cons li { margin-bottom: 3px; }
+
+  /* Flow diagram */
+  .flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 14px 0;
+    font-family: var(--mono);
+    font-size: .75rem;
+  }
+  .flow .step {
+    background: var(--bg-alt);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xs);
+    padding: 5px 10px;
+    white-space: nowrap;
+  }
+  .flow .step.active { 
+    background: var(--accent-light); border-color: var(--accent); color: var(--accent); font-weight: 600;
+  }
+  .flow .step.green { 
+    background: var(--accent2-light); border-color: var(--accent2); color: var(--accent2); font-weight: 600;
+  }
+  .flow .step.yellow { 
+    background: var(--accent3-light); border-color: var(--accent3); color: var(--accent3); font-weight: 600;
+  }
+  .flow .step.blue { 
+    background: var(--blue-light); border-color: var(--blue); color: var(--blue); font-weight: 600;
+  }
+  .flow .conn { color: var(--text-muted); font-size: .7rem; }
+
+  /* Callout */
+  .callout {
+    background: var(--accent-light);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin: 16px 0;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .callout .icon { font-size: 1.3rem; line-height: 1; }
+  .callout p { margin: 0; font-size: .88rem; }
+  .callout strong { color: var(--accent); }
+
+  .callout.green { background: var(--accent2-light); border-color: var(--accent2); }
+  .callout.green strong { color: var(--accent2); }
+  .callout.blue { background: var(--blue-light); border-color: var(--blue); }
+  .callout.blue strong { color: var(--blue); }
+  .callout.yellow { background: var(--accent3-light); border-color: var(--accent3); }
+  .callout.yellow strong { color: var(--accent3); }
+
+  /* Component list */
+  .comp-list { list-style: none; padding: 0; }
+  .comp-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 14px;
+    margin: 6px 0;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: .88rem;
+  }
+  .comp-list li .icon-box {
+    width: 32px; height: 32px;
+    border-radius: var(--radius-xs);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+
+  /* Question flow */
+  .q-flow {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 12px 0;
+    padding: 16px;
+    background: var(--bg-alt);
+    border-radius: var(--radius-sm);
+    font-family: var(--mono);
+    font-size: .72rem;
+    line-height: 1.5;
+  }
+  .q-flow .line { display: flex; gap: 8px; }
+  .q-flow .dir { color: var(--blue); font-weight: 600; }
+  .q-flow .resp { color: var(--accent2); }
+  .q-flow .sys { color: var(--text-muted); }
+
+  @media (max-width: 700px) {
+    .hero h1 { font-size: 2rem; }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .option-card .pros-cons { grid-template-columns: 1fr; }
+    .mockup-body { font-size: .62rem; }
+  }
+
+  html { scroll-behavior: smooth; }
+
+  /* Sticky nav */
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 0;
+    margin-bottom: 0;
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .nav a {
+    text-decoration: none;
+    color: var(--text-dim);
+    font-size: .75rem;
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: 20px;
+    white-space: nowrap;
+    transition: all .15s;
+    flex-shrink: 0;
+  }
+  .nav a:hover { color: var(--accent); background: var(--accent-light); }
+
+  /* Decision matrix */
+  .matrix {
+    display: grid;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin: 16px 0;
+  }
+  .matrix-row {
+    display: grid;
+    grid-template-columns: 140px 1fr 1fr 1fr;
+    background: var(--bg-card);
+  }
+  .matrix-row.header {
+    background: var(--bg-alt);
+    font-weight: 600;
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--text-dim);
+  }
+  .matrix-cell {
+    padding: 10px 12px;
+    font-size: .82rem;
+    border-right: 1px solid var(--border-light);
+  }
+  .matrix-cell:last-child { border-right: 0; }
+
+  .stars { color: var(--accent3); letter-spacing: 2px; }
+</style>
+</head>
+<body>
+<script>
+  (function() {
+    const t = localStorage.getItem('theme');
+    if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    }
+  })();
+</script>
+
+<button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">🌓</button>
+<script>
+  function toggleTheme() {
+    const d = document.documentElement;
+    d.classList.toggle('dark');
+    localStorage.setItem('theme', d.classList.contains('dark') ? 'dark' : 'light');
+  }
+</script>
+
+<nav class="nav" id="top-nav">
+  <a href="#visao">Visão Geral</a>
+  <a href="#arquitetura">Arquitetura</a>
+  <a href="#componentes">Componentes</a>
+  <a href="#linear">Integração Linear</a>
+  <a href="#terminal">Terminal Ao Vivo</a>
+  <a href="#qa">Fluxo de Perguntas</a>
+  <a href="#mockup">Mockup</a>
+  <a href="#decisao">Matriz de Decisão</a>
+  <a href="#recomendacao">Recomendação</a>
+</nav>
+
+<header class="hero">
+  <h1>🚀 Mission Control<br>para o stelow</h1>
+  <p class="subtitle">
+    Um sistema web que consome issues do Linear, orquestra workflows do stelow via Pi, 
+    exibe estágios, artefatos e escopos em tempo real, e permite gates com Plannotator embutido — 
+    tudo acessível para PMs, UX designers e devs sem precisar abrir um terminal.
+  </p>
+  <div class="meta">
+    <span>🔧 stelow extension + web app</span>
+    <span>🔗 Linear API + Webhooks</span>
+    <span>🖥️ xterm.js + Plannotator embed</span>
+    <span>🧑‍🚀 Human-in-the-loop</span>
+  </div>
+</header>
+
+<div class="container">
+
+<!-- ==================== VISÃO GERAL ==================== -->
+<section id="visao">
+  <h2>🧭 Visão Geral</h2>
+  <p class="section-desc">O conceito central: um "Mission Control" web que é o cérebro visível do stelow. Ele não substitui o terminal — ele o torna opcional para quem só precisa acompanhar, responder perguntas e aprovar gates.</p>
+
+  <div class="grid-2">
+    <div class="card">
+      <h4>🧠 O que o Mission Control faz</h4>
+      <p><strong>Consome dados</strong> de ferramentas externas (Linear, GitHub Issues) — lê issues, projetos, comentários, status. Cria e atualiza issues refletindo o progresso do workflow.</p>
+      <p style="margin-top:8px;"><strong>Exibe tudo ao vivo</strong> — workflows em andamento, macro-estágios (Shape → Build → Verify), artefatos por fase, escopos com dependências, tarefas com progresso.</p>
+      <p style="margin-top:8px;"><strong>Requer atenção humana</strong> — destaca onde o humano precisa agir: perguntas para responder, gates para aprovar, escopos para revisar.</p>
+    </div>
+    <div class="card">
+      <h4>🎯 O que NÃO faz</h4>
+      <p>Não substitui o Pi ou o terminal. A orquestração do workflow (rodar skills, gerar artefatos) continua sendo feita pelo agente de IA no terminal.</p>
+      <p style="margin-top:8px;">Não é "mais uma ferramenta" — é uma superfície de <strong>visualização e interação</strong> que se acopla ao ecossistema existente. O PM vê o que precisa aprovar no navegador. O dev vê o progresso dos scopes no Linear.</p>
+      <p style="margin-top:8px;">Não substitui o Plannotator — o embute ou abre como link.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ==================== ARQUITETURA ==================== -->
+<section id="arquitetura">
+  <h2>🏗️ Arquitetura Proposta</h2>
+  <p class="section-desc">Seis camadas que se comunicam via WebSockets, webhooks e API REST. O dado central é o <code>stelow.json</code> — o terminal escreve, o Mission Control lê e exibe.</p>
+
+  <div class="arch-wrap">
+    <div class="arch-comp">
+      <!-- Tier 1: External tools -->
+      <div class="arch-tier">
+        <span class="arch-tier-label">Externo</span>
+        <span class="arch-box blue">Linear (API)</span>
+        <span class="arch-arrow">↔</span>
+        <span class="arch-box blue">GitHub Issues</span>
+        <span class="arch-arrow">↔</span>
+        <span class="arch-box blue">Slack (notify)</span>
+      </div>
+
+      <!-- Tier 2: Mission Control Web App -->
+      <div class="arch-tier">
+        <span class="arch-tier-label">Web App</span>
+        <span class="arch-box primary">Mission Control</span>
+        <span class="arch-arrow">←</span>
+        <span class="arch-box outline">Next.js / Fastify</span>
+        <span class="arch-box outline">WebSocket Server</span>
+        <span class="arch-box outline">xterm.js Terminal</span>
+      </div>
+
+      <!-- Tier 3: Plannotator -->
+      <div class="arch-tier">
+        <span class="arch-tier-label">Browser</span>
+        <span class="arch-box yellow">Plannotator (embed/iframe)</span>
+        <span class="arch-arrow">⤴</span>
+        <span class="arch-box yellow" style="border-style:dashed;">.plannotator/approvals/</span>
+      </div>
+
+      <!-- Tier 4: Stelow / Pi -->
+      <div class="arch-tier">
+        <span class="arch-tier-label">Terminal</span>
+        <span class="arch-box green">Pi + stelow extension</span>
+        <span class="arch-arrow">→</span>
+        <span class="arch-box green">$ /sw-start, /sw-next</span>
+        <span class="arch-arrow">→</span>
+        <span class="arch-box green" style="border-style:dashed;">Skills / Stages</span>
+      </div>
+
+      <!-- Tier 5: File System -->
+      <div class="arch-tier">
+        <span class="arch-tier-label">Estado</span>
+        <span class="arch-box teal">stelow.json</span>
+        <span class="arch-arrow">←</span>
+        <span class="arch-box teal" style="border-style:dashed;">.stelow/{date}/{hash}/</span>
+        <span class="arch-box teal" style="border-style:dashed;">artifacts (specs, plans...)</span>
+      </div>
+
+      <!-- Tier 6: Daemon -->
+      <div class="arch-tier">
+        <span class="arch-tier-label">Daemon</span>
+        <span class="arch-box pink">stelow daemon (Node)</span>
+        <span class="arch-arrow">→</span>
+        <span class="arch-box pink" style="border-style:dashed;">WebSocket broker</span>
+        <span class="arch-arrow">→</span>
+        <span class="arch-box pink" style="border-style:dashed;">File watcher (chokidar)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout blue">
+    <span class="icon">💡</span>
+    <p><strong>O segredo da arquitetura:</strong> O daemon (camada 6) fica rodando no mesmo ambiente do Pi. Ele escuta <code>stelow.json</code> e o diretório <code>.stelow/</code> com um file watcher. A cada mudança, ele transmite via WebSocket para o Mission Control. O terminal nunca precisa "saber" que existe um web app — ele só escreve arquivos como sempre fez.</p>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ==================== COMPONENTES ==================== -->
+<section id="componentes">
+  <h2>🧩 Componentes do Sistema</h2>
+  <p class="section-desc">Cada peça que precisaria ser construída ou adaptada, com o que já existe e o que é novo.</p>
+
+  <ul class="comp-list">
+    <li>
+      <div class="icon-box" style="background:var(--accent-light);color:var(--accent);">1</div>
+      <div>
+        <strong>Daemon stelow</strong> — Processo Node que observa o sistema de arquivos, gerencia WebSocket connections, e faz sync bidirecional com ferramentas externas (Linear).
+        <span class="badge badge-purple" style="margin-left:8px;">NOVO</span>
+      </div>
+    </li>
+    <li>
+      <div class="icon-box" style="background:var(--accent2-light);color:var(--accent2);">2</div>
+      <div>
+        <strong>File Watcher</strong> — Usando <code>chokidar</code>, observa <code>stelow.json</code> e diretórios de artefatos. A cada mudança, emite evento via WebSocket. Zero polling.
+        <span class="badge badge-green" style="margin-left:8px;">NOVO</span>
+      </div>
+    </li>
+    <li>
+      <div class="icon-box" style="background:var(--blue-light);color:var(--blue);">3</div>
+      <div>
+        <strong>WebSocket Server</strong> — Bridge entre o daemon (local) e o Mission Control (web). Transmite estado, recebe comandos de ação.
+        <span class="badge badge-blue" style="margin-left:8px;">NOVO</span>
+      </div>
+    </li>
+    <li>
+      <div class="icon-box" style="background:var(--accent3-light);color:var(--accent3);">4</div>
+      <div>
+        <strong>Mission Control Web App</strong> — Interface web com dashboard de workflows, scopes, artefatos, e área de perguntas/gates. Pode ser um app Next.js (SSR) ou um frontend estático com backend Fastify.
+        <span class="badge badge-yellow" style="margin-left:8px;">NOVO</span>
+      </div>
+    </li>
+    <li>
+      <div class="icon-box" style="background:var(--pink-light);color:var(--pink);">5</div>
+      <div>
+        <strong>Linear Adapter</strong> — Módulo que sincroniza stelow ↔ Linear. Cria issues no Linear quando um workflow começa. Comenta cada avanço de fase. Atualiza status quando scopes mudam. Escuta webhooks do Linear para detectar respostas.
+        <span class="badge badge-pink" style="margin-left:8px;">NOVO</span>
+      </div>
+    </li>
+    <li>
+      <div class="icon-box" style="background:var(--teal-light);color:var(--teal);">6</div>
+      <div>
+        <strong>Plannotator Integration Layer</strong> — Abre Plannotator no browser (ou embute). Escuta o retorno <code>--json</code> para capturar decisões. Já existe no stelow como CLI + tool, mas precisa de uma interface programática para o web app.
+        <span class="badge badge-teal" style="margin-left:8px;">ADAPTAR</span>
+      </div>
+    </li>
+    <li>
+      <div class="icon-box" style="background:var(--accent4-light);color:var(--accent4);">7</div>
+      <div>
+        <strong>Terminal Stream</strong> — Usando xterm.js + node-pty ou ttyd, exibe o terminal do Pi ao vivo no navegador. Permite que PMs vejam o agente "pensando" em tempo real, sem abrir terminal.
+        <span class="badge badge-red" style="margin-left:8px;">NOVO</span>
+      </div>
+    </li>
+    <li>
+      <div class="icon-box" style="background:var(--accent-light);color:var(--accent);">8</div>
+      <div>
+        <strong>Quest Core (Question Engine)</strong> — Motor que decide quando e como perguntar ao humano. Lê o <code>review_mode</code> do workflow, gera documentos de pergunta, envia para o canal apropriado (web UI, Linear comment, ou deixa o Pi perguntar via terminal).
+        <span class="badge badge-purple" style="margin-left:8px;">NOVO</span>
+      </div>
+    </li>
+  </ul>
+</section>
+
+<hr class="divider">
+
+<!-- ==================== INTEGRAÇÃO LINEAR ==================== -->
+<section id="linear">
+  <h2>🔗 Integração com Linear</h2>
+  <p class="section-desc">A ideia é o stelow "falar a língua" do Linear — criar issues, comentar progresso, atualizar status, mas sem depender do Linear para o core do workflow.</p>
+
+  <div class="mockup-wrap">
+    <div class="mockup-header">
+      <span class="mockup-dot red"></span>
+      <span class="mockup-dot yellow"></span>
+      <span class="mockup-dot green"></span>
+      <span style="margin-left:8px;">linear.app — stelow workflow visível no board</span>
+    </div>
+    <div class="mockup-body">
+╔══════════════════════════════════════════════════════════════╗
+║  🔍 stelow / Produto   <span class="dim">|</span>  <span class="hl">● 3 Active  |  12 Done</span>            ║
+╠══════════════════════════════════════════════════════════════╣
+║                                                              ║
+║  <span class="tag green">workflow</span> <span class="hl">"Feature: User Onboarding"</span>  <span class="tag yellow">Shape</span>  <span class="dim">|</span>  <span class="hl4">●</span>     ║
+║  ─────────────────────────────────────────────              ║
+║  <span class="tag green">workflow</span> <span class="hl">"Bugfix: Login 500 error"</span>  <span class="tag yellow">Execution</span>  <span class="tag green">scopes 4/6</span>  ║
+║  ─────────────────────────────────────────────              ║
+║  <span class="tag green">workflow</span> <span class="hl">"New: Payment Gateway"</span>  <span class="tag blue">Gate</span>  <span class="tag red">⏳ NEEDS REVIEW</span>   ║
+║  ─────────────────────────────────────────────              ║
+║  <span class="tag green">workflow</span> <span class="hl">"Refactor: Auth module"</span>  <span class="tag green">Verify</span>  <span class="dim">scopes 8/8</span>     ║
+║                                                              ║
+╚══════════════════════════════════════════════════════════════╝
+    </div>
+  </div>
+
+  <div class="grid-3">
+    <div class="card">
+      <h4>🔄 Sync de Fluxo (stelow → Linear)</h4>
+      <p><strong>Workflow criado</strong> → Issue criada no Linear com título, descrição e label "stelow".</p>
+      <p><strong>Fase avança</strong> → Comentário na issue: "✅ Shape concluído. Entrando em Gate."</p>
+      <p><strong>Scope muda</strong> → Subtarefas criadas/atualizadas no Linear.</p>
+      <p><strong>Workflow concluído</strong> → Status → Done, comentário final com audit trail.</p>
+    </div>
+    <div class="card">
+      <h4>📡 Webhooks (Linear → stelow)</h4>
+      <p><strong>Comentário novo</strong> → Se alguém responde a uma pergunta do stelow no Linear, o webhook dispara e o daemon coleta a resposta.</p>
+      <p><strong>Issue movida</strong> → Se um PM arrasta uma issue de "In Progress" para "Done" no board, o daemon interpreta como "scope concluído".</p>
+      <p><strong>Label adicionada</strong> → "blocked" → daemon pausa o workflow.</p>
+    </div>
+    <div class="card">
+      <h4>⚠️ Limitações do Linear</h4>
+      <p><strong>Sem custom fields</strong> — Estado do stelow (appetite, review_mode, dirHash) precisa ser armazenado na descrição da issue em formato YAML frontmatter ou em labels convencionadas.</p>
+      <p><strong>Não é blocking</strong> — Linear não tem "gate blocking". O bloqueio precisa ser lógico (no daemon), não no Linear.</p>
+    </div>
+  </div>
+
+  <div class="callout yellow">
+    <span class="icon">🔑</span>
+    <p><strong>Decisão de design:</strong> O Linear é <em>superfície de visualização e comunicação</em>, mas não de decisão. As perguntas críticas e gates continuam no Mission Control (web) ou no Plannotator. O Linear mostra "esse workflow precisa de atenção → abra o Mission Control".</p>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ==================== TERMINAL AO VIVO ==================== -->
+<section id="terminal">
+  <h2>🖥️ Terminal Ao Vivo no Browser</h2>
+  <p class="section-desc">Uma das maiores fricções hoje: PMs e designers não têm como ver o que o agente está fazendo. Com terminal streaming, eles podem assistir ao vivo sem instalar nada.</p>
+
+  <div class="mockup-wrap">
+    <div class="mockup-header">
+      <span class="mockup-dot red"></span>
+      <span class="mockup-dot yellow"></span>
+      <span class="mockup-dot green"></span>
+      <span style="margin-left:8px;">🟢 stelow — Terminal Session: "Payment Gateway"</span>
+    </div>
+    <div class="mockup-body">
+┌─────────────────────────────────────────────────────────────┐
+│  <span class="hl">$ pi</span>                                                       │
+│  <span class="dim">┌─────────────────────────────────────────────────────────┐</span>  │
+│  <span class="dim">│</span>  <span class="hl">◆ stelow: Shape Up Planning — "Payment Gateway"</span>        <span class="dim">│</span>  │
+│  <span class="dim">│</span>  <span class="hl2">/sw-start</span> initializing workflow...                        <span class="dim">│</span>  │
+│  <span class="dim">│</span>  ─────────────────────────────────────────────────────────  <span class="dim">│</span>  │
+│  <span class="dim">│</span>  <span class="tag yellow">setup:15</span> How deep should the plan be?                    <span class="dim">│</span>  │
+│  <span class="dim">│</span>  <span class="dim">┃</span>  ○ Lean — Quick validation, 1 scope                     <span class="dim">│</span>  │
+│  <span class="dim">│</span>  <span class="dim">┃</span>  ● <span class="hl">Core</span> — One feature, 3-5 scopes  <span class="dim">← selecionado</span>       <span class="dim">│</span>  │
+│  <span class="dim">│</span>  <span class="dim">┃</span>  ○ Complete — Full pipeline, 8-15 scopes               <span class="dim">│</span>  │
+│  <span class="dim">│</span>  ─────────────────────────────────────────────────────────  <span class="dim">│</span>  │
+│  <span class="dim">│</span>  <span class="hl4">⏳ Agent is shaping the proposal...</span>                        <span class="dim">│</span>  │
+│  <span class="dim">│</span>  <span class="dim">Analyzing problem: 'Implementar gateway de pagamento...'</span>    <span class="dim">│</span>  │
+│  <span class="dim">│</span>  <span class="dim">Mapping rabbit holes...</span>                                   <span class="dim">│</span>  │
+│  <span class="dim">└─────────────────────────────────────────────────────────┘</span>  │
+└─────────────────────────────────────────────────────────────┘
+    </div>
+  </div>
+
+  <div class="grid-3">
+    <div class="card">
+      <h4>⚙️ Como funciona</h4>
+      <p><strong>xterm.js</strong> no frontend (mesmo usado pelo VS Code).</p>
+      <p><strong>node-pty</strong> no backend — cria um PTY real conectado ao shell do projeto.</p>
+      <p><strong>WebSocket</strong> bidirecional — streaming de output, envio de input.</p>
+      <p><strong>Múltiplas sessões</strong> — uma por workflow, ou um terminal compartilhado.</p>
+    </div>
+    <div class="card">
+      <h4>🔒 Segurança</h4>
+      <p>Sessões são <strong>read-only por padrão</strong> — PMs veem mas não podem digitar comandos. Apenas devs autenticados podem interagir.</p>
+      <p>Ou: o terminal é <strong>visível mas bloqueado</strong> — o PM só pode responder perguntas via UI, não via terminal.</p>
+    </div>
+    <div class="card">
+      <h4>📦 Opções de implementação</h4>
+      <p><strong>ttyd</strong> — mais simples, já pronto. Só não dá tanto controle de UI.</p>
+      <p><strong>xterm.js + node-pty custom</strong> — mais flexível, permite embed direto no Mission Control, controle de permissões, múltiplas sessões com labels.</p>
+    </div>
+  </div>
+
+  <div class="callout blue">
+    <span class="icon">💡</span>
+    <p><strong>Insight:</strong> O terminal ao vivo resolve um problema que nem sabíamos que existia. Hoje PMs não têm <em>visibilidade</em> do que o agente está fazendo — quando veem o terminal rolando, entendem o ritmo, veem o agente "pensando", e confiam mais no processo. É o <strong>real-time feel</strong> que falta.</p>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ==================== FLUXO DE PERGUNTAS ==================== -->
+<section id="qa">
+  <h2>❓ O Coração do Problema: Como Fazer as Perguntas</h2>
+  <p class="section-desc">Esta é a parte mais crítica e a que você mais refletiu. Existem 3 alternativas claras, cada uma com trade-offs diferentes. Vamos a elas.</p>
+
+  <!-- OPTION 1 -->
+  <div class="option-card" style="border-top-color: var(--accent);">
+    <span class="tagline badge-purple">OPÇÃO A — RECOMENDADA</span>
+    <h3>A — Plannotator adaptado como "Question Doc"</h3>
+    <div class="meta">🎯 Transformar cada pergunta em um documento markdown → abrir no Plannotator</div>
+    <p>
+      Em vez de <code>ask_user_question</code> no terminal, o workflow gera um <strong>documento de perguntas</strong> 
+      em markdown com checkboxes interativos. Esse documento é aberto no Plannotator no browser. 
+      O usuário seleciona opções, anota, aprova. O feedback volta como JSON.
+    </p>
+
+    <div class="q-flow">
+      <div class="line"><span class="dir">Agent→</span> [Escreve question-doc.md com perguntas e checkboxes]</div>
+      <div class="line"><span class="dir">→     </span> [Abre Plannotator com --gate --json]</div>
+      <div class="line"><span class="sys">      </span> ┌─ Plannotator (browser) ──────────────────┐</div>
+      <div class="line"><span class="sys">      </span> │ <span class="hl">Appetite: How deep should the plan be?     </span>   │</div>
+      <div class="line"><span class="sys">      </span> │ ● <span class="hl2">Core</span> — One feature, 3-5 scopes              │</div>
+      <div class="line"><span class="sys">      </span> │ ○ Lean — Quick validation                  │</div>
+      <div class="line"><span class="sys">      </span> │ ○ Complete — Full pipeline                 │</div>
+      <div class="line"><span class="sys">      </span> │ [Approve] [Annotate]                        │</div>
+      <div class="line"><span class="sys">      </span> └────────────────────────────────────────────┘</div>
+      <div class="line"><span class="resp">User→  </span> [Seleciona "Core", aprova]</div>
+      <div class="line"><span class="resp">Plann→ </span> { "decision": "approved", "selections": { "appetite": "Core" } }</div>
+      <div class="line"><span class="dir">Agent→</span> [Continua o workflow com appetite=Core]</div>
+    </div>
+
+    <div class="pros-cons">
+      <div class="pros">
+        <h5>✅ Vantagens</h5>
+        <ul>
+          <li>Não requer componente novo — Plannotator já existe</li>
+          <li>Já tem blocking gate semantics</li>
+          <li>Feedback estruturado via annotations ou JSON</li>
+          <li>Todos os usuários acessam via browser</li>
+          <li>Aproveita o approval receipt existente</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h5>⚠️ Desafios</h5>
+        <ul>
+          <li>Plannotator foi feito para <em>revisão</em>, não para questionários</li>
+          <li>Checkboxes funcionam visualmente, mas o retorno JSON pode não incluir o estado dos checkboxes — precisa testar</li>
+          <li>Multi-select pode não ter UX ideal</li>
+          <li>Se o Plannotator não suportar, precisamos adaptar ou criar algo</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- OPTION 2 -->
+  <div class="option-card" style="border-top-color: var(--accent2);">
+    <span class="tagline badge-green">OPÇÃO B</span>
+    <h3>B — Web UI própria para perguntas + Plannotator para gates</h3>
+    <div class="meta">🎯 Criar um componente de questionário embutido no Mission Control</div>
+    <p>
+      O Mission Control tem uma área dedicada a perguntas. Quando o workflow precisa de uma decisão humana, 
+      o daemon emite um evento "pergunta pendente". O web app exibe a pergunta com opções, 
+      multi-select, preview, etc. O usuário responde ali mesmo. Plannotator continua sendo usado 
+      apenas para os gates visuais (revisão de spec, diff review).
+    </p>
+
+    <div class="q-flow">
+      <div class="line"><span class="dir">Daemon→</span> [WebSocket: { type: "question", id: "...", payload: {...} }]</div>
+      <div class="line"><span class="dir">→      </span> [Mission Control exibe pergunta com radio buttons]</div>
+      <div class="line"><span class="sys">       </span> ┌─ Mission Control ────────────────────┐</div>
+      <div class="line"><span class="sys">       </span> │ <span class="hl">🤔 Pergunta pendente                   </span>   │</div>
+      <div class="line"><span class="sys">       </span> │ How deep should the plan be?          │</div>
+      <div class="line"><span class="sys">       </span> │ ○ Lean    ○ <span class="hl2">Core</span>   ○ Complete         │</div>
+      <div class="line"><span class="sys">       </span> │ [Responder]                             │</div>
+      <div class="line"><span class="sys">       </span> └────────────────────────────────────────┘</div>
+      <div class="line"><span class="resp">User→   </span> [Clica "Core", "Responder"]</div>
+      <div class="line"><span class="resp">Daemon→ </span> [WebSocket: { type: "answer", id: "...", value: "Core" }]</div>
+      <div class="line"><span class="dir">Agente→ </span> [Continua com appetite=Core]</div>
+    </div>
+
+    <div class="pros-cons">
+      <div class="pros">
+        <h5>✅ Vantagens</h5>
+        <ul>
+          <li>UX sob medida — radio buttons, checkboxes, preview, notas</li>
+          <li>Embutido no Mission Control — sem abrir outra aba</li>
+          <li>Histórico de perguntas e respostas visível</li>
+          <li>Pode notificar via Slack, Linear, etc.</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h5>⚠️ Desafios</h5>
+        <ul>
+          <li>Requer construir e manter o componente de perguntas</li>
+          <li>O agente (Pi) precisa de um <em>tool</em> novo para emitir perguntas em vez de ask_user_question</li>
+          <li>Se o web app não estiver aberto, a pergunta fica sem resposta — precisa de fallback</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- OPTION 3 -->
+  <div class="option-card" style="border-top-color: var(--accent3);">
+    <span class="tagline badge-yellow">OPÇÃO C</span>
+    <h3>C — Terminal streaming + "Responder aqui" como overlay</h3>
+    <div class="meta">🎯 Mostrar o terminal ao vivo e permitir responder clicando em botões na UI</div>
+    <p>
+      O terminal do Pi é transmitido ao vivo (xterm.js). Quando o agente usa <code>ask_user_question</code>, 
+      o Mission Control detecta o padrão no terminal (as opções renderizadas) e exibe um 
+      <strong>overlay de resposta</strong> sobre o terminal — botões clicáveis que, quando pressionados, 
+      simulam digitar a resposta no terminal.
+    </p>
+
+    <div class="mockup-wrap">
+      <div class="mockup-header">
+        <span class="mockup-dot red"></span>
+        <span class="mockup-dot yellow"></span>
+        <span class="mockup-dot green"></span>
+        <span style="margin-left:8px;">Terminal + Overlay de Resposta</span>
+      </div>
+      <div class="mockup-body">
+┌────────────────────────────────────────────────────────────┐
+│  <span class="dim">$ pi</span>                                                    │
+│  <span class="dim">┌─────────────────────────────────────────────────────────┐</span> │
+│  <span class="dim">│ ◆ setup:15 — How deep should the plan be?               │</span> │
+│  <span class="dim">│                                                     │</span> │
+│  <span class="dim">│   1. Lean — Quick validation, 1-2 scopes                │</span> │
+│  <span class="dim">│   2. Core — One feature, 3-5 scopes                     │</span> │
+│  <span class="dim">│   3. Complete — Full pipeline, 8-15 scopes              │</span> │
+│  <span class="dim">│                                                     │</span> │
+│  <span class="dim">│   > _                                                 │</span> │
+│  <span class="dim">└─────────────────────────────────────────────────────────┘</span> │
+│                                                              │
+│  <span class="tag purple">Responder</span>  [ <span class="hl">Lean</span> ] [ <span class="hl2">Core</span> ] [ <span class="hl3">Complete</span> ]  <span class="dim">|</span>  ✏️ Custom   │
+│                                                              │
+└────────────────────────────────────────────────────────────┘
+      </div>
+    </div>
+
+    <div class="pros-cons">
+      <div class="pros">
+        <h5>✅ Vantagens</h5>
+        <ul>
+          <li>Não requer mudanças no Pi — funciona com o ask_user_question existente</li>
+          <li>PM vê o terminal ao vivo "pensando"</li>
+          <li>Respostas são "click to type" — natural e familiar</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h5>⚠️ Desafios</h5>
+        <ul>
+          <li>Detecção de padrões no terminal é frágil (mudança de prompt, cores, etc.)</li>
+          <li>Se o usuário fechar o navegador, a pergunta fica órfã no terminal</li>
+          <li>Requer o daemon + terminal streaming sempre ativos</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout blue">
+    <span class="icon">🧪</span>
+    <p><strong>Minha avaliação:</strong> A <strong>Opção A (Plannotator question-doc)</strong> é a mais elegante porque reaproveita algo que já existe. Mas a <strong>Opção B (web UI própria)</strong> dá mais controle e melhor UX. Uma abordagem híbrida: usar a Opção B como padrão (perguntas no Mission Control) e a Opção A como fallback (quando o Plannotator está disponível mas a web UI não). E a Opção C pode ser um add-on interessante — "ver o terminal ao vivo" como feature extra mesmo que as perguntas sejam respondidas via UI.</p>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ==================== MOCKUP CONCEITUAL ==================== -->
+<section id="mockup">
+  <h2>🖼️ Mockup Conceitual do Mission Control</h2>
+  <p class="section-desc">Uma visão de como seriam as principais telas do sistema — não é um design final, mas uma exploração de layout e fluxo.</p>
+
+  <div class="mockup-wrap">
+    <div class="mockup-header">
+      <span class="mockup-dot red"></span>
+      <span class="mockup-dot yellow"></span>
+      <span class="mockup-dot green"></span>
+      <span style="margin-left:8px;">🚀 stelow Mission Control — Painel Principal</span>
+    </div>
+    <div class="mockup-body">
+<span class="hl">┌────────────────────────────────────────────────────────────────┐</span>
+<span class="hl">│</span>  🚀 <span class="hl">stelow</span>  <span class="dim">│</span>  Workflows  <span class="dim">│</span>  Scopes  <span class="dim">│</span>  Linear Sync  <span class="dim">│</span>  <span class="hl4">⚡ 3 pending</span>  <span class="hl">│</span>
+<span class="hl">│</span>  ─────────────────────────────────────────────────────────────  <span class="hl">│</span>
+<span class="hl">│</span>  <span class="tag yellow">⚡ 3 Actions</span> <span class="tag blue">📋 8 Workflows</span> <span class="tag green">✅ 12 Scopes done</span>           <span class="hl">│</span>
+<span class="hl">└────────────────────────────────────────────────────────────────┘</span>
+
+<span class="hl2">=== ACTIVE WORKFLOWS ===</span>
+
+<span class="hl">┌─ Payment Gateway ─────────────────────────────────────────────┐</span>
+<span class="hl">│</span>  <span class="tag green">● Active</span>  <span class="tag yellow">Shape</span>  <span class="dim">|</span>  Appetite: Core  <span class="dim">|</span>  Intent: Feature   <span class="hl">│</span>
+<span class="hl">│</span>  <span class="hl4">████████░░░░░░░░</span>  <span class="dim">45%</span>  <span class="dim">|</span>  ⏳ Agent shaping proposal...   <span class="hl">│</span>
+<span class="hl">│</span>  <span class="dim">└ Stages: Triage ✓ → Setup ✓ → Context ✓ → Shape ●</span>         <span class="hl">│</span>
+<span class="hl">└────────────────────────────────────────────────────────────────┘</span>
+
+<span class="hl">┌─ Login Refactor ─────────────────────────────────────────────┐</span>
+<span class="hl">│</span>  <span class="tag green">● Active</span>  <span class="tag blue">Execution</span>  <span class="dim">|</span>  scopes <span class="hl2">3/5</span>  <span class="dim">|</span>  tasks <span class="hl2">14/22</span>    <span class="hl">│</span>
+<span class="hl">│</span>  <span class="hl2">██████████████░░</span>  <span class="dim">75%</span>                                    <span class="hl">│</span>
+<span class="hl">│</span>  <span class="dim">└ Scope-1:</span> <span class="tag green">Done</span>  <span class="dim">Scope-2:</span> <span class="tag green">Done</span>  <span class="dim">Scope-3:</span> <span class="tag yellow">●</span>  <span class="dim">Scope-4:</span> <span class="dim">○</span>  <span class="dim">Scope5:</span> <span class="dim">○</span>  <span class="hl">│</span>
+<span class="hl">└────────────────────────────────────────────────────────────────┘</span>
+
+<span class="hl">┌─ Auth V2 ────────────────────────────────────────────────────┐</span>
+<span class="hl">│</span>  <span class="tag yellow">⏸ Paused</span>  <span class="tag red">⏳ GATE: Needs Review</span>  <span class="dim">|</span>  ⏰ waiting 2h      <span class="hl">│</span>
+<span class="hl">│</span>  <span class="hl3">████████████████</span>  <span class="dim">90%</span>                                     <span class="hl">│</span>
+<span class="hl">│</span>  <span class="tag red">🔴 Plannotator</span> spec-product_v2.md  <span class="hl4">→ [Open Gate]</span>          <span class="hl">│</span>
+<span class="hl">└────────────────────────────────────────────────────────────────┘</span>
+
+<span class="dim">────────────────────────────────────────────────────────────────────</span>
+
+<span class="hl2">=== PENDING QUESTIONS (1) ===</span>
+
+<span class="tag red">●</span> <span class="hl">"Payment Gateway"</span>  —  How deep should the plan be?
+  <span class="tag green" style="border:1px solid var(--accent2);">Lean</span>  <span class="tag yellow">Core</span>  <span class="dim">Complete</span>
+  <span class="dim">[Answer in Mission Control]</span>  <span class="dim">|</span>  <span class="dim">[Answer via Linear]</span>  <span class="dim">|</span>  <span class="dim">[Open Terminal]</span>
+
+<span class="dim">────────────────────────────────────────────────────────────────────</span>
+
+<span class="hl2">=== RECENT ACTIVITY ===</span>
+<span class="dim">10:32 — Payment Gateway: Agent generated spec-product_v1.md</span>
+<span class="dim">10:28 — Login Refactor: Scope-3 marked completed (task 14/22)</span>
+<span class="dim">10:15 — Auth V2: Gate opened — waiting for human review</span>
+<span class="dim">09:50 — Payment Gateway: Context stage completed</span>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-top:16px;">
+    <div class="card">
+      <h4>📋 Tela de Scopes</h4>
+      <p>Visão kanban de todos os scopes (como um board do Linear). Colunas: Pending → In Progress → Escalated → Failed → Done.</p>
+      <p>Cada card mostra: nome do scope, workflow pai, progresso de tarefas, dependências, arquivos-alvo, iteração atual.</p>
+      <p>Já existe no Muxy panel (<code>groupScopesByStatus</code> + <code>SCOPE_COLUMNS</code>).</p>
+    </div>
+    <div class="card">
+      <h4>📄 Tela de Artefatos</h4>
+      <p>Por workflow, lista todos os artefatos gerados: specs, interfaces, plans, critiques, approvals.</p>
+      <p>Cada artefato pode ser visualizado inline ou aberto no Plannotator. Os approvals (gate receipts) ficam destacados.</p>
+      <p>Já existe no Muxy panel (<code>scanArtifactDirs</code> + <code>ARTIFACT_DIRS</code>).</p>
+    </div>
+    <div class="card">
+      <h4>💬 Tela de Linear Sync</h4>
+      <p>Mostra quais workflows estão vinculados a quais issues do Linear. Permite desvincular, re-vincular, ou criar nova issue.</p>
+      <p>Histórico de comentários sincronizados entre stelow e Linear.</p>
+    </div>
+    <div class="card">
+      <h4>⚙️ Tela de Config</h4>
+      <p>Token de API do Linear, configuração do daemon (porta WebSocket, auto-start), revisão de modos e appetite.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ==================== MATRIZ DE DECISÃO ==================== -->
+<section id="decisao">
+  <h2>📊 Matriz de Decisão: Onde Investir</h2>
+  <p class="section-desc">Uma comparação objetiva de cada frente de desenvolvimento — complexidade, valor entregue e dependências.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Componente</th>
+          <th>Complexidade</th>
+          <th>Valor para PMs/UX</th>
+          <th>Valor para Devs</th>
+          <th>Depende de</th>
+          <th>Prioridade</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Daemon + File Watcher</strong></td>
+          <td>Média</td>
+          <td><span class="stars">★★☆☆☆</span></td>
+          <td><span class="stars">★★★★★</span></td>
+          <td>Node, chokidar, ws</td>
+          <td><span class="badge badge-green">1º</span></td>
+        </tr>
+        <tr>
+          <td><strong>Mission Control Web App</strong></td>
+          <td>Alta</td>
+          <td><span class="stars">★★★★★</span></td>
+          <td><span class="stars">★★★★☆</span></td>
+          <td>Daemon + WS</td>
+          <td><span class="badge badge-green">2º</span></td>
+        </tr>
+        <tr>
+          <td><strong>Linear Sync</strong></td>
+          <td>Média</td>
+          <td><span class="stars">★★★★★</span></td>
+          <td><span class="stars">★★★☆☆</span></td>
+          <td>Linear API key</td>
+          <td><span class="badge badge-green">3º</span></td>
+        </tr>
+        <tr>
+          <td><strong>Quest Engine (perguntas)</strong></td>
+          <td>Média-Alta</td>
+          <td><span class="stars">★★★★★</span></td>
+          <td><span class="stars">★★★☆☆</span></td>
+          <td>Web App</td>
+          <td><span class="badge badge-yellow">4º</span></td>
+        </tr>
+        <tr>
+          <td><strong>Terminal Streaming</strong></td>
+          <td>Média</td>
+          <td><span class="stars">★★★★☆</span></td>
+          <td><span class="stars">★★☆☆☆</span></td>
+          <td>xterm.js + node-pty</td>
+          <td><span class="badge badge-yellow">5º</span></td>
+        </tr>
+        <tr>
+          <td><strong>Plannotator Embed</strong></td>
+          <td>Baixa</td>
+          <td><span class="stars">★★★★☆</span></td>
+          <td><span class="stars">★★☆☆☆</span></td>
+          <td>Plannotator CLI</td>
+          <td><span class="badge badge-yellow">6º</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout green">
+    <span class="icon">🎯</span>
+    <p><strong>Ordem sugerida de implementação:</strong> Daemon → Web App → Linear Sync → Quest Engine → Terminal → Plannotator. O daemon e o web app formam a base. Linear sync dá o "gancho" de adoção para times. Quest engine e terminal são os diferenciais de experiência.</p>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ==================== RECOMENDAÇÃO ==================== -->
+<section id="recomendacao">
+  <h2>🎯 Recomendação Final</h2>
+  <p class="section-desc">Depois de toda a exploração, aqui está uma direção concreta para começar.</p>
+
+  <div class="card" style="padding:28px; border-left: 4px solid var(--accent);">
+    <h4 style="font-size:1.1rem;">🚀 MVP: Daemon + Mission Control + Linear Sync</h4>
+    <p style="font-size:.9rem;">
+      <strong>O que fazer:</strong> Construir um daemon Node que observa <code>stelow.json</code> e expele o estado via WebSocket. Um web app (Next.js ou frontend puro) que consome esse WebSocket e exibe um dashboard igual ao mockup acima — workflows, progresso, scopes, artefatos. Um módulo Linear que cria/comenta issues.
+    </p>
+    <p style="font-size:.9rem; margin-top:8px;">
+      <strong>O que NÃO fazer no MVP:</strong> Terminal streaming ao vivo (complexo, valor médio). Quest engine próprio (comece com a pergunta aparecendo no web app redirecionando para o Pi ou Plannotator). Embed do Plannotator (abrir em nova aba resolve).
+    </p>
+    <p style="font-size:.9rem; margin-top:8px;">
+      <strong>Para as perguntas (a grande questão):</strong> Comece com a <strong>Opção B leve</strong> — o web app mostra "pergunta pendente" com um botão que abre o terminal (ou Plannotator) para responder. Depois de validar que PMs usam o web app, evolua para um componente de questionário embutido. A Opção A (question-doc no Plannotator) pode ser explorada em paralelo como experimento rápido.
+    </p>
+  </div>
+
+  <div class="card" style="margin-top:16px; padding:28px; border-left: 4px solid var(--accent2);">
+    <h4 style="font-size:1.1rem;">📦 Aproveitando o que já existe</h4>
+    <p style="font-size:.9rem;">
+      O <strong>Muxy panel</strong> (integrations/muxy/stelow/src/panel/) já tem 70% do que o Mission Control precisa:
+    </p>
+    <ul style="font-size:.88rem; margin: 8px 0 0 20px;">
+      <li>Leitura e parsing do <code>stelow.json</code> (<code>loadTrackingData</code>)</li>
+      <li>Grouping por macro-stage (<code>groupWorkflowsByMacroStage</code>)</li>
+      <li>Progresso de scopes e tarefas (<code>getScopeProgress</code>, <code>getTaskSummaryText</code>)</li>
+      <li>Scanning de artefatos (<code>scanArtifactDirs</code>)</li>
+      <li>Parsing de spec-tech.md para scopes (<code>parseScopesFromSpecTech</code>)</li>
+      <li>Cross-worktree awareness</li>
+    </ul>
+    <p style="font-size:.9rem; margin-top:8px;">
+      O Mission Control pode reusar toda essa lógica — o data layer é essencialmente o mesmo. A diferença é que em vez de rodar dentro de um iframe do Muxy, roda como web app independente com backend próprio.
+    </p>
+  </div>
+
+  <div class="card" style="margin-top:16px; padding:28px; border-left: 4px solid var(--accent3);">
+    <h4 style="font-size:1.1rem;">🔮 Visão de longo prazo</h4>
+    <p style="font-size:.9rem;">
+      O Mission Control pode se tornar a <strong>porta de entrada</strong> do stelow para não-devs:
+    </p>
+    <ul style="font-size:.88rem; margin: 8px 0 0 20px;">
+      <li><strong>PM</strong> abre o Mission Control, vê workflows pendentes, responde perguntas, aprova gates</li>
+      <li><strong>UX Designer</strong> vê os artefatos de interface, anota no Plannotator, aprova o int-gate</li>
+      <li><strong>Dev</strong> inicia workflows no terminal (Pi), acompanha scopes no Mission Control, ou abre o terminal streaming para debug</li>
+      <li><strong>Stakeholder</strong> vê o board executivo no Mission Control — quantos workflows em andamento, progresso geral, bloqueios</li>
+    </ul>
+    <p style="font-size:.9rem; margin-top:8px;">
+      Tudo sem criar "mais uma ferramenta" — o Mission Control é um <em>hub</em> que conecta o terminal (Pi), o projeto (Linear), a revisão (Plannotator), e as pessoas (PM/UX/Dev).
+    </p>
+  </div>
+</section>
+
+</div>
+
+<footer style="text-align:center; padding: 48px 24px; color: var(--text-muted); font-size: .82rem; border-top: 1px solid var(--border); margin-top: 56px;">
+  <p>Exploração arquitetural · 16 de julho de 2026 · Nenhum código foi alterado</p>
+  <p style="margin-top:4px;">Baseado em análise do stelow extension, Muxy panel, Linear API, Plannotator CLI, e xterm.js/node-pty</p>
+</footer>
+
+</body>
+</html>

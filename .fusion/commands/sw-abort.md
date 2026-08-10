@@ -15,7 +15,7 @@ Usage: `/sw-abort | all | name1 name2`
 This file is an executable agent command prompt; Fusion does **not** load the
 Pi extension adapter at runtime.
 
-1. Read `skills/stelow-product-orchestrator/SKILL.md` and the current
+1. Read `skills/stelow-adapter-cli/SKILL.md` and the current
    project `stelow.json`.
 2. Execute the `sw-abort` operation described in
    `cli-agents/COMMANDS.md`, preserving the command arguments supplied

@@ -27,7 +27,7 @@ const __testDir = dirname(__filename);
 const PROJECT_ROOT = join(__testDir, '..', '..');
 const HELPER_PATH = join(
   PROJECT_ROOT,
-  'skills/stelow-product-orchestrator/references/cli-tools/read-config.sh',
+  'skills/stelow-adapter-cli/references/cli-tools/read-config.sh',
 );
 
 describe('Workflow.config: bash helper reads from stelow.json (canonical source)', () => {

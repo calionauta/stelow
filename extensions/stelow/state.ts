@@ -805,13 +805,6 @@ export function syncScopesFromPlanningFiles(
 /**
  * Parse [SCOPE-N] blocks from spec-tech.md content into Scope[].
  *
- * This is the **sole canonical parser** for spec-tech scopes. The Muxy /
- * Herdr integration trees were removed in v0.55 and SW-002; there is no
- * JavaScript mirror or parallel runtime to keep in sync. All hosts
- * (Pi extension, Fusion plugin, generic adapters) consume the same
- * TypeScript implementation exported from this module — host-specific
- * adapters wrap it via `syncScopesFromPlanningFiles` / `syncScopesIfNeeded`.
- *
  * Convention (matches the scope-executor SKILL Step 1 format):
  * ```
  * [SCOPE-1]
@@ -826,13 +819,8 @@ export function syncScopesFromPlanningFiles(
  *
  * Pure function. No filesystem access.
  *
- * Version-aware re-sync contract: callers detect a newer spec-tech
- * revision via the workflow's `wf.specTechFile` field (typed in
- * `extensions/stelow/types.ts`). When the latest `spec-tech_*.md`
- * filename on disk differs from `wf.specTechFile`, the caller re-parses
- * the latest file and replaces `wf.scopes` with the parsed result (only
- * when the parse yields entries). See `syncScopesIfNeeded` in this
- * module for the implementation.
+ * If you change this function, update the mirror in data.js and vice versa.
+ * The two runtimes (Node TS vs Electron sandbox JS) cannot share code.
  */
 export function parseSpecTechScopes(content: string): Scope[] {
   const scopes: Scope[] = [];
@@ -975,10 +963,30 @@ export function truncateText(text: string, maxLen: number): string {
   return text.slice(0, maxLen - 100) + "\n\n[... truncated ...]";
 }
 
-// Inbox + Provenance removed in v0.57.0 — hosts own their inbox and audit
-// trail (Multica uses issue metadata + comments, Fusion uses session-state,
-// Pi uses pi-session-state). `audit-trail.ts` remains: it is the workflow's
-// own output, not a host inbox mirror.
+// ── Inbox ──────────────────────────────────────────────────────────────
+// Moved to inbox.ts (filesystem helper for the .stelow/inbox/items.md
+// staging area). Re-exported below for callers that import from
+// `state.ts`. See `inbox.ts` for the canonical implementation.
+
+// ── Provenance Log ───────────────────────────────────────────────────
+// Moved to provenance.ts (JSONL append-only history log).
+// Re-exported below. See `provenance.ts` for the canonical implementation.
 
 // Re-export for convenience (used by commands.ts and external consumers).
 export { TASK_ICONS };
+export {
+  getInboxDir,
+  getInboxPath,
+  ensureInboxDir,
+  readInbox,
+  writeInbox,
+  addToInbox,
+  removeFromInbox,
+  clearInbox,
+} from "./inbox";
+export {
+  getProvenancePath,
+  appendProvenance,
+  readProvenance,
+  PROVENANCE_FILE,
+} from "./provenance";

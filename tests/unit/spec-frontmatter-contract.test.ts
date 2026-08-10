@@ -31,8 +31,8 @@ const PROPOSAL_STRUCTURE = join(
   PROJECT_ROOT,
   'skills/stelow-product-shape-up/references/proposal-structure.md',
 );
-const SETUP_MD = join(PROJECT_ROOT, 'skills/stelow-product-orchestrator/stages/setup.md');
-const ASK_PATTERNS = join(PROJECT_ROOT, 'skills/stelow-product-orchestrator/stages/ask-patterns.md');
+const SETUP_MD = join(PROJECT_ROOT, 'skills/stelow-adapter-cli/stages/setup.md');
+const ASK_PATTERNS = join(PROJECT_ROOT, 'skills/stelow-adapter-cli/stages/ask-patterns.md');
 
 function read(path: string): string {
   return readFileSync(path, 'utf-8');

@@ -119,3 +119,36 @@ export {
   saveState,
   getCurrentStage,
 } from "./state-manager";
+
+// ── Host Adapters (DecisionGateway) ─────────────────────────────────
+//
+// External HITL hosts (Multica, Slack, Linear, ...). The stelow
+// orchestrator calls `createHostAdapter(projectRoot)` and routes
+// `ask_user_question` / `plannotator --gate` through it when a
+// `.stelow/host-workgroup.yaml` is present.
+
+export {
+  createHostAdapter,
+  HostAdapterError,
+  MulticaAdapter,
+  BaseHostAdapter,
+  parseNumberedReply,
+  loadWorkgroupConfig,
+  resolveReviewer,
+  WorkgroupConfigError,
+  interpretMemberReply,
+  interpretQuestionReply,
+} from "./host";
+
+export type {
+  DecisionGateway,
+  DecisionRequest,
+  DecisionResult,
+  DecisionKind,
+  DecisionOutcome,
+  PendingDecision,
+  Question,
+  Option,
+  WorkgroupConfig,
+  ReviewerRef,
+} from "./host";

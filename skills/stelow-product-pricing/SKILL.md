@@ -72,6 +72,20 @@ Benefits: creates strong sense of urgency; clear incentive not to "leave for lat
 
 ⚠️ Requires transparent communication — the increase rules must be clear to everyone from the beginning.
 
+**First 5 / Work for Free — Hormozi's Graduated Discount Transition**
+A concrete application of stepped pricing for the zero-proof phase. After serving the first 5 clients for free, transition via decreasing discount:
+
+| Batch | Price |
+|-------|-------|
+| First 5 (free) | $0 |
+| Next 5 | 80% OFF (pay 20%) |
+| Next 5 | 60% OFF (pay 40%) |
+| Next 5 | 40% OFF (pay 60%) |
+| Next 5 | 20% OFF (pay 80%) |
+| From then on | Full price |
+
+> 📖 Full strategy context (3-condition exchange, ACA outreach, tuition mindset) in `stelow-product-testimonials`.
+
 **Subscription Fatigue — Market Response Strategy**
 We are in a phase of "subscription fatigue" — the accumulation of small monthly charges generates constant cognitive and financial burden for consumers. Alternatives:
 
@@ -97,19 +111,61 @@ The way price is presented has a profound impact on how it is perceived.
 
 ---
 
-## The Trust Pact: An Anti-Lock-In Pricing Approach
+## Trust Pact
 
-In a saturated market, where customers feel increasingly trapped in services by contracts, inertia, or difficulty migrating data, **trust can be the biggest competitive differential**.
+> 📖 The **Trust Pact** (Three Freedoms: Contractual, Financial, Informational) is a framework for designing anti-lock-in commercial relationships. It lives in `stelow-product-trust-building` alongside the 10 trust pillars and guarantee mechanisms.
 
-Building a "trust pact" means designing the commercial relationship in a way that gives power and autonomy to the customer. It rests on three principles:
+---
 
-**1. Contractual Freedom (The Right to Exit)**
-The customer can end the relationship whenever they want, without bureaucratic barriers or punitive fines. *The message: the customer stays for the quality of the service, not for a contractual obligation.*
+## Discovery Quick Reference (Pricing Models at a Glance)
 
-**2. Financial Freedom (Insurance Against Initial Risk)**
-Ensures that if a customer changes their mind — especially in the first few months — they don't lose their entire investment. Mechanics: fair refund with the returned value deducting only the usage period calculated based on the standard price, without discount.
+A condensed reference for quick decisions during product discovery. Full depth in each section above.
 
-**3. Informational Freedom (Data Belongs to the Customer)**
-The exit barrier of a service cannot be the difficulty of taking their data away. An explicit commitment to **data portability** — exporting information easily, freely, and in an open format — is the recognition that the company offers a tool, but the work and creation belong to the user.
+### Exchange Base
 
-**Why Adopting These Principles is Also a Business Strategy**: a company that facilitates customer entry and exit is making a bold bet on the quality of its own product, signaling that it intends to retain customers **by merit, and not by lock-in**.
+| Model | When to use | Risk |
+|-------|-------------|------|
+| One-Time Payment | Durable goods, digital products, low maintenance cost | Zero recurring revenue |
+| Recurring Subscription | Ongoing value delivery, SaaS | Subscription fatigue |
+| Finite Term License | Long-term access without auto-renewal | Lower perceived flexibility |
+| Per-Unit of Outcome | Transactional delivery, AI services | Volume dependency |
+| Bundling | Group items to increase perceived value | May obscure individual value |
+| Hybrid Pricing | Balance stability + flexibility (fixed + variable) | Complexity in communication |
+
+### Consumption Control
+
+| Model | How it works | Best for |
+|-------|-------------|----------|
+| Pre-paid Credits | Buy package, consume as used | Intentional usage, upfront cash |
+| Computational Granularity | Pay per GPU/TPU time, tokens | AI services with variable costs |
+
+### Interest Alignment
+
+| Model | Mechanism | Trust required |
+|-------|-----------|----------------|
+| Performance Payment | Pay only if result achieved | High — measurable outcome needed |
+| Value-Generated Pricing | % of revenue/savings generated | Very high — deep partnership |
+| Payment with Data | Discount in exchange for data | Ethical boundaries needed |
+
+### Strategies
+
+| Strategy | When to use |
+|----------|-------------|
+| Stepped (Tiered) Pricing | Pre-sale/launch — first adopters pay less, price increases with batches |
+| First 5 / Work for Free | Zero-proof phase — free → 80% OFF → 60% OFF → 40% OFF → 20% OFF → full price |
+| Subscription Fatigue Response | Mature market — offer annual, lifetime deals, long-term licenses |
+
+### Perception Tactics
+
+Monetary abstraction, magnitude perception (9.99 effect), temporal reframing (R$1/day), decoy effect, value anchoring (replace vs. cost saved).
+
+---
+
+## Related Skills
+
+- `stelow-product-trust-building` — 10 pillars of trust, Trust Pact (Three Freedoms), guarantee mechanisms
+- `stelow-product-testimonials` — First 5 / Work for Free, BAB storytelling, collection system
+- `stelow-product-promotions` — MAGIC framework, Loss Leader, Irresistible Freebie
+- `stelow-product-business-models` — Cost reduction and revenue generation models
+- `stelow-product-open-source` — OSS business strategy
+- `stelow-product-discovery` — Complete short-cycle product learning method

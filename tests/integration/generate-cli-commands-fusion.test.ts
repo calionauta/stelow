@@ -25,7 +25,7 @@ describe("Fusion command artifact generator", () => {
         const metadata = parse(frontmatter);
         expect(metadata).toEqual(expect.objectContaining({ name: descriptor.name, host: "fusion" }));
         expect(content).toContain(descriptor.description);
-        expect(content).toContain("skills/stelow-product-orchestrator/SKILL.md");
+        expect(content).toContain("skills/stelow-adapter-cli/SKILL.md");
         expect(content).not.toContain("through the host adapter");
       }
     } finally { rmSync(root, { recursive: true, force: true }); }

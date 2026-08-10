@@ -22,19 +22,19 @@ and ast-grep (joelhooks/pi-ast-grep) are installed automatically as Pi packages.
 ```
 stelow/          ← Source
 └── skills/                     ← 25 skills flat
-    ├── stelow-product-orchestrator/   ← Orchestrator
+    ├── stelow-adapter-cli/   ← Orchestrator
     ├── stelow-product-shape-up/
     └── ... (23 more)
 
 ~/.agents/skills/               ← Install target
-├── stelow-product-orchestrator/       ← Copied
+├── stelow-adapter-cli/       ← Copied
 ├── stelow-product-shape-up/             ← Copied
 └── ... (25 total)
 ```
 
 **Skills installed (25 total):**
 
-- 1 orchestrator: `stelow-product-orchestrator` (15 stages)
+- 1 orchestrator: `stelow-adapter-cli` (15 stages)
 - 10 workflow stage skills (shape-up, interface-alternatives, plan-critique, codebase-critique, ux-critique, tech-planning, testing-ai-code, testing-execution, scope-executor, execution-critique)
 - 5 strategic analysis skills (job-to-be-done, discovery, opportunity-mapping, multi-method-market-analysis, evolutionary-principles)
 - 1 code-standards skill
@@ -109,7 +109,7 @@ add a one-line reminder if you want to make the trigger explicit.
 ## stelow Integration
 
 For product-workflow tasks (plans, critiques, scopes, executions), invoke
-`stelow-product-orchestrator` and follow its stage routing.
+`stelow-adapter-cli` and follow its stage routing.
 ```
 
 ---

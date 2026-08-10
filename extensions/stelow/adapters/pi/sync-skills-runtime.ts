@@ -47,12 +47,12 @@ export function syncPiSkillsFromClone() {
 
       // 3. Sync cli-tools from orchestrator to each installed skill.
       //    cli-tools are gitignored in sub-skills (single source of truth:
-      //    stelow-product-orchestrator/references/cli-tools/). We regenerate
+      //    stelow-adapter-cli/references/cli-tools/). We regenerate
       //    them here so each skill is self-contained in ~/.agents/skills/.
-      const orchCliTools = join(cloneSkillsDir, "stelow-product-orchestrator/references/cli-tools");
+      const orchCliTools = join(cloneSkillsDir, "stelow-adapter-cli/references/cli-tools");
       if (existsSync(orchCliTools)) {
         for (const skill of projectSkills) {
-          if (skill === "stelow-product-orchestrator") continue;
+          if (skill === "stelow-adapter-cli") continue;
           const target = join(agentsDir, skill, "references/cli-tools");
           mkdirSync(target, { recursive: true });
           for (const file of readdirSync(orchCliTools)) {

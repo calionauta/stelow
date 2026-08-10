@@ -38,7 +38,7 @@ const PROJECT_ROOT = join(__testDir, '..', '..');
 function listSubSkills(): string[] {
   const dir = join(PROJECT_ROOT, 'skills');
   return readdirSync(dir).filter((d) => {
-    if (d === 'stelow-product-orchestrator') return false;
+    if (d === 'stelow-adapter-cli') return false;
     const p = join(dir, d);
     return statSync(p).isDirectory();
   });
@@ -47,7 +47,7 @@ function listSubSkills(): string[] {
 // ── Path Helpers ───────────────────────────────────────────────────
 
 function readMainSkill(): string {
-  return readFileSync(join(PROJECT_ROOT, 'skills/stelow-product-orchestrator/SKILL.md'), 'utf8');
+  return readFileSync(join(PROJECT_ROOT, 'skills/stelow-adapter-cli/SKILL.md'), 'utf8');
 }
 
 function readSkillByPath(name: string): string {
@@ -55,7 +55,7 @@ function readSkillByPath(name: string): string {
 }
 
 function readStageFile(name: string): string {
-  return readFileSync(join(PROJECT_ROOT, 'skills/stelow-product-orchestrator/stages', name), 'utf8');
+  return readFileSync(join(PROJECT_ROOT, 'skills/stelow-adapter-cli/stages', name), 'utf8');
 }
 
 // ═════════════════════════════════════════════════════════════════════
@@ -341,7 +341,7 @@ describe('Iteration Loop Consistency', () => {
 
   it('execution.md routing table should reference acceptance or iteration for features', () => {
     const execContent = readFileSync(
-      join(PROJECT_ROOT, 'skills/stelow-product-orchestrator/stages/execution.md'), 'utf8'
+      join(PROJECT_ROOT, 'skills/stelow-adapter-cli/stages/execution.md'), 'utf8'
     );
     expect(execContent).toMatch(/iteration|acceptance/i);
   });
@@ -352,7 +352,7 @@ describe('Iteration Loop Consistency', () => {
     // (first / middle / last by alphabetical order). The per-file
     // `beforeAll` already prepared the shared tree, so sub-skill
     // copies are guaranteed present.
-    const canonical = join(PROJECT_ROOT, 'skills/stelow-product-orchestrator/references/cli-tools/goals.md');
+    const canonical = join(PROJECT_ROOT, 'skills/stelow-adapter-cli/references/cli-tools/goals.md');
     expect(existsSync(canonical)).toBe(true);
     expect(readFileSync(canonical, 'utf8')).toMatch(/acceptance|iteration loop/i);
 
@@ -379,7 +379,7 @@ describe('Iteration Loop Consistency', () => {
     // Assert the contract on the canonical source AND on the
     // synced scope-executor copy. The per-file `beforeAll`
     // guarantees the copy exists; if not, this fails loudly.
-    const canonical = join(PROJECT_ROOT, 'skills/stelow-product-orchestrator/references/cli-tools/goals.md');
+    const canonical = join(PROJECT_ROOT, 'skills/stelow-adapter-cli/references/cli-tools/goals.md');
     expect(existsSync(canonical)).toBe(true);
     const canonicalContent = readFileSync(canonical, 'utf8');
     expect(canonicalContent).toMatch(/criteria/i);
@@ -401,7 +401,7 @@ describe('Stage Files', () => {
 
   stageFiles.forEach(stage => {
     describe(stage, () => {
-      const path = join(PROJECT_ROOT, 'skills/stelow-product-orchestrator/stages', stage);
+      const path = join(PROJECT_ROOT, 'skills/stelow-adapter-cli/stages', stage);
 
       it('should exist', () => {
         expect(existsSync(path)).toBe(true);
@@ -426,7 +426,7 @@ describe('Stage Files', () => {
 });
 
 describe('cli-tools References', () => {
-  const cliToolsDir = join(PROJECT_ROOT, 'skills/stelow-product-orchestrator/references/cli-tools');
+  const cliToolsDir = join(PROJECT_ROOT, 'skills/stelow-adapter-cli/references/cli-tools');
 
   it('cli-tools directory should exist', () => {
     expect(existsSync(cliToolsDir)).toBe(true);
@@ -458,7 +458,7 @@ describe('cli-tools References', () => {
 });
 
 describe('Ask Patterns', () => {
-  const askPath = join(PROJECT_ROOT, 'skills/stelow-product-orchestrator/stages/ask-patterns.md');
+  const askPath = join(PROJECT_ROOT, 'skills/stelow-adapter-cli/stages/ask-patterns.md');
 
   it('ask-patterns.md should exist', () => {
     expect(existsSync(askPath)).toBe(true);
@@ -475,7 +475,7 @@ describe('Ask Patterns', () => {
 });
 
 describe('References Directory', () => {
-  const refsDir = join(PROJECT_ROOT, 'skills/stelow-product-orchestrator/references');
+  const refsDir = join(PROJECT_ROOT, 'skills/stelow-adapter-cli/references');
 
   it('should exist', () => {
     expect(existsSync(refsDir)).toBe(true);
@@ -489,7 +489,7 @@ describe('References Directory', () => {
 });
 
 describe('Execution Phase', () => {
-  const execPath = join(PROJECT_ROOT, 'skills/stelow-product-orchestrator/stages/execution.md');
+  const execPath = join(PROJECT_ROOT, 'skills/stelow-adapter-cli/stages/execution.md');
 
   it('execution.md should exist', () => {
     expect(existsSync(execPath)).toBe(true);

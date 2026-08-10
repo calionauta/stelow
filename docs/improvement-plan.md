@@ -1,9 +1,5 @@
 # Stelow Improvement Plan
 
-**Status:** Archived — kept here for archaeology only. Do not use this historical June 2026 plan as current implementation guidance. The post-v0.55 host-agnostic design is documented in [`AGENTS.md`](../AGENTS.md), [`architecture.md`](../architecture.md), and [`docs/design/host-agnostic-architecture.md`](design/host-agnostic-architecture.md).
-
-> This plan is superseded because its paths and proposals span completed work, renamed `skills/stelow-product-*` surfaces, and pre-v0.55 Pi-first assumptions. Preserve the body below to retain the original investigation and implementation history.
-
 > Generated: 2026-06-21
 > Source: Comprehensive investigation of token optimization, dependency management, UX clarity, and workflow efficiency opportunities.
 
@@ -310,11 +306,11 @@ If your harness supports per-stage model selection (e.g., via `model` parameter 
 
 Look for `stelow.config.yaml` in the project root. If it exists, use its model mappings. If not, use built-in defaults. Never override the harness's configured model.
 
-### Per-agent hint handling (historical, superseded)
+### Per-agent hint handling
 
-The original notes below used a pre-v0.55 Pi-first model-routing assumption. That assumption is no longer current. Today, `detectHost()` selects `pi`, `fusion`, or `generic` (with `STELOW_HOST` as the canonical explicit setting, Fusion precedence, filesystem probes, and a generic fallback). The Pi adapter may use Pi-native question and model facilities; the Fusion adapter/plugin maps Fusion-native interaction and emits generated workflow resources; and the generic agentskills path provides a limited fallback where hints remain informational or are resolved by the host. See [`docs/design/host-agnostic-architecture.md`](design/host-agnostic-architecture.md) for the architecture record.
+Notes left here are from pre-v0.45.0 multi-CLI framing. From v0.45.0 onward, stelow is Pi-first: hint resolution goes through the Pi extension's `ask_user_question` + per-stage model override. Other agents pick up hints via the standard agentskills mechanism (the skill reads `model_hint` from `stages.yaml` and asks the user's harness via its native config file).
 
-For backward reference, the prior matrix listed per-agent mechanisms; that work was later folded into the agentskills standard and per-host adapters. Historical paths and proposals elsewhere in this archived document are not current requirements.
+For backward reference, the prior matrix listed per-agent mechanisms; that work has been folded into the agentskills standard and the per-harness `~/.agents/skills/<name>/` install path.
 | Generic | ❌ No | Hints are informational only |
 
 ### Expected Impact

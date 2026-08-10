@@ -4,31 +4,22 @@
 
 ## Project Overview
 
-**Type:** Host-agnostic product workflow library (skills + stages + adapters).
+**Type:** Workflow CLI for product planning (skills + stages).
 **Stack:** Node 20+, TypeScript 6.0 strict, npm.
-**Hosts:** Pi (native extension), Fusion (compiled plugin at
-`plugins/fusion-plugin-stelow/`), and generic agentskills-compatible agents.
 
 ## Architecture
 
-See [architecture.md](architecture.md) for module layout, data flow, and how to extend. Skills live in `skills/*/SKILL.md`; stages are defined in
-`skills/stelow-product-orchestrator/stages.yaml` (single source of truth). The
-phases in `extensions/stelow/types.ts#PHASE_NAMES` are the canonical
-17-stage state machine. Visual review gates (`gate`, `int-gate`, `plan-gate`,
-`diff-gate`) are conditional by review mode — see `stages.yaml`.
+See [architecture.md](architecture.md) for module layout, data flow, and how to extend. Skills live in `skills/*/SKILL.md`; stages defined in `stages.yaml` (single source of truth). Visual review gates: `gate`, `int-gate`, `plan-gate`, `diff-gate` (Plannotator) — conditional by review mode.
 
 ### Top-level layout
 
 | Directory | Purpose |
 |---|---|
-| `skills/` | Stelow skills consumed by coding agents (LLM-facing content). |
-| `extensions/stelow/` | Host-agnostic core: state, schema, locking, phases, command registry, adapter contract. |
-| `extensions/stelow/adapters/pi/` | Pi-only hooks, native `/sw-*` commands, TUI, Plannotator. |
-| `extensions/stelow/adapters/fusion.ts` | Fusion tool mapping, generated command/workflow/settings resources. |
-| `extensions/stelow/adapters/generic.ts` | Portable no-op fallbacks for non-Pi, non-Fusion agents. |
-| `plugins/fusion-plugin-stelow/` | Compiled Fusion package: 25 plugin-local skills, validated settings/workflow IR, full-runtime project artifact installation, one managed project-scoped workflow, dependency-free `dist/index.js`. |
-| `docs/design/` | Design docs, plans, ADR (PT-BR discussion, EN artifacts). |
-| `stelow.schema.json` / `stelow.json` | Workflow tracking schema + per-project runtime state. |
+| `skills/` | Stelow skills consumed by pi coding agents (LLM-facing) |
+| `extensions/stelow/` | Host-agnostic core plus adapters. Pi-only hooks, commands, UI, and tools live under `adapters/pi/`; Fusion uses generated artifacts. |
+| `extensions/stelow/adapters/<host>/` | Host-specific runtime specialization behind the stable adapter contract. |
+| `docs/design/` | Design docs, plans, ADR (PT-BR discussion, EN artifacts) |
+| `stelow.schema.json` / `stelow.json` | Workflow tracking schema + runtime state |
 
 
 ## Commands
@@ -40,15 +31,7 @@ phases in `extensions/stelow/types.ts#PHASE_NAMES` are the canonical
 
 > **Command aliases:** `/stelow-*` names are registered alongside `/sw-*` for readability. Both prefixes work.
 
-> **Source of Truth (do not guess):** Stage/skill/command counts and exposure derive from the canonical sources below, not from this file. The shared
-> documentation regression test in `tests/integration/documentation-contract.test.ts` asserts these counts and pins them to the source files.
->
-> - **Skills (25)**: `find skills -maxdepth 2 -name SKILL.md -path '*/stelow-product-*' | wc -l` (canonical product-orchestrator + 24 sub-skills).
-> - **Phases (17)**: `extensions/stelow/types.ts#PHASE_NAMES` (the `Triage`..`Audit` array).
-> - **Stage transitions and conditional gates**: `skills/stelow-product-orchestrator/stages.yaml`.
-> - **Commands (16)**: `extensions/stelow/adapters/commands/dispatcher.ts#WORKFLOW_COMMANDS` (host-agnostic; v0.57.0 removed `sw-inbox`/`sw-pulse`).
-> - **Fusion commands (16)**: `WORKFLOW_COMMANDS.length` (v0.57.0 — no `piOnly` descriptors remain in the host-agnostic registry).
-> - **Pi commands (17)**: host-agnostic 16 + 1 Pi-local (`sw-unlock`, registered in `extensions/stelow/adapters/pi/commands.ts#PI_LOCAL_COMMANDS`).
+> **Source of Truth:** Stage/skill counts derive from `stages.yaml` and `ls skills/*/SKILL.md | wc -l`. Never update counts here without verifying.
 
 ```bash
 npm run build            # Compile TypeScript
@@ -156,62 +139,15 @@ Run before releases. A test file moving from OK to REVIEW over time signals rot.
 ## Versioning
 
 - **Single source:** `package.json` → `npm run version:sync` syncs plugin files.
-- **Distribution:** Stelow ships **via Git/GitHub only** — there is no
-  `npm publish` step. Release agents must not run `npm publish`.
 - **Tag and Release are linked — never create one without the other.** A git tag alone does not create a GitHub Release; the landing page shows only Releases, not tags.
-
-### Commit-message trailer contract
-
-Any commit that edits `package.json#version` **must** carry exactly one of the
-following two trailers:
-
-- `Release-Bump: v<X.Y.Z>` — a legitimate forward version bump. Regex: `^Release-Bump: v[0-9]+\.[0-9]+\.[0-9]+$`.
-- `Rollback: v<X.Y.Z> → v<A.B.C> — <reason>` — a deliberate rollback. Regex:
-  `^Rollback: v[0-9]+\.[0-9]+\.[0-9]+ → v[0-9]+\.[0-9]+\.[0-9]+ — [^[:space:]].*`.
-  The `— <reason>` segment is **mandatory**: a `Rollback:` trailer without a
-  non-empty reason is rejected by the guard.
-
-The contract exists because SW-028 (`27188f7`) deliberately rolled the
-`package.json#version` field back from `v0.55.2` to `v0.55.1` without any
-declared intent in the commit message, and the drift was only caught by
-manual `git show` inspection long after merge. See the post-mortem at
-`docs/agents-md-refs/post-mortems/v0.55.2-release-drift.md` §"Proposed guard"
-for the full rationale.
-
-Enforcement:
-
-- `scripts/check-version-coherence.sh` is the canonical implementation. It
-  runs in two modes:
-  - `--mode=ci` (default) — invoked from `.github/workflows/version-coherence.yml`;
-    fails the PR with a `::error::` annotation when `package.json#version`
-    diverges from the latest annotated tag on `origin/main` and the HEAD
-    commit body lacks one of the trailers above.
-  - `--hook=commit-msg <msg-file>` — invoked from `.husky/commit-msg`; rejects
-    any local commit whose staged `package.json` change lacks one of the
-    trailers above. (Bypass with `git commit --no-verify`.)
-- Annotated-tag-only tag resolution (`git for-each-ref` + `cat-file -t` filter).
-  Lightweight tags and `v<X.Y.Z>-rc.N` pre-release tags are ignored.
-- See `.changeset/sw-034-version-coherence-guard.md` for the canonical
-  frontmatter template that future release notes use to compose the v0.55.3+
-  changelog with the trailer contract documented.
-
-### Full release workflow (do NOT skip steps)
+- **Full release workflow (do NOT skip steps):**
   1. `npm version <major.minor.patch> --no-git-tag-version` — bump `package.json`
-  2. `npm run version:sync` — sync plugin files (`manifest.json`, plugin `package.json`)
-  3. **`npm run prepare:fusion-plugin && npm run build:fusion-plugin`** — re-bake `plugins/fusion-plugin-stelow/src/skills.ts#STELOW_PLUGIN_VERSION` and the compiled `artifacts/settings.json` from `manifest.json#version`. SW-008 shipped v0.55.0 with stale `0.54.3` baked into these files because this step was skipped on the release commit; SW-010 v0.55.1 fixed it as a side-effect. **Do not skip.**
-  4. Update `CHANGELOG.md` — add entry with changes
-  5. Verify the six-point version agreement: `package.json`, `package-lock.json`, `manifest.json`, plugin `package.json`, `STELOW_PLUGIN_VERSION` in `src/skills.ts` and `dist/skills.d.ts`. **All six must equal the new version.**
-  6. `git add -A && git commit -m "chore: bump to v<version>" -m "Release-Bump: v<version>"`
-  7. `git tag -a v$(node -p "require('./package.json').version") -m "v<version>: <summary>"`
-  8. `git push origin main --tags`
-  9. **`gh release create v$(node -p "require('./package.json').version") --title "v<version>" --notes-file <changelog-section>`** — required for GitHub landing page visibility
-- **Build-artifact drift guard (CI runtime check).** After `npm run build`,
-  `scripts/check-dist-skills-drift.sh` runs as a step in the CI `test` job and
-  asserts the compiled `plugins/fusion-plugin-stelow/dist/skills.d.ts#STELOW_PLUGIN_VERSION`
-  matches `manifest.json#version`. The guard catches the SW-008 historical-miss
-  pattern (v0.55.0 shipped with `STELOW_PLUGIN_VERSION="0.54.3"` baked into the
-  dist because the release commit skipped step 3 above). See
-  `docs/agents-md-refs/post-mortems/v0.55.2-release-drift.md` §"Secondary guard".
+  2. `npm run version:sync` — sync plugin files
+  3. Update `CHANGELOG.md` — add entry with changes
+  4. `git add -A && git commit -m "chore: bump to v<version>"`
+  5. `git tag -a v$(node -p "require('./package.json').version") -m "v<version>: <summary>"`
+  6. `git push origin main --tags`
+  7. **`gh release create v$(node -p "require('./package.json').version") --title "v<version>" --notes "<changelog>"`** — required for GitHub landing page visibility
 - **Never guess the version** — always read `package.json` first.
 
 ## Don'ts
@@ -237,7 +173,7 @@ All optional — workflow runs without them. `scripts/setup.sh` auto-detects + o
 
 ## Token Efficiency
 
-See `skills/stelow-product-orchestrator/references/cli-tools/context-efficiency.md` for patterns:
+See `skills/stelow-adapter-cli/references/cli-tools/context-efficiency.md` for patterns:
 - Batch multi-symbol cymbal lookups (`show X Y Z`)
 - Batch agent_browser extractions (`snapshot` + batch `get text`)
 - Output truncation with `offset/limit` instead of full `read`

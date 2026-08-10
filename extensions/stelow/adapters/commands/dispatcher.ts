@@ -100,9 +100,34 @@ export const WORKFLOW_COMMANDS: CommandDescriptor[] = [
     usage: "/sw-recover | /sw-recover all",
   },
   {
+    name: "sw-unlock",
+    description: "Disable stage guard for this session (debug/emergency)",
+    usage: "/sw-unlock",
+    piOnly: true,
+  },
+  {
+    name: "sw-inbox",
+    description: "Manage workflow inbox",
+    usage: "/sw-inbox | add <text> | remove <text> | clear | history",
+    piOnly: true,
+  },
+  {
+    name: "sw-pulse",
+    description: "Manage automatic inbox processing (Pulse)",
+    usage: "/sw-pulse | status | pause | resume | process | log [n]",
+    piOnly: true,
+  },
+  {
     name: "sw-audit",
     description: "Show audit trail — full lineage from origin to delivery",
     usage: "/sw-audit [--scope <id>] [--format json|markdown]",
+  },
+  {
+    name: "sw-host",
+    description: "Inspect or configure Host Adapter (DecisionGateway). " +
+      "Routes ask_user_question / plannotator --gate through external hosts " +
+      "(Multica today) when `.stelow/host-workgroup.yaml` is present.",
+    usage: "/sw-host | status | resolve | clear",
   },
 ];
 
@@ -234,7 +259,7 @@ Usage: \`${usage}\`
 This file is an executable agent command prompt; Fusion does **not** load the
 Pi extension adapter at runtime.
 
-1. Read \`skills/stelow-product-orchestrator/SKILL.md\` and the current
+1. Read \`skills/stelow-adapter-cli/SKILL.md\` and the current
    project \`stelow.json\`.
 2. Execute the \`${descriptor.name}\` operation described in
    \`cli-agents/COMMANDS.md\`, preserving the command arguments supplied
