@@ -137,7 +137,7 @@ Phase 2 (after SCOPE-1):
 # (canonical source via helper) so the warning matches the active workflow, not stale specs.
 APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/*/*/plans/spec-product_*.md 2>/dev/null || echo "Core")
 # shellcheck disable=SC1091
-source "$(dirname "${BASH_SOURCE[0]:-$0}")/../../stelow-product-orchestrator/references/cli-tools/read-config.sh" 2>/dev/null || true
+source "$(dirname "${BASH_SOURCE[0]:-$0}")/../../stelow-adapter-cli/references/cli-tools/read-config.sh" 2>/dev/null || true
 WF_APPETITE=$(stelow_read_appetite 2>/dev/null || true)
 [ -n "$WF_APPETITE" ] && APPETITE="$WF_APPETITE"
 if [ "$APPETITE" = "Complete" ]; then
@@ -155,68 +155,23 @@ If the user says yes, proceed autonomously. If no, ask what they'd like to adjus
 
 ### Step 2e: Initialize scope tracking in `stelow.json`
 
-Before executing scopes, `wf.scopes[]` must be populated from the latest
-`spec-tech.md`. **How that happens depends on the host**: Pi and Fusion have
-native persistence hooks, while generic agents use the documented fallback.
+Before executing scopes, the **extension auto-syncs** the scope list from `spec-tech.md`
+into `stelow.json` by convention — the LLM does NOT need to run a bash snippet for this.
 
-#### Pi (native extension host)
-
-The Pi adapter's `writeTracking()` (see `extensions/stelow/adapters/pi/hooks.ts`)
-auto-syncs scopes on every persisted `stelow.json` write. The LLM does NOT need
-to run a bash snippet for this — Pi reaches the shared
-`parseSpecTechScopes` parser in `extensions/stelow/state.ts` through
-`syncScopesIfNeeded()`.
-
-#### Fusion (compiled plugin host)
-
-The compiled Fusion plugin (`plugins/fusion-plugin-stelow/`) uses the same
-host-agnostic `parseSpecTechScopes` parser as Pi. The LLM does NOT need to run
-a bash snippet for this — Fusion's managed write path performs the sync through
-the compiled plugin integration.
-
-#### Generic (skill-only host)
-
-`GenericAdapter` (see `extensions/stelow/adapters/generic.ts`) has **no**
-native `writeTracking` or scope-sync hook. Generic agents must run the bash
-fallback in
-[`references/cli-tools/scope-init-fallback.md`](references/cli-tools/scope-init-fallback.md)
-before Step 3. It loads the same compiled `parseSpecTechScopes` artifact and
-writes `wf.scopes[]` from the latest
-`.stelow/{date}/{hash}/plans/spec-tech_*.md`.
-
-The fallback handles empty and populated workflows, version-aware replacement
-when a newer `spec-tech_*.md` appears, missing or malformed planning files, and
-non-coercible timestamps. Missing or malformed input is a safe no-op; a
-missing parser artifact is reported as an actionable error rather than being
-silently replaced by a second parser.
-
-**How the shared parser is reached:**
-
-`parseSpecTechScopes` (in `extensions/stelow/state.ts`) is the single
-host-agnostic parser for `[SCOPE-N]` blocks. It returns a `Scope[]` containing
-`id`, `type`, `name`, dependency, target-file, and iteration metadata, with every
-scope set to `status: 'pending'`. Pi and Fusion invoke it through their native
-write paths; generic agents invoke the same compiled artifact through the
-fallback. All three paths discover the conventional
-`.stelow/{date}/{hash}/plans/spec-tech_*.md` location and honor the
-`wf.specTechFile` version marker.
-
-| Host | Trigger | Idempotent skip |
-|------|---------|-----------------|
-| Pi | Every `writeTracking()` call once the workflow reaches Execution phase | `wf.specTechFile === latest && wf.scopes.length > 0` |
-| Fusion | Managed plugin write path using the shared parser | Same as Pi |
-| Generic | LLM runs the documented bash fallback | Same filename-keyed skip (`specTechFile === latest`) |
+**How it works:** When the extension's `writeTracking()` sees a workflow in Execution phase
+with empty `scopes[]`, it automatically:
+1. Finds the latest `spec-tech_*.md` in `.stelow/{date}/{hash}/plans/`
+2. Parses `[SCOPE-N]` blocks for `id`, `type`, `name`, `blockedBy`, `targetFiles`
+3. Populates `wf.scopes[]` with all scopes set to `status: 'pending'`
+4. Persists to `stelow.json`
 
 This follows KISS + DRY + Convention over Configuration:
-- **KISS:** One canonical parser, with host-specific triggers only.
-- **DRY:** Pi, Fusion, and the generic fallback all consume the compiled
-  `parseSpecTechScopes` artifact; the fallback contains only filesystem glue.
-- **CoC:** `spec-tech_*.md` is found by convention at
-  `.stelow/{date}/{hash}/plans/`; the date stamp comes from `wf.created` and the
-  directory hash from `wf.dirHash`.
+- **KISS:** Zero LLM effort. No bash to remember or skip.
+- **DRY:** One centralized TypeScript function replaces ~20 lines of bash SKILL.md
+- **CoC:** spec-tech.md found by convention at `.stelow/{date}/{hash}/plans/spec-tech_*.md`
 
-After synchronization has fired for a workflow, the LLM must still update
-scope statuses manually as it executes (see Steps 3c/3e).
+The auto-sync only fires **once** per workflow (when scopes are empty). After that,
+the LLM must still update scope statuses manually as it executes (see Steps 3c/3e).
 
 **Key:** All scopes start as `status: 'pending'`. Update each scope's status as execution progresses.
 
@@ -245,7 +200,7 @@ Same scope body may declare a lock TTL override:
 
 Parse the integer value into `wf.scopes[i].lock_ttl_seconds: number` (optional). Default is 1800 (30 min); see `references/cli-tools/file-locking.md#ttl-configuration` for range / clamping rules. At Step 3c, the orchestrator exports this to `$LOCK_TTL_SECONDS` for the acquire snippet.
 
-Convention is **advisory** — no enforcement at the tracking layer. The file-reservation lock protocol (see `references/cli-tools/file-locking.md` in `stelow-product-orchestrator`) uses these declared paths at scope-execution time. If undeclared, the post-execution `actual_files ∩ declared` diff in Step 8 still flags undeclared writes.
+Convention is **advisory** — no enforcement at the tracking layer. The file-reservation lock protocol (see `references/cli-tools/file-locking.md` in `stelow-adapter-cli`) uses these declared paths at scope-execution time. If undeclared, the post-execution `actual_files ∩ declared` diff in Step 8 still flags undeclared writes.
 
 ### Step 2d: Complete Human-in-loop execution mode
 

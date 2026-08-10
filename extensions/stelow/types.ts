@@ -303,7 +303,7 @@ export type ScopeStatus = 'pending' | 'in-progress' | 'completed' | 'escalated' 
  *
  * @see docs/scope-execution-strategy.md (high-level pipeline overview)
  * @see skills/stelow-product-scope-executor/SKILL.md (Steps 2e / 3c / 3e / 8)
- * @see skills/stelow-product-orchestrator/references/cli-tools/file-locking.md
+ * @see skills/stelow-adapter-cli/references/cli-tools/file-locking.md
  *      (parallel-scope prevention via file-reservation locks)
  */
 export interface Scope {
@@ -568,6 +568,10 @@ export interface Workflow {
   intent?: WorkflowIntent; // Intent category detected at /sw-start
   scopes?: Scope[];       // Tech plan scopes — populated during Execution phase
   specTechFile?: string;  // Filename of spec-tech.md that scopes were synced from (e.g. "spec-tech_v2.md")
+  pending_decision?: import("./adapters/host/types").PendingDecision;
+    // Pinned by DecisionGateway (Multica/Slack/...) when an ask/gate
+    // is parked on an external host. Read + cleared by the resume
+    // hook on the next session. Optional.
 }
 
 export interface TrackingData {

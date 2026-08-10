@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exploração: stelow além do terminal</title>
+<style>
+  :root {
+    --bg: #fafafa;
+    --bg-card: #ffffff;
+    --bg-alt: #f3f4f6;
+    --text: #1a1a2e;
+    --text-dim: #6b7280;
+    --border: #e5e7eb;
+    --accent: #7c3aed;
+    --accent-light: #ede9fe;
+    --accent2: #059669;
+    --accent2-light: #d1fae5;
+    --accent3: #d97706;
+    --accent3-light: #fef3c7;
+    --accent4: #dc2626;
+    --accent4-light: #fee2e2;
+    --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+    --shadow-lg: 0 10px 25px rgba(0,0,0,.1);
+    --radius: 12px;
+    --radius-sm: 8px;
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
+  }
+  html.dark {
+    --bg: #0f0f1a;
+    --bg-card: #1a1a2e;
+    --bg-alt: #1f1f35;
+    --text: #e5e7eb;
+    --text-dim: #9ca3af;
+    --border: #2d2d4a;
+    --accent: #a78bfa;
+    --accent-light: #2e2a4a;
+    --accent2: #34d399;
+    --accent2-light: #1a3a2e;
+    --accent3: #fbbf24;
+    --accent3-light: #3a2e1a;
+    --accent4: #f87171;
+    --accent4-light: #3a1a1a;
+    --shadow: 0 1px 3px rgba(0,0,0,.3), 0 1px 2px rgba(0,0,0,.2);
+    --shadow-lg: 0 10px 25px rgba(0,0,0,.4);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Theme toggle */
+  .theme-toggle {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 100;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+    box-shadow: var(--shadow);
+    transition: all .2s;
+  }
+  .theme-toggle:hover { transform: scale(1.1); box-shadow: var(--shadow-lg); }
+
+  /* Hero */
+  .hero {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 80px 24px 40px;
+    text-align: center;
+  }
+  .hero h1 {
+    font-size: 2.8rem;
+    font-weight: 800;
+    letter-spacing: -.03em;
+    line-height: 1.2;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero .subtitle {
+    margin-top: 12px;
+    font-size: 1.1rem;
+    color: var(--text-dim);
+    max-width: 600px;
+    margin-inline: auto;
+  }
+  .hero .meta {
+    margin-top: 20px;
+    font-size: .85rem;
+    color: var(--text-dim);
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .hero .meta span {
+    background: var(--bg-alt);
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+  }
+
+  /* Container */
+  .container { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+
+  /* Section */
+  section { margin: 48px 0; }
+  section h2 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    padding-bottom: 8px;
+    border-bottom: 3px solid var(--accent);
+    display: inline-block;
+  }
+  section h3 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin: 24px 0 12px;
+    color: var(--accent);
+  }
+  section p, section li { color: var(--text); }
+  section p { margin-bottom: 12px; }
+
+  /* Cards */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin: 16px 0;
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    transition: all .2s;
+  }
+  .card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+  .card h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card p { font-size: .9rem; color: var(--text-dim); margin: 0; line-height: 1.5; }
+  .card .tag {
+    display: inline-block;
+    font-size: .7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-top: 10px;
+  }
+  .tag-green { background: var(--accent2-light); color: var(--accent2); }
+  .tag-yellow { background: var(--accent3-light); color: var(--accent3); }
+  .tag-red { background: var(--accent4-light); color: var(--accent4); }
+  .tag-purple { background: var(--accent-light); color: var(--accent); }
+
+  /* Tension cards */
+  .tension-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin: 12px 0;
+    border-left: 4px solid var(--accent3);
+    box-shadow: var(--shadow);
+  }
+  .tension-card h4 { color: var(--accent3); margin-bottom: 6px; }
+  .tension-card p { font-size: .9rem; color: var(--text-dim); margin: 0; }
+
+  /* Option cards */
+  .option-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin: 16px 0;
+    box-shadow: var(--shadow);
+    border-top: 4px solid var(--accent);
+  }
+  .option-card h3 {
+    margin: 0 0 4px;
+    font-size: 1.2rem;
+  }
+  .option-card .option-meta {
+    font-size: .8rem;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+  }
+  .option-card p { font-size: .92rem; }
+  .option-card ul { margin: 10px 0 0 18px; font-size: .9rem; }
+  .option-card ul li { margin-bottom: 6px; }
+  .option-card .pros-cons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 14px;
+  }
+  .option-card .pros, .option-card .cons {
+    padding: 12px;
+    border-radius: var(--radius-sm);
+    font-size: .85rem;
+  }
+  .option-card .pros { background: var(--accent2-light); }
+  .option-card .cons { background: var(--accent4-light); }
+  .option-card .pros h5, .option-card .cons h5 {
+    font-size: .8rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    margin-bottom: 6px;
+  }
+  .option-card .pros h5 { color: var(--accent2); }
+  .option-card .cons h5 { color: var(--accent4); }
+  .option-card .pros ul, .option-card .cons ul { margin: 0 0 0 14px; }
+
+  /* Architecture diagram */
+  .arch-container {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px 24px;
+    margin: 20px 0;
+    box-shadow: var(--shadow);
+    overflow-x: auto;
+  }
+  .arch {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: .75rem;
+    line-height: 1.5;
+    min-width: 600px;
+  }
+  .arch .row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .arch .box {
+    background: var(--bg-alt);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 6px 14px;
+    white-space: nowrap;
+    font-weight: 500;
+  }
+  .arch .box.accent { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+  .arch .box.green { background: var(--accent2-light); border-color: var(--accent2); color: var(--accent2); }
+  .arch .box.yellow { background: var(--accent3-light); border-color: var(--accent3); color: var(--accent3); }
+  .arch .arrow { color: var(--text-dim); }
+  .arch .label { color: var(--text-dim); font-size: .7rem; }
+
+  /* Flow diagram simple */
+  .flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 16px 0;
+    font-family: var(--mono);
+    font-size: .8rem;
+  }
+  .flow .step {
+    background: var(--bg-alt);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 6px 12px;
+  }
+  .flow .step.active { background: var(--accent-light); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+  .flow .conn { color: var(--text-dim); }
+
+  /* Quote */
+  .quote {
+    border-left: 4px solid var(--accent);
+    padding: 16px 20px;
+    margin: 20px 0;
+    background: var(--bg-alt);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    font-style: italic;
+    color: var(--text-dim);
+  }
+  .quote strong { color: var(--text); }
+
+  /* Table */
+  .table-wrap {
+    overflow-x: auto;
+    margin: 16px 0;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .85rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    background: var(--bg-alt);
+    font-weight: 600;
+    font-size: .75rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--text-dim);
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg-alt); }
+
+  /* Divider */
+  .divider {
+    border: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 48px 0;
+  }
+
+  /* Callout */
+  .callout {
+    background: var(--accent-light);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin: 16px 0;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .callout .icon { font-size: 1.3rem; }
+  .callout p { margin: 0; font-size: .9rem; }
+  .callout strong { color: var(--accent); }
+
+  /* Question list */
+  .q-list { list-style: none; padding: 0; }
+  .q-list li {
+    padding: 10px 14px;
+    margin: 6px 0;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: .9rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .q-list li .q-num {
+    background: var(--accent-light);
+    color: var(--accent);
+    font-weight: 700;
+    font-size: .75rem;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  @media (max-width: 700px) {
+    .hero h1 { font-size: 2rem; }
+    .option-card .pros-cons { grid-template-columns: 1fr; }
+    .card-grid { grid-template-columns: 1fr; }
+    .arch { font-size: .65rem; }
+    .arch .box { padding: 4px 8px; }
+  }
+
+  /* Smooth scroll */
+  html { scroll-behavior: smooth; }
+
+  /* Tagline */
+  .tagline {
+    display: inline-block;
+    font-size: .75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    padding: 3px 10px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+  }
+  .tagline.insight { background: var(--accent-light); color: var(--accent); }
+  .tagline.problem { background: var(--accent4-light); color: var(--accent4); }
+  .tagline.idea { background: var(--accent3-light); color: var(--accent3); }
+</style>
+</head>
+<body>
+<script>
+  (function() {
+    const t = localStorage.getItem('theme');
+    if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    }
+  })();
+</script>
+
+<button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">🌓</button>
+<script>
+  function toggleTheme() {
+    const d = document.documentElement;
+    d.classList.toggle('dark');
+    localStorage.setItem('theme', d.classList.contains('dark') ? 'dark' : 'light');
+  }
+</script>
+
+<!-- Hero -->
+<header class="hero">
+  <h1>stelow além do terminal</h1>
+  <p class="subtitle">
+    Uma exploração de como levar o workflow de planejamento de produto do stelow<br>
+    para ferramentas que PMs, UX designers e devs já usam no dia a dia.
+  </p>
+  <div class="meta">
+    <span>🔍 Pesquisa exploratória</span>
+    <span>🧩 Linear + Multica.ai + Plannotator</span>
+    <span>🎯 Human-in-the-loop preservado</span>
+  </div>
+</header>
+
+<div class="container">
+
+<!-- Contexto -->
+<section>
+  <h2>🧠 O problema central</h2>
+
+  <div class="card-grid">
+    <div class="card">
+      <h4>🎯 O valor do stelow</h4>
+      <p>Structured gates, perguntas no momento certo, adversarial critique, Plannotator visual review, typed scopes com dependências explícitas. Um workflow que força clareza antes de executar.</p>
+      <span class="tag tag-green">Valor preservar</span>
+    </div>
+    <div class="card">
+      <h4>⚡ A trava atual</h4>
+      <p>Tudo roda dentro do terminal do Pi. PMs e UX designers não vivem em terminais. O <code>ask_user_question</code> exige Pi. Os gates exigem Plannotator + Pi. A adoção depende de devs operando o terminal.</p>
+      <span class="tag tag-red">Limitação</span>
+    </div>
+    <div class="card">
+      <h4>🔄 O insight do usuário</h4>
+      <p>Em vez de criar um sistema próprio de gerenciamento (outro dashboard, outra ferramenta), a ideia é integrar com o que as pessoas já usam — Linear, Multica, e manter o Plannotator como superfície visual.</p>
+      <span class="tag tag-yellow">Direção</span>
+    </div>
+    <div class="card">
+      <h4>🧪 Human-in-the-loop</h4>
+      <p>As perguntas intencionais, os gates, as decisões de escopo — tudo isso é o coração do stelow. A questão é: como oferecer isso sem forçar todo mundo a usar o mesmo terminal?</p>
+      <span class="tag tag-purple">Desafio de design</span>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- Arquitetura atual -->
+<section>
+  <h2>🏗️ Como o stelow funciona hoje</h2>
+  <p>Entender a arquitetura atual é essencial para ver onde e como podemos inserir novas superfícies de interação.</p>
+
+  <div class="arch-container">
+    <div class="arch">
+      <div class="row">
+        <span class="box accent">setup</span>
+        <span class="arrow">→</span>
+        <span class="box">context</span>
+        <span class="arrow">→</span>
+        <span class="box">shape</span>
+        <span class="arrow">→</span>
+        <span class="box">critique</span>
+        <span class="arrow">→</span>
+        <span class="box accent" style="border-color: var(--accent3); color: var(--accent3); background: var(--accent3-light);">gate</span>
+        <span class="arrow">→</span>
+        <span class="box">scope</span>
+      </div>
+      <div class="row">
+        <span class="box">interface</span>
+        <span class="arrow">→</span>
+        <span class="box accent" style="border-color: var(--accent3); color: var(--accent3); background: var(--accent3-light);">int-gate</span>
+        <span class="arrow">→</span>
+        <span class="box">planning</span>
+        <span class="arrow">→</span>
+        <span class="box accent" style="border-color: var(--accent3); color: var(--accent3); background: var(--accent3-light);">plan-gate</span>
+        <span class="arrow">→</span>
+        <span class="box">execution</span>
+        <span class="arrow">→</span>
+        <span class="box accent" style="border-color: var(--accent3); color: var(--accent3); background: var(--accent3-light);">diff-gate</span>
+      </div>
+      <div class="row" style="margin-top: 8px;">
+        <span class="label">📋</span>
+        <span class="box" style="background: var(--accent-light);">ask_user_question</span>
+        <span class="box" style="background: var(--accent-light); border-color: var(--accent3); color: var(--accent3);">plannotator --gate</span>
+        <span class="label">🧑‍💻 Tudo no terminal (Pi)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <span class="icon">💡</span>
+    <div>
+      <strong>Insight:</strong> O stelow já tem 3 pontos de interação com humanos bem definidos:
+      <ol style="margin: 8px 0 0 20px;">
+        <li><strong>ask_user_question</strong> — perguntas estruturadas no terminal (setup, scope, interface selection)</li>
+        <li><strong>plannotator --gate</strong> — revisão visual no browser (gate, int-gate, plan-gate, diff-gate)</li>
+        <li><strong>Gap resolution</strong> — o LLM pergunta ao usuário sobre gaps críticos encontrados na critique</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- Mapeamento: cada ferramenta -->
+<section>
+  <h2>🗺️ O ecossistema disponível</h2>
+  <p>Três ferramentas principais emergem como candidatas a superfície de interação. Cada uma com capacidades e limitações específicas.</p>
+
+  <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+    <div class="card" style="border-top: 4px solid var(--accent);">
+      <h4>📐 Linear</h4>
+      <p><strong>O que é:</strong> Gerenciamento de projetos opinativo, dev-first. Referência para times de produto.</p>
+      <p><strong>API:</strong> GraphQL completa — issues, projects, comments, webhooks. Sem custom fields nativos. Tags e labels substituem.</p>
+      <p><strong>Webhooks:</strong> Eventos em tempo real para triggers externos.</p>
+      <p><strong>Limitação chave:</strong> Sem custom fields → estado do stelow (appetite, review_mode) precisaria ser codificado em labels ou description parsing.</p>
+      <span class="tag tag-purple">Superfície: issues + comments</span>
+    </div>
+    <div class="card" style="border-top: 4px solid var(--accent2);">
+      <h4>🤖 Multica.ai</h4>
+      <p><strong>O que é:</strong> Plataforma open-source que gerencia AI coding agents como membros de time. Já suporta Pi como runtime.</p>
+      <p><strong>Modelo:</strong> Issues atribuídas a agentes, squads, autopilots (cron), daemon local.</p>
+      <p><strong>Integração com stelow:</strong> Potencial de rodar workflows do stelow dentro do Multica, com gates virando approval steps.</p>
+      <span class="tag tag-green">Superfície: agent tasks + daemon</span>
+    </div>
+    <div class="card" style="border-top: 4px solid var(--accent3);">
+      <h4>📝 Plannotator</h4>
+      <p><strong>O que é:</strong> Superfície de revisão visual interativa no browser. Já é o gate do stelow.</p>
+      <p><strong>Não é read-only:</strong> Suporta anotações bidirecionais, feedback → LLM, approve/reject.</p>
+      <p><strong>Potencial não explorado:</strong> Se Plannotator pode abrir qualquer markdown para anotação, <em>por que não usar para perguntas também?</em></p>
+      <span class="tag tag-yellow">Superfície: browser interativo</span>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- Tensões de design -->
+<section>
+  <h2>⚡ Tensões de design</h2>
+  <p>Três forças que qualquer solução precisa equilibrar:</p>
+
+  <div class="tension-card">
+    <h4>📊 Tensão 1 — Terminal vs Browser</h4>
+    <p>O <code>ask_user_question</code> do Pi oferece uma experiência riquíssima (2-6 opções, preview, multi-select, notas laterais) mas está preso ao terminal. Plannotator já está no browser mas foi desenhado para <em>revisão de artefatos</em>, não para <em>perguntas</em>. Como unificar? Fazer Plannotator renderizar perguntas? Ou criar um formato de "documento de perguntas" que Plannotator abre?</p>
+  </div>
+
+  <div class="tension-card">
+    <h4>🔄 Tensão 2 — Pull vs Push</h4>
+    <p>Hoje o workflow <em>push</em> perguntas para o usuário no terminal (ele vê, responde, continua). Numa integração com Linear, o workflow <em>pull</em> o usuário para o browser/Linear (cria issue com pergunta, usuário vê quando acessa). Isso muda a dinâmica: em vez de "responda agora", vira "responda quando puder". Como o bloqueio (gate) se comporta nesse modelo?</p>
+  </div>
+
+  <div class="tension-card">
+    <h4>🎭 Tensão 3 — Quem opera?</h4>
+    <p>Hoje o desenvolvedor opera o terminal e responde perguntas. Numa interface tipo Linear, PMs e UX designers podem responder perguntas de escopo e design sem abrir terminal. Mas <em>quem inicia o workflow?</em> Um PM cria uma issue no Linear com label "stelow" e o daemon dispara? Ou o dev continua iniciando no terminal e o convite vai para o PM via Linear?</p>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- Opções de arquitetura -->
+<section>
+  <h2>🧩 Quatro alternativas de arquitetura</h2>
+  <p>Cada opção representa um equilíbrio diferente entre profundidade de integração, esforço de implementação e preservação do valor central do stelow.</p>
+
+  <!-- Option A -->
+  <div class="option-card" style="border-top-color: var(--accent2);">
+    <span class="tagline idea">IDEIA PROMISSORA</span>
+    <h3>A — Plannotator como interface universal de perguntas</h3>
+    <div class="option-meta">🎯 Foco: transformar cada pergunta em um documento anotável</div>
+    <p>
+      Em vez de fazer perguntas no terminal via <code>ask_user_question</code>, o workflow gera um 
+      <strong>"documento de perguntas"</strong> estruturado em markdown. Esse documento é aberto no 
+      Plannotator no browser. O usuário vê perguntas com opções, seleciona, anota, aprova. 
+      O feedback estruturado volta para o LLM.
+    </p>
+    <div class="callout" style="margin: 12px 0; background: var(--accent2-light); border-color: var(--accent2);">
+      <span class="icon">✨</span>
+      <p><strong>A chave:</strong> Plannotator já suporta checkboxes interativos (<code>- [ ]</code> / <code>- [x]</code>) e anotações linha a linha. Um "questionário" em markdown com checkboxes e campos de annotação + o <code>--gate</code> já existente pode cobrir <strong>todo</strong> o fluxo de perguntas — sem precisar de uma ferramenta nova.</p>
+    </div>
+    <div class="pros-cons">
+      <div class="pros">
+        <h5>✅ Vantagens</h5>
+        <ul>
+          <li>Não requer ferramenta nova — Plannotator já existe</li>
+          <li>Funciona em qualquer browser (PMs, UX, devs)</li>
+          <li>Preserva blocking gate semantics</li>
+          <li>Feedback estruturado via annotations</li>
+          <li>Aproveita o approval receipt existente</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h5>⚠️ Desafios</h5>
+        <ul>
+          <li>Plannotator não foi desenhado para questionários — UX pode não ser ideal para multi-select ou preview</li>
+          <li>Precisa estender o Plannotator ou criar um formato de question-doc</li>
+          <li>Perde a imersão do terminal (pergunta aparece na hora)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Option B -->
+  <div class="option-card" style="border-top-color: var(--accent);">
+    <span class="tagline insight">PESQUISAR MAIS</span>
+    <h3>B — Linear como superfície de decisão + Plannotator para gates</h3>
+    <div class="option-meta">🎯 Foco: trabalhar onde o time já gerencia projetos</div>
+    <p>
+      Cada etapa do stelow cria/atualiza uma issue no Linear. Perguntas viram comentários com 
+      checkboxes. Decisões viram transições de status. Plannotator gates continuam abrindo no 
+      browser. Um daemon leve (tipo o Multica) escuta webhooks do Linear e avança o workflow.
+    </p>
+    <div class="flow">
+      <span class="step">Issue criada</span>
+      <span class="conn">→</span>
+      <span class="step">Comentário com pergunta</span>
+      <span class="conn">→</span>
+      <span class="step">PM responde</span>
+      <span class="conn">→</span>
+      <span class="step">Webhook → Daemon</span>
+      <span class="conn">→</span>
+      <span class="step active">Plannotator gate</span>
+    </div>
+    <div class="pros-cons">
+      <div class="pros">
+        <h5>✅ Vantagens</h5>
+        <ul>
+          <li>PMs/UX vivem no Linear — zero ferramenta nova</li>
+          <li>APIs e webhooks robustos</li>
+          <li>Histórico de decisões fica no Linear</li>
+          <li>Convite natural: "Issue #42 precisa da sua resposta"</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h5>⚠️ Desafios</h5>
+        <ul>
+          <li>Sem custom fields → estado do stelow precisa ser codificado (labels, description)</li>
+          <li>Não é síncrono — perde o "responda agora" do terminal</li>
+          <li>Complexidade de implementação: daemon + webhooks + sync bidirecional</li>
+          <li>Multi-select de opções não é nativo do Linear</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Option C -->
+  <div class="option-card" style="border-top-color: var(--accent3);">
+    <span class="tagline insight">PESQUISAR MAIS</span>
+    <h3>C — Multica.ai como orquestrador + stelow como skill</h3>
+    <div class="option-meta">🎯 Foco: delegar o workflow para agentes gerenciados</div>
+    <p>
+      O stelow vira um skill que roda dentro do Multica. O Pi (suportado) executa o workflow. 
+      As perguntas e gates são gerenciadas pelo Multica — que já tem UI web, sistema de issues, 
+      squads e autopilots. O daemon local do Multica conecta o terminal à interface web.
+    </p>
+    <div class="pros-cons">
+      <div class="pros">
+        <h5>✅ Vantagens</h5>
+        <ul>
+          <li>Zero nova infra — Multica já existe e suporta Pi</li>
+          <li>UI web nativa para acompanhar progresso</li>
+          <li>Autopilots para workflows recorrentes</li>
+          <li>Open-source, self-hostable</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h5>⚠️ Desafios</h5>
+        <ul>
+          <li>Multica é desenhado para coding agents, não para product planning</li>
+          <li>As perguntas estruturadas do stelow não mapeiam 1:1 para issues do Multica</li>
+          <li>Depende do ecossistema Multica evoluir</li>
+          <li>Precisa testar se os gates (plannotator) funcionam dentro do fluxo do Multica</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Option D -->
+  <div class="option-card" style="border-top-color: var(--accent4);">
+    <span class="tagline problem">MAIS COMPLEXO</span>
+    <h3>D — App web leve próprio + Plannotator gates</h3>
+    <div class="option-meta">🎯 Foco: experiência controlada, sem depender de terceiros</div>
+    <p>
+      Um app web minimalista que serve apenas o formulário de perguntas do stelow. O terminal 
+      continua rodando a orquestração. Quando chega uma pergunta, o app abre no browser. Usuário 
+      responde, fecha, workflow continua. Plannotator gates permanecem como estão.
+    </p>
+    <div class="pros-cons">
+      <div class="pros">
+        <h5>✅ Vantagens</h5>
+        <ul>
+          <li>Experiência de perguntas sob medida</li>
+          <li>Pode imitar exatamente o ask_user_question (multi-select, preview)</li>
+          <li>Não depende de evolução de terceiros</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h5>⚠️ Desafios</h5>
+        <ul>
+          <li>Outra ferramenta na vida do time — contradiz o objetivo</li>
+          <li>Precisa ser mantida, testada, documentada</li>
+          <li>Pode virar um projeto paralelo que nunca termina</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- Síntese -->
+<section>
+  <h2>🔬 Síntese e questões abertas</h2>
+
+  <div class="callout">
+    <span class="icon">🚀</span>
+    <div>
+      <p><strong>Minha recomendação inicial:</strong> explorar a <strong>Opção A (Plannotator como question-doc)</strong> primeiro. É a que menos requer infraestrutura nova, mais aproveita o que já existe, e resolve a tensão central: <em>como levar as perguntas para fora do terminal sem perder a semântica de blocking gate</em>.</p>
+      <p style="margin-top: 8px;">A Opção B (Linear) pode ser um complemento natural depois — o question-doc vira um artefato linkado numa issue do Linear, e o time vê o progresso do workflow no board sem precisar abrir terminal.</p>
+    </div>
+  </div>
+
+  <h3>❓ Perguntas que ainda precisam de resposta</h3>
+  <ul class="q-list">
+    <li>
+      <span class="q-num">1</span>
+      <span><strong>O Plannotator consegue renderizar checkboxes interativos <em>e</em> retornar quais foram selecionados?</strong> Sabemos que ele renderiza <code>- [x]</code> visualmente, mas o feedback (annotations) captura o estado? Precisamos testar.</span>
+    </li>
+    <li>
+      <span class="q-num">2</span>
+      <span><strong>E se o Plannotator for estendido?</strong> Em vez de apenas anotar, ele poderia ter um modo "questionário" — radio buttons, checkboxes, text input? Isso abriria a possibilidade de ter perguntas ricas no browser sem nenhuma outra ferramenta.</span>
+    </li>
+    <li>
+      <span class="q-num">3</span>
+      <span><strong>O que acontece com o Review Mode Auto?</strong> No modo Auto não há perguntas. Se movermos as perguntas para Plannotator, o Auto vira "gerar documento de perguntas mas não abrir Plannotator"? Ou o documento nem é gerado?</span>
+    </li>
+    <li>
+      <span class="q-num">4</span>
+      <span><strong>Linear Agents API</strong> — A nova API de Agents do Linear permite criar "co-workers" programáticos que interagem com issues. Um "Linear Agent stelow" poderia escutar webhooks, fazer perguntas via comentários, e avançar o workflow? Isso merece pesquisa mais profunda.</span>
+    </li>
+    <li>
+      <span class="q-num">5</span>
+      <span><strong>O daemon do Multica já suporta Pi.</strong> Se instalarmos stelow + pi + plannotator num ambiente Multica, o que funciona de imediato? O ask_user_question apareceria onde? Precisamos testar na prática.</span>
+    </li>
+    <li>
+      <span class="q-num">6</span>
+      <span><strong>E o Pulse?</strong> O sistema de inbox do stelow (Pulse) já processa itens automaticamente com review_mode=Auto. Como ele se comporta se o workflow for iniciado de uma issue do Linear?</span>
+    </li>
+  </ul>
+</section>
+
+<hr class="divider">
+
+<!-- Próximos passos -->
+<section>
+  <h2>👣 Próximos passos sugeridos</h2>
+
+  <div class="card-grid">
+    <div class="card">
+      <h4>🧪 1. Testar Plannotator com question-doc</h4>
+      <p>Criar um documento markdown com perguntas e checkboxes, abrir no Plannotator, verificar se annotations retornam o estado das seleções. Validar a hipótese central da Opção A.</p>
+      <span class="tag tag-purple">Experimento rápido</span>
+    </div>
+    <div class="card">
+      <h4>🔍 2. Pesquisar Linear Agents API</h4>
+      <p>A API de Agents do Linear foi lançada recentemente. Precisamos entender se permite criar um agente que reage a eventos e interage com issues via comentários. Isso pode viabilizar a Opção B.</p>
+      <span class="tag tag-yellow">Pesquisa</span>
+    </div>
+    <div class="card">
+      <h4>⚙️ 3. Rodar stelow dentro do Multica</h4>
+      <p>Instalar Multica com suporte a Pi, configurar stelow como skill, e testar um workflow completo. Ver onde as perguntas aparecem e se os gates funcionam.</p>
+      <span class="tag tag-green">Prova de conceito</span>
+    </div>
+    <div class="card">
+      <h4>📄 4. Especificar o formato question-doc</h4>
+      <p>Mesmo sem implementar, definir como seria um "documento de perguntas" em markdown — frontmatter com metadados, seções de perguntas, opções com checkboxes, campos para notas. Isso esclarece se a abordagem é viável.</p>
+      <span class="tag tag-purple">Design</span>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<footer style="text-align: center; padding: 48px 24px; color: var(--text-dim); font-size: .85rem; border-top: 1px solid var(--border); margin-top: 48px;">
+  <p>Exploração feita em 16 de julho de 2026 · Nenhum código foi alterado · Apenas pesquisa e ideação</p>
+</footer>
+</body>
+</html>

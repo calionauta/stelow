@@ -24,8 +24,8 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { loadStages } from "../../extensions/stelow/adapters/stages-loader";
 
-const CONFIG = join(process.cwd(), "skills/stelow-product-orchestrator/stages.yaml");
-const CLI_TOOLS_DIR = join(process.cwd(), "skills/stelow-product-orchestrator/references/cli-tools");
+const CONFIG = join(process.cwd(), "skills/stelow-adapter-cli/stages.yaml");
+const CLI_TOOLS_DIR = join(process.cwd(), "skills/stelow-adapter-cli/references/cli-tools");
 
 // Canonical tool name → reference doc filename (without extension).
 // `ask_user_question` ships as `ask.md`; `visual_review` ships as

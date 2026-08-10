@@ -63,8 +63,8 @@ print_agents_setup() {
 
 When working on software projects, trigger the product workflow:
 
-1. **Trigger:** Use `/skill:stelow-product-orchestrator`
-2. **Process:** Follow the 15-stage workflow (see Stage Index in `skills/stelow-product-orchestrator/SKILL.md`)
+1. **Trigger:** Use `/skill:stelow-adapter-cli`
+2. **Process:** Follow the 15-stage workflow (see Stage Index in `skills/stelow-adapter-cli/SKILL.md`)
 3. **Execute:** Only after visual review gate (Plannotator approval)
 \`\`\`
 EOF
@@ -224,7 +224,6 @@ PI_EXTENSIONS=(
   "npm:@ff-labs/pi-fff"
   "npm:@plannotator/pi-extension"
   "npm:@sting8k/pi-vcc"
-  
   "npm:pi-cache-optimizer"
   "git:github.com/calionauta/pi-leakguard"
   "npm:@tomooshi/condensed-milk-pi"

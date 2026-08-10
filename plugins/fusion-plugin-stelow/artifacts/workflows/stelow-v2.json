@@ -169,7 +169,7 @@
       "config": {
         "name": "Stelow: triage",
         "description": "Initial assessment. Determine if this is a valid request.",
-        "prompt": "Load the stelow-product-orchestrator skill and execute only the triage stage. Follow stages.yaml and persist progress in stelow.json."
+        "prompt": "Load the stelow-adapter-cli skill and execute only the triage stage. Follow stages.yaml and persist progress in stelow.json."
       }
     },
     {
@@ -179,7 +179,7 @@
       "config": {
         "name": "Stelow: select",
         "description": "Item selection. Rank accepted items, user picks one.",
-        "prompt": "Load the stelow-product-orchestrator skill and execute only the select stage. Follow stages.yaml and persist progress in stelow.json."
+        "prompt": "Load the stelow-adapter-cli skill and execute only the select stage. Follow stages.yaml and persist progress in stelow.json."
       }
     },
     {
@@ -189,7 +189,7 @@
       "config": {
         "name": "Stelow: setup",
         "description": "Setup context. Explore codebase, gather requirements.",
-        "prompt": "Load the stelow-product-orchestrator skill and execute only the setup stage. Follow stages.yaml and persist progress in stelow.json."
+        "prompt": "Load the stelow-adapter-cli skill and execute only the setup stage. Follow stages.yaml and persist progress in stelow.json."
       }
     },
     {
@@ -199,7 +199,7 @@
       "config": {
         "name": "Stelow: context",
         "description": "Strategic context. Market analysis, JTBD, domain detection. Gated by `context:5` (appetite/review mode): Product Spec Gate+Auto skips; others use reduced ask. See `stages/context.md#context:5`.",
-        "prompt": "Load the stelow-product-orchestrator skill and execute only the context stage. Follow stages.yaml and persist progress in stelow.json."
+        "prompt": "Load the stelow-adapter-cli skill and execute only the context stage. Follow stages.yaml and persist progress in stelow.json."
       }
     },
     {
@@ -209,7 +209,7 @@
       "config": {
         "name": "Stelow: shape",
         "description": "Shape stage. Define appetite, hill chart, rabbit holes.",
-        "prompt": "Load the stelow-product-orchestrator skill and execute only the shape stage. Follow stages.yaml and persist progress in stelow.json."
+        "prompt": "Load the stelow-adapter-cli skill and execute only the shape stage. Follow stages.yaml and persist progress in stelow.json."
       }
     },
     {
@@ -219,7 +219,7 @@
       "config": {
         "name": "Stelow: critique",
         "description": "Plan critique. Pre-flight check before gate.",
-        "prompt": "Load the stelow-product-orchestrator skill and execute only the critique stage. Follow stages.yaml and persist progress in stelow.json."
+        "prompt": "Load the stelow-adapter-cli skill and execute only the critique stage. Follow stages.yaml and persist progress in stelow.json."
       }
     },
     {
@@ -229,7 +229,7 @@
       "config": {
         "name": "Stelow: gate",
         "description": "Gate review. Visual approval via visual review required. Use `visual_review` tool (not bash).",
-        "prompt": "Load the stelow-product-orchestrator skill and execute only the gate stage. Fusion has no native visual_review tool: complete the canonical fallback by writing .stelow/approvals/{dirHash}/{file}.approved.md before advancing. Follow stages.yaml and persist progress in stelow.json."
+        "prompt": "Load the stelow-adapter-cli skill and execute only the gate stage. Fusion has no native visual_review tool: complete the canonical fallback by writing .stelow/approvals/{dirHash}/{file}.approved.md before advancing. Follow stages.yaml and persist progress in stelow.json."
       }
     },
     {
@@ -239,7 +239,7 @@
       "config": {
         "name": "Stelow: scope",
         "description": "Scope adjustment. Add/remove from IN/OUT after gate approval.",
-        "prompt": "Load the stelow-product-orchestrator skill and execute only the scope stage. Follow stages.yaml and persist progress in stelow.json."
+        "prompt": "Load the stelow-adapter-cli skill and execute only the scope stage. Follow stages.yaml and persist progress in stelow.json."
       }
     },
     {
@@ -249,7 +249,7 @@
       "config": {
         "name": "Stelow: interface",
         "description": "Interface alternatives. Appetite-scaled exploration: 1, 3, or 5 proposals + hybrid.",
-        "prompt": "Load the stelow-product-orchestrator skill and execute only the interface stage. Follow stages.yaml and persist progress in stelow.json."
+        "prompt": "Load the stelow-adapter-cli skill and execute only the interface stage. Follow stages.yaml and persist progress in stelow.json."
       }
     },
     {
@@ -259,7 +259,7 @@
       "config": {
         "name": "Stelow: int-gate",
         "description": "Interface gate. Visual review of all interface proposals. Use `visual_review` tool (not bash).",
-        "prompt": "Load the stelow-product-orchestrator skill and execute only the int-gate stage. Fusion has no native visual_review tool: complete the canonical fallback by writing .stelow/approvals/{dirHash}/{file}.approved.md before advancing. Follow stages.yaml and persist progress in stelow.json."
+        "prompt": "Load the stelow-adapter-cli skill and execute only the int-gate stage. Fusion has no native visual_review tool: complete the canonical fallback by writing .stelow/approvals/{dirHash}/{file}.approved.md before advancing. Follow stages.yaml and persist progress in stelow.json."
       }
     },
     {
@@ -269,7 +269,7 @@
       "config": {
         "name": "Stelow: selection",
         "description": "Interface selection. User picks via structured question.",
-        "prompt": "Load the stelow-product-orchestrator skill and execute only the selection stage. Follow stages.yaml and persist progress in stelow.json."
+        "prompt": "Load the stelow-adapter-cli skill and execute only the selection stage. Follow stages.yaml and persist progress in stelow.json."
       }
     },
     {
@@ -279,7 +279,7 @@
       "config": {
         "name": "Stelow: planning",
         "description": "Tech planning. Typed scopes + sequencing.",
-        "prompt": "Load the stelow-product-orchestrator skill and execute only the planning stage. Follow stages.yaml and persist progress in stelow.json."
+        "prompt": "Load the stelow-adapter-cli skill and execute only the planning stage. Follow stages.yaml and persist progress in stelow.json."
       }
     },
     {
@@ -289,7 +289,7 @@
       "config": {
         "name": "Stelow: plan-gate",
         "description": "Tech plan gate. Visual review of spec-tech.md via visual review. Only in Product Spec + Interface + Tech Review or Code Diff mode.",
-        "prompt": "Load the stelow-product-orchestrator skill and execute only the plan-gate stage. Fusion has no native visual_review tool: complete the canonical fallback by writing .stelow/approvals/{dirHash}/{file}.approved.md before advancing. Follow stages.yaml and persist progress in stelow.json."
+        "prompt": "Load the stelow-adapter-cli skill and execute only the plan-gate stage. Fusion has no native visual_review tool: complete the canonical fallback by writing .stelow/approvals/{dirHash}/{file}.approved.md before advancing. Follow stages.yaml and persist progress in stelow.json."
       }
     },
     {
@@ -299,7 +299,7 @@
       "config": {
         "name": "Stelow: execution",
         "description": "Implementation. Execute planned scopes.",
-        "prompt": "Load the stelow-product-orchestrator skill and execute only the execution stage. Follow stages.yaml and persist progress in stelow.json."
+        "prompt": "Load the stelow-adapter-cli skill and execute only the execution stage. Follow stages.yaml and persist progress in stelow.json."
       }
     },
     {
@@ -309,7 +309,7 @@
       "config": {
         "name": "Stelow: verification",
         "description": "Verification. Run full test suite, code review, UI audit, browser testing.",
-        "prompt": "Load the stelow-product-orchestrator skill and execute only the verification stage. Follow stages.yaml and persist progress in stelow.json."
+        "prompt": "Load the stelow-adapter-cli skill and execute only the verification stage. Follow stages.yaml and persist progress in stelow.json."
       }
     },
     {
@@ -319,7 +319,7 @@
       "config": {
         "name": "Stelow: diff-gate",
         "description": "Code diff review. visual review review of working tree diff. Only in Product Spec + Interface + Tech Review + Code Diff mode.",
-        "prompt": "Load the stelow-product-orchestrator skill and execute only the diff-gate stage. Fusion has no native visual_review tool: complete the canonical fallback by writing .stelow/approvals/{dirHash}/{file}.approved.md before advancing. Follow stages.yaml and persist progress in stelow.json."
+        "prompt": "Load the stelow-adapter-cli skill and execute only the diff-gate stage. Fusion has no native visual_review tool: complete the canonical fallback by writing .stelow/approvals/{dirHash}/{file}.approved.md before advancing. Follow stages.yaml and persist progress in stelow.json."
       }
     },
     {
@@ -329,7 +329,7 @@
       "config": {
         "name": "Stelow: audit",
         "description": "Final audit. Verify all requirements met.",
-        "prompt": "Load the stelow-product-orchestrator skill and execute only the audit stage. Follow stages.yaml and persist progress in stelow.json."
+        "prompt": "Load the stelow-adapter-cli skill and execute only the audit stage. Follow stages.yaml and persist progress in stelow.json."
       }
     },
     {
@@ -434,7 +434,7 @@
       "id": "skillName",
       "name": "Orchestrator skill",
       "type": "string",
-      "default": "stelow-product-orchestrator",
+      "default": "stelow-adapter-cli",
       "description": "Agent Skill loaded by every Stelow stage node."
     }
   ]

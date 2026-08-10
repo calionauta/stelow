@@ -80,3 +80,52 @@ The solution's audience can be in 5 stages according to the **Transtheoretical M
 - **Challenges and Contests**: promote challenges that motivate customers to continue using the solution
 - **Inspiring Customer Stories**: share stories of customers who overcame challenges and achieved significant results
 - **User-Generated Content**: encourage customers to create and share content related to the solution
+
+---
+
+## Channels and Methods
+
+Once you know what to communicate (awareness stage), the next question is **where**.
+
+### Warm Approach (contact with people you know)
+- Individual direct message
+- Direct message to small group
+- Small personalized video showing a quick analysis of something relevant to the person
+
+### Cold Approach (contact with people you don't know)
+- Individual direct message
+- Direct message to small group
+- Small personalized video showing a quick analysis of something relevant to the person
+- 🕵️ **Competitor monitoring**: where there's a complaint, there's a potential customer. Enter conversations (social media, Reddit, forums) where users express frustration with an existing solution and present yours as an alternative. ⚠️ Use only with large corporations or well-funded startups.
+
+### Free Content
+- Own publication: site, blog, podcast, WhatsApp Stories, YouTube channel, Instagram, Facebook, TikTok, Substack, Medium.
+- **Micro-solutions and free tools**: create a free mini-solution in a similar context and link to the paid solution. Examples: Chrome extension, AI content generator, niche resource directory, online calculator.
+- Participate as a guest on podcasts/videocasts — smaller ones usually have more slots. During the conversation, demonstrate your solution live when pertinent.
+- **Existing community**: publish content in existing communities without violating rules, delivering contextual value (Reddit, Facebook groups, Discord and Slack groups, etc.).
+
+### Paid Advertising
+- Third-party audience: newsletters, podcasts, and videocasts from content creators.
+- Online directories: sites that list brands and links in a specific niche.
+- References from other brands: find sites and solutions in a similar context and negotiate a reference.
+- Digital platforms: Google Ads, Meta Ads, TikTok Ads, LinkedIn Ads, Twitter Ads, Pinterest Ads, Reddit Ads, Mercado Livre Ads, OLX Ads.
+- Offline platforms: print (newspapers, leaflets, posters, direct mail), outdoor media (billboards, urban furniture, airports, metro, digital panels), radio and TV, events.
+- Sponsor hackathons and small niche events (~$500). Negotiate for your tool to be used by participants during the competition.
+
+### Examples of Media
+
+| Type | Channels |
+|------|----------|
+| Calls | Phone calls |
+| Messaging | DMs, SMS, WhatsApp, Telegram, Audio messages |
+| Content | Forum posts, social media posts, blog posts |
+| Physical | Letters, postcards, door-to-door, direct mail |
+
+---
+
+## Related Skills
+
+- `stelow-product-promotions` — MAGIC framework, Loss Leader, Irresistible Freebie
+- `stelow-product-promoters` — Promoters, referrals, affiliates
+- `stelow-product-discovery` — Complete short-cycle product learning method
+- `stelow-product-testimonials` — Testimonial collection and social proof

@@ -1,9 +1,9 @@
 /**
- * Task Types - Shared interfaces for task management.
- *
- * Defines common types for tasks across different systems.
- * (InboxItem removed in v0.57.0 — hosts own their inbox surface.)
- *
+ * Task Types - Shared interfaces for task management
+ * 
+ * Defines common types for tasks across different systems:
+ * - InboxItem: Deferred items in inbox
+ * 
  * Usage:
  *   import type { TaskStatus } from './modules/task';
  */
@@ -22,6 +22,16 @@ export interface TaskItem {
   status: TaskStatus;
   createdAt?: string;
   completedAt?: string;
+}
+
+/**
+ * Inbox item - simpler than phase todo.
+ * No id required, just content.
+ */
+export interface InboxItem {
+  content: string;
+  addedAt?: string;
+  source?: string;  // Where the item came from (e.g., "triage", "selection")
 }
 
 /**

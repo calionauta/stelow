@@ -16,7 +16,7 @@ shopt -s nullglob
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
-SOURCE="$PROJECT_ROOT/skills/stelow-product-orchestrator/references/cli-tools"
+SOURCE="$PROJECT_ROOT/skills/stelow-adapter-cli/references/cli-tools"
 
 # Files in SOURCE that are orchestrator-only and should NOT be synced to sub-skills
 SYNC_EXCLUDE=("context-efficiency.md" "execution-loop.md")
@@ -25,7 +25,7 @@ SYNC_EXCLUDE=("context-efficiency.md" "execution-loop.md")
 TARGET_SKILLS=()
 for SKILL_DIR in "$PROJECT_ROOT/skills"/*/; do
   SKILL=$(basename "$SKILL_DIR")
-  [ "$SKILL" = "stelow-product-orchestrator" ] && continue
+  [ "$SKILL" = "stelow-adapter-cli" ] && continue
   TARGET_SKILLS+=("$SKILL")
 done
 

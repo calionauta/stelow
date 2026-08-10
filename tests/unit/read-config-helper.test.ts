@@ -29,7 +29,7 @@ const PROJECT_ROOT = join(__testDir, '..', '..');
 
 const HELPER_PATH = join(
   PROJECT_ROOT,
-  'skills/stelow-product-orchestrator/references/cli-tools/read-config.sh',
+  'skills/stelow-adapter-cli/references/cli-tools/read-config.sh',
 );
 
 describe('read-config.sh helper exists and is executable', () => {

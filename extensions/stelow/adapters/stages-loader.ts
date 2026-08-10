@@ -43,7 +43,7 @@ export function loadStages(configPath: string): StagesConfig {
 export function resolveTool(
   agnosticName: string,
   host: CLI,
-  configPath = join(process.cwd(), 'skills/stelow-product-orchestrator/stages.yaml'),
+  configPath = join(process.cwd(), 'skills/stelow-adapter-cli/stages.yaml'),
 ): string | null {
   const mapped = loadStages(configPath).tools?.[agnosticName];
   return mapped && host in mapped ? mapped[host] ?? null : agnosticName;

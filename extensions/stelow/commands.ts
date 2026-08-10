@@ -1,5 +1,5 @@
 // @lat: [[architecture#System Layers#Extension Layer]]
-import { rmSync, readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
+import { rmSync, readFileSync, writeFileSync, existsSync, mkdirSync, copyFileSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
 import { execSync } from "node:child_process";
@@ -17,6 +17,8 @@ import {
   getActiveWorkflow, renameWorkflow, toSafeName, reconcileTracking, scanWorkflowDirs,
   resolveProjectDir,
   parseChecklist,
+  readInbox, addToInbox, removeFromInbox, clearInbox,
+  readProvenance,
   findWorkflowIndexByName, findWorkflowIndexForProject, isWorkflowFromProject, isSamePath,
   removeGlobalIndexEntry, addToGlobalIndex, getDateStamp,
 } from "./state";
@@ -28,6 +30,10 @@ import { escapeRegex, convertAuditTrailToJson } from "./audit-trail";
 
 // ── Stages Guard (pure file-state management) ────────────────────────
 import { PHASE_TO_STAGE, syncStagesGuardState } from "./stages-guard";
+
+// ── Host Adapter (DecisionGateway) ───────────────────────────────
+import { createHostAdapter } from "./adapters/host";
+import { MulticaAdapter } from "./adapters/host/multica-adapter";
 
 // ── Import Command Dispatcher for Multi-CLI Support ─────────────────
 import { WORKFLOW_COMMANDS, type CommandDescriptor } from "./adapters/commands/dispatcher";
@@ -311,7 +317,7 @@ async function cmdResume(pi: ExtensionAPI, args: string, ctx: CmdCtx) {
       }
       reply(ctx, `▶️ '${inProgress.name}' resuming from ${PHASE_NAMES[inProgress.currentPhase]}...`);
       pi.sendUserMessage(
-        `/skill:stelow-product-orchestrator\n\n[RESUME: workflow '${inProgress.name}', current phase: ${inProgress.currentPhase} (${PHASE_NAMES[inProgress.currentPhase]}). Auto-Discovery will find this in-progress workflow. User already confirmed via /sw-resume — proceed without asking, jump to the current phase and continue from there.]`,
+        `/skill:stelow-adapter-cli\n\n[RESUME: workflow '${inProgress.name}', current phase: ${inProgress.currentPhase} (${PHASE_NAMES[inProgress.currentPhase]}). Auto-Discovery will find this in-progress workflow. User already confirmed via /sw-resume — proceed without asking, jump to the current phase and continue from there.]`,
         { deliverAs: "followUp" }
       );
       return;
@@ -1046,8 +1052,73 @@ async function cmdRecover(_pi: ExtensionAPI, _args: string, ctx: CmdCtx): Promis
   }
 }
 
-// Inbox and Pulse were removed in v0.57.0 — scheduling and inbox handling
-// are now host responsibilities. See README "Host Installation Guide".
+// ── INBOX ─────────────────────────────────────────────────────────────
+
+function cmdInbox(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
+  const wd = resolveProjectDir(ctx.cwd);
+  const parsed = parseArgs(args);
+  const items = readInbox(wd);
+
+  // /sw-inbox add <item>
+  if (parsed.add !== undefined) {
+    const item = parsed.add || parsed._.join(" ");
+    if (!item) {
+      replyWarn(ctx, "Usage: /sw-inbox add <item text>");
+      return;
+    }
+    addToInbox(wd, item);
+    ctx.ui?.notify(`📥 Added to inbox: ${item.slice(0, 50)}`, "info");
+    return;
+  }
+
+  // /sw-inbox remove <item>
+  if (parsed.remove || parsed.rm) {
+    const item = parsed.remove || parsed.rm;
+    removeFromInbox(wd, item);
+    ctx.ui?.notify(`🗑️ Removed from inbox`, "info");
+    return;
+  }
+
+  // /sw-inbox clear
+  if (parsed.clear) {
+    clearInbox(wd);
+    ctx.ui?.notify(`🗑️ Inbox cleared`, "info");
+    return;
+  }
+
+  // /sw-inbox history — show provenance log
+  if (parsed.history !== undefined || parsed.hist || parsed.h) {
+    const log = readProvenance(wd);
+    if (log.length === 0) {
+      reply(ctx, "📋 No inbox history yet.");
+      return;
+    }
+    const limit = parseInt(parsed.n || parsed.limit || "20", 10);
+    const recent = log.slice(-limit).reverse();
+    const lines = ["📋 Inbox history (most recent first):", ""];
+    for (const entry of recent) {
+      const ts = (entry.ts as string || "").slice(0, 19).replace("T", " ");
+      const item = (entry.item as string || "").slice(0, 60);
+      const wf = entry.workflow as string || "";
+      const status = entry.exit_code === 0 ? "✅" : entry.exit_code === undefined ? "⏳" : "❌";
+      const dir = entry.dir as string || "";
+      lines.push(`${status} [${ts}] ${item}`);
+      if (wf && wf !== "unknown") lines.push(`   → ${wf} (${dir})`);
+    }
+    reply(ctx, lines.join("\n"));
+    return;
+  }
+
+  // /sw-inbox (show)
+  if (items.length === 0) {
+    reply(ctx, "📥 Inbox is empty.");
+  } else {
+    const lines = ["📥 Inbox:", "", ...items.map((item, i) => `${i + 1}. ${item}`)];
+    reply(ctx, lines.join("\n"));
+  }
+}
+
+// ── TODO ──────────────────────────────────────────────────────────────
 
 // ── ARCHIVE ──────────────────────────────────────────────────────────
 
@@ -1140,10 +1211,6 @@ function cmdUnlock(_pi: ExtensionAPI, _args: string, ctx: CmdCtx) {
   process.env.CALI_PW_GUARD = "off";
   reply(ctx, "🔓 Stages guard disabled for this session. Reopen pi to re-enable.");
 }
-
-/** Exported so the Pi adapter (`adapters/pi/commands.ts`) can register it
- *  as a Pi-local descriptor (post-v0.57.0 split). */
-export { cmdUnlock };
 
 // ── UNARCHIVE ────────────────────────────────────────────────────────
 
@@ -1289,8 +1356,294 @@ function cmdAudit(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
   reply(ctx, content);
 }
 
-// Pulse removed in v0.57.0 — scheduling is the host's responsibility.
-// See README "Host Installation Guide" for the per-host scheduler path.
+// ── PULSE ────────────────────────────────────────────────────────────
+
+// Copy bundled Pulse scripts (.stelow/pulse/) from extension's bundled
+// `pulse/` directory. Runs once on first /sw-pulse invocation when
+// scripts are missing, so users don't need a separate setup step.
+const PULSE_SCRIPT_FILES = [
+  "pulse.sh",
+  "pulse.ps1",
+  "pulse-task.md",
+  "pulse-system.md",
+  "SETUP.md",
+];
+
+function ensurePulseScripts(pulseDir: string): void {
+  // Skip if user already has the bash script
+  if (existsSync(join(pulseDir, "pulse.sh")) || existsSync(join(pulseDir, "pulse.ps1"))) {
+    return;
+  }
+  // Find bundled location (next to this file: extensions/stelow/pulse/)
+  const bundledDir = join(import.meta.dirname || __dirname, "pulse");
+  if (!existsSync(bundledDir)) {
+    return; // bundled files not shipped — caller will report missing
+  }
+  mkdirSync(pulseDir, { recursive: true });
+  for (const file of PULSE_SCRIPT_FILES) {
+    const src = join(bundledDir, file);
+    const dst = join(pulseDir, file);
+    if (existsSync(src) && !existsSync(dst)) {
+      try {
+        copyFileSync(src, dst);
+      } catch (_e) {
+        // best-effort — don't fail the whole setup if one file fails
+      }
+    }
+  }
+}
+
+function cmdPulse(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
+  const wd = resolveProjectDir(ctx.cwd);
+  const parsed = parseArgs(args);
+  const pulseDir = join(wd, ".stelow", "pulse");
+  const logPath = join(pulseDir, "pulse.log");
+  const pausePath = join(pulseDir, "pulse.pause");
+
+  // Auto-install bundled scripts on first invocation
+  ensurePulseScripts(pulseDir);
+
+  // /sw-pulse status
+  if (parsed.status !== undefined || parsed._.includes("status") || (!parsed.pause && !parsed.resume && !parsed.process && !parsed.log && parsed._.length === 0)) {
+    const paused = existsSync(pausePath);
+    const lastLine = (() => {
+      try {
+        const content = readFileSync(logPath, "utf-8").trim().split("\n").filter(Boolean);
+        return content[content.length - 1] || "Never ran";
+      } catch { return "Never ran"; }
+    })();
+    const inbox = readInbox(wd);
+    const lines = [
+      "📡 Pulse status:",
+      `  ${paused ? "⏸️ PAUSED" : "▶️ Active"}`,
+      `  📥 ${inbox.length} item(s) in inbox`,
+      `  🕐 Last run: ${lastLine.slice(0, 80)}`,
+      "",
+      "Commands:",
+      "  /sw-pulse pause     — pause automatic processing",
+      "  /sw-pulse resume    — resume automatic processing",
+      "  /sw-pulse process   — force processing now",
+      "  /sw-pulse log       — show recent log entries",
+      "  /sw-pulse status    — show this status",
+    ];
+    reply(ctx, lines.join("\n"));
+    return;
+  }
+
+  // /sw-pulse pause
+  if (parsed.pause !== undefined || parsed._.includes("pause")) {
+    mkdirSync(pulseDir, { recursive: true });
+    writeFileSync(pausePath, new Date().toISOString() + "\n");
+    ctx.ui?.notify(`⏸️ Pulse paused — no automatic processing until resumed`, "info");
+    return;
+  }
+
+  // /sw-pulse resume
+  if (parsed.resume !== undefined || parsed._.includes("resume")) {
+    if (existsSync(pausePath)) {
+      rmSync(pausePath);
+      ctx.ui?.notify(`▶️ Pulse resumed — automatic processing active`, "info");
+    } else {
+      replyWarn(ctx, "Pulse is not paused.");
+    }
+    return;
+  }
+
+  // /sw-pulse process
+  if (parsed.process !== undefined || parsed._.includes("process")) {
+    const shell = process.platform === "win32" ? "powershell" : "bash";
+    const scriptPath = join(pulseDir, shell === "powershell" ? "pulse.ps1" : "pulse.sh");
+    const altScript = join(pulseDir, shell === "powershell" ? "pulse.sh" : "pulse.ps1");
+
+    if (!existsSync(scriptPath)) {
+      if (existsSync(altScript)) {
+        // Fall back to the other script if available
+        const finalPath = altScript;
+        const finalShell = shell === "powershell" ? "bash" : "powershell";
+        const cmd = finalShell === "powershell"
+          ? `powershell -ExecutionPolicy Bypass -File "${finalPath}" -Force`
+          : `bash "${finalPath}" --force`;
+        ctx.ui?.notify(`⚡ Pulse processing started (via ${finalShell})...`, "info");
+        const output = execSync(cmd, { cwd: wd, encoding: "utf8", timeout: 180000, stdio: ["pipe", "pipe", "pipe"] });
+        ctx.ui?.notify(`✅ Pulse processing complete`, "info");
+        reply(ctx, output.trim() || "✅ Done.");
+      } else {
+        replyWarn(ctx, `No pulse script found at ${scriptPath} or ${altScript}. Run setup first.`);
+      }
+      return;
+    }
+
+    const cmd = shell === "powershell"
+      ? `powershell -ExecutionPolicy Bypass -File "${scriptPath}" -Force`
+      : `bash "${scriptPath}" --force`;
+
+    ctx.ui?.notify(`⚡ Pulse processing started...`, "info");
+    try {
+      const output = execSync(cmd, { cwd: wd, encoding: "utf8", timeout: 180000, stdio: ["pipe", "pipe", "pipe"] });
+      ctx.ui?.notify(`✅ Pulse processing complete`, "info");
+      reply(ctx, output.trim() || "✅ Done.");
+    } catch (e: any) {
+      ctx.ui?.notify(`❌ Pulse processing failed`, "error");
+      reply(ctx, e.stdout?.trim() || e.message || "Unknown error");
+    }
+    return;
+  }
+
+  // /sw-pulse log [n]
+  if (parsed.log !== undefined || parsed._.includes("log") || parsed._.length > 0 && !isNaN(Number(parsed._[0]))) {
+    const n = parseInt(parsed.log || parsed.n || parsed._.find(t => !isNaN(Number(t))) || "10", 10);
+    try {
+      const content = readFileSync(logPath, "utf-8").trim().split("\n").filter(Boolean);
+      const recent = content.slice(-n);
+      reply(ctx, recent.join("\n") || "📡 No log entries yet.");
+    } catch {
+      reply(ctx, "📡 No log entries yet.");
+    }
+    return;
+  }
+
+  // Fallback: show status
+  replyWarn(ctx, "Usage: /sw-pulse [status|pause|resume|process|log [n]]");
+}
+
+// ── HOST (Host Adapter / DecisionGateway) ─────────────────────────────
+
+/**
+ * /sw-host — inspect or operate on the active Host Adapter.
+ *
+ *   /sw-host             — show status (active adapter, pending decisions)
+ *   /sw-host status      — same as above
+ *   /sw-host resolve     — re-poll the host for the current pending decision
+ *   /sw-host clear       — discard the pending decision marker (no host call)
+ *
+ * Per `docs/design/host-adapter-multica.md` §5.3 — the primary resume
+ * path is the Multica assignee auto-trigger (re-runs stelow). The
+ * resolve subcommand is the manual fallback for when that trigger
+ * doesn't fire.
+ */
+async function cmdHost(_pi: ExtensionAPI, args: string, ctx: CmdCtx) {
+  const wd = resolveProjectDir(ctx.cwd);
+  const parsed = parseArgs(args);
+  const sub = (parsed._[0] ?? "status").toLowerCase();
+
+  let adapter;
+  try {
+    adapter = createHostAdapter(wd);
+  } catch (e) {
+    replyWarn(ctx, `Host adapter error: ${e instanceof Error ? e.message : String(e)}`);
+    return;
+  }
+
+  if (!adapter) {
+    replyWarn(ctx, [
+      "No Host Adapter configured.",
+      "",
+      "Create `.stelow/host-workgroup.yaml` with at minimum:",
+      "  host: multica",
+      "  reviewers:",
+      "    shape: { role: pm, member_id: <uuid> }",
+      "    interface: { role: ux, member_id: <uuid> }",
+      "    planning: { role: tech-lead, member_id: <uuid> }",
+      "    gate: { role: pm, member_id: <uuid> }",
+      "  fallback_owner: <uuid>",
+      "",
+      "See docs/design/host-adapter-multica.md §6.",
+    ].join("\n"));
+    return;
+  }
+
+  const wf = getActiveWorkflow(wd);
+  const pending = wf?.pending_decision ?? null;
+
+  // ── /sw-host status (default) ─────────────────────────────────
+  if (sub === "status" || sub === "") {
+    const lines = [
+      `🔌 Host Adapter: ${adapter.constructor.name}`,
+      `   workflow: ${wf?.name ?? "(none)"}`,
+      `   stage: ${wf ? PHASE_TO_STAGE[wf.currentPhase] ?? "unknown" : "n/a"}`,
+      "",
+    ];
+    if (pending) {
+      lines.push(
+        "📌 Pending decision:",
+        `   kind: ${pending.kind}`,
+        `   host: ${pending.host}`,
+        `   external_ref: ${pending.external_ref}`,
+        `   asked_at: ${pending.asked_at}`,
+        `   idempotency_key: ${pending.idempotency_key}`,
+        "",
+        "Re-poll with `/sw-host resolve`. Discard with `/sw-host clear`.",
+      );
+    } else {
+      lines.push("📭 No pending decision parked.");
+    }
+    reply(ctx, lines.join("\n"));
+    return;
+  }
+
+  // ── /sw-host resolve ──────────────────────────────────────────
+  if (sub === "resolve") {
+    if (!pending) {
+      replyWarn(ctx, "No pending decision to resolve.");
+      return;
+    }
+    if (!(adapter instanceof MulticaAdapter)) {
+      replyWarn(ctx, `Resolve is implemented only for the MulticaAdapter (got ${adapter.constructor.name}).`);
+      return;
+    }
+    reply(ctx, `🔄 Polling Multica for issue ${pending.external_ref}…`);
+    const result = await adapter.readDecisionFromIssue(pending.external_ref);
+    if (!result) {
+      replyWarn(ctx, `Multica returned no decision for ${pending.external_ref} (issue unreachable or no member reply yet).`);
+      return;
+    }
+    const t = readTracking(wd);
+    if (!t) {
+      replyWarn(ctx, "Tracking file missing — cannot clear pending marker.");
+      return;
+    }
+    const idx = t.workflows.findIndex((w) => w.name === wf?.name);
+    if (idx === -1) {
+      replyWarn(ctx, "Active workflow not found in tracking file.");
+      return;
+    }
+    t.workflows[idx].pending_decision = undefined;
+    t.workflows[idx].updated = new Date().toISOString();
+    writeTracking(wd, t);
+    reply(ctx, [
+      `✅ Decision resolved from ${pending.host}:`,
+      `   decision: ${result.decision}`,
+      `   answered_by: ${result.answered_by || "(status-driven)"}`,
+      `   answered_at: ${result.answered_at}`,
+      `   external_ref: ${result.external_ref}`,
+      result.feedback ? `   feedback: ${result.feedback.slice(0, 200)}` : "",
+    ].filter(Boolean).join("\n"));
+    return;
+  }
+
+  // ── /sw-host clear ────────────────────────────────────────────
+  if (sub === "clear") {
+    if (!pending) {
+      replyWarn(ctx, "No pending decision to clear.");
+      return;
+    }
+    const t = readTracking(wd);
+    if (!t || !wf) {
+      replyWarn(ctx, "Tracking file / workflow missing — nothing to clear.");
+      return;
+    }
+    const idx = t.workflows.findIndex((w) => w.name === wf.name);
+    if (idx !== -1) {
+      t.workflows[idx].pending_decision = undefined;
+      t.workflows[idx].updated = new Date().toISOString();
+      writeTracking(wd, t);
+    }
+    reply(ctx, "🧹 Pending decision cleared.");
+    return;
+  }
+
+  replyWarn(ctx, "Usage: /sw-host [status|resolve|clear]");
+}
 
 // ── Single source of truth: handler lookups ──────────────────────────
 // Handlers are keyed by command name (derived from WORKFLOW_COMMANDS).
@@ -1314,7 +1667,10 @@ const COMMAND_ALIASES: Record<string, string[]> = {
   "sw-unarchive": ["stelow-unarchive"],
   "sw-recover":   ["stelow-recover"],
   "sw-unlock":    ["stelow-unlock"],
+  "sw-inbox":     ["stelow-inbox"],
+  "sw-pulse":     ["stelow-pulse"],
   "sw-audit":     ["stelow-audit"],
+  "sw-host":      ["stelow-host"],
 };
 
 const HANDLER_BY_NAME: Record<string, CmdHandler> = {
@@ -1334,7 +1690,10 @@ const HANDLER_BY_NAME: Record<string, CmdHandler> = {
   "sw-unarchive":  cmdUnarchive,
   "sw-recover":    cmdRecover,
   "sw-unlock":     cmdUnlock,
+  "sw-inbox":      cmdInbox,
+  "sw-pulse":      cmdPulse,
   "sw-audit":      cmdAudit,
+  "sw-host":       cmdHost,
   // Aliases
   "stelow-start":     cmdStart,
   "stelow-abort":     cmdAbort,
@@ -1351,7 +1710,10 @@ const HANDLER_BY_NAME: Record<string, CmdHandler> = {
   "stelow-archive":   cmdArchive,
   "stelow-unarchive": cmdUnarchive,
   "stelow-unlock":    cmdUnlock,
+  "stelow-inbox":     cmdInbox,
+  "stelow-pulse":     cmdPulse,
   "stelow-audit":     cmdAudit,
+  "stelow-host":      cmdHost,
 };
 
 function getDescription(cmdName: string): string {

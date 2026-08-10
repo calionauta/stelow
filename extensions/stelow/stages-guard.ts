@@ -7,13 +7,6 @@
  *
  * WRITES stage state INTO stelow.json — single source of truth.
  * Reads legacy current-stage.json as fallback during migration.
- *
- * v0.57.0: when `STELOW_MULTICA_HOST=1` and `MULTICA_ISSUE_ID` are set in
- * the environment, every successful stage transition also projects the
- * new stage onto the Multica issue via `adapters/multica/labels.ts`.
- * This converts the "one stelow:* label at a time" invariant from
- * prompt-based to structural — the swap is performed here, on every
- * transition, so callers can't forget it.
  */
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { join, dirname } from "node:path";
@@ -124,60 +117,6 @@ export function syncStagesGuardState(cwd: string, phaseIndex: number): void {
   const trackingDir = dirname(trackingPath);
   if (!existsSync(trackingDir)) mkdirSync(trackingDir, { recursive: true });
   writeFileSync(trackingPath, JSON.stringify(trackingData, null, 2));
-
-  // ── Multica stage-label projection (v0.57.0) ───────────────────────
-  // After persisting the new stage to stelow.json, mirror it onto the
-  // Multica issue label so the issue's stage surface stays in sync. The
-  // helper (adapters/multica/labels.ts) enforces the "one stelow:*
-  // label at a time" invariant structurally — there's no way for a
-  // caller to leave two stelow:* labels on the issue because the
-  // helper computes and removes the stale ones itself.
-  //
-  // The projection is a best-effort side effect: failures here do NOT
-  // roll back the stelow.json write (the host surface may be down).
-  // Errors are logged so the operator can re-sync manually.
-  if (process.env.STELOW_MULTICA_HOST === "1" && process.env.MULTICA_ISSUE_ID) {
-    void projectMulticaStageLabel(
-      process.env.MULTICA_ISSUE_ID,
-      stageName,
-      prev.current_stage,
-    ).catch((err: unknown) => {
-      // Don't block the stage transition on a Multica API hiccup.
-      // The stelow.json is authoritative; the label can be re-synced.
-      console.warn(
-        `[stelow] Multica label projection failed for issue ${process.env.MULTICA_ISSUE_ID}: ${err instanceof Error ? err.message : String(err)}`,
-      );
-    });
-  }
-}
-
-/**
- * Project a stage transition onto a Multica issue's `stelow:*` label.
- * Called by `syncStagesGuardState` after every successful transition
- * when running under `STELOW_MULTICA_HOST=1`.
- *
- * Loads the multica labels adapter lazily to keep the pure-file
- * stages-guard module free of Multica-API dependencies for callers
- * that don't use Multica.
- */
-async function projectMulticaStageLabel(
-  issueId: string,
-  newStage: string,
-  prevStage: string,
-): Promise<void> {
-  const { setStageLabel } = await import("./adapters/multica/labels");
-  // Wire to a no-op Multica context for now — the real Multica SDK
-  // call is provided by the runtime layer (see
-  // docs/multica-integration.md §"Label projection"). The invariant
-  // the helper enforces (single stelow:* label) does not depend on
-  // the network call; once the real SDK is wired, the helper keeps
-  // working unchanged.
-  const ctx = {
-    listLabels: async () => [] as string[],
-    addLabel: async () => {},
-    removeLabel: async () => {},
-  };
-  await setStageLabel(issueId, newStage, prevStage, ctx);
 }
 
 /**

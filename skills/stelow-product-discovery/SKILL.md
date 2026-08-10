@@ -1,14 +1,16 @@
 ---
 name: stelow-product-discovery
 description: >
-  [stelow] Complete expert in the short-cycle product learning method,
-  based on the e-book "Guide to Creating Products with Short Learning Cycles" by calionauta.
-  Use this skill whenever the user asks about: idea validation, customer discovery,
-  product experimentation, jobs to be done, pricing strategies, business models, marketing channels,
-  early adopters, MVP, product-market fit, pre-sales, launch strategies, product innovation,
-  product lifecycle, building customer trust, marketplace, open source as strategy,
-  or any concept related to creating and validating digital products with low risk and fast learning.
-  This skill contains ALL the method details — do not skip any detail.
+  [stelow] Orchestrator for the short-cycle product learning method based on
+  the e-book "Guide to Creating Products with Short Learning Cycles" by calionauta.
+  Guides the user through 8 discovery stages and loads the appropriate standalone
+  skill for each topic. Use this skill whenever the user asks about: idea validation,
+  customer discovery, product experimentation, jobs to be done, pricing strategies,
+  business models, marketing channels, early adopters, MVP, product-market fit,
+  pre-sales, launch strategies, product innovation, product lifecycle, building
+  customer trust, marketplace, open source as strategy, or any concept related to
+  creating and validating digital products with low risk and fast learning.
+  This is the orchestrator — load the referenced standalone skill for full depth.
 metadata:
   frequency: monthly
   category: product
@@ -36,35 +38,26 @@ The process has **8 stages** (not necessarily linear):
 7. Evolve to a viable business
 8. The pulse of the system: signals in tension
 
-**→ Read reference files as needed:**
-- `references/01-experimentation-principles.md` — criteria for reliable data + 6 principles
-- `references/02-stages-1-to-3.md` — audience, market, solutions
-- `references/03-stages-4-to-6.md` — offer, commitment, manual process
-- `references/04-stage-7.md` — viable business, product-market fit, channels
-- `references/05-stage-8-signals.md` — pulse of the system, signals in tension
-- `references/06-appendix-business-models.md` — business models, open source, pricing
-- `references/07-appendix-strategies.md` — marketplace, solutions, trust, bonuses, promotions, ads, lifecycle
+**→ Load the appropriate standalone skill for each topic (pointers below):**
 
-## When to Read Each Reference
-
-| User asks about... | Read... |
-|---|---|
-| How to validate an idea / experiment | 01, 02 |
-| Target audience, market, jobs to be done | 02 |
-| Solution, product, features | 02, 03 |
-| Offer, advertisement, early adopters | 03 |
-| Pre-sale, commitment, waitlist | 03 |
-| MVP, manual process, concierge, wizard of oz | 03 |
-| Product-market fit, channels, viable business | 04 |
-| Metrics, retention, growth | 04, 05 |
-| Pricing, pricing models | 06 |
-| Business models, revenue, costs | 06 |
-| Open source as strategy | 06 |
-| Marketplace, supply and demand | 07 |
-| Trust, guarantees, social proof | 07 |
-| Bonuses, launch promotions | 07 |
-| Online ads, stages of awareness | 07 |
-| Product lifecycle, innovation | 07 |
+| Topic | Skill |
+|-------|-------|
+| Experimentation (6 principles) | `stelow-product-experimentation` |
+| Audience + Market (SEDIF, interviews, segments, GPN) | `stelow-product-audience-market` |
+| Solutions (9 components, risk matrix) | `stelow-product-solutions-prioritization` |
+| Launch Validation (offer, pioneer program, pre-sale, waitlist) | `stelow-product-launch-validation` |
+| Manual Process (concierge, wizard of oz, high-risk systems) | `stelow-product-manual-process` |
+| Viable Business (stepping stones, metrics) | `stelow-product-evolutionary-principles` |
+| Product Health (signals in tension) | `stelow-product-health` |
+| Business Models (cost reduction, revenue generation) | `stelow-product-business-models` |
+| Pricing (exchange base, consumption, perception) | `stelow-product-pricing` |
+| Open Source (business strategy) | `stelow-product-open-source` |
+| Trust + Guarantees (10 pillars, trust pact, guarantees) | `stelow-product-trust-building` |
+| Testimonials (First 5, BAB, collection system) | `stelow-product-testimonials` |
+| Promoters (referrals, affiliates, marketplace) | `stelow-product-promoters` |
+| Promotions (MAGIC, bonuses, 4 launch strategies) | `stelow-product-promotions` |
+| Ads (awareness stages, channels, methods) | `stelow-product-ads` |
+| Innovation Strategies (differentiated, dominant, disruptive) | `stelow-product-innovation-strategies` |
 
 ## Interaction Tool Guidelines
 
@@ -110,14 +103,23 @@ For specialized analysis, these standalone skills are available at [github.com/c
 
 | Skill | Description | Lines |
 |-------|-----------|--------|
+| `stelow-product-promoters` | Promoters, referrals, affiliates, marketplace dynamics | ~300 |
 | `stelow-product-health` | Product health monitoring via signals in tension | ~100 |
 | `stelow-product-pricing` | Pricing strategy: Exchange Base, Consumption Control, Interest Alignment, Trust Pact | ~100 |
 | `stelow-product-open-source` | OSS as business strategy: Proprietary Problem, Org Structures, Competition Protection | ~60 |
 | `stelow-product-trust-building` | 10 pillars of trust, guarantees, perception, commitment | ~60 |
 | `stelow-product-promotions` | MAGIC framework, 4 launch strategies, bonuses | ~60 |
 | `stelow-product-business-models` | Cost reduction & revenue generation models | ~80 |
-| `stelow-product-ads` | 5 awareness stages, ad categories | ~50 |
+| `stelow-product-testimonials` | Testimonial strategies: First 5 / Work for Free, BAB storytelling, timing & asymmetry, perfect fit, collection system | ~200 |
+| `stelow-product-ads` | 5 awareness stages, ad categories, channels & methods | ~120 |
+| `stelow-product-experimentation` | 4 criteria + 6 principles for reliable experimentation | ~100 |
+| `stelow-product-audience-market` | SEDIF model, interviews, JTBD market definition, segments, GPN story | ~120 |
+| `stelow-product-solutions-prioritization` | 9 components for desirable solutions + impact/risk matrix | ~150 |
+| `stelow-product-launch-validation` | Offer development, pioneer program, pre-sale, waitlist, fake door | ~150 |
+| `stelow-product-manual-process` | Concierge, Wizard of Oz, high-risk systems framework | ~120 |
+| `stelow-product-evolutionary-principles` | Evolutionary thinking, stepping stones, metrics, first version approaches | ~450 |
+| `stelow-product-innovation-strategies` | Differentiated, Dominant, Sustaining, Discreet, Disruptive | ~80 |
 
 **Install (if you don't have it yet):**
 ...
-**Note:** These are optional enhancements. The core method works without them — the references/ contain all the necessary content.
+**Note:** These are optional enhancements. The core method's 8 stages are described above; each topic has a dedicated standalone skill for full depth.

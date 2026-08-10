@@ -1,5 +1,5 @@
 /**
- * Build the user message that activates the /skill:stelow-product-orchestrator
+ * Build the user message that activates the /skill:stelow-adapter-cli
  * skill, embedding the user's brief and any @file source contents so the
  * LLM has the full context on first contact. The /sw-start command itself
  * is intercepted and not delivered to the LLM, so without this injection
@@ -144,7 +144,7 @@ export function buildSkillActivationMessage(
     : "\nDo NOT ask the user what to do next \u2014 the workflow is automatic.";
 
   let msg =
-    "/skill:stelow-product-orchestrator" +
+    "/skill:stelow-adapter-cli" +
     "\n\n>>> WORKFLOW STARTED: '" + displayLabel + "' <<<" +
     "\nIntent: " + intent +
     "\nALL prior work is PAUSED. Do NOT continue previous tasks." +

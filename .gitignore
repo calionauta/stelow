@@ -99,7 +99,7 @@ plugins/fusion-plugin-stelow/.fusion-stelow-stage-*/
 # The orchestrator is the source of truth; sub-skills get cli-tools via sync-cli-tools.sh
 skills/*/references/cli-tools/*.md
 # Keep orchestrator tracked (source of truth)
-!skills/stelow-product-orchestrator/references/cli-tools/*.md
+!skills/stelow-adapter-cli/references/cli-tools/*.md
 # Keep skill-specific extras (not in orchestrator)
 !skills/*/references/cli-tools/dead-code-candidates.md
 !skills/*/references/cli-tools/doc-search.md

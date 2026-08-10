@@ -18,7 +18,7 @@
  * README parser is scoped to the `## 📋 Skills` section so unrelated
  * category/count mentions elsewhere cannot satisfy the contract. The
  * orchestrator's intentional public display alias `` `stelow` ``
- * (described in `skills/stelow-product-orchestrator/SKILL.md` as
+ * (described in `skills/stelow-adapter-cli/SKILL.md` as
  * `[stelow]`) is the ONLY normalization applied; all sub-skill rows
  * must use exact stelow-product-prefixed directory names.
  *
@@ -38,7 +38,7 @@ const README_PATH = join(PROJECT_ROOT, 'README.md');
 
 type Category = 'product' | 'research' | 'code' | 'meta';
 const ALLOWED_CATEGORIES: readonly Category[] = ['product', 'research', 'code', 'meta'];
-const ORCHESTRATOR_DIR = 'stelow-product-orchestrator';
+const ORCHESTRATOR_DIR = 'stelow-adapter-cli';
 const ORCHESTRATOR_ALIAS = 'stelow';
 
 // ── Source enumeration ────────────────────────────────────────────
@@ -406,7 +406,7 @@ describe('SW-015 — README skill-count contract', () => {
       expect(orchestratorBlock).toBeDefined();
       const rows = parseSkillRowsFromBlock(orchestratorBlock!.body);
       expect(rows).toHaveLength(1);
-      // Intentional public alias: `stelow` → `stelow-product-orchestrator`.
+      // Intentional public alias: `stelow` → `stelow-adapter-cli`.
       const normalized = rows[0] === ORCHESTRATOR_ALIAS ? ORCHESTRATOR_DIR : rows[0];
       expect(normalized).toBe(ORCHESTRATOR_DIR);
     });

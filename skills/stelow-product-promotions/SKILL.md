@@ -1,6 +1,9 @@
 ---
 name: stelow-product-promotions
-description: Launch promotion strategies using the MAGIC framework. Covers Loss Leader, Gift Card Sale, Limited High-Value Package, and Irresistible Freebie strategies with tactical examples.
+description: >-
+  Launch promotion strategies using the MAGIC framework. Covers bonuses,
+  Loss Leader, Gift Card Sale, Limited High-Value Package, and Irresistible Freebie
+  strategies with tactical examples.
 metadata:
   frequency: rare
   category: research
@@ -10,9 +13,30 @@ metadata:
 disable-model-invocation: true
 ---
 
-# Promotions for Launch
+# Promotions and Bonuses for Launch
 
 A simple offer, but communicated unequivocally, tends to work better than a brilliant offer that nobody understands.
+
+---
+
+## Bonuses: Adding Value Beyond the Main Offer
+
+A bonus is any resource that requires an initial investment of time or money to create, but that can be replicated afterward with low or no marginal cost.
+
+Ideally, the perceived value of the **set of bonuses** could exceed the value of the main solution itself. Bonuses should contain elements you consider important for the person's journey, preventing useful information from being lost.
+
+### Types of Bonuses
+
+- **Checklists, tools, reference files, scripts, templates, tickets** for a virtual experience.
+- **Partnerships with adjacent suppliers** (local or virtual) to offer as a bonus. Negotiate group discounts and commissions:
+  - Pre-negotiated discounts or free periods/units
+  - Pre-negotiated discounts + affiliate commissions
+  - Pre-negotiated fees with exclusive resources/licenses + affiliate commissions
+- **A higher service level for a limited time** (e.g., VIP support for one month) — fixed cost to you, high perceived value.
+- **Resolution of the next step**: anticipate and solve the next problem the person will likely encounter after using your main solution. The bonus becomes a bridge to the next phase of their journey.
+- **Any resource** that would demand considerable time and effort for the person to create on their own.
+
+---
 
 ## MAGIC Structure
 
@@ -78,6 +102,15 @@ Instead of offering a discount to everyone, create an exclusive and premium offe
 ---
 
 ### Strategy 4: The Irresistible Freebie
+
+---
+
+## Related Skills
+
+- `stelow-product-pricing` — Stepped pricing, perception tactics, the Trust Pact
+- `stelow-product-trust-building` — 10 trust pillars, guarantees, perception
+- `stelow-product-testimonials` — First 5 / Work for Free, BAB storytelling, collection system
+- `stelow-product-ads` — Advertising by audience awareness stage
 Instead of giving a price discount, you **add more value to the original offer**. The perception of getting something valuable for free can be psychologically more attractive than a simple discount.
 
 - **Reason (M)**: a "buy 1, get 2" offer for a limited time

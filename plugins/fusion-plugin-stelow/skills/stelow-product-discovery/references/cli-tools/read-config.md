@@ -15,7 +15,7 @@ Source this in any skill that needs to read workflow config:
 
 ```bash
 # Source the helper (adjust path relative to skill)
-source "$(dirname "${BASH_SOURCE[0]}")/../../stelow-product-orchestrator/references/cli-tools/read-config.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/../../stelow-adapter-cli/references/cli-tools/read-config.sh"
 
 APPETITE=$(stelow_read_appetite)
 REVIEW_MODE=$(stelow_read_review_mode)
@@ -82,7 +82,7 @@ APPETITE=$(grep -oP '"appetite":\s*"([^"]+)"' stelow.json 2>/dev/null | grep -oP
 
 **After**:
 ```bash
-source "$(dirname "${BASH_SOURCE[0]}")/../../stelow-product-orchestrator/references/cli-tools/read-config.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/../../stelow-adapter-cli/references/cli-tools/read-config.sh"
 APPETITE=$(stelow_read_appetite)
 ```
 

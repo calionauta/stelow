@@ -1,6 +1,6 @@
 ---
 name: stelow-product-trust-building
-description: Building trust through perception and guarantee mechanisms. Covers ten pillars to materialize trust, guarantee types from unconditional to anti-guarantees, and strategic approaches for different contexts.
+description: Building trust through perception, the Trust Pact (Three Freedoms), and guarantee mechanisms. Covers ten pillars to materialize trust, the anti-lock-in Three Freedoms framework, guarantee types from unconditional to anti-guarantees, and stacking strategies.
 metadata:
   frequency: rare
   category: research
@@ -28,6 +28,25 @@ When someone seeks us out, they carry the weight of past experiences, skepticism
 8. **Contextual empathy**: describing the person's situation or challenge with such a level of detail that they feel deeply understood.
 9. **A new mechanism**: presenting a unique approach or feature that the person hasn't tried yet, opening the possibility that "this time, it might work".
 10. **Practical demonstration**: showing the result happening, either live or in a recording, to make success tangible.
+
+---
+
+## The Trust Pact: Three Freedoms (Anti-Lock-In)
+
+In a saturated market, where customers feel increasingly trapped in services by contracts, inertia, or difficulty migrating data, **trust can be the biggest competitive differential**.
+
+Building a "trust pact" means designing the commercial relationship in a way that gives power and autonomy to the customer. It rests on three principles:
+
+**1. Contractual Freedom (The Right to Exit)**
+The customer can end the relationship whenever they want, without bureaucratic barriers or punitive fines. *The message: the customer stays for the quality of the service, not for a contractual obligation.*
+
+**2. Financial Freedom (Insurance Against Initial Risk)**
+Ensures that if a customer changes their mind — especially in the first few months — they don't lose their entire investment. Mechanics: fair refund with the returned value deducting only the usage period calculated based on the standard price, without discount.
+
+**3. Informational Freedom (Data Belongs to the Customer)**
+The exit barrier of a service cannot be the difficulty of taking their data away. An explicit commitment to **data portability** — exporting information easily, freely, and in an open format — is the recognition that the company offers a tool, but the work and creation belong to the user.
+
+**Why Adopting These Principles is Also a Business Strategy**: a company that facilitates customer entry and exit is making a bold bet on the quality of its own product, signaling that it intends to retain customers **by merit, and not by lock-in**.
 
 ---
 
