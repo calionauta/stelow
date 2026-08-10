@@ -71,7 +71,6 @@ describe("Command Dispatcher Integration Tests", () => {
         "sw-info",
         "sw-rename",
         "sw-doctor",
-        "sw-inbox",
         "sw-archive",
         "sw-unarchive",
       ]) {

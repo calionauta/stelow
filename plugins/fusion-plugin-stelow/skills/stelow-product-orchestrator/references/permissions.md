@@ -8,7 +8,7 @@ Documentation of what permissions the stelow requires per stage.
 |------|-------|--------|---------|
 | `stelow.json` | All | Read/Write | **Stage state — single source of truth** (phases, currentPhase, stage) |
 | `.stelow/state/current-stage.json` | All | Read (write via state-manager) | Legacy — maintained for backward compat; LLM prefers stelow.json |
-| `.stelow/inbox/` | triage | Read/Write | Inbox items |
+| host inbox surface | triage | Read/Write | Multica `backlog`/`todo`, Fusion inbox, Pi pi-session-state (the Stelow core no longer mirrors `.stelow/inbox/`) |
 | `.stelow/{yyyy-mm-dd}/` | setup+ | Read/Write | Workflow artifacts |
 | `stages.yaml` | All | Read | Tool restriction metadata |
 | `RULES.md` | All | Read | Hard constraints |

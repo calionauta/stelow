@@ -53,7 +53,7 @@ describe("Fusion command artifact generator (edge cases)", () => {
       for (const name of expected) {
         expect(emittedNames, `missing ${name}`).toContain(name);
       }
-      // piOnly commands (sw-unlock, sw-inbox, sw-pulse) MUST NOT appear.
+      // piOnly commands (currently sw-unlock) MUST NOT appear in Fusion output.
       const piOnly = WORKFLOW_COMMANDS.filter((d) => d.piOnly).map((d) => d.name);
       for (const name of piOnly) {
         expect(emittedNames, `piOnly ${name} should be filtered`).not.toContain(name);

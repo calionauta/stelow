@@ -6,8 +6,9 @@
  *   2. The core does NOT import any Pi-specific package
  *      (@earendil-works/pi-coding-agent, @earendil-works/pi-tui,
  *      plannotator, pi-intercom, pi-subagents, pi-supervisor, etc.).
- *   3. The pure modules (state, schemas, scope, file-lock, provenance,
+ *   3. The pure modules (state, schemas, scope, file-lock,
  *      audit-trail, sync-skills, stages-guard) carry no Pi-only imports.
+ *      (provenance.ts removed in v0.57.0; inbox + pulse moved to host.)
  *   4. The bootstrap calls `createAdapter(detectHost())`.
  *
  * These are the invariants that SW-002 established; this test guards
@@ -23,7 +24,6 @@ const PURE_MODULES = [
   "schemas.ts",
   "scope.ts",
   "file-lock.ts",
-  "provenance.ts",
   "audit-trail.ts",
   "sync-skills.ts",
   "stages-guard.ts",

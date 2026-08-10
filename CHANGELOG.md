@@ -2,6 +2,46 @@
 
 All notable changes to `@calionauta/stelow` will be documented in this file.
 
+## [0.57.0] - 2026-08-04
+
+Host owns scheduling, Stelow slims responsibilities. The core no longer ships Pulse, the inbox mirror, or the provenance log — each host surface now drives its own deferred-item and scheduling story (Multica autopilot + `backlog`/`todo`, Fusion native scheduler, Pi `pi-subagents`). Includes the Multica stage-label hardening from `CAL-38` (the "one `stelow:*` label at a time" invariant is now structural, not prompt-based).
+
+### Added
+
+- **Multica stage-label adapter** (`CAL-40` T4) — New `extensions/stelow/adapters/multica/labels.ts` with `setStageLabel(issueId, newStage, prevStage, ctx)` helper. `STAGE_LABELS` is derived from `PHASE_NAMES` (canonical 17-stage state machine in `extensions/stelow/types.ts`), so adding a stage in the engine automatically gets a label. `stages-guard.ts#syncStagesGuardState()` now invokes the helper after every successful transition when `STELOW_MULTICA_HOST=1` and `MULTICA_ISSUE_ID` are set in the environment. Pre-transition drift (issues with two `stelow:*` labels) is corrected in-place by the helper.
+- **Multica label invariant test** (`CAL-40` T4) — `tests/unit/multica-labels.test.ts` (18 tests) asserts the structural invariant: an issue must have at most one `stelow:*` label at any time, even after a transition that follows a drift state. The `assertSingleStageLabel` helper exposes the invariant as a catchable check for the audit stage.
+- **Host Installation Guide** (`CAL-40` T5) — New top-level `README.md` section with one concrete path per host (Pi, Fusion, Multica, Generic). Documents that scheduling/automation is host-owned with the per-host scheduler recipe.
+
+### Changed
+
+- **WORKFLOW_COMMANDS slimmed** (`CAL-40` T3) — Host-agnostic registry went from 19 to 16 descriptors after `sw-inbox` and `sw-pulse` were removed. The last `piOnly` descriptor (`sw-unlock`) was moved to `extensions/stelow/adapters/pi/commands.ts#PI_LOCAL_COMMANDS` as a Pi-local registration. Pi now exposes 17 commands (16 agnostic + 1 Pi-local); Fusion emits all 16 agnostic descriptors.
+- **Stage transitions project onto Multica issue labels** (`CAL-40` T4) — `stages-guard.ts#syncStagesGuardState()` now performs the `stelow:*` label swap automatically under `STELOW_MULTICA_HOST=1`. Callers no longer need to remember to remove the previous label; the invariant is enforced by the helper. The projection is a best-effort side effect (failures are logged but don't roll back the `stelow.json` write).
+- **Architecture split documented** (`CAL-40` T6) — `architecture.md` gained a "Responsibility split (v0.57.0)" section under "Host adapters" that calls out Pulse, inbox, and runner scheduling as host responsibilities while Stelow owns workflow state, adapters, and the audit trail.
+
+### Removed
+
+- **Pulse — autonomous inbox processing** (`CAL-40` T1) — Deleted `extensions/stelow/pulse/` (`pulse.sh`, `pulse.ps1`, `pulse-system.md`, `pulse-task.md`, `SETUP.md`). `scripts/setup-pulse.sh` and `scripts/copy-pulse-assets.sh` are now no-op stubs that point users at their host's native scheduler. `tests/unit/pulse-assets.test.ts` deleted. `setup.sh` lost the "Step 9/11: Pulse" step (renumbered to 9 steps). Migration: anyone running `pulse.sh`/`pulse.ps1` from cron, systemd, launchd, or Task Scheduler must move to their host's native scheduling (Multica autopilot with `run_only` triggers, Fusion native scheduler, Pi `pi-subagents`).
+- **Inbox + Provenance filesystem mirror** (`CAL-40` T2) — Deleted `extensions/stelow/inbox.ts` and `extensions/stelow/provenance.ts`. Removed `cmdInbox`, `cmdPulse`, `ensurePulseScripts`, and their command registrations in `commands.ts`. Removed the `readInbox` fallback in `start.ts`. Removed the `InboxItem` type from `extensions/stelow/modules/task.ts`. Migration: hosts that wanted deferred items should use Multica's `backlog`/`todo`, Fusion's inbox, or Pi's `pi-session-state`. The `audit-trail.ts` module stays (it is the workflow's own output, not a host inbox mirror).
+
+## [0.55.2] - 2026-07-31
+
+Re-establish v0.55.2 release after the v0.55.0/v0.55.1 release-drift post-mortem. Tracks the `SW-028`..`SW-031` hardening patches on top of the re-baked `v0.55.2` baseline.
+
+### Fixed
+
+- **Fusion plugin cli-tools build drift** (`SW-016`) — Run `scripts/sync-cli-tools.sh` before `prepare:fusion-plugin` so a fresh-checkout `npm run build` preserves all 382 tracked plugin cli-tool references instead of silently deleting them. Added an isolated regression fixture that pins the sync-before-prepare ordering and verifies the generated plugin tree matches tracked HEAD.
+
+## [0.55.1] - 2026-07-23
+
+Vitest CI timeout mitigation for filesystem-heavy integration suites on cold-cache shared runners.
+
+### Fixed
+
+- **Vitest CI timeout mitigation** (`SW-009`) — Raise global Vitest `testTimeout` and `hookTimeout` from 10s to 30s in `vitest.config.ts`; add explicit per-suite limits (120s for `tests/integration/concurrency.test.ts` and `tests/integration/property-based.test.ts` Property 1; 240s for the heavier `renameWorkflow` Property 2 suite) via Vitest's third-positional `describe(name, fn, timeoutMs)` argument. Documented observed cold-cache GitHub Actions shared-runner latency (~111s for the 50-parallel `concurrency.test.ts` ~166s for `property-based.test.ts` Property 2) versus local (~130ms) and the rationale for each specific override. Mitigates the eight `Test timed out in 10000ms` failures observed against `v0.55.0` (`779d4ba`) on `Unit Tests (ubuntu-latest)`.
+- **Plugin version constant refresh** (`SW-010`) — `npm run prepare:fusion-plugin` (called by `npm run build`) now correctly regenerates `plugins/fusion-plugin-stelow/src/skills.ts#STELOW_PLUGIN_VERSION` and the compiled `plugins/fusion-plugin-stelow/dist/skills.d.ts` to match the current `manifest.json#version`. The v0.55.0 published tarball was internally pinned to `0.54.3` at this constant because SW-008's `npm run build` was never run on the release commit; the v0.55.1 release re-bakes it to `0.55.1`.
+
+**Full Changelog:** https://github.com/calionauta/stelow/compare/v0.55.0...v0.55.1
+
 ## [0.55.0] - 2026-07-23
 
 Host-agnostic core, compiled Fusion plugin, artifact validation, and rollback hardening. The 7 commits since `v0.54.3` correspond to the plan-of-record tasks `SW-001` through `SW-007`.
@@ -532,7 +572,7 @@ This is a non-cosmetic change: any script, hook, or external tool that hard-code
 If you depend on one of the removed harnesses:
 
 1. **For skill-level functionality:** nothing to do. The skills still work via the universal `npx skills add calionauta/stelow -g` install path (or `./install.sh --minimal`). The orchestrator's `/sw-*` slash commands route through the orchestrator skill in any agent that reads `~/.agents/skills/`.
-2. **For adapter-level functionality** (native slash commands, TUI overlay, lifecycle hooks, ask_user_question, subagent acceptance contracts): open an adapter PR following the contract in `cli-agents/COMMANDS.md#how-to-extend`. The v0.43.4 source tree (or the snapshot at `docs/archive/2026-07-09-deprecated-multi-cli-integration/v0.43.4-multi-cli-surface.tar.gz`) is the cleanest reference implementation to branch from.
+2. **For adapter-level functionality** (native slash commands, TUI overlay, lifecycle hooks, ask_user_question, subagent acceptance contracts): open an adapter PR following the contract in `cli-agents/COMMANDS.md#generic-and-future-hosts`. The v0.43.4 source tree (or the snapshot at `docs/archive/2026-07-09-deprecated-multi-cli-integration/v0.43.4-multi-cli-surface.tar.gz`) is the cleanest reference implementation to branch from.
 3. **`CLI` type imports:** rename `"opencode"` / `"claude-code"` cases to `"generic"` in any external code that consumed the type, since `generic` now means "any agent that does not have the Pi extension loaded". The Universal Fallback instructions cover every harness through that single path.
 
 ### Archived for archaeology

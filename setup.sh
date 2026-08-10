@@ -6,7 +6,7 @@
 #   1. Node.js (if needed)
 #   2. pi.dev coding agent
 #   3. All extensions
-#   4. stelow (25 skills)
+#   4. stelow (workflow skills)
 #   5. Configures settings.json with optimized defaults
 #
 # Usage:
@@ -26,7 +26,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 GITHUB_REPO="https://github.com/calionauta/stelow"
 MIN_NODE_VERSION=20
 # Project where stelow is being installed. Defaults to cwd (user's project).
-# Override via --project-dir <path> (used by setup-pulse to copy scripts there).
+# Override via --project-dir <path> for project-scoped setup runs.
 PROJECT_DIR="$(pwd)"
 for arg in "$@"; do
   case "$arg" in
@@ -62,7 +62,7 @@ PI_PACKAGES=(
 
   # Memory & compaction
   "npm:@sting8k/pi-vcc"
-  "npm:pi-hermes-memory"
+  
 
   # Cache
   "npm:pi-cache-optimizer"
@@ -81,33 +81,19 @@ PI_PACKAGES=(
 )
 
 # Skills to install from stelow
-ALL_SKILLS=(
-  "stelow"
-  "stelow-product-shape-up"
-  "stelow-product-interface-alternatives"
-  "stelow-product-plan-critique"
-  "stelow-product-codebase-critique"
-  "stelow-product-ux-critique"
-  "stelow-product-coding-standards"
-  "stelow-product-tech-planning"
-  "stelow-product-job-to-be-done"
-  "stelow-product-discovery"
-  "stelow-product-opportunity-mapping"
-  "stelow-product-multi-method-market-analysis"
-  "stelow-product-evolutionary-principles"
-  "stelow-product-pricing"
-  "stelow-product-ads"
-  "stelow-product-trust-building"
-  "stelow-product-promotions"
-  "stelow-product-business-models"
-  "stelow-product-health"
-  "stelow-product-marketplace-playbook"
-  "stelow-product-open-source"
-  "stelow-product-scope-executor"
-  "stelow-product-testing-ai-code"
-  "stelow-product-testing-execution"
-  "stelow-product-execution-critique"
-)
+# Scan filesystem for project skills (source of truth).
+# Returns skill names (directories with SKILL.md under $SCRIPT_DIR/skills/).
+get_project_skills() {
+  local skills=()
+  for dir in "$SCRIPT_DIR/skills/"*/; do
+    local name
+    name="$(basename "$dir")"
+    if [[ -f "$dir/SKILL.md" ]]; then
+      skills+=("$name")
+    fi
+  done
+  printf '%s\n' "${skills[@]}"
+}
 
 # ─── Colors & Output ─────────────────────────────────────────────────────────
 
@@ -145,7 +131,7 @@ for arg in "$@"; do
       echo "  • Node.js >= 20 (if not installed)"
       echo "  • pi.dev coding agent"
       echo "  • Pi extensions and packages"
-      echo "  • 24 stelow skills"
+      echo "  • stelow skills"
       echo "  • Optimized settings.json configuration"
       exit 0
       ;;
@@ -155,7 +141,7 @@ done
 # ─── Prerequisites Check ────────────────────────────────────────────────────
 
 check_prereqs() {
-  log_step "Step 1/11: Checking Prerequisites"
+  log_step "Step 1/9: Checking Prerequisites"
 
   # Check macOS/Linux
   if [[ "$(uname)" != "Darwin" && "$(uname)" != "Linux" ]]; then
@@ -203,7 +189,7 @@ check_prereqs() {
 # ─── Node.js ─────────────────────────────────────────────────────────────────
 
 check_node() {
-  log_step "Step 2/11: Checking Node.js"
+  log_step "Step 2/9: Checking Node.js"
 
   if [[ "$SKIP_NODE" == "true" ]]; then
     log_warn "Skipping Node.js check (--skip-node)"
@@ -258,7 +244,7 @@ check_node() {
 # ─── Pi.dev ──────────────────────────────────────────────────────────────────
 
 install_pi() {
-  log_step "Step 3/11: Installing pi.dev"
+  log_step "Step 3/9: Installing pi.dev"
 
   if command -v pi &>/dev/null; then
     local current_version
@@ -292,7 +278,7 @@ install_pi() {
 # ─── Pi Extensions ───────────────────────────────────────────────────────────
 
 install_extensions() {
-  log_step "Step 4/11: Installing Pi Extensions"
+  log_step "Step 4/9: Installing Pi Extensions"
 
   local installed=0
   local failed=0
@@ -330,7 +316,7 @@ install_extensions() {
 # ─── Skills ──────────────────────────────────────────────────────────────────
 
 install_skills() {
-  log_step "Step 5/11: Installing stelow Skills (25 skills)"
+  log_step "Step 5/9: Installing stelow Skills"
 
   local skills_dir="$HOME/.agents/skills"
   if [[ "$DRY_RUN" == "false" ]]; then
@@ -365,7 +351,10 @@ install_skills() {
     skills_source="$tmp_dir/skills"
   fi
 
-  for skill in "${ALL_SKILLS[@]}"; do
+  local project_skills=()
+  while IFS= read -r s; do project_skills+=("$s"); done < <(get_project_skills)
+
+  for skill in "${project_skills[@]}"; do
     local src="$skills_source/$skill"
     local dst="$skills_dir/$skill"
 
@@ -513,7 +502,7 @@ confirm_optional() {
 }
 
 install_cymbal() {
-  log_step "Step 6/11: cymbal (codebase navigation)"
+  log_step "Step 6/9: cymbal (codebase navigation)"
   if [[ "$DRY_RUN" == "true" ]]; then
     log_info "[dry-run] Would install cymbal via brew/go"
     record_skip "cymbal"
@@ -552,7 +541,7 @@ install_cymbal() {
 }
 
 install_ctx7() {
-  log_step "Step 7/11: ctx7 (library docs fetcher)"
+  log_step "Step 7/9: ctx7 (library docs fetcher)"
   if [[ "$DRY_RUN" == "true" ]]; then
     log_info "[dry-run] Would install ctx7 (requires interactive OAuth)"
     record_skip "ctx7"
@@ -586,7 +575,7 @@ install_ctx7() {
 }
 
 install_safe_change() {
-  log_step "Step 8/11: safe-change (pre-planning regression check)"
+  log_step "Step 8/9: safe-change (pre-planning regression check)"
   if [[ "$DRY_RUN" == "true" ]]; then
     log_info "[dry-run] Would install safe-change via npx skills"
     record_skip "safe-change"
@@ -611,39 +600,8 @@ install_safe_change() {
   fi
 }
 
-setup_pulse() {
-  # Optional Pulse setup — copies the standalone setup-pulse.sh from the
-  # package scripts/ directory and runs it for the project at SCRIPT_DIR.
-  # Pulse is a background inbox processor (cron/launchd/systemd) and works
-  # without an interactive pi session.
-  log_step "Step 9/9: Pulse — autonomous inbox processing (optional)"
-  if [[ "$DRY_RUN" == "true" ]]; then
-    log_info "[dry-run] Would offer to setup Pulse scripts"
-    record_skip "Pulse"
-    return
-  fi
-  if [[ -f "$PROJECT_DIR/.stelow/pulse/pulse.sh" ]] || [[ -f "$PROJECT_DIR/.stelow/pulse/pulse.ps1" ]]; then
-    log_info "Pulse scripts already installed at $PROJECT_DIR/.stelow/pulse"
-    record_ok "Pulse"
-    return
-  fi
-  if ! confirm_optional "Pulse"; then
-    log_info "Pulse skipped. Run later: ./scripts/setup-pulse.sh"
-    record_skip "Pulse"
-    return
-  fi
-  local setup_script="$SCRIPT_DIR/scripts/setup-pulse.sh"
-  if [[ ! -f "$setup_script" ]]; then
-    log_warn "Setup script not found at $setup_script (skipping)"
-    record_fail "Pulse (setup-pulse.sh missing in package)"
-    return
-  fi
-  if bash "$setup_script" --project-dir "$PROJECT_DIR"; then
-    record_ok "Pulse"
-  else
-    record_fail "Pulse (setup-pulse.sh failed)"
-  fi
-}
+# Pulse removed in v0.57.0 — scheduling is the host's responsibility. See
+# README.md "Host Installation Guide" for per-host scheduler recipes.
 
 # ─── Summary ─────────────────────────────────────────────────────────────────
 
@@ -658,7 +616,7 @@ print_summary() {
   echo "  ${CYAN}Node.js${RESET}       $(node --version 2>/dev/null || echo 'not found')"
   echo "  ${CYAN}pi.dev${RESET}        $(pi --version 2>/dev/null || echo 'not found')"
   echo "  ${CYAN}Extensions${RESET}    (subagents, tasks, memory, cache, security, milk, etc.)"
-  echo "  ${CYAN}Skills${RESET}        25 product workflow skills"
+  echo "  ${CYAN}Skills${RESET}        $(get_project_skills | wc -l | tr -d ' ') product workflow skills"
   echo "  ${CYAN}Settings${RESET}      Optimized configuration"
   echo ""
 
@@ -722,12 +680,11 @@ main() {
   echo "    • Node.js (if needed)"
   echo "    • pi.dev coding agent"
   echo "    • Pi extensions"
-  echo "    • 25 product workflow skills"
+  echo "    • Product workflow skills"
   echo "    • Optimized settings"
   echo "    • cymbal (codebase navigation) — brew/go"
   echo "    • ctx7 (library docs) — OAuth setup"
   echo "    • safe-change (pre-planning regression check)"
-  echo "    • Pulse scripts (autonomous inbox processing, optional)"
   echo ""
 
   if [[ "$DRY_RUN" == "false" ]]; then
@@ -748,7 +705,6 @@ main() {
   install_cymbal
   install_ctx7
   install_safe_change
-  setup_pulse
   print_summary
 }
 
