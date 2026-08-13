@@ -31,7 +31,8 @@ stryker-reports/
 # .stelow/ — runtime artifacts (state, session knowledge, plans)
 .stelow/
 !.stelow/.gitkeep
-!.stelow/state/
+!.stelow/refactor-freeze-active  # freeze guard: present = extensions/WORKFLOW_COMMANDS frozen
+.stelow/state/
 .stelow-global.json
 
 # Per-user runtime artifacts (agent-specific)
@@ -110,3 +111,4 @@ skills/*/references/cli-tools/*.md
 
 # npm pack tarballs (used by pi-sandbox-install + pi-session-lifecycle tests)
 calionauta-stelow-*.tgz
+.kata.local.toml

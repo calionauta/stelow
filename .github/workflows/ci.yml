@@ -102,3 +102,14 @@ jobs:
 
       - name: Rigor test quality scan
         run: bash scripts/rigor-scan.sh 60
+
+  freeze-guard:
+    name: Extensions Freeze Guard
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run extensions freeze guard (SCOPE-5)
+        run: bash scripts/check-extensions-freeze.sh

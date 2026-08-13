@@ -4,6 +4,10 @@ All notable changes to `@calionauta/stelow` will be documented in this file.
 
 ## [Unreleased]
 
+### Patch
+
+- **SCOPE-5**: add `scripts/check-extensions-freeze.sh` CI guard blocking any diff under `extensions/` or `WORKFLOW_COMMANDS/` relative to `origin/main`. Prevents accidental drift while the skills-only refactor is in progress.
+
 ### Fixed
 
 - **Fusion plugin cli-tools build drift** (`SW-016`) — Run `scripts/sync-cli-tools.sh` before `prepare:fusion-plugin` so a fresh-checkout `npm run build` preserves all 382 tracked plugin cli-tool references instead of silently deleting them. Added an isolated regression fixture that pins the sync-before-prepare ordering and verifies the generated plugin tree matches tracked HEAD.
