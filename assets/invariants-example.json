@@ -1,0 +1,92 @@
+{
+  "$schema": "stelow-invariants-v1",
+  "version": "1.0.0",
+  "updated": "2026-08-13T00:00:00Z",
+  "spec_tech_file": ".stelow/2026-08-13/abc123/plans/spec-tech_v1.md",
+  "scopes": [
+    {
+      "id": "scope-1",
+      "status": "completed",
+      "record": {
+        "completed_at": "2026-08-13T14:30:00Z",
+        "files_count": 12,
+        "commands_count": 34,
+        "verified": true,
+        "suggested_commit": "feat(auth): add OAuth2 PKCE login flow"
+      },
+      "discovered_tasks_count": 2,
+      "tasks": [
+        {
+          "id": "t-001",
+          "name": "Add OAuth2 PKCE support to auth module",
+          "source": "planned",
+          "status": "done",
+          "components": ["auth", "api"],
+          "risk": 2
+        },
+        {
+          "id": "t-002",
+          "name": "Update token refresh logic for PKCE",
+          "source": "discovered",
+          "status": "done",
+          "discovered_in_iter": 3,
+          "components": ["auth"],
+          "risk": 3,
+          "note": "Found during t-001 implementation; PKCE requires stateless refresh tokens"
+        },
+        {
+          "id": "t-003",
+          "name": "Add PKCE code verifier to session store",
+          "source": "planned",
+          "status": "skipped",
+          "note": "Deferred to scope-2 (session refactor)"
+        },
+        {
+          "id": "t-004",
+          "name": "Fix CORS preflight for PKCE redirect",
+          "source": "discovered",
+          "status": "done",
+          "discovered_in_iter": 4,
+          "components": ["api", "infra"],
+          "risk": 2,
+          "note": "CORS error surfaced during manual QA of PKCE flow"
+        }
+      ]
+    },
+    {
+      "id": "scope-2",
+      "status": "in-progress",
+      "record": {
+        "completed_at": "",
+        "files_count": 3,
+        "commands_count": 8,
+        "verified": false,
+        "suggested_commit": null
+      },
+      "discovered_tasks_count": 0,
+      "tasks": [
+        {
+          "id": "t-005",
+          "name": "Refactor session store for stateless refresh tokens",
+          "source": "planned",
+          "status": "pending",
+          "components": ["auth", "db"],
+          "risk": 3
+        }
+      ]
+    },
+    {
+      "id": "scope-3",
+      "status": "pending",
+      "record": {
+        "completed_at": "",
+        "files_count": 0,
+        "commands_count": 0,
+        "verified": false,
+        "suggested_commit": null
+      },
+      "discovered_tasks_count": 0,
+      "tasks": []
+    }
+  ]
+}
