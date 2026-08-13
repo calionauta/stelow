@@ -110,3 +110,4 @@ skills/*/references/cli-tools/*.md
 
 # npm pack tarballs (used by pi-sandbox-install + pi-session-lifecycle tests)
 calionauta-stelow-*.tgz
+.kata.local.toml

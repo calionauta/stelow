@@ -70,9 +70,9 @@ PI_PACKAGES=(
   # Security
   "git:github.com/calionauta/pi-leakguard"
 
-  # Milk extensions
+  # Minimal-code + milk extensions
   "npm:@tomooshi/condensed-milk-pi"
-  "https://github.com/tomooshi/caveman-milk-pi"
+  "git:github.com/DietrichGebert/ponytail"
 
   # Git packages
   "git:github.com/PriNova/pi-agent-codebase-workflows"

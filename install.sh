@@ -228,7 +228,7 @@ PI_EXTENSIONS=(
   "npm:pi-cache-optimizer"
   "git:github.com/calionauta/pi-leakguard"
   "npm:@tomooshi/condensed-milk-pi"
-  "https://github.com/tomooshi/caveman-milk-pi"
+  "git:github.com/DietrichGebert/ponytail"
   "git:github.com/PriNova/pi-agent-codebase-workflows"
   "git:github.com/calionauta/pi-tool-repair-layer"
   "git:github.com/raphapr/pi-cymbal"
