@@ -79,21 +79,35 @@ root = sys.argv[1]
 state = os.path.join(root, "state.md")
 inv   = os.path.join(root, ".stelow/invariants.json")
 out = {"workflow": None, "intent": None, "current_stage": None, "status": None, "config": {}}
-def get(blob, key):
+def get_top(blob, key):
     m = re.match(r"^---\n(.*?)\n---", blob, re.DOTALL)
     if not m: return None
     for line in m.group(1).splitlines():
         mm = re.match(r"^" + re.escape(key) + r":\s*(.*)$", line)
         if mm: return mm.group(1).strip()
     return None
+def get_nested(blob, parent, key):
+    m = re.match(r"^---\n(.*?)\n---", blob, re.DOTALL)
+    if not m: return None
+    in_block = False
+    for line in m.group(1).splitlines():
+        if re.match(r"^" + re.escape(parent) + r":\s*$", line):
+            in_block = True; continue
+        if in_block:
+            mm = re.match(r"^  " + re.escape(key) + r":\s*(.*)$", line)
+            if mm: return mm.group(1).strip()
+            # leaving the block (a new top-level key)
+            if re.match(r"^[A-Za-z_][\w-]*:\s*(.*)$", line) and not line.startswith(" "):
+                in_block = False
+    return None
 if os.path.exists(state):
     blob = open(state).read()
     for k in ("name", "intent", "current_stage", "status"):
-        out[k.replace("name", "workflow") if k == "name" else k] = get(blob, k)
+        out[k.replace("name", "workflow") if k == "name" else k] = get_top(blob, k)
     cfg = {}
     for k in ("appetite", "review_mode", "product_type"):
-        v = get(blob, k)
-        if v: cfg[k] = v
+        v = get_nested(blob, "config", k)
+        if v is not None: cfg[k] = v
     out["config"] = cfg
 if os.path.exists(inv):
     try: out["invariants"] = json.loads(open(inv).read())
@@ -306,6 +320,8 @@ if want_json == "--json":
     print(json.dumps({"findings": findings,
                        "ok": not any(f["severity"] == "error" for f in findings)},
                       indent=2, sort_keys=True))
+    if any(f["severity"] == "error" for f in findings):
+        sys.exit(1)
 else:
     if not findings:
         print("doctor: ok (no drift)")
