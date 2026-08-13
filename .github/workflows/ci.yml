@@ -67,6 +67,19 @@ jobs:
       - name: Run lint
         run: npm run lint
 
+  check:
+    name: Guard Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extensions freeze guard (SCOPE-5)
+        run: bash scripts/check-extensions-freeze.sh
+
   test:
     name: Unit Tests (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
