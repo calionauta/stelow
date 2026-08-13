@@ -1,0 +1,357 @@
+#!/usr/bin/env bash
+# scripts/stelow — SCOPE-2 helper (status / advance / doctor).
+#
+# Passive: reads/writes the project state.md under the current git root.
+# Idempotent on bad input (never mutates on invalid candidate). Fail-closed.
+# No npm deps — POSIX sh + node only.
+#
+# Usage:
+#   scripts/stelow status [--json]
+#   scripts/stelow advance <candidate>
+#   scripts/stelow doctor [--json]
+#   scripts/stelow --help
+
+set -euo pipefail
+
+PROG="${0##*/}"
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null || { echo "$PROG: not in a git repo" >&2; exit 2; })"
+STATE="$ROOT/state.md"
+TRANSITIONS="$ROOT/skills/stelow-product-orchestrator/references/transitions.md"
+LOCKDIR="$ROOT/.stelow/lock"
+LOCK_TTL_SEC="${STELOW_LOCK_TTL_SEC:-120}"
+
+mkdir -p "$ROOT/.stelow"
+
+# --- shared helpers ---------------------------------------------------------
+
+die() { echo "$PROG: $*" >&2; exit 1; }
+
+yaml_get() {
+  local key="$1" file="$2"
+  [ -f "$file" ] || return 1
+  python3 - "$file" "$key" <<'PY'
+import sys, re
+path, key = sys.argv[1], sys.argv[2]
+text = open(path).read()
+m = re.match(r"^---\n(.*?)\n---", text, re.DOTALL)
+if not m: sys.exit(1)
+# First pass: top-level scalar match.
+for line in m.group(1).splitlines():
+    mm = re.match(r"^" + re.escape(key) + r":\s*(.*)$", line)
+    if mm: print(mm.group(1).strip()); sys.exit(0)
+# Second pass: one-level-nested scalar under any "config:" / "stages:" block.
+# Walk lines, track nesting depth of any block the key could live under.
+in_block = None
+for line in m.group(1).splitlines():
+    if re.match(r"^[A-Za-z_][\w-]*:\s*$", line):
+        in_block = line.rstrip(":").strip()
+        continue
+    if in_block == "config":
+        mm = re.match(r"^  " + re.escape(key) + r":\s*(.*)$", line)
+        if mm: print(mm.group(1).strip()); sys.exit(0)
+sys.exit(1)
+PY
+}
+
+status_text() {
+  local name intent stage status appetite review_mode
+  name=$(yaml_get name "$STATE" 2>/dev/null || echo "?")
+  intent=$(yaml_get intent "$STATE" 2>/dev/null || echo "?")
+  stage=$(yaml_get current_stage "$STATE" 2>/dev/null || echo "?")
+  status=$(yaml_get status "$STATE" 2>/dev/null || echo "?")
+  appetite=$(yaml_get appetite "$STATE" 2>/dev/null || echo "?")
+  review_mode=$(yaml_get review_mode "$STATE" 2>/dev/null || echo "?")
+  cat <<EOF
+workflow : $name
+intent   : $intent
+stage    : $stage
+status   : $status
+appetite : $appetite
+review   : $review_mode
+lock     : $(lock_state)
+EOF
+}
+
+status_json() {
+  python3 - "$ROOT" <<'PY'
+import json, os, sys, re
+root = sys.argv[1]
+state = os.path.join(root, "state.md")
+inv   = os.path.join(root, ".stelow/invariants.json")
+out = {"workflow": None, "intent": None, "current_stage": None, "status": None, "config": {}}
+def get(blob, key):
+    m = re.match(r"^---\n(.*?)\n---", blob, re.DOTALL)
+    if not m: return None
+    for line in m.group(1).splitlines():
+        mm = re.match(r"^" + re.escape(key) + r":\s*(.*)$", line)
+        if mm: return mm.group(1).strip()
+    return None
+if os.path.exists(state):
+    blob = open(state).read()
+    for k in ("name", "intent", "current_stage", "status"):
+        out[k.replace("name", "workflow") if k == "name" else k] = get(blob, k)
+    cfg = {}
+    for k in ("appetite", "review_mode", "product_type"):
+        v = get(blob, k)
+        if v: cfg[k] = v
+    out["config"] = cfg
+if os.path.exists(inv):
+    try: out["invariants"] = json.loads(open(inv).read())
+    except Exception: out["invariants_error"] = "parse-failed"
+print(json.dumps(out, indent=2, sort_keys=True))
+PY
+}
+
+# --- lock (mkdir, TTL) -------------------------------------------------------
+
+lock_state() {
+  if [ -d "$LOCKDIR" ]; then
+    local now mtime age
+    now=$(date +%s)
+    mtime=$(stat -c %Y "$LOCKDIR" 2>/dev/null || echo "$now")
+    age=$((now - mtime))
+    if [ "$age" -gt "$LOCK_TTL_SEC" ]; then
+      echo "stale (age=${age}s > ttl=${LOCK_TTL_SEC}s)"
+    else
+      local pid host
+      pid=$(cat "$LOCKDIR/pid" 2>/dev/null || echo "?")
+      host=$(cat "$LOCKDIR/host" 2>/dev/null || echo "?")
+      echo "held (pid=$pid host=$host age=${age}s)"
+    fi
+  else
+    echo "free"
+  fi
+}
+
+lock_acquire() {
+  if mkdir "$LOCKDIR" 2>/dev/null; then
+    echo "$$" > "$LOCKDIR/pid"
+    hostname > "$LOCKDIR/host"
+    date -Is > "$LOCKDIR/acquired"
+    trap 'rm -rf "$LOCKDIR" 2>/dev/null || true' EXIT
+    return 0
+  fi
+  local now mtime age pid host
+  now=$(date +%s)
+  mtime=$(stat -c %Y "$LOCKDIR" 2>/dev/null || echo "$now")
+  age=$((now - mtime))
+  if [ "$age" -gt "$LOCK_TTL_SEC" ]; then
+    echo "$PROG: stale lock (age=${age}s) — removing" >&2
+    rm -rf "$LOCKDIR" || die "lock remove failed"
+    if mkdir "$LOCKDIR" 2>/dev/null; then
+      echo "$$" > "$LOCKDIR/pid"; hostname > "$LOCKDIR/host"; date -Is > "$LOCKDIR/acquired"
+      trap 'rm -rf "$LOCKDIR" 2>/dev/null || true' EXIT
+      return 0
+    fi
+  fi
+  pid=$(cat "$LOCKDIR/pid" 2>/dev/null || echo "?")
+  host=$(cat "$LOCKDIR/host" 2>/dev/null || echo "?")
+  die "lock held by pid=$pid host=$host (age=${age}s; set STELOW_LOCK_TTL_SEC to override)"
+}
+
+# --- advance -----------------------------------------------------------------
+
+candidate_for_stage() {
+  local stage="$1"
+  [ -f "$TRANSITIONS" ] || die "transitions reference not found at $TRANSITIONS"
+  python3 - "$stage" "$TRANSITIONS" <<'PY'
+import sys, re
+stage, path = sys.argv[1], sys.argv[2]
+text = open(path).read()
+m = re.search(r"^### " + re.escape(stage) + r"\s*\n(.*?)(?=^### |\Z)", text, re.MULTILINE | re.DOTALL)
+if not m: sys.exit(1)
+for line in m.group(1).splitlines():
+    mm = re.match(r"^next:\s*(\S.*)$", line.strip())
+    if mm: print(mm.group(1).strip()); sys.exit(0)
+sys.exit(1)
+PY
+}
+
+all_stages() {
+  python3 - "$TRANSITIONS" <<'PY'
+import sys, re
+text = open(sys.argv[1]).read()
+for m in re.finditer(r"^### (\S+)\s*$", text, re.MULTILINE):
+    print(m.group(1))
+PY
+}
+
+do_advance() {
+  local candidate="$1"
+  [ -n "$candidate" ] || die "advance requires a <candidate> argument"
+  [ -f "$STATE" ] || die "state.md not found at $STATE (run /stelow entry first)"
+  local current
+  current=$(yaml_get current_stage "$STATE" 2>/dev/null) || die "state.md has no current_stage (run /stelow entry first)"
+  local next_allowed
+  next_allowed=$(candidate_for_stage "$current") || die "no transition defined from stage '$current'"
+
+  if [ "$candidate" != "$next_allowed" ]; then
+    if ! all_stages | grep -qx "$candidate"; then
+      die "invalid candidate '$candidate' (next from '$current' is '$next_allowed')"
+    fi
+    echo "$PROG: note: '$candidate' is not the next stage from '$current' (expected '$next_allowed')" >&2
+  fi
+
+  # pre-condition: required artifacts
+  python3 - "$current" "$ROOT" <<'PY' || die "pre-condition check failed"
+import sys, re, os
+current, root = sys.argv[1], sys.argv[2]
+trans = open(os.path.join(root, "skills/stelow-product-orchestrator/references/transitions.md")).read()
+m = re.search(r"^### " + re.escape(current) + r"\s*\n(.*?)(?=^### |\Z)", trans, re.MULTILINE | re.DOTALL)
+if not m: sys.exit(0)
+for line in m.group(1).splitlines():
+    am = re.match(r"^artifact:\s*(\S+)\s*$", line.strip())
+    if am:
+        path = am.group(1)
+        if path.startswith("/"): continue
+        full = os.path.join(root, path)
+        if not os.path.exists(full):
+            print(f"missing required artifact: {path}", file=sys.stderr); sys.exit(1)
+PY
+
+  lock_acquire
+
+  # mutate state.md frontmatter
+  python3 - "$candidate" "$STATE" <<'PY'
+import sys, re
+candidate, path = sys.argv[1], sys.argv[2]
+blob = open(path).read()
+m = re.match(r"^(---\n)(.*?)(\n---)(.*)$", blob, re.DOTALL)
+if not m:
+    print("state.md: missing YAML frontmatter", file=sys.stderr); sys.exit(2)
+header_open, fm, header_close, body = m.group(1), m.group(2), m.group(3), m.group(4)
+new_lines = []
+found = False
+for line in fm.splitlines():
+    mm = re.match(r"^current_stage:\s*(.*)$", line)
+    if mm:
+        new_lines.append(f"current_stage: {candidate}"); found = True
+    else:
+        new_lines.append(line)
+if not found:
+    new_lines.append(f"current_stage: {candidate}")
+new_blob = header_open + "\n".join(new_lines) + header_close + body
+open(path, "w").write(new_blob)
+PY
+
+  # append invariants
+  python3 - "$candidate" "$ROOT" <<'PY'
+import sys, os, json, datetime
+candidate, root = sys.argv[1], sys.argv[2]
+inv_path = os.path.join(root, ".stelow/invariants.json")
+os.makedirs(os.path.dirname(inv_path), exist_ok=True)
+data = {}
+if os.path.exists(inv_path):
+    try: data = json.loads(open(inv_path).read())
+    except Exception: data = {}
+data.setdefault("history", [])
+data["history"].append({"stage": candidate,
+                         "at": datetime.datetime.now(datetime.timezone.utc).isoformat()})
+data["current_stage"] = candidate
+open(inv_path, "w").write(json.dumps(data, indent=2, sort_keys=True) + "\n")
+PY
+
+  rm -rf "$LOCKDIR"
+  echo "$PROG: advanced to $candidate"
+}
+
+# --- doctor ------------------------------------------------------------------
+
+do_doctor() {
+  python3 - "$ROOT" "$LOCKDIR" "$LOCK_TTL_SEC" "$STATE" "$TRANSITIONS" "${1:-}" <<'PY'
+import sys, os, json, re, time
+root, lockdir, ttl, state_path, trans_path, want_json = sys.argv[1:7]
+findings = []
+def add(severity, klass, msg):
+    findings.append({"severity": severity, "class": klass, "message": msg})
+
+# 1. orphan dir
+if os.path.isdir(lockdir):
+    age = int(time.time() - os.stat(lockdir).st_mtime)
+    if age > int(ttl):
+        add("warn", "stale-lock", f".stelow/lock is stale (age={age}s > ttl={ttl}s)")
+
+# 2. missing dir (intent convention)
+if os.path.exists(state_path):
+    blob = open(state_path).read()
+    mm = re.search(r"^intent:\s*(\S+)", blob, re.MULTILINE)
+    if mm:
+        intent = mm.group(1).strip()
+        if intent not in ("new-product", "feature", "bugfix", "refactor", "investigate"):
+            add("warn", "missing-dir", f"state.md intent '{intent}' has no artifacts dir convention")
+
+# 3. parallel lock (live pid)
+if os.path.isdir(lockdir):
+    pidfile = os.path.join(lockdir, "pid")
+    if os.path.exists(pidfile):
+        try:
+            pid = int(open(pidfile).read().strip())
+            os.kill(pid, 0)
+            add("info", "parallel-lock", f"another live process holds the lock (pid={pid})")
+        except (ValueError, ProcessLookupError, PermissionError):
+            add("warn", "orphan-pid", "lock pid file points at dead pid")
+
+# 4. state<->transitions drift
+if os.path.exists(state_path) and os.path.exists(trans_path):
+    blob = open(state_path).read()
+    cm = re.search(r"^current_stage:\s*(\S+)", blob, re.MULTILINE)
+    if cm:
+        cur = cm.group(1).strip()
+        text = open(trans_path).read()
+        if not re.search(r"^### " + re.escape(cur) + r"\s*$", text, re.MULTILINE):
+            add("error", "state-transitions-drift",
+                f"state.md current_stage '{cur}' not in transitions.md")
+
+if want_json == "--json":
+    print(json.dumps({"findings": findings,
+                       "ok": not any(f["severity"] == "error" for f in findings)},
+                      indent=2, sort_keys=True))
+else:
+    if not findings:
+        print("doctor: ok (no drift)")
+    for f in findings:
+        print(f"{f['severity']:5} {f['class']:24} {f['message']}")
+    if any(f["severity"] == "error" for f in findings):
+        sys.exit(1)
+PY
+}
+
+# --- dispatch ----------------------------------------------------------------
+
+usage() {
+  cat <<EOF
+$PROG — SCOPE-2 helper (status / advance / doctor)
+
+Usage:
+  $PROG status [--json]
+  $PROG advance <candidate>
+  $PROG doctor [--json]
+  $PROG --help
+
+State file:  $STATE
+Transitions: $TRANSITIONS
+Lock dir:    $LOCKDIR (TTL ${LOCK_TTL_SEC}s, override with STELOW_LOCK_TTL_SEC)
+EOF
+}
+
+case "${1:-}" in
+  status)
+    shift
+    case "${1:-}" in
+      --json) status_json ;;
+      "")     status_text ;;
+      *) die "status: unknown arg '$1'" ;;
+    esac
+    ;;
+  advance)
+    shift
+    candidate="${1:-}"; [ -n "$candidate" ] || die "advance requires <candidate>"
+    do_advance "$candidate"
+    ;;
+  doctor)
+    shift
+    do_doctor "${1:-}"
+    ;;
+  -h|--help|help|"") usage ;;
+  *) die "unknown subcommand '$1' (try --help)" ;;
+esac
