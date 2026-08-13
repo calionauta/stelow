@@ -80,3 +80,39 @@ The solution's audience can be in 5 stages according to the **Transtheoretical M
 - **Challenges and Contests**: promote challenges that motivate customers to continue using the solution
 - **Inspiring Customer Stories**: share stories of customers who overcame challenges and achieved significant results
 - **User-Generated Content**: encourage customers to create and share content related to the solution
+
+## Entry (mode detection)
+
+When this skill loads, check for the stelow workflow marker:
+
+```bash
+if [ -n "$STELOW_WORKFLOW" ] && [ -n "$STELOW_STATE" ]; then
+  echo "stelow: workflow mode (state=$STELOW_STATE)"
+else
+  echo "stelow: standalone mode (no STELOW_WORKFLOW marker)"
+fi
+```
+
+In **standalone mode** (no marker), run the existing skill body unchanged.
+In **workflow mode**, skip to `### Workflow slice` and emit a complete
+`## Hand-off (workflow mode)` block at the end. See
+`references/host-levers.md` for the full marker protocol (SCOPE-9).
+
+## Hand-off (workflow mode)
+
+```
+stage          : promotions  (no transitions defined in stages.yaml)
+status         : <done|partial|blocked>
+artifacts      : <paths created or modified>
+next-candidate : <next stage from stages.yaml>
+gate           : <none|approval-required>
+rework-on      : <previous stage if rework path>
+```
+
+Workflow mode: emit the above Hand-off block verbatim, then stop.
+
+### Workflow slice
+
+Standalone (non-workflow) steps are not part of the workflow slice. In
+workflow mode this skill emits the Hand-off block and exits.
+

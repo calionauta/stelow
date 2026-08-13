@@ -230,3 +230,48 @@ Users
 
 - Variant 1: Structured markdown report organized by time horizon and methodology
 - Variant 2: Executive Canvas in markdown, ready for Notion, Miro, or Canva
+
+## Entry (mode detection)
+
+When this skill loads, check for the stelow workflow marker:
+
+```bash
+if [ -n "$STELOW_WORKFLOW" ] && [ -n "$STELOW_STATE" ]; then
+  echo "stelow: workflow mode (state=$STELOW_STATE)"
+else
+  echo "stelow: standalone mode (no STELOW_WORKFLOW marker)"
+fi
+```
+
+In **standalone mode** (no marker), run the existing skill body unchanged.
+In **workflow mode**, skip to `### Workflow slice` and emit a complete
+`## Hand-off (workflow mode)` block at the end. See
+`references/host-levers.md` for the full marker protocol (SCOPE-9).
+
+## Hand-off (workflow mode)
+
+```
+stage          : context
+description    : Strategic context. Market analysis, JTBD, domain detection. Gated by `context:5` (appetite/review mode): Product Spec Ga
+status         : <done|partial|blocked>
+artifacts      : <paths created or modified>
+next-candidate : shape
+gate           : none
+rework-on      : setup
+```
+
+Workflow mode: emit the above Hand-off block verbatim, then stop. The
+router skill consumes the next-candidate field and calls
+`scripts/stelow advance <next-candidate>` to move state forward.
+
+### Workflow slice
+
+Workflow mode for the **context** stage. Standalone behavior lives in
+the rest of this file (unchanged). Summary:
+
+> Strategic context. Market analysis, JTBD, domain detection. Gated by `context:5` (appetite/review mode): Product Spec Gate+Auto skips; others use reduced ask. S
+
+Primary actions (per stages.yaml): `read, write`. Run only the actions that
+produce the artifacts promised in `## Hand-off`; skip anything that does
+not advance the workflow.
+

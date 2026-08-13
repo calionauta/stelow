@@ -96,3 +96,48 @@ As a product evolves, optimization for more experienced users can, unintentional
 **Intuitive Examples**:
 - Video editing software: "the completion rate of the initial tutorial by new users" or "the satisfaction level (CSAT) of users with less than 30 days of use"
 - Online community: "the rate of new members who make their first post or comment in their first week"
+
+## Entry (mode detection)
+
+When this skill loads, check for the stelow workflow marker:
+
+```bash
+if [ -n "$STELOW_WORKFLOW" ] && [ -n "$STELOW_STATE" ]; then
+  echo "stelow: workflow mode (state=$STELOW_STATE)"
+else
+  echo "stelow: standalone mode (no STELOW_WORKFLOW marker)"
+fi
+```
+
+In **standalone mode** (no marker), run the existing skill body unchanged.
+In **workflow mode**, skip to `### Workflow slice` and emit a complete
+`## Hand-off (workflow mode)` block at the end. See
+`references/host-levers.md` for the full marker protocol (SCOPE-9).
+
+## Hand-off (workflow mode)
+
+```
+stage          : audit
+description    : Final audit. Verify all requirements met.
+status         : <done|partial|blocked>
+artifacts      : <paths created or modified>
+next-candidate : (terminal)
+gate           : none
+rework-on      : execution
+```
+
+Workflow mode: emit the above Hand-off block verbatim, then stop. The
+router skill consumes the next-candidate field and calls
+`scripts/stelow advance <next-candidate>` to move state forward.
+
+### Workflow slice
+
+Workflow mode for the **audit** stage. Standalone behavior lives in
+the rest of this file (unchanged). Summary:
+
+> Final audit. Verify all requirements met.
+
+Primary actions (per stages.yaml): `read, write`. Run only the actions that
+produce the artifacts promised in `## Hand-off`; skip anything that does
+not advance the workflow.
+

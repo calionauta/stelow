@@ -217,3 +217,48 @@ h2. ⚠️ Analysis Impaired by Insufficient Input
 ** The context in which the problem occurs.
 ** The desired outcome or goal to be achieved.
 ```
+
+## Entry (mode detection)
+
+When this skill loads, check for the stelow workflow marker:
+
+```bash
+if [ -n "$STELOW_WORKFLOW" ] && [ -n "$STELOW_STATE" ]; then
+  echo "stelow: workflow mode (state=$STELOW_STATE)"
+else
+  echo "stelow: standalone mode (no STELOW_WORKFLOW marker)"
+fi
+```
+
+In **standalone mode** (no marker), run the existing skill body unchanged.
+In **workflow mode**, skip to `### Workflow slice` and emit a complete
+`## Hand-off (workflow mode)` block at the end. See
+`references/host-levers.md` for the full marker protocol (SCOPE-9).
+
+## Hand-off (workflow mode)
+
+```
+stage          : triage
+description    : Initial assessment. Determine if this is a valid request.
+status         : <done|partial|blocked>
+artifacts      : <paths created or modified>
+next-candidate : select
+gate           : none
+rework-on      : (none)
+```
+
+Workflow mode: emit the above Hand-off block verbatim, then stop. The
+router skill consumes the next-candidate field and calls
+`scripts/stelow advance <next-candidate>` to move state forward.
+
+### Workflow slice
+
+Workflow mode for the **triage** stage. Standalone behavior lives in
+the rest of this file (unchanged). Summary:
+
+> Initial assessment. Determine if this is a valid request.
+
+Primary actions (per stages.yaml): `read, write`. Run only the actions that
+produce the artifacts promised in `## Hand-off`; skip anything that does
+not advance the workflow.
+

@@ -218,3 +218,48 @@ Then follow the appetite-selected archetype generation process above.
 
 If a tool is unavailable, check:
 `references/cli-tools/`
+
+## Entry (mode detection)
+
+When this skill loads, check for the stelow workflow marker:
+
+```bash
+if [ -n "$STELOW_WORKFLOW" ] && [ -n "$STELOW_STATE" ]; then
+  echo "stelow: workflow mode (state=$STELOW_STATE)"
+else
+  echo "stelow: standalone mode (no STELOW_WORKFLOW marker)"
+fi
+```
+
+In **standalone mode** (no marker), run the existing skill body unchanged.
+In **workflow mode**, skip to `### Workflow slice` and emit a complete
+`## Hand-off (workflow mode)` block at the end. See
+`references/host-levers.md` for the full marker protocol (SCOPE-9).
+
+## Hand-off (workflow mode)
+
+```
+stage          : interface
+description    : Interface alternatives. Appetite-scaled exploration: 1, 3, or 5 proposals + hybrid.
+status         : <done|partial|blocked>
+artifacts      : <paths created or modified>
+next-candidate : int-gate
+gate           : none
+rework-on      : scope
+```
+
+Workflow mode: emit the above Hand-off block verbatim, then stop. The
+router skill consumes the next-candidate field and calls
+`scripts/stelow advance <next-candidate>` to move state forward.
+
+### Workflow slice
+
+Workflow mode for the **interface** stage. Standalone behavior lives in
+the rest of this file (unchanged). Summary:
+
+> Interface alternatives. Appetite-scaled exploration: 1, 3, or 5 proposals + hybrid.
+
+Primary actions (per stages.yaml): `read, write`. Run only the actions that
+produce the artifacts promised in `## Hand-off`; skip anything that does
+not advance the workflow.
+
