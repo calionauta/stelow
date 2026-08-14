@@ -118,10 +118,12 @@ PY
 
 # --- lock (mkdir, TTL) -------------------------------------------------------
 
-# Portable directory mtime (seconds) for the lock TTL: `stat -f %m` is BSD/macOS,
-# `stat -c %Y` is GNU. Falls back to "now" (no staleness) if stat is unavailable.
+# Portable directory mtime (seconds) for the lock TTL. Unlike `date`/`stat`,
+# python3's st_mtime is identical on GNU/Linux and BSD/macOS (the script
+# already requires python3 for YAML parsing). Falls back to "now" (no
+# staleness) on error.
 lock_mtime() {
-  stat -f %m "$LOCKDIR" 2>/dev/null || stat -c %Y "$LOCKDIR" 2>/dev/null || echo "$(date +%s)"
+  python3 -c 'import os, sys; print(int(os.stat(sys.argv[1]).st_mtime))' "$LOCKDIR" 2>/dev/null || echo "$(date +%s)"
 }
 
 lock_state() {
