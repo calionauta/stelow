@@ -118,11 +118,19 @@ PY
 
 # --- lock (mkdir, TTL) -------------------------------------------------------
 
+# Portable directory mtime (seconds) for the lock TTL. Unlike `date`/`stat`,
+# python3's st_mtime is identical on GNU/Linux and BSD/macOS (the script
+# already requires python3 for YAML parsing). Falls back to "now" (no
+# staleness) on error.
+lock_mtime() {
+  python3 -c 'import os, sys; print(int(os.stat(sys.argv[1]).st_mtime))' "$LOCKDIR" 2>/dev/null || echo "$(date +%s)"
+}
+
 lock_state() {
   if [ -d "$LOCKDIR" ]; then
     local now mtime age
     now=$(date +%s)
-    mtime=$(stat -c %Y "$LOCKDIR" 2>/dev/null || echo "$now")
+    mtime=$(lock_mtime)
     age=$((now - mtime))
     if [ "$age" -gt "$LOCK_TTL_SEC" ]; then
       echo "stale (age=${age}s > ttl=${LOCK_TTL_SEC}s)"
@@ -141,19 +149,19 @@ lock_acquire() {
   if mkdir "$LOCKDIR" 2>/dev/null; then
     echo "$$" > "$LOCKDIR/pid"
     hostname > "$LOCKDIR/host"
-    date -Is > "$LOCKDIR/acquired"
+    date -Iseconds > "$LOCKDIR/acquired"
     trap 'rm -rf "$LOCKDIR" 2>/dev/null || true' EXIT
     return 0
   fi
   local now mtime age pid host
   now=$(date +%s)
-  mtime=$(stat -c %Y "$LOCKDIR" 2>/dev/null || echo "$now")
+  mtime=$(lock_mtime)
   age=$((now - mtime))
   if [ "$age" -gt "$LOCK_TTL_SEC" ]; then
     echo "$PROG: stale lock (age=${age}s) — removing" >&2
     rm -rf "$LOCKDIR" || die "lock remove failed"
     if mkdir "$LOCKDIR" 2>/dev/null; then
-      echo "$$" > "$LOCKDIR/pid"; hostname > "$LOCKDIR/host"; date -Is > "$LOCKDIR/acquired"
+      echo "$$" > "$LOCKDIR/pid"; hostname > "$LOCKDIR/host"; date -Iseconds > "$LOCKDIR/acquired"
       trap 'rm -rf "$LOCKDIR" 2>/dev/null || true' EXIT
       return 0
     fi

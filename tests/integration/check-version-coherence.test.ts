@@ -124,7 +124,7 @@ async function buildFixture(opts: FixtureOptions): Promise<Fixture> {
   // 5. optional follow-up commit that mutates `package.json#version`.
   if (opts.followupVersion) {
     await writePackageJson(opts.followupVersion);
-    execFileSync('touch', ['-d', 'now', packageJsonPath], { stdio: 'pipe' });
+    execFileSync('touch', [packageJsonPath], { stdio: 'pipe' });
     execFileSync('git', ['add', 'package.json'], { cwd: workDir, stdio: 'pipe' });
     const body = opts.followupMessage ?? `chore: bump to ${opts.followupVersion}`;
     execFileSync('git', ['commit', '-m', body], { cwd: workDir, stdio: 'pipe' });
@@ -184,7 +184,7 @@ async function runScript(workDir: string, scriptPath: string, args: string[]): P
  */
 async function stagePendingVersionChange(fx: Fixture, version: string): Promise<void> {
   await writeFile(fx.packageJson, JSON.stringify({ name: 'fixture', version }), 'utf8');
-  execFileSync('touch', ['-d', 'now', fx.packageJson], { stdio: 'pipe' });
+  execFileSync('touch', [fx.packageJson], { stdio: 'pipe' });
   execFileSync('git', ['add', 'package.json'], { cwd: fx.workDir, stdio: 'pipe' });
 }
 

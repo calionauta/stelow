@@ -13,7 +13,7 @@
 
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import { execSync, spawnSync, ChildProcess } from "node:child_process";
-import { mkdtempSync, writeFileSync, mkdirSync, readFileSync, rmSync, existsSync, readdirSync } from "node:fs";
+import { mkdtempSync, writeFileSync, mkdirSync, readFileSync, rmSync, existsSync, readdirSync, utimesSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { randomBytes } from "node:crypto";
@@ -64,6 +64,12 @@ stages:
 `);
 }
 
+// Backdate a lock dir's mtime with Node (portable; GNU/BSD `touch -d` differs).
+function backdateLock(wd: Workdir, when: Date): void {
+  const lock = join(wd.dir, ".stelow", "lock");
+  utimesSync(lock, when, when);
+}
+
 function run(wd: Workdir, args: string[], env: Record<string, string> = {}): { status: number; stdout: string; stderr: string } {
   const r = spawnSync("bash", [wd.helper, ...args], {
     cwd: wd.dir, encoding: "utf8",
@@ -93,7 +99,7 @@ describe("parallel-lock contention", () => {
     writeFileSync(join(wd.dir, ".stelow", "lock", "host"), "ghost");
     // make it stale so both will try to clear+reacquire
     const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000);
-    execSync(`touch -d "${fiveMinAgo.toISOString()}" .stelow/lock`, { cwd: wd.dir });
+    backdateLock(wd, fiveMinAgo);
 
     const r1 = run(wd, ["advance", "critique"], { STELOW_LOCK_TTL_SEC: "10" });
     const r2 = run(wd, ["advance", "critique"], { STELOW_LOCK_TTL_SEC: "10" });
@@ -125,7 +131,7 @@ describe("crash-resume", () => {
 
     // backdate the lock to make it stale
     const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000);
-    execSync(`touch -d "${tenMinAgo.toISOString()}" .stelow/lock`, { cwd: wd.dir });
+    backdateLock(wd, tenMinAgo);
 
     // The next advance must: clear the stale lock, succeed, write invariants.
     const r = run(wd, ["advance", "critique"], { STELOW_LOCK_TTL_SEC: "10" });

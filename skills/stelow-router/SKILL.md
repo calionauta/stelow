@@ -59,7 +59,7 @@ scripts/stelow advance "$next"
 
 # 4. Append router Hand-off (audit).
 cat >> "$STELOW_STATE" <<EOF
-## Hand-off (router) — $(date -Is)
+## Hand-off (router) — $(date -Iseconds)
 from        : $current
 to          : $next
 skill loaded: stelow-product-$next

@@ -14,7 +14,7 @@
 
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import { execSync, spawnSync } from "node:child_process";
-import { mkdtempSync, writeFileSync, mkdirSync, readFileSync, statSync, rmSync } from "node:fs";
+import { mkdtempSync, writeFileSync, mkdirSync, readFileSync, statSync, rmSync, utimesSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { randomBytes } from "node:crypto";
@@ -46,6 +46,12 @@ function makeWorkdir(): Workdir {
   const wd = { dir, helper };
   workdirs.push(wd);
   return wd;
+}
+
+// Backdate a lock dir's mtime with Node (portable; GNU/BSD `touch -d` differs).
+function backdateLock(wd: Workdir, when: Date): void {
+  const lock = join(wd.dir, ".stelow", "lock");
+  utimesSync(lock, when, when);
 }
 
 function makeState(wd: Workdir, current_stage: string): void {
@@ -161,7 +167,7 @@ describe("advance", () => {
     writeFileSync(join(wd.dir, ".stelow", "lock", "host"), "test");
     // backdate the lock dir by 5 minutes
     const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000);
-    execSync(`touch -d "${fiveMinAgo.toISOString()}" .stelow/lock`, { cwd: wd.dir });
+    backdateLock(wd, fiveMinAgo);
     const r = run(wd, ["advance", "critique"], { env: { ...process.env, STELOW_LOCK_TTL_SEC: "10" } });
     expect(r.status).toBe(0);
     expect(r.stdout).toContain("advanced to critique");
@@ -201,7 +207,7 @@ describe("doctor", () => {
     mkdirSync(join(wd.dir, ".stelow", "lock"), { recursive: true });
     writeFileSync(join(wd.dir, ".stelow", "lock", "pid"), "1");
     const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000);
-    execSync(`touch -d "${fiveMinAgo.toISOString()}" .stelow/lock`, { cwd: wd.dir });
+    backdateLock(wd, fiveMinAgo);
     const r = run(wd, ["doctor"]);
     expect(r.status).toBe(0); // warn is non-fatal
     expect(r.stdout).toMatch(/warn\s+stale-lock/);
