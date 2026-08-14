@@ -2,7 +2,8 @@
 # Complements stages/*.md (behavior), does NOT replace them
 # Source of truth for: tools per stage, transitions, supervisor, gates
 #
-# Sincronizado com PHASE_NAMES em extensions/stelow/types.ts
+# Espelho data-only: references/transitions.md é regenerado a partir deste
+# arquivo e é o que scripts/stelow advance valida (não edite manualmente).
 
 
 # Canonical tool vocabulary and host-native implementations. A null value
