@@ -8,12 +8,23 @@ cd stelow
 ./install.sh
 ```
 
-Interactive full setup. Installs 25 skills, Pi extension (if detected), and offers
-optional dependencies (ctx7) with step-by-step confirmation. cymbal (raphapr/pi-cymbal)
-and ast-grep (joelhooks/pi-ast-grep) are installed automatically as Pi packages.
+`./install.sh` flattens all 25 skills into `~/.agents/skills/` and prunes
+retired or orphaned skills. That is everything — there is no extension, plugin,
+or host registration step; any agent that reads `~/.agents/skills/<name>/SKILL.md`
+(agentskills.io standard) picks the skills up automatically.
 
-> **v0.45.0 narrowed the shipped surface to Pi-only.** Skills remain agent-agnostic —
-> see `cli-agents/COMMANDS.md` for the extension guide and the rationale for narrowing.
+**Without cloning:**
+
+```bash
+npx skills add calionauta/stelow -g
+```
+
+**Zero-to-running on a new machine** (optionally bootstraps Node + pi.dev +
+toolchain before installing the skills):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/calionauta/stelow/main/setup.sh | sh
+```
 
 ---
 
@@ -21,53 +32,39 @@ and ast-grep (joelhooks/pi-ast-grep) are installed automatically as Pi packages.
 
 ```
 stelow/          ← Source
-└── skills/                     ← 25 skills flat
-    ├── stelow-product-orchestrator/   ← Orchestrator
+└── skills/                     ← 25 portable skills (1 orchestrator + 24 sub-skills)
+    ├── stelow-entry/                   ← entry point (STELOW_WORKFLOW=1)
+    ├── stelow-router/                  ← advance / load next stage
+    ├── stelow-product-orchestrator/    ← orchestrator + stages.yaml
     ├── stelow-product-shape-up/
-    └── ... (23 more)
+    └── ...
 
 ~/.agents/skills/               ← Install target
-├── stelow-product-orchestrator/       ← Copied
-├── stelow-product-shape-up/             ← Copied
-└── ... (25 total)
+├── stelow-entry/                       ← Copied
+├── stelow-product-orchestrator/        ← Copied
+└── ... (all skills)
 ```
 
-**Skills installed (25 total):**
-
-- 1 orchestrator: `stelow-product-orchestrator` (15 stages)
-- 10 workflow stage skills (shape-up, interface-alternatives, plan-critique, codebase-critique, ux-critique, tech-planning, testing-ai-code, testing-execution, scope-executor, execution-critique)
-- 5 strategic analysis skills (job-to-be-done, discovery, opportunity-mapping, multi-method-market-analysis, evolutionary-principles)
-- 1 code-standards skill
-- 8 domain library skills (ads, pricing, promotions, trust-building, health, marketplace-playbook, business-models, open-source)
+The 17-stage model, data flow, and state layout are documented in
+[architecture.md](architecture.md) and the README [📋 Skills](../README.md#-skills) section.
 
 ---
 
 ## Commands
 
 ```bash
-./install.sh                    # Interactive full setup (default)
-./install.sh --minimal          # Skills only, no optional deps
-./install.sh update             # Update skills
-./install.sh remove             # Uninstall from all detected agents
+./install.sh                    # Flatten skills to ~/.agents/skills/ (default)
+./install.sh --minimal          # Skills only, no optional toolchain (same as default in practice)
+./install.sh update             # Re-copy skills + prune retired/orphaned
+./install.sh remove             # Remove skills from all detected agents
 ./install.sh --help             # Show help
 
-# Non-interactive (CI), install everything
+# Non-interactive (CI)
 ASSUME_YES=1 ./install.sh
-
-# Limit to Pi
-PRODUCT_WORKFLOW_CLI=pi ./install.sh
 ```
 
-**Full setup flow:**
-1. 25 workflow skills — **always installed**
-2. Pi extension + npm packages — **confirms before installing** (Pi only)
-3. cymbal (codebase navigation) — **installed automatically** as a Pi package (raphapr/pi-cymbal); requires the cymbal CLI on the host
-4. ctx7 — live library docs via `npx @vedanth/context7` (recommends, requires OAuth)
-5. `./install.sh --minimal` skips all optional steps
-
-**CI / automation:** Set `ASSUME_YES=1` to auto-confirm all prompts without interaction.
-
-**Config file:** Unselected options can be installed later by re-running `./install.sh`.
+`./install.sh --minimal` is the default behavior: only the skills are installed.
+There is no Pi-extension step anymore (removed in 1.0.0).
 
 ---
 
@@ -77,7 +74,7 @@ The installer places skills in `~/.agents/skills/`. Any agent that reads from th
 directory (the [agentskills.io](https://agentskills.io/) standard) automatically picks
 them up — no per-agent install required.
 
-To install skills without the installer (any agent, no extension):
+To install skills without the installer (any agent):
 
 ```bash
 npx skills add calionauta/stelow -g
@@ -88,20 +85,17 @@ them on next session.
 
 ---
 
-## Skills-only mode (no Pi extension)
+## Skills-only mode
 
-```bash
-./install.sh --minimal
-```
-
-This skips the Pi extension and optional npm packages, leaving the 25 skills in
-`~/.agents/skills/`. Works in any agent that reads from there.
+Skills-only **is** the product since 1.0.0 — there is no separate skills-only flag.
+`./install.sh` (or `npx skills add`) installs portable skills that work in any agent
+that reads `~/.agents/skills/`.
 
 ---
 
 ## Agent Instructions Setup
 
-The installer **does not modify** your `AGENTS.md` / `CLAUDE.md` automatically. The
+`./install.sh` does **not** modify your `AGENTS.md` / `CLAUDE.md` automatically. The
 orchestrator skill is loaded automatically via its `SKILL.md` frontmatter; you can
 add a one-line reminder if you want to make the trigger explicit.
 
@@ -114,42 +108,17 @@ For product-workflow tasks (plans, critiques, scopes, executions), invoke
 
 ---
 
-## Required npm Packages (Pi only)
-
-The Pi extension surfaces additional features (slash commands, TUI overlay, event
-hooks, structured questions) through a few npm packages. None are required for the
-skills to work; they activate only when Pi is detected.
-
-| Package | Purpose |
-|---------|---------|
-| `pi-subagents` | Parallel subagent orchestration |
-| `pi-intercom` | Session-to-session coordination |
-| `pi-supervisor` | Conversation supervision |
-| `@juicesharp/rpiv-ask-user-question` | Question UI component |
-| `@plannotator/pi-extension` | Visual plan annotation |
-| `raphapr/pi-cymbal` | Codebase navigation (`cymbal` CLI required) |
-| `joelhooks/pi-ast-grep` | Structural code search (bundles `sg`) |
-
-For Pi-only package installation:
-
-```bash
-pi install npm:@calionauta/stelow
-```
-
-This installs the extension and its peer dependencies in one step.
-
----
-
 ## Third-Party Skill Registry
 
 Some phases of the workflow reference third-party skills:
 
 | Skill | Required for | Install |
 |-------|-------------|---------|
-| `pi-agent-codebase-workflows` (safe-change) | Phase 2 impact analysis | `npx skills add Prinova/pi-agent-codebase-workflows -g` |
+| `pi-agent-codebase-workflows` (safe-change) | Pre-execution impact analysis | `npx skills add Prinova/pi-agent-codebase-workflows -g` |
 | `thermo-nuclear` (code-quality-review) | optional ultra-strict final gate | `npx skills add cursor/plugins -g` |
 
-Both work in any agent via the same `npx skills add ... -g` invocation.
+Both work in any agent via the same `npx skills add ... -g` invocation. See the
+External Dependencies table in the README for the full list with fallbacks.
 
 ---
 
@@ -176,69 +145,11 @@ Git-based distribution is a deliberate security choice:
 
 **Bottom line:** Git-based distribution solves the risks we *control* (how we ship our code). Risks we *inherit* (maintainer compromise, third-party deps) are shared with all software.
 
+---
 
-## Fusion
+## Fusion / Multica / pi.dev / any host (all hosts)
 
-### Build and preflight
-
-From a clean Stelow checkout:
-
-```bash
-npm ci
-npm run build
-fn workflow validate --file plugins/fusion-plugin-stelow/artifacts/workflows/stelow-v2.json --json
-fn plugin publish --dry-run plugins/fusion-plugin-stelow
-```
-
-`npm run build` prepares all 25 canonical skill trees, emits settings and v2
-workflow JSON through Stelow's canonical Fusion builders, and compiles the
-loadable JavaScript entry. Workflow validation is dry-run only: it does not
-create a workflow row.
-
-### Install and enable
-
-Install the built plugin directory directly:
-
-```bash
-fn plugin install ./plugins/fusion-plugin-stelow
-fn plugin enable fusion-plugin-stelow
-fn plugin list
-```
-
-For a packed Stelow release, extract the tarball first and point Fusion at the
-nested plugin directory (a raw `.tgz` is not an install target):
-
-```bash
-npm pack
-mkdir /tmp/stelow-package
-# replace the filename with the one printed by npm pack
-tar -xzf calionauta-stelow-*.tgz -C /tmp/stelow-package
-fn plugin install /tmp/stelow-package/package/plugins/fusion-plugin-stelow
-fn plugin enable fusion-plugin-stelow
-```
-
-The install/publish preflight loader has a reduced task-store seam. The plugin
-loads there without writing a workflow and completes project registration when
-a full Fusion project runtime next loads it.
-
-### Installed and project paths
-
-| Content | Path |
-|---|---|
-| Compiled plugin entry | `<installed-plugin-root>/dist/index.js` |
-| Plugin-local skills | `<installed-plugin-root>/skills/stelow-product-*/SKILL.md` |
-| Bundled settings source | `<installed-plugin-root>/artifacts/settings.json` |
-| Bundled workflow source | `<installed-plugin-root>/artifacts/workflows/stelow-v2.json` |
-| Project plugin settings artifact | `.fusion/plugins/fusion-plugin-stelow/settings.json` |
-| Project workflow artifact | `.fusion/workflows/stelow-v2.json` |
-| Managed workflow row | `Stelow product planning` in the current project's Fusion store |
-
-A repeat load keeps the same workflow ID and does not rewrite different bytes.
-Malformed resources, workflow collisions, duplicate managed rows, and failed
-file/store operations fail closed and restore prior state. Stelow workflow state
-remains in `stelow.json` and `.stelow/`; the plugin never writes it into Fusion
-engine or task state.
-
-Fusion-native mappings remain `fn_ask_question` → `ask_user_question` and
-`fn_spawn_agent` → `subagent`. Fusion has no native `visual_review`; Stelow uses
-the `.stelow/approvals/{dirHash}/{file}.approved.md` receipt fallback.
+All hosts install the **same** skills to `~/.agents/skills/` — there is no compiled
+Fusion plugin and no per-host package anymore (removed in 1.0.0). Hosts that want
+the workflow auto-loaded set the marker protocol (`STELOW_WORKFLOW=1` +
+`STELOW_STATE=<path>`); see `skills/stelow-entry/references/host-levers.md`.

@@ -11,8 +11,8 @@
 # Or run standalone (e.g. in CI):
 #   bash scripts/pre-commit-record.sh
 #
-# STELOW_VALIDATE=1 also enables runtime validation in writeTracking()
-# (extensions/stelow/state.ts). This hook is the "at commit time" gate.
+# STELOW_VALIDATE=1 enables runtime validation during scope execution
+# (skills/stelow-product-scope-executor). This hook is the "at commit time" gate.
 #
 # The hook is intentionally single-job: validate only scope records.
 # Other stelow checks (scope consistency, task count) live in

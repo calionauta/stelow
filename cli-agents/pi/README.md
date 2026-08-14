@@ -1,29 +1,33 @@
 # Pi CLI — stelow
 
 This directory follows the standard `cli-agents/` pattern for all CLI harnesses.
-All commands are documented in `COMMANDS.md` (single source of truth).
+Commands and host activation are documented in `COMMANDS.md` (single source of truth).
 
 ## Installation
 
+Since 1.0.0 the product is **skills-only** — there is no Pi extension to build
+or install. pi.dev consumes the same 25 skills as every other agent:
+
 ```bash
 # Run from project root
-./install.sh --cli pi
+./install.sh          # flattens skills/* into ~/.agents/skills/
+# — or —
+npx skills add calionauta/stelow -g
 ```
 
-The install script:
-- Builds the Pi extension (`extensions/stelow/`)
-- Installs the extension to Pi
-- Installs required npm packages (`pi-subagents`, `pi-intercom`, etc.)
-- Installs all 25 skills to `~/.agents/skills/`
-- Cleans up any conflicting local Pi skill copies
+The installer:
+- Flattens all 25 skills into `~/.agents/skills/`
+- Prunes retired/orphaned skills (`retired-skills.yaml`)
+- Does **not** register host commands or install a TUI — `/sw-*` is routed by
+  the skills themselves
 
 ## Available Commands
 
 | Command | Description |
 |---------|-------------|
 | `/sw-start` | Start a new workflow |
-| `/sw-status` | Show current status |
-| `/sw-help` | Get help |
+| `/sw-status` | Show workflow status (`scripts/stelow status`) |
+| `/sw-next` | Advance to the next stage |
 
 Full command matrix: `../COMMANDS.md`
 
@@ -31,22 +35,12 @@ Full command matrix: `../COMMANDS.md`
 
 | Component | Location |
 |-----------|----------|
-| Extension | `~/.pi/agent/extensions/stelow/` |
 | Skills | `~/.agents/skills/` (25 skills flat) |
-| Commands | Via extension (slash commands with TUI) |
-
-## Extension Architecture
-
-```
-extensions/stelow/  # Source (TypeScript) — single Pi extension
-  ├── adapters/pi/                 # Pi-specific adapter
-  ├── commands.ts                  # Slash command registration
-  ├── ui.ts                        # TUI overlay
-  └── modules/                     # Cache, file-store, task
-```
+| Helper | `scripts/stelow` (status / advance / doctor) |
+| Commands | Skill-provided (`/sw-*` routed by `stelow-entry` + `stelow-router`) |
 
 ## Notes
 
-- Pi loads AGENTS.md from `~/.pi/agent/AGENTS.md` for development sessions
-- The extension provides commands with TUI, not markdown commands
-- Skills are loaded from `~/.agents/skills/`
+- Activate the workflow with the marker protocol: `STELOW_WORKFLOW=1` +
+  `STELOW_STATE=<path>` (see `skills/stelow-entry/references/host-levers.md`).
+- Skills are loaded from `~/.agents/skills/` on every agentskills-compatible agent.
