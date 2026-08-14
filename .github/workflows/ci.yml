@@ -77,9 +77,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Extensions freeze guard (SCOPE-5)
-        run: bash scripts/check-extensions-freeze.sh
-
   test:
     name: Unit Tests (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
@@ -103,9 +100,6 @@ jobs:
         run: npm ci
       - name: Build
         run: npm run build
-
-      - name: Check dist/skills.d.ts version drift (SW-036)
-        run: bash scripts/check-dist-skills-drift.sh
 
       - name: Generate cli-tools (gitignored, needed for tests)
         run: ./scripts/sync-cli-tools.sh

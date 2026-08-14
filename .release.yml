@@ -15,8 +15,6 @@ suffix: alpha
 # Default: [] (auto-detect package.json, pyproject.toml, Cargo.toml)
 version_files:
   - package.json
-  - plugins/fusion-plugin-stelow/manifest.json
-  - plugins/fusion-plugin-stelow/package.json
 
 # Command to run tests before release
 # Default: "" (no tests)
