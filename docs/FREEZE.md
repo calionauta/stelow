@@ -1,45 +1,20 @@
-# `extensions/` — Frozen Tree
+# `extensions/` — Historical (resolved in 1.0.0)
 
-> ⚠️ **This tree is frozen.** It is kept in the repository only as a
-> compatibility shim and will be removed in a future major version.
-> All orchestration, skills discovery, and workflow logic have migrated to
-> `skills/` and `references/`.
+> ⚠️ **This tree no longer exists.** The `extensions/` directory was deleted in
+> SCOPE-7 (`dcbd49c`, 1.0.0). This file is kept only as historical context.
 
-## What is frozen here
+## What happened
 
-- All files under `extensions/stelow/`, including:
-  - `adapters/` — host-specific adapters (Pi, Fusion, generic)
-  - `modules/` — core runtime modules
-  - `types.ts`, `state.ts`, `schema.ts`, `schemas.ts`
-  - All command dispatchers and event handlers
+- The SCOPE-5 "skills-only" refactor froze `extensions/` behind
+  `scripts/check-extensions-freeze.sh`, blocking accidental drift during the
+  transition window.
+- SCOPE-7 removed the entire tree (Pi extension host code, Fusion adapter,
+  the `WORKFLOW_COMMANDS` command registry, and the rest of the core) plus the
+  freeze guard itself.
 
-- The `WORKFLOW_COMMANDS` constant declared in
-  `extensions/stelow/adapters/commands/dispatcher.ts`
+## Current state
 
-## Why it is frozen
-
-The `scope-5` "skills-only" refactor removes the entire `extensions/`
-tree. The guard at `scripts/check-extensions-freeze.sh` prevents
-accidental re-introduction of code into this tree during the refactor
-window.
-
-Once the refactor merges to `main`, the tree will be removed entirely.
-
-## Override (temporary use only)
-
-```bash
-touch .extensions-freeze-override
-git commit -m "chore: lift extensions freeze for <reason>" .extensions-freeze-override
-```
-
-Always document the reason. Remove the file and commit again to re-enable
-the guard after the emergency fix is merged.
-
-## CI
-
-This guard runs in the CI `check` job. See `.github/workflows/ci.yml`.
-
-```yaml
-- name: Extensions freeze guard (SCOPE-5)
-  run: bash scripts/check-extensions-freeze.sh
-```
+The product is skills-only: 25 portable skills in `skills/`, a
+zero-dependency `scripts/stelow` helper (status/advance/doctor), and the
+17-stage model in `skills/stelow-product-orchestrator/stages.yaml`. See
+[architecture.md](architecture.md).
