@@ -7,7 +7,7 @@
 **Type:** Host-agnostic product workflow library (skills + stages + adapters).
 **Stack:** Node 20+, TypeScript 6.0 strict, npm.
 **Hosts:** Pi (native extension), Fusion (compiled plugin at
-`plugins/fusion-plugin-stelow/`), and generic agentskills-compatible agents.
+`skills/`), and generic agentskills-compatible agents.
 
 ## Architecture
 
@@ -26,7 +26,7 @@ phases in `extensions/stelow/types.ts#PHASE_NAMES` are the canonical
 | `extensions/stelow/adapters/pi/` | Pi-only hooks, native `/sw-*` commands, TUI, Plannotator. |
 | `extensions/stelow/adapters/fusion.ts` | Fusion tool mapping, generated command/workflow/settings resources. |
 | `extensions/stelow/adapters/generic.ts` | Portable no-op fallbacks for non-Pi, non-Fusion agents. |
-| `plugins/fusion-plugin-stelow/` | Compiled Fusion package: 25 plugin-local skills, validated settings/workflow IR, full-runtime project artifact installation, one managed project-scoped workflow, dependency-free `dist/index.js`. |
+| `skills/` | Compiled Fusion package: 25 plugin-local skills, validated settings/workflow IR, full-runtime project artifact installation, one managed project-scoped workflow, dependency-free `dist/index.js`. |
 | `docs/design/` | Design docs, plans, ADR (PT-BR discussion, EN artifacts). |
 | `stelow.schema.json` / `stelow.json` | Workflow tracking schema + per-project runtime state. |
 
@@ -198,7 +198,7 @@ Enforcement:
 ### Full release workflow (do NOT skip steps)
   1. `npm version <major.minor.patch> --no-git-tag-version` — bump `package.json`
   2. `npm run version:sync` — sync plugin files (`manifest.json`, plugin `package.json`)
-  3. **`npm run prepare:fusion-plugin && npm run build:fusion-plugin`** — re-bake `plugins/fusion-plugin-stelow/src/skills.ts#STELOW_PLUGIN_VERSION` and the compiled `artifacts/settings.json` from `manifest.json#version`. SW-008 shipped v0.55.0 with stale `0.54.3` baked into these files because this step was skipped on the release commit; SW-010 v0.55.1 fixed it as a side-effect. **Do not skip.**
+  3. **`npm run prepare:fusion-plugin && npm run build:fusion-plugin`** — re-bake `skills/src/skills.ts#STELOW_PLUGIN_VERSION` and the compiled `artifacts/settings.json` from `manifest.json#version`. SW-008 shipped v0.55.0 with stale `0.54.3` baked into these files because this step was skipped on the release commit; SW-010 v0.55.1 fixed it as a side-effect. **Do not skip.**
   4. Update `CHANGELOG.md` — add entry with changes
   5. Verify the six-point version agreement: `package.json`, `package-lock.json`, `manifest.json`, plugin `package.json`, `STELOW_PLUGIN_VERSION` in `src/skills.ts` and `dist/skills.d.ts`. **All six must equal the new version.**
   6. `git add -A && git commit -m "chore: bump to v<version>" -m "Release-Bump: v<version>"`
@@ -207,7 +207,7 @@ Enforcement:
   9. **`gh release create v$(node -p "require('./package.json').version") --title "v<version>" --notes-file <changelog-section>`** — required for GitHub landing page visibility
 - **Build-artifact drift guard (CI runtime check).** After `npm run build`,
   `scripts/check-dist-skills-drift.sh` runs as a step in the CI `test` job and
-  asserts the compiled `plugins/fusion-plugin-stelow/dist/skills.d.ts#STELOW_PLUGIN_VERSION`
+  asserts the compiled `skills/dist/skills.d.ts#STELOW_PLUGIN_VERSION`
   matches `manifest.json#version`. The guard catches the SW-008 historical-miss
   pattern (v0.55.0 shipped with `STELOW_PLUGIN_VERSION="0.54.3"` baked into the
   dist because the release commit skipped step 3 above). See

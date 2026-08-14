@@ -1,3 +1,157 @@
+## [1.0.0] - 2026-08-14
+
+Skills-only milestone. The Pi extension host code, the Fusion adapter package,
+and the inbox mirror are removed. Workflow content is the 25 portable skills
+plus the new `scripts/stelow` helper (status/advance/doctor). Host
+specialization is via the marker protocol (`STELOW_WORKFLOW=1` + 
+`STELOW_STATE=<path>`) — no per-host fork ships in the repo.
+
+### Added
+
+- ** helper** (SCOPE-2, commit ) —  (text/--json),
+   (mkdir lock with TTL, pre-condition check on
+  transitions.md, fail-closed on invalid candidate so state.md stays
+  byte-identical),  (4 drift classes: stale-lock, missing-dir,
+  parallel-lock, state-transitions-drift). Reference:
+  .
+- **Dual-mode contract** (SCOPE-3, commit ) — every stage skill
+  carries , ,
+  and  blocks. Standalone sections preserved.
+- **Entry + router skills** (SCOPE-4, commit ) —
+   (intent classification + state scaffold),
+   (validate next-candidate, advance via
+  helper, load next stage).
+- **Three test layers** (SCOPE-6a/b/c, commits , ,
+  ) —  (13 cases),
+   (5 cases),
+   (4 cases). 523/523 passing.
+
+### Removed
+
+- **** (SCOPE-7, commit ) — the Pi extension host
+  code, including , , ,
+  , , , , ,
+  , , and the entire 
+  registry. The  (, ,
+  , , etc.) is gone.
+- **** — the compiled Fusion adapter
+  package (, , ).
+- **** — Fusion CLI command artifacts (the 
+  directory).
+- **5 dependent scripts** — ,
+  , ,
+  , ,
+   (no-op stub).
+- **19 dependent tests** — all unit/integration tests that imported
+  from , including the hook-error-containment and
+  pi-sandbox-install suites.
+
+### Changed
+
+- **** — drops exports  and ;
+  drops the , ,  paths from ;
+  drops scripts , ,
+  , ; removes the 
+  block (the Pi extension is gone).  script now runs
+   only.
+- **** — drops the 
+  and  steps.
+- **** — drops 
+  paths.
+- **** — drops 
+  from the mutation list.
+- **** — drops 3 dead Removing /extensions/stelow...
+  lines that referenced the deleted extension path.
+- ** /  /  / ** —
+  rewritten to reflect the skills-only tree. Historical references in
+  ,  legacy notes, , and
+   remain by design.
+
+### Verification
+
+- : ✅ (sync-cli-tools + tsc -p tsconfig.build.json)
+- : ✅ 523/523 (20 test files, 14s)
+-  in runtime code: no broken imports
+-  restores the exact pre-cut tree (verified via
+   + cleanup; revert aborted to keep the cut).
+
+## [1.0.0] - 2026-08-14
+
+Skills-only milestone. The Pi extension host code, the Fusion adapter package,
+and the inbox mirror are removed. Workflow content is the 25 portable skills
+plus the new  helper (status/advance/doctor). Host
+specialization is via the marker protocol ( +
+) — no per-host fork ships in the repo.
+
+### Added
+
+- ** helper** (SCOPE-2, commit ) —  (text/--json),
+   (mkdir lock with TTL, pre-condition check on
+  transitions.md, fail-closed on invalid candidate so state.md stays
+  byte-identical),  (4 drift classes: stale-lock, missing-dir,
+  parallel-lock, state-transitions-drift). Reference:
+  .
+- **Dual-mode contract** (SCOPE-3, commit ) — every stage skill
+  carries , ,
+  and  blocks. Standalone sections preserved.
+- **Entry + router skills** (SCOPE-4, commit ) —
+   (intent classification + state scaffold),
+   (validate next-candidate, advance via
+  helper, load next stage).
+- **Three test layers** (SCOPE-6a/b/c, commits , ,
+  ) —  (13 cases),
+   (5 cases),
+   (4 cases). 523/523 passing.
+
+### Removed
+
+- **** (SCOPE-7, commit ) — the Pi extension host
+  code, including , , ,
+  , , , , ,
+  , , and the entire 
+  registry. The  (, ,
+  , , etc.) is gone.
+- **** — the compiled Fusion adapter
+  package (, , ).
+- **** — Fusion CLI command artifacts (the 
+  directory).
+- **5 dependent scripts** — ,
+  , ,
+  , ,
+   (no-op stub).
+- **19 dependent tests** — all unit/integration tests that imported
+  from , including the hook-error-containment and
+  pi-sandbox-install suites.
+
+### Changed
+
+- **** — drops exports  and ;
+  drops the , ,  paths from ;
+  drops scripts , ,
+  , ; removes the 
+  block (the Pi extension is gone).  script now runs
+   only.
+- **** — drops the 
+  and  steps.
+- **** — drops 
+  paths.
+- **** — drops 
+  from the mutation list.
+- **** — drops 3 dead Removing /extensions/stelow...
+  lines that referenced the deleted extension path.
+- ** /  /  / ** —
+  rewritten to reflect the skills-only tree. Historical references in
+  ,  legacy notes, , and
+   remain by design.
+
+### Verification
+
+- : ✅ (sync-cli-tools + tsc -p tsconfig.build.json)
+- : ✅ 523/523 (20 test files, 14s)
+-  in runtime code: no broken imports
+-  restores the exact pre-cut tree (verified via
+   + cleanup; revert aborted to keep the cut).
+
 # Changelog
 
 All notable changes to `@calionauta/stelow` will be documented in this file.

@@ -30,4 +30,4 @@ See `skills/stelow-product-orchestrator/stages.yaml` for current tool restrictio
 ## Enforcement
 
 - **All CLIs:** This file + stages.yaml define behavioral constraints
-- **Pi only:** `extensions/stelow/adapters/stages-guard.ts` enforces programmatically
+- **Pi only:** `scripts/stelow (helper) + skills/stelow/adapters/stages-guard.ts` enforces programmatically

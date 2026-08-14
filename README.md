@@ -10,7 +10,6 @@
 [![Coverage](https://img.shields.io/badge/coverage-70%25-brightgreen)](https://github.com/calionauta/stelow/actions/workflows/ci.yml)
 [![Version](https://img.shields.io/github/v/release/calionauta/stelow?logo=github&label=release)](https://github.com/calionauta/stelow/releases)
 [![Pi](https://img.shields.io/badge/Native-Pi-8B5CF6)](https://pi.dev)
-[![Fusion](https://img.shields.io/badge/Compiled%20plugin-Fusion-2563EB)](https://github.com/calionauta/stelow)
 [![CLI](https://img.shields.io/badge/Skills%20run%20on-Any%20agent-3B82F6)](https://github.com/calionauta/stelow#-host-support)
 
 I'm trying to make ai agents behave less like coding assistants and more like cross-functional product team.
@@ -406,7 +405,7 @@ reads `~/.agents/skills/<name>/SKILL.md` — the agentskills.io standard.
 | **Subagent delegation with `context: "fresh"` + `acceptance` contracts** | ✅ Via `pi-subagents` (tintinweb) | ⚠️ Native subagent only; no acceptance contract |
 | **Supervision / overnight execution** | ✅ Via `pi-supervisor` | ❌ |
 
-> **Bottom line:** The **25 skills run in any agent that reads agentskills.io skill directories** — they execute the same workflow and keep portable state in `stelow.json` / `.stelow/`. Pi adds its TUI, hooks, and Plannotator implementation. Fusion ships a separate compiled plugin at `plugins/fusion-plugin-stelow/` that contributes the 25 plugin-local skills, installs validated project artifacts, and maintains one project-scoped workflow; `visual_review` remains the portable approval-receipt fallback.
+> **Bottom line:** The **25 skills run in any agent that reads agentskills.io skill directories** — they execute the same workflow and keep portable state in `stelow.json` / `.stelow/`. Pi adds its TUI, hooks, and Plannotator implementation. Fusion ships a separate compiled plugin at `skills/` that contributes the 25 plugin-local skills, installs validated project artifacts, and maintains one project-scoped workflow; `visual_review` remains the portable approval-receipt fallback.
 >
 > Generic agents retain the skill-only path. First-class host support belongs behind the [Adapter extension guide](cli-agents/COMMANDS.md#generic-and-future-hosts), with a host plugin only when that host exposes a plugin contract.
 
@@ -515,8 +514,7 @@ This project distributes exclusively via GitHub (no npm) — see [docs/SECURITY.
 ## 🎮 Commands
 
 The canonical command registry is `WORKFLOW_COMMANDS` in
-`extensions/stelow/adapters/commands/dispatcher.ts` — it is the single source
-of truth for the 19 descriptors.
+`scripts/stelow` is the single source of truth for status/advance/doctor.
 
 | Command | Description | Host |
 |---------|-------------|------|
@@ -540,7 +538,7 @@ of truth for the 19 descriptors.
 
 - **Pi** registers all 17 commands natively (16 host-agnostic + the `sw-unlock` Pi-local descriptor) via `pi.registerCommand()`.
 - **Fusion** registers all 16 host-agnostic commands through
-  `plugins/fusion-plugin-stelow/`.
+  `skills/`.
 - **Generic** hosts have no native command registry; the orchestrator skill
   routes the same names through the skill.
 
@@ -574,10 +572,10 @@ cd stelow
 npm ci
 npm run build
 # Install the compiled plugin:
-ls plugins/fusion-plugin-stelow/
+ls skills/
 ```
 
-The compiled plugin (`plugins/fusion-plugin-stelow/`) is the installable
+The compiled plugin (`skills/`) is the installable
 artifact — drop it into your Fusion plugin registry. The Stelow extension
 is **not** used inside Fusion; only the plugin. See the plugin's own README
 for Fusion-specific commands (16 host-agnostic descriptors; v0.57.0 removed
@@ -600,8 +598,7 @@ export STELOW_VERSION=0.57.0
 multica skill import --file ./build/stelow-skills.tgz
 ```
 
-The Multica adapter lives in `extensions/stelow/adapters/multica/` (added in
-v0.57.0). It consumes the Stelow skill bundle, projects state to issue
+Multica consumes the skills via the agentskills standard. It consumes the Stelow skill bundle, projects state to issue
 metadata, and labels issues with `stelow:<stage>` (one label at a time, see
 the structural invariant).
 
@@ -640,18 +637,18 @@ stelow runs on three host surfaces (and any agent that reads `~/.agents/skills/<
 
 | Host | Detection | Adapter surface | Notes |
 |---|---|---|---|
-| **Pi** (`@earendil-works/pi-coding-agent`) | `~/.pi` probe or `STELOW_HOST=pi` | `extensions/stelow/adapters/pi/` | Full experience: native `/sw-*` slash commands, TUI overlay, lifecycle hooks, Plannotator visual review. |
-| **Fusion** (the AI-orchestrated task board) | `~/.fusion` probe, `.fusion/` project-local probe, or `STELOW_HOST=fusion` | `extensions/stelow/adapters/fusion.ts` + `plugins/fusion-plugin-stelow/` | Compiled plugin with 25 plugin-local skills, validated project artifacts, and one managed project workflow; `visual_review` uses `.stelow/approvals/{dirHash}/{file}.approved.md`. |
-| **Generic / standalone** (Claude Code, Codex, Cursor, Continue, OpenCode, or any agent reading skills directly) | Default fallback (no probe match) | `extensions/stelow/adapters/generic.ts` | Skills land in `~/.agents/skills/` per the agentskills.io standard; visual_review is a no-op + receipt; subagent is a file-based handoff. |
+| **Pi** (`@earendil-works/pi-coding-agent`) | `~/.pi` probe or `STELOW_HOST=pi` | `skills/` (25 portable skills + `scripts/stelow` helper) | Full experience: marker protocol (`STELOW_WORKFLOW=1` + `STELOW_STATE=<path>`), TUI overlay, lifecycle hooks via `pi-kata-attention` extension. |
+| **Fusion** (the AI-orchestrated task board) | `~/.fusion` probe, or `STELOW_HOST=fusion` | `skills/` (25 portable skills + `scripts/stelow` helper) | Consumer reads the skills directly via the agentskills standard; `visual_review` uses `.stelow/approvals/{dirHash}/{file}.approved.md`. |
+| **Generic / standalone** (Claude Code, Codex, Cursor, Continue, OpenCode, or any agent reading skills directly) | Default fallback (no probe match) | `skills/` (25 portable skills + `scripts/stelow` helper) | Skills land in `~/.agents/skills/` per the agentskills.io standard; visual_review is a no-op + receipt. |
 
 Owner paths in this repo:
 
-- `extensions/stelow/adapters/pi/` — Pi-only hooks, native `/sw-*` commands, TUI, Plannotator.
-- `extensions/stelow/adapters/fusion.ts` — Fusion tool mapping and generated resources.
-- `extensions/stelow/adapters/generic.ts` — portable no-op fallbacks.
-- `plugins/fusion-plugin-stelow/` — compiled dependency-free Fusion package.
+- `skills/` (25 portable skills) - loaded by Pi via agentskills.io standard; Pi extension `pi-kata-attention` handles `work.attention` transitions.
+- `skills/` (25 portable skills) - Fusion consumes them directly via the agentskills standard.
+- `scripts/stelow` - portable helper for status/advance/doctor; all hosts shell out to it.
+- `skills/` — compiled dependency-free Fusion package.
 
-Detection lives in `extensions/stelow/state.ts#detectHost()` and follows this precedence: `FUSION_HOST=1` → `STELOW_HOST` (or `PRODUCT_WORKFLOW_CLI`) env var → `~/.fusion` probe → `~/.pi` probe → `pi --version` CLI probe → `generic` (safe fallback). See [docs/design/host-agnostic-architecture.md](docs/design/host-agnostic-architecture.md) for the full design rationale.
+Detection follows this precedence: `FUSION_HOST=1` → `STELOW_HOST` (or `PRODUCT_WORKFLOW_CLI`) env var → `~/.fusion` probe → `~/.pi` probe → `pi --version` CLI probe → `generic` (safe fallback). See [docs/design/host-agnostic-architecture.md](docs/design/host-agnostic-architecture.md) for the full design rationale.
 
 To add a new host, follow the [Generic and future hosts](cli-agents/COMMANDS.md#generic-and-future-hosts) recipe in the adapter guide.
 
@@ -720,10 +717,10 @@ compatibility/historical path; the portable canonical receipts live under
 If you upgraded from `stelow < 0.55`, note the breaking changes:
 
 1. **`integrations/muxy/stelow/` and `integrations/herdr/stelow/` were deleted.** Both the Muxy webview panel and the Herdr split-pane TUI integrations were removed as part of the host-agnostic refactor. The host-agnostic adapter pattern replaces them:
-   - **Pi** stays specialized under `extensions/stelow/adapters/pi/`.
-   - **Fusion** uses `extensions/stelow/adapters/fusion.ts` plus the compiled `plugins/fusion-plugin-stelow/` package for skills, validated artifacts, and managed workflow registration.
+   - **Pi** stays specialized via the native agentskills consumer + the `pi-kata-attention` extension.
+   - **Fusion** consumes `skills/` directly via the agentskills standard; host specialization is via the `STELOW_HOST` env var, not a per-host fork.
    - **Generic / standalone** uses the agentskills.io standard with no host-coupled UI surfaces.
-2. **`PRODUCT_WORKFLOW_CLI` env var was renamed to `STELOW_HOST`.** Use `STELOW_HOST` (or `FUSION_HOST=1` for Fusion). The legacy `PRODUCT_WORKFLOW_CLI` name is still accepted by `extensions/stelow/state.ts#detectHost()` for backward compatibility; `STELOW_HOST` is canonical.
+2. **`PRODUCT_WORKFLOW_CLI` env var was renamed to `STELOW_HOST`.** Use `STELOW_HOST` (or `FUSION_HOST=1` for Fusion). `STELOW_HOST` is canonical.
 3. **`pi.*` host-private tool names** in skill prose are replaced by canonical agnostic names per `stages.yaml#tools` (`ask_user_question`, `visual_review`, `subagent`, etc.). Pi-native invocations live in `references/cli-tools/*.md` only.
 4. **Visual review receipt path**: All hosts write approval receipts to the portable, host-agnostic path under `.stelow/approvals/{dirHash}/{file}.approved.md`. The older Pi-specific shim at `.plannotator/approvals/` is retained only for backward compatibility.
 
