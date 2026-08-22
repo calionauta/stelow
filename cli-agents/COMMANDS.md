@@ -1,26 +1,37 @@
-# Host Adapter and Command Guide
+# Command and Host Guide
 
-Stelow's workflow and 25 skills are host-agnostic. `stages.yaml#tools` is the
-canonical vocabulary; adapters translate those names to native host tools.
+Stelow's workflow and 25 skills are host-agnostic and **skills-only**: there is
+no host adapter code in the repo. `stages.yaml#tools` defines a canonical tool
+vocabulary (`ask_user_question`, `visual_review`, `subagent`, ...) and
+per-host invocation syntax is documented in `references/cli-tools/*.md` inside
+each skill.
 
-## Pi
+## Workflow commands
 
-`extensions/stelow/adapters/pi/` owns native `/sw-*` registration, lifecycle
-hooks, TUI integration, runtime skill synchronization, and the Plannotator
-implementation of `visual_review`. No Pi dependency is imported by the core
-bootstrap or command/state modules.
+`/sw-*` commands are skill-provided entry points routed by `stelow-entry`
+(start/classify) and `stelow-router` (advance/load next stage). They work on
+every agentskills-compatible agent — nothing registers them on a host.
 
-## Fusion
+## State mechanics
 
-Fusion is a host, not a competing workflow engine.
-`scripts/generate-cli-commands.ts` emits `.fusion/commands/sw-*.md` artifacts.
-Fusion maps `ask_user_question` to `fn_ask_question` and `subagent` to
-`fn_spawn_agent`; because Fusion has no native visual-review tool, the adapter
-writes portable receipts under `.stelow/approvals/`. See
-`docs/design/fusion-integration-facts.md`.
+`scripts/stelow` is the portable helper every host shells out to:
+`status [--json]`, `advance <candidate>`, `doctor [--json]`. It needs only
+`bash` + `python3` and enforces transitions against
+`skills/stelow-product-orchestrator/references/transitions.md`.
 
-## Generic and future hosts
+## Host activation
 
-Implement `CLIAdapter`/`BaseAdapter`, add capabilities and tool mappings, and
-keep host-specific code under `extensions/stelow/adapters/<host>/`. Skills must
-never call host-native names directly.
+- **Marker protocol:** set `STELOW_WORKFLOW=1` + `STELOW_STATE=<path>` to
+  load the workflow automatically (see `skills/stelow-entry/references/host-levers.md`).
+- **Visual review:** `visual_review` writes portable approval receipts under
+  `.stelow/approvals/{dirHash}/{file}.approved.md`.
+- **Scheduling/automation:** host-owned (background tasks / cron / autopilot).
+  No `pulse.sh`, no inbox mirror.
+
+## Adding a new host
+
+No code is required. Any agent that reads agentskills.io skill directories
+(`~/.agents/skills/<name>/SKILL.md`) can run the workflow. To add host
+vocabulary (e.g. a new native tool), document it in the tool's
+`references/cli-tools/<tool>.md` file — skills must never call host-native
+tool names directly in prose.

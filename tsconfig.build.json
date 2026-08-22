@@ -23,7 +23,6 @@
     "rootDir": "."
   },
   "include": [
-    "extensions/**/*.ts",
     "types/**/*.d.ts"
   ],
   "exclude": [

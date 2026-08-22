@@ -584,3 +584,48 @@ If tech stack detection fails:
 - **stelow-product-tech-planning**: Produces scopes to test
 - **stelow-product-scope-executor**: Executes test scopes
 - **stelow-product-plan-critique**: Can review testing strategy
+
+## Entry (mode detection)
+
+When this skill loads, check for the stelow workflow marker:
+
+```bash
+if [ -n "$STELOW_WORKFLOW" ] && [ -n "$STELOW_STATE" ]; then
+  echo "stelow: workflow mode (state=$STELOW_STATE)"
+else
+  echo "stelow: standalone mode (no STELOW_WORKFLOW marker)"
+fi
+```
+
+In **standalone mode** (no marker), run the existing skill body unchanged.
+In **workflow mode**, skip to `### Workflow slice` and emit a complete
+`## Hand-off (workflow mode)` block at the end. See
+`references/host-levers.md` for the full marker protocol (SCOPE-9).
+
+## Hand-off (workflow mode)
+
+```
+stage          : verification
+description    : Verification. Run full test suite, code review, UI audit, browser testing.
+status         : <done|partial|blocked>
+artifacts      : <paths created or modified>
+next-candidate : diff-gate
+gate           : none
+rework-on      : execution
+```
+
+Workflow mode: emit the above Hand-off block verbatim, then stop. The
+router skill consumes the next-candidate field and calls
+`scripts/stelow advance <next-candidate>` to move state forward.
+
+### Workflow slice
+
+Workflow mode for the **verification** stage. Standalone behavior lives in
+the rest of this file (unchanged). Summary:
+
+> Verification. Run full test suite, code review, UI audit, browser testing.
+
+Primary actions (per stages.yaml): `read, write`. Run only the actions that
+produce the artifacts promised in `## Hand-off`; skip anything that does
+not advance the workflow.
+

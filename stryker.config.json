@@ -3,16 +3,14 @@
   "_comment": "Mutation testing config (G6C from stelow-reliability plan). Run with `npm run test:mutation`. See docs/agents-md-refs/mutation-testing.md (TODO) for guidance.",
   "packageManager": "npm",
   "testRunner": "vitest",
-  "reporters": ["clear-text", "progress"],
+  "reporters": [
+    "clear-text",
+    "progress"
+  ],
   "coverageAnalysis": "off",
   "timeoutMS": 60000,
   "concurrency": 2,
-  "mutate": [
-    "extensions/stelow/safe-hook.ts",
-    "extensions/stelow/file-lock.ts",
-    "extensions/stelow/schemas.ts"
-  ],
-  "_mutate_comment": "High-leverage correctness files only. state.ts is too large for mutation testing without significant CI time investment.",
+  "mutate": [],
   "ignorePatterns": [
     "node_modules",
     "build",

@@ -1,123 +1,84 @@
-# Stelow Architecture
+# stelow — Architecture
 
-## Overview
+**Skills-only, host-agnostic.** The product is 25 portable agentskills-compatible
+skills plus one zero-dependency shell helper. There is **no extension host code,
+no compiled plugin, and no per-host adapter** in the repo — every agent that can
+read `~/.agents/skills/<name>/SKILL.md` (the agentskills.io standard) runs the
+same workflow. Hosts only add an optional marker protocol
+(`STELOW_WORKFLOW=1` + `STELOW_STATE=<path>`).
 
-Stelow is a host-agnostic product-planning workflow. The repository contains 25
-portable skills and 17 phases. Runtime state and commands live in
-`extensions/stelow/`; host specialization is behind `CLIAdapter`.
-See the [README](README.md) and [AGENTS.md](AGENTS.md) for the user-facing
-and contributor views, and [`docs/design/host-agnostic-architecture.md`](docs/design/host-agnostic-architecture.md)
-for the host-agnostic design rationale. Reference for the
-[agentskills.io](https://agentskills.io/) standard, the
-[Plannotator](https://plannotator.ai/) visual review tool, and the
-[Pi](https://pi.dev) host.
+## Top-level layout
 
-```text
-skills/ + stages.yaml (workflow content and tool vocabulary)
-        ↓
-extensions/stelow/ (state, schema, locking, phases, command registry)
-        ↓ CLIAdapter
-  Pi: adapters/pi/ (hooks, TUI, native slash commands, Plannotator)
-  Fusion: adapters/fusion.ts (tool mapping and generated resources)
-  Generic: adapters/generic.ts (safe fallback)
-        ↓
-plugins/fusion-plugin-stelow/ (compiled dependency-free Fusion package)
-```
+| Path | Purpose |
+|------|---------|
+| `skills/` | All workflow skills (LLM-facing content). One directory per skill, each self-contained: `SKILL.md` + `references/` + `references/cli-tools/` + optional `stages/` files. |
+| `skills/stelow-entry/` | Entry point. Classifies intent, scaffolds `state.md`, picks the first stage. Loaded when `STELOW_WORKFLOW=1`. Never runs stage logic. |
+| `skills/stelow-router/` | Router. Validates the next candidate against `transitions.md`, calls `scripts/stelow advance`, loads the next stage skill, appends the hand-off audit record. |
+| `skills/stelow-product-orchestrator/` | Orchestrator. Coordinates the 17-stage pipeline (Setup → Shape → Critique → Gate → Scope → Interface → Planning → Execution → Verification → Audit). |
+| `skills/stelow-product-<area>/` | The 23 other product/planning sub-skills (shape-up, plan-critique, tech-planning, ux-critique, domain playbooks, etc.). |
+| `scripts/stelow` | Portable helper (bash + python3): `status [--json]`, `advance <candidate>`, `doctor [--json]`. Single source of runtime mechanics. |
+| `scripts/sync-cli-tools.sh` | Regenerates each sub-skill's `references/cli-tools/` from the orchestrator's copy. Run after editing a cli-tools reference. |
+| `scripts/setup.sh` / `install.sh` | Installers. `install.sh` flattens `skills/*` into `~/.agents/skills/` and prunes retired/orphaned skills; `setup.sh` is the zero-to-running path (optionally pi.dev + toolchain). |
+| `types/stages.ts` | Shared TypeScript interfaces for the `stages.yaml` stage model (transitions, gates, supervisor). |
+| `stelow.schema.json` / `stelow.json` | Workflow tracking JSON schema + per-project runtime tracking state. |
+| `tests/` | Vitest suite (`unit/`, `integration/`, `skills/`) + contract tests (skill-count, dual-mode, fs/e2e). |
+| `docs/design/`, `docs/agents-md-refs/` | Historical design docs / agent reference notes (EN artifacts, PT-BR discussion). |
+| `references/` | Legacy root copies of orchestrator reference files (consumed by tooling, not by skills at runtime). |
 
-## State and artifacts
+## Stage model (the 17-stage state machine)
 
-`stelow.json` at the project root is the sole canonical workflow state;
-`~/.stelow-global.json` is the global catalog. Workflow artifacts live under
-`.stelow/{date}/{dirHash}/` (specs, interfaces, plans, critiques and
-checklists). There is no generated per-workflow `index.json` mirror. Portable
-approval receipts are `.stelow/approvals/{dirHash}/{file}.approved.md`;
-`.plannotator/approvals/` is Pi compatibility/history only. Fusion owns
-`.fusion/` workflow/task persistence; Stelow owns `stelow.json` and `.stelow/`.
+- **Single source of truth:** `skills/stelow-product-orchestrator/stages.yaml`
+  (tools per stage, transitions, gates, supervisor activation).
+- **Behavioral companion:** `skills/stelow-product-orchestrator/stages/*.md`
+  (one file per stage, describing what happens in that stage).
+- **Data-only mirror:** `skills/stelow-product-orchestrator/references/transitions.md`
+  — generated from `stages.yaml`; this is the file `scripts/stelow advance` and
+  the router validate against. Do not edit by hand; edit `stages.yaml` and regen.
+- The 17 stages: `triage` → `select` → `setup` → `context` → `shape` →
+  `critique` → `gate` → `scope` → `interface` → `int-gate` → `selection` →
+  `planning` → `plan-gate` → `execution` → `verification` → `diff-gate` →
+  `audit`.
+- Visual review gates (`gate`, `int-gate`, `plan-gate`, `diff-gate`) are
+  conditional on `review_mode` — see `stages.yaml`.
 
-`state.ts` provides `JsonFileStore`, schema validation, checkpoints, events,
-file locks, host detection (`detectHost()`), and recovery. `start.ts` creates
-workflow artifact directories. `modules/index.ts` exports surviving shared
-module utilities such as `TASK_ICONS`; do not document cache helpers that no
-longer exist.
+## Runtime state
 
-## Host adapters
+| Path | Contents | Owner |
+|------|----------|-------|
+| `state.md` | Per-workflow frontmatter: `name`, `intent`, `current_stage`, `status`, `config` (appetite, review_mode, product_type), tracked `stage` history. | entry/router skills + `scripts/stelow advance` |
+| `.stelow/lock` | mkdir-based advisory lock (pid, host, acquired timestamp) with TTL (`STELOW_LOCK_TTL_SEC`, default 120). Stale locks are auto-cleared. | `scripts/stelow` |
+| `.stelow/invariants.json` | Append-only advance history + invariant checks written by `scripts/stelow advance`. | `scripts/stelow` |
+| `stelow.json` | Multi-workflow tracking (schema `stelow.schema.json`): `workflows[]` with phases, scope sync from `spec-tech.md`. | workflow skills (agent) |
+| `.stelow/{date}/{dirHash}/` | Per-workflow artifacts: `specs/`, `interfaces/`, `plans/`, `critiques/`, `approvals/`, `execution/`, `verification/`. | workflow skills |
 
-`CLI`/`HostName` are the `"pi" | "fusion" | "generic"` union. Adapter factories
-select the host after `detectHost()`. `stages.yaml` supplies canonical tool
-vocabulary; adapters translate it (for example Pi's `ask_user_question` to
-Fusion's `fn_ask_question`). Generic hosts receive skills and fallbacks but do
-not register native `/sw-*` commands. The adapter is in-process; a host plugin
-is a separate packaging boundary.
+## Data flow
 
-### Responsibility split (v0.57.0)
+1. Host sets `STELOW_WORKFLOW=1`; entry skill loads, classifies intent, scaffolds
+   `state.md`, and selects the first stage from `transitions.md`.
+2. Router validates the candidate stage against `transitions.md`, then
+   `scripts/stelow advance <candidate>` acquires `.stelow/lock`, checks the
+   pre-condition (transitions.md presence) and stage-transition invariants,
+   updates `state.md` frontmatter, appends `.stelow/invariants.json`, and
+   releases the lock.
+3. Stage skill loads and runs, writing artifacts under `.stelow/{date}/{dirHash}/`.
+4. `scripts/stelow doctor` detects drift classes (stale-lock, missing-dir,
+   parallel-lock, state-transitions) across the workflow tree.
 
-Pulse, the inbox mirror (`.stelow/inbox/`), and the Stelow Runner autopilot are
-**host responsibilities**, not core responsibilities. Each host owns:
+## Portability rules
 
-- **Scheduling / automation** — Multica autopilot (`run_only` + triggers),
-  Fusion's native scheduler, Pi `pi-subagents` background runs. There is no
-  `pulse.sh` in the core anymore; cron entries that pointed at it must move to
-  the host equivalent.
-- **Inbox surface** — Multica `backlog`/`todo` issues, Fusion's native inbox,
-  Pi `pi-session-state`. The core no longer mirrors `.stelow/inbox/items.md`.
+- Zero npm-dependency runtime: skills are markdown + the `scripts/stelow` shell
+  helper (bash + python3). No compile step at install time.
+- Skills never call host-native tool names directly; `stages.yaml#tools` defines
+  a portable vocabulary (`ask_user_question`, `visual_review`, `subagent`) and
+  `references/cli-tools/*.md` document per-host invocation syntax.
+- Distribution is Git/GitHub only (no `npm publish`). Version lives in
+  `package.json` and is pinned by the SW-034 trailer contract + `.husky/commit-msg`.
 
-Stelow owns only:
+## How to extend
 
-- The workflow state machine (`PHASE_NAMES` + `stages.yaml`).
-- The adapters (Pi, Fusion, Generic, Multica).
-- The audit trail (`audit-trail.ts`) — the workflow's own output, not a host
-  inbox mirror.
-
-The Fusion package is prepared from the canonical skills and builders by
-`scripts/prepare-fusion-plugin.ts`, then compiled by
-`npm run build:fusion-plugin`. Its entry has no private Fusion imports. Full
-runtime installation validates settings and workflow IR, installs 25 local skill
-trees and project artifacts, registers one managed project-scoped workflow,
-and is idempotent and fail-closed on collisions. Installation rollback restores
-previous bytes and removes only transaction-created empty directories.
-See [`plugins/fusion-plugin-stelow/README.md`](plugins/fusion-plugin-stelow/README.md)
-and [`docs/design/fusion-integration-facts.md`](docs/design/fusion-integration-facts.md).
-
-## Workflow phases
-
-The source of truth is `PHASE_NAMES` in `extensions/stelow/types.ts`, with
-transitions and conditional review gates in
-`skills/stelow-product-orchestrator/stages.yaml`:
-
-`Triage`, `ItemSelect`, `Setup`, `Context`, `Shape`, `Critique`, `Gate`, `Scope`,
-`Interface`, `Int.Gate`, `Selection`, `Planning`, `Plan.Gate`, `Execution`,
-`Verification`, `Diff.Gate`, `Audit` (indices 0–16).
-
-`Gate`, `Int.Gate`, `Plan.Gate`, and `Diff.Gate` are conditional by review mode;
-the unconditional “never skip” rule from pre-v0.55 is gone. Execution is
-phase 13, Verification 14, and Audit 16. See [`stages.yaml`](skills/stelow-product-orchestrator/stages.yaml)
-for the canonical transitions.
-
-## Commands
-
-`WORKFLOW_COMMANDS` in `extensions/stelow/adapters/commands/dispatcher.ts` is
-the host-agnostic registry — 17 descriptors in v0.57.0 (down from 19 after
-`sw-inbox` and `sw-pulse` were removed alongside Pulse, Inbox, and
-Provenance). All 17 are emitted to every host; there are no `piOnly` flags
-remaining in the agnostic registry.
-
-Pi additionally registers one Pi-local descriptor — `sw-unlock` — via
-`extensions/stelow/adapters/pi/commands.ts#PI_LOCAL_COMMANDS`. Pi therefore
-exposes 18 total commands (17 agnostic + 1 Pi-local). Fusion emits all 17
-agnostic descriptors through `plugins/fusion-plugin-stelow/`. Generic hosts
-have no native command registry and use the orchestrator skill/fallback
-path. The registry is the authoritative command inventory; it includes
-`/sw-recover` and `/sw-audit`.
-
-## Extending the system
-
-1. Add host-agnostic behavior to the core and update schemas/tests.
-2. Add host-specific behavior under the matching adapter; do not import Pi
-   primitives into Fusion or generic code.
-3. Update `stages.yaml` tool mappings and command descriptors when applicable.
-4. Run `npm run version:sync`, `npm run prepare:fusion-plugin`, and the targeted
-   contract tests. Keep generated plugin output out of hand-authored guides.
-
-The thin `extensions/stelow/index.ts` bootstrap delegates registration to the
-selected adapter. Design rationale is in
-[`docs/design/host-agnostic-architecture.md`](docs/design/host-agnostic-architecture.md).
+- New stage → edit `stages.yaml`, regenerate `references/transitions.md`.
+- New skill → add `skills/stelow-product-<name>/SKILL.md` with `metadata.category`
+  frontmatter; keep counts consistent (README contract test pins 25/1+24).
+- New host → no code required. Ensure the host can read agentskills.io skill
+  directories and set the marker env vars. Host levers are documented in
+  `skills/stelow-entry/references/host-levers.md`.

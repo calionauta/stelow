@@ -190,3 +190,48 @@ specialized analysis.
 - **stelow-product-ux-critique**: For visual/interface critique (use instead when you have UI)
 - **stelow-product-plan-critique**: For product plan critique (use instead when you have spec-product.md)
 - **stelow-product-execution-critique**: Post-implementation audit
+
+## Entry (mode detection)
+
+When this skill loads, check for the stelow workflow marker:
+
+```bash
+if [ -n "$STELOW_WORKFLOW" ] && [ -n "$STELOW_STATE" ]; then
+  echo "stelow: workflow mode (state=$STELOW_STATE)"
+else
+  echo "stelow: standalone mode (no STELOW_WORKFLOW marker)"
+fi
+```
+
+In **standalone mode** (no marker), run the existing skill body unchanged.
+In **workflow mode**, skip to `### Workflow slice` and emit a complete
+`## Hand-off (workflow mode)` block at the end. See
+`references/host-levers.md` for the full marker protocol (SCOPE-9).
+
+## Hand-off (workflow mode)
+
+```
+stage          : diff-gate
+description    : Code diff review. visual review review of working tree diff. Only in Product Spec + Interface + Tech Review + Code Diff 
+status         : <done|partial|blocked>
+artifacts      : <paths created or modified>
+next-candidate : audit
+gate           : none
+rework-on      : execution
+```
+
+Workflow mode: emit the above Hand-off block verbatim, then stop. The
+router skill consumes the next-candidate field and calls
+`scripts/stelow advance <next-candidate>` to move state forward.
+
+### Workflow slice
+
+Workflow mode for the **diff-gate** stage. Standalone behavior lives in
+the rest of this file (unchanged). Summary:
+
+> Code diff review. visual review review of working tree diff. Only in Product Spec + Interface + Tech Review + Code Diff mode.
+
+Primary actions (per stages.yaml): `read, write`. Run only the actions that
+produce the artifacts promised in `## Hand-off`; skip anything that does
+not advance the workflow.
+

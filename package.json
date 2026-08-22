@@ -1,7 +1,7 @@
 {
   "name": "@calionauta/stelow",
-  "version": "0.57.0",
-  "description": "stelow — opinionated product workflow. stellar clarity. low friction.",
+  "version": "1.0.0",
+  "description": "stelow \u2014 opinionated product workflow. stellar clarity. low friction.",
   "keywords": [
     "pi-skill",
     "pi-extension",
@@ -22,12 +22,7 @@
       "types": "./build/index.d.ts"
     },
     "./skills": "./skills/",
-    "./extensions": "./extensions",
-    "./adapters": "./build/adapters/index.js",
-    "./fusion-plugin": {
-      "types": "./plugins/fusion-plugin-stelow/dist/index.d.ts",
-      "import": "./plugins/fusion-plugin-stelow/dist/index.js"
-    }
+    "./adapters": "./build/adapters/index.js"
   },
   "repository": {
     "type": "git",
@@ -62,10 +57,7 @@
   },
   "files": [
     "build/",
-    ".fusion/commands/",
     "skills/",
-    "extensions/stelow/",
-    "plugins/fusion-plugin-stelow/",
     "scripts/",
     "install.sh",
     "stelow.schema.json",
@@ -74,12 +66,9 @@
     "CHANGELOG.md"
   ],
   "scripts": {
-    "prepare:fusion-plugin": "npm exec -- tsx scripts/prepare-fusion-plugin.ts",
-    "build:fusion-plugin": "tsc -p plugins/fusion-plugin-stelow/tsconfig.json",
-    "build": "./scripts/sync-cli-tools.sh && npm run prepare:fusion-plugin && npm run build:fusion-plugin && tsc -p tsconfig.build.json && ./scripts/copy-pulse-assets.sh",
+    "build": "./scripts/sync-cli-tools.sh && tsc -p tsconfig.build.json",
     "prepare": "node -e \"try { require('husky').install() } catch (e) { console.log('husky not installed (e.g. prod install), skipping') }\"",
-    "prepublishOnly": "npm run generate-cli-commands && npm run build && ./scripts/sync-cli-tools.sh",
-    "generate-cli-commands": "npm exec -- tsx scripts/generate-cli-commands.ts",
+    "prepublishOnly": "npm run build && ./scripts/sync-cli-tools.sh",
     "test": "vitest run",
     "test:unit": "vitest run tests/unit",
     "test:integration": "vitest run tests/integration",
@@ -92,9 +81,7 @@
     "test:rigor": "bash scripts/rigor-scan.sh 60",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",
-    "version:sync": "node scripts/version-sync.mjs",
-    "version": "npm run version:sync",
-    "prepack": "npm run generate-cli-commands && npm run build && ./scripts/sync-cli-tools.sh"
+    "prepack": "npm run build && ./scripts/sync-cli-tools.sh"
   },
   "devDependencies": {
     "@earendil-works/pi-coding-agent": "0.80.6",
@@ -108,10 +95,5 @@
     "husky": "9.1.7",
     "typescript": "^6.0.3",
     "vitest": "^4.1.6"
-  },
-  "pi": {
-    "extensions": [
-      "./extensions/stelow/index.ts"
-    ]
   }
 }

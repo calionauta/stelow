@@ -1,5 +1,13 @@
 # Scope Lifecycle — Gap Analysis
 
+> ⚠️ **Superseded (1.0.0).** This document analyzes the pre-1.0.0 auto-sync
+> implementation (`readTracking()` / `writeTracking()` /
+> `parseSpecTechScopes` in the deleted `extensions/` core). Since 1.0.0 the
+> scope lifecycle is skill-instructed: the executor skill parses
+> `[SCOPE-N]` blocks from `spec-tech.md` and writes `wf.scopes[]` to
+> `stelow.json`. The historical analysis below is kept as a regression note;
+> the mechanics described here no longer exist in source.
+
 After implementing auto-sync (host-agnostic `readTracking()` / `writeTracking()`
 hooks both call `syncScopesIfNeeded`, which calls the single
 `parseSpecTechScopes` implementation in `extensions/stelow/state.ts`), the

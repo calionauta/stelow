@@ -90,3 +90,48 @@ Instead of giving a price discount, you **add more value to the original offer**
 - **Valuable freebie**: the freebie must have real perceived value. If you sell a package of 4 consultations, offer 2 extra sessions.
 - **Differential in the freebie**: the extra sessions can include a premium service that's not in the normal package
 - **Limit**: to create urgency, the offer can be limited to the first 5 customers
+
+## Entry (mode detection)
+
+When this skill loads, check for the stelow workflow marker:
+
+```bash
+if [ -n "$STELOW_WORKFLOW" ] && [ -n "$STELOW_STATE" ]; then
+  echo "stelow: workflow mode (state=$STELOW_STATE)"
+else
+  echo "stelow: standalone mode (no STELOW_WORKFLOW marker)"
+fi
+```
+
+In **standalone mode** (no marker), run the existing skill body unchanged.
+In **workflow mode**, skip to `### Workflow slice` and emit a complete
+`## Hand-off (workflow mode)` block at the end. See
+`references/host-levers.md` for the full marker protocol (SCOPE-9).
+
+## Hand-off (workflow mode)
+
+```
+stage          : shape
+description    : Shape stage. Define appetite, hill chart, rabbit holes.
+status         : <done|partial|blocked>
+artifacts      : <paths created or modified>
+next-candidate : critique
+gate           : none
+rework-on      : shape
+```
+
+Workflow mode: emit the above Hand-off block verbatim, then stop. The
+router skill consumes the next-candidate field and calls
+`scripts/stelow advance <next-candidate>` to move state forward.
+
+### Workflow slice
+
+Workflow mode for the **shape** stage. Standalone behavior lives in
+the rest of this file (unchanged). Summary:
+
+> Shape stage. Define appetite, hill chart, rabbit holes.
+
+Primary actions (per stages.yaml): `read, write`. Run only the actions that
+produce the artifacts promised in `## Hand-off`; skip anything that does
+not advance the workflow.
+

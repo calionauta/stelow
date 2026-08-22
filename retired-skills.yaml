@@ -1,11 +1,11 @@
 # retired-skills.yaml — Retired/removed skills from the project
 #
 # List of skills that WERE PART OF the project but are no longer in
-# the current `skills/` directory. `syncSkillsFromClone` reads this file and removes
-# stale copies from `~/.agents/skills/` on next session_start.
+# the current `skills/` directory. `install.sh` reads this file and removes
+# stale copies from `~/.agents/skills/` on next install (prune phase).
 #
 # Lives at project root (not inside skills/) because it is consumed
-# by ops code (sync-skills.ts), never by the LLM at runtime.
+# by the installer, not by the LLM at runtime.
 #
 # Entry format:
 #   - name:           (required) retired skill name

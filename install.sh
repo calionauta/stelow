@@ -266,7 +266,6 @@ install_pi() {
   # and kept fresh by the extension's syncSkillsFromClone() on session_start.
 
   log_info "    Installing Pi extension (git package)..."
-  pi remove "$SCRIPT_DIR/extensions/stelow" 2>/dev/null || true
   pi install "git:github.com/calionauta/stelow" 2>/dev/null || true
 
   # Configure Pi to ignore skills/ from the git clone via native package filter.
@@ -508,7 +507,6 @@ setup_minimal() {
 
 install_pi_extension() {
   log_info "  Installing Pi extension..."
-  pi remove "$SCRIPT_DIR/extensions/stelow" 2>/dev/null || true
   pi install "git:github.com/calionauta/stelow" 2>/dev/null || true
   _configure_pi_skills_filter
 }

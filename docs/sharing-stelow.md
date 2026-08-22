@@ -1,5 +1,12 @@
 # Sharing stelow: a step-by-step plan
 
+> ⛔ **Superseded (1.0.0).** This plan targeted publishing stelow as a pi
+> package with a bundled Pi extension. Stelow is now **skills-only and
+> distributed via Git/GitHub only — there is no `npm publish`** (see
+> `AGENTS.md` Versioning). The plan below is kept as historical context for
+> the pre-1.0.0 era; the relevant discovery work today is updating lists and
+> the README to point at `npx skills add calionauta/stelow -g`.
+
 A plan to publish stelow as a pi package and contribute it to existing community lists. The intent is to make stelow discoverable for people who would find it useful, not to run a campaign.
 
 ## Preconditions

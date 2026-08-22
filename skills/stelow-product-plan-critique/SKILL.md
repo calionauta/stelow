@@ -346,3 +346,48 @@ proceeding to tech planning.
 - **stelow-product-ux-critique**: For visual/interface critique (use instead when you have a URL, codebase, or screenshot)
 - **stelow-product-codebase-critique**: For codebase architecture critique (use instead when you have a code directory)
 - **stelow-product-execution-critique**: Post-implementation audit (runs after execution to verify completeness)
+
+## Entry (mode detection)
+
+When this skill loads, check for the stelow workflow marker:
+
+```bash
+if [ -n "$STELOW_WORKFLOW" ] && [ -n "$STELOW_STATE" ]; then
+  echo "stelow: workflow mode (state=$STELOW_STATE)"
+else
+  echo "stelow: standalone mode (no STELOW_WORKFLOW marker)"
+fi
+```
+
+In **standalone mode** (no marker), run the existing skill body unchanged.
+In **workflow mode**, skip to `### Workflow slice` and emit a complete
+`## Hand-off (workflow mode)` block at the end. See
+`references/host-levers.md` for the full marker protocol (SCOPE-9).
+
+## Hand-off (workflow mode)
+
+```
+stage          : plan-gate
+description    : Tech plan gate. Visual review of spec-tech.md via visual review. Only in Product Spec + Interface + Tech Review or Code 
+status         : <done|partial|blocked>
+artifacts      : <paths created or modified>
+next-candidate : execution
+gate           : none
+rework-on      : planning
+```
+
+Workflow mode: emit the above Hand-off block verbatim, then stop. The
+router skill consumes the next-candidate field and calls
+`scripts/stelow advance <next-candidate>` to move state forward.
+
+### Workflow slice
+
+Workflow mode for the **plan-gate** stage. Standalone behavior lives in
+the rest of this file (unchanged). Summary:
+
+> Tech plan gate. Visual review of spec-tech.md via visual review. Only in Product Spec + Interface + Tech Review or Code Diff mode.
+
+Primary actions (per stages.yaml): `read, write`. Run only the actions that
+produce the artifacts promised in `## Hand-off`; skip anything that does
+not advance the workflow.
+

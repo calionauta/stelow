@@ -113,3 +113,48 @@ Ensures that if a customer changes their mind — especially in the first few mo
 The exit barrier of a service cannot be the difficulty of taking their data away. An explicit commitment to **data portability** — exporting information easily, freely, and in an open format — is the recognition that the company offers a tool, but the work and creation belong to the user.
 
 **Why Adopting These Principles is Also a Business Strategy**: a company that facilitates customer entry and exit is making a bold bet on the quality of its own product, signaling that it intends to retain customers **by merit, and not by lock-in**.
+
+## Entry (mode detection)
+
+When this skill loads, check for the stelow workflow marker:
+
+```bash
+if [ -n "$STELOW_WORKFLOW" ] && [ -n "$STELOW_STATE" ]; then
+  echo "stelow: workflow mode (state=$STELOW_STATE)"
+else
+  echo "stelow: standalone mode (no STELOW_WORKFLOW marker)"
+fi
+```
+
+In **standalone mode** (no marker), run the existing skill body unchanged.
+In **workflow mode**, skip to `### Workflow slice` and emit a complete
+`## Hand-off (workflow mode)` block at the end. See
+`references/host-levers.md` for the full marker protocol (SCOPE-9).
+
+## Hand-off (workflow mode)
+
+```
+stage          : shape
+description    : Shape stage. Define appetite, hill chart, rabbit holes.
+status         : <done|partial|blocked>
+artifacts      : <paths created or modified>
+next-candidate : critique
+gate           : none
+rework-on      : shape
+```
+
+Workflow mode: emit the above Hand-off block verbatim, then stop. The
+router skill consumes the next-candidate field and calls
+`scripts/stelow advance <next-candidate>` to move state forward.
+
+### Workflow slice
+
+Workflow mode for the **shape** stage. Standalone behavior lives in
+the rest of this file (unchanged). Summary:
+
+> Shape stage. Define appetite, hill chart, rabbit holes.
+
+Primary actions (per stages.yaml): `read, write`. Run only the actions that
+produce the artifacts promised in `## Hand-off`; skip anything that does
+not advance the workflow.
+

@@ -29,5 +29,9 @@ See `skills/stelow-product-orchestrator/stages.yaml` for current tool restrictio
 
 ## Enforcement
 
-- **All CLIs:** This file + stages.yaml define behavioral constraints
-- **Pi only:** `extensions/stelow/adapters/stages-guard.ts` enforces programmatically
+- **All agents:** This file + `stages.yaml` define behavioral constraints.
+  `scripts/stelow` enforces the mechanics programmatically on every host:
+  `advance` refuses invalid candidates (fail-closed, `state.md` stays
+  byte-identical) and guards stage transitions against `transitions.md`;
+  `doctor` flags drift (stale-lock, missing-dir, parallel-lock,
+  state-transitions).

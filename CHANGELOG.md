@@ -1,3 +1,72 @@
+## [1.0.0] - 2026-08-14
+
+Skills-only milestone (SCOPE-1..SCOPE-9, `f25b751`..`d2aa445`). The Pi
+extension host code, the Fusion adapter package, and the inbox mirror are
+removed from the tree. The product is now the 25 portable skills plus the
+zero-dependency `scripts/stelow` helper (status/advance/doctor). Host
+specialization is via the marker protocol (`STELOW_WORKFLOW=1` +
+`STELOW_STATE=<path>`); no per-host fork ships in the repo.
+
+### Added
+
+- **State-model contract** (`f25b751`, SCOPE-1) — canonical 17-stage model
+  and `state.md` frontmatter scaffold (`types/stages.ts`).
+- **`scripts/stelow` helper** (`93520ed`, SCOPE-2) — `status` (text/--json),
+  `advance` (mkdir lock with TTL, pre-condition check on `transitions.md`,
+  fail-closed on invalid candidate so `state.md` stays byte-identical),
+  `doctor` (4 drift classes: stale-lock, missing-dir, parallel-lock,
+  state-transitions-drift). Reference:
+  `skills/stelow-product-orchestrator/references/cli-tools/stelow-helper.md`.
+- **Dual-mode contract** (`c9da74d`, SCOPE-3) — every stage skill carries
+  workflow-mode / standalone-mode blocks; standalone sections preserved.
+- **Entry + router skills** (`d9303a9`, SCOPE-4) — `stelow-entry` (intent
+  classification + state scaffold), `stelow-router` (validate next-candidate,
+  advance via helper, load next stage).
+- **Extensions freeze guard** (`2353e8e`, SCOPE-5) — CI guard blocking drift
+  under `extensions/` while the skills-only refactor was in flight.
+- **Host-levers spike** (`535bda5`, SCOPE-9) — `host-levers.md` documents the
+  marker protocol across 8 harnesses.
+- **Three test layers** (SCOPE-6a/b/c, `bf6318c`, `d4664e0`, `75af0de`) —
+  `stelow-helper.test.ts` (13 cases), `stelow-fs.test.ts` (5 cases),
+  `stelow-e2e.test.ts` (4 cases). 523/523 passing.
+
+### Removed
+
+- **Pi extension host code** (`dcbd49c`, SCOPE-7) — `extensions/` in full:
+  the adapters (`pi/`, `fusion/`, `commands/`, `multica/`, ...), the
+  `WORKFLOW_COMMANDS` registry, `commands.ts`, `doctor.ts`, `state-manager.ts`,
+  `audit-trail.ts`, `file-lock.ts` and the rest of the core.
+- **Compiled Fusion adapter package** — `plugins/fusion-plugin-stelow/`
+  (`manifest.json`, `package.json`, `src/skills.ts`).
+- **Fusion CLI command artifacts** — the `.fusion/` directory (`sw-*.md`).
+- **5 dependent scripts** — `generate-cli-commands.ts`,
+  `prepare-fusion-plugin.ts`, `version-sync.mjs`, `check-dist-skills-drift.sh`,
+  `check-extensions-freeze.sh` (post-freeze).
+- **19 dependent tests** — all unit/integration tests that imported from
+  `extensions/`, including the hook-error-containment and pi-sandbox-install
+  suites.
+
+### Changed
+
+- **`package.json`** — drops the ESM build entry/exports and the
+  `version:sync`, `prepare:fusion-plugin`, `build:fusion-plugin`,
+  `check-dist-skills-drift` scripts; drops the publish/`files` block.
+- **`.github/workflows/ci.yml`** — drops the `version-coherence` workflow and
+  the dist-skills-drift step; only the `CI` workflow remains.
+- **`stryker.config.json`** — mutation targets narrowed to the remaining
+  sources.
+- **`AGENTS.md` / `README.md` / `RULES.md` / `retired-skills.yaml`** —
+  rewritten to reflect the skills-only tree. Historical references in
+  `docs/design/`, legacy notes, and the changelog remain by design.
+
+### Verification
+
+- **Build**: ✅ (sync-cli-tools + `tsc -p tsconfig.build.json`)
+- **Tests**: ✅ 523/523 (20 test files)
+- **No broken imports** in runtime code
+- **Tree cut verified** — restore of the pre-cut tree confirms nothing else
+  referenced the deleted paths (revert aborted to keep the cut).
+
 # Changelog
 
 All notable changes to `@calionauta/stelow` will be documented in this file.
