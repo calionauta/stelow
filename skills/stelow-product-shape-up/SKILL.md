@@ -15,7 +15,7 @@ metadata:
 
 # Shape Up Planning
 
-> **Tools:** See `references/cli-tools/subagents.md` for subagent patterns.
+> **Tools:** See `references/cli-tools/subagents.md` for subagent patterns and `../../stelow-product-orchestrator/references/cli-tools/acceptance-checklist.md` for external acceptance-criteria sources.
 
 ## Overview
 
@@ -272,6 +272,40 @@ After shaping:
 Each shaped proposal should include **product-level DoD and ACs** that define what "done"
 means from the user's perspective. These are distinct from technical DoD/ACs (added during
 Tech Planning) — they describe the **outcome**, not the implementation.
+
+### shape:22 — External Acceptance Checklist (candidate AC source)
+
+When `product_type ∈ {software, hybrid}` AND the scope involves UI screens, flows,
+or reusable components, consult checklist.design as a **candidate** AC source — the LLM
+decides which items are worth keeping for the project's scope, platform, appetite, and
+review mode. Fetch gracefully: if the source is unreachable or irrelevant, proceed with
+the generated ACs only. **Never block shaping or a gate on an external source.**
+
+See `../../stelow-product-orchestrator/references/cli-tools/acceptance-checklist.md` for
+the fetch recipe (deterministic JSON endpoints: `/api/checklists/grouped` +
+`/api/checklists/by-slug`). Do NOT use plan-critique, tech-planning, or scope-executor
+here — this runs at shaping time only.
+
+1. **Fetch catalog** — `GET /api/checklists/grouped`; pick 1-3 checklists most relevant
+   to the shaped context (category by platform: `website` / `web-app` / `mobile` /
+   `design-system` / `flows`).
+2. **Fetch detail** — `GET /api/checklists/by-slug?slug={slug}&category={category}`
+   for each selected checklist.
+3. **Filter (LLM decision)** — keep only items that map to a flow/screen/component in
+   IN scope. Depth by appetite: `Lean` ≤5 critical-path items, `Core` ~8-12, `Complete`
+   all applicable. Rewrite each item as a verifiable AC (given/when/then or checkable);
+   merge description + suggestion; dedup against the ACs generated below.
+4. **Record source** — append a short `## Checklist Sources` appendix after the ACs,
+   with the retained item count:
+
+```
+## Checklist Sources
+
+- [checklist.design · web-app/onboarding](https://www.checklist.design) — 4 items retained
+```
+
+The appendix is the contract for `stelow-product-ux-critique`: during verification it
+re-checks the shipped UI against the retained items. Skip this step when nothing applies.
 
 Include in `spec-product.md`:
 

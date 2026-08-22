@@ -23,7 +23,7 @@ metadata:
 > **Inputs:** URL (live site), directory (source code), or screenshot (image).
 > **Output:** Classified report with gaps (🚨/🤔/🔎) + actionable recommendations.
 
-> **Tools:** See `references/cli-tools/agent_browser.md` and `references/cli-tools/subagents.md` for tool patterns.
+> **Tools:** See `references/cli-tools/agent_browser.md`, `references/cli-tools/subagents.md`, and `../../stelow-product-orchestrator/references/cli-tools/acceptance-checklist.md` for tool patterns.
 
 ## Overview
 
@@ -217,6 +217,21 @@ keyboard, screen reader, focus, interactive states, animation.
 | Nielsen heuristics (visual) | Interactive states |
 | Personas (visual) | ARIA attributes |
 | Layout/spacing | Animations |
+
+---
+
+## 📋 Recorded Checklist Sources (loop-closing)
+
+If the shaped plan (`spec-product*.md` in the workflow root) has a `## Checklist Sources`
+appendix, the shaping stage retained UI/UX items from checklist.design as acceptance
+criteria. During verification, re-check the shipped UI against those retained items.
+This closes the loop: the criteria that seeded the ACs are the criteria the audit verifies.
+
+1. **Find retained items** — read the current `spec-product*.md`: `## Checklist Sources`
+   (source + item count) and the `## Acceptance Criteria` items it seeded.
+2. **Verify each** against the applicable mode (Live Site / Codebase / Screenshot) and
+   record PASS/FAIL in the audit report with severity when it fails.
+3. **Skip entirely** if the appendix is absent or lists nothing.
 
 ---
 

@@ -76,9 +76,10 @@ next:      shape
 accept:    shape
 reject:    setup
 rework:    (none)
-gate:      context:5 — Product Spec Gate and Auto skip this stage
-           (other review modes use reduced ask; this affects pipeline
-           routing but not the transitions table)
+gate:      context:5 — Lean+Auto skips entire stage; Lean+non-Auto uses
+           reduced ask (opt-in execution); Core/Complete run full ask.
+           Product Spec Gate skips entirely (all appetites).
+           See Appetite Effects section below for the full matrix.
 ```
 
 ### shape
@@ -232,7 +233,7 @@ gate:      (none)
 
 | Stage | review_mode | Blocked? | Gate rule |
 |---|---|---|---|
-| context | Auto | skip | appetite=Core? Reduced ask only |
+| context | Auto | skip | Lean skips entirely; Core/Complete run full ask |
 | context | Product Spec Gate | skip | skipped entirely |
 | context | Product Spec + Interface + Scopes | skip | skipped entirely |
 | context | Product Spec + Interface + Tech Review + Code Diff | skip | skipped entirely |
@@ -245,6 +246,58 @@ gate:      (none)
 | diff-gate | Product Spec Gate | skip | skipped |
 | diff-gate | Product Spec + Interface + Scopes | skip | skipped |
 | diff-gate | Product Spec + Interface + Tech Review + Code Diff | block | `requires_approval: true`, `visual_review` required |
+
+---
+
+## Appetite Effects
+
+Appetite controls **depth** within each stage, not which stages run.
+The only pipeline-level skip is Context (see `context:5` gate below).
+All other appetite effects are stage-internal: scope limits, review
+depth, supervisor sensitivity, test breadth.
+
+### Pipeline-level skip
+
+| Appetite | Review Mode | Stage skipped |
+|---|---|---|
+| `Lean` | `Auto` | **context** (entire stage — `context:5` gate) |
+| `Lean` | any other | context runs (reduced ask, opt-in execution) |
+| `Core` | any | none |
+| `Complete` | any | none |
+
+### Depth controls per stage
+
+| Stage | Lean | Core | Complete |
+|---|---|---|---|
+| **shape** (tech preview) | Minimum recon (cymbal structure only) | Standard recon (cymbal structure) | Deep recon (cymbal structure + impact) |
+| **shape** (appetite_fit) | ≤2 scopes, ≤150 lines | ≤5 scopes, ≤350 lines | No mechanical limits |
+| **shape** (assumption check) | Controlled by **review_mode**, not appetite — see `shape:15` in shape-up SKILL | — | — |
+| **interface** | 1 archetype, no hybrid | 3 archetypes + hybrid | 5 archetypes + hybrid |
+| **execution** (supervisor) | Low sensitivity | Medium sensitivity | High sensitivity |
+| **verification** (code review) | Single reviewer | Parallel reviewers | Parallel + Thermo-Nuclear |
+| **verification** (UI quality) | Static a11y/lint only | Codebase/browserless (~80%) | Live site audit (browser) |
+| **verification** (interactive) | Quick Tier only (browserless) | Quick Tier | Quick + Full Tier (browser) |
+| **verification** (code quality) | Skip Thermo-Nuclear | Conditional by risk | Mandatory (high review modes) |
+| **codebase-critique** | Light checklist (basic structural) | Quick single-reviewer | Full architectural analysis |
+| **ux-critique** | Static a11y/lint baseline | Codebase/browserless mode | Live site audit |
+| **testing-ai-code** | Critical-path only | Standard coverage | Full coverage (e2e, security) |
+| **acceptance-checklist** | ≤5 items | ~8-12 items | All applicable items |
+| **triage** (group size) | ≤2 items/group | ≤4 items/group | ≤6 items/group |
+
+### What appetite does NOT control
+
+- **Which stages run** (except Context skip above) — intent controls that
+- **Which gates are active** — review_mode controls that
+- **Quality baseline** — build/test/lint/typecheck always run; a11y lint always runs when UI files exist
+
+### Reading appetite at runtime
+
+Stage skills read appetite from `spec-product.md` frontmatter via the
+canonical helper (`stelow_read_appetite` from `read-config.sh`).
+Fallback: `Core` if unavailable.
+
+See `README.md` § "Appetite & Review Mode" for the full table and
+`stages/context.md#context:5` for the Context skip gate matrix.
 
 ---
 

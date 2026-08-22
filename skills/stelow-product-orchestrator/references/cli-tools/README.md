@@ -80,6 +80,7 @@ cli-binary ...args
 
 | File | Purpose |
 |------|---------|
+| `acceptance-checklist.md` | Curated UI/UX checklists (checklist.design) as candidate acceptance criteria |
 | `subagents.md` | Parallel task delegation |
 | `ask.md` | Structured user questions (`ask_user_question`) |
 | `visual_review.md` | Visual review gate |

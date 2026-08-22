@@ -201,11 +201,11 @@ Appetite controls HOW DEEP it runs             →  Scope depth per gate
 | **Product Spec + Interface + Tech Review + Code Diff** | 4 gates + plan-gate + diff-gate. Full review. | 4 gates + all questions. Max oversight. | 4 gates + all questions + code diff review. No shortcuts. |
 
 **Examples:**
-- `Lean + Auto` → Fastest path: no gates, no questions, no Plannotator. LLM decides scope. Interface runs automatically with 1 suggested interface. (~6 stages)
-- `Core + Product Spec Gate` → Standard feature: 1 Plannotator gate (pre-tech), interface runs automatically with 3 interfaces + hybrid. (~10 stages)
-- `Core + Product Spec + Interface Gates` → Feature where interface matters: 1 Plannotator gate + user chooses among 3 interfaces + hybrid. (~8 stages)
-- `Complete + Product Spec + Interface + Tech Review` → Critical feature: 3 Plannotator gates + all questions. Interface explores all 5 archetypes + hybrid. No shortcuts. (~17 stages)
-- `Complete + Product Spec + Interface + Tech Review + Code Diff` → Maximum oversight: 4 Plannotator gates + code diff review. All questions. All archetypes. (~17 stages)
+- `Lean + Auto` → Fastest path: no gates, no questions, no Plannotator. LLM decides scope. Interface runs automatically with 1 suggested interface. Context stage skipped. (bugfix: ~8 stages, feature: ~12 stages)
+- `Core + Product Spec Gate` → Standard feature: 1 Plannotator gate (pre-tech), interface runs automatically with 3 interfaces + hybrid. (feature: ~14 stages)
+- `Core + Product Spec + Interface Gates` → Feature where interface matters: 1 Plannotator gate + user chooses among 3 interfaces + hybrid. (feature: ~14 stages)
+- `Complete + Product Spec + Interface + Tech Review` → Critical feature: 3 Plannotator gates + all questions. Interface explores all 5 archetypes + hybrid. No shortcuts. (feature: ~17 stages)
+- `Complete + Product Spec + Interface + Tech Review + Code Diff` → Maximum oversight: 4 Plannotator gates + code diff review. All questions. All archetypes. (feature: ~17 stages)
 
 ### Motivation
 
