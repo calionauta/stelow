@@ -4,7 +4,7 @@
  * Regression guard for `scripts/sync-cli-tools.sh`.
  *
  * The sync script copies the canonical cli-tools files from
- * `skills/stelow-product-orchestrator/references/cli-tools/` to each
+ * `skills/stelow-workflow-orchestrator/references/cli-tools/` to each
  * sub-skill's `references/cli-tools/`. There are 25 directories
  * (1 source + 24 sub-skills).
  *
@@ -62,7 +62,7 @@ const __testDir = dirname(__filename);
 const PROJECT_ROOT = join(__testDir, '..', '..');
 
 const SYNC_SCRIPT = join(PROJECT_ROOT, 'scripts/sync-cli-tools.sh');
-const SOURCE_DIR = join(PROJECT_ROOT, 'skills/stelow-product-orchestrator/references/cli-tools');
+const SOURCE_DIR = join(PROJECT_ROOT, 'skills/stelow-workflow-orchestrator/references/cli-tools');
 const SOURCE_FILE = join(SOURCE_DIR, 'subagents.md');
 const SKILLS_DIR = join(PROJECT_ROOT, 'skills');
 
@@ -80,7 +80,7 @@ function md5(path: string): string {
 function listSkills(): string[] {
   return readdirSync(SKILLS_DIR).filter((d) => {
     const p = join(SKILLS_DIR, d);
-    return statSync(p).isDirectory() && d !== 'stelow-product-orchestrator';
+    return statSync(p).isDirectory() && d !== 'stelow-workflow-orchestrator';
   });
 }
 
@@ -255,7 +255,7 @@ describe('SW-005 isolated temp-fixture regressions', () => {
     //   <fixtureRoot>/
     //     scripts/sync-cli-tools.sh        (copied executable)
     //     skills/
-    //       stelow-product-orchestrator/references/cli-tools/
+    //       stelow-workflow-orchestrator/references/cli-tools/
     //         subagents.md
     //         goals.md
     //         execution-loop.md   (orchestrator-only — must NOT sync)
@@ -269,7 +269,7 @@ describe('SW-005 isolated temp-fixture regressions', () => {
     fixtureSkill = 'stelow-product-fixture-skill';
     fixtureSource = join(
       fixtureRoot,
-      'skills/stelow-product-orchestrator/references/cli-tools',
+      'skills/stelow-workflow-orchestrator/references/cli-tools',
     );
     fixtureTarget = join(
       fixtureRoot,

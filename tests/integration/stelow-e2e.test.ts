@@ -29,7 +29,7 @@ import { randomBytes } from "node:crypto";
 
 const REPO_ROOT = join(__dirname, "..", "..");
 const HELPER_SRC = join(REPO_ROOT, "scripts", "stelow");
-const TRANSITIONS_SRC = join(REPO_ROOT, "skills", "stelow-product-orchestrator", "references", "transitions.md");
+const TRANSITIONS_SRC = join(REPO_ROOT, "skills", "stelow-workflow-orchestrator", "references", "transitions.md");
 const STATE_TEMPLATE_SRC = join(REPO_ROOT, "assets", "state-template.md");
 
 interface Workdir { dir: string; helper: string; }
@@ -44,8 +44,8 @@ function makeWorkdir(): Workdir {
   mkdirSync(join(dir, "scripts"), { recursive: true });
   const helper = join(dir, "scripts", "stelow");
   writeFileSync(helper, readFileSync(HELPER_SRC));
-  mkdirSync(join(dir, "skills", "stelow-product-orchestrator", "references"), { recursive: true });
-  writeFileSync(join(dir, "skills", "stelow-product-orchestrator", "references", "transitions.md"),
+  mkdirSync(join(dir, "skills", "stelow-workflow-orchestrator", "references"), { recursive: true });
+  writeFileSync(join(dir, "skills", "stelow-workflow-orchestrator", "references", "transitions.md"),
                 readFileSync(TRANSITIONS_SRC));
   if (existsSync(STATE_TEMPLATE_SRC)) {
     mkdirSync(join(dir, "assets"), { recursive: true });
@@ -160,7 +160,7 @@ describe("standalone regression: every modified skill still works WITHOUT the ma
 
   function findModifiedSkills(): string[] {
     const out: string[] = [];
-    const dirs = readdirSync(SKILLS_DIR).filter(d => d.startsWith("stelow-product-") && d !== "stelow-product-orchestrator");
+    const dirs = readdirSync(SKILLS_DIR).filter(d => (d.startsWith("stelow-product-") || d.startsWith("stelow-workflow-")) && d !== "stelow-workflow-orchestrator");
     for (const d of dirs) {
       const skillPath = join(SKILLS_DIR, d, "SKILL.md");
       if (!existsSync(skillPath)) continue;

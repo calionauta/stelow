@@ -41,7 +41,7 @@ current=$(scripts/stelow status --json | jq -r .current_stage)
 next=$(extract_hand_off_field next-candidate)
 
 # 2. Validate next against transitions.md.
-transitions=skills/stelow-product-orchestrator/references/transitions.md
+transitions=skills/stelow-workflow-orchestrator/references/transitions.md
 allowed=$(awk "/^### $current\$/,/^### |\$/" "$transitions" \
             | grep -E "^(next|accept|rework):" \
             | head -1 | awk "{print \$2}" | tr -d "[],\"")

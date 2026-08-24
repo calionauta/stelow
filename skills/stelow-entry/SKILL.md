@@ -71,7 +71,7 @@ is non-empty and `stelow status` renders.
 ## Pick the first stage
 
 Look up `current_stage` from the canonical first stage in
-`skills/stelow-product-orchestrator/references/transitions.md`. Today
+`skills/stelow-workflow-orchestrator/references/transitions.md`. Today
 that is `setup` for `feature`/`bugfix`/`refactor`/`investigate` and
 `triage` for `new-product` (the new-product flow always starts with a
 triage assessment).

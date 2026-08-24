@@ -35,13 +35,13 @@ stelow/          ← Source
 └── skills/                     ← 25 portable skills (1 orchestrator + 24 sub-skills)
     ├── stelow-entry/                   ← entry point (STELOW_WORKFLOW=1)
     ├── stelow-router/                  ← advance / load next stage
-    ├── stelow-product-orchestrator/    ← orchestrator + stages.yaml
-    ├── stelow-product-shape-up/
+    ├── stelow-workflow-orchestrator/    ← orchestrator + stages.yaml
+    ├── stelow-workflow-shape-up/
     └── ...
 
 ~/.agents/skills/               ← Install target
 ├── stelow-entry/                       ← Copied
-├── stelow-product-orchestrator/        ← Copied
+├── stelow-workflow-orchestrator/        ← Copied
 └── ... (all skills)
 ```
 
@@ -103,7 +103,7 @@ add a one-line reminder if you want to make the trigger explicit.
 ## stelow Integration
 
 For product-workflow tasks (plans, critiques, scopes, executions), invoke
-`stelow-product-orchestrator` and follow its stage routing.
+`stelow-workflow-orchestrator` and follow its stage routing.
 ```
 
 ---

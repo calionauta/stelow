@@ -21,7 +21,7 @@ import { randomBytes } from "node:crypto";
 
 const REPO_ROOT = join(__dirname, "..", "..");
 const HELPER_SRC = join(REPO_ROOT, "scripts", "stelow");
-const TRANSITIONS_SRC = join(REPO_ROOT, "skills", "stelow-product-orchestrator", "references", "transitions.md");
+const TRANSITIONS_SRC = join(REPO_ROOT, "skills", "stelow-workflow-orchestrator", "references", "transitions.md");
 
 interface Workdir { dir: string; helper: string; }
 
@@ -39,8 +39,8 @@ function makeWorkdir(): Workdir {
   const helper = join(dir, "scripts", "stelow");
   writeFileSync(helper, readFileSync(HELPER_SRC));
   // copy transitions
-  mkdirSync(join(dir, "skills", "stelow-product-orchestrator", "references"), { recursive: true });
-  writeFileSync(join(dir, "skills", "stelow-product-orchestrator", "references", "transitions.md"),
+  mkdirSync(join(dir, "skills", "stelow-workflow-orchestrator", "references"), { recursive: true });
+  writeFileSync(join(dir, "skills", "stelow-workflow-orchestrator", "references", "transitions.md"),
                 readFileSync(TRANSITIONS_SRC));
   execSync("git add -A && git commit -q -m init", { cwd: dir });
   const wd = { dir, helper };

@@ -5,7 +5,7 @@
  * that acceptance = retry happens". There is no orchestrator code
  * yet for subagent dispatch (the scope-executor skill is the planned
  * home). What we CAN test now is the contract documented in
- * skills/stelow-product-orchestrator/references/cli-tools/subagents.md
+ * skills/stelow-workflow-orchestrator/references/cli-tools/subagents.md
  * (lines 213-238). This test asserts the docs describe:
  *
  *  1. The retry pattern: launch → success→continue; fail→retry once
@@ -23,7 +23,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const DOCS_PATH = resolve(
-  __dirname, '..', '..', 'skills', 'stelow-product-orchestrator',
+  __dirname, '..', '..', 'skills', 'stelow-workflow-orchestrator',
   'references', 'cli-tools', 'subagents.md',
 );
 

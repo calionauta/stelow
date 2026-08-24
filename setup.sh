@@ -426,10 +426,10 @@ configure_settings() {
       .skillful.hiddenSkills //= [] |
       .skillful.toggleSlots //= {
         "1": "stelow",
-        "2": "stelow-product-shape-up",
-        "3": "stelow-product-coding-standards",
-        "4": "stelow-product-testing-execution",
-        "5": "stelow-product-execution-critique"
+        "2": "stelow-workflow-shape-up",
+        "3": "stelow-workflow-coding-standards",
+        "4": "stelow-workflow-testing-execution",
+        "5": "stelow-workflow-execution-critique"
       } |
       .skillful.toggleModifier //= "alt"
     ' "$settings_file" > "$tmp" && mv "$tmp" "$settings_file"
@@ -465,10 +465,10 @@ configure_settings() {
     "hiddenSkills": [],
     "toggleSlots": {
       "1": "stelow",
-      "2": "stelow-product-shape-up",
-      "3": "stelow-product-coding-standards",
-      "4": "stelow-product-testing-execution",
-      "5": "stelow-product-execution-critique"
+      "2": "stelow-workflow-shape-up",
+      "3": "stelow-workflow-coding-standards",
+      "4": "stelow-workflow-testing-execution",
+      "5": "stelow-workflow-execution-critique"
     },
     "toggleModifier": "alt"
   }

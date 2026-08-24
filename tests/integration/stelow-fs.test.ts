@@ -20,8 +20,8 @@ import { randomBytes } from "node:crypto";
 
 const REPO_ROOT = join(__dirname, "..", "..");
 const HELPER_SRC = join(REPO_ROOT, "scripts", "stelow");
-const TRANSITIONS_SRC = join(REPO_ROOT, "skills", "stelow-product-orchestrator", "references", "transitions.md");
-const STAGES_YAML_SRC = join(REPO_ROOT, "skills", "stelow-product-orchestrator", "stages.yaml");
+const TRANSITIONS_SRC = join(REPO_ROOT, "skills", "stelow-workflow-orchestrator", "references", "transitions.md");
+const STAGES_YAML_SRC = join(REPO_ROOT, "skills", "stelow-workflow-orchestrator", "stages.yaml");
 
 interface Workdir { dir: string; helper: string; }
 const workdirs: Workdir[] = [];
@@ -35,11 +35,11 @@ function makeWorkdir(): Workdir {
   mkdirSync(join(dir, "scripts"), { recursive: true });
   const helper = join(dir, "scripts", "stelow");
   writeFileSync(helper, readFileSync(HELPER_SRC));
-  mkdirSync(join(dir, "skills", "stelow-product-orchestrator", "references"), { recursive: true });
-  writeFileSync(join(dir, "skills", "stelow-product-orchestrator", "references", "transitions.md"),
+  mkdirSync(join(dir, "skills", "stelow-workflow-orchestrator", "references"), { recursive: true });
+  writeFileSync(join(dir, "skills", "stelow-workflow-orchestrator", "references", "transitions.md"),
                 readFileSync(TRANSITIONS_SRC));
   // copy stages.yaml so the transitions<->stages.yaml check is meaningful
-  writeFileSync(join(dir, "skills", "stelow-product-orchestrator", "stages.yaml"),
+  writeFileSync(join(dir, "skills", "stelow-workflow-orchestrator", "stages.yaml"),
                 readFileSync(STAGES_YAML_SRC));
   execSync("git add -A && git commit -q -m init", { cwd: dir });
   const wd = { dir, helper };

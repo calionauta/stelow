@@ -38,7 +38,7 @@ const PROJECT_ROOT = join(__testDir, '..', '..');
 function listSubSkills(): string[] {
   const dir = join(PROJECT_ROOT, 'skills');
   return readdirSync(dir).filter((d) => {
-    if (d === 'stelow-product-orchestrator') return false;
+    if (d === 'stelow-workflow-orchestrator') return false;
     const p = join(dir, d);
     return statSync(p).isDirectory();
   });
@@ -47,7 +47,7 @@ function listSubSkills(): string[] {
 // ── Path Helpers ───────────────────────────────────────────────────
 
 function readMainSkill(): string {
-  return readFileSync(join(PROJECT_ROOT, 'skills/stelow-product-orchestrator/SKILL.md'), 'utf8');
+  return readFileSync(join(PROJECT_ROOT, 'skills/stelow-workflow-orchestrator/SKILL.md'), 'utf8');
 }
 
 function readSkillByPath(name: string): string {
@@ -55,7 +55,7 @@ function readSkillByPath(name: string): string {
 }
 
 function readStageFile(name: string): string {
-  return readFileSync(join(PROJECT_ROOT, 'skills/stelow-product-orchestrator/stages', name), 'utf8');
+  return readFileSync(join(PROJECT_ROOT, 'skills/stelow-workflow-orchestrator/stages', name), 'utf8');
 }
 
 // ═════════════════════════════════════════════════════════════════════
@@ -233,14 +233,14 @@ interface SkillDefinition {
 }
 
 const skills: SkillDefinition[] = [
-  { name: 'stelow-product-shape-up', path: 'stelow-product-shape-up/SKILL.md', requiresGate: false, requiresToolRef: true },
-  { name: 'stelow-product-tech-planning', path: 'stelow-product-tech-planning/SKILL.md', requiresGate: true, requiresToolRef: true },
-  { name: 'stelow-product-interface-alternatives', path: 'stelow-product-interface-alternatives/SKILL.md', requiresGate: true, requiresToolRef: true },
-  { name: 'stelow-product-plan-critique', path: 'stelow-product-plan-critique/SKILL.md', requiresGate: false, requiresToolRef: true },
-  { name: 'stelow-product-codebase-critique', path: 'stelow-product-codebase-critique/SKILL.md', requiresGate: false, requiresToolRef: true },
-  { name: 'stelow-product-ux-critique', path: 'stelow-product-ux-critique/SKILL.md', requiresGate: false, requiresToolRef: true },
-  { name: 'stelow-product-scope-executor', path: 'stelow-product-scope-executor/SKILL.md', requiresGate: false, requiresToolRef: true },
-  { name: 'stelow-product-execution-critique', path: 'stelow-product-execution-critique/SKILL.md', requiresGate: false, requiresToolRef: true },
+  { name: 'stelow-workflow-shape-up', path: 'stelow-workflow-shape-up/SKILL.md', requiresGate: false, requiresToolRef: true },
+  { name: 'stelow-workflow-tech-planning', path: 'stelow-workflow-tech-planning/SKILL.md', requiresGate: true, requiresToolRef: true },
+  { name: 'stelow-workflow-interface-alternatives', path: 'stelow-workflow-interface-alternatives/SKILL.md', requiresGate: true, requiresToolRef: true },
+  { name: 'stelow-workflow-plan-critique', path: 'stelow-workflow-plan-critique/SKILL.md', requiresGate: false, requiresToolRef: true },
+  { name: 'stelow-workflow-codebase-critique', path: 'stelow-workflow-codebase-critique/SKILL.md', requiresGate: false, requiresToolRef: true },
+  { name: 'stelow-workflow-ux-critique', path: 'stelow-workflow-ux-critique/SKILL.md', requiresGate: false, requiresToolRef: true },
+  { name: 'stelow-workflow-scope-executor', path: 'stelow-workflow-scope-executor/SKILL.md', requiresGate: false, requiresToolRef: true },
+  { name: 'stelow-workflow-execution-critique', path: 'stelow-workflow-execution-critique/SKILL.md', requiresGate: false, requiresToolRef: true },
 ];
 
 describe('Per-Skill Implementation', () => {
@@ -269,7 +269,7 @@ describe('Per-Skill Implementation', () => {
       }
 
       // ── Scope-executor specific: acceptance-based delegation ──
-      if (skill.name === 'stelow-product-scope-executor') {
+      if (skill.name === 'stelow-workflow-scope-executor') {
         it('should use acceptance-based delegation in Step 3', () => {
           expect(content).toMatch(/acceptance/i);
           expect(content).toMatch(/criteria/i);
@@ -319,7 +319,7 @@ describe('Per-Skill Implementation', () => {
   // Tech Planning has its own gate
   describe('Tech Planning gate', () => {
     const techContent = readFileSync(
-      join(PROJECT_ROOT, 'skills', 'stelow-product-tech-planning', 'SKILL.md'),
+      join(PROJECT_ROOT, 'skills', 'stelow-workflow-tech-planning', 'SKILL.md'),
       'utf8'
     );
     it('should have plannotator --gate or plannotator.md reference', () => {
@@ -334,14 +334,14 @@ describe('Per-Skill Implementation', () => {
 
 describe('Iteration Loop Consistency', () => {
   it('scopes-and-sequencing.md should document [MAX_ITERATIONS]', () => {
-    const path = join(PROJECT_ROOT, 'skills/stelow-product-tech-planning/references/scopes-and-sequencing.md');
+    const path = join(PROJECT_ROOT, 'skills/stelow-workflow-tech-planning/references/scopes-and-sequencing.md');
     const content = readFileSync(path, 'utf8');
     expect(content).toMatch(/MAX_ITERATIONS/);
   });
 
   it('execution.md routing table should reference acceptance or iteration for features', () => {
     const execContent = readFileSync(
-      join(PROJECT_ROOT, 'skills/stelow-product-orchestrator/stages/execution.md'), 'utf8'
+      join(PROJECT_ROOT, 'skills/stelow-workflow-orchestrator/stages/execution.md'), 'utf8'
     );
     expect(execContent).toMatch(/iteration|acceptance/i);
   });
@@ -352,7 +352,7 @@ describe('Iteration Loop Consistency', () => {
     // (first / middle / last by alphabetical order). The per-file
     // `beforeAll` already prepared the shared tree, so sub-skill
     // copies are guaranteed present.
-    const canonical = join(PROJECT_ROOT, 'skills/stelow-product-orchestrator/references/cli-tools/goals.md');
+    const canonical = join(PROJECT_ROOT, 'skills/stelow-workflow-orchestrator/references/cli-tools/goals.md');
     expect(existsSync(canonical)).toBe(true);
     expect(readFileSync(canonical, 'utf8')).toMatch(/acceptance|iteration loop/i);
 
@@ -379,14 +379,14 @@ describe('Iteration Loop Consistency', () => {
     // Assert the contract on the canonical source AND on the
     // synced scope-executor copy. The per-file `beforeAll`
     // guarantees the copy exists; if not, this fails loudly.
-    const canonical = join(PROJECT_ROOT, 'skills/stelow-product-orchestrator/references/cli-tools/goals.md');
+    const canonical = join(PROJECT_ROOT, 'skills/stelow-workflow-orchestrator/references/cli-tools/goals.md');
     expect(existsSync(canonical)).toBe(true);
     const canonicalContent = readFileSync(canonical, 'utf8');
     expect(canonicalContent).toMatch(/criteria/i);
     expect(canonicalContent).toMatch(/verify/i);
     expect(canonicalContent).toMatch(/stopRules/i);
 
-    const goalsPath = join(PROJECT_ROOT, 'skills/stelow-product-scope-executor/references/cli-tools/goals.md');
+    const goalsPath = join(PROJECT_ROOT, 'skills/stelow-workflow-scope-executor/references/cli-tools/goals.md');
     expect(existsSync(goalsPath)).toBe(true);
     const content = readFileSync(goalsPath, 'utf8');
     expect(content).toMatch(/criteria/i);
@@ -401,7 +401,7 @@ describe('Stage Files', () => {
 
   stageFiles.forEach(stage => {
     describe(stage, () => {
-      const path = join(PROJECT_ROOT, 'skills/stelow-product-orchestrator/stages', stage);
+      const path = join(PROJECT_ROOT, 'skills/stelow-workflow-orchestrator/stages', stage);
 
       it('should exist', () => {
         expect(existsSync(path)).toBe(true);
@@ -426,7 +426,7 @@ describe('Stage Files', () => {
 });
 
 describe('cli-tools References', () => {
-  const cliToolsDir = join(PROJECT_ROOT, 'skills/stelow-product-orchestrator/references/cli-tools');
+  const cliToolsDir = join(PROJECT_ROOT, 'skills/stelow-workflow-orchestrator/references/cli-tools');
 
   it('cli-tools directory should exist', () => {
     expect(existsSync(cliToolsDir)).toBe(true);
@@ -458,7 +458,7 @@ describe('cli-tools References', () => {
 });
 
 describe('Ask Patterns', () => {
-  const askPath = join(PROJECT_ROOT, 'skills/stelow-product-orchestrator/stages/ask-patterns.md');
+  const askPath = join(PROJECT_ROOT, 'skills/stelow-workflow-orchestrator/stages/ask-patterns.md');
 
   it('ask-patterns.md should exist', () => {
     expect(existsSync(askPath)).toBe(true);
@@ -475,7 +475,7 @@ describe('Ask Patterns', () => {
 });
 
 describe('References Directory', () => {
-  const refsDir = join(PROJECT_ROOT, 'skills/stelow-product-orchestrator/references');
+  const refsDir = join(PROJECT_ROOT, 'skills/stelow-workflow-orchestrator/references');
 
   it('should exist', () => {
     expect(existsSync(refsDir)).toBe(true);
@@ -489,7 +489,7 @@ describe('References Directory', () => {
 });
 
 describe('Execution Phase', () => {
-  const execPath = join(PROJECT_ROOT, 'skills/stelow-product-orchestrator/stages/execution.md');
+  const execPath = join(PROJECT_ROOT, 'skills/stelow-workflow-orchestrator/stages/execution.md');
 
   it('execution.md should exist', () => {
     expect(existsSync(execPath)).toBe(true);

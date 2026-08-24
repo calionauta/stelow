@@ -16,5 +16,5 @@
 
 The product is skills-only: 25 portable skills in `skills/`, a
 zero-dependency `scripts/stelow` helper (status/advance/doctor), and the
-17-stage model in `skills/stelow-product-orchestrator/stages.yaml`. See
+17-stage model in `skills/stelow-workflow-orchestrator/stages.yaml`. See
 [architecture.md](architecture.md).

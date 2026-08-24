@@ -106,20 +106,22 @@ This skill was translated and adapted by permission and attribution to the origi
 
 ## Extended Deep-Dives (Optional)
 
-For specialized analysis, these standalone skills are available at [github.com/calionauta/agent-sync-public](https://github.com/calionauta/agent-sync-public/tree/main/skills):
+For specialized analysis, these standalone skills are vendored in this repo
+under `skills/` (historically published at
+[github.com/calionauta/agent-sync-public](https://github.com/calionauta/agent-sync-public/tree/main/skills)):
 
 | Skill | Description | Lines |
 |-------|-----------|--------|
-| `stelow-product-health` | Product health monitoring via signals in tension | ~100 |
+| `stelow-workflow-health` | Product health monitoring via signals in tension | ~100 |
 | `stelow-product-pricing` | Pricing strategy: Exchange Base, Consumption Control, Interest Alignment, Trust Pact | ~100 |
 | `stelow-product-open-source` | OSS as business strategy: Proprietary Problem, Org Structures, Competition Protection | ~60 |
 | `stelow-product-trust-building` | 10 pillars of trust, guarantees, perception, commitment | ~60 |
 | `stelow-product-promotions` | MAGIC framework, 4 launch strategies, bonuses | ~60 |
 | `stelow-product-business-models` | Cost reduction & revenue generation models | ~80 |
 | `stelow-product-ads` | 5 awareness stages, ad categories | ~50 |
+| `stelow-product-paywall` | Paywall & onboarding monetization funnel (paywall-first build order, 3 funnel benchmarks, trial policy, web2app) | ~310 |
 
-**Install (if you don't have it yet):**
-...
+**Install:** already vendored in this repo — no separate install needed.
 **Note:** These are optional enhancements. The core method works without them — the references/ contain all the necessary content.
 
 ## Entry (mode detection)

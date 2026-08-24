@@ -14,7 +14,7 @@ same workflow. Hosts only add an optional marker protocol
 | `skills/` | All workflow skills (LLM-facing content). One directory per skill, each self-contained: `SKILL.md` + `references/` + `references/cli-tools/` + optional `stages/` files. |
 | `skills/stelow-entry/` | Entry point. Classifies intent, scaffolds `state.md`, picks the first stage. Loaded when `STELOW_WORKFLOW=1`. Never runs stage logic. |
 | `skills/stelow-router/` | Router. Validates the next candidate against `transitions.md`, calls `scripts/stelow advance`, loads the next stage skill, appends the hand-off audit record. |
-| `skills/stelow-product-orchestrator/` | Orchestrator. Coordinates the 17-stage pipeline (Setup → Shape → Critique → Gate → Scope → Interface → Planning → Execution → Verification → Audit). |
+| `skills/stelow-workflow-orchestrator/` | Orchestrator. Coordinates the 17-stage pipeline (Setup → Shape → Critique → Gate → Scope → Interface → Planning → Execution → Verification → Audit). |
 | `skills/stelow-product-<area>/` | The 23 other product/planning sub-skills (shape-up, plan-critique, tech-planning, ux-critique, domain playbooks, etc.). |
 | `scripts/stelow` | Portable helper (bash + python3): `status [--json]`, `advance <candidate>`, `doctor [--json]`. Single source of runtime mechanics. |
 | `scripts/sync-cli-tools.sh` | Regenerates each sub-skill's `references/cli-tools/` from the orchestrator's copy. Run after editing a cli-tools reference. |
@@ -27,11 +27,11 @@ same workflow. Hosts only add an optional marker protocol
 
 ## Stage model (the 17-stage state machine)
 
-- **Single source of truth:** `skills/stelow-product-orchestrator/stages.yaml`
+- **Single source of truth:** `skills/stelow-workflow-orchestrator/stages.yaml`
   (tools per stage, transitions, gates, supervisor activation).
-- **Behavioral companion:** `skills/stelow-product-orchestrator/stages/*.md`
+- **Behavioral companion:** `skills/stelow-workflow-orchestrator/stages/*.md`
   (one file per stage, describing what happens in that stage).
-- **Data-only mirror:** `skills/stelow-product-orchestrator/references/transitions.md`
+- **Data-only mirror:** `skills/stelow-workflow-orchestrator/references/transitions.md`
   — generated from `stages.yaml`; this is the file `scripts/stelow advance` and
   the router validate against. Do not edit by hand; edit `stages.yaml` and regen.
 - The 17 stages: `triage` → `select` → `setup` → `context` → `shape` →
@@ -72,12 +72,15 @@ same workflow. Hosts only add an optional marker protocol
   a portable vocabulary (`ask_user_question`, `visual_review`, `subagent`) and
   `references/cli-tools/*.md` document per-host invocation syntax.
 - Distribution is Git/GitHub only (no `npm publish`). Version lives in
-  `package.json` and is pinned by the SW-034 trailer contract + `.husky/commit-msg`.
+  `package.json` and is pinned by the SW-034 trailer contract, enforced by
+  `scripts/check-version-coherence.sh` (`--hook=commit-msg` mode for local
+  commits; the `.husky/commit-msg` hook file was removed with the tooling-dirs cleanup).
 
 ## How to extend
 
 - New stage → edit `stages.yaml`, regenerate `references/transitions.md`.
-- New skill → add `skills/stelow-product-<name>/SKILL.md` with `metadata.category`
+- New skill → add `skills/stelow-product-<name>/SKILL.md` (research/domain libraries) or
+  `skills/stelow-workflow-<name>/SKILL.md` (workflow stage skills) with `metadata.category`
   frontmatter; keep counts consistent (README contract test pins 25/1+24).
 - New host → no code required. Ensure the host can read agentskills.io skill
   directories and set the marker env vars. Host levers are documented in

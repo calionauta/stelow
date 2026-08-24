@@ -2,7 +2,7 @@
 
 > **Status:** design doc. Source of truth for the *why* behind stelow's
 > parallel scope execution model. The protocol-level *how* lives in
-> `skills/stelow-product-orchestrator/references/cli-tools/file-locking.md`.
+> `skills/stelow-workflow-orchestrator/references/cli-tools/file-locking.md`.
 
 ## TL;DR
 
@@ -167,7 +167,7 @@ Non-empty (a)/(b)/(c) → block advance to Verification until human decides.
 
 ## Related docs
 
-- `skills/stelow-product-orchestrator/references/cli-tools/file-locking.md` — protocol-level how-to (FS ops, TTL, JSON shape)
-- `skills/stelow-product-scope-executor/SKILL.md` — Step 2e (init), Step 3c (acquire), Step 3e (release + capture), Step 8 (report)
+- `skills/stelow-workflow-orchestrator/references/cli-tools/file-locking.md` — protocol-level how-to (FS ops, TTL, JSON shape)
+- `skills/stelow-workflow-scope-executor/SKILL.md` — Step 2e (init), Step 3c (acquire), Step 3e (release + capture), Step 8 (report)
 - `extensions/stelow/types.ts#Scope` — `target_files?`, `actual_files?`, `start_sha?` fields
 - `CHANGELOG.md` — v0.41.2 entry (initial implementation)

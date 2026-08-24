@@ -48,7 +48,7 @@ claude --print "workflow" --system "Activate stelow: set STELOW_WORKFLOW=1 STELO
 
 # Option B: prompt template in .claude/commands/stelow.md
 # /path/to/state.md is injected by the user or the entry skill on first run
-@stelow-product-orchestrator/entry/SKILL.md
+@stelow-workflow-orchestrator/entry/SKILL.md
 Set: STELOW_WORKFLOW=1, STELOW_STATE=<path>
 ```
 
@@ -73,7 +73,7 @@ On completion, echo the ## Hand-off block verbatim to confirm."
 **Activation:**
 ```bash
 # Cursor Composer or Agent mode: paste or reference the skill path
-# Entry skill path: skills/stelow-product-orchestrator/entry/SKILL.md
+# Entry skill path: skills/stelow-workflow-orchestrator/entry/SKILL.md
 # Set Cursor agent environment variables before the session:
 STELOW_WORKFLOW=1
 STELOW_STATE=<path>
@@ -189,13 +189,13 @@ ln -s $(pwd)/.agents/skills ~/.pi/skills/stelow-product
 
 **Activation:**
 Fusion already hosts stelow's orchestrator skill. In Fusion's agent mode:
-1. Load the `stelow-product-orchestrator/entry/SKILL.md` skill
+1. Load the `stelow-workflow-orchestrator/entry/SKILL.md` skill
 2. Fusion provides session context automatically — the entry skill can read
    `env.STELOW_WORKFLOW` if set, or default to standalone
 
 ```bash
 # Fusion CLI (fusion agent)
-fusion --skill stelow-product-orchestrator/entry --env STELOW_WORKFLOW=1,STELOW_STATE=/path/to/state.md
+fusion --skill stelow-workflow-orchestrator/entry --env STELOW_WORKFLOW=1,STELOW_STATE=/path/to/state.md
 ```
 
 **Subagent skill passing:** Fusion agents receive skills through the `--skill`
@@ -230,7 +230,7 @@ ln -s $(pwd)/.agents/skills ~/.goose/skills/stelow-product
 
 **Failure modes:**
 - Goose skill registry is file-based — ensure `.goose/skills/` contains the
-  25 stelow-product-* skills
+  26 stelow-product-* / stelow-workflow-* skills
 - Echo-validation applies for subagent handoffs
 
 ---

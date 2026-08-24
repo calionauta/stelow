@@ -63,8 +63,8 @@ print_agents_setup() {
 
 When working on software projects, trigger the product workflow:
 
-1. **Trigger:** Use `/skill:stelow-product-orchestrator`
-2. **Process:** Follow the 15-stage workflow (see Stage Index in `skills/stelow-product-orchestrator/SKILL.md`)
+1. **Trigger:** Use `/skill:stelow-workflow-orchestrator`
+2. **Process:** Follow the 15-stage workflow (see Stage Index in `skills/stelow-workflow-orchestrator/SKILL.md`)
 3. **Execute:** Only after visual review gate (Plannotator approval)
 \`\`\`
 EOF
@@ -136,7 +136,7 @@ install_skills_flat() {
   for entry in "$SKILLS_DIR"/*/; do
     local name="$(basename "$entry")"
     case "$name" in
-      stelow-product-*) ;;
+      stelow-product-*|stelow-workflow-*) ;;
       *) continue ;;
     esac
     # Source 1: not in the project's active skills (natural orphan)

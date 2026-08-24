@@ -15,7 +15,7 @@ import { fileURLToPath } from "node:url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SUBAGENTS_MD = join(
   __dirname,
-  "../../skills/stelow-product-orchestrator/references/cli-tools/subagents.md",
+  "../../skills/stelow-workflow-orchestrator/references/cli-tools/subagents.md",
 );
 
 describe("subagent-context-contract", () => {

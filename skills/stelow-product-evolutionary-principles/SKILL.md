@@ -732,7 +732,7 @@ This skill pairs especially well with:
 - `stelow`
   for the complete product definition workflow (shaping, critique, planning, execution routing)
 
-- `stelow-product-scope-executor`
+- `stelow-workflow-scope-executor`
   for routing approved scopes to the correct executor
 
 - `stelow-product-discovery`

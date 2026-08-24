@@ -10,7 +10,7 @@
  *   1. Real subprocess invocation of: find skills -maxdepth 2 -name SKILL.md -path glob-prefix
  *   2. Independent FS enumeration: every immediate child of `skills/`
  *      whose name starts with `stelow-product-` AND that contains
- *      `SKILL.md`. The two paths must produce the SAME 25 paths.
+ *      `SKILL.md`. The two paths must produce the SAME 26 paths.
  *   3. Per-file frontmatter: parse the `---`-delimited YAML block,
  *      read the indented `category:` value from the `metadata:` block,
  *      and verify `name:` equals the directory name.
@@ -18,7 +18,7 @@
  * README parser is scoped to the `## 📋 Skills` section so unrelated
  * category/count mentions elsewhere cannot satisfy the contract. The
  * orchestrator's intentional public display alias `` `stelow` ``
- * (described in `skills/stelow-product-orchestrator/SKILL.md` as
+ * (described in `skills/stelow-workflow-orchestrator/SKILL.md` as
  * `[stelow]`) is the ONLY normalization applied; all sub-skill rows
  * must use exact stelow-product-prefixed directory names.
  *
@@ -38,7 +38,7 @@ const README_PATH = join(PROJECT_ROOT, 'README.md');
 
 type Category = 'product' | 'research' | 'code' | 'meta';
 const ALLOWED_CATEGORIES: readonly Category[] = ['product', 'research', 'code', 'meta'];
-const ORCHESTRATOR_DIR = 'stelow-product-orchestrator';
+const ORCHESTRATOR_DIR = 'stelow-workflow-orchestrator';
 const ORCHESTRATOR_ALIAS = 'stelow';
 
 // ── Source enumeration ────────────────────────────────────────────
@@ -46,7 +46,7 @@ const ORCHESTRATOR_ALIAS = 'stelow';
 function runCanonicalFind(): string[] {
   const out = execFileSync(
     'find',
-    ['skills', '-maxdepth', '2', '-name', 'SKILL.md', '-path', '*/stelow-product-*'],
+    ['skills', '-maxdepth', '2', '-name', 'SKILL.md', '-path', '*/stelow-*-*'],
     { cwd: PROJECT_ROOT, encoding: 'utf8' },
   );
   return out
@@ -58,7 +58,11 @@ function runCanonicalFind(): string[] {
 
 function enumerateImmediateSkillDirs(): string[] {
   return readdirSync(SKILLS_DIR, { withFileTypes: true })
-    .filter((e) => e.isDirectory() && e.name.startsWith('stelow-product-'))
+    .filter(
+      (e) =>
+        e.isDirectory() &&
+        (e.name.startsWith('stelow-product-') || e.name.startsWith('stelow-workflow-')),
+    )
     .filter((e) => statSync(join(SKILLS_DIR, e.name, 'SKILL.md')).isFile())
     .map((e) => `skills/${e.name}/SKILL.md`)
     .sort();
@@ -246,19 +250,19 @@ describe('SW-015 — README skill-count contract', () => {
       const fromFind = runCanonicalFind();
       const fromFs = enumerateImmediateSkillDirs();
       expect(fromFind).toEqual(fromFs);
-      // Both must converge on exactly 25 source paths.
-      expect(fromFind.length).toBe(25);
+      // Both must converge on exactly 26 source paths.
+      expect(fromFind.length).toBe(26);
       // Every entry must be an immediate child directory of skills/.
       for (const p of fromFind) {
-        expect(p).toMatch(/^skills\/stelow-product-[^/]+\/SKILL\.md$/);
+        expect(p).toMatch(/^skills\/(stelow-product-|stelow-workflow-)[^/]+\/SKILL\.md$/);
       }
     });
 
-    it('contains exactly 25 paths, exactly one orchestrator, exactly 24 sub-skills', () => {
-      expect(sources).toHaveLength(25);
+    it('contains exactly 26 paths, exactly one orchestrator, exactly 25 sub-skills', () => {
+      expect(sources).toHaveLength(26);
       const orchestrators = sources.filter((s) => s.dirName === ORCHESTRATOR_DIR);
       expect(orchestrators).toHaveLength(1);
-      expect(subSkills).toHaveLength(24);
+      expect(subSkills).toHaveLength(25);
       expect(orchestrator).toBeDefined();
     });
 
@@ -273,19 +277,19 @@ describe('SW-015 — README skill-count contract', () => {
   });
 
   describe('frontmatter category counts (derived from source)', () => {
-    it('inclusive counts are product 8 / research 12 / code 4 / meta 1', () => {
+    it('inclusive counts are product 8 / research 13 / code 4 / meta 1', () => {
       // Inclusive: orchestrator (product) + every sub-skill.
       expect(skillsByCategory.product).toHaveLength(8);
-      expect(skillsByCategory.research).toHaveLength(12);
+      expect(skillsByCategory.research).toHaveLength(13);
       expect(skillsByCategory.code).toHaveLength(4);
       expect(skillsByCategory.meta).toHaveLength(1);
-      // Sanity: 8 + 12 + 4 + 1 = 25.
+      // Sanity: 8 + 13 + 4 + 1 = 26.
       expect(
         skillsByCategory.product.length +
           skillsByCategory.research.length +
           skillsByCategory.code.length +
           skillsByCategory.meta.length,
-      ).toBe(25);
+      ).toBe(26);
     });
 
     it('product sub-skill set (after excluding orchestrator) has size 7', () => {
@@ -340,9 +344,9 @@ describe('SW-015 — README skill-count contract', () => {
       expect(summaryRows.length).toBeGreaterThanOrEqual(5);
     });
 
-    it('reports the total "1 orchestrator + 24 sub-skills = 25"', () => {
+    it('reports the total "1 orchestrator + 25 sub-skills = 26"', () => {
       const totals = summaryRows.filter((r) =>
-        r.count.includes('1 orchestrator + 24 sub-skills = 25'),
+        r.count.includes('1 orchestrator + 25 sub-skills = 26'),
       );
       expect(totals.length).toBeGreaterThanOrEqual(1);
       // The row is the totals row; its category label can be `Total` or
@@ -370,7 +374,7 @@ describe('SW-015 — README skill-count contract', () => {
         }
       }
       expectRowWith('product', 8);
-      expectRowWith('research', 12);
+      expectRowWith('research', 13);
       expectRowWith('code', 4);
       expectRowWith('meta', 1);
     });
@@ -388,7 +392,7 @@ describe('SW-015 — README skill-count contract', () => {
       const expectedHeadings = [
         'Orchestrator (1)',
         'Product (7)',
-        'Research (12)',
+        'Research (13)',
         'Code (4)',
         'Meta (1)',
       ];
@@ -406,7 +410,7 @@ describe('SW-015 — README skill-count contract', () => {
       expect(orchestratorBlock).toBeDefined();
       const rows = parseSkillRowsFromBlock(orchestratorBlock!.body);
       expect(rows).toHaveLength(1);
-      // Intentional public alias: `stelow` → `stelow-product-orchestrator`.
+      // Intentional public alias: `stelow` → `stelow-workflow-orchestrator`.
       const normalized = rows[0] === ORCHESTRATOR_ALIAS ? ORCHESTRATOR_DIR : rows[0];
       expect(normalized).toBe(ORCHESTRATOR_DIR);
     });
@@ -483,7 +487,7 @@ describe('SW-015 — README skill-count contract', () => {
       // Set equality with the canonical source set.
       const expected = new Set(sources.map((s) => s.dirName));
       expect(new Set(allRows)).toEqual(expected);
-      expect(allRows).toHaveLength(25);
+      expect(allRows).toHaveLength(26);
     });
   });
 });

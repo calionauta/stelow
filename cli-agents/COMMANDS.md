@@ -17,7 +17,7 @@ every agentskills-compatible agent — nothing registers them on a host.
 `scripts/stelow` is the portable helper every host shells out to:
 `status [--json]`, `advance <candidate>`, `doctor [--json]`. It needs only
 `bash` + `python3` and enforces transitions against
-`skills/stelow-product-orchestrator/references/transitions.md`.
+`skills/stelow-workflow-orchestrator/references/transitions.md`.
 
 ## Host activation
 

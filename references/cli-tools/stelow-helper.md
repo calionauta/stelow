@@ -3,7 +3,7 @@
 The `scripts/stelow` helper is the canonical CLI for the stelow skills-only
 workflow. It reads/writes the project `state.md` and `.stelow/invariants.json`,
 validates stage transitions against
-`skills/stelow-product-orchestrator/references/transitions.md`, and exposes
+`skills/stelow-workflow-orchestrator/references/transitions.md`, and exposes
 a passive doctor that detects four classes of drift.
 
 It replaces the legacy `/sw-*` and `/stelow-*` slash commands with a script
@@ -53,7 +53,7 @@ on `warn` / `info`; only `error` flips `ok` to false.
 | `state.md` | workflow state (YAML frontmatter + body markdown) | LLM + `stelow advance` |
 | `.stelow/invariants.json` | audit trail of stage transitions | `stelow advance` only |
 | `.stelow/lock/` | mkdir lock with TTL | `stelow advance` |
-| `skills/stelow-product-orchestrator/references/transitions.md` | stage table (read-only mirror of `stages.yaml`) | generator (read SCOPE-1 contract) |
+| `skills/stelow-workflow-orchestrator/references/transitions.md` | stage table (read-only mirror of `stages.yaml`) | generator (read SCOPE-1 contract) |
 
 ## Old `/sw-*` → `stelow` mapping
 

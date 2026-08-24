@@ -104,7 +104,7 @@ A structured workflow that makes AI think like a product manager:
 
 ### Key Features
 
-- **25 skills total** in this repo: 1 orchestrator + 24 sub-skills (broken down by frontmatter category — product: 7, research: 12, code: 4, meta: 1)
+- **26 skills total** in this repo: 1 orchestrator + 25 sub-skills (broken down by frontmatter category — product: 7, research: 13, code: 4, meta: 1)
 - Part of a broader ecosystem — the orchestrator composes these and can also invoke additional skills from the user's agent environment at runtime
 - Real-time TUI tracking with visual status overlay (`/sw-status`)
 - Gate approval via Plannotator - review, comment, approve or reject before implementation
@@ -138,7 +138,7 @@ Appetite is the **scope and exploration budget** - how much product depth the hu
 | **Core** | Low-value variants. Keep the main JTBD, obvious edge cases, and one alternative only if it changes the core flow. |
 | **Complete** | Cut nothing unless impossible. Keep full edge case mapping, multiple implementation strategies, and domain context. |
 
-The Shape Up stage runs a mechanical check (scope count, spec size) and writes a preliminary `appetite_fit` in the spec frontmatter. The **Plan Critique** stage validates it via its fresh-context feasibility reviewer (see `stelow-product-plan-critique` checklists — Scope Fit dimension). This uses the existing 5-reviewer infrastructure instead of adding a dedicated subagent.
+The Shape Up stage runs a mechanical check (scope count, spec size) and writes a preliminary `appetite_fit` in the spec frontmatter. The **Plan Critique** stage validates it via its fresh-context feasibility reviewer (see `stelow-workflow-plan-critique` checklists — Scope Fit dimension). This uses the existing 5-reviewer infrastructure instead of adding a dedicated subagent.
 
 | `appetite_fit` | Meaning |
 |----------------|---------|
@@ -267,20 +267,20 @@ These loops are **appetite- and mode-respecting by design** — they inherit the
 
 ## 📋 Skills
 
-All 25 skills live flat in `skills/` and install into `~/.agents/skills/`. The total is **1 orchestrator + 24 sub-skills = 25**, grouped by each skill's `metadata.category` frontmatter:
+All 26 skills live flat in `skills/` and install into `~/.agents/skills/`. The total is **1 orchestrator + 25 sub-skills = 26**, grouped by each skill's `metadata.category` frontmatter:
 
 | Category | Count | Notes |
 |---|---|---|
-| Total | **1 orchestrator + 24 sub-skills = 25** | Product workflow skills (`stelow-product-*`); `stelow-entry` + `stelow-router` are separate infra skills |
+| Total | **1 orchestrator + 25 sub-skills = 26** | Product workflow skills (`stelow-product-*` / `stelow-workflow-*`); `stelow-entry` + `stelow-router` are separate infra skills |
 | product (incl. orchestrator) | 8 | |
-| research | 12 | |
+| research | 13 | |
 | code | 4 | |
 | meta | 1 | |
 
-The orchestrator (`stelow-product-orchestrator`) is the only `product` skill that is not a sub-skill — it composes the others. The remaining 7 `product` skills plus the 12 `research`, 4 `code`, and 1 `meta` skill are sub-skills (24 total).
+The orchestrator (`stelow-workflow-orchestrator`) is the only `product` skill that is not a sub-skill — it composes the others. The remaining 7 `product` skills plus the 13 `research`, 4 `code`, and 1 `meta` skill are sub-skills (25 total).
 
 **Each skill is fully self-contained** - the installer copies the complete directory tree including its own `references/cli-tools/`, `references/`, and `stages/` files. This means:
-- ✅ **Skills work standalone** - invoke any sub-skill (e.g., `stelow-product-shape-up`, `stelow-product-plan-critique`) independently of the orchestrator
+- ✅ **Skills work standalone** - invoke any sub-skill (e.g., `stelow-workflow-shape-up`, `stelow-workflow-plan-critique`) independently of the orchestrator
 - ✅ **Portable across agents** - Pi, Claude Code, Codex, Cursor, Continue, OpenCode, and others all reference skills by name (`~/.agents/skills/`)
 - ✅ **References resolve locally** - every `references/cli-tools/*.md` path is relative to the skill's own directory
 - ❌ **Not in `~/.agents/skills/`?** Use `./install.sh` or `npx skills add calionauta/stelow -g`
@@ -298,14 +298,14 @@ Sub-skills that drive the core product planning stages.
 | Skill | Purpose |
 |-------|---------|
 | `stelow-product-discovery` | Product discovery and validation |
-| `stelow-product-shape-up` | Shape Up planning + **Tech Preview** (appetite-gated codebase recon via cymbal) — surfaces codebase reality before product decisions |
-| `stelow-product-interface-alternatives` | Interface alternatives exploration (1/3/5 archetypes by appetite) |
-| `stelow-product-plan-critique` | Product plan gap analysis (flows, states, affordances, data, system, compositional quality, feasibility); mode-dependent resolution |
-| `stelow-product-tech-planning` | Technical scope generation + **Alignment Check** (mode-gated bidirectional product↔tech feedback loop) |
-| `stelow-product-scope-executor` | Autonomous scope execution via acceptance contracts - child self-corrects (harness-dependent), parent evaluates final result |
-| `stelow-product-ux-critique` | Full UX/UI audit (accessibility, Nielsen heuristics, personas, AI slop) |
+| `stelow-workflow-shape-up` | Shape Up planning + **Tech Preview** (appetite-gated codebase recon via cymbal) — surfaces codebase reality before product decisions |
+| `stelow-workflow-interface-alternatives` | Interface alternatives exploration (1/3/5 archetypes by appetite) |
+| `stelow-workflow-plan-critique` | Product plan gap analysis (flows, states, affordances, data, system, compositional quality, feasibility); mode-dependent resolution |
+| `stelow-workflow-tech-planning` | Technical scope generation + **Alignment Check** (mode-gated bidirectional product↔tech feedback loop) |
+| `stelow-workflow-scope-executor` | Autonomous scope execution via acceptance contracts - child self-corrects (harness-dependent), parent evaluates final result |
+| `stelow-workflow-ux-critique` | Full UX/UI audit (accessibility, Nielsen heuristics, personas, AI slop) |
 
-### 🔬 Research (12)
+### 🔬 Research (13)
 
 Domain and market research skills used during Context, Shape, and Scope.
 
@@ -317,9 +317,10 @@ Domain and market research skills used during Context, Shape, and Scope.
 | `stelow-product-evolutionary-principles` | Evolutionary principles for sustainable development |
 | `stelow-product-ads` | Advertising and growth channels |
 | `stelow-product-business-models` | Business model canvas and options |
-| `stelow-product-health` | Product health metrics |
+| `stelow-workflow-health` | Product health metrics |
 | `stelow-product-marketplace-playbook` | Marketplace dynamics |
 | `stelow-product-open-source` | Open source strategy |
+| `stelow-product-paywall` | Paywall and onboarding monetization funnel — paywall-first build order, paywall as PMF test, pain-matched onboarding, 3 funnel benchmarks, trial policy, web2app |
 | `stelow-product-pricing` | Pricing strategy and tactics |
 | `stelow-product-promotions` | Promotions and campaigns |
 | `stelow-product-trust-building` | Trust-building mechanisms |
@@ -330,10 +331,10 @@ Engineering-oriented skills used during planning, verification, and audit.
 
 | Skill | Purpose |
 |-------|---------|
-| `stelow-product-codebase-critique` | Codebase structural critique (architecture, performance, AI slop) |
-| `stelow-product-coding-standards` | Self-contained coding standards - KISS, DRY, LoB, SoC, Fail Fast, YAGNI, file/function size limits |
-| `stelow-product-testing-ai-code` | AI-aware testing strategy with contextual mutation testing evaluation |
-| `stelow-product-testing-execution` | Post-implementation testing protocol |
+| `stelow-workflow-codebase-critique` | Codebase structural critique (architecture, performance, AI slop) |
+| `stelow-workflow-coding-standards` | Self-contained coding standards - KISS, DRY, LoB, SoC, Fail Fast, YAGNI, file/function size limits |
+| `stelow-workflow-testing-ai-code` | AI-aware testing strategy with contextual mutation testing evaluation |
+| `stelow-workflow-testing-execution` | Post-implementation testing protocol |
 
 ### 🧠 Meta (1)
 
@@ -341,19 +342,19 @@ Workflow-level audit and post-execution review.
 
 | Skill | Purpose |
 |-------|---------|
-| `stelow-product-execution-critique` | Post-execution audit - classifies gaps as FIXED/DOCUMENTED/ESCALATED; ESCALATED gaps become new scopes |
+| `stelow-workflow-execution-critique` | Post-execution audit - classifies gaps as FIXED/DOCUMENTED/ESCALATED; ESCALATED gaps become new scopes |
 
 ---
 
 ## 🚀 Quick Start
 
-This package is **skills-only and host-agnostic** — the 25 workflow skills run on any agentskills-compatible agent (Claude Code, Codex, Cursor, Continue, OpenCode, pi.dev, …). There is no compiled plugin and no per-host adapter; the runtime is the portable `scripts/stelow` helper plus the skills themselves.
+This package is **skills-only and host-agnostic** — the 26 workflow skills run on any agentskills-compatible agent (Claude Code, Codex, Cursor, Continue, OpenCode, pi.dev, …). There is no compiled plugin and no per-host adapter; the runtime is the portable `scripts/stelow` helper plus the skills themselves.
 
 | Your situation | Recommended command | What you get |
 |----------------|--------------------|-------------|
-| **New to CLIs** (no Node, no agent) | `curl -fsSL https://raw.githubusercontent.com/calionauta/stelow/main/setup.sh \| sh` | Node.js (optional) + all 25 skills + optional pi.dev toolchain |
-| **Any CLI** (Claude Code, Codex, Cursor, OpenCode, pi.dev, …) | `npx skills add calionauta/stelow -g` | All 25 skills, copied to `~/.agents/skills/` |
-| **Existing repo / offline** | `git clone ... && ./install.sh` | All 25 skills + prune of retired/orphaned skills |
+| **New to CLIs** (no Node, no agent) | `curl -fsSL https://raw.githubusercontent.com/calionauta/stelow/main/setup.sh \| sh` | Node.js (optional) + all 26 skills + optional pi.dev toolchain |
+| **Any CLI** (Claude Code, Codex, Cursor, OpenCode, pi.dev, …) | `npx skills add calionauta/stelow -g` | All 26 skills, copied to `~/.agents/skills/` |
+| **Existing repo / offline** | `git clone ... && ./install.sh` | All 26 skills + prune of retired/orphaned skills |
 
 ### Intent-Aware Start
 
@@ -396,14 +397,14 @@ tree. Host specialization is optional and lives in the environment (`STELOW_WORK
 
 | Feature | Any agentskills-compatible agent |
 |---|---|
-| **25 skills (orchestrator + 24 sub-skills)** | ✅ |
+| **26 skills (orchestrator + 25 sub-skills)** | ✅ |
 | **`scripts/stelow` helper (status / advance / doctor)** | ✅ (bash + python3) |
 | **`/sw-*` workflow commands** | ✅ Routed by the entry + router skills |
 | **`visual_review` gate** | ✅ Portable approval receipts under `.stelow/approvals/` |
 | **Scope sync from spec-tech.md** | ✅ Skill-instructed parse into `stelow.json` |
 | **TUI overlay / lifecycle hooks** | ❌ Not shipped — host-side niceties only (no host code in this repo) |
 
-> **Bottom line:** The **25 skills + `scripts/stelow` run identically in any agent** that can read agentskills.io skill directories, and keep portable state in `stelow.json` / `.stelow/` / `state.md`. There is no extension code to install and no plugin to compile.
+> **Bottom line:** The **26 skills + `scripts/stelow` run identically in any agent** that can read agentskills.io skill directories, and keep portable state in `stelow.json` / `.stelow/` / `state.md`. There is no extension code to install and no plugin to compile.
 
 ### Auto-sync scopes from spec-tech.md
 
@@ -420,7 +421,7 @@ Known gaps (race window, legacy workflows without `dirHash`, phase-number drift)
 
 ## External Dependencies
 
-stelow is designed to be **self-contained** — the 25 skills + installer cover the full workflow. Some features optionally integrate with external tools for enhanced capability. Every external dependency has a documented fallback.
+stelow is designed to be **self-contained** — the 26 skills + installer cover the full workflow. Some features optionally integrate with external tools for enhanced capability. Every external dependency has a documented fallback.
 
 | Dependency | Required? | Used by | Install method | Fallback if absent |
 |---|---|---|---|---|
@@ -436,9 +437,9 @@ stelow is designed to be **self-contained** — the 25 skills + installer cover 
 > **Note:** stelow's cli-tools (`references/cli-tools/subagents.md`) document the invocation syntax. Host variability is handled by the skills themselves (`stages.yaml#tools` vocabulary + `references/cli-tools/*.md`), not by host-specific code — no skill changes needed when switching agents.
 | [pi-supervisor](https://github.com/tintinweb/pi-supervisor) | Optional (Pi only) | Conversation supervision during execution | `npm:pi-supervisor` | Skip — no supervision; rely on `stages-guard` for invariant enforcement |
 
-**Design principle:** stelow is **host-agnostic, skills-agnostic**. The 25 skills run identically in any agent that reads `~/.agents/skills/` — the full Shape Up workflow (plans, critique, scopes) works everywhere, driven by `scripts/stelow` for state mechanics. There is no extension layer and no compiled plugin in the repo; optional baseline tools install on top of any agent. No external tool is *required* to run the workflow — each optional integration enhances a phase but never blocks progress. `./setup.sh` optionally installs pi.dev + agnostic tool extensions; `./install.sh` only flattens the skills into `~/.agents/skills/` (and prunes retired ones). The cymbal/ast-grep **CLIs** and `sem`/`ctx7` remain user-managed (offered interactively during setup, or see the tools table above).
+**Design principle:** stelow is **host-agnostic, skills-agnostic**. The 26 skills run identically in any agent that reads `~/.agents/skills/` — the full Shape Up workflow (plans, critique, scopes) works everywhere, driven by `scripts/stelow` for state mechanics. There is no extension layer and no compiled plugin in the repo; optional baseline tools install on top of any agent. No external tool is *required* to run the workflow — each optional integration enhances a phase but never blocks progress. `./setup.sh` optionally installs pi.dev + agnostic tool extensions; `./install.sh` only flattens the skills into `~/.agents/skills/` (and prunes retired ones). The cymbal/ast-grep **CLIs** and `sem`/`ctx7` remain user-managed (offered interactively during setup, or see the tools table above).
 
-For every external tool above, the workflow teaches the agent the **specific fallback strategy** in `skills/stelow-product-orchestrator/references/cli-tools/<tool>.md`. When a tool is unavailable, the orchestrator instructs the agent to use harness-native capabilities (built-in `subagent()`, `git grep`, terminal-based review with approval receipts) rather than skipping the workflow step entirely. Degraded capability is the trade-off — see the Fallback column above for what you lose without each tool.
+For every external tool above, the workflow teaches the agent the **specific fallback strategy** in `skills/stelow-workflow-orchestrator/references/cli-tools/<tool>.md`. When a tool is unavailable, the orchestrator instructs the agent to use harness-native capabilities (built-in `subagent()`, `git grep`, terminal-based review with approval receipts) rather than skipping the workflow step entirely. Degraded capability is the trade-off — see the Fallback column above for what you lose without each tool.
 
 ### 🚀 Path A: From Zero (pi.dev + Everything)
 
@@ -455,7 +456,7 @@ curl -fsSL https://raw.githubusercontent.com/calionauta/stelow/main/setup.sh | s
 | 1 | Node.js | v20+ via Homebrew (macOS) or nvm (Linux/Windows) | - |
 | 2 | pi.dev | `@earendil-works/pi-coding-agent` via npm | pi.dev |
 | 3 | Pi extensions | @tintinweb/pi-subagents, @tintinweb/pi-tasks, pi-supervisor, @plannotator/pi-extension, pi-rewind, @sting8k/pi-vcc, pi-cache-optimizer, pi-leakguard, @tomooshi/condensed-milk-pi, caveman-milk-pi, rpiv-ask-user-question, pi-fff, raphapr/pi-cymbal, joelhooks/pi-ast-grep | pi.dev only |
-| 4 | Skills (25) | stelow orchestrator + 24 subskills, copied to `~/.agents/skills/` | **All CLIs** ✅ |
+| 4 | Skills (26) | stelow orchestrator + 25 subskills, copied to `~/.agents/skills/` | **All CLIs** ✅ |
 | 5 | Settings | theme, model defaults, skill shortcuts in `~/.pi/agent/settings.json` | pi.dev |
 | 6 | cymbal | codebase navigation via `brew install 1broseidon/tap/cymbal` (macOS) or `go install` (Linux). Auto-installed as the `raphapr/pi-cymbal` Pi extension when Pi is detected; skipped gracefully if brew/Go absent | macOS, Linux |
 | 7 | ctx7 | library docs fetcher via `npx @vedanth/context7` (interactive OAuth — prompts the user) | All CLIs |
@@ -473,7 +474,7 @@ cd stelow
 ./install.sh
 ```
 
-The installer flattens the skills into `~/.agents/skills/` and prunes any retired or orphaned skills. No extensions, no TUI, no slash-command registration — just the 25 skills that run the workflow.
+The installer flattens the skills into `~/.agents/skills/` and prunes any retired or orphaned skills. No extensions, no TUI, no slash-command registration — just the 26 skills that run the workflow.
 
 ### 📋 Path C: Any other agent (universal)
 
@@ -485,7 +486,7 @@ cd stelow
 ./install.sh
 ```
 
-The installer detects your CLI and installs the **skills + command reference files**. No extensions, no TUI - just the 25 skills that run the workflow.
+The installer detects your CLI and installs the **skills + command reference files**. No extensions, no TUI - just the 26 skills that run the workflow.
 
 **Or, with npx (no clone needed):**
 
@@ -493,7 +494,7 @@ The installer detects your CLI and installs the **skills + command reference fil
 npx skills add calionauta/stelow -g
 ```
 
-This installs all 25 skills to `~/.agents/skills/` - works on any CLI.
+This installs all 26 skills to `~/.agents/skills/` - works on any CLI.
 
 > For per-agent configuration (if your agent needs more than the universal skill path), see [docs/INSTALLATION.md](docs/INSTALLATION.md).
 
@@ -582,9 +583,9 @@ there is no host matrix to maintain because there is no host-specific code.
 
 Owner paths in this repo:
 
-- `skills/` (25 portable `stelow-product-*` skills + `stelow-entry` + `stelow-router`) — the only runtime content; loaded by any agentskills-compatible agent.
+- `skills/` (26 portable `stelow-product-*` / `stelow-workflow-*` skills + `stelow-entry` + `stelow-router`) — the only runtime content; loaded by any agentskills-compatible agent.
 - `scripts/stelow` — portable helper for status/advance/doctor; every host shells out to it.
-- `types/stages.ts` + `skills/stelow-product-orchestrator/stages.yaml` — the stage model and transitions.
+- `types/stages.ts` + `skills/stelow-workflow-orchestrator/stages.yaml` — the stage model and transitions.
 
 To add a new host you need **no code** — just an agent that reads
 agentskills.io skill directories. Host-specific knobs are documented in
@@ -708,7 +709,7 @@ Even with these guardrails, the AI agent still exhibits predictable failure mode
 | 13 | **Pipeline memory loss** - no cross-session memory of own failure patterns | [Flamehaven 2026](https://flamehaven.space/writing/the-two-problems-no-one-talks-about-in-ai-agent-coding-pipelines/) - cross-session memory, MICA governance schema | Execution Critique saves lessons from each cycle. Setup stage automatically reads past lessons with forced reflection. | **Captured and injected, but not verified.** Same model that made mistakes reads the lessons. Context rot can still cause mid-session forgetting. Cannot auto-verify lesson adherence. |
 | 14 | **Code complexity growth** - AI-generated code increases complexity over time | [Cursor Study (MSR 2026)](https://arxiv.org/abs/2511.04427) - static analysis warnings +30%, code complexity +41% after month 2 | Execution Critique includes anti-pattern detection (god functions >100 lines, global mutable state). Optional Code Quality Gate with static analysis. | **Caught too late.** Complexity analysis happens after code is written. No mechanism to prevent complexity during generation - only flag it after. |
 | 15 | **Activity ≠ productivity** - more PRs, more commits does not mean more value delivered | [METR 2025 RCT](https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/) - 19% slower for experienced devs; [Faros AI 2025](https://www.faros.ai/ai-productivity-paradox) - 9% more tasks, 0% DORA improvement | Appetite system anchors scope size to human attention budget. OUT/IN scoping keeps proposals focused. Execution Critique includes "close without follow-up" as valid outcome. | **Honest assessment:** Appetite system mitigates scope bloat, but requires human to set appetite honestly. `appetite_fit` is validated by the Plan Critique stage's fresh-context feasibility reviewer (reusing existing 5-reviewer infrastructure). The appetite system is new - its real-world effectiveness is not yet measured. |
-| 16 | **Coordination overhead** — adding agents to shared-state coding tasks degrades quality | [CooperBench 2026](https://arxiv.org/abs/2601.13295) — 2-agent cooperation: 25% success vs 50% solo; [clawRxiv 2604.00736](https://clawrxiv.io/abs/2604.00736) — overhead hits 50% of tokens at n=7 agents | Parallelism limited to research/review tasks with fresh context, zero inter-agent communication, and independent file outputs. Code execution defaults to sequential. Parallel scope execution is opt-in via post-hoc overlap detection (`git diff --name-only` per scope) + opt-in file-reservation locks (CLI-agnostic prevention, see [file-locking.md](skills/stelow-product-orchestrator/references/cli-tools/file-locking.md)). Full pipeline in [scope-execution-strategy.md](docs/scope-execution-strategy.md). | **Addressed by design — 3-layer pipeline (sequential default + optional prevention + post-hoc audit).** If overlap is detected in the report, human decides next action (merge, sequential re-run, or rework). Detection is observed-reality, not predicted heuristic. |
+| 16 | **Coordination overhead** — adding agents to shared-state coding tasks degrades quality | [CooperBench 2026](https://arxiv.org/abs/2601.13295) — 2-agent cooperation: 25% success vs 50% solo; [clawRxiv 2604.00736](https://clawrxiv.io/abs/2604.00736) — overhead hits 50% of tokens at n=7 agents | Parallelism limited to research/review tasks with fresh context, zero inter-agent communication, and independent file outputs. Code execution defaults to sequential. Parallel scope execution is opt-in via post-hoc overlap detection (`git diff --name-only` per scope) + opt-in file-reservation locks (CLI-agnostic prevention, see [file-locking.md](skills/stelow-workflow-orchestrator/references/cli-tools/file-locking.md)). Full pipeline in [scope-execution-strategy.md](docs/scope-execution-strategy.md). | **Addressed by design — 3-layer pipeline (sequential default + optional prevention + post-hoc audit).** If overlap is detected in the report, human decides next action (merge, sequential re-run, or rework). Detection is observed-reality, not predicted heuristic. |
 
 ### What this means for you
 

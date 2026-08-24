@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """scope3_blocks.py — append the dual-mode contract blocks to every
-stelow-product-* skill (SCOPE-3 deliverable).
+stelow-product-* / stelow-workflow-* skill (SCOPE-3 deliverable).
 
 Reads stages.yaml for stage metadata, reads each skill's first paragraph to
 infer its stage (by filename heuristic + description scan), and appends:
@@ -19,7 +19,7 @@ import os, re, sys, glob, pathlib
 ROOT = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else ".").resolve()
 
 # 1. Read stages.yaml once.
-stages_yaml = (ROOT / "skills/stelow-product-orchestrator/stages.yaml").read_text()
+stages_yaml = (ROOT / "skills/stelow-workflow-orchestrator/stages.yaml").read_text()
 stages = []
 current = None
 for line in stages_yaml.splitlines():
@@ -185,7 +185,7 @@ def process_skill(path: pathlib.Path) -> str:
 
 def main():
     skills_dir = ROOT / "skills"
-    targets = sorted(glob.glob(str(skills_dir / "stelow-product-*/SKILL.md")))
+    targets = sorted(glob.glob(str(skills_dir / "stelow-*-*/SKILL.md")))
     targets = [t for t in targets if "orchestrator" not in t]
     results = []
     for t in targets:

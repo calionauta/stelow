@@ -16,7 +16,7 @@ set -euo pipefail
 PROG="${0##*/}"
 ROOT="$(git rev-parse --show-toplevel 2>/dev/null || { echo "$PROG: not in a git repo" >&2; exit 2; })"
 STATE="$ROOT/state.md"
-TRANSITIONS="$ROOT/skills/stelow-product-orchestrator/references/transitions.md"
+TRANSITIONS="$ROOT/skills/stelow-workflow-orchestrator/references/transitions.md"
 LOCKDIR="$ROOT/.stelow/lock"
 LOCK_TTL_SEC="${STELOW_LOCK_TTL_SEC:-120}"
 
@@ -218,7 +218,7 @@ do_advance() {
   python3 - "$current" "$ROOT" <<'PY' || die "pre-condition check failed"
 import sys, re, os
 current, root = sys.argv[1], sys.argv[2]
-trans = open(os.path.join(root, "skills/stelow-product-orchestrator/references/transitions.md")).read()
+trans = open(os.path.join(root, "skills/stelow-workflow-orchestrator/references/transitions.md")).read()
 m = re.search(r"^### " + re.escape(current) + r"\s*\n(.*?)(?=^### |\Z)", trans, re.MULTILINE | re.DOTALL)
 if not m: sys.exit(0)
 for line in m.group(1).splitlines():

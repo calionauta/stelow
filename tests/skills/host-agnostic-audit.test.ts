@@ -25,7 +25,7 @@ const SKILLS_ROOT = join(process.cwd(), "skills");
 
 function listSkillDirs(): string[] {
   return readdirSync(SKILLS_ROOT)
-    .filter((d) => d.startsWith("stelow-product-"))
+    .filter((d) => d.startsWith("stelow-product-") || d.startsWith("stelow-workflow-"))
     .filter((d) => statSync(join(SKILLS_ROOT, d)).isDirectory());
 }
 

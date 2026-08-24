@@ -5,7 +5,7 @@
 ## Project Overview
 
 **Type:** Skills-only, host-agnostic product workflow library. The product is
-25 portable agentskills-compatible skills (`skills/stelow-product-*`) plus a
+25 portable agentskills-compatible skills (`skills/stelow-product-*` + `skills/stelow-workflow-*`) plus a
 zero-dependency shell helper (`scripts/stelow`). There is **no extension code,
 no compiled plugin, and no per-host adapter** in the repo.
 **Stack:** bash + python3 (runtime), Node 20+, TypeScript strict (tooling/tests).
@@ -17,8 +17,8 @@ Continue, OpenCode, …
 
 See [architecture.md](architecture.md) for module layout, data flow, and how to
 extend. The 17-stage state machine is defined in
-`skills/stelow-product-orchestrator/stages.yaml` (single source of truth);
-`skills/stelow-product-orchestrator/references/transitions.md` is the
+`skills/stelow-workflow-orchestrator/stages.yaml` (single source of truth);
+`skills/stelow-workflow-orchestrator/references/transitions.md` is the
 data-only mirror that `scripts/stelow advance` and the router validate against
 (regenerate from `stages.yaml` — do not edit by hand). Visual review gates
 (`gate`, `int-gate`, `plan-gate`, `diff-gate`) are conditional by review mode —
@@ -30,8 +30,8 @@ see `stages.yaml`.
 |---|---|
 | `skills/stelow-entry/` | Entry point: intent classification, `state.md` scaffold, first-stage selection (loaded when `STELOW_WORKFLOW=1`). |
 | `skills/stelow-router/` | Router: validate next candidate, `advance` via helper, load next stage, append hand-off audit. |
-| `skills/stelow-product-orchestrator/` | Orchestrator + `stages.yaml` + `stages/*.md` + `references/transitions.md`. |
-| `skills/stelow-product-*/` | The 23 other self-contained planning sub-skills. |
+| `skills/stelow-workflow-orchestrator/` | Orchestrator + `stages.yaml` + `stages/*.md` + `references/transitions.md`. |
+| `skills/stelow-product-*/` + `skills/stelow-workflow-*/` | The 23 other self-contained planning sub-skills. |
 | `scripts/stelow` | Portable helper: `status [--json]`, `advance <candidate>`, `doctor [--json]` (lock + TTL, invariants). |
 | `types/stages.ts` | Stage-model TS interfaces mirroring `stages.yaml`. |
 | `stelow.schema.json` / `stelow.json` | Workflow tracking schema + per-project runtime state. |
@@ -53,9 +53,9 @@ see `stages.yaml`.
 Stage/skill/command counts are pinned to the canonical sources by regression
 tests — not from this file:
 
-- **Skills (25)**: `find skills -maxdepth 2 -name SKILL.md -path '*/stelow-product-*' | wc -l` (orchestrator + 24 sub-skills). Pinned against the README `## 📋 Skills` section by `tests/integration/skill-count-readme-contract.test.ts`.
-- **Stages (17)**: `skills/stelow-product-orchestrator/stages.yaml` + its mirror `references/transitions.md` (the `triage`..`audit` chain).
-- **Stage transitions and conditional gates**: `skills/stelow-product-orchestrator/stages.yaml`.
+- **Skills (26)**: `find skills -maxdepth 2 -name SKILL.md \( -path '*/stelow-product-*' -o -path '*/stelow-workflow-*' \) | wc -l` (orchestrator + 25 sub-skills). Pinned against the README `## 📋 Skills` section by `tests/integration/skill-count-readme-contract.test.ts`.
+- **Stages (17)**: `skills/stelow-workflow-orchestrator/stages.yaml` + its mirror `references/transitions.md` (the `triage`..`audit` chain).
+- **Stage transitions and conditional gates**: `skills/stelow-workflow-orchestrator/stages.yaml`.
 - **Helper mechanics**: `scripts/stelow` (status/advance/doctor), pinned by `tests/unit/stelow-helper.test.ts`, `tests/integration/stelow-fs.test.ts`, `tests/integration/stelow-e2e.test.ts`.
 
 ```bash
@@ -132,7 +132,7 @@ Run before releases. A test file moving from OK to REVIEW over time signals rot.
 **Thresholds:**
 
 - **CI gate**: 60 (anything below fails the build)
-- **Local pre-push** (`.husky/pre-push`): 60 (same)
+- **Local pre-push**: 60 (same) — the `.husky/pre-push` hook was removed with the tooling-dirs cleanup; run `npm run test:rigor` locally to enforce
 - **Release target**: all test files should be B+ (80+)
 
 **Practical reality check:** A-grade (90+) is rare in practice. Most well-written tests will be B (80–89). B is the realistic "good" target. C is acceptable for low-stakes coverage. Anything below C is façade.
@@ -178,14 +178,16 @@ Enforcement:
   - `--mode=ci` — fails the run with a `::error::` annotation when
     `package.json#version` diverges from the latest annotated tag on
     `origin/main` and the HEAD commit body lacks one of the trailers above.
-  - `--hook=commit-msg <msg-file>` — invoked from `.husky/commit-msg`; rejects
-    any local commit whose staged `package.json` change lacks one of the
-    trailers above. (Bypass with `git commit --no-verify`.)
+  - `--hook=commit-msg <msg-file>` — rejects any local commit whose staged
+    `package.json` change lacks one of the trailers above (the `.husky/commit-msg`
+    hook was removed with the tooling-dirs cleanup; run this mode manually or
+    re-add the hook). (Bypass with `git commit --no-verify`.)
 - Annotated-tag-only tag resolution (`git for-each-ref` + `cat-file -t` filter).
   Lightweight tags and `v<X.Y.Z>-rc.N` pre-release tags are ignored.
-- See `.changeset/sw-034-version-coherence-guard.md` for the canonical
-  frontmatter template that future release notes use to compose the changelog
-  with the trailer contract documented.
+- The canonical trailer contract is documented in this section and enforced by
+  `scripts/check-version-coherence.sh`. (The old `.changeset/sw-034-version-coherence-guard.md`
+  template was removed with the `.changeset/` cleanup; release notes are composed
+  directly from `CHANGELOG.md`.)
 
 ### Full release workflow (do NOT skip steps)
   1. `npm version <major.minor.patch> --no-git-tag-version` — bump `package.json`
@@ -218,7 +220,7 @@ All optional — workflow runs without them. `scripts/setup.sh` auto-detects + o
 
 ## Token Efficiency
 
-See `skills/stelow-product-orchestrator/references/cli-tools/context-efficiency.md` for patterns:
+See `skills/stelow-workflow-orchestrator/references/cli-tools/context-efficiency.md` for patterns:
 - Batch multi-symbol cymbal lookups (`show X Y Z`)
 - Batch agent_browser extractions (`snapshot` + batch `get text`)
 - Output truncation with `offset/limit` instead of full `read`

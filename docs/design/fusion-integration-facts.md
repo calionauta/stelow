@@ -72,7 +72,7 @@ with:
   `dashboardViews[]` (optional), `uiSlots[]` (optional), `settingsSchema`.
   See `plugins/fusion-plugin-compound-engineering/manifest.json` for the
   canonical schema.
-- `src/agent-installation.ts` — copy vendored `stelow-product-orchestrator`
+- `src/agent-installation.ts` — copy vendored `stelow-workflow-orchestrator`
   + the 24 partner skills into a plugin-local `.fusion-stelow-skills/`
   directory at plugin load, guarded against global `.claude/`, `.codex/`,
   `.gemini/skills` writes.
@@ -293,7 +293,7 @@ Reference: `plugins/fusion-plugin-compound-engineering/manifest.json`.
 - The plugin's `src/index.ts` is what `definePlugin()` exports.
 
 **For stelow:** the plugin's `src/index.ts` should:
-1. Copy `skills/stelow-product-orchestrator/` + 24 partner skills from
+1. Copy `skills/stelow-workflow-orchestrator/` + 24 partner skills from
    the plugin's `src/skills/` into `resolveDefaultInstallTargetRoot()`.
 2. Register a `cwd-extension.ts` that mirrors `extensions/stelow/index.ts`
    for the host's `pi` extension (Fusion's host extension already wraps
@@ -406,7 +406,7 @@ Synthesizing the empirical facts:
 **Stelow integrates with Fusion as a plugin**, not as a host extension or
 as a manual workflow author. The plugin's deliverables are:
 
-1. **Skill trees** — `stelow-product-orchestrator` + 24 partner skills,
+1. **Skill trees** — `stelow-workflow-orchestrator` + 24 partner skills,
    installed at plugin load into a plugin-local `.fusion-stelow-skills/`
    directory; the plugin then exposes them via `additionalSkillPaths`
    (verified mechanism).

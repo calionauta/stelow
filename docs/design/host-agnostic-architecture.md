@@ -196,7 +196,7 @@ host-agnostic `index.ts`.
 `stages.yaml#tools:` will use these canonical names everywhere:
 
 ```yaml
-# anchors at the top of skills/stelow-product-orchestrator/stages.yaml
+# anchors at the top of skills/stelow-workflow-orchestrator/stages.yaml
 tools:
   # canonical names (used in allowed_tools, blocked_tools, preferred_tools,
   # primary_actions, and references/cli-tools/*.md)
@@ -240,23 +240,23 @@ tools:
 
 **Skill consumers to update:**
 
-- `skills/stelow-product-orchestrator/stages.yaml` — replace `ask` →
+- `skills/stelow-workflow-orchestrator/stages.yaml` — replace `ask` →
   `ask_user_question`, `plannotator` → `visual_review` everywhere.
-- `skills/stelow-product-orchestrator/references/cli-tools/ask.md` —
+- `skills/stelow-workflow-orchestrator/references/cli-tools/ask.md` —
   rename to `ask-user-question.md` (or keep filename, update content).
-- `skills/stelow-product-orchestrator/references/cli-tools/plannotator.md`
+- `skills/stelow-workflow-orchestrator/references/cli-tools/plannotator.md`
   — rename to `visual-review.md` (or keep filename, update content).
-- `skills/stelow-product-orchestrator/references/cli-tools/README.md` —
+- `skills/stelow-workflow-orchestrator/references/cli-tools/README.md` —
   update the tool index table.
-- `skills/stelow-product-tech-planning/SKILL.md` (lines 471-495) — replace
+- `skills/stelow-workflow-tech-planning/SKILL.md` (lines 471-495) — replace
   `plannotator` references with `visual_review`.
-- `skills/stelow-product-interface-alternatives/SKILL.md` (lines 138-147) —
+- `skills/stelow-workflow-interface-alternatives/SKILL.md` (lines 138-147) —
   same.
-- `skills/stelow-product-scope-executor/SKILL.md` (line 1019 reference
+- `skills/stelow-workflow-scope-executor/SKILL.md` (line 1019 reference
   table) — same.
-- `skills/stelow-product-orchestrator/references/capabilities.md` (line 11)
+- `skills/stelow-workflow-orchestrator/references/capabilities.md` (line 11)
   — same.
-- `skills/stelow-product-orchestrator/references/cli-tools/todo.md`
+- `skills/stelow-workflow-orchestrator/references/cli-tools/todo.md`
   (lines 145, 154) — same.
 
 **Confirm none of the existing `references/cli-tools/*.md` files break:**
@@ -345,7 +345,7 @@ can re-run `/sw-start` from any host to set it on the next write.
 
 ## 7. **`stages.yaml#tools:` section**
 
-Add to `skills/stelow-product-orchestrator/stages.yaml` (right after the
+Add to `skills/stelow-workflow-orchestrator/stages.yaml` (right after the
 existing `allowed_tools` / `blocked_tools` / `preferred_tools` machinery):
 
 ```yaml

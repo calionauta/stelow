@@ -12,7 +12,7 @@
 #   bash scripts/pre-commit-record.sh
 #
 # STELOW_VALIDATE=1 enables runtime validation during scope execution
-# (skills/stelow-product-scope-executor). This hook is the "at commit time" gate.
+# (skills/stelow-workflow-scope-executor). This hook is the "at commit time" gate.
 #
 # The hook is intentionally single-job: validate only scope records.
 # Other stelow checks (scope consistency, task count) live in
