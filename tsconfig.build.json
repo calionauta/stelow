@@ -23,7 +23,7 @@
     "rootDir": "."
   },
   "include": [
-    "types/**/*.d.ts"
+    "types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

@@ -1,3 +1,45 @@
+# CHANGELOG
+
+All notable changes to this project are documented in this file, following
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+
+## [Unreleased]
+
+### Changed (Breaking)
+
+- **Rename 13 workflow stage skills from `stelow-product-*` to
+  `stelow-workflow-*`** — orchestrator, shape-up, interface-alternatives,
+  plan-critique, tech-planning, scope-executor, ux-critique, health,
+  codebase-critique, coding-standards, testing-ai-code, testing-execution,
+  execution-critique. Research/domain libraries keep the `stelow-product-*`
+  prefix. Recorded in `retired-skills.yaml` so `install.sh` prunes stale
+  `~/.agents/skills/` copies.
+- **Remove tooling dirs from the repo** — `.changeset/`, `.github/` (CI + release
+  docs), `.husky/` (commit-msg + pre-push hooks), `.opencode/` (host-specific
+  command wrappers). All gitignored.
+- **Drop the npm-package surface** — `main`/`exports` entry points into `build/`
+  (which the current build never produces), `files`, `publishConfig`,
+  `prepublishOnly`/`prepack`, the unused `typebox` peer dependency, and the
+  unused `yaml` dependency. Distribution stays Git/GitHub-only (skills-only).
+
+### Added
+
+- **`stelow-product-paywall`** — paywall & onboarding monetization funnel,
+  adapted from Jake Castillo's Cal AI playbook (paywall-first build order,
+  paywall as PMF test, pain-matched onboarding, 3 funnel benchmarks, trial
+  policy, web2app).
+
+### Removed
+
+- **`husky` dev dependency and `prepare` hook-install script** — no hooks remain
+  in the repo.
+- **CI/coverage badges** from README (workflow deleted).
+
+### Changed
+
+- Skill count 25 → 26; counts, globs, and docs updated to the dual
+  `stelow-product-*` / `stelow-workflow-*` prefix convention.
+
 ## [1.0.0] - 2026-08-14
 
 Skills-only milestone (SCOPE-1..SCOPE-9, `f25b751`..`d2aa445`). The Pi

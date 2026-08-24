@@ -15,14 +15,8 @@
   "license": "MIT",
   "author": "calionauta",
   "type": "module",
-  "main": "./build/index.js",
   "exports": {
-    ".": {
-      "import": "./build/index.js",
-      "types": "./build/index.d.ts"
-    },
-    "./skills": "./skills/",
-    "./adapters": "./build/adapters/index.js"
+    "./skills": "./skills/"
   },
   "repository": {
     "type": "git",
@@ -31,13 +25,6 @@
   "homepage": "https://github.com/calionauta/stelow#readme",
   "bugs": {
     "url": "https://github.com/calionauta/stelow/issues"
-  },
-  "peerDependencies": {
-    "typebox": "*"
-  },
-  "dependencies": {
-    "typebox": "*",
-    "yaml": "2.9.0"
   },
   "optionalPeerDependencies": {
     "@earendil-works/pi-coding-agent": ">=0.74.0",
@@ -49,26 +36,11 @@
     "pi-supervisor": ">=0.4.0",
     "pi-agent-codebase-workflows": "git:github.com/PriNova/pi-agent-codebase-workflows"
   },
-  "publishConfig": {
-    "access": "public"
-  },
   "engines": {
     "node": ">=20.0.0"
   },
-  "files": [
-    "build/",
-    "skills/",
-    "scripts/",
-    "install.sh",
-    "stelow.schema.json",
-    "README.md",
-    "LICENSE",
-    "CHANGELOG.md"
-  ],
   "scripts": {
     "build": "./scripts/sync-cli-tools.sh && tsc -p tsconfig.build.json",
-    "prepare": "node -e \"try { require('husky').install() } catch (e) { console.log('husky not installed (e.g. prod install), skipping') }\"",
-    "prepublishOnly": "npm run build && ./scripts/sync-cli-tools.sh",
     "test": "vitest run",
     "test:unit": "vitest run tests/unit",
     "test:integration": "vitest run tests/integration",
@@ -80,19 +52,14 @@
     "test:mutation": "stryker run",
     "test:rigor": "bash scripts/rigor-scan.sh 60",
     "typecheck": "tsc --noEmit",
-    "lint": "tsc --noEmit",
-    "prepack": "npm run build && ./scripts/sync-cli-tools.sh"
+    "lint": "tsc --noEmit"
   },
   "devDependencies": {
-    "@earendil-works/pi-coding-agent": "0.80.6",
-    "@earendil-works/pi-tui": "0.80.6",
-    "@mariozechner/pi-ai": "0.73.1",
     "@stryker-mutator/core": "9.6.1",
     "@stryker-mutator/typescript-checker": "9.6.1",
     "@stryker-mutator/vitest-runner": "9.6.1",
     "@vitest/coverage-v8": "^4.1.6",
     "fast-check": "4.9.0",
-    "husky": "9.1.7",
     "typescript": "^6.0.3",
     "vitest": "^4.1.6"
   }

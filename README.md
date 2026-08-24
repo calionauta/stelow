@@ -6,8 +6,6 @@
 
 [![Ask DeepWiki](https://img.shields.io/badge/Ask%20DeepWiki-007ACC)](https://deepwiki.com/calionauta/stelow)
 [![Ask zRead](https://img.shields.io/badge/Ask%20zRead-10B981)](https://zread.ai/calionauta/stelow)
-[![CI](https://github.com/calionauta/stelow/actions/workflows/ci.yml/badge.svg)](https://github.com/calionauta/stelow/actions/workflows/ci.yml)
-[![Coverage](https://img.shields.io/badge/coverage-70%25-brightgreen)](https://github.com/calionauta/stelow/actions/workflows/ci.yml)
 [![Version](https://img.shields.io/github/v/release/calionauta/stelow?logo=github&label=release)](https://github.com/calionauta/stelow/releases)
 [![Pi](https://img.shields.io/badge/Native-Pi-8B5CF6)](https://pi.dev)
 [![CLI](https://img.shields.io/badge/Skills%20run%20on-Any%20agent-3B82F6)](https://github.com/calionauta/stelow#-host-support)

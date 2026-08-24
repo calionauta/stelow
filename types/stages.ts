@@ -1,5 +1,5 @@
 // types/stages.ts
-// Interfaces compartilhadas para o schema de stages.yaml
+// Shared interfaces for the stages.yaml schema
 
 export interface StageTransitions {
   next?: string[];
