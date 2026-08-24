@@ -3,7 +3,7 @@ name: stelow-product-ads
 description: Advertising strategies for online placement based on the Transtheoretical Model of Change. Covers the 5 stages of audience awareness and ad categories for each stage.
 metadata:
   frequency: rare
-  category: research
+  category: product
   context-cost: low
   author: calionauta
   author-url: https://github.com/calionauta

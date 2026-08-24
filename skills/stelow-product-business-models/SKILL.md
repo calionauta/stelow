@@ -3,7 +3,7 @@ name: stelow-product-business-models
 description: Business model creativity triggers for reducing costs and generating revenue. Based on Jobs to Be Done frameworks from Strategyn to adapt and experiment with new models.
 metadata:
   frequency: rare
-  category: research
+  category: product
   context-cost: low
   author: calionauta
   author-url: https://github.com/calionauta

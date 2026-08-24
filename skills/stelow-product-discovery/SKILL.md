@@ -112,7 +112,7 @@ under `skills/` (historically published at
 
 | Skill | Description | Lines |
 |-------|-----------|--------|
-| `stelow-workflow-health` | Product health monitoring via signals in tension | ~100 |
+| `stelow-product-health` | Product health monitoring via signals in tension | ~100 |
 | `stelow-product-pricing` | Pricing strategy: Exchange Base, Consumption Control, Interest Alignment, Trust Pact | ~100 |
 | `stelow-product-open-source` | OSS as business strategy: Proprietary Problem, Org Structures, Competition Protection | ~60 |
 | `stelow-product-trust-building` | 10 pillars of trust, guarantees, perception, commitment | ~60 |

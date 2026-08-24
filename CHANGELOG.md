@@ -7,13 +7,20 @@ All notable changes to this project are documented in this file, following
 
 ### Changed (Breaking)
 
-- **Rename 13 workflow stage skills from `stelow-product-*` to
+- **Rename 12 workflow stage skills from `stelow-product-*` to
   `stelow-workflow-*`** — orchestrator, shape-up, interface-alternatives,
-  plan-critique, tech-planning, scope-executor, ux-critique, health,
+  plan-critique, tech-planning, scope-executor, ux-critique,
   codebase-critique, coding-standards, testing-ai-code, testing-execution,
-  execution-critique. Research/domain libraries keep the `stelow-product-*`
-  prefix. Recorded in `retired-skills.yaml` so `install.sh` prunes stale
-  `~/.agents/skills/` copies.
+  execution-critique. `stelow-product-health` was renamed back from the
+  intermediate `stelow-workflow-health` (it is a strategy library, not a
+  stage skill). Recorded in `retired-skills.yaml` so `install.sh` prunes
+  stale `~/.agents/skills/` copies.
+- **README Skills section grouped by prefix** — `stelow-workflow-*`
+  (12, the machinery that runs the workflow) and `stelow-product-*`
+  (14, product strategy & domain libraries). Frontmatter
+  `metadata.category` aligned to the prefix (`workflow` / `product`) in
+  all 28 skills (incl. `stelow-entry`/`stelow-router`); the obsolete
+  product/research/code/meta taxonomy is gone.
 - **Remove tooling dirs from the repo** — `.changeset/`, `.github/` (CI + release
   docs), `.husky/` (commit-msg + pre-push hooks), `.opencode/` (host-specific
   command wrappers). All gitignored.

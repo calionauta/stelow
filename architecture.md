@@ -79,9 +79,11 @@ same workflow. Hosts only add an optional marker protocol
 ## How to extend
 
 - New stage → edit `stages.yaml`, regenerate `references/transitions.md`.
-- New skill → add `skills/stelow-product-<name>/SKILL.md` (research/domain libraries) or
-  `skills/stelow-workflow-<name>/SKILL.md` (workflow stage skills) with `metadata.category`
-  frontmatter; keep counts consistent (README contract test pins 25/1+24).
+- New skill → add `skills/stelow-workflow-<name>/SKILL.md` (workflow stage
+  skills) or `skills/stelow-product-<name>/SKILL.md` (product strategy /
+  domain libraries) with `metadata.category` matching the prefix
+  (`workflow` / `product`); keep counts consistent (README contract test
+  pins 26 / 1 orchestrator + 25 sub-skills).
 - New host → no code required. Ensure the host can read agentskills.io skill
   directories and set the marker env vars. Host levers are documented in
   `skills/stelow-entry/references/host-levers.md`.

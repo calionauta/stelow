@@ -107,7 +107,7 @@ retired:
     retired_at: 2026-07-13
     reason: renamed
     superseded_by:
-      - stelow-workflow-health
+      - stelow-product-health
   - name: cali-product-interface-alternatives
     retired_at: 2026-07-13
     reason: renamed
@@ -207,11 +207,11 @@ retired:
     reason: renamed
     superseded_by:
       - stelow-workflow-execution-critique
-  - name: stelow-product-health
+  - name: stelow-workflow-health
     retired_at: 2026-08-24
     reason: renamed
     superseded_by:
-      - stelow-workflow-health
+      - stelow-product-health
   - name: stelow-product-interface-alternatives
     retired_at: 2026-08-24
     reason: renamed

@@ -6,7 +6,7 @@ description: >
   Use when generating or reviewing code within any product planning context.
 metadata:
   frequency: daily
-  category: code
+  category: workflow
   context-cost: low
   author: calionauta
   author-url: https://github.com/calionauta

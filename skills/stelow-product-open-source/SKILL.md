@@ -3,7 +3,7 @@ name: stelow-product-open-source
 description: The Open Source Paradox — delivering value by giving up control. Explores business models, organizational structures, and strategies for competing in an open-source world.
 metadata:
   frequency: rare
-  category: research
+  category: product
   context-cost: low
   author: calionauta
   author-url: https://github.com/calionauta

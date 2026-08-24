@@ -8,7 +8,7 @@ description: >
   For codebases with visual UI, use stelow-workflow-ux-critique instead.
 metadata:
   frequency: weekly
-  category: code
+  category: workflow
   context-cost: medium
   author: calionauta
   author-url: https://github.com/calionauta

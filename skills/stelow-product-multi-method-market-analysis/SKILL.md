@@ -3,7 +3,7 @@ name: stelow-product-multi-method-market-analysis
 description: Conduct deep, structured market analysis using multiple methodologies (PESTLE, Foresight, Delphi, Wardley Maps). Use this skill whenever the user asks for market analysis, competitive intelligence, industry research, market trends, weekly intelligence reports, or strategic market insights. Also trigger when the user mentions PESTLE, Wardley Maps, Foresight signals, or wants to understand a market, niche, or industry in depth — even if they don't explicitly ask for "market analysis".
 metadata:
   frequency: rare
-  category: research
+  category: product
   context-cost: low
   author: calionauta
   author-url: https://github.com/calionauta

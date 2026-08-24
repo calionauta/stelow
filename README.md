@@ -102,7 +102,7 @@ A structured workflow that makes AI think like a product manager:
 
 ### Key Features
 
-- **26 skills total** in this repo: 1 orchestrator + 25 sub-skills (broken down by frontmatter category — product: 7, research: 13, code: 4, meta: 1)
+- **26 skills total** in this repo: 1 orchestrator + 25 sub-skills (grouped by prefix — workflow: 12, product: 14)
 - Part of a broader ecosystem — the orchestrator composes these and can also invoke additional skills from the user's agent environment at runtime
 - Real-time TUI tracking with visual status overlay (`/sw-status`)
 - Gate approval via Plannotator - review, comment, approve or reject before implementation
@@ -265,82 +265,59 @@ These loops are **appetite- and mode-respecting by design** — they inherit the
 
 ## 📋 Skills
 
-All 26 skills live flat in `skills/` and install into `~/.agents/skills/`. The total is **1 orchestrator + 25 sub-skills = 26**, grouped by each skill's `metadata.category` frontmatter:
+All 26 skills live flat in `skills/` and install into `~/.agents/skills/`. The total is **1 orchestrator + 25 sub-skills = 26**, grouped by prefix — the name after the prefix is the skill's job. `stelow-entry` + `stelow-router` are separate infra skills (workflow bootstrap + navigation).
 
-| Category | Count | Notes |
+| Prefix | Count | Meaning |
 |---|---|---|
-| Total | **1 orchestrator + 25 sub-skills = 26** | Product workflow skills (`stelow-product-*` / `stelow-workflow-*`); `stelow-entry` + `stelow-router` are separate infra skills |
-| product (incl. orchestrator) | 8 | |
-| research | 13 | |
-| code | 4 | |
-| meta | 1 | |
+| `stelow-workflow-*` | 12 | Skills that run the 17-stage workflow: the orchestrator, the stage skills, and the execution/verification support they invoke |
+| `stelow-product-*` | 14 | Product strategy & domain libraries consulted during stages (reference only, none execute stages) |
+| Total | **1 orchestrator + 25 sub-skills = 26** | `stelow-entry` + `stelow-router` are separate infra skills |
 
-The orchestrator (`stelow-workflow-orchestrator`) is the only `product` skill that is not a sub-skill — it composes the others. The remaining 7 `product` skills plus the 13 `research`, 4 `code`, and 1 `meta` skill are sub-skills (25 total).
-
-**Each skill is fully self-contained** - the installer copies the complete directory tree including its own `references/cli-tools/`, `references/`, and `stages/` files. This means:
-- ✅ **Skills work standalone** - invoke any sub-skill (e.g., `stelow-workflow-shape-up`, `stelow-workflow-plan-critique`) independently of the orchestrator
+The prefix is the grouping: `stelow-workflow-*` is the machinery that executes the process, `stelow-product-*` is the knowledge consulted while doing it. Every skill is fully self-contained - the installer copies the complete directory tree including its own `references/cli-tools/`, `references/`, and `stages/` files. This means:
+- ✅ **Skills work standalone** - invoke any sub-skill (e.g., `stelow-workflow-shape-up`, `stelow-product-pricing`) independently of the orchestrator
 - ✅ **Portable across agents** - Pi, Claude Code, Codex, Cursor, Continue, OpenCode, and others all reference skills by name (`~/.agents/skills/`)
 - ✅ **References resolve locally** - every `references/cli-tools/*.md` path is relative to the skill's own directory
 - ❌ **Not in `~/.agents/skills/`?** Use `./install.sh` or `npx skills add calionauta/stelow -g`
 
-### 🎛️ Orchestrator (1)
+### 🏗️ Workflow (12)
+
+`stelow-workflow-*` — skills that execute the 17-stage workflow. `stelow-workflow-orchestrator` composes the others; the stage skills and execution/verification support run the steps.
 
 | Skill | Purpose |
 |-------|---------|
-| `stelow` | Coordinates the multi-stage workflow (Setup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Plan.Gate → Execution → Verification → Diff.Gate → Audit) |
-
-### 🧭 Product (7)
-
-Sub-skills that drive the core product planning stages.
-
-| Skill | Purpose |
-|-------|---------|
-| `stelow-product-discovery` | Product discovery and validation |
+| `stelow-workflow-orchestrator` | Coordinates the multi-stage workflow (Setup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Plan.Gate → Execution → Verification → Diff.Gate → Audit) |
 | `stelow-workflow-shape-up` | Shape Up planning + **Tech Preview** (appetite-gated codebase recon via cymbal) — surfaces codebase reality before product decisions |
 | `stelow-workflow-interface-alternatives` | Interface alternatives exploration (1/3/5 archetypes by appetite) |
 | `stelow-workflow-plan-critique` | Product plan gap analysis (flows, states, affordances, data, system, compositional quality, feasibility); mode-dependent resolution |
 | `stelow-workflow-tech-planning` | Technical scope generation + **Alignment Check** (mode-gated bidirectional product↔tech feedback loop) |
 | `stelow-workflow-scope-executor` | Autonomous scope execution via acceptance contracts - child self-corrects (harness-dependent), parent evaluates final result |
 | `stelow-workflow-ux-critique` | Full UX/UI audit (accessibility, Nielsen heuristics, personas, AI slop) |
+| `stelow-workflow-codebase-critique` | Codebase structural critique (architecture, performance, AI slop) |
+| `stelow-workflow-coding-standards` | Self-contained coding standards - KISS, DRY, LoB, SoC, Fail Fast, YAGNI, file/function size limits |
+| `stelow-workflow-testing-ai-code` | AI-aware testing strategy with contextual mutation testing evaluation |
+| `stelow-workflow-testing-execution` | Post-implementation testing protocol |
+| `stelow-workflow-execution-critique` | Post-execution audit - classifies gaps as FIXED/DOCUMENTED/ESCALATED; ESCALATED gaps become new scopes |
 
-### 🔬 Research (13)
+### 📚 Product (14)
 
-Domain and market research skills used during Context, Shape, and Scope.
+`stelow-product-*` — product strategy & domain libraries consulted during Context, Shape, Scope, and Audit. All are `disable-model-invocation` reference skills — none execute a stage.
 
-| Skill | Purpose |
-|-------|---------|
+| Skill | Strategy |
+|-------|----------|
+| `stelow-product-discovery` | Product discovery and validation (the short-cycle learning method) |
 | `stelow-product-job-to-be-done` | Job To Be Done - understand what job users hire the product to do |
 | `stelow-product-opportunity-mapping` | Map opportunities to see where to focus |
 | `stelow-product-multi-method-market-analysis` | Multi-method market analysis |
 | `stelow-product-evolutionary-principles` | Evolutionary principles for sustainable development |
 | `stelow-product-ads` | Advertising and growth channels |
 | `stelow-product-business-models` | Business model canvas and options |
-| `stelow-workflow-health` | Product health metrics |
+| `stelow-product-health` | Product health metrics (signals in tension) |
 | `stelow-product-marketplace-playbook` | Marketplace dynamics |
 | `stelow-product-open-source` | Open source strategy |
 | `stelow-product-paywall` | Paywall and onboarding monetization funnel — paywall-first build order, paywall as PMF test, pain-matched onboarding, 3 funnel benchmarks, trial policy, web2app |
 | `stelow-product-pricing` | Pricing strategy and tactics |
 | `stelow-product-promotions` | Promotions and campaigns |
 | `stelow-product-trust-building` | Trust-building mechanisms |
-
-### 🧪 Code (4)
-
-Engineering-oriented skills used during planning, verification, and audit.
-
-| Skill | Purpose |
-|-------|---------|
-| `stelow-workflow-codebase-critique` | Codebase structural critique (architecture, performance, AI slop) |
-| `stelow-workflow-coding-standards` | Self-contained coding standards - KISS, DRY, LoB, SoC, Fail Fast, YAGNI, file/function size limits |
-| `stelow-workflow-testing-ai-code` | AI-aware testing strategy with contextual mutation testing evaluation |
-| `stelow-workflow-testing-execution` | Post-implementation testing protocol |
-
-### 🧠 Meta (1)
-
-Workflow-level audit and post-execution review.
-
-| Skill | Purpose |
-|-------|---------|
-| `stelow-workflow-execution-critique` | Post-execution audit - classifies gaps as FIXED/DOCUMENTED/ESCALATED; ESCALATED gaps become new scopes |
 
 ---
 

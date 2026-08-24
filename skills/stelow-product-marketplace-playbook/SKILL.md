@@ -3,7 +3,7 @@ name: stelow-product-marketplace-playbook
 description: Strategies and tactics for stimulating marketplaces by balancing supply and demand. Covers 19 proven tactics from getting the harder side first to creating urgency through constraints.
 metadata:
   frequency: rare
-  category: research
+  category: product
   context-cost: low
   author: calionauta
   author-url: https://github.com/calionauta

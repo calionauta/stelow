@@ -8,7 +8,7 @@ description: >
   Loaded by host-levers.md on every stage hand-off.
 metadata:
   frequency: per-stage
-  category: product
+  category: workflow
   context-cost: low
   author: calionauta
 ---

@@ -8,7 +8,7 @@ description: >
   references/host-levers.md).
 metadata:
   frequency: per-workflow
-  category: product
+  category: workflow
   context-cost: low
   author: calionauta
 ---

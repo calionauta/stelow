@@ -8,7 +8,7 @@ description: >
   Part of stelow (`critique` stage) but usable standalone.
 metadata:
   frequency: weekly
-  category: product
+  category: workflow
   context-cost: medium
   author: calionauta
   author-url: https://github.com/calionauta

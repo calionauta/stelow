@@ -8,7 +8,7 @@ description: >
   Standalone or integrated into stelow and stelow-workflow-testing-execution.
 metadata:
   frequency: weekly
-  category: product
+  category: workflow
   context-cost: medium
   author: calionauta
   author-url: https://github.com/calionauta

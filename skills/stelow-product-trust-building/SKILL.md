@@ -3,7 +3,7 @@ name: stelow-product-trust-building
 description: Building trust through perception and guarantee mechanisms. Covers ten pillars to materialize trust, guarantee types from unconditional to anti-guarantees, and strategic approaches for different contexts.
 metadata:
   frequency: rare
-  category: research
+  category: product
   context-cost: low
   author: calionauta
   author-url: https://github.com/calionauta

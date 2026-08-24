@@ -7,7 +7,7 @@ description: >
   and standalone (auto-detects via sem diff + git). Falls back to git diff when sem is not installed.
 metadata:
   frequency: weekly
-  category: meta
+  category: workflow
   context-cost: medium
   author: calionauta
   author-url: https://github.com/calionauta

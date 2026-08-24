@@ -12,7 +12,7 @@ description: >
   variables, emotional jobs, social jobs, or any combination of these terms.
 metadata:
   frequency: monthly
-  category: research
+  category: product
   context-cost: low
   author: calionauta
   author-url: https://github.com/calionauta

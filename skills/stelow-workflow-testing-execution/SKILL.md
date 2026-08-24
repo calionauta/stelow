@@ -3,7 +3,7 @@ name: stelow-workflow-testing-execution
 description: "Run post-implementation testing protocol. Triggers when: user says 'test this', 'run tests', 'QA', 'dogfood', 'check quality', user finishes implementing a feature, or when a PR is ready for review. Also triggers on mentions of: test coverage, accessibility audit, WCAG, design review, code review, subagent review, UX quality audit. Covers: parallel review via subagents, UX/UI quality audit (via stelow-workflow-ux-critique), accessibility check, and browser testing. Part of stelow but usable standalone by stating what needs testing."
 metadata:
   frequency: weekly
-  category: code
+  category: workflow
   context-cost: medium
   author: calionauta
   author-url: https://github.com/calionauta

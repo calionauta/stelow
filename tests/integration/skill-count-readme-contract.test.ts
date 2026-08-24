@@ -1,26 +1,24 @@
 /**
  * skill-count-readme-contract.test.ts
  *
- * SW-015 contract guard: README.md's "What stelow does" / Key Features
- * sentence and the "## 📋 Skills" section must report skill counts and
- * category breakdown that match the canonical source of truth
- *   (every skills/<dir>/SKILL.md with frontmatter metadata.category).
+ * SW-015 contract guard: README.md's "## 📋 Skills" section must report
+ * skill counts and prefix-group breakdown that match the canonical source
+ * of truth (every skills/<dir>/SKILL.md with frontmatter metadata.category
+ * aligned to the `stelow-workflow-*` / `stelow-product-*` prefix).
  *
  * Source-of-truth derivation:
  *   1. Real subprocess invocation of: find skills -maxdepth 2 -name SKILL.md -path glob-prefix
  *   2. Independent FS enumeration: every immediate child of `skills/`
- *      whose name starts with `stelow-product-` AND that contains
- *      `SKILL.md`. The two paths must produce the SAME 26 paths.
+ *      whose name starts with `stelow-product-` or `stelow-workflow-`
+ *      AND that contains `SKILL.md`. The two paths must produce the SAME 26 paths.
  *   3. Per-file frontmatter: parse the `---`-delimited YAML block,
- *      read the indented `category:` value from the `metadata:` block,
- *      and verify `name:` equals the directory name.
+ *      read the indented `category:` value from the `metadata:` block
+ *      (must be `workflow` or `product`, matching the dir prefix), and
+ *      verify `name:` equals the directory name.
  *
  * README parser is scoped to the `## 📋 Skills` section so unrelated
- * category/count mentions elsewhere cannot satisfy the contract. The
- * orchestrator's intentional public display alias `` `stelow` ``
- * (described in `skills/stelow-workflow-orchestrator/SKILL.md` as
- * `[stelow]`) is the ONLY normalization applied; all sub-skill rows
- * must use exact stelow-product-prefixed directory names.
+ * count mentions elsewhere cannot satisfy the contract. Every row in the
+ * two level-3 blocks must use the exact directory name (no aliases).
  *
  * This test intentionally exercises real I/O (execFileSync, readFileSync,
  * readdirSync, statSync). It mocks nothing and reads no `process.env`.
@@ -36,10 +34,15 @@ const PROJECT_ROOT = resolve(dirname(__filename), '..', '..');
 const SKILLS_DIR = join(PROJECT_ROOT, 'skills');
 const README_PATH = join(PROJECT_ROOT, 'README.md');
 
-type Category = 'product' | 'research' | 'code' | 'meta';
-const ALLOWED_CATEGORIES: readonly Category[] = ['product', 'research', 'code', 'meta'];
+type Group = 'workflow' | 'product';
+const ALLOWED_GROUPS: readonly Group[] = ['workflow', 'product'];
 const ORCHESTRATOR_DIR = 'stelow-workflow-orchestrator';
-const ORCHESTRATOR_ALIAS = 'stelow';
+
+function groupFromDir(dirName: string): Group {
+  if (dirName.startsWith('stelow-workflow-')) return 'workflow';
+  if (dirName.startsWith('stelow-product-')) return 'product';
+  throw new Error(`Unknown prefix group for directory "${dirName}"`);
+}
 
 // ── Source enumeration ────────────────────────────────────────────
 
@@ -71,12 +74,12 @@ function enumerateImmediateSkillDirs(): string[] {
 interface SkillSource {
   relPath: string;
   dirName: string;
-  category: Category;
+  group: Group;
 }
 
 function parseCategoryFromMetadata(
   filePath: string,
-): { name: string; category: Category } {
+): { name: string; category: Group } {
   const content = readFileSync(filePath, 'utf8');
   const fm = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
   if (!fm) {
@@ -113,12 +116,12 @@ function parseCategoryFromMetadata(
   if (!category) {
     throw new Error(`No category field under metadata: in ${filePath}`);
   }
-  if (!ALLOWED_CATEGORIES.includes(category as Category)) {
+  if (!ALLOWED_GROUPS.includes(category as Group)) {
     throw new Error(
-      `Unexpected category "${category}" in ${filePath}; expected one of ${ALLOWED_CATEGORIES.join(', ')}`,
+      `Unexpected category "${category}" in ${filePath}; expected one of ${ALLOWED_GROUPS.join(', ')}`,
     );
   }
-  return { name, category: category as Category };
+  return { name, category: category as Group };
 }
 
 function loadSources(): SkillSource[] {
@@ -132,7 +135,12 @@ function loadSources(): SkillSource[] {
         `Frontmatter name "${name}" does not match directory "${dirName}" in ${relPath}`,
       );
     }
-    return { relPath, dirName, category };
+    if (category !== groupFromDir(dirName)) {
+      throw new Error(
+        `Frontmatter category "${category}" does not match prefix group "${groupFromDir(dirName)}" of "${dirName}" in ${relPath}`,
+      );
+    }
+    return { relPath, dirName, group: category };
   });
 }
 
@@ -171,7 +179,7 @@ function parseSummaryTable(skillsSection: string): SummaryRow[] {
     if (cells.length < 2) continue;
     const firstLower = cells[0].toLowerCase();
     // Skip header / separator rows.
-    if (firstLower === 'category' || firstLower === 'role') continue;
+    if (firstLower === 'category' || firstLower === 'prefix' || firstLower === 'role') continue;
     if (/^[-:]+$/.test(cells[1])) continue;
     rows.push({ category: cells[0], count: cells[1] });
   }
@@ -200,7 +208,7 @@ function extractLevel3Blocks(skillsSection: string): Level3Block[] {
 }
 
 function extractSkillNameCountFromHeading(heading: string): { label: string; count: number } | null {
-  // Heading like "🎛️ Orchestrator (1)" or "Orchestrator (1)" → label "Orchestrator", count 1.
+  // Heading like "🏗️ Workflow (12)" → label "Workflow", count 12.
   const m = heading.match(/^(.+?)\s*\((\d+)\)\s*$/);
   if (!m) return null;
   const rawLabel = m[1].trim();
@@ -235,13 +243,8 @@ function parseSkillRowsFromBlock(blockBody: string): string[] {
 
 describe('SW-015 — README skill-count contract', () => {
   const sources = loadSources();
-  const skillsByCategory: Record<Category, string[]> = {
-    product: [],
-    research: [],
-    code: [],
-    meta: [],
-  };
-  for (const s of sources) skillsByCategory[s.category].push(s.dirName);
+  const skillsByGroup: Record<Group, string[]> = { workflow: [], product: [] };
+  for (const s of sources) skillsByGroup[s.group].push(s.dirName);
   const orchestrator = sources.find((s) => s.dirName === ORCHESTRATOR_DIR);
   const subSkills = sources.filter((s) => s.dirName !== ORCHESTRATOR_DIR);
 
@@ -276,31 +279,30 @@ describe('SW-015 — README skill-count contract', () => {
     });
   });
 
-  describe('frontmatter category counts (derived from source)', () => {
-    it('inclusive counts are product 8 / research 13 / code 4 / meta 1', () => {
-      // Inclusive: orchestrator (product) + every sub-skill.
-      expect(skillsByCategory.product).toHaveLength(8);
-      expect(skillsByCategory.research).toHaveLength(13);
-      expect(skillsByCategory.code).toHaveLength(4);
-      expect(skillsByCategory.meta).toHaveLength(1);
-      // Sanity: 8 + 13 + 4 + 1 = 26.
+  describe('frontmatter group counts (derived from source)', () => {
+    it('inclusive counts are workflow 12 / product 14', () => {
+      // Inclusive: orchestrator (workflow) + every sub-skill.
+      expect(skillsByGroup.workflow).toHaveLength(12);
+      expect(skillsByGroup.product).toHaveLength(14);
+      // Sanity: 12 + 14 = 26.
       expect(
-        skillsByCategory.product.length +
-          skillsByCategory.research.length +
-          skillsByCategory.code.length +
-          skillsByCategory.meta.length,
+        skillsByGroup.workflow.length + skillsByGroup.product.length,
       ).toBe(26);
     });
 
-    it('product sub-skill set (after excluding orchestrator) has size 7', () => {
-      const productSubSkills = skillsByCategory.product.filter(
-        (d) => d !== ORCHESTRATOR_DIR,
-      );
-      expect(productSubSkills).toHaveLength(7);
-      // Every product sub-skill must be a sub-skill (not the orchestrator).
-      expect(productSubSkills).not.toContain(ORCHESTRATOR_DIR);
-      // Orchestrator must be in the inclusive product set.
-      expect(skillsByCategory.product).toContain(ORCHESTRATOR_DIR);
+    it('frontmatter category matches the directory prefix for every skill', () => {
+      // The prefix IS the grouping: stelow-workflow-* ⇔ category workflow,
+      // stelow-product-* ⇔ category product. loadSources() enforces this;
+      // assert it explicitly here so a broken alignment is a named failure.
+      for (const s of sources) {
+        const fm = parseCategoryFromMetadata(join(PROJECT_ROOT, s.relPath));
+        expect(fm.category, `${s.dirName} category`).toBe(groupFromDir(s.dirName));
+      }
+    });
+
+    it('product group contains no orchestrator; orchestrator is in workflow group', () => {
+      expect(skillsByGroup.product).not.toContain(ORCHESTRATOR_DIR);
+      expect(skillsByGroup.workflow).toContain(ORCHESTRATOR_DIR);
     });
   });
 
@@ -308,8 +310,6 @@ describe('SW-015 — README skill-count contract', () => {
     const readme = readReadme();
 
     it('rejects the stale "5+8+5+6 = 24 sub-skills" claim (whitespace tolerant)', () => {
-      // Exact no-space form would let a future spacing variant slip past;
-      // the spec requires whitespace tolerance so both forms are rejected.
       expect(readme).not.toMatch(/5\s*\+\s*8\s*\+\s*5\s*\+\s*6\s*=\s*24\s+sub-skills/i);
     });
 
@@ -320,17 +320,22 @@ describe('SW-015 — README skill-count contract', () => {
     });
 
     it('rejects the stale contemporary labels (strategic / domain / utility as categories)', () => {
-      // These are the labels used by the obsolete breakdown. They must
-      // not appear as a contemporary categorization anywhere in README.
       expect(readme).not.toMatch(/\bstrategic approaches\b/i);
       expect(readme).not.toMatch(/\bdomain tactics\b/i);
-      // `utility skill(s)` as a category phrase:
       expect(readme).not.toMatch(/\butility skills?\b/i);
-      // The four obsolete sub-section labels:
+      // The obsolete four-category sub-section labels:
       expect(readme).not.toMatch(/^### .*Product Strategies\s*\(\d+\)/m);
       expect(readme).not.toMatch(/^### .*Workflow Stages\s*\(\d+\)/m);
       expect(readme).not.toMatch(/^### .*Product Tactics\s*\(\d+\)/m);
       expect(readme).not.toMatch(/^### .*Complementary\s*\(\d+\)/m);
+    });
+
+    it('rejects the previous four-category headings (Product/Research/Code/Meta as sections)', () => {
+      // The pre-prefix README grouped by metadata.category with these
+      // section headings; they must not reappear.
+      expect(readme).not.toMatch(/^### .*Research\s*\(\d+\)/m);
+      expect(readme).not.toMatch(/^### .*Code\s*\(\d+\)/m);
+      expect(readme).not.toMatch(/^### .*Meta\s*\(\d+\)/m);
     });
   });
 
@@ -339,9 +344,9 @@ describe('SW-015 — README skill-count contract', () => {
     const section = extractSkillsSection(readme);
     const summaryRows = parseSummaryTable(section);
 
-    it('extracts at least the inclusive-summary rows', () => {
-      // Need product/research/code/meta plus the total row.
-      expect(summaryRows.length).toBeGreaterThanOrEqual(5);
+    it('extracts at least the prefix-summary rows', () => {
+      // Need workflow/product plus the total row.
+      expect(summaryRows.length).toBeGreaterThanOrEqual(3);
     });
 
     it('reports the total "1 orchestrator + 25 sub-skills = 26"', () => {
@@ -350,73 +355,49 @@ describe('SW-015 — README skill-count contract', () => {
       );
       expect(totals.length).toBeGreaterThanOrEqual(1);
       // The row is the totals row; its category label can be `Total` or
-      // similar. It must NOT be one of the four frontmatter categories.
+      // similar. It must NOT be one of the two prefix groups.
       for (const t of totals) {
+        expect(t.category.toLowerCase()).not.toBe('workflow');
         expect(t.category.toLowerCase()).not.toBe('product');
-        expect(t.category.toLowerCase()).not.toBe('research');
-        expect(t.category.toLowerCase()).not.toBe('code');
-        expect(t.category.toLowerCase()).not.toBe('meta');
       }
     });
 
-    it('reports inclusive numeric counts: product 8 / research 12 / code 4 / meta 1', () => {
+    it('reports inclusive numeric counts: workflow 12 / product 14', () => {
       function expectRowWith(categoryToken: string, expectedCount: number) {
         const matching = summaryRows.filter((r) =>
           r.category.toLowerCase().includes(categoryToken.toLowerCase()),
         );
         expect(matching.length, `rows mentioning "${categoryToken}"`).toBeGreaterThanOrEqual(1);
         for (const row of matching) {
-          // Accept either a bare number or a parenthesized variant
-          // like "8 (incl. orchestrator)".
           expect(row.count, `${categoryToken} row count`).toMatch(
             new RegExp(`\\b${expectedCount}\\b`),
           );
         }
       }
-      expectRowWith('product', 8);
-      expectRowWith('research', 13);
-      expectRowWith('code', 4);
-      expectRowWith('meta', 1);
+      expectRowWith('workflow', 12);
+      expectRowWith('product', 14);
     });
   });
 
-  describe('Skills section level-3 category blocks', () => {
+  describe('Skills section level-3 group blocks', () => {
     const readme = readReadme();
     const section = extractSkillsSection(readme);
     const blocks = extractLevel3Blocks(section);
     const blocksByHeading = new Map<string, Level3Block>();
     for (const b of blocks) blocksByHeading.set(b.title, b);
 
-    it('contains exactly 5 level-3 category blocks: Orchestrator / Product / Research / Code / Meta', () => {
-      expect(blocks).toHaveLength(5);
-      const expectedHeadings = [
-        'Orchestrator (1)',
-        'Product (7)',
-        'Research (13)',
-        'Code (4)',
-        'Meta (1)',
-      ];
+    it('contains exactly 2 level-3 blocks: Workflow (12) / Product (14)', () => {
+      expect(blocks).toHaveLength(2);
+      const expectedHeadings = ['Workflow (12)', 'Product (14)'];
       const actualLabels = blocks.map((b) => {
         const parsed = extractSkillNameCountFromHeading(b.title);
         return parsed ? `${parsed.label} (${parsed.count})` : b.title;
       });
       expect(actualLabels).toEqual(expectedHeadings);
     });
-
-    it('Orchestrator block has exactly one row whose name normalizes to the canonical orchestrator directory', () => {
-      const orchestratorBlock = blocks.find(
-        (b) => extractSkillNameCountFromHeading(b.title)?.label === 'Orchestrator',
-      );
-      expect(orchestratorBlock).toBeDefined();
-      const rows = parseSkillRowsFromBlock(orchestratorBlock!.body);
-      expect(rows).toHaveLength(1);
-      // Intentional public alias: `stelow` → `stelow-workflow-orchestrator`.
-      const normalized = rows[0] === ORCHESTRATOR_ALIAS ? ORCHESTRATOR_DIR : rows[0];
-      expect(normalized).toBe(ORCHESTRATOR_DIR);
-    });
   });
 
-  describe('per-bucket skill lists match the source (mutation-killing)', () => {
+  describe('per-group skill lists match the source (mutation-killing)', () => {
     const readme = readReadme();
     const section = extractSkillsSection(readme);
     const blocks = extractLevel3Blocks(section);
@@ -431,54 +412,25 @@ describe('SW-015 — README skill-count contract', () => {
       return parseSkillRowsFromBlock(block!.body);
     }
 
-    it('Product block lists exactly the 7 product sub-skills (no orchestrator, no other category)', () => {
-      const productRows = rowsFor('Product').sort();
-      const expected = skillsByCategory.product
-        .filter((d) => d !== ORCHESTRATOR_DIR)
-        .sort();
-      expect(productRows).toEqual(expected);
-      expect(productRows).not.toContain(ORCHESTRATOR_DIR);
-      // None of the rows should be a research/code/meta skill.
-      for (const d of skillsByCategory.research) expect(productRows).not.toContain(d);
-      for (const d of skillsByCategory.code) expect(productRows).not.toContain(d);
-      for (const d of skillsByCategory.meta) expect(productRows).not.toContain(d);
+    it('Workflow block lists exactly the 12 workflow skills, including the orchestrator', () => {
+      const rows = rowsFor('Workflow').sort();
+      const expected = [...skillsByGroup.workflow].sort();
+      expect(rows).toEqual(expected);
+      expect(rows).toContain(ORCHESTRATOR_DIR);
     });
 
-    it('Research block lists exactly the 12 research sub-skills', () => {
-      const rows = rowsFor('Research').sort();
-      const expected = [...skillsByCategory.research].sort();
+    it('Product block lists exactly the 14 product skills', () => {
+      const rows = rowsFor('Product').sort();
+      const expected = [...skillsByGroup.product].sort();
       expect(rows).toEqual(expected);
     });
 
-    it('Code block lists exactly the 4 code sub-skills', () => {
-      const rows = rowsFor('Code').sort();
-      const expected = [...skillsByCategory.code].sort();
-      expect(rows).toEqual(expected);
-    });
-
-    it('Meta block lists exactly the 1 meta sub-skill', () => {
-      const rows = rowsFor('Meta').sort();
-      const expected = [...skillsByCategory.meta].sort();
-      expect(rows).toEqual(expected);
-    });
-
-    it('sub-skill blocks are disjoint and union with orchestrator equals all 25 source names', () => {
+    it('blocks are disjoint and union with orchestrator equals all 26 source names', () => {
+      const workflowRows = rowsFor('Workflow');
       const productRows = rowsFor('Product');
-      const researchRows = rowsFor('Research');
-      const codeRows = rowsFor('Code');
-      const metaRows = rowsFor('Meta');
-      const orchestratorRows = rowsFor('Orchestrator').map(
-        (n) => (n === ORCHESTRATOR_ALIAS ? ORCHESTRATOR_DIR : n),
-      );
-      const allRows = [
-        ...productRows,
-        ...researchRows,
-        ...codeRows,
-        ...metaRows,
-        ...orchestratorRows,
-      ];
+      const allRows = [...workflowRows, ...productRows];
       // Each block must be disjoint from the others (no skill appears
-      // in two blocks; no duplicates within a block).
+      // in both blocks; no duplicates within a block).
       const seen = new Set<string>();
       for (const r of allRows) {
         expect(seen.has(r), `duplicate row "${r}" across blocks`).toBe(false);

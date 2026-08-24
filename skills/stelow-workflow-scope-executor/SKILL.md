@@ -8,7 +8,7 @@ description: >
   Part of stelow but can be used standalone.
 metadata:
   frequency: weekly
-  category: product
+  category: workflow
   context-cost: low
   author: calionauta
   author-url: https://github.com/calionauta

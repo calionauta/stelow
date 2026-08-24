@@ -3,7 +3,7 @@ name: stelow-product-paywall
 description: Paywall and onboarding monetization funnel for consumer apps, based on the Cal AI playbook. Covers paywall-first build order, the paywall as an honest product-market fit test, onboarding length matched to pain, the 7-screen converting onboarding anatomy, free trial policy, the 3 funnel benchmarks (view-to-download, paywall rate, paywall conversion), mindshare pricing, and web2app funnels. Use when evaluating an existing product's monetization funnel, diagnosing conversion leaks, or designing the paywall + onboarding flow for a new product.
 metadata:
   frequency: rare
-  category: research
+  category: product
   context-cost: low
   author: calionauta
   author-url: https://github.com/calionauta
@@ -267,7 +267,7 @@ install before rolling out.
 - "What price should I charge?" (use `stelow-product-pricing`)
 - "How do I validate my idea?" (use `stelow-product-discovery`)
 - "How do I run an influencer campaign?" (use `stelow-product-ads` / promotions)
-- "How do I improve retention metrics?" (use `stelow-workflow-health`)
+- "How do I improve retention metrics?" (use `stelow-product-health`)
 
 ## Entry (mode detection)
 

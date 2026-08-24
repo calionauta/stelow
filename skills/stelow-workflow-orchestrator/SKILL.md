@@ -3,7 +3,7 @@ name: stelow-workflow-orchestrator
 description: "[stelow] Complete product planning workflow: Shape Up -> Interface -> Tech Planning -> Product Critique -> visual review Gate. Includes 8 domain playbooks (Pricing, Trust, Ads, Health, etc)"
 metadata:
   frequency: daily
-  category: product
+  category: workflow
   context-cost: medium
   author: calionauta
   author-url: https://github.com/calionauta
@@ -89,7 +89,7 @@ Domain playbooks available for tactical reference during planning/execution:
 |---|---|---|
 | **Ads** | `stelow-product-ads` | Transtheoretical Model, 5 awareness stages |
 | **Business Models** | `stelow-product-business-models` | Cost reduction, revenue generation |
-| **Health** | `stelow-workflow-health` | Signals in tension, success vs counterbalance |
+| **Health** | `stelow-product-health` | Signals in tension, success vs counterbalance |
 | **Marketplace Playbook** | `stelow-product-marketplace-playbook` | 19 marketplace stimulation tactics |
 | **Open Source** | `stelow-product-open-source` | OSS business models, fair code |
 | **Paywall** | `stelow-product-paywall` | Paywall-first build order, onboarding anatomy, 3 funnel benchmarks, trial policy, web2app |

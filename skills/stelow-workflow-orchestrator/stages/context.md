@@ -65,7 +65,7 @@ echo "Proceeding directly to shape:10"
 | "trust", "guarantee", "social proof", "credibility" | Trust | `stelow-product-trust-building` |
 | "business model", "revenue", "monetize", "make money" | Business Models | `stelow-product-business-models` |
 | "open source", "community edition" | Open Source | `stelow-product-open-source` |
-| "product health", "product metrics", "addiction", "wellbeing" | Health | `stelow-workflow-health` |
+| "product health", "product metrics", "addiction", "wellbeing" | Health | `stelow-product-health` |
 | "marketplace", "marketplace supply", "marketplace demand" | Marketplace | `stelow-product-marketplace-playbook` |
 
 **Two detection modes:**

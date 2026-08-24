@@ -17,7 +17,7 @@ description: >
   - discussing product resilience, flexibility, or future evolution
 metadata:
   frequency: rare
-  category: research
+  category: product
   context-cost: medium
   author: calionauta
   author-url: https://github.com/calionauta

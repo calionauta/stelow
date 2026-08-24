@@ -8,7 +8,7 @@ description: >
   LLM4TDD (2023), TDD-with-AI-Agents (2026).
 metadata:
   frequency: monthly
-  category: code
+  category: workflow
   context-cost: medium
   author: calionauta
   author-url: https://github.com/calionauta
