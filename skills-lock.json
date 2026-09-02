@@ -1,5 +1,47 @@
 {
-  "version": 1,
+  "version": 2,
+  "scopes": {
+    "workflow": {
+      "description": "Core skills that execute the 17-stage stelow workflow. Auto-vendored and auto-refreshed into the bb-plugin-stelow plugin (bb.background.schedule fetch of this repo). Standalone-installable on non-bb hosts.",
+      "install": "npx skills add calionauta/stelow -g",
+      "skills": [
+        "stelow-entry",
+        "stelow-router",
+        "stelow-workflow-orchestrator",
+        "stelow-workflow-shape-up",
+        "stelow-workflow-interface-alternatives",
+        "stelow-workflow-plan-critique",
+        "stelow-workflow-tech-planning",
+        "stelow-workflow-scope-executor",
+        "stelow-workflow-ux-critique",
+        "stelow-workflow-codebase-critique",
+        "stelow-workflow-coding-standards",
+        "stelow-workflow-testing-ai-code",
+        "stelow-workflow-testing-execution",
+        "stelow-workflow-execution-critique"
+      ]
+    },
+    "product": {
+      "description": "Optional standalone product-strategy playbooks and domain libraries. Host-agnostic reference skills; installable independently via npx skills.",
+      "install": "npx skills add calionauta/stelow -g",
+      "skills": [
+        "stelow-product-discovery",
+        "stelow-product-job-to-be-done",
+        "stelow-product-opportunity-mapping",
+        "stelow-product-multi-method-market-analysis",
+        "stelow-product-evolutionary-principles",
+        "stelow-product-ads",
+        "stelow-product-business-models",
+        "stelow-product-health",
+        "stelow-product-marketplace-playbook",
+        "stelow-product-open-source",
+        "stelow-product-paywall",
+        "stelow-product-pricing",
+        "stelow-product-promotions",
+        "stelow-product-trust-building"
+      ]
+    }
+  },
   "skills": {
     "stelow": {
       "source": "calionauta/stelow",

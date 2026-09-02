@@ -268,13 +268,18 @@ These loops are **appetite- and mode-respecting by design** — they inherit the
 
 All 26 skills live flat in `skills/` and install into `~/.agents/skills/`. The total is **1 orchestrator + 25 sub-skills = 26**, grouped by prefix — the name after the prefix is the skill's job. `stelow-entry` + `stelow-router` are separate infra skills (workflow bootstrap + navigation).
 
-| Prefix | Count | Meaning |
-|---|---|---|
-| `stelow-workflow-*` | 12 | Skills that run the 17-stage workflow: the orchestrator, the stage skills, and the execution/verification support they invoke |
-| `stelow-product-*` | 14 | Product strategy & domain libraries consulted during stages (reference only, none execute stages) |
-| Total | **1 orchestrator + 25 sub-skills = 26** | `stelow-entry` + `stelow-router` are separate infra skills |
+| Prefix | Count | Meaning | Distribution |
+|---|---|---|---|
+| `stelow-workflow-*` | 12 | Skills that run the 17-stage workflow: the orchestrator, the stage skills, and the execution/verification support they invoke | **Core** — auto-vendored into `bb-plugin-stelow` and auto-refreshed from this repo (no manual step) |
+| `stelow-product-*` | 14 | Product strategy & domain libraries consulted during stages (reference only, none execute stages) | **Optional** — standalone, installed via `npx skills`/`install.sh`; the plugin consumes them from the hub |
+| Total | **1 orchestrator + 25 sub-skills = 26** | `stelow-entry` + `stelow-router` are separate infra skills | — |
 
-The prefix is the grouping: `stelow-workflow-*` is the machinery that executes the process, `stelow-product-*` is the knowledge consulted while doing it. Every skill is fully self-contained - the installer copies the complete directory tree including its own `references/cli-tools/`, `references/`, and `stages/` files. This means:
+The prefix is the grouping: `stelow-workflow-*` is the machinery that executes the process, `stelow-product-*` is the knowledge consulted while doing it. Distribution differs by design:
+
+- **`stelow-workflow-*` = core, auto-vendored.** When running inside bb, `bb-plugin-stelow` vendors these and **auto-syncs them from this repo on a schedule** (`bb.background.schedule` + fetch of the GitHub tree), so a workflow-skill update here propagates to the plugin automatically — no manual re-install and no `~/.agents/skills` pollution. On other hosts they remain standalone-installable exactly as before.
+- **`stelow-product-*` = optional, standalone.** Stable host-agnostic playbooks — install them with `npx skills add calionauta/stelow` and use them with no dependency on stelow or bb.
+
+Every skill is fully self-contained - the installer copies the complete directory tree including its own `references/cli-tools/`, `references/`, and `stages/` files. This means:
 - ✅ **Skills work standalone** - invoke any sub-skill (e.g., `stelow-workflow-shape-up`, `stelow-product-pricing`) independently of the orchestrator
 - ✅ **Portable across agents** - Pi, Claude Code, Codex, Cursor, Continue, OpenCode, and others all reference skills by name (`~/.agents/skills/`)
 - ✅ **References resolve locally** - every `references/cli-tools/*.md` path is relative to the skill's own directory
