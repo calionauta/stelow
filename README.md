@@ -51,6 +51,7 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 - [External Dependencies](#external-dependencies)
 - [🎮 Commands](#-commands)
 - [🛠️ Host Installation Guide](#️-host-installation-guide)
+- [🗂️ Visual Management (Kanban Board)](#️-visual-management-kanban-board)
 - [🌐 Host Support](#-host-support)
 - [📁 Artifact Directory](#-artifact-directory)
 - [📖 Evidence & Limitations](#-evidence--limitations)
@@ -533,17 +534,11 @@ npx skills add calionauta/stelow -g
   `skills/stelow-entry/references/host-levers.md`). Without the marker, the
   skills still run standalone (`/sw-*` is routed by the skills themselves).
 - **Scheduling/automation:** host-owned. Use your agent's background tasks /
-  scheduled prompts — there is no `pulse.sh` (removed in v0.57.0) and no
-  inbox mirror in the repo.
+  scheduled prompts. The repository does not ship a scheduler or inbox mirror.
 
-**Migration note (v0.57.0):** anyone running `pulse.sh`/`pulse.ps1` from
-cron, systemd, launchd, or Task Scheduler must move to the host's native
-scheduling. The `.stelow/inbox/items.md` mirror is also removed — use
-Multica's `backlog`/`todo`, Fusion's inbox, or Pi's pi-session-state instead.
+## 🗂️ Visual Management (Kanban Board)
 
-### Optional: bb visual plugin
-
-[bb-plugin-stelow](https://github.com/calionauta/bb-plugin-stelow) is an optional visual host for Stelow in [bb](https://github.com/calionauta/bb). It keeps `stelow.json` and `.stelow/` as the source of truth, while adding a Kanban board, structured gate questions and approvals, artifact review, worker presets, and BB-native file attachments. Install it only when working in bb; the portable skills remain sufficient on every other host.
+[bb-plugin-stelow](https://github.com/calionauta/bb-plugin-stelow) is an optional visual management layer for Stelow in [bb](https://github.com/calionauta/bb). It keeps `stelow.json` and `.stelow/` as the source of truth, while adding a Kanban board, structured gate questions and approvals, artifact review, worker presets, and BB-native file attachments. Install it only when working in bb; the portable skills remain sufficient on every other host.
 
 ```bash
 git clone https://github.com/calionauta/bb-plugin-stelow.git
@@ -576,8 +571,7 @@ Owner paths in this repo:
 
 To add a new host you need **no code** — just an agent that reads
 agentskills.io skill directories. Host-specific knobs are documented in
-`skills/stelow-entry/references/host-levers.md`. Historical design docs for
-the pre-1.0.0 host-adapter architecture live in `docs/design/`.
+`skills/stelow-entry/references/host-levers.md`.
 
 ---
 
