@@ -70,6 +70,12 @@ history:
 ---
 ```
 
+`artifacts` is the complete manifest of material Markdown outputs produced by
+the workflow. `scripts/stelow advance` discovers and records known outputs at
+each successful transition (shape, critique, interface, planning, scope,
+execution, verification, and audit), so hosts render the same artifact set
+without maintaining a second index.
+
 ### Valid Stage Names
 
 `triage`, `select`, `setup`, `context`, `shape`, `critique`, `gate`,

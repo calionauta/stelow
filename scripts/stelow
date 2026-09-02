@@ -256,9 +256,9 @@ PY
   lock_acquire
 
   # mutate state.md frontmatter
-  python3 - "$current" "$candidate" "$STATE" <<'PY'
+  python3 - "$current" "$candidate" "$STATE" "$STATEDIR" <<'PY'
 import sys, re, os, datetime, tempfile
-current, candidate, path = sys.argv[1:4]
+current, candidate, path, statedir = sys.argv[1:5]
 blob = open(path).read()
 m = re.match(r"^(---\n)(.*?)(\n---)(.*)$", blob, re.DOTALL)
 if not m:
@@ -313,6 +313,40 @@ elif lines[history_start] == "history: []":
     lines[history_start:history_end] = ["history:", *history_entry]
 else:
     lines[history_end:history_end] = history_entry
+
+# Keep the state manifest complete. Stage skills write Markdown artifacts to
+# the workflow directory; advancing is the durable point at which those files
+# become part of the workflow record and therefore visible to host UIs.
+def artifact_stage(relative):
+    name = os.path.basename(relative)
+    if name.startswith("spec-product"): return "shape"
+    if name.startswith("spec-tech") or name == "testing-strategy.md": return "planning"
+    if relative.startswith("interfaces/"): return "interface"
+    if relative.startswith("critiques/"): return "critique"
+    if relative.startswith("scopes/"): return "scope"
+    if name == "execution.md": return "execution"
+    if name.startswith("verification"): return "verification"
+    if name == "audit.md": return "audit"
+    return None
+
+artifacts = {}
+artifact_start, artifact_end = block_bounds("artifacts")
+if artifact_start is not None:
+    for line in lines[artifact_start + 1:artifact_end]:
+        match = re.match(r"^  ([\w-]+):\s*(\S+)\s*$", line)
+        if match: artifacts[match.group(1)] = match.group(2)
+for root, _, files in os.walk(statedir):
+    for filename in files:
+        if not filename.endswith(".md") or filename == "state.md": continue
+        absolute = os.path.join(root, filename)
+        relative = os.path.relpath(absolute, os.getcwd()).replace(os.sep, "/")
+        workflow_relative = os.path.relpath(absolute, statedir).replace(os.sep, "/")
+        stage = artifact_stage(workflow_relative)
+        if stage: artifacts[stage] = relative
+if artifact_start is None:
+    lines.extend(["artifacts:", *[f"  {key}: {value}" for key, value in sorted(artifacts.items())]])
+else:
+    lines[artifact_start:artifact_end] = ["artifacts:", *[f"  {key}: {value}" for key, value in sorted(artifacts.items())]]
 
 new_blob = header_open + "\n".join(lines) + header_close + body
 fd, temporary = tempfile.mkstemp(prefix=".state.", dir=os.path.dirname(path) or ".", text=True)
