@@ -4,7 +4,7 @@
 
 See the **Source of Truth** section in AGENTS.md for how stage/skill counts
 are derived. Skills live in `skills/*/SKILL.md` (26 `stelow-product-*` / `stelow-workflow-*` skills
-plus the `stelow-entry` and `stelow-router` infra skills) and install to
+plus the `stelow-workflow-entry` and `stelow-workflow-router` infra skills) and install to
 `~/.agents/skills/` for **any** agentskills-compatible agent (pi.dev, OpenCode,
 Claude Code, Codex, Cursor, Fusion, Multica, …).
 

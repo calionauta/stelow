@@ -1,5 +1,5 @@
 ---
-name: stelow-router
+name: stelow-workflow-router
 description: >
   [stelow] Workflow router. Reads state.md, consumes the previous skill's
   ## Hand-off block, validates next-candidate against transitions.md,

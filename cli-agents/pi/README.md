@@ -37,10 +37,10 @@ Full command matrix: `../COMMANDS.md`
 |-----------|----------|
 | Skills | `~/.agents/skills/` (25 skills flat) |
 | Helper | `scripts/stelow` (status / advance / doctor) |
-| Commands | Skill-provided (`/sw-*` routed by `stelow-entry` + `stelow-router`) |
+| Commands | Skill-provided (`/sw-*` routed by `stelow-workflow-entry` + `stelow-workflow-router`) |
 
 ## Notes
 
 - Activate the workflow with the marker protocol: `STELOW_WORKFLOW=1` +
-  `STELOW_STATE=<path>` (see `skills/stelow-entry/references/host-levers.md`).
+  `STELOW_STATE=<path>` (see `skills/stelow-workflow-entry/references/host-levers.md`).
 - Skills are loaded from `~/.agents/skills/` on every agentskills-compatible agent.

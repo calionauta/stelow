@@ -19,7 +19,7 @@ All notable changes to this project are documented in this file, following
   (12, the machinery that runs the workflow) and `stelow-product-*`
   (14, product strategy & domain libraries). Frontmatter
   `metadata.category` aligned to the prefix (`workflow` / `product`) in
-  all 28 skills (incl. `stelow-entry`/`stelow-router`); the obsolete
+  all 28 skills (incl. `stelow-workflow-entry`/`stelow-workflow-router`); the obsolete
   product/research/code/meta taxonomy is gone.
 - **Remove tooling dirs from the repo** — `.changeset/`, `.github/` (CI + release
   docs), `.husky/` (commit-msg + pre-push hooks), `.opencode/` (host-specific
@@ -68,8 +68,8 @@ specialization is via the marker protocol (`STELOW_WORKFLOW=1` +
   `skills/stelow-product-orchestrator/references/cli-tools/stelow-helper.md`.
 - **Dual-mode contract** (`c9da74d`, SCOPE-3) — every stage skill carries
   workflow-mode / standalone-mode blocks; standalone sections preserved.
-- **Entry + router skills** (`d9303a9`, SCOPE-4) — `stelow-entry` (intent
-  classification + state scaffold), `stelow-router` (validate next-candidate,
+- **Entry + router skills** (`d9303a9`, SCOPE-4) — `stelow-workflow-entry` (intent
+  classification + state scaffold), `stelow-workflow-router` (validate next-candidate,
   advance via helper, load next stage).
 - **Extensions freeze guard** (`2353e8e`, SCOPE-5) — CI guard blocking drift
   under `extensions/` while the skills-only refactor was in flight.

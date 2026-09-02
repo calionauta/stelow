@@ -1,5 +1,5 @@
 ---
-name: stelow-entry
+name: stelow-workflow-entry
 description: >
   [stelow] Workflow entry point. Classifies the user's intent, scaffolds
   state.md from the template, and picks the first stage from
@@ -92,5 +92,5 @@ stage skill — the router will.
 stage          : setup  (or triage for new-product)
 artifacts      : state.md  (created)
 next-candidate : <first stage>
-router         : load skills/stelow-router/SKILL.md next
+router         : load skills/stelow-workflow-router/SKILL.md next
 ```

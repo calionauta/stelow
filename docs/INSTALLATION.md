@@ -33,14 +33,14 @@ curl -fsSL https://raw.githubusercontent.com/calionauta/stelow/main/setup.sh | s
 ```
 stelow/          ← Source
 └── skills/                     ← 25 portable skills (1 orchestrator + 24 sub-skills)
-    ├── stelow-entry/                   ← entry point (STELOW_WORKFLOW=1)
-    ├── stelow-router/                  ← advance / load next stage
+    ├── stelow-workflow-entry/                   ← entry point (STELOW_WORKFLOW=1)
+    ├── stelow-workflow-router/                  ← advance / load next stage
     ├── stelow-workflow-orchestrator/    ← orchestrator + stages.yaml
     ├── stelow-workflow-shape-up/
     └── ...
 
 ~/.agents/skills/               ← Install target
-├── stelow-entry/                       ← Copied
+├── stelow-workflow-entry/                       ← Copied
 ├── stelow-workflow-orchestrator/        ← Copied
 └── ... (all skills)
 ```
@@ -152,4 +152,4 @@ Git-based distribution is a deliberate security choice:
 All hosts install the **same** skills to `~/.agents/skills/` — there is no compiled
 Fusion plugin and no per-host package anymore (removed in 1.0.0). Hosts that want
 the workflow auto-loaded set the marker protocol (`STELOW_WORKFLOW=1` +
-`STELOW_STATE=<path>`); see `skills/stelow-entry/references/host-levers.md`.
+`STELOW_STATE=<path>`); see `skills/stelow-workflow-entry/references/host-levers.md`.

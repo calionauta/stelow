@@ -103,7 +103,7 @@ A structured workflow that makes AI think like a product manager:
 
 ### Key Features
 
-- **26 skills total** in this repo: 1 orchestrator + 25 sub-skills (grouped by prefix — workflow: 12, product: 14)
+- **28 skills total** in this repo: 14 workflow skills + 14 product skills (grouped by prefix — workflow: 14, product: 14)
 - Part of a broader ecosystem — the orchestrator composes these and can also invoke additional skills from the user's agent environment at runtime
 - Real-time TUI tracking with visual status overlay (`/sw-status`)
 - Gate approval via Plannotator - review, comment, approve or reject before implementation
@@ -266,13 +266,13 @@ These loops are **appetite- and mode-respecting by design** — they inherit the
 
 ## 📋 Skills
 
-All 26 skills live flat in `skills/` and install into `~/.agents/skills/`. The total is **1 orchestrator + 25 sub-skills = 26**, grouped by prefix — the name after the prefix is the skill's job. `stelow-entry` + `stelow-router` are separate infra skills (workflow bootstrap + navigation).
+All 28 skills live flat in `skills/` and install into `~/.agents/skills/`: **14 workflow skills + 14 product skills**. `stelow-workflow-entry` and `stelow-workflow-router` are workflow control-plane skills (bootstrap + navigation).
 
 | Prefix | Count | Meaning | Distribution |
 |---|---|---|---|
-| `stelow-workflow-*` | 12 | Skills that run the 17-stage workflow: the orchestrator, the stage skills, and the execution/verification support they invoke | **Core** — auto-vendored into `bb-plugin-stelow` and auto-refreshed from this repo (no manual step) |
+| `stelow-workflow-*` | 14 | Skills that run the 17-stage workflow: the orchestrator, the stage skills, and the execution/verification support they invoke | **Core** — auto-vendored into `bb-plugin-stelow` and auto-refreshed from this repo (no manual step) |
 | `stelow-product-*` | 14 | Product strategy & domain libraries consulted during stages (reference only, none execute stages) | **Optional** — standalone, installed via `npx skills`/`install.sh`; the plugin consumes them from the hub |
-| Total | **1 orchestrator + 25 sub-skills = 26** | `stelow-entry` + `stelow-router` are separate infra skills | — |
+| Total | **14 workflow skills + 14 product skills = 28** | Entry and router are part of the workflow family | — |
 
 The prefix is the grouping: `stelow-workflow-*` is the machinery that executes the process, `stelow-product-*` is the knowledge consulted while doing it. Distribution differs by design:
 
@@ -285,7 +285,7 @@ Every skill is fully self-contained - the installer copies the complete director
 - ✅ **References resolve locally** - every `references/cli-tools/*.md` path is relative to the skill's own directory
 - ❌ **Not in `~/.agents/skills/`?** Use `./install.sh` or `npx skills add calionauta/stelow -g`
 
-### 🏗️ Workflow (12)
+### 🏗️ Workflow (14)
 
 `stelow-workflow-*` — skills that execute the 17-stage workflow. `stelow-workflow-orchestrator` composes the others; the stage skills and execution/verification support run the steps.
 
@@ -329,13 +329,13 @@ Every skill is fully self-contained - the installer copies the complete director
 
 ## 🚀 Quick Start
 
-This package is **skills-only and host-agnostic** — the 26 workflow skills run on any agentskills-compatible agent (Claude Code, Codex, Cursor, Continue, OpenCode, pi.dev, …). There is no compiled plugin and no per-host adapter; the runtime is the portable `scripts/stelow` helper plus the skills themselves.
+This package is **skills-only and host-agnostic** — its 28 skills run on any agentskills-compatible agent (Claude Code, Codex, Cursor, Continue, OpenCode, pi.dev, …). There is no compiled plugin and no per-host adapter; the runtime is the portable `scripts/stelow` helper plus the skills themselves.
 
 | Your situation | Recommended command | What you get |
 |----------------|--------------------|-------------|
-| **New to CLIs** (no Node, no agent) | `curl -fsSL https://raw.githubusercontent.com/calionauta/stelow/main/setup.sh \| sh` | Node.js (optional) + all 26 skills + optional pi.dev toolchain |
-| **Any CLI** (Claude Code, Codex, Cursor, OpenCode, pi.dev, …) | `npx skills add calionauta/stelow -g` | All 26 skills, copied to `~/.agents/skills/` |
-| **Existing repo / offline** | `git clone ... && ./install.sh` | All 26 skills + prune of retired/orphaned skills |
+| **New to CLIs** (no Node, no agent) | `curl -fsSL https://raw.githubusercontent.com/calionauta/stelow/main/setup.sh \| sh` | Node.js (optional) + all 28 skills + optional pi.dev toolchain |
+| **Any CLI** (Claude Code, Codex, Cursor, OpenCode, pi.dev, …) | `npx skills add calionauta/stelow -g` | All 28 skills, copied to `~/.agents/skills/` |
+| **Existing repo / offline** | `git clone ... && ./install.sh` | All 28 skills + prune of retired/orphaned skills |
 
 ### Intent-Aware Start
 
@@ -374,18 +374,18 @@ Per-agent configuration files (commands, install scripts) are in [`cli-agents/`]
 The skills work in any agent that reads `~/.agents/skills/<name>/SKILL.md` — the
 agentskills.io standard. No host ships host-specific code: pi.dev, Fusion,
 Multica, Claude Code, Codex, Cursor, and OpenCode all consume the same skill
-tree. Host specialization is optional and lives in the environment (`STELOW_WORKFLOW=1` + `STELOW_STATE=<path>` — see `skills/stelow-entry/references/host-levers.md`).
+tree. Host specialization is optional and lives in the environment (`STELOW_WORKFLOW=1` + `STELOW_STATE=<path>` — see `skills/stelow-workflow-entry/references/host-levers.md`).
 
 | Feature | Any agentskills-compatible agent |
 |---|---|
-| **26 skills (orchestrator + 25 sub-skills)** | ✅ |
+| **28 skills (14 workflow + 14 product)** | ✅ |
 | **`scripts/stelow` helper (status / advance / doctor)** | ✅ (bash + python3) |
 | **`/sw-*` workflow commands** | ✅ Routed by the entry + router skills |
 | **`visual_review` gate** | ✅ Portable approval receipts under `.stelow/approvals/` |
 | **Scope sync from spec-tech.md** | ✅ Skill-instructed parse into `stelow.json` |
 | **TUI overlay / lifecycle hooks** | ❌ Not shipped — host-side niceties only (no host code in this repo) |
 
-> **Bottom line:** The **26 skills + `scripts/stelow` run identically in any agent** that can read agentskills.io skill directories, and keep portable state in `stelow.json` / `.stelow/` / `state.md`. There is no extension code to install and no plugin to compile.
+> **Bottom line:** The **28 skills + `scripts/stelow` run identically in any agent** that can read agentskills.io skill directories, and keep portable state in `stelow.json` / `.stelow/` / `state.md`. There is no extension code to install and no plugin to compile.
 
 ### Auto-sync scopes from spec-tech.md
 
@@ -402,7 +402,7 @@ Known gaps (race window, legacy workflows without `dirHash`, phase-number drift)
 
 ## External Dependencies
 
-stelow is designed to be **self-contained** — the 26 skills + installer cover the full workflow. Some features optionally integrate with external tools for enhanced capability. Every external dependency has a documented fallback.
+stelow is designed to be **self-contained** — the 28 skills + installer cover the full workflow. Some features optionally integrate with external tools for enhanced capability. Every external dependency has a documented fallback.
 
 | Dependency | Required? | Used by | Install method | Fallback if absent |
 |---|---|---|---|---|
@@ -418,7 +418,7 @@ stelow is designed to be **self-contained** — the 26 skills + installer cover 
 > **Note:** stelow's cli-tools (`references/cli-tools/subagents.md`) document the invocation syntax. Host variability is handled by the skills themselves (`stages.yaml#tools` vocabulary + `references/cli-tools/*.md`), not by host-specific code — no skill changes needed when switching agents.
 | [pi-supervisor](https://github.com/tintinweb/pi-supervisor) | Optional (Pi only) | Conversation supervision during execution | `npm:pi-supervisor` | Skip — no supervision; rely on `stages-guard` for invariant enforcement |
 
-**Design principle:** stelow is **host-agnostic, skills-agnostic**. The 26 skills run identically in any agent that reads `~/.agents/skills/` — the full Shape Up workflow (plans, critique, scopes) works everywhere, driven by `scripts/stelow` for state mechanics. There is no extension layer and no compiled plugin in the repo; optional baseline tools install on top of any agent. No external tool is *required* to run the workflow — each optional integration enhances a phase but never blocks progress. `./setup.sh` optionally installs pi.dev + agnostic tool extensions; `./install.sh` only flattens the skills into `~/.agents/skills/` (and prunes retired ones). The cymbal/ast-grep **CLIs** and `sem`/`ctx7` remain user-managed (offered interactively during setup, or see the tools table above).
+**Design principle:** stelow is **host-agnostic, skills-agnostic**. The 28 skills run identically in any agent that reads `~/.agents/skills/` — the full Shape Up workflow (plans, critique, scopes) works everywhere, driven by `scripts/stelow` for state mechanics. There is no extension layer and no compiled plugin in the repo; optional baseline tools install on top of any agent. No external tool is *required* to run the workflow — each optional integration enhances a phase but never blocks progress. `./setup.sh` optionally installs pi.dev + agnostic tool extensions; `./install.sh` only flattens the skills into `~/.agents/skills/` (and prunes retired ones). The cymbal/ast-grep **CLIs** and `sem`/`ctx7` remain user-managed (offered interactively during setup, or see the tools table above).
 
 For every external tool above, the workflow teaches the agent the **specific fallback strategy** in `skills/stelow-workflow-orchestrator/references/cli-tools/<tool>.md`. When a tool is unavailable, the orchestrator instructs the agent to use harness-native capabilities (built-in `subagent()`, `git grep`, terminal-based review with approval receipts) rather than skipping the workflow step entirely. Degraded capability is the trade-off — see the Fallback column above for what you lose without each tool.
 
@@ -437,7 +437,7 @@ curl -fsSL https://raw.githubusercontent.com/calionauta/stelow/main/setup.sh | s
 | 1 | Node.js | v20+ via Homebrew (macOS) or nvm (Linux/Windows) | - |
 | 2 | pi.dev | `@earendil-works/pi-coding-agent` via npm | pi.dev |
 | 3 | Pi extensions | @tintinweb/pi-subagents, @tintinweb/pi-tasks, pi-supervisor, @plannotator/pi-extension, pi-rewind, @sting8k/pi-vcc, pi-cache-optimizer, pi-leakguard, @tomooshi/condensed-milk-pi, caveman-milk-pi, rpiv-ask-user-question, pi-fff, raphapr/pi-cymbal, joelhooks/pi-ast-grep | pi.dev only |
-| 4 | Skills (26) | stelow orchestrator + 25 subskills, copied to `~/.agents/skills/` | **All CLIs** ✅ |
+| 4 | Skills (28) | 14 workflow + 14 product skills, copied to `~/.agents/skills/` | **All CLIs** ✅ |
 | 5 | Settings | theme, model defaults, skill shortcuts in `~/.pi/agent/settings.json` | pi.dev |
 | 6 | cymbal | codebase navigation via `brew install 1broseidon/tap/cymbal` (macOS) or `go install` (Linux). Auto-installed as the `raphapr/pi-cymbal` Pi extension when Pi is detected; skipped gracefully if brew/Go absent | macOS, Linux |
 | 7 | ctx7 | library docs fetcher via `npx @vedanth/context7` (interactive OAuth — prompts the user) | All CLIs |
@@ -453,7 +453,7 @@ cd stelow
 ./install.sh
 ```
 
-The installer flattens the skills into `~/.agents/skills/` and prunes any retired or orphaned skills. No extensions, no TUI, no slash-command registration — just the 26 skills that run the workflow.
+The installer flattens the skills into `~/.agents/skills/` and prunes any retired or orphaned skills. No extensions, no TUI, no slash-command registration — just the 28 skills that run the workflow.
 
 ### 📋 Path C: Any other agent (universal)
 
@@ -465,7 +465,7 @@ cd stelow
 ./install.sh
 ```
 
-The installer detects your CLI and installs the **skills + command reference files**. No extensions, no TUI - just the 26 skills that run the workflow.
+The installer detects your CLI and installs the **skills + command reference files**. No extensions, no TUI - just the 28 skills that run the workflow.
 
 **Or, with npx (no clone needed):**
 
@@ -473,7 +473,7 @@ The installer detects your CLI and installs the **skills + command reference fil
 npx skills add calionauta/stelow -g
 ```
 
-This installs all 26 skills to `~/.agents/skills/` - works on any CLI.
+This installs all 28 skills to `~/.agents/skills/` - works on any CLI.
 
 > For per-agent configuration (if your agent needs more than the universal skill path), see [docs/INSTALLATION.md](docs/INSTALLATION.md).
 
@@ -536,7 +536,7 @@ npx skills add calionauta/stelow -g
   `curl -fsSL https://raw.githubusercontent.com/calionauta/stelow/main/setup.sh | sh`
 - **Activating the workflow:** the entry skill loads when the host sets
   `STELOW_WORKFLOW=1` + `STELOW_STATE=<path>` (see
-  `skills/stelow-entry/references/host-levers.md`). Without the marker, the
+  `skills/stelow-workflow-entry/references/host-levers.md`). Without the marker, the
   skills still run standalone (`/sw-*` is routed by the skills themselves).
 - **Scheduling/automation:** host-owned. Use your agent's background tasks /
   scheduled prompts. The repository does not ship a scheduler or inbox mirror.
@@ -570,13 +570,13 @@ there is no host matrix to maintain because there is no host-specific code.
 
 Owner paths in this repo:
 
-- `skills/` (26 portable `stelow-product-*` / `stelow-workflow-*` skills + `stelow-entry` + `stelow-router`) — the only runtime content; loaded by any agentskills-compatible agent.
+- `skills/` (28 portable skills: 14 `stelow-product-*` and 14 `stelow-workflow-*`) — the only runtime content; loaded by any agentskills-compatible agent.
 - `scripts/stelow` — portable helper for status/advance/doctor; every host shells out to it.
 - `types/stages.ts` + `skills/stelow-workflow-orchestrator/stages.yaml` — the stage model and transitions.
 
 To add a new host you need **no code** — just an agent that reads
 agentskills.io skill directories. Host-specific knobs are documented in
-`skills/stelow-entry/references/host-levers.md`.
+`skills/stelow-workflow-entry/references/host-levers.md`.
 
 ---
 

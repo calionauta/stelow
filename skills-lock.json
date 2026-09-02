@@ -5,8 +5,8 @@
       "description": "Core skills that execute the 17-stage stelow workflow. Auto-vendored and auto-refreshed into the bb-plugin-stelow plugin (bb.background.schedule fetch of this repo). Standalone-installable on non-bb hosts.",
       "install": "npx skills add calionauta/stelow -g",
       "skills": [
-        "stelow-entry",
-        "stelow-router",
+        "stelow-workflow-entry",
+        "stelow-workflow-router",
         "stelow-workflow-orchestrator",
         "stelow-workflow-shape-up",
         "stelow-workflow-interface-alternatives",

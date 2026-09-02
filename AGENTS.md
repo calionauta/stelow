@@ -28,8 +28,8 @@ see `stages.yaml`.
 
 | Directory | Purpose |
 |---|---|
-| `skills/stelow-entry/` | Entry point: intent classification, `state.md` scaffold, first-stage selection (loaded when `STELOW_WORKFLOW=1`). |
-| `skills/stelow-router/` | Router: validate next candidate, `advance` via helper, load next stage, append hand-off audit. |
+| `skills/stelow-workflow-entry/` | Entry point: intent classification, `state.md` scaffold, first-stage selection (loaded when `STELOW_WORKFLOW=1`). |
+| `skills/stelow-workflow-router/` | Router: validate next candidate, `advance` via helper, load next stage, append hand-off audit. |
 | `skills/stelow-workflow-orchestrator/` | Orchestrator + `stages.yaml` + `stages/*.md` + `references/transitions.md`. |
 | `skills/stelow-product-*/` + `skills/stelow-workflow-*/` | The 23 other self-contained planning sub-skills. |
 | `scripts/stelow` | Portable helper: `status [--json]`, `advance <candidate>`, `doctor [--json]` (lock + TTL, invariants). |
@@ -45,7 +45,7 @@ see `stages.yaml`.
 | `/sw-start` | Begin planning (entry skill) |
 | `/sw-status` | Show workflow status (`scripts/stelow status`) |
 
-`/sw-*` are skill-provided commands routed by `stelow-entry`/`stelow-router` on
+`/sw-*` are skill-provided commands routed by `stelow-workflow-entry`/`stelow-workflow-router` on
 **every** agentskills-compatible host — there is no host command registry.
 
 ## Source of Truth (do not guess)
@@ -53,7 +53,7 @@ see `stages.yaml`.
 Stage/skill/command counts are pinned to the canonical sources by regression
 tests — not from this file:
 
-- **Skills (26)**: `find skills -maxdepth 2 -name SKILL.md \( -path '*/stelow-product-*' -o -path '*/stelow-workflow-*' \) | wc -l` (orchestrator + 25 sub-skills). Pinned against the README `## 📋 Skills` section by `tests/integration/skill-count-readme-contract.test.ts`.
+- **Skills (28)**: `find skills -maxdepth 2 -name SKILL.md \( -path '*/stelow-product-*' -o -path '*/stelow-workflow-*' \) | wc -l` (14 workflow + 14 product). Pinned against the README `## 📋 Skills` section by `tests/integration/skill-count-readme-contract.test.ts`.
 - **Stages (17)**: `skills/stelow-workflow-orchestrator/stages.yaml` + its mirror `references/transitions.md` (the `triage`..`audit` chain).
 - **Stage transitions and conditional gates**: `skills/stelow-workflow-orchestrator/stages.yaml`.
 - **Helper mechanics**: `scripts/stelow` (status/advance/doctor), pinned by `tests/unit/stelow-helper.test.ts`, `tests/integration/stelow-fs.test.ts`, `tests/integration/stelow-e2e.test.ts`.

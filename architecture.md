@@ -12,8 +12,8 @@ same workflow. Hosts only add an optional marker protocol
 | Path | Purpose |
 |------|---------|
 | `skills/` | All workflow skills (LLM-facing content). One directory per skill, each self-contained: `SKILL.md` + `references/` + `references/cli-tools/` + optional `stages/` files. |
-| `skills/stelow-entry/` | Entry point. Classifies intent, scaffolds `state.md`, picks the first stage. Loaded when `STELOW_WORKFLOW=1`. Never runs stage logic. |
-| `skills/stelow-router/` | Router. Validates the next candidate against `transitions.md`, calls `scripts/stelow advance`, loads the next stage skill, appends the hand-off audit record. |
+| `skills/stelow-workflow-entry/` | Entry point. Classifies intent, scaffolds `state.md`, picks the first stage. Loaded when `STELOW_WORKFLOW=1`. Never runs stage logic. |
+| `skills/stelow-workflow-router/` | Router. Validates the next candidate against `transitions.md`, calls `scripts/stelow advance`, loads the next stage skill, appends the hand-off audit record. |
 | `skills/stelow-workflow-orchestrator/` | Orchestrator. Coordinates the 17-stage pipeline (Setup → Shape → Critique → Gate → Scope → Interface → Planning → Execution → Verification → Audit). |
 | `skills/stelow-product-<area>/` | The 23 other product/planning sub-skills (shape-up, plan-critique, tech-planning, ux-critique, domain playbooks, etc.). |
 | `scripts/stelow` | Portable helper (bash + python3): `status [--json]`, `advance <candidate>`, `doctor [--json]`. Single source of runtime mechanics. |
@@ -83,7 +83,7 @@ same workflow. Hosts only add an optional marker protocol
   skills) or `skills/stelow-product-<name>/SKILL.md` (product strategy /
   domain libraries) with `metadata.category` matching the prefix
   (`workflow` / `product`); keep counts consistent (README contract test
-  pins 26 / 1 orchestrator + 25 sub-skills).
+  pins 28 / 14 workflow + 14 product skills).
 - New host → no code required. Ensure the host can read agentskills.io skill
   directories and set the marker env vars. Host levers are documented in
-  `skills/stelow-entry/references/host-levers.md`.
+  `skills/stelow-workflow-entry/references/host-levers.md`.

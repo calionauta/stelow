@@ -8,8 +8,8 @@ each skill.
 
 ## Workflow commands
 
-`/sw-*` commands are skill-provided entry points routed by `stelow-entry`
-(start/classify) and `stelow-router` (advance/load next stage). They work on
+`/sw-*` commands are skill-provided entry points routed by `stelow-workflow-entry`
+(start/classify) and `stelow-workflow-router` (advance/load next stage). They work on
 every agentskills-compatible agent — nothing registers them on a host.
 
 ## State mechanics
@@ -22,7 +22,7 @@ every agentskills-compatible agent — nothing registers them on a host.
 ## Host activation
 
 - **Marker protocol:** set `STELOW_WORKFLOW=1` + `STELOW_STATE=<path>` to
-  load the workflow automatically (see `skills/stelow-entry/references/host-levers.md`).
+  load the workflow automatically (see `skills/stelow-workflow-entry/references/host-levers.md`).
 - **Visual review:** `visual_review` writes portable approval receipts under
   `.stelow/approvals/{dirHash}/{file}.approved.md`.
 - **Scheduling/automation:** host-owned (background tasks / cron / autopilot).
