@@ -10,11 +10,12 @@ reading workflow state files.
 
 | File | Location | Authored by |
 |---|---|---|
-| `state.md` | `<git-root>/state.md` | LLM (content fields) + `stelow advance` (stage transitions) |
-| `invariants.json` | `<git-root>/.stelow/invariants.json` | `stelow advance` only |
+| `state.md` | `$STELOW_STATE`, or `<git-root>/state.md` when unset | LLM (content fields) + `stelow advance` (stage transitions) |
+| `invariants.json` | `$STELOW_STATEDIR/invariants.json`, or `<git-root>/.stelow/invariants.json` when unset | `stelow advance` only |
 
-Both files live at the project root. The project root is a git repository —
-`git log` is the ledger/audit trail.
+Standalone workflows use the project root. Hosts that run concurrent workflows
+must set `STELOW_STATE` (and normally `STELOW_STATEDIR`) to a per-workflow
+directory; the helper must never fall back to another workflow's root state.
 
 ---
 
@@ -36,7 +37,7 @@ intent: feature          # new-product | feature | bugfix | refactor | investiga
 current_stage: shape     # single string, always one of the stage names below
 status: active           # active | paused | archived | completed
 config:
-  appetite: Core          # Core | Large | Bite-sized
+  appetite: Core          # Lean | Core | Complete
   review_mode: "Auto"     # Auto | "Product Spec Gate" | "Product Spec + Interface + Scopes" | "Product Spec + Interface + Tech Review + Code Diff"
   product_type: software  # software | docs | infra | data | research
 stages:
@@ -175,8 +176,8 @@ See `assets/invariants-example.json` for a complete `invariants.json` example.
 
 ## Anti-Drift Rules
 
-- One canonical state path per project: `<git-root>/state.md` and
-  `<git-root>/.stelow/invariants.json`.
+- One canonical state path per workflow: `$STELOW_STATE` / `$STELOW_STATEDIR`
+  when supplied; otherwise `<git-root>/state.md` / `<git-root>/.stelow/invariants.json`.
 - **No mirrors.** No generated `index.json`, `status.json`, or per-workflow
   state copies.
 - `stelow doctor` compares `state.md` artifact paths against on-disk
@@ -188,10 +189,12 @@ See `assets/invariants-example.json` for a complete `invariants.json` example.
 ## Locking
 
 Concurrent session safety: `stelow advance` acquires a POSIX `mkdir`-based
-lock with a 5-minute TTL before writing. If the lock directory exists and
-is not stale, the advance fails with a clear message and no mutation occurs.
+lock with the configurable `STELOW_LOCK_TTL_SEC` (120 seconds by default)
+before writing. If the lock directory exists and is not stale, the advance
+fails with a clear message and no mutation occurs.
 
-Lock directory: `.stelow/locks/<current_stage>.lock/`
+Lock directory: `$STELOW_STATEDIR/lock/`, or `<git-root>/.stelow/lock/` in
+standalone mode.
 
 ---
 

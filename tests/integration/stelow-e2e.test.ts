@@ -145,7 +145,7 @@ stages:
     // (unknown to transitions.md). The helper must reject it.
     const r = run(wd, ["advance", "this-stage-is-not-in-transitions"]);
     expect(r.status).not.toBe(0);
-    expect(r.stderr).toContain("invalid candidate");
+    expect(r.stderr).toContain("invalid transition");
     // state.md must NOT have moved
     const sm = readFileSync(join(wd.dir, "state.md"), "utf8");
     expect(sm).toMatch(/current_stage:\s*shape/);

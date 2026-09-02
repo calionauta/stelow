@@ -45,9 +45,9 @@ same workflow. Hosts only add an optional marker protocol
 
 | Path | Contents | Owner |
 |------|----------|-------|
-| `state.md` | Per-workflow frontmatter: `name`, `intent`, `current_stage`, `status`, `config` (appetite, review_mode, product_type), tracked `stage` history. | entry/router skills + `scripts/stelow advance` |
-| `.stelow/lock` | mkdir-based advisory lock (pid, host, acquired timestamp) with TTL (`STELOW_LOCK_TTL_SEC`, default 120). Stale locks are auto-cleared. | `scripts/stelow` |
-| `.stelow/invariants.json` | Append-only advance history + invariant checks written by `scripts/stelow advance`. | `scripts/stelow` |
+| `state.md` | Per-workflow frontmatter at `$STELOW_STATE` (or `<root>/state.md` in standalone mode). | entry/router skills + `scripts/stelow advance` |
+| `lock/` | Advisory lock inside `$STELOW_STATEDIR` (or `<root>/.stelow`) with TTL (`STELOW_LOCK_TTL_SEC`, default 120). | `scripts/stelow` |
+| `invariants.json` | Append-only advance history inside `$STELOW_STATEDIR` (or `<root>/.stelow`) written by `scripts/stelow advance`. | `scripts/stelow` |
 | `stelow.json` | Multi-workflow tracking (schema `stelow.schema.json`): `workflows[]` with phases, scope sync from `spec-tech.md`. | workflow skills (agent) |
 | `.stelow/{date}/{dirHash}/` | Per-workflow artifacts: `specs/`, `interfaces/`, `plans/`, `critiques/`, `approvals/`, `execution/`, `verification/`. | workflow skills |
 

@@ -14,7 +14,7 @@
 
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import { execSync, spawnSync } from "node:child_process";
-import { mkdtempSync, writeFileSync, mkdirSync, readFileSync, statSync, rmSync, utimesSync } from "node:fs";
+import { mkdtempSync, writeFileSync, mkdirSync, readFileSync, existsSync, rmSync, utimesSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { randomBytes } from "node:crypto";
@@ -71,9 +71,9 @@ stages:
 `);
 }
 
-function run(wd: Workdir, args: string[]): { status: number; stdout: string; stderr: string } {
+function run(wd: Workdir, args: string[], env: Record<string, string> = {}): { status: number; stdout: string; stderr: string } {
   const r = spawnSync("bash", [wd.helper, ...args], {
-    cwd: wd.dir, encoding: "utf8", env: { ...process.env, PATH: process.env.PATH ?? "" },
+    cwd: wd.dir, encoding: "utf8", env: { ...process.env, PATH: process.env.PATH ?? "", ...env },
   });
   return { status: r.status ?? -1, stdout: r.stdout ?? "", stderr: r.stderr ?? "" };
 }
@@ -128,9 +128,17 @@ describe("advance", () => {
     const before = readFileSync(join(wd.dir, "state.md"));
     const r = run(wd, ["advance", "bogus"]);
     expect(r.status).not.toBe(0);
-    expect(r.stderr).toContain("invalid candidate");
+    expect(r.stderr).toContain("invalid transition");
     const after = readFileSync(join(wd.dir, "state.md"));
     expect(Buffer.compare(before, after)).toBe(0);
+  });
+
+  it("rejects a known stage that is not reachable from the current stage", () => {
+    const before = readFileSync(join(wd.dir, "state.md"));
+    const r = run(wd, ["advance", "scope"]);
+    expect(r.status).not.toBe(0);
+    expect(r.stderr).toContain("invalid transition 'shape' -> 'scope'");
+    expect(Buffer.compare(before, readFileSync(join(wd.dir, "state.md")))).toBe(0);
   });
 
   it("advances valid next stage and updates frontmatter", () => {
@@ -139,6 +147,18 @@ describe("advance", () => {
     expect(r.stdout).toContain("advanced to critique");
     const sm = readFileSync(join(wd.dir, "state.md"), "utf8");
     expect(sm).toMatch(/current_stage:\s*critique/);
+    expect(sm).toMatch(/  shape:\s*done/);
+    expect(sm).toMatch(/  critique:\s*in-progress/);
+    expect(sm).toMatch(/history:\n  - stage: shape\n    at: .+\n    status: done/);
+  });
+
+  it("accepts a canonical intent shortcut", () => {
+    makeState(wd, "gate");
+    const statePath = join(wd.dir, "state.md");
+    writeFileSync(statePath, readFileSync(statePath, "utf8").replace("intent: feature", "intent: bugfix"));
+    const r = run(wd, ["advance", "execution"]);
+    expect(r.status).toBe(0);
+    expect(readFileSync(statePath, "utf8")).toMatch(/current_stage:\s*execution/);
   });
 
   it("appends history to .stelow/invariants.json", () => {
@@ -168,9 +188,27 @@ describe("advance", () => {
     // backdate the lock dir by 5 minutes
     const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000);
     backdateLock(wd, fiveMinAgo);
-    const r = run(wd, ["advance", "critique"], { env: { ...process.env, STELOW_LOCK_TTL_SEC: "10" } });
+    const r = run(wd, ["advance", "critique"], { STELOW_LOCK_TTL_SEC: "10" });
     expect(r.status).toBe(0);
     expect(r.stdout).toContain("advanced to critique");
+  });
+
+  it("isolates status, state, invariants, and lock in STELOW_STATEDIR", () => {
+    const stateDir = join(wd.dir, ".stelow", "2026-09-02", "pw-test");
+    mkdirSync(stateDir, { recursive: true });
+    const rootState = join(wd.dir, "state.md");
+    const workflowState = join(stateDir, "state.md");
+    writeFileSync(workflowState, readFileSync(rootState));
+    rmSync(rootState);
+    const env = { STELOW_STATEDIR: stateDir };
+
+    const status = run(wd, ["status", "--json"], env);
+    expect(JSON.parse(status.stdout).current_stage).toBe("shape");
+    expect(run(wd, ["advance", "critique"], env).status).toBe(0);
+    expect(readFileSync(workflowState, "utf8")).toMatch(/current_stage:\s*critique/);
+    expect(existsSync(join(stateDir, "invariants.json"))).toBe(true);
+    expect(existsSync(join(wd.dir, ".stelow", "invariants.json"))).toBe(false);
+    expect(existsSync(rootState)).toBe(false);
   });
 });
 

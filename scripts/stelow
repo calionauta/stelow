@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # scripts/stelow — SCOPE-2 helper (status / advance / doctor).
 #
-# Passive: reads/writes the project state.md under the current git root.
+# Passive: reads/writes one workflow state. Hosts may point at a per-workflow
+# directory with STELOW_STATEDIR/STELOW_STATE; root paths remain the legacy
+# standalone fallback.
 # Idempotent on bad input (never mutates on invalid candidate). Fail-closed.
 # No npm deps — POSIX sh + node only.
 #
@@ -15,12 +17,20 @@ set -euo pipefail
 
 PROG="${0##*/}"
 ROOT="$(git rev-parse --show-toplevel 2>/dev/null || { echo "$PROG: not in a git repo" >&2; exit 2; })"
-STATE="$ROOT/state.md"
-TRANSITIONS="$ROOT/skills/stelow-workflow-orchestrator/references/transitions.md"
-LOCKDIR="$ROOT/.stelow/lock"
+STATEDIR="${STELOW_STATEDIR:-$ROOT/.stelow}"
+if [ -n "${STELOW_STATE:-}" ]; then
+  STATE="$STELOW_STATE"
+elif [ -n "${STELOW_STATEDIR:-}" ]; then
+  STATE="$STATEDIR/state.md"
+else
+  STATE="$ROOT/state.md"
+fi
+INVARIANTS="$STATEDIR/invariants.json"
+TRANSITIONS="${STELOW_TRANSITIONS:-$ROOT/skills/stelow-workflow-orchestrator/references/transitions.md}"
+LOCKDIR="$STATEDIR/lock"
 LOCK_TTL_SEC="${STELOW_LOCK_TTL_SEC:-120}"
 
-mkdir -p "$ROOT/.stelow"
+mkdir -p "$STATEDIR"
 
 # --- shared helpers ---------------------------------------------------------
 
@@ -73,11 +83,9 @@ EOF
 }
 
 status_json() {
-  python3 - "$ROOT" <<'PY'
+  python3 - "$STATE" "$INVARIANTS" <<'PY'
 import json, os, sys, re
-root = sys.argv[1]
-state = os.path.join(root, "state.md")
-inv   = os.path.join(root, ".stelow/invariants.json")
+state, inv = sys.argv[1:3]
 out = {"workflow": None, "intent": None, "current_stage": None, "status": None, "config": {}}
 def get_top(blob, key):
     m = re.match(r"^---\n(.*?)\n---", blob, re.DOTALL)
@@ -173,19 +181,37 @@ lock_acquire() {
 
 # --- advance -----------------------------------------------------------------
 
-candidate_for_stage() {
-  local stage="$1"
+allowed_candidates_for_stage() {
+  local stage="$1" intent="$2"
   [ -f "$TRANSITIONS" ] || die "transitions reference not found at $TRANSITIONS"
-  python3 - "$stage" "$TRANSITIONS" <<'PY'
+  python3 - "$stage" "$intent" "$TRANSITIONS" <<'PY'
 import sys, re
-stage, path = sys.argv[1], sys.argv[2]
+stage, intent, path = sys.argv[1:4]
 text = open(path).read()
 m = re.search(r"^### " + re.escape(stage) + r"\s*\n(.*?)(?=^### |\Z)", text, re.MULTILINE | re.DOTALL)
-if not m: sys.exit(1)
+if not m:
+    sys.exit(1)
+allowed = []
 for line in m.group(1).splitlines():
-    mm = re.match(r"^next:\s*(\S.*)$", line.strip())
-    if mm: print(mm.group(1).strip()); sys.exit(0)
-sys.exit(1)
+    mm = re.match(r"^(next|accept|reject|rework|annotate):\s*(.*)$", line.strip())
+    if not mm:
+        continue
+    for token in re.split(r"[,\s]+", mm.group(2)):
+        token = token.strip("[]\"'")
+        if token and not token.startswith("(") and re.match(r"^[a-z][a-z0-9-]*$", token):
+            allowed.append(token)
+
+# Intent routes are canonical shortcuts through the full transition graph.
+route = re.search(r"^\*\*" + re.escape(intent) + r":\*\*\s*(.+)$", text, re.MULTILINE)
+if route:
+    stages = [part.strip() for part in route.group(1).split("→")]
+    if stage in stages:
+        index = stages.index(stage)
+        if index + 1 < len(stages):
+            allowed.append(stages[index + 1])
+
+for candidate in dict.fromkeys(allowed):
+    print(candidate)
 PY
 }
 
@@ -204,21 +230,17 @@ do_advance() {
   [ -f "$STATE" ] || die "state.md not found at $STATE (run /stelow entry first)"
   local current
   current=$(yaml_get current_stage "$STATE" 2>/dev/null) || die "state.md has no current_stage (run /stelow entry first)"
-  local next_allowed
-  next_allowed=$(candidate_for_stage "$current") || die "no transition defined from stage '$current'"
-
-  if [ "$candidate" != "$next_allowed" ]; then
-    if ! all_stages | grep -qx "$candidate"; then
-      die "invalid candidate '$candidate' (next from '$current' is '$next_allowed')"
-    fi
-    echo "$PROG: note: '$candidate' is not the next stage from '$current' (expected '$next_allowed')" >&2
-  fi
+  local intent allowed
+  intent=$(yaml_get intent "$STATE" 2>/dev/null || echo "unknown")
+  allowed=$(allowed_candidates_for_stage "$current" "$intent") || die "no transition defined from stage '$current'"
+  echo "$allowed" | grep -qx "$candidate" ||
+    die "invalid transition '$current' -> '$candidate' (allowed: $(echo "$allowed" | paste -sd, -))"
 
   # pre-condition: required artifacts
-  python3 - "$current" "$ROOT" <<'PY' || die "pre-condition check failed"
+  python3 - "$current" "$ROOT" "$TRANSITIONS" <<'PY' || die "pre-condition check failed"
 import sys, re, os
-current, root = sys.argv[1], sys.argv[2]
-trans = open(os.path.join(root, "skills/stelow-workflow-orchestrator/references/transitions.md")).read()
+current, root, transitions = sys.argv[1:4]
+trans = open(transitions).read()
 m = re.search(r"^### " + re.escape(current) + r"\s*\n(.*?)(?=^### |\Z)", trans, re.MULTILINE | re.DOTALL)
 if not m: sys.exit(0)
 for line in m.group(1).splitlines():
@@ -234,33 +256,79 @@ PY
   lock_acquire
 
   # mutate state.md frontmatter
-  python3 - "$candidate" "$STATE" <<'PY'
-import sys, re
-candidate, path = sys.argv[1], sys.argv[2]
+  python3 - "$current" "$candidate" "$STATE" <<'PY'
+import sys, re, os, datetime, tempfile
+current, candidate, path = sys.argv[1:4]
 blob = open(path).read()
 m = re.match(r"^(---\n)(.*?)(\n---)(.*)$", blob, re.DOTALL)
 if not m:
     print("state.md: missing YAML frontmatter", file=sys.stderr); sys.exit(2)
 header_open, fm, header_close, body = m.group(1), m.group(2), m.group(3), m.group(4)
-new_lines = []
-found = False
-for line in fm.splitlines():
-    mm = re.match(r"^current_stage:\s*(.*)$", line)
-    if mm:
-        new_lines.append(f"current_stage: {candidate}"); found = True
-    else:
-        new_lines.append(line)
-if not found:
-    new_lines.append(f"current_stage: {candidate}")
-new_blob = header_open + "\n".join(new_lines) + header_close + body
-open(path, "w").write(new_blob)
+lines = fm.splitlines()
+
+for index, line in enumerate(lines):
+    if re.match(r"^current_stage:\s*", line):
+        lines[index] = f"current_stage: {candidate}"
+        break
+else:
+    lines.append(f"current_stage: {candidate}")
+
+def block_bounds(key):
+    start = next((i for i, line in enumerate(lines) if line == f"{key}:" or line == f"{key}: []"), None)
+    if start is None:
+        return None, None
+    end = start + 1
+    while end < len(lines) and (lines[end].startswith(" ") or not lines[end]):
+        end += 1
+    return start, end
+
+stage_start, stage_end = block_bounds("stages")
+if stage_start is None:
+    lines.extend(["stages:", f"  {current}: done", f"  {candidate}: in-progress"])
+else:
+    stage_lines = lines[stage_start + 1:stage_end]
+    seen_current = seen_candidate = False
+    for index, line in enumerate(stage_lines):
+        match = re.match(r"^  ([a-z][a-z0-9-]*):\s*", line)
+        if not match:
+            continue
+        if match.group(1) == current:
+            stage_lines[index] = f"  {current}: {'in-progress' if current == candidate else 'done'}"
+            seen_current = True
+        if match.group(1) == candidate:
+            stage_lines[index] = f"  {candidate}: in-progress"
+            seen_candidate = True
+    if not seen_current and current != candidate:
+        stage_lines.append(f"  {current}: done")
+    if not seen_candidate:
+        stage_lines.append(f"  {candidate}: in-progress")
+    lines[stage_start + 1:stage_end] = stage_lines
+
+timestamp = datetime.datetime.now(datetime.timezone.utc).isoformat()
+history_entry = [f"  - stage: {current}", f"    at: {timestamp}", "    status: done"]
+history_start, history_end = block_bounds("history")
+if history_start is None:
+    lines.extend(["history:", *history_entry])
+elif lines[history_start] == "history: []":
+    lines[history_start:history_end] = ["history:", *history_entry]
+else:
+    lines[history_end:history_end] = history_entry
+
+new_blob = header_open + "\n".join(lines) + header_close + body
+fd, temporary = tempfile.mkstemp(prefix=".state.", dir=os.path.dirname(path) or ".", text=True)
+try:
+    with os.fdopen(fd, "w") as handle:
+        handle.write(new_blob)
+    os.replace(temporary, path)
+finally:
+    if os.path.exists(temporary):
+        os.unlink(temporary)
 PY
 
   # append invariants
-  python3 - "$candidate" "$ROOT" <<'PY'
-import sys, os, json, datetime
-candidate, root = sys.argv[1], sys.argv[2]
-inv_path = os.path.join(root, ".stelow/invariants.json")
+  python3 - "$candidate" "$INVARIANTS" <<'PY'
+import sys, os, json, datetime, tempfile
+candidate, inv_path = sys.argv[1:3]
 os.makedirs(os.path.dirname(inv_path), exist_ok=True)
 data = {}
 if os.path.exists(inv_path):
@@ -270,7 +338,14 @@ data.setdefault("history", [])
 data["history"].append({"stage": candidate,
                          "at": datetime.datetime.now(datetime.timezone.utc).isoformat()})
 data["current_stage"] = candidate
-open(inv_path, "w").write(json.dumps(data, indent=2, sort_keys=True) + "\n")
+fd, temporary = tempfile.mkstemp(prefix=".invariants.", dir=os.path.dirname(inv_path), text=True)
+try:
+    with os.fdopen(fd, "w") as handle:
+        handle.write(json.dumps(data, indent=2, sort_keys=True) + "\n")
+    os.replace(temporary, inv_path)
+finally:
+    if os.path.exists(temporary):
+        os.unlink(temporary)
 PY
 
   rm -rf "$LOCKDIR"

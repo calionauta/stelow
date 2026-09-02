@@ -53,14 +53,15 @@ Once intent is locked:
 
 ```bash
 git_root=$(git rev-parse --show-toplevel)
-cp "$git_root/assets/state-template.md" "$git_root/state.md"
+state_path="${STELOW_STATE:-$git_root/state.md}"
+cp "$git_root/assets/state-template.md" "$state_path"
 # then fill the YAML frontmatter:
 #   name: <short project name derived from intent>
 #   intent: <one of the 5 above>
 #   current_stage: setup   (first stage per transitions.md)
 #   status: active
 #   config:
-#     appetite: <Core | Large | Bite-sized — derived from intent + scope>
+#     appetite: <Lean | Core | Complete — derived from intent + scope>
 #     review_mode: <Auto | Product Spec Gate | Product Spec + Interface + Scopes | Product Spec + Interface + Tech Review + Code Diff>
 #     product_type: <software | docs | infra | data | research>
 ```
@@ -76,7 +77,9 @@ that is `setup` for `feature`/`bugfix`/`refactor`/`investigate` and
 `triage` for `new-product` (the new-product flow always starts with a
 triage assessment).
 
-Write `current_stage` into the scaffolded `state.md`.
+Write `current_stage` into the scaffolded `state.md`. When `STELOW_STATE` is
+set, it is the workflow's canonical state file; never substitute a root
+`state.md` or a guessed per-card path.
 
 ## Hand off
 

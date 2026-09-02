@@ -49,7 +49,7 @@ history: []
   - `unknown` → treat as `feature`
 - **current_stage** — the active stage; updated by `stelow advance`
 - **status** — `active` | `paused` | `archived` | `completed`
-- **config.appetite** — `Core` (default) | `Large` | `Bite-sized`
+- **config.appetite** — `Lean` | `Core` (default) | `Complete`
 - **config.review_mode** — `Auto` (default) | `Product Spec Gate` | `Product Spec + Interface + Scopes` | `Product Spec + Interface + Tech Review + Code Diff`
 - **config.product_type** — `software` (default) | `docs` | `infra` | `data` | `research`
 - **stages** — all 17 stage names; values: `pending` | `in-progress` | `done` | `skipped`
