@@ -438,8 +438,6 @@ curl -fsSL https://raw.githubusercontent.com/calionauta/stelow/main/setup.sh | s
 | 8 | safe-change | pre-planning regression check via `npx skills add PrinNova/pi-agent-codebase-workflows -g` | All CLIs |
 
 > **Not using pi.dev?** Skills land in `~/.agents/skills/` and work on any agent that reads them. You just won't get the Pi-only extensions or TUI overlay. The workflow itself runs fine — see [agentskills.io](https://agentskills.io/) for the cross-agent standard.
->
-> **The in-tree Muxy and Herdr integrations were removed in v0.55** as part of the host-agnostic refactor; both are now external projects — see the [migration note](#-migration-from-pre-v055) below. If you depend on the Muxy webview panel or the Herdr split-pane TUI, pin to `stelow@0.54.x` or install a community-maintained fork.
 
 ### 📋 Path B: Existing pi.dev User
 
@@ -543,6 +541,20 @@ cron, systemd, launchd, or Task Scheduler must move to the host's native
 scheduling. The `.stelow/inbox/items.md` mirror is also removed — use
 Multica's `backlog`/`todo`, Fusion's inbox, or Pi's pi-session-state instead.
 
+### Optional: bb visual plugin
+
+[bb-plugin-stelow](https://github.com/calionauta/bb-plugin-stelow) is an optional visual host for Stelow in [bb](https://github.com/calionauta/bb). It keeps `stelow.json` and `.stelow/` as the source of truth, while adding a Kanban board, structured gate questions and approvals, artifact review, worker presets, and BB-native file attachments. Install it only when working in bb; the portable skills remain sufficient on every other host.
+
+```bash
+git clone https://github.com/calionauta/bb-plugin-stelow.git
+cd bb-plugin-stelow
+npm install
+bb plugin build
+bb plugin install . --yes
+```
+
+Open **Stelow** in BB's navigation, select a project, choose Appetite and Review mode, then create a card. The plugin seeds the workflow, starts the worker, and reflects its stages and generated artifacts in the board. See the [plugin README](https://github.com/calionauta/bb-plugin-stelow#readme) for details.
+
 ---
 
 ## 🌐 Host Support
@@ -624,19 +636,6 @@ compatibility/historical path; the portable canonical receipts live under
 > **Convention:** `{dirHash}` is a stable random identifier (e.g. `sw-abc123-xyz789`) generated at workflow creation. The display name may change via `/sw-rename`, but the directory hash stays constant.
 
 ---
-
-## 🔄 Migration from pre-v0.55
-
-> The in-tree Muxy and Herdr integrations were removed in v0.55 as part of the host-agnostic refactor. Stelow now ships **skills only** (the extension host code and the compiled Fusion plugin were removed in 1.0.0; `/sw-*` commands are skill-provided). Users who need the Muxy webview panel or the Herdr split-pane TUI must pin to `stelow@0.54.x` or use an external community fork. The remainder of this section is historical migration context only. Users who install the Herdr CLI from [herdr.dev](https://herdr.dev/) can still load a community fork at the published plugin path; this README does not document an in-tree install path.
-
-If you upgraded from `stelow < 0.55`, note the breaking changes:
-
-1. **`integrations/muxy/stelow/` and `integrations/herdr/stelow/` were deleted.** Both the Muxy webview panel and the Herdr split-pane TUI integrations were removed as part of the host-agnostic refactor. Since 1.0.0 the tree is skills-only — there are no host adapters to specialize.
-2. **`PRODUCT_WORKFLOW_CLI` env var was renamed to `STELOW_HOST`.** Use `STELOW_HOST`. (The pre-1.0.0 `FUSION_HOST=1` convention no longer maps to any repo code.)
-3. **`pi.*` host-private tool names** in skill prose are replaced by canonical agnostic names per `stages.yaml#tools` (`ask_user_question`, `visual_review`, `subagent`, etc.). Per-host invocation syntax lives in `references/cli-tools/*.md` only.
-4. **Visual review receipt path**: All hosts write approval receipts to the portable, host-agnostic path under `.stelow/approvals/{dirHash}/{file}.approved.md`. The older Pi-specific shim at `.plannotator/approvals/` is retained only for backward compatibility.
-
-Historical design rationale for the pre-1.0.0 host-adapter architecture lives in `docs/design/` (see `docs/design/host-agnostic-architecture.md` and `docs/design/fusion-integration-facts.md`).
 
 ## 📖 Evidence & Limitations
 
