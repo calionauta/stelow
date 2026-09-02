@@ -169,6 +169,22 @@ describe("advance", () => {
     expect(typeof inv.history.at(-1).at).toBe("string");
   });
 
+  it("records every new workflow document against the stage being completed", () => {
+    const stateDir = join(wd.dir, ".stelow", "2026-09-02", "artifacts-test");
+    mkdirSync(join(stateDir, "plans"), { recursive: true });
+    const statePath = join(stateDir, "state.md");
+    writeFileSync(statePath, readFileSync(join(wd.dir, "state.md"), "utf8").replace("---\n# t", "artifacts: []\n---\n# t"));
+    writeFileSync(join(stateDir, "plans", "spec-product_v1.md"), "# Product spec");
+    writeFileSync(join(stateDir, "plans", "ui-alternatives.md"), "# UI alternatives");
+
+    const result = run(wd, ["advance", "critique"], { STELOW_STATEDIR: stateDir });
+    expect(result.status).toBe(0);
+    const state = readFileSync(statePath, "utf8");
+    expect(state).toMatch(/- stage: shape\n    kind: document\n    label: spec product v1\n    path: \.stelow\/2026-09-02\/artifacts-test\/plans\/spec-product_v1\.md/);
+    expect(state).toMatch(/- stage: shape\n    kind: document\n    label: ui alternatives\n    path: \.stelow\/2026-09-02\/artifacts-test\/plans\/ui-alternatives\.md/);
+    expect((state.match(/generated_at:/g) ?? []).length).toBe(2);
+  });
+
   it("fails when lock is held by another process (non-fatal exit)", () => {
     // manually hold the lock
     mkdirSync(join(wd.dir, ".stelow", "lock"), { recursive: true });

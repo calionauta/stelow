@@ -57,9 +57,11 @@ stages:
   diff-gate: pending
   audit: pending
 artifacts:
-  spec-product: .stelow/2026-08-13/abc123/plans/spec-product_v1.md
-  spec-tech: .stelow/2026-08-13/abc123/plans/spec-tech_v1.md
-  scope-report: .stelow/2026-08-13/abc123/plans/scope-report_v1.md
+  - stage: shape
+    kind: document
+    label: spec product v1
+    path: .stelow/2026-08-13/abc123/plans/spec-product_v1.md
+    generated_at: 2026-08-13T10:00:00Z
 history:
   - stage: setup
     at: 2026-08-13T09:00:00Z
@@ -70,11 +72,11 @@ history:
 ---
 ```
 
-`artifacts` is the complete manifest of material Markdown outputs produced by
-the workflow. `scripts/stelow advance` discovers and records known outputs at
-each successful transition (shape, critique, interface, planning, scope,
-execution, verification, and audit), so hosts render the same artifact set
-without maintaining a second index.
+`artifacts` is the complete typed manifest of material Markdown outputs. At a
+successful transition, `scripts/stelow advance` records every previously
+unregistered Markdown file in the workflow directory with the stage it is
+leaving. Hosts can therefore show each artifact beside its producing stage
+without a second index or filename-based stage inference.
 
 ### Valid Stage Names
 
@@ -99,9 +101,8 @@ without maintaining a second index.
 
 | Field group | Written by |
 |---|---|
-| `name`, `intent`, `config.*`, `artifacts.*`, `history` | LLM |
-| `current_stage`, `stages.*`, `status`, `history` (entries) | `stelow advance` only |
-| `artifacts` entries | LLM declares; `stelow advance` enforces existence before transition |
+| `name`, `intent`, `config.*` | LLM |
+| `current_stage`, `stages.*`, `status`, `history`, `artifacts` | `stelow advance` only |
 
 **The LLM must never hand-write a stage transition.** Use `stelow advance <stage>`
 to change `current_stage` or `stages.*`.

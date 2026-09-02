@@ -32,7 +32,7 @@ stages:
   verification: pending
   diff-gate: pending
   audit: pending
-artifacts: {}
+artifacts: []
 history: []
 ---
 ```
@@ -53,7 +53,7 @@ history: []
 - **config.review_mode** — `Auto` (default) | `Product Spec Gate` | `Product Spec + Interface + Scopes` | `Product Spec + Interface + Tech Review + Code Diff`
 - **config.product_type** — `software` (default) | `docs` | `infra` | `data` | `research`
 - **stages** — all 17 stage names; values: `pending` | `in-progress` | `done` | `skipped`
-- **artifacts** — key-value map of `artifact-name: relative-path`; paths are relative to project root
+- **artifacts** — typed list of produced files: `stage`, `kind`, `label`, `path`, `generated_at`; paths are relative to project root
 - **history** — chronological log of stage completions; appended by `stelow advance`
 
 ## Valid stage names
