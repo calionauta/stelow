@@ -146,6 +146,8 @@ Run before releases. A test file moving from OK to REVIEW over time signals rot.
 - **Stage headings:** must use `slug:major.minor` format — see [docs/agents-md-refs/stage-numbering.md](docs/agents-md-refs/stage-numbering.md) for the gap-based numbering rules.
 - **Tool calls in stage files:** never call `ask_user_question`, `subagent`, or `start_supervision` directly. Use the CLI-agnostic reference in `references/cli-tools/{tool}.md` — see [docs/agents-md-refs/tool-reference-pattern.md](docs/agents-md-refs/tool-reference-pattern.md).
 - **Product name:** `stelow` (canonical). All runtime paths, skill prefixes, and filesystem artifacts use the `stelow` prefix.
+- **Single working clone:** on the deploy host, `~/repos/stelow` is the **only** clone where methodology/skill work happens. Never edit skills in a throwaway `/tmp` clone — if you did, re-do or rebase the work onto `~/repos/stelow`. **Run `git pull --ff-only` here FIRST** before starting any edit, so work advances from `origin/main` and the auto-sync below propagates it. Push is the trigger: a local-only commit is invisible to consumers.
+- **Propagation is automatic but on a schedule:** pushing to `calionauta/stelow@main` propagates automatically — the workflow skills (`stelow-workflow-*` + entry/router) reach `bb-plugin-stelow` via its 6h cron auto-sync, and the product playbooks (`stelow-product-*`) reach the agent skills hub on the daily 03:00 `npx skills update -g`. Neither needs a manual copy step.
 
 ## Versioning
 
