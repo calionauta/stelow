@@ -5,6 +5,17 @@ All notable changes to this project are documented in this file, following
 
 ## [Unreleased]
 
+### Fixed
+
+- **Interface selection no longer waits for a human in `Auto` /
+  `Product Spec Gate` modes.** The interface-alternatives skill ordered an
+  unconditional user pick, contradicting the Mode table (Auto → LLM
+  decides) and parking Auto cards forever. The pick is now mode-gated,
+  with a new machine-readable policy at
+  `skills/stelow-workflow-orchestrator/references/human-gates.md` that
+  plugin surfaces can derive the same rules from. Orchestrator safety
+  rules, stage table, and transitions stage list point at it.
+
 ### Changed (Breaking)
 
 - **Rename 12 workflow stage skills from `stelow-product-*` to

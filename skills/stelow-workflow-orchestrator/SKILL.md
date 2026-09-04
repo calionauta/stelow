@@ -140,7 +140,7 @@ LLMs suffer from **context rot**: compliance with their own rules drops from
 
 ### Interface Selection (Selection stage)
 - **Proceed automatically** after Gate approval — do NOT describe the next step, execute it
-- Use **Pattern 2** from `stages/ask-patterns.md` immediately
+- Who picks is mode-gated (see `references/human-gates.md`): `Auto` / `Product Spec Gate` → LLM adopts the hybrid recommendation itself; only `Product Spec + Interface Gates` and above ask the user (Pattern 2 from `stages/ask-patterns.md`)
 
 ### Tech Planning (Planning stage)
 - Before generating scopes: verify `approved: true` in spec-product.md
@@ -169,7 +169,7 @@ After completing each stage, the LLM **must proceed directly to the next stage**
 - Execution halted due to an error
 - User typed `/sw-next` manually to advance faster
 
-**Exception:** If a stage produced output requiring human review (e.g., visual review gate rejected the spec, interface selection needs user choice), pause and wait for user input BEFORE advancing. After the user responds, resume auto-advance.
+**Exception:** If a stage produced output requiring human review under the active `review_mode` (e.g., visual review gate rejected the spec, interface selection needs user choice **in Product Spec + Interface Gates and above** — never in `Auto` / `Product Spec Gate`; see `references/human-gates.md`), pause and wait for user input BEFORE advancing. After the user responds, resume auto-advance.
 
 #### Other Interruption Rules
 - If user introduces new work mid-workflow, use **Pattern 6** from `stages/ask-patterns.md`
@@ -217,7 +217,7 @@ Do NOT use `/skill:` for internal subskills.
 | `scope` | **Scope Adjustment** | Add/remove from IN/OUT (ask) | — |
 | `interface` | **Interface Alternatives** | Appetite-scaled interface exploration: 1, 3, or 5 proposals + hybrid | — |
 | `int-gate` | **Interface Gate (visual review)** | Visual review of all interfaces | — |
-| `selection` | **Interface Selection** | User picks via ask with preview. Chosen interface saved to `selected-interface.md` | — |
+| `selection` | **Interface Selection** | Human pick via ask with preview in Interface-Gates modes; LLM decides in `Auto` / `Product Spec Gate` (`references/human-gates.md`). Chosen interface saved to `selected-interface.md` | — |
 | `planning` | **Tech Planning** | Typed scopes + sequencing. Includes `planning:15` — **Alignment Check** (review mode-gated bidirectional feedback: spec-tech vs spec-product) | — |
 | `plan-gate` | **Tech Plan Gate (visual review)** | Visual review of spec-tech.md. Only in Tech Review / Code Diff modes | After planning |
 | `execution` | **Execution** | Goal/scope executor | — |

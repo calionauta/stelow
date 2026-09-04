@@ -27,7 +27,7 @@ after any change to verify.
 | 70 | scope | Scope adjustment. Add/remove from IN/OUT after gate approval. |
 | 80 | interface | Interface alternatives. Appetite-scaled exploration. |
 | 90 | int-gate | Interface gate. Visual review of all interface proposals. |
-| 100 | selection | Interface selection. User picks via structured question. |
+| 100 | selection | Interface selection. Human pick via structured question in Interface-Gates modes; LLM decides in `Auto` / `Product Spec Gate` (see `human-gates.md`). |
 | 110 | planning | Tech planning. Typed scopes + sequencing. |
 | 115 | plan-gate | Tech plan gate. Visual review of spec-tech.md. |
 | 120 | execution | Implementation. Execute planned scopes. |
