@@ -181,6 +181,48 @@ See `assets/invariants-example.json` for a complete `invariants.json` example.
 
 ---
 
+## stelow.json Worker Lineage (Optional, Host-Managed)
+
+Hosts that run workflows inside managed worker threads (bb, Pi, Fusion,
+or any host integration) may record worker lineage on the workflow entry
+in `stelow.json`, so thread history survives outside any single plugin
+database and the worker itself can read it for continuity:
+
+```json
+"workers": [
+  {
+    "thread_id": "thr_abc123",
+    "preset": "preset id or name that spawned it, or null",
+    "started_at": "2026-09-04T17:14:57.065Z",
+    "ended_at": "2026-09-04T19:36:33.000Z",
+    "ended_reason": "restart | reseed | band-swap | initial | archived"
+  }
+]
+```
+
+### Field Rules
+
+| Field | Type | Required | Rule |
+|---|---|---|---|
+| `thread_id` | string | yes | Opaque host thread identifier. Never interpreted, only referenced. |
+| `preset` | string\|null | no | Preset that spawned the worker, for audit. |
+| `started_at` | string | yes | ISO-8601 creation of the worker thread. |
+| `ended_at` | string\|null | yes | `null` while the worker is live; exactly one open row per workflow. |
+| `ended_reason` | string\|null | yes | Transition that replaced the worker (`initial` only closes nothing). |
+
+### Authorship Rules
+
+- Written by the **host integration only** (the spawner), never by the LLM
+  and never by `stelow advance`.
+- On replacement: close the open row (`ended_at` + `ended_reason`), then
+  append the new open row. Never rewrite history.
+- Best-effort: a failed lineage write must never break a spawn, reseed,
+  or restart.
+- Hosts without managed threads simply omit `workers`. Consumers treat a
+  missing array as "no lineage", never as an error.
+
+---
+
 ## Anti-Drift Rules
 
 - One canonical state path per workflow: `$STELOW_STATE` / `$STELOW_STATEDIR`
