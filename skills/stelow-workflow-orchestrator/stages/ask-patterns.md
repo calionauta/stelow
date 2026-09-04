@@ -175,7 +175,10 @@ Keep previews concise. If content exceeds limits, prioritize:
 
 ## Pattern 3: Scope Adjustment (Scope Adjustment stage)
 
-Used after Gate approval to let user add/remove from IN/OUT.
+Used after Gate approval to let user add/remove from IN/OUT — **only when
+review mode requires IN/OUT confirmation** (`Product Spec + Interface +
+Scopes` and above). In `Auto` and lower modes the LLM adjusts scope itself
+(see `../references/human-gates.md`) and never parks waiting.
 
 > **Note:** No visual review re-run after this — the ask tool already confirms selections.
 

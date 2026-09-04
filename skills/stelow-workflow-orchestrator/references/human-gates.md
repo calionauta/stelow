@@ -17,6 +17,19 @@ decision** under each `review_mode` (frontmatter in `spec-product.md`,
 | `Product Spec + Interface + Scopes` | Interface selection + scope | **User chooses** via structured ask with preview. |
 | `Product Spec + Interface + Tech Review` and above | All including technical | **User chooses** via structured ask with preview. |
 
+## More Mode-Gated Waits
+
+- **Scope adjustment** (`Pattern 3`): human IN/OUT confirmation only in
+  `Product Spec + Interface + Scopes` and above; otherwise the LLM adjusts
+  scope itself.
+- **Execution start**: always automatic after planning approval. Never ask
+  "shall I proceed" — that question is the workflow stalling, not diligence.
+- **Gate tool fallback**: when a gate *tool* (`visual_review`) is
+  unavailable in the host, do NOT park in chat waiting. In `Auto`, write
+  the approval receipt yourself (`.stelow/approvals/{dirHash}/{file}.approved.md`)
+  and advance; in gated modes, open a structured ask instead. A wait with
+  neither tool receipt nor open ask is a phantom wait — forbidden.
+
 ## Rules
 
 1. **Read `review_mode` before any human wait.** A wait issued in the

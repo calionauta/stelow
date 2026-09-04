@@ -15,6 +15,12 @@ All notable changes to this project are documented in this file, following
   `skills/stelow-workflow-orchestrator/references/human-gates.md` that
   plugin surfaces can derive the same rules from. Orchestrator safety
   rules, stage table, and transitions stage list point at it.
+- **Scope adjustment and execution start covered by the same policy.**
+  Pattern 3 (scope IN/OUT ask) and the plan-gate body are mode-gated;
+  execution never asks to proceed. `human-gates.md` additionally defines
+  the gate-tool fallback (missing `visual_review` → Auto self-approves
+  with a receipt, gated modes open a structured ask, chat-parking is
+  forbidden).
 
 ### Changed (Breaking)
 
