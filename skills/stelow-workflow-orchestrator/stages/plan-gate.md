@@ -1,8 +1,8 @@
 # Tech Plan Gate
 
-> **Conditional stage** — only runs when review mode is `Product Spec + Interface + Tech Review` or `Product Spec + Interface + Tech Review + Code Diff`.
+> **Conditional stage** — only runs when review mode is `Product Spec + Interface + Tech Review` or `Product Spec + Interface + Tech Review + Code Diff`. In `Auto`, `Product Spec Gate`, and `Product Spec + Interface + Scopes` this stage does not exist: advance from planning directly to execution, never park waiting for a review here (see `../references/human-gates.md`).
 
-visual review gate on `spec-tech.md` (the tech plan). Blocks until human approves, annotates, or rejects.
+visual review gate on `spec-tech.md` (the tech plan). Blocks until human approves, annotates, or rejects — **in the Tech Review / Code Diff modes above only**.
 
 ## Gate Activation
 
