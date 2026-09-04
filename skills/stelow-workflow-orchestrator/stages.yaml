@@ -168,7 +168,7 @@ stages:
   - name: selection
     order: 100
     model_hint: standard
-    description: Interface selection. User picks via structured question.
+    description: Interface selection. Human pick via structured question in Interface-Gates modes; LLM decides in Auto / Product Spec Gate (see references/human-gates.md).
     blocked_tools: [bash, write]
     allowed_tools: [ask_user_question, read, grep, ls, subagent]
     preferred_tools: [ask_user_question, read]
