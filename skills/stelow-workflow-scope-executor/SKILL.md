@@ -146,7 +146,9 @@ if [ "$APPETITE" = "Complete" ]; then
   echo "In Product Spec + Interface + Tech Review mode, each PR/fork-point requires human approval before merge."
 ```
 
-Ask the user:
+Ask the user (skip this ask entirely in `Auto` mode — proceed autonomously;
+it exists for gated modes and standalone runs, whose default review mode
+is gated):
 ```
 Shall I proceed with autonomous execution? I'll report back when all scopes are complete.
 ```

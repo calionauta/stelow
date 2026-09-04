@@ -41,9 +41,9 @@ decision** under each `review_mode` (frontmatter in `spec-product.md`,
    ask open (no pending interaction, no answerable artifact) is a phantom
    wait — the human has nothing to answer. Either open the ask or advance.
 3. **Host plugin surfaces** (bb, Multica, Fusion, Pi, or any host
-   integration) derive the same rules from this file: hero copy, inbox
-   events, and retry nudges must never promise or demand a human decision
-   the mode doesn't require.
+   integration) derive the same rules from this file: status copy,
+   notification feeds, and resume/retry prompts must never promise or
+   demand a human decision the mode doesn't require.
 
 ## Canonical References
 
