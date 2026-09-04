@@ -294,7 +294,6 @@ When Thermo-Nuclear runs, save or copy the result to:
 verification notes.
 
 ### final-checklist
-
 - [ ] Unit tests pass
 - [ ] Code review done (subagent or human)
 - [ ] Code quality gate completed
@@ -303,6 +302,21 @@ verification notes.
 - [ ] UI accessible (if applicable — static a11y baseline always; Live Site when appetite warrants)
 - [ ] Documentation updated (if applicable)
 - [ ] AGENTS.md updated (if architecture changed)
+
+### Close the loop on checklists
+
+Every `- [ ]` checkbox this workflow generated and verification just
+checked — DoD items, acceptance criteria, scope lists, test plans, in ANY
+artifact — must be ticked in place with its evidence link:
+
+```md
+- [x] Win in a row, column, and diagonal is detected and announced → evidence/velha-test.cjs §2 (32/32)
+```
+
+Spec prose stays frozen — only checkbox state plus evidence links change.
+An unticked box after a passing verification reads as "not done" to the
+next reader; the audit-report mapping alone does not fix the source.
+Unverifiable items stay unticked and are called out explicitly instead.
 
 ### invisible-20-percent
 
