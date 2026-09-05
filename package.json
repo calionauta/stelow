@@ -1,7 +1,7 @@
 {
   "name": "@calionauta/stelow",
-  "version": "1.0.0",
-  "description": "stelow \u2014 opinionated product workflow. stellar clarity. low friction.",
+  "version": "1.0.1",
+  "description": "stelow — opinionated product workflow. stellar clarity. low friction.",
   "keywords": [
     "pi-skill",
     "pi-extension",
