@@ -245,7 +245,12 @@ Used in `stages/setup.md` for workflow stage selection and safe-change.
 > **Note:** This pattern is only shown for Product Spec + Interface Gates and above.
 > Auto/Product Spec Gate modes auto-define stages.
 
-> **Note:** This is the ONLY place with multiple questions in parallel.
+> **Batching rule:** ask independent questions in ONE `ask_user_question`
+> call (repeat question blocks, as below) — the user answers them together
+> instead of being pinged one by one. Ask dependent questions (Q2 needs
+> Q1's answer) one at a time. Exception: Appetite (Pattern 7) and Review
+> Mode (Pattern 8) stay separate calls — that split is deliberate decision
+> sequencing, not data dependency.
 
 ```typescript
 ask_user_question({
@@ -473,6 +478,9 @@ When the Plan Critique finds gaps via the 7 checklists, each gap is classified a
 3. **Adapt labels/summaries** to the specific situation
 4. **Use preview** when visual comparison adds value
 5. **Keep previews under 20 rows** (side-by-side) or 15 rows (stacked)
+6. **Batch independent questions** in one call (repeat question blocks);
+   sequence dependent ones. Appetite (Pattern 7) and Review Mode
+   (Pattern 8) always stay separate — deliberate sequencing, not dependency
 
 ---
 

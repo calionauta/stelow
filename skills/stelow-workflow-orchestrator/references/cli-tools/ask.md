@@ -24,6 +24,11 @@ leading convention instead:
     [--option "<label 3>" ...] [--multiple]
   ```
 
+  Repeat `--question` groups (each with its own `--option` labels) in ONE
+  call to ask several independent questions together — see the batching
+  rule in `stelow-workflow-orchestrator/stages/ask-patterns.md`
+  (Usage Rules). Ask dependent questions one at a time.
+
   `bb stelow ask` renders into bb's structured form (`stelow-question`
   renderer) and blocks until the user submits or cancels. In the plugin, the
   card moves to **Gate pending** while the question is open. Never substitute

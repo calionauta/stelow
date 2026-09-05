@@ -7,6 +7,14 @@ All notable changes to this project are documented in this file, following
 
 ### Fixed
 
+- **Ask batching rule replaces the parallel-questions exception.**
+  `ask-patterns.md` called Pattern 5 "the ONLY place with multiple
+  questions in parallel", discouraging batching everywhere else. The rule
+  is now dependency-based: independent questions share ONE
+  `ask_user_question` call (the user answers together), dependent ones
+  stay sequential. Appetite (Pattern 7) and Review Mode (Pattern 8) stay
+  separate by deliberate decision sequencing. The bb host mapping
+  (`references/cli-tools/ask.md`) documents repeated `--question` groups.
 - **Interface selection no longer waits for a human in `Auto` /
   `Product Spec Gate` modes.** The interface-alternatives skill ordered an
   unconditional user pick, contradicting the Mode table (Auto → LLM
