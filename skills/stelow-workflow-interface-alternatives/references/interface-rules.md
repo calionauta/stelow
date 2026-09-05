@@ -236,7 +236,7 @@ N/A Notes:
 A state coverage table for key components showing states per type:
 
 | Component | Type | Idle | Hov | Act | Foc | Dis | Ld | Emp | Err | Ovr | Coverage | vs Baseline |
-|-----------|------|:---:+|:---:+|:---:+|:---:+|:---:+|:---:+|:---:+|:---:+|:---:+|:--------:+|:----------:|
+|-----------|------|:----:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:--------:|:-----------:|
 | Primary Btn | Int | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | N/A | ✅ | N/A |  6/6  |  ✅ ≥6  |
 | Search Input | Int | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |  9/9  |  ✅ ≥6  |
 | Data Table | Int | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |  9/9  |  ✅ ≥6  |

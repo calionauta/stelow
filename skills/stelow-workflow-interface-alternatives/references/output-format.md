@@ -87,7 +87,7 @@ Interactive components should aim for ≥6 applicable states.
 
 ### Format:
 | Component | Type | Idle | Hov | Act | Foc | Dis | Ld | Emp | Err | Ovr | Coverage | vs Baseline |
-|-----------|------|:---:+|:---:+|:---:+|:---:+|:---:+|:---:+|:---:+|:---:+|:---:+|:--------:+|:----------:|
+|-----------|------|:----:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:--------:|:-----------:|
 | Example Btn | Int | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | N/A | ✅ | N/A |  6/6  |  ✅ ≥6  |
 | Page Title | Disp | ✅ | N/A | N/A | ✅ | N/A | N/A | N/A | N/A | N/A |  2/2  |    —    |
 
