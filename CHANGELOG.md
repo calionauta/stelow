@@ -7,6 +7,13 @@ All notable changes to this project are documented in this file, following
 
 ### Fixed
 
+- **State Coverage Table template uses valid GFM delimiters.** The
+  `interface-alternatives` references shipped `:---:+` separator cells
+  (stray `+`), which no GFM renderer recognizes — every generated table
+  rendered as raw pipes. Workers copying the template now produce real
+  tables; a plugin-side regression test scans vendored skills for bad
+  delimiters.
+
 - **Ask batching rule replaces the parallel-questions exception.**
   `ask-patterns.md` called Pattern 5 "the ONLY place with multiple
   questions in parallel", discouraging batching everywhere else. The rule
@@ -31,6 +38,12 @@ All notable changes to this project are documented in this file, following
   forbidden).
 
 ### Changed (Breaking)
+
+- **Opportunity mapping outputs Markdown instead of Confluence markup.**
+  No Confluence consumers remain and backward compatibility is waived:
+  headings, nested lists, bold/italic map mechanically, emoji carry
+  over, and the single wrapping code block goes away (in Markdown it
+  would prevent rendering — Confluence needed it as paste-source).
 
 - **Rename 12 workflow stage skills from `stelow-product-*` to
   `stelow-workflow-*`** — orchestrator, shape-up, interface-alternatives,
