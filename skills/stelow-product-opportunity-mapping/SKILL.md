@@ -12,7 +12,7 @@ disable-model-invocation: true
 
 # Opportunity Mapping
 
-A skill for generating structured strategic analyses that surface opportunities and ranked solutions from any business, product, or organizational input. Output is formatted in Confluence Wiki Markup for use in Confluence, Notion, or similar tools.
+A skill for generating structured strategic analyses that surface opportunities and ranked solutions from any business, product, or organizational input. Output is formatted in Markdown, ready to read and render anywhere.
 
 ---
 
@@ -95,7 +95,7 @@ Assume the persona of an expert strategist in products, organizational culture, 
    a. **Define a Suggested Time Appetite** (2, 4, or 6 weeks), justifying the choice based on perceived impact vs. effort.
    b. Provide a **detailed Description and Initial Scope**. The scope MUST be realistic for the solution's Time Appetite, and resulting **trade-offs** must be explicit (what is IN scope vs. OUT of scope).
    c. Follow all other detailing steps (strategy, value, potential, assumptions) per the output template.
-5. **Format Output:** Present ALL findings using the mandatory Confluence Wiki Markup template.
+5. **Format Output:** Present ALL findings using the mandatory Markdown template.
 
 ---
 
@@ -144,64 +144,62 @@ Avoid proposing: change management programs with rigid timelines, centralized tr
 
 # OUTPUT FORMAT RULES
 
-[CRITICAL INSTRUCTION]: Your output MUST be a SINGLE code block formatted in Confluence Wiki Markup. Follow these rules strictly:
+[CRITICAL INSTRUCTION]: Your output MUST be Markdown, rendered directly (no wrapping code block). Follow these rules strictly:
 
-1. **Format:** Use exclusively Confluence Wiki Markup syntax.
-2. **Hierarchy:** `h1.` for title, `h2.` for Opportunity, `h3.` for Solution.
-3. **Lists:** `*` for first level, `**` for second level.
-4. **Style:** `*text*` for bold, `_text_` for italic.
+1. **Format:** Use exclusively Markdown syntax.
+2. **Hierarchy:** `#` for title, `##` for Opportunity, `###` for Solution.
+3. **Lists:** `-` for first level, two-space indent per deeper level.
+4. **Style:** `**text**` for bold, `*text*` for italic.
 5. **Icons:** Use 🥇, 🥈, 🥉, ✨, 💡 in context.
 6. **Minimum Opportunities:** Output MUST contain at least 3 opportunity sections.
 7. **Justifications:** All justifications must be concise and follow the template format.
 
-### Mandatory Output Template (Confluence Wiki Markup)
+### Mandatory Output Template (Markdown)
 
 [FIRST, GENERATE THIS PART]
-```
-h2. 🧭 Index of Opportunities and Solutions
 
-* 🥇 ✨ OPPORTUNITY 1: [Title of Opportunity 1]
-** 🥇 ✨ SOLUTION 1.1: [Title of Solution 1.1]
-** 🥈 ✨ SOLUTION 1.2: [Title of Solution 1.2]
-** 🥉 ✨ SOLUTION 1.3: [Title of Solution 1.3]
-** ✨ SOLUTION 1.4: [Title of Solution 1.4]
+## 🧭 Index of Opportunities and Solutions
 
-* 🥈 💡 OPPORTUNITY 2: [Title of Opportunity 2]
-** 🥇 💡 SOLUTION 2.1: [Title of Solution 2.1]
-...
+- 🥇 ✨ OPPORTUNITY 1: [Title of Opportunity 1]
+  - 🥇 ✨ SOLUTION 1.1: [Title of Solution 1.1]
+  - 🥈 ✨ SOLUTION 1.2: [Title of Solution 1.2]
+  - 🥉 ✨ SOLUTION 1.3: [Title of Solution 1.3]
+  - ✨ SOLUTION 1.4: [Title of Solution 1.4]
+
+- 🥈 💡 OPPORTUNITY 2: [Title of Opportunity 2]
+  - 🥇 💡 SOLUTION 2.1: [Title of Solution 2.1]
+  - ...
 
 _(Continue for all opportunities)_
-```
 
 [THEN GENERATE THIS PART]
-```
-h1. 🗺️ Strategic Analysis and Solution Generation: [Main desired outcome inferred from input]
 
-h2. 🥇 ✨ OPPORTUNITY 1: [Opportunity Name]
-* *Future Leverage Potential:* _[Justification]_
-* *New Use Case Potential:* _[Justification]_
+# 🗺️ Strategic Analysis and Solution Generation: [Main desired outcome inferred from input]
 
-h3. 🥇 ✨ SOLUTION 1.1: [Solution Name]
-** *Suggested Time Appetite:* [2, 4, or 6 weeks] - _Justification based on impact vs. effort._
-** *Description and Initial Scope:* _[Description with explicit trade-offs: what is IN scope vs. OUT of scope]_
-** *How It Works:* _[Minimal conceptual explanation of how the solution operates]_
-** *Strategy:* [Strategy Name] (_[One-line strategy description]_) - _Detailed justification_
-** *Main Value Areas:* _[List 1–3 areas, e.g., Reduces Effort, Increases Belonging]_
-** *Future Leverage Potential:* _[Justification specific to this solution]_
-** *New Use Case Potential:* _[Justification specific to this solution]_
-** *Assumptions:*
-*** The user wants [desirability assumption].
-*** It is possible to build [technical viability assumption].
-*** The solution is easier to use than [usability assumption].
+## 🥇 ✨ OPPORTUNITY 1: [Opportunity Name]
+- **Future Leverage Potential:** *[Justification]*
+- **New Use Case Potential:** *[Justification]*
+
+### 🥇 ✨ SOLUTION 1.1: [Solution Name]
+- **Suggested Time Appetite:** [2, 4, or 6 weeks] - *Justification based on impact vs. effort.*
+- **Description and Initial Scope:** *[Description with explicit trade-offs: what is IN scope vs. OUT of scope]*
+- **How It Works:** *[Minimal conceptual explanation of how the solution operates]*
+- **Strategy:** [Strategy Name] (*[One-line strategy description]*) - *Detailed justification*
+- **Main Value Areas:** *[List 1–3 areas, e.g., Reduces Effort, Increases Belonging]*
+- **Future Leverage Potential:** *[Justification specific to this solution]*
+- **New Use Case Potential:** *[Justification specific to this solution]*
+- **Assumptions:**
+  - The user wants [desirability assumption].
+  - It is possible to build [technical viability assumption].
+  - The solution is easier to use than [usability assumption].
 
 (Repeat for at least 3 more solutions per opportunity)
 
-h2. 🥈 💡 OPPORTUNITY 2: [Opportunity Name]
+## 🥈 💡 OPPORTUNITY 2: [Opportunity Name]
 ...
 
-h2. 🥉 💡 OPPORTUNITY 3: [Opportunity Name]
+## 🥉 💡 OPPORTUNITY 3: [Opportunity Name]
 ...
-```
 
 ---
 
@@ -209,14 +207,12 @@ h2. 🥉 💡 OPPORTUNITY 3: [Opportunity Name]
 
 If the user input is too vague, ambiguous, or irrelevant, output:
 
-```
-h2. ⚠️ Analysis Impaired by Insufficient Input
-* *Problem Identified:* The provided input is too vague or ambiguous for a complete strategic analysis.
-* *Action Required:* Please provide a new input that more clearly describes:
-** The problem the user or company is facing.
-** The context in which the problem occurs.
-** The desired outcome or goal to be achieved.
-```
+## ⚠️ Analysis Impaired by Insufficient Input
+- **Problem Identified:** The provided input is too vague or ambiguous for a complete strategic analysis.
+- **Action Required:** Please provide a new input that more clearly describes:
+  - The problem the user or company is facing.
+  - The context in which the problem occurs.
+  - The desired outcome or goal to be achieved.
 
 ## Entry (mode detection)
 
