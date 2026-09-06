@@ -103,7 +103,7 @@ opencode
 ```
 
 **Subagent skill passing:** OpenCode agents support skill directories. Add
-`.agents/skills/` (stelow's 25 skills) to the OpenCode skills search path in
+`.agents/skills/` (stelow's 28 skills) to the OpenCode skills search path in
 `~/.opencode/config.json`:
 ```json
 { "skills": { "search_paths": [".agents/skills", "~/.skills"] } }
@@ -185,31 +185,6 @@ ln -s $(pwd)/.agents/skills ~/.pi/skills/stelow-product
 
 ---
 
-### Fusion (runfusion.ai)
-
-**Activation:**
-Fusion already hosts stelow's orchestrator skill. In Fusion's agent mode:
-1. Load the `stelow-workflow-orchestrator/entry/SKILL.md` skill
-2. Fusion provides session context automatically — the entry skill can read
-   `env.STELOW_WORKFLOW` if set, or default to standalone
-
-```bash
-# Fusion CLI (fusion agent)
-fusion --skill stelow-workflow-orchestrator/entry --env STELOW_WORKFLOW=1,STELOW_STATE=/path/to/state.md
-```
-
-**Subagent skill passing:** Fusion agents receive skills through the `--skill`
-flag. The orchestrator skill instructs Fusion to pass each stage skill
-explicitly via `--skill <stage-name>`. Echo-validation pattern applies.
-
-**Failure modes:**
-- Fusion has native session hooks — use them to re-inject `state.md` context
-  at turn start (documented in the host-levers table below)
-- If Fusion already has a TUI for the workflow, stelow's router skill renders
-  no UI — it defers to Fusion's native presentation
-
----
-
 ### Goose (ossHAI/goose)
 
 **Activation:**
@@ -230,7 +205,7 @@ ln -s $(pwd)/.agents/skills ~/.goose/skills/stelow-product
 
 **Failure modes:**
 - Goose skill registry is file-based — ensure `.goose/skills/` contains the
-  26 stelow-product-* / stelow-workflow-* skills
+  28 stelow-product-* / stelow-workflow-* skills
 - Echo-validation applies for subagent handoffs
 
 ---
@@ -253,7 +228,7 @@ When spawning a subagent for a stage:
 ```
 
 This pattern is harness-agnostic. It works with Claude Code, Cursor Composer,
-Pi, Fusion, Goose, and any other Agent Skills-compatible harness.
+Pi, Goose, and any other Agent Skills-compatible harness.
 
 ---
 
@@ -266,7 +241,7 @@ Pi, Fusion, Goose, and any other Agent Skills-compatible harness.
 | TUI / notifications | Surface within the host natively. Stelow's router and entry skills render no UI. |
 | Slash commands | Register only `/stelow` (description-match is the fallback). `stelow status` and `stelow doctor` are bash commands, not slash commands. |
 | Subagent spawning | Pass stage skills explicitly in the task + require echo-validation. Subagents do NOT inherit skills automatically. |
-| Visual review (Plannotator, Fusion) | Already covered in `references/cli-tools/`: use `visual_review` when present, else write `.stelow/approvals/<dirHash>/<file>.approved.md` as a receipt. |
+| Visual review | Already covered in `references/cli-tools/`: use `visual_review` when present, else write `.stelow/approvals/<dirHash>/<file>.approved.md` as a receipt. |
 | Session persistence | `state.md` at `<git-root>/state.md` is the persistence boundary. `git log` is the audit trail. |
 | Concurrent session protection | The `stelow advance` helper uses a `mkdir`-based lock with TTL. If two sessions race, the second fails with a clear message. |
 
@@ -282,7 +257,6 @@ Pi, Fusion, Goose, and any other Agent Skills-compatible harness.
 | Codex CLI | No skill registry | Inline skill markdown in task prompt |
 | Gemini CLI | Skill directory convention unclear | Use `.agents/skills/` (Agent Skills standard) |
 | Pi | Env propagation from parent shell | `pi env set` or `~/.pi/env` before session |
-| Fusion | TUI conflicts with stelow's router output | Router defers to Fusion's native presentation |
 | Goose | Skill registry is file-based | Symlink `.agents/skills/` → `~/.goose/skills/` |
 
 ---

@@ -5,6 +5,23 @@ All notable changes to this project are documented in this file, following
 
 ## [Unreleased]
 
+### Removed
+
+- **Multica/Fusion residue across live docs.** `host-levers.md` Fusion
+  section, per-host tables/rows in `README.md`, `stelow-helper.md` and
+  `INSTALLATION.md`, the dead `host` object in `stelow.schema.json`
+  (never written by anything), dead `plugins/fusion-*` ignore rules,
+  and stale skill counts (25/26 → 28) in `architecture.md`,
+  `cli-agents/`, `INSTALLATION.md`, `host-levers.md` and
+  `source-of-truth.md` (rewritten). Fixed 7 dangling pointers to
+  `skills/.../entry/references/host-levers.md` (file never existed) to
+  the canonical `references/host-levers.md`. Historical records
+  (audits, post-mortems, CHANGELOG, superseded design docs) and the
+  intentional `setup-pulse.sh` removal stub are untouched by design.
+- **`stage-status.md` rewritten around the 17 canonical stages.**
+  The 0-indexed 15-phase table, numeric `stage=N` form and "edit
+  `stelow.json` directly" advice contradicted the transition contract.
+
 ### Added
 
 - **Workflow mechanics portable beyond git repos.** Non-repository

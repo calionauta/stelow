@@ -1,6 +1,6 @@
 # stelow — Architecture
 
-**Skills-only, host-agnostic.** The product is 25 portable agentskills-compatible
+**Skills-only, host-agnostic.** The product is 28 portable agentskills-compatible
 skills plus one zero-dependency shell helper. There is **no extension host code,
 no compiled plugin, and no per-host adapter** in the repo — every agent that can
 read `~/.agents/skills/<name>/SKILL.md` (the agentskills.io standard) runs the
@@ -16,14 +16,14 @@ same workflow. Hosts only add an optional marker protocol
 | `skills/stelow-workflow-router/` | Router. Validates the next candidate against `transitions.md`, calls `scripts/stelow advance`, loads the next stage skill, appends the hand-off audit record. |
 | `skills/stelow-workflow-orchestrator/` | Orchestrator. Coordinates the 17-stage pipeline (Setup → Shape → Critique → Gate → Scope → Interface → Planning → Execution → Verification → Audit). |
 | `skills/stelow-product-<area>/` | The 23 other product/planning sub-skills (shape-up, plan-critique, tech-planning, ux-critique, domain playbooks, etc.). |
-| `scripts/stelow` | Portable helper (bash + python3): `status [--json]`, `advance <candidate>`, `doctor [--json]`. Single source of runtime mechanics. |
+| `scripts/stelow` | Portable helper (bash + python3): `status`, `advance`, `doctor`, `seed`, `schema`, `ask`. Single source of runtime mechanics. |
 | `scripts/sync-cli-tools.sh` | Regenerates each sub-skill's `references/cli-tools/` from the orchestrator's copy. Run after editing a cli-tools reference. |
 | `scripts/setup.sh` / `install.sh` | Installers. `install.sh` flattens `skills/*` into `~/.agents/skills/` and prunes retired/orphaned skills; `setup.sh` is the zero-to-running path (optionally pi.dev + toolchain). |
 | `types/stages.ts` | Shared TypeScript interfaces for the `stages.yaml` stage model (transitions, gates, supervisor). |
 | `stelow.schema.json` / `stelow.json` | Workflow tracking JSON schema + per-project runtime tracking state. |
 | `tests/` | Vitest suite (`unit/`, `integration/`, `skills/`) + contract tests (skill-count, dual-mode, fs/e2e). |
 | `docs/design/`, `docs/agents-md-refs/` | Historical design docs / agent reference notes (EN artifacts, PT-BR discussion). |
-| `references/` | Legacy root copies of orchestrator reference files (consumed by tooling, not by skills at runtime). |
+| `references/` | Canonical shared docs (`host-levers.md`, `cli-tools/stelow-helper.md`) referenced by skills, `cli-agents/`, and install docs alike. |
 
 ## Stage model (the 17-stage state machine)
 
@@ -70,7 +70,7 @@ same workflow. Hosts only add an optional marker protocol
   helper (bash + python3). No compile step at install time.
 - Skills never call host-native tool names directly; `stages.yaml#tools` defines
   a portable vocabulary (`ask_user_question`, `visual_review`, `subagent`) and
-  `references/cli-tools/*.md` document per-host invocation syntax.
+  `references/cli-tools/*.md` document the canonical `stelow` form — hosts wrap it.
 - Distribution is Git/GitHub only (no `npm publish`). Version lives in
   `package.json` and is pinned by the SW-034 trailer contract, enforced by
   `scripts/check-version-coherence.sh` (`--hook=commit-msg` mode for local
@@ -86,4 +86,4 @@ same workflow. Hosts only add an optional marker protocol
   pins 28 / 14 workflow + 14 product skills).
 - New host → no code required. Ensure the host can read agentskills.io skill
   directories and set the marker env vars. Host levers are documented in
-  `skills/stelow-workflow-entry/references/host-levers.md`.
+  `references/host-levers.md`.

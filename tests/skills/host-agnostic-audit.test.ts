@@ -179,3 +179,33 @@ describe("audit coverage invariant", () => {
     expect(listSkillDirs().length).toBeGreaterThanOrEqual(25);
   });
 });
+
+describe("root references/ host-agnostic compliance", () => {
+  // references/ holds canonical shared docs (host-levers.md, stelow-helper.md)
+  // consumed outside skills/ — host names must never creep back in here.
+  const REF_ROOT = join(process.cwd(), "references");
+  const files = markdownFiles(REF_ROOT);
+
+  it("covers real files", () => {
+    expect(files.length).toBeGreaterThan(0);
+  });
+
+  it("has no bb CLI invocations (use stelow CLI, hosts wrap it)", () => {
+    for (const file of files) {
+      if (isExemptFromAudit(file)) continue;
+      const content = stripFrontmatter(readFileSync(file, "utf8"));
+      expect(content, file).not.toMatch(/\bbb stelow\b/);
+    }
+  });
+
+  it("has no Fusion fn_ calls or host-name conditionals", () => {
+    for (const file of files) {
+      if (isExemptFromAudit(file)) continue;
+      const content = stripFrontmatter(readFileSync(file, "utf8"));
+      const noFences = content.replace(/```[\s\S]*?```/g, "");
+      expect(noFences, file).not.toMatch(/\bfn_[a-z_]+\s*\(/);
+      expect(noFences, file).not.toMatch(/Multica/);
+      expect(noFences, file).not.toMatch(/(^|[^a-zA-Z])Fusion([^a-zA-Z]|$)/);
+    }
+  });
+});

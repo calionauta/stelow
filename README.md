@@ -36,7 +36,7 @@ This package brings [Shape Up](https://basecamp.com/shapeup) methodology to AI c
 - **Bidirectional product ↔ tech flow** — tech constraints and opportunities inform product decisions *before* execution. Tech Preview uses cymbal for appetite-gated codebase recon; Alignment Check catches product-vs-tech misalignment with mode-dependent resolution (auto or user-flagged).
 - **Stack-matched skills + fresh docs** — during execution setup, the workflow discovers skills (via `npx skills`) optimized for the chosen tech stack and fetches current library docs (via `ctx7`). Both skip if already installed or unavailable. Skills install in project scope only, after user confirmation.
 - **Real-time TUI tracking** - see workflow state as it progresses through all stages.
-- **Host-owned scheduling** — Stelow ships no scheduler of its own. Each host (Multica autopilot, Fusion scheduler, Pi pi-subagents) drives `/sw-*` invocations from its native event surface. See "Host Installation Guide" below.
+- **Host-owned scheduling** — Stelow ships no scheduler of its own. Each host drives `/sw-*` invocations from its native event surface (autopilot, scheduler, background runs). See "Host Installation Guide" below.
 
 ---
 
@@ -374,9 +374,9 @@ Per-agent configuration files (commands, install scripts) are in [`cli-agents/`]
 ### Compatibility
 
 The skills work in any agent that reads `~/.agents/skills/<name>/SKILL.md` — the
-agentskills.io standard. No host ships host-specific code: pi.dev, Fusion,
-Multica, Claude Code, Codex, Cursor, and OpenCode all consume the same skill
-tree. Host specialization is optional and lives in the environment (`STELOW_WORKFLOW=1` + `STELOW_STATE=<path>` — see `skills/stelow-workflow-entry/references/host-levers.md`).
+agentskills.io standard. No host ships host-specific code: pi.dev,
+Claude Code, Codex, Cursor, and OpenCode all consume the same skill
+tree. Host specialization is optional and lives in the environment (`STELOW_WORKFLOW=1` + `STELOW_STATE=<path>` — see `references/host-levers.md`).
 
 | Feature | Any agentskills-compatible agent |
 |---|---|
@@ -538,7 +538,7 @@ npx skills add calionauta/stelow -g
   `curl -fsSL https://raw.githubusercontent.com/calionauta/stelow/main/setup.sh | sh`
 - **Activating the workflow:** the entry skill loads when the host sets
   `STELOW_WORKFLOW=1` + `STELOW_STATE=<path>` (see
-  `skills/stelow-workflow-entry/references/host-levers.md`). Without the marker, the
+  `references/host-levers.md`). Without the marker, the
   skills still run standalone (`/sw-*` is routed by the skills themselves).
 - **Scheduling/automation:** host-owned. Use your agent's background tasks /
   scheduled prompts. The repository does not ship a scheduler or inbox mirror.
@@ -567,18 +567,17 @@ there is no host matrix to maintain because there is no host-specific code.
 | Agent | How it runs stelow |
 |---|---|
 | **pi.dev** | Reads the skills via the agentskills.io standard; marker protocol via `STELOW_WORKFLOW=1`. `setup.sh` optionally bootstraps pi.dev + toolchain. |
-| **Fusion / Multica** | Read the skills directly from `~/.agents/skills/`; no plugin import needed. Multica can additionally project stage state onto issue labels via the skill instructions. |
-| **Claude Code, Codex, Cursor, Continue, OpenCode, …** | Read the skills directly from `~/.agents/skills/`; `visual_review` writes portable receipts under `.stelow/approvals/`. |
+| **Any other host** | Reads the skills directly from `~/.agents/skills/`; no plugin import needed. Stage state can additionally be projected onto the host's native surface (e.g. issue labels) via the skill instructions. `visual_review` writes portable receipts under `.stelow/approvals/`. |
 
 Owner paths in this repo:
 
 - `skills/` (28 portable skills: 14 `stelow-product-*` and 14 `stelow-workflow-*`) — the only runtime content; loaded by any agentskills-compatible agent.
-- `scripts/stelow` — portable helper for status/advance/doctor; every host shells out to it.
+- `scripts/stelow` — portable helper (`status`, `advance`, `doctor`, `seed`, `schema`, `ask`); every host shells out to it.
 - `types/stages.ts` + `skills/stelow-workflow-orchestrator/stages.yaml` — the stage model and transitions.
 
 To add a new host you need **no code** — just an agent that reads
 agentskills.io skill directories. Host-specific knobs are documented in
-`skills/stelow-workflow-entry/references/host-levers.md`.
+`references/host-levers.md`.
 
 ---
 
@@ -597,8 +596,7 @@ All workflow artifacts live under `<project>/.stelow/`. The layout below is gene
 
 > The Stelow core no longer maintains an inbox mirror (`.stelow/inbox/`)
 > or provenance log (`.stelow/inbox/history.jsonl`) — those were removed in
-> v0.57.0. Hosts own their own inbox surface (Multica `backlog`/`todo`,
-> Fusion inbox, Pi pi-session-state). The workflow's own audit trail lives
+> v0.57.0. Hosts own their own inbox surface. The workflow's own audit trail lives
 > in `.stelow/{date}/{dirHash}/audit-trail.md` (generated by the audit
 > stage skill from `scripts/stelow` state + stage artifacts).
 

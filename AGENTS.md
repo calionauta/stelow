@@ -5,12 +5,12 @@
 ## Project Overview
 
 **Type:** Skills-only, host-agnostic product workflow library. The product is
-25 portable agentskills-compatible skills (`skills/stelow-product-*` + `skills/stelow-workflow-*`) plus a
+28 portable agentskills-compatible skills (`skills/stelow-product-*` + `skills/stelow-workflow-*`) plus a
 zero-dependency shell helper (`scripts/stelow`). There is **no extension code,
 no compiled plugin, and no per-host adapter** in the repo.
 **Stack:** bash + python3 (runtime), Node 20+, TypeScript strict (tooling/tests).
 **Hosts:** any agent that reads `~/.agents/skills/<name>/SKILL.md` (the
-agentskills.io standard) — pi.dev, Fusion, Multica, Claude Code, Codex, Cursor,
+agentskills.io standard) — pi.dev, Claude Code, Codex, Cursor,
 Continue, OpenCode, …
 
 ## Architecture

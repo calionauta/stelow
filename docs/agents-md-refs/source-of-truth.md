@@ -2,11 +2,10 @@
 
 ## Skills
 
-See the **Source of Truth** section in AGENTS.md for how stage/skill counts
-are derived. Skills live in `skills/*/SKILL.md` (26 `stelow-product-*` / `stelow-workflow-*` skills
-plus the `stelow-workflow-entry` and `stelow-workflow-router` infra skills) and install to
-`~/.agents/skills/` for **any** agentskills-compatible agent (pi.dev, OpenCode,
-Claude Code, Codex, Cursor, Fusion, Multica, …).
+Counts are derived, never hardcoded — see the **Source of Truth** section in
+AGENTS.md. Skills live in `skills/*/SKILL.md` (14 `stelow-product-*` + 14
+`stelow-workflow-*` = 28) and install to `~/.agents/skills/` for **any**
+agentskills-compatible agent.
 
 ## Distribution
 
@@ -15,10 +14,11 @@ Claude Code, Codex, Cursor, Fusion, Multica, …).
 - **Git-based primary distribution** (`./install.sh`, `npx skills add
   calionauta/stelow -g`, or `setup.sh`). There is **no npm publish** — see
   [docs/SECURITY.md](../SECURITY.md) for rationale.
-- **Runtime mechanics:** `scripts/stelow` (bash + python3) — status, advance,
-  doctor. No npm runtime dependency.
+- **Runtime mechanics:** `scripts/stelow` (bash + python3) — `status`,
+  `advance`, `doctor`, `seed`, `schema`, `ask`. No npm runtime dependency.
 
 **Reference from AGENTS.md:** When the user asks "where do skills come
 from?", "how do I add a new skill?", or "is this on npm?", point here.
-The `stages.yaml` and `ls skills/stelow-product-*/SKILL.md skills/stelow-workflow-*/SKILL.md | wc -l` commands
+`skills/stelow-workflow-orchestrator/stages.yaml` and
+`ls skills/stelow-product-*/SKILL.md skills/stelow-workflow-*/SKILL.md | wc -l`
 are the source of truth for counts.

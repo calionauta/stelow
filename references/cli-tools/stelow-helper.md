@@ -7,15 +7,18 @@ validates stage transitions against
 a passive doctor that detects four classes of drift.
 
 It replaces the legacy `/sw-*` and `/stelow-*` slash commands with a script
-that any host (Pi, Fusion, generic agentskills-compatible agents, or a human
+that any host (any agentskills-compatible agent, or a human
 in a terminal) can invoke.
 
 ## Usage
 
 ```
 scripts/stelow status [--json]
-scripts/stelow advance <candidate>
+scripts/stelow advance <candidate> [--dry-run] [--json]
 scripts/stelow doctor [--json]
+scripts/stelow seed --name <n> --intent <i> [--appetite Lean|Core|Complete] [--review-mode M] [--json]
+scripts/stelow ask --question <t> [--multiple] --option <label>... (repeat --question groups)
+scripts/stelow schema [command]
 scripts/stelow --help
 ```
 
@@ -65,7 +68,7 @@ on `warn` / `info`; only `error` flips `ok` to false.
 | `/sw-doctor` | `scripts/stelow doctor` |
 | `/sw-doctor --json` | `scripts/stelow doctor --json` |
 
-Slash-command versions remain registered in Pi and Fusion adapters for
+Slash-command versions remain registered in host adapters for
 backward compatibility but always delegate to this helper at runtime.
 
 ## Env overrides

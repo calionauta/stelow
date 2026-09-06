@@ -8,7 +8,7 @@ cd stelow
 ./install.sh
 ```
 
-`./install.sh` flattens all 25 skills into `~/.agents/skills/` and prunes
+`./install.sh` flattens all 28 skills into `~/.agents/skills/` and prunes
 retired or orphaned skills. That is everything — there is no extension, plugin,
 or host registration step; any agent that reads `~/.agents/skills/<name>/SKILL.md`
 (agentskills.io standard) picks the skills up automatically.
@@ -32,7 +32,7 @@ curl -fsSL https://raw.githubusercontent.com/calionauta/stelow/main/setup.sh | s
 
 ```
 stelow/          ← Source
-└── skills/                     ← 25 portable skills (1 orchestrator + 24 sub-skills)
+└── skills/                     ← 28 portable skills (14 product + 14 workflow)
     ├── stelow-workflow-entry/                   ← entry point (STELOW_WORKFLOW=1)
     ├── stelow-workflow-router/                  ← advance / load next stage
     ├── stelow-workflow-orchestrator/    ← orchestrator + stages.yaml
@@ -147,9 +147,9 @@ Git-based distribution is a deliberate security choice:
 
 ---
 
-## Fusion / Multica / pi.dev / any host (all hosts)
+## Any host (all hosts)
 
 All hosts install the **same** skills to `~/.agents/skills/` — there is no compiled
-Fusion plugin and no per-host package anymore (removed in 1.0.0). Hosts that want
+per-host plugin and no per-host package anymore (removed in 1.0.0). Hosts that want
 the workflow auto-loaded set the marker protocol (`STELOW_WORKFLOW=1` +
-`STELOW_STATE=<path>`); see `skills/stelow-workflow-entry/references/host-levers.md`.
+`STELOW_STATE=<path>`); see `references/host-levers.md`.

@@ -6,7 +6,7 @@ Commands and host activation are documented in `COMMANDS.md` (single source of t
 ## Installation
 
 Since 1.0.0 the product is **skills-only** — there is no Pi extension to build
-or install. pi.dev consumes the same 25 skills as every other agent:
+or install. pi.dev consumes the same 28 skills as every other agent:
 
 ```bash
 # Run from project root
@@ -16,7 +16,7 @@ npx skills add calionauta/stelow -g
 ```
 
 The installer:
-- Flattens all 25 skills into `~/.agents/skills/`
+- Flattens all 28 skills into `~/.agents/skills/`
 - Prunes retired/orphaned skills (`retired-skills.yaml`)
 - Does **not** register host commands or install a TUI — `/sw-*` is routed by
   the skills themselves
@@ -35,12 +35,12 @@ Full command matrix: `../COMMANDS.md`
 
 | Component | Location |
 |-----------|----------|
-| Skills | `~/.agents/skills/` (25 skills flat) |
+| Skills | `~/.agents/skills/` (28 skills flat) |
 | Helper | `scripts/stelow` (status / advance / doctor) |
 | Commands | Skill-provided (`/sw-*` routed by `stelow-workflow-entry` + `stelow-workflow-router`) |
 
 ## Notes
 
 - Activate the workflow with the marker protocol: `STELOW_WORKFLOW=1` +
-  `STELOW_STATE=<path>` (see `skills/stelow-workflow-entry/references/host-levers.md`).
+  `STELOW_STATE=<path>` (see `references/host-levers.md`).
 - Skills are loaded from `~/.agents/skills/` on every agentskills-compatible agent.

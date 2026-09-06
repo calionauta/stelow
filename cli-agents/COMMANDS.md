@@ -1,10 +1,10 @@
 # Command and Host Guide
 
-Stelow's workflow and 25 skills are host-agnostic and **skills-only**: there is
+Stelow's workflow and 28 skills are host-agnostic and **skills-only**: there is
 no host adapter code in the repo. `stages.yaml#tools` defines a canonical tool
-vocabulary (`ask_user_question`, `visual_review`, `subagent`, ...) and
-per-host invocation syntax is documented in `references/cli-tools/*.md` inside
-each skill.
+vocabulary (`ask_user_question`, `visual_review`, `subagent`, ...) and the
+portable `stelow` CLI (`status`, `advance`, `doctor`, `seed`, `schema`, `ask`)
+is the only invocation surface — hosts wrap it, skills never name hosts.
 
 ## Workflow commands
 
@@ -22,7 +22,7 @@ every agentskills-compatible agent — nothing registers them on a host.
 ## Host activation
 
 - **Marker protocol:** set `STELOW_WORKFLOW=1` + `STELOW_STATE=<path>` to
-  load the workflow automatically (see `skills/stelow-workflow-entry/references/host-levers.md`).
+  load the workflow automatically (see `references/host-levers.md`).
 - **Visual review:** `visual_review` writes portable approval receipts under
   `.stelow/approvals/{dirHash}/{file}.approved.md`.
 - **Scheduling/automation:** host-owned (background tasks / cron / autopilot).

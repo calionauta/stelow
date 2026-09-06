@@ -6,8 +6,8 @@
 .husky/
 .opencode/
 
-# Temporary investigation clones (e.g. tmp/fusion-inspect/ for SW-001)
-tmp/fusion-inspect/
+# Temporary investigation clones (e.g. tmp/inspect/ for one-off probes)
+tmp/inspect/
 
 # Session checkpoints and research (local only)
 research/
@@ -96,10 +96,6 @@ edge-case-review.md
 
 # Local skills (pi installs here)
 .agents/
-
-# Generated Fusion plugin tree is tracked (build-time artifact);
-# exclude transient staging leftovers that may appear during prepare.
-plugins/fusion-plugin-stelow/.fusion-stelow-stage-*/
 
 # Generated cli-tools (synced from orchestrator at build/install time)
 # The orchestrator is the source of truth; sub-skills get cli-tools via sync-cli-tools.sh
