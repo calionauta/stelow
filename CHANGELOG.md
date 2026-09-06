@@ -7,6 +7,10 @@ All notable changes to this project are documented in this file, following
 
 ### Fixed
 
+- **README workflow table lists all 14 skills.** `entry` and `router`
+  rows were missing, failing the skill-count contract (the test was
+  right, the docs were stale).
+
 - **State Coverage Table template uses valid GFM delimiters.** The
   `interface-alternatives` references shipped `:---:+` separator cells
   (stray `+`), which no GFM renderer recognizes — every generated table
