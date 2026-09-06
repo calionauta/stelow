@@ -18,11 +18,13 @@ leading convention instead:
   form:
 
   ```bash
-  bb stelow ask --thread <this_thread_id> \
+  bb stelow ask --thread <your-worker-thread-id> \
     --question "<single clear question>" \
     --option "<label 1>" --option "<label 2>" \
     [--option "<label 3>" ...] [--multiple]
   ```
+
+  Pass the id of THIS worker session — never a provider session id, a directory hash, or any other id.
 
   Repeat `--question` groups (each with its own `--option` labels) in ONE
   call to ask several independent questions together — see the batching
