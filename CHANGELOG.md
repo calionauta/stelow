@@ -7,6 +7,13 @@ All notable changes to this project are documented in this file, following
 
 ### Fixed
 
+- **Ask thread placeholder names the worker session.** `ask.md`
+  showed `--thread <this_thread_id>`, sending workers guessing with
+  provider session ids and directory hashes — a wrong id failed deep
+  inside blaming storage. Now `<your-worker-thread-id>` with an
+  explicit never-list. (Orchestrator copy only; per-skill copies
+  regenerate via sync-cli-tools.sh.)
+
 - **README workflow table lists all 14 skills.** `entry` and `router`
   rows were missing, failing the skill-count contract (the test was
   right, the docs were stale).
