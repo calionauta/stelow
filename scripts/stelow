@@ -16,7 +16,19 @@
 set -euo pipefail
 
 PROG="${0##*/}"
-ROOT="$(git rev-parse --show-toplevel 2>/dev/null || { echo "$PROG: not in a git repo" >&2; exit 2; })"
+# Project workflows derive their root from git. Non-repository workspaces
+# (exploratory dirs, CI checkouts without .git) provide an explicit
+# per-workflow state dir instead: <root>/.stelow/<date>/<dirHash>, so the
+# project root is three levels up.
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+if [ -z "$ROOT" ]; then
+  if [ -n "${STELOW_STATEDIR:-}" ]; then
+    ROOT="$(cd "$STELOW_STATEDIR/../../.." && pwd)"
+  else
+    echo "$PROG: not in a git repo (set STELOW_STATEDIR for a non-repository workspace)" >&2
+    exit 2
+  fi
+fi
 STATEDIR="${STELOW_STATEDIR:-$ROOT/.stelow}"
 if [ -n "${STELOW_STATE:-}" ]; then
   STATE="$STELOW_STATE"
@@ -237,24 +249,78 @@ do_advance() {
   local intent allowed
   intent=$(yaml_get intent "$STATE" 2>/dev/null || echo "unknown")
   allowed=$(allowed_candidates_for_stage "$current" "$intent") || die "no transition defined from stage '$current'"
+
+  # Mode-skipped passthroughs: when a gate/stage does not exist in the active
+  # review mode, its successor becomes a legal target directly — otherwise the
+  # worker deadlocks (refused AT the gate by the block below, rejected PAST it
+  # here). Unknown/missing review_mode (or appetite) skips enforcement.
+  review_mode=$(yaml_get review_mode "$STATE" 2>/dev/null || true)
+  appetite=$(yaml_get appetite "$STATE" 2>/dev/null || true)
+  if [ -n "$review_mode" ]; then
+    case "$current" in
+      planning)
+        case "$review_mode" in
+          "Product Spec + Interface + Tech Review"|"Product Spec + Interface + Tech Review + Code Diff") ;;
+          *) allowed=$(printf "%s\nexecution" "$allowed") ;;
+        esac
+        ;;
+      verification)
+        case "$review_mode" in
+          "Product Spec + Interface + Tech Review + Code Diff") ;;
+          *) allowed=$(printf "%s\naudit" "$allowed") ;;
+        esac
+        ;;
+      setup)
+        if [ "$appetite" = "Lean" ] && [ "$review_mode" = "Auto" ]; then allowed=$(printf "%s\nshape" "$allowed"); fi
+        ;;
+    esac
+  fi
   echo "$allowed" | grep -qx "$candidate" ||
     die "invalid transition '$current' -> '$candidate' (allowed: $(echo "$allowed" | paste -sd, -))"
 
-  # pre-condition: required artifacts
-  python3 - "$current" "$ROOT" "$TRANSITIONS" <<'PY' || die "pre-condition check failed"
-import sys, re, os
-current, root, transitions = sys.argv[1:4]
+  # Mode-skipped gates: plan-gate and diff-gate do not exist in modes that
+  # skip them (see Gate Conditions in transitions.md). Entering one parks the
+  # worker waiting for a review nobody configured, so refuse with the
+  # redirect instead of mutating. Unknown/missing review_mode skips enforcement.
+  if [ -n "$review_mode" ]; then
+    case "$candidate" in
+      plan-gate)
+        case "$review_mode" in
+          "Product Spec + Interface + Tech Review"|"Product Spec + Interface + Tech Review + Code Diff") ;;
+          *) die "plan-gate is skipped in '$review_mode' review mode — advance directly to execution instead" ;;
+        esac
+        ;;
+      diff-gate)
+        case "$review_mode" in
+          "Product Spec + Interface + Tech Review + Code Diff") ;;
+          *) die "diff-gate is skipped in '$review_mode' review mode — advance directly to audit instead" ;;
+        esac
+        ;;
+    esac
+  fi
+
+  # pre-condition: required artifacts, resolved against the workflow's own
+  # state dir first, then the repo root.
+  python3 - "$current" "$ROOT" "$STATEDIR" "$TRANSITIONS" <<'PY' || die "pre-condition check failed"
+import sys, re, os, glob
+current, root, statedir, transitions = sys.argv[1:5]
 trans = open(transitions).read()
 m = re.search(r"^### " + re.escape(current) + r"\s*\n(.*?)(?=^### |\Z)", trans, re.MULTILINE | re.DOTALL)
 if not m: sys.exit(0)
 for line in m.group(1).splitlines():
     am = re.match(r"^artifact:\s*(\S+)\s*$", line.strip())
     if am:
-        path = am.group(1)
-        if path.startswith("/"): continue
-        full = os.path.join(root, path)
-        if not os.path.exists(full):
-            print(f"missing required artifact: {path}", file=sys.stderr); sys.exit(1)
+        pat = am.group(1)
+        bases = [statedir, root]
+        if pat.startswith("/"): bases = [""]
+        matched = False
+        for base in bases:
+            fullpat = pat if base == "" else os.path.join(base, pat)
+            if glob.glob(fullpat):
+                matched = True
+                break
+        if not matched:
+            print(f"missing required artifact: {pat} (expected under {statedir})", file=sys.stderr); sys.exit(1)
 PY
 
   # dry run validates without side effects (no lock, no mutation)
