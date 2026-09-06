@@ -33,6 +33,7 @@ leading convention instead:
 
   `bb stelow ask` renders into bb's structured form (`stelow-question`
   renderer) and blocks until the user submits or cancels. In the plugin, the
-  card moves to **Gate pending** while the question is open. Never substitute
+  card stays in its column and signals it is waiting for an answer while
+  the question is open. Never substitute
   prose like "waiting for your choice" — that is the pattern that breaks the
   card's question flow.
