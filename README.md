@@ -292,6 +292,8 @@ Every skill is fully self-contained - the installer copies the complete director
 | Skill | Purpose |
 |-------|---------|
 | `stelow-workflow-orchestrator` | Coordinates the multi-stage workflow (Setup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Plan.Gate → Execution → Verification → Diff.Gate → Audit) |
+| `stelow-workflow-entry` | Workflow entry point - classifies intent, scaffolds state, picks the first stage |
+| `stelow-workflow-router` | Workflow router - reads state, validates hand-offs, advances stages |
 | `stelow-workflow-shape-up` | Shape Up planning + **Tech Preview** (appetite-gated codebase recon via cymbal) — surfaces codebase reality before product decisions |
 | `stelow-workflow-interface-alternatives` | Interface alternatives exploration (1/3/5 archetypes by appetite) |
 | `stelow-workflow-plan-critique` | Product plan gap analysis (flows, states, affordances, data, system, compositional quality, feasibility); mode-dependent resolution |
