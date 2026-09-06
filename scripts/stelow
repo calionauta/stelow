@@ -36,6 +36,10 @@ mkdir -p "$STATEDIR"
 
 die() { echo "$PROG: $*" >&2; exit 1; }
 
+# Usage errors exit 2 (worker misuse); runtime failures exit 1. The split is
+# machine-readable contract: hosts retry 1, fix-and-rerun on 2.
+usage_error() { echo "$PROG: $*" >&2; exit 2; }
+
 yaml_get() {
   local key="$1" file="$2"
   [ -f "$file" ] || return 1
@@ -253,7 +257,15 @@ for line in m.group(1).splitlines():
             print(f"missing required artifact: {path}", file=sys.stderr); sys.exit(1)
 PY
 
+  # dry run validates without side effects (no lock, no mutation)
+  if [ -n "${DRY_RUN:-}" ]; then
+    emit_advanced "$current" "$candidate" "true"
+    return 0
+  fi
+
   lock_acquire
+
+  # mutate state.md frontmatter
 
   # mutate state.md frontmatter
   python3 - "$current" "$candidate" "$STATE" "$STATEDIR" <<'PY'
@@ -389,7 +401,25 @@ finally:
 PY
 
   rm -rf "$LOCKDIR"
-  echo "$PROG: advanced to $candidate"
+  emit_advanced "$current" "$candidate" "false"
+}
+
+emit_advanced() {
+  local previous="$1" candidate="$2" dry="$3"
+  if [ -n "${JSON_OUT:-}" ]; then
+    python3 - "$previous" "$candidate" "$dry" <<'PY'
+import sys, json
+previous, candidate, dry = sys.argv[1:4]
+out = {"previous_stage": previous, "advanced_to": candidate}
+if dry == "true":
+    out["dry_run"] = True
+print(json.dumps(out, sort_keys=True))
+PY
+  elif [ "$dry" = "true" ]; then
+    echo "$PROG: would advance $previous -> $candidate"
+  else
+    echo "$PROG: advanced to $candidate"
+  fi
 }
 
 # --- doctor ------------------------------------------------------------------
@@ -455,21 +485,310 @@ else:
 PY
 }
 
+# --- seed --------------------------------------------------------------------
+
+# Mint a fresh per-workflow state dir (.stelow/<date>/<dirHash>/) with a
+# scaffolded state.md plus a stelow.json tracking entry. Prints the state
+# dir so callers export STELOW_STATEDIR for follow-up commands.
+do_seed() {
+  local name="" intent="" appetite="Core" review_mode="Auto" json=""
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --name) name="${2:-}"; shift 2 ;;
+      --intent) intent="${2:-}"; shift 2 ;;
+      --appetite) appetite="${2:-}"; shift 2 ;;
+      --review-mode) review_mode="${2:-}"; shift 2 ;;
+      --json) json="1"; shift ;;
+      *) usage_error "seed: unknown arg '$1' (try --help)" ;;    esac
+  done
+  [ -n "$name" ] || usage_error "seed requires --name <workflow-name>"
+  case "$intent" in
+    new-product|feature|bugfix|refactor|investigate) ;;
+    *) usage_error "seed requires --intent <new-product|feature|bugfix|refactor|investigate>" ;;
+  esac
+  case "$appetite" in
+    Lean|Core|Complete) ;;
+    *) usage_error "seed: --appetite must be Lean|Core|Complete" ;;
+  esac
+  [ -n "$review_mode" ] || usage_error "seed: --review-mode must be non-empty"
+  python3 - "$ROOT" "$STATEDIR" "$TRANSITIONS" "$name" "$intent" "$appetite" "$review_mode" "$json" <<'PY' || die "seed failed"
+import sys, os, re, json, secrets, datetime
+root, statedir, trans_path, name, intent, appetite, review_mode, want_json = sys.argv[1:9]
+if not os.path.exists(trans_path):
+    print(f"seed: transitions reference not found at {trans_path}", file=sys.stderr); sys.exit(1)
+text = open(trans_path).read()
+stages = [m.group(1) for m in re.finditer(r"^### (\S+)\s*$", text, re.MULTILINE)]
+if not stages:
+    print("seed: no stages in transitions reference", file=sys.stderr); sys.exit(1)
+first = "triage" if intent == "new-product" else "setup"
+if first not in stages:
+    print(f"seed: first stage '{first}' not in transitions reference", file=sys.stderr); sys.exit(1)
+date = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
+now = datetime.datetime.now(datetime.timezone.utc).isoformat()
+dirhash = "pw-%s-%s" % (secrets.token_hex(3), secrets.token_hex(3))
+statedir = os.path.join(statedir, date, dirhash)
+os.makedirs(statedir, exist_ok=True)
+fm = ["---", f"name: {name}", f"intent: {intent}", f"current_stage: {first}",
+      "status: active", "config:", f"  appetite: {appetite}",
+      f"  review_mode: {review_mode}", "  product_type: software", "stages:"]
+fm += [f"  {s}: pending" for s in stages]
+fm += ["artifacts: []", "history: []", "---", "", f"# {name}", ""]
+with open(os.path.join(statedir, "state.md"), "w") as handle:
+    handle.write("\n".join(fm))
+tracking_path = os.path.join(root, "stelow.json")
+tracking = {}
+if os.path.exists(tracking_path):
+    try: tracking = json.loads(open(tracking_path).read())
+    except Exception: tracking = {}
+if not isinstance(tracking.get("workflows"), list):
+    tracking["workflows"] = []
+entry = {"name": name, "description": "", "status": "in-progress", "cwd": root,
+         "dirHash": dirhash, "created": now, "updated": now,
+         "config": {"appetite": appetite, "review_mode": review_mode},
+         "stage": {"current_stage": first, "previous_stage": None,
+                   "transitioned_at": now,
+                   "history": [{"stage": first, "entered_at": now}]},
+         "phases": []}
+tracking["workflows"] = [w for w in tracking["workflows"] if w.get("name") != name]
+tracking["workflows"].append(entry)
+tracking.setdefault("$schema", "https://raw.githubusercontent.com/calionauta/stelow/main/stelow.schema.json")
+tracking.setdefault("version", "1.0")
+tracking.setdefault("created", now)
+tracking["updated"] = now
+fd, temporary = __import__("tempfile").mkstemp(prefix=".stelow.", dir=root)
+try:
+    with os.fdopen(fd, "w") as handle:
+        handle.write(json.dumps(tracking, indent=2, sort_keys=True) + "\n")
+    os.replace(temporary, tracking_path)
+finally:
+    if os.path.exists(temporary):
+        os.unlink(temporary)
+if want_json:
+    print(json.dumps({"state": os.path.join(statedir, "state.md"), "statedir": statedir,
+                      "dirHash": dirhash, "created": now}, indent=2, sort_keys=True))
+else:
+    print(os.path.join(statedir, "state.md"))
+PY
+}
+
+# --- schema ------------------------------------------------------------------
+
+# Runtime introspection: the CLI documents itself as JSON so agents self-serve
+# without pre-stuffed docs. Keep in sync with the dispatch table below (the
+# schema test fails otherwise).
+do_schema() {
+  local want="${1:-}"
+  python3 - "$want" <<'PY'
+import json, sys
+want = sys.argv[1] if len(sys.argv) > 1 else ""
+commands = {
+  "status": {
+    "usage": "stelow status [--json]",
+    "flags": ["--json"],
+    "env": ["STELOW_STATE", "STELOW_STATEDIR", "STELOW_TRANSITIONS"],
+    "exit_codes": {"0": "ok", "1": "unreadable state (still prints ?-rows with exit 0; reserved)"},
+    "output": "text rows or {workflow, intent, current_stage, status, config, artifacts?, invariants?, lock}",
+  },
+  "advance": {
+    "usage": "stelow advance <candidate> [--dry-run] [--json]",
+    "flags": ["--dry-run", "--json"],
+    "env": ["STELOW_STATE", "STELOW_STATEDIR", "STELOW_TRANSITIONS", "STELOW_LOCK_TTL_SEC"],
+    "exit_codes": {"0": "advanced", "1": "invalid transition, pre-condition, lock held, or bad state", "2": "usage"},
+    "output": "'stelow: advanced to <stage>' or {previous_stage, advanced_to} with --json",
+  },
+  "doctor": {
+    "usage": "stelow doctor [--json]",
+    "flags": ["--json"],
+    "env": ["STELOW_STATE", "STELOW_STATEDIR", "STELOW_TRANSITIONS", "STELOW_LOCK_TTL_SEC"],
+    "exit_codes": {"0": "ok or warnings only", "1": "findings with severity error"},
+    "output": "text lines or {findings: [{severity, class, message}], ok}",
+  },
+  "seed": {
+    "usage": "stelow seed --name <n> --intent <i> [--appetite Lean|Core|Complete] [--review-mode M] [--json]",
+    "flags": ["--name", "--intent", "--appetite", "--review-mode", "--json"],
+    "env": ["STELOW_STATEDIR"],
+    "exit_codes": {"0": "seeded (prints state path)", "1": "seed failed", "2": "usage"},
+    "output": "state path or {state, statedir, dirHash, created} with --json",
+  },
+  "ask": {
+    "usage": "stelow ask --question <t> [--multiple] --option <label>... (repeat --question groups)",
+    "flags": ["--question", "--option", "--multiple"],
+    "env": ["STELOW_THREAD_ID", "STELOW_ASK_TIMEOUT_MS"],
+    "exit_codes": {"0": "submitted (answer JSON)", "1": "waiting (persisted) or explicit cancel", "2": "usage or unknown identity"},
+    "output": "answer JSON, or pending.json surviving under ask/ for host fulfillment",
+  },
+}
+if want and want not in commands:
+    print(f"schema: unknown command '{want}' (known: {', '.join(sorted(commands))})", file=sys.stderr)
+    sys.exit(2)
+print(json.dumps(commands[want] if want else commands, indent=2, sort_keys=True))
+PY
+}
+
+# --- ask ---------------------------------------------------------------------
+
+# File-handoff question protocol. Writes ask/pending.json, blocks until
+# ask/answer.json appears or the timeout lapses. Hosts fulfill by rendering
+# their own UI or by watching the directory — the CLI never renders.
+# Identity comes from STELOW_THREAD_ID (fallback BB_THREAD_ID) only; there
+# is no --thread flag (explicit ids get copied wrong — see plugin history).
+do_ask() {
+  local thread_id="${STELOW_THREAD_ID:-${BB_THREAD_ID:-}}"
+  [ -n "$thread_id" ] || usage_error "ask needs a worker identity: export STELOW_THREAD_ID (no --thread flag; identity is never copied by hand)"
+  local timeout_ms="${STELOW_ASK_TIMEOUT_MS:-3600000}"
+  case "$timeout_ms" in ''|*[!0-9]*) usage_error "ask: STELOW_ASK_TIMEOUT_MS must be a millisecond integer" ;; esac
+  local ask_dir="$STATEDIR/ask"
+  mkdir -p "$ask_dir"
+  python3 - "$ask_dir" "$thread_id" "$timeout_ms" "$@" <<'PY' || exit $?
+import sys, os, json, time, datetime
+ask_dir, thread_id, timeout_ms = sys.argv[1:4]
+timeout_ms = int(timeout_ms)
+argv = sys.argv[4:]
+
+def fail_usage(msg):
+    print(f"ask: {msg}", file=sys.stderr)
+    print("Usage: stelow ask --question <text> [--multiple] --option <label>... (repeat --question groups)", file=sys.stderr)
+    sys.exit(2)
+
+# --- parse groups (same grammar as every host adapter) ---
+groups = []
+current = None
+i = 0
+while i < len(argv):
+    arg = argv[i]
+    if arg == "--thread":
+        fail_usage("stelow ask takes no --thread; identity comes from STELOW_THREAD_ID")
+    elif arg == "--question":
+        i += 1
+        if i >= len(argv) or not argv[i].strip():
+            fail_usage("Each --question needs a non-empty text.")
+        current = {"question": argv[i], "multiple": False, "options": []}
+        groups.append(current)
+    elif arg == "--option":
+        i += 1
+        if current is None:
+            fail_usage("Options must follow a --question: --question <text> --option <label>...")
+        if i >= len(argv) or not argv[i].strip():
+            fail_usage("Each --option needs a non-empty label.")
+        current["options"].append({"label": argv[i], "description": ""})
+    elif arg == "--multiple":
+        if current is None:
+            fail_usage("--multiple must follow a --question.")
+        current["multiple"] = True
+    elif arg.startswith("--"):
+        fail_usage(f"unknown flag '{arg}'")
+    else:
+        fail_usage(f"unexpected positional '{arg}' (questions come from --question groups)")
+    i += 1
+if not groups:
+    fail_usage("at least one --question group is required")
+for index, group in enumerate(groups):
+    if len(group["options"]) < 2:
+        fail_usage(f"Question {index + 1} needs at least 2 --option labels.")
+
+def pending_path():
+    return os.path.join(ask_dir, "pending.json")
+
+def answer_path():
+    return os.path.join(ask_dir, "answer.json")
+
+def read_json(path):
+    try:
+        with open(path) as handle:
+            return json.load(handle)
+    except Exception:
+        return None
+
+def collect():
+    """Print a valid answer and consume it. Returns True when collected."""
+    answer = read_json(answer_path())
+    if not isinstance(answer, dict):
+        return False
+    if answer.get("cancelled") is True:
+        print(json.dumps(answer, sort_keys=True))
+        try: os.unlink(answer_path())
+        except OSError: pass
+        sys.exit(1)
+    answers = answer.get("answers")
+    if not isinstance(answers, dict) or not answers:
+        return False
+    print(json.dumps({"answers": answers}, sort_keys=True))
+    try: os.unlink(answer_path())
+    except OSError: pass
+    sys.exit(0)
+
+def pending_live():
+    """A pending file that has not timed out yet (or has no deadline)."""
+    pending = read_json(pending_path())
+    if not isinstance(pending, dict) or not isinstance(pending.get("questions"), list):
+        return None
+    asked_at = pending.get("asked_at_ms", 0)
+    timeout = pending.get("timeout_ms", 0)
+    try:
+        expired = timeout > 0 and (int(time.time() * 1000) - int(asked_at)) >= int(timeout)
+    except (TypeError, ValueError):
+        expired = False
+    return None if expired else pending
+
+# Re-run doubles as collect: an arrived answer wins over everything.
+collect()  # exits 0/1 when an answer is present
+live = pending_live()
+if live is not None:
+    asked_ago = int(time.time() - live.get("asked_at_ms", int(time.time() * 1000)) / 1000)
+    print(f"ask: question already pending (asked {asked_ago}s ago) — answer it, then re-run to collect", file=sys.stderr)
+    sys.exit(1)
+
+# Fresh (or expired) pending: stage it, clearing any stale answer.
+now_ms = int(time.time() * 1000)
+now_iso = datetime.datetime.now(datetime.timezone.utc).isoformat()
+pending = {
+    "questions": [{"id": f"q{index + 1}", **group} for index, group in enumerate(groups)],
+    "thread_id": thread_id,
+    "asked_at": now_iso,
+    "asked_at_ms": now_ms,
+    "timeout_ms": timeout_ms,
+}
+try: os.unlink(answer_path())
+except OSError: pass
+with open(pending_path(), "w") as handle:
+    handle.write(json.dumps(pending, indent=2, sort_keys=True) + "\n")
+
+# Block until an answer lands, the timeout lapses, or the pending file vanishes.
+deadline = now_ms + timeout_ms
+interval = 1.0 if timeout_ms >= 10000 else 0.1
+while True:
+    collect()  # exits 0/1 when an answer lands
+    if not os.path.exists(pending_path()):
+        print("ask: pending question was withdrawn; stopping", file=sys.stderr)
+        sys.exit(1)
+    if int(time.time() * 1000) >= deadline:
+        elapsed = max(1, round((int(time.time() * 1000) - now_ms) / 1000))
+        print(f"No response after {elapsed}s. STOP and wait: do NOT proceed with the workflow. "
+              f"The question is still pending (ask/pending.json) and remains answerable. "
+              f"When an answer is recorded, re-run this command to collect it.", file=sys.stderr)
+        sys.exit(1)
+    time.sleep(interval)
+PY
+}
+
 # --- dispatch ----------------------------------------------------------------
 
 usage() {
   cat <<EOF
-$PROG — SCOPE-2 helper (status / advance / doctor)
+$PROG — stelow workflow helper (status / advance / doctor / seed / schema)
 
 Usage:
   $PROG status [--json]
-  $PROG advance <candidate>
+  $PROG advance <candidate> [--dry-run] [--json]
   $PROG doctor [--json]
+  $PROG seed --name <n> --intent <i> [--appetite Lean|Core|Complete] [--review-mode M] [--json]
+  $PROG schema [command]
   $PROG --help
 
 State file:  $STATE
 Transitions: $TRANSITIONS
 Lock dir:    $LOCKDIR (TTL ${LOCK_TTL_SEC}s, override with STELOW_LOCK_TTL_SEC)
+Identity:    STELOW_THREAD_ID (ask only)
 EOF
 }
 
@@ -479,18 +798,40 @@ case "${1:-}" in
     case "${1:-}" in
       --json) status_json ;;
       "")     status_text ;;
-      *) die "status: unknown arg '$1'" ;;
+      *) usage_error "status: unknown arg '$1'" ;;
     esac
     ;;
   advance)
     shift
-    candidate="${1:-}"; [ -n "$candidate" ] || die "advance requires <candidate>"
+    candidate=""; DRY_RUN=""; JSON_OUT=""
+    for arg in "$@"; do
+      case "$arg" in
+        --dry-run) DRY_RUN="1" ;;
+        --json) JSON_OUT="1" ;;
+        --*) usage_error "advance: unknown flag '$arg'" ;;
+        *) if [ -n "$candidate" ]; then usage_error "advance takes exactly one <candidate>"; fi
+           candidate="$arg" ;;
+      esac
+    done
+    [ -n "$candidate" ] || usage_error "advance requires <candidate>"
     do_advance "$candidate"
+    ;;
+  seed)
+    shift
+    do_seed "$@"
+    ;;
+  schema)
+    shift
+    do_schema "${1:-}"
+    ;;
+  ask)
+    shift
+    do_ask "$@"
     ;;
   doctor)
     shift
     do_doctor "${1:-}"
     ;;
   -h|--help|help|"") usage ;;
-  *) die "unknown subcommand '$1' (try --help)" ;;
+  *) usage_error "unknown subcommand '$1' (try --help)" ;;
 esac

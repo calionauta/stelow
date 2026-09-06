@@ -5,6 +5,26 @@ All notable changes to this project are documented in this file, following
 
 ## [Unreleased]
 
+### Added
+
+- **Portable `stelow` CLI surface: `seed`, `schema`, `ask`, `advance --dry-run/--json`.**
+  `seed` mints per-workflow state dirs from a single template (+ tracking
+  entry); `schema` dumps machine-readable command contracts for runtime
+  introspection; `ask` implements the file-handoff question protocol
+  (`ask/pending.json` + `answer.json`, identity from env only, typed exit
+  codes); `advance` validates without mutating under `--dry-run` and emits
+  JSON. Usage errors exit 2, runtime failures exit 1, everywhere.
+- **Generated `transitions.md` with CI gate.** `stages.yaml` is now really
+  single source: `scripts/generate-transitions.py` (+ `npm run
+  gen:transitions`, `--check` gate test) emits order table and transition
+  lines byte-identically. Generation already caught real drift (stale
+  `reject: execution`, outdated order descriptions).
+- **Zero host names in skills.** `stages.yaml` tool table is a canonical
+  list (per-host columns removed); `ask.md` shows only the portable
+  `stelow ask` form; host conditionals rewritten in capability language.
+  The host-agnostic audit test now also forbids `bb stelow`, `fn_*` calls
+  and host names.
+
 ### Fixed
 
 - **Ask thread placeholder names the worker session.** `ask.md`

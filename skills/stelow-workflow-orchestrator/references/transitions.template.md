@@ -1,4 +1,5 @@
 # Transitions Reference
+<!-- TEMPLATE: this file generates transitions.md (same dir) via scripts/generate-transitions.py. {{STAGE_ORDER}} and {{TRANSITIONS:<stage>:<verb>}} markers expand from stages.yaml. Gate prose, (none) lines, tables and stubs below are curated and pass through verbatim. -->
 
 This file is a **data-only mirror** of `skills/stelow-workflow-orchestrator/stages.yaml`.
 It is the single source of truth used by the `stelow advance` helper and the
@@ -17,23 +18,7 @@ after any change to verify.
 
 | Order | Stage | Description |
 |---|---|---|
-| 10 | triage | Initial assessment. Determine if this is a valid request. |
-| 15 | select | Item selection. Rank accepted items, user picks one. |
-| 20 | setup | Setup context. Explore codebase, gather requirements. |
-| 25 | context | Strategic context. Market analysis, JTBD, domain detection. Gated by `context:5` (appetite/review mode): Product Spec Gate+Auto skips; others use reduced ask. See `stages/context.md#context:5`. |
-| 40 | shape | Shape stage. Define appetite, hill chart, rabbit holes. |
-| 45 | critique | Plan critique. Pre-flight check before gate. |
-| 60 | gate | Gate review. Visual approval via visual review required. Use `visual_review` tool (not bash). |
-| 70 | scope | Scope adjustment. Add/remove from IN/OUT after gate approval. |
-| 80 | interface | Interface alternatives. Appetite-scaled exploration: 1, 3, or 5 proposals + hybrid. |
-| 90 | int-gate | Interface gate. Visual review of all interface proposals. Use `visual_review` tool (not bash). |
-| 100 | selection | Interface selection. Human pick via structured question in Interface-Gates modes; LLM decides in Auto / Product Spec Gate (see references/human-gates.md). |
-| 110 | planning | Tech planning. Typed scopes + sequencing. |
-| 115 | plan-gate | Tech plan gate. Visual review of spec-tech.md via visual review. Only in Product Spec + Interface + Tech Review or Code Diff mode. |
-| 120 | execution | Implementation. Execute planned scopes. |
-| 150 | verification | Verification. Run full test suite, code review, UI audit, browser testing. |
-| 175 | diff-gate | Code diff review. visual review review of working tree diff. Only in Product Spec + Interface + Tech Review + Code Diff mode. |
-| 200 | audit | Final audit. Verify all requirements met. |
+{{STAGE_ORDER}}
 
 ---
 
@@ -42,8 +27,8 @@ after any change to verify.
 ### triage
 
 ```
-next:      select
-accept:    select
+{{TRANSITIONS:triage:next}}
+{{TRANSITIONS:triage:accept}}
 reject:    (none — stays at triage)
 rework:    (none)
 gate:      (none — triage has no gate)
@@ -52,9 +37,9 @@ gate:      (none — triage has no gate)
 ### select
 
 ```
-next:      setup
-accept:    setup
-reject:    triage
+{{TRANSITIONS:select:next}}
+{{TRANSITIONS:select:accept}}
+{{TRANSITIONS:select:reject}}
 rework:    (none)
 gate:      (none)
 ```
@@ -62,9 +47,9 @@ gate:      (none)
 ### setup
 
 ```
-next:      context
-accept:    context
-reject:    triage
+{{TRANSITIONS:setup:next}}
+{{TRANSITIONS:setup:accept}}
+{{TRANSITIONS:setup:reject}}
 rework:    (none)
 gate:      (none)
 ```
@@ -72,9 +57,9 @@ gate:      (none)
 ### context
 
 ```
-next:      shape
-accept:    shape
-reject:    setup
+{{TRANSITIONS:context:next}}
+{{TRANSITIONS:context:accept}}
+{{TRANSITIONS:context:reject}}
 rework:    (none)
 gate:      context:5 — Product Spec Gate and Auto skip this stage
            (other review modes use reduced ask; this affects pipeline
@@ -84,9 +69,9 @@ gate:      context:5 — Product Spec Gate and Auto skip this stage
 ### shape
 
 ```
-next:      critique
-accept:    critique
-reject:    context
+{{TRANSITIONS:shape:next}}
+{{TRANSITIONS:shape:accept}}
+{{TRANSITIONS:shape:reject}}
 rework:    shape    (shape rework — same stage)
 gate:      (none)
 ```
@@ -94,9 +79,9 @@ gate:      (none)
 ### critique
 
 ```
-next:      gate
-accept:    gate
-reject:    shape
+{{TRANSITIONS:critique:next}}
+{{TRANSITIONS:critique:accept}}
+{{TRANSITIONS:critique:reject}}
 rework:    (none)
 gate:      (none — critique feeds the gate, gate handles approval)
 ```
@@ -104,9 +89,9 @@ gate:      (none — critique feeds the gate, gate handles approval)
 ### gate
 
 ```
-next:      scope
-accept:    scope
-reject:    shape
+{{TRANSITIONS:gate:next}}
+{{TRANSITIONS:gate:accept}}
+{{TRANSITIONS:gate:reject}}
 rework:    (none)
 gate:      requires_approval: true
            approval_tool: visual_review
@@ -117,9 +102,9 @@ gate:      requires_approval: true
 ### scope
 
 ```
-next:      interface
-accept:    interface
-reject:    gate
+{{TRANSITIONS:scope:next}}
+{{TRANSITIONS:scope:accept}}
+{{TRANSITIONS:scope:reject}}
 rework:    (none)
 gate:      (none)
 ```
@@ -127,9 +112,9 @@ gate:      (none)
 ### interface
 
 ```
-next:      int-gate
-accept:    int-gate
-reject:    scope
+{{TRANSITIONS:interface:next}}
+{{TRANSITIONS:interface:accept}}
+{{TRANSITIONS:interface:reject}}
 rework:    (none)
 gate:      (none)
 ```
@@ -137,9 +122,9 @@ gate:      (none)
 ### int-gate
 
 ```
-next:      selection
-accept:    selection
-reject:    interface
+{{TRANSITIONS:int-gate:next}}
+{{TRANSITIONS:int-gate:accept}}
+{{TRANSITIONS:int-gate:reject}}
 rework:    (none)
 gate:      requires_approval: true
            approval_tool: visual_review
@@ -149,9 +134,9 @@ gate:      requires_approval: true
 ### selection
 
 ```
-next:      planning
-accept:    planning
-reject:    interface
+{{TRANSITIONS:selection:next}}
+{{TRANSITIONS:selection:accept}}
+{{TRANSITIONS:selection:reject}}
 rework:    (none)
 gate:      (none)
 ```
@@ -159,9 +144,9 @@ gate:      (none)
 ### planning
 
 ```
-next:      plan-gate
-accept:    plan-gate
-reject:    scope
+{{TRANSITIONS:planning:next}}
+{{TRANSITIONS:planning:accept}}
+{{TRANSITIONS:planning:reject}}
 rework:    (none)
 gate:      (none)
 ```
@@ -169,9 +154,9 @@ gate:      (none)
 ### plan-gate
 
 ```
-next:      execution
-accept:    execution
-reject:    planning
+{{TRANSITIONS:plan-gate:next}}
+{{TRANSITIONS:plan-gate:accept}}
+{{TRANSITIONS:plan-gate:reject}}
 rework:    (none)
 gate:      requires_approval: true
            approval_tool: visual_review
@@ -183,8 +168,9 @@ gate:      requires_approval: true
 ### execution
 
 ```
-next:      verification
-accept:    verification
+{{TRANSITIONS:execution:next}}
+{{TRANSITIONS:execution:accept}}
+{{TRANSITIONS:execution:reject}}
 rework:    shape    (full rework path — returns to shape)
 gate:      (none)
            supervisor: true (pi/supervisor pattern active)
@@ -193,9 +179,9 @@ gate:      (none)
 ### verification
 
 ```
-next:      diff-gate
-accept:    diff-gate
-reject:    execution
+{{TRANSITIONS:verification:next}}
+{{TRANSITIONS:verification:accept}}
+{{TRANSITIONS:verification:reject}}
 rework:    (none)
 gate:      (none)
 ```
@@ -203,11 +189,11 @@ gate:      (none)
 ### diff-gate
 
 ```
-next:      audit
-accept:    audit
-reject:    execution
+{{TRANSITIONS:diff-gate:next}}
+{{TRANSITIONS:diff-gate:accept}}
+{{TRANSITIONS:diff-gate:reject}}
 rework:    (none)
-annotate:  execution
+{{TRANSITIONS:diff-gate:annotate}}
 gate:      requires_approval: true
            approval_tool: visual_review
            Only in: "Product Spec + Interface + Tech Review + Code Diff"
@@ -220,7 +206,7 @@ gate:      requires_approval: true
 ```
 next:      (done — workflow complete)
 accept:    (done)
-reject:    execution
+{{TRANSITIONS:audit:reject}}
 rework:    (none)
 gate:      (none)
 ```

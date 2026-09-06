@@ -151,6 +151,25 @@ describe("per-skill host-agnostic compliance", () => {
           }
         }
       });
+
+      it("body has no bb CLI invocations (use stelow CLI, hosts wrap it)", () => {
+        for (const file of files) {
+          if (isExemptFromAudit(file)) continue;
+          const content = stripFrontmatter(readFileSync(file, "utf8"));
+          expect(content, file).not.toMatch(/\bbb stelow\b/);
+        }
+      });
+
+      it("body has no Fusion fn_ calls or host-name conditionals", () => {
+        for (const file of files) {
+          if (isExemptFromAudit(file)) continue;
+          const content = stripFrontmatter(readFileSync(file, "utf8"));
+          const noFences = content.replace(/```[\s\S]*?```/g, "");
+          expect(noFences, file).not.toMatch(/\bfn_[a-z_]+\s*\(/);
+          expect(noFences, file).not.toMatch(/Multica/);
+          expect(noFences, file).not.toMatch(/(^|[^a-zA-Z])Fusion([^a-zA-Z]|$)/);
+        }
+      });
     });
   }
 });

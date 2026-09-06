@@ -8,7 +8,7 @@ Documentation of what permissions the stelow requires per stage.
 |------|-------|--------|---------|
 | `stelow.json` | All | Read/Write | **Stage state — single source of truth** (phases, currentPhase, stage) |
 | `.stelow/state/current-stage.json` | All | Read (write via state-manager) | Legacy — maintained for backward compat; LLM prefers stelow.json |
-| host inbox surface | triage | Read/Write | Multica `backlog`/`todo`, Fusion inbox, Pi pi-session-state (the Stelow core no longer mirrors `.stelow/inbox/`) |
+| host inbox surface | triage | Read/Write | The host's own inbox or task surface (Stelow core no longer mirrors `.stelow/inbox/`) |
 | `.stelow/{yyyy-mm-dd}/` | setup+ | Read/Write | Workflow artifacts |
 | `stages.yaml` | All | Read | Tool restriction metadata |
 | `RULES.md` | All | Read | Hard constraints |
@@ -27,9 +27,8 @@ See `stages.yaml` for the full matrix of `blocked_tools` and `allowed_tools`.
 | Socket.dev | execution | Supply chain audit |
 | Trivy | execution | CVE/secret scanning |
 
-## Pi-Only Permissions (hooks)
+## Native Hook Permissions
 
-The following hooks may intercept tool calls:
-
-- **PreToolUse** (stages-guard.ts) — blocks tools based on current stage
-- Applied in `adapters/` directory under the skill's `extensions/` folder
+Hosts with a hook system may intercept tool calls (e.g. a PreToolUse
+stage guard blocking tools based on current stage, applied in the host's
+own adapters directory). These live in host code, never in this repo.

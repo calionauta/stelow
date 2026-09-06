@@ -6,28 +6,19 @@
 # arquivo e é o que scripts/stelow advance valida (não edite manualmente).
 
 
-# Canonical tool vocabulary and host-native implementations. A null value
-# means the host uses stelow's safe fallback rather than a native tool.
+# Canonical tool vocabulary. Hosts map these names to their native
+# implementations in their own config — never here.
 tools:
-  ask_user_question:
-    pi: ask_user_question
-    fusion: fn_ask_question
-    generic: ask_user_question
-  visual_review:
-    pi: plannotator
-    fusion: null
-    generic: null
-  subagent:
-    pi: subagent
-    fusion: fn_spawn_agent
-    generic: subagent
-  read: { pi: read, fusion: read, generic: read }
-  write: { pi: write, fusion: write, generic: write }
-  edit: { pi: edit, fusion: edit, generic: edit }
-  bash: { pi: bash, fusion: bash, generic: bash }
-  grep: { pi: grep, fusion: grep, generic: grep }
-  ls: { pi: ls, fusion: ls, generic: ls }
-  agent_browser: { pi: agent_browser, fusion: agent_browser, generic: agent_browser }
+  - ask_user_question
+  - visual_review
+  - subagent
+  - read
+  - write
+  - edit
+  - bash
+  - grep
+  - ls
+  - agent_browser
 
 stages:
   - name: triage

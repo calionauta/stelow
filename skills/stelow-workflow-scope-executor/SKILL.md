@@ -158,28 +158,26 @@ If the user says yes, proceed autonomously. If no, ask what they'd like to adjus
 ### Step 2e: Initialize scope tracking in `stelow.json`
 
 Before executing scopes, `wf.scopes[]` must be populated from the latest
-`spec-tech.md`. **How that happens depends on the host**: Pi and Fusion have
-native persistence hooks, while generic agents use the documented fallback.
+`spec-tech.md`. **How that happens depends on host capability**: hosts with
+a native scope-sync hook sync automatically, while hosts without one use
+the documented fallback.
 
-#### Pi (native extension host)
+#### Native scope-sync hook
 
-The Pi adapter's `writeTracking()` (see `extensions/stelow/adapters/pi/hooks.ts`)
-auto-syncs scopes on every persisted `stelow.json` write. The LLM does NOT need
-to run a bash snippet for this — Pi reaches the shared
-`parseSpecTechScopes` parser in `extensions/stelow/state.ts` through
-`syncScopesIfNeeded()`.
+A host adapter with `writeTracking()` auto-syncs scopes on every persisted
+`stelow.json` write. The LLM does NOT need to run a bash snippet for this —
+the host reaches the shared `parseSpecTechScopes` parser through its own
+`syncScopesIfNeeded()` integration.
 
-#### Fusion (compiled plugin host)
+#### Managed write path
 
-The compiled Fusion plugin (`plugins/fusion-plugin-stelow/`) uses the same
-host-agnostic `parseSpecTechScopes` parser as Pi. The LLM does NOT need to run
-a bash snippet for this — Fusion's managed write path performs the sync through
-the compiled plugin integration.
+A host with a compiled plugin performs the sync through the same
+host-agnostic `parseSpecTechScopes` parser. The LLM does NOT need to run
+a bash snippet for this.
 
-#### Generic (skill-only host)
+#### Explicit fallback (no native hook)
 
-`GenericAdapter` (see `extensions/stelow/adapters/generic.ts`) has **no**
-native `writeTracking` or scope-sync hook. Generic agents must run the bash
+Hosts **without** a native `writeTracking` or scope-sync hook: run the bash
 fallback in
 [`references/cli-tools/scope-init-fallback.md`](references/cli-tools/scope-init-fallback.md)
 before Step 3. It loads the same compiled `parseSpecTechScopes` artifact and
@@ -194,24 +192,23 @@ silently replaced by a second parser.
 
 **How the shared parser is reached:**
 
-`parseSpecTechScopes` (in `extensions/stelow/state.ts`) is the single
-host-agnostic parser for `[SCOPE-N]` blocks. It returns a `Scope[]` containing
+`parseSpecTechScopes` is the single host-agnostic parser for `[SCOPE-N]` blocks. It returns a `Scope[]` containing
 `id`, `type`, `name`, dependency, target-file, and iteration metadata, with every
-scope set to `status: 'pending'`. Pi and Fusion invoke it through their native
-write paths; generic agents invoke the same compiled artifact through the
-fallback. All three paths discover the conventional
+scope set to `status: 'pending'`. Hosts with native write paths invoke it through
+their own integration; hosts without invoke the same compiled artifact through the
+fallback. All paths discover the conventional
 `.stelow/{date}/{hash}/plans/spec-tech_*.md` location and honor the
 `wf.specTechFile` version marker.
 
-| Host | Trigger | Idempotent skip |
+| Capability | Trigger | Idempotent skip |
 |------|---------|-----------------|
-| Pi | Every `writeTracking()` call once the workflow reaches Execution phase | `wf.specTechFile === latest && wf.scopes.length > 0` |
-| Fusion | Managed plugin write path using the shared parser | Same as Pi |
-| Generic | LLM runs the documented bash fallback | Same filename-keyed skip (`specTechFile === latest`) |
+| Native scope-sync hook | Every tracking write once the workflow reaches Execution phase | `wf.specTechFile === latest && wf.scopes.length > 0` |
+| Managed write path | Host-managed write using the shared parser | Same as above |
+| Explicit fallback | LLM runs the documented bash fallback | Same filename-keyed skip (`specTechFile === latest`) |
 
 This follows KISS + DRY + Convention over Configuration:
 - **KISS:** One canonical parser, with host-specific triggers only.
-- **DRY:** Pi, Fusion, and the generic fallback all consume the compiled
+- **DRY:** Native, managed, and fallback paths all consume the compiled
   `parseSpecTechScopes` artifact; the fallback contains only filesystem glue.
 - **CoC:** `spec-tech_*.md` is found by convention at
   `.stelow/{date}/{hash}/plans/`; the date stamp comes from `wf.created` and the

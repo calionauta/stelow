@@ -1,9 +1,9 @@
-# Scope Initialization Fallback (Generic Agents)
+# Scope Initialization Fallback (hosts without native scope sync)
 
-> **Audience:** generic agents without a native Pi extension or Fusion plugin.
-> Pi and Fusion use the shared `parseSpecTechScopes` path through their host
-> integrations; they do not need this fallback. Generic agents should run the
-> snippet below before executing scopes.
+> **Audience:** agents whose host does not sync scopes natively.
+> Hosts with a native scope-sync hook use the shared `parseSpecTechScopes`
+> path through their own integration; they do not need this fallback.
+> All other agents run the snippet below before executing scopes.
 
 ## Contract
 
@@ -192,10 +192,10 @@ process.stdout.write(`[scope-init-fallback] synced ${scopes.length} scopes from 
 
 ## Host boundary
 
-- **Pi:** the native adapter persists tracking through the shared state module.
-- **Fusion:** the compiled plugin uses the same host-agnostic parser path.
-- **Generic:** run this reference explicitly because `GenericAdapter` has no
-  native `writeTracking`/scope-sync hook.
+- **Native hook:** the host persists tracking through the shared state module.
+- **Managed write path:** a compiled host plugin uses the same host-agnostic parser path.
+- **Explicit fallback:** run this reference, needed only when the host provides
+  no native `writeTracking`/scope-sync hook.
 
 Canonical implementation: `extensions/stelow/state.ts`,
 `parseSpecTechScopes` and `syncScopesIfNeeded`. This reference does not modify

@@ -183,8 +183,7 @@ See `assets/invariants-example.json` for a complete `invariants.json` example.
 
 ## stelow.json Worker Lineage (Optional, Host-Managed)
 
-Hosts that run workflows inside managed worker threads (bb, Pi, Fusion,
-or any host integration) may record worker lineage on the workflow entry
+Hosts that run workflows inside managed worker threads may record worker lineage on the workflow entry
 in `stelow.json`, so thread history survives outside any single plugin
 database and the worker itself can read it for continuity:
 
