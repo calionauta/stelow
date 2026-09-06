@@ -42,7 +42,8 @@ TRANSITIONS="${STELOW_TRANSITIONS:-$ROOT/skills/stelow-workflow-orchestrator/ref
 LOCKDIR="$STATEDIR/lock"
 LOCK_TTL_SEC="${STELOW_LOCK_TTL_SEC:-120}"
 
-mkdir -p "$STATEDIR"
+# NOTE: no mkdir here — read-only commands (status, doctor, dry runs) must
+# never mutate the filesystem. Mutating paths create what they need.
 
 # --- shared helpers ---------------------------------------------------------
 
@@ -332,9 +333,8 @@ PY
     return 0
   fi
 
+  mkdir -p "$STATEDIR"
   lock_acquire
-
-  # mutate state.md frontmatter
 
   # mutate state.md frontmatter
   python3 - "$current" "$candidate" "$STATE" "$STATEDIR" <<'PY'

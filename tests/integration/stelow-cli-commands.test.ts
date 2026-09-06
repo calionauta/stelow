@@ -18,8 +18,7 @@
  */
 import { describe, it, expect, afterAll } from "vitest";
 import { execSync, spawnSync, spawn } from "node:child_process";
-import { mkdtempSync, writeFileSync, mkdirSync, readFileSync, existsSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { mkdtempSync, writeFileSync, mkdirSync, readFileSync, existsSync, rmSync } from "node:fs";import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { randomBytes } from "node:crypto";
@@ -264,5 +263,18 @@ describe("ask file protocol", () => {
     const exit: number = await new Promise((resolve) => child.on("close", resolve));
     expect(exit).toBe(1);
     expect(JSON.parse(stdout).cancelled).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+
+describe("read-only commands never touch the filesystem", () => {
+  it("status/doctor/dry-run do not create a missing state dir", () => {
+    const wd = makeWorkdir();
+    const ghost = join(wd.dir, ".stelow", "2099-01-01", "pw-ghost");
+    const env = { STELOW_STATEDIR: ghost, STELOW_TRANSITIONS: TRANSITIONS_SRC };
+    run(wd, ["status"], env);
+    run(wd, ["doctor"], env);
+    expect(existsSync(ghost)).toBe(false);
   });
 });
