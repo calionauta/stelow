@@ -134,6 +134,23 @@ describe("mode-skipped passthroughs", () => {
 
 // ---------------------------------------------------------------------------
 
+describe("transition token hygiene", () => {
+  it("prose words from parenthetical comments never become candidates", () => {
+    const dir = gitRepo();
+    const stateDir = makeStateDir(dir, "triage", "Auto");
+    const env = { STELOW_STATEDIR: stateDir, STELOW_TRANSITIONS: TRANSITIONS };
+    for (const bogus of ["stays", "at", "path", "returns", "to", "none"]) {
+      const r = run(["advance", bogus, "--dry-run"], dir, env);
+      expect(r.status, `candidate '${bogus}' must be rejected`).not.toBe(0);
+      expect(r.stderr).toContain("invalid transition");
+    }
+    const before = readFileSync(join(stateDir, "state.md"));
+    expect(Buffer.compare(before, readFileSync(join(stateDir, "state.md")))).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+
 describe("mode-skipped gate refusals", () => {
   it("plan-gate in Auto refuses with the execution redirect and mutates nothing", () => {
     const dir = gitRepo();

@@ -212,9 +212,12 @@ for line in m.group(1).splitlines():
     mm = re.match(r"^(next|accept|reject|rework|annotate):\s*(.*)$", line.strip())
     if not mm:
         continue
-    for token in re.split(r"[,\s]+", mm.group(2)):
+    # Trailing prose comments (e.g. "(full rework path ...)") must never
+    # leak words as candidates: cut the line at the first paren.
+    value = mm.group(2).split("(", 1)[0]
+    for token in re.split(r"[,\s]+", value):
         token = token.strip("[]\"'")
-        if token and not token.startswith("(") and re.match(r"^[a-z][a-z0-9-]*$", token):
+        if token and re.match(r"^[a-z][a-z0-9-]*$", token):
             allowed.append(token)
 
 # Intent routes are canonical shortcuts through the full transition graph.
