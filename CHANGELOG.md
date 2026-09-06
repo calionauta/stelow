@@ -7,6 +7,11 @@ All notable changes to this project are documented in this file, following
 
 ### Added
 
+- **Workflow mechanics portable beyond git repos.** Non-repository
+  workspaces resolve their root from `STELOW_STATEDIR`; review-mode
+  rules (mode-skipped passthroughs, gate refusals with redirects) and
+  statedir-first artifact preconditions moved from a downstream fork
+  into `do_advance`, so any host gets identical behavior.
 - **Portable `stelow` CLI surface: `seed`, `schema`, `ask`, `advance --dry-run/--json`.**
   `seed` mints per-workflow state dirs from a single template (+ tracking
   entry); `schema` dumps machine-readable command contracts for runtime
@@ -33,6 +38,15 @@ All notable changes to this project are documented in this file, following
   inside blaming storage. Now `<your-worker-thread-id>` with an
   explicit never-list. (Orchestrator copy only; per-skill copies
   regenerate via sync-cli-tools.sh.)
+- **Transition tokens ignore prose comments.** Parenthetical prose in
+  transition blocks (`(full rework path …)`, `(none …)`) leaked bare
+  words as valid candidates — `advance stays` would have corrupted
+  `current_stage`. Lines are cut at the first paren before tokenizing.
+- **Read-only commands never touch the filesystem.** `status`, `doctor`
+  and dry runs no longer `mkdir` the state dir as a side effect.
+- **`stage-status.md` tells the truth.** The 0-indexed 15-phase table
+  (wrong stages, "edit stelow.json directly") is replaced by the 17
+  canonical slugs with phasename-only commands.
 
 - **README workflow table lists all 14 skills.** `entry` and `router`
   rows were missing, failing the skill-count contract (the test was
