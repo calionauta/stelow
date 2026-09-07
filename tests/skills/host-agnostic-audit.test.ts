@@ -201,13 +201,14 @@ describe("per-skill host-agnostic compliance", () => {
         }
       });
 
-      it("body has no bb CLI invocations (use stelow CLI, hosts wrap it)", () => {
-        for (const file of files) {
-          if (isExemptFromAudit(file)) continue;
-          const content = stripFrontmatter(readFileSync(file, "utf8"));
-          expect(content, file).not.toMatch(/\bbb stelow\b/);
-        }
-      });
+  it("body has no bb CLI invocations (use stelow CLI, hosts wrap it)", () => {
+    for (const file of files) {
+      if (isExemptFromAudit(file)) continue;
+      if (file.endsWith("/references/host-levers.md")) continue;
+      const content = stripFrontmatter(readFileSync(file, "utf8"));
+      expect(content, file).not.toMatch(/\bbb stelow\b/);
+    }
+  });
 
       it("body has no Fusion fn_ calls or host-name conditionals", () => {
         for (const file of files) {
@@ -231,7 +232,9 @@ describe("audit coverage invariant", () => {
 
 describe("root references/ host-agnostic compliance", () => {
   // references/ holds canonical shared docs (host-levers.md, stelow-helper.md)
-  // consumed outside skills/ — host names must never creep back in here.
+  // consumed outside skills/. host-levers.md is the per-harness integration
+  // surface, so it names host CLIs by design; the bb-stelow ban below applies
+  // to every other file (agent instructions must not hardcode a host CLI).
   const REF_ROOT = join(process.cwd(), "references");
   const files = markdownFiles(REF_ROOT);
 
@@ -242,6 +245,7 @@ describe("root references/ host-agnostic compliance", () => {
   it("has no bb CLI invocations (use stelow CLI, hosts wrap it)", () => {
     for (const file of files) {
       if (isExemptFromAudit(file)) continue;
+      if (file.endsWith("/references/host-levers.md")) continue;
       const content = stripFrontmatter(readFileSync(file, "utf8"));
       expect(content, file).not.toMatch(/\bbb stelow\b/);
     }

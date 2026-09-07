@@ -23,7 +23,7 @@ same workflow. Hosts only add an optional marker protocol
 | `stelow.schema.json` / `stelow.json` | Workflow tracking JSON schema + per-project runtime tracking state. |
 | `tests/` | Vitest suite (`unit/`, `integration/`, `skills/`) + contract tests (skill-count, dual-mode, fs/e2e). |
 | `docs/design/`, `docs/agents-md-refs/` | Historical design docs / agent reference notes (EN artifacts, PT-BR discussion). |
-| `references/` | Canonical shared docs (`host-levers.md`, `cli-tools/stelow-helper.md`) referenced by skills, `cli-agents/`, and install docs alike. |
+| `references/` | Canonical shared docs: `host-levers.md` (per-harness recipes) + `cli-tools/stelow-helper.md` (helper contract). Host integration contract: `HOSTING.md` (root). |
 
 ## Stage model (the 17-stage state machine)
 
@@ -70,7 +70,8 @@ same workflow. Hosts only add an optional marker protocol
   helper (bash + python3). No compile step at install time.
 - Skills never call host-native tool names directly; `stages.yaml#tools` defines
   a portable vocabulary (`ask_user_question`, `visual_review`, `subagent`) and
-  `references/cli-tools/*.md` document the canonical `stelow` form — hosts wrap it.
+  `skills/stelow-workflow-orchestrator/references/cli-tools/*.md` document the
+  canonical shapes — hosts wrap them.
 - Distribution is Git/GitHub only (no `npm publish`). Version lives in
   `package.json` and is pinned by the SW-034 trailer contract, enforced by
   `scripts/check-version-coherence.sh` (`--hook=commit-msg` mode for local

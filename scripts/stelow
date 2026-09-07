@@ -1,16 +1,19 @@
 #!/usr/bin/env bash
-# scripts/stelow — SCOPE-2 helper (status / advance / doctor).
+# scripts/stelow — stelow workflow CLI (status / advance / doctor / seed / schema / ask).
 #
 # Passive: reads/writes one workflow state. Hosts may point at a per-workflow
 # directory with STELOW_STATEDIR/STELOW_STATE; root paths remain the legacy
 # standalone fallback.
 # Idempotent on bad input (never mutates on invalid candidate). Fail-closed.
-# No npm deps — POSIX sh + node only.
+# No npm deps — bash + python3 only.
 #
 # Usage:
 #   scripts/stelow status [--json]
-#   scripts/stelow advance <candidate>
+#   scripts/stelow advance <candidate> [--dry-run] [--json]
 #   scripts/stelow doctor [--json]
+#   scripts/stelow seed --name <n> --intent <i> [--json]
+#   scripts/stelow schema [command]
+#   scripts/stelow ask ...
 #   scripts/stelow --help
 
 set -euo pipefail

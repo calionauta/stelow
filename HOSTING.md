@@ -35,7 +35,7 @@ layer on top (like [bb-plugin-stelow](https://github.com/calionauta/bb-plugin-st
    (`ask_user_question`, `visual_review`, `subagent`, `read`, `write`,
    `edit`, `bash`, `grep`, `ls`, `agent_browser`). Skills never name
    host-native tools directly in prose; new harness vocabulary goes in the
-   tool's `references/cli-tools/<tool>.md`.
+   tool's `skills/stelow-workflow-orchestrator/references/cli-tools/<tool>.md`.
 
 ## Adding a new host
 

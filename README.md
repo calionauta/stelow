@@ -401,7 +401,7 @@ A common pain point used to be initializing `wf.scopes[]` in `stelow.json` — i
 - **Re-sync on v2+:** Tracks `wf.specTechFile` — if spec-tech bumps to v2, scopes are re-synced automatically.
 - **Consistent across agents:** the parse runs as skill-instructed bash/python against `spec-tech.md`, so every host behaves the same.
 
-Known gaps (race window, legacy workflows without `dirHash`, phase-number drift) are tracked in [`docs/scope-lifecycle-gaps.md`](docs/scope-lifecycle-gaps.md).
+Known edge cases (race window, legacy workflows without `dirHash`) are handled idempotently; report new ones as [issues](https://github.com/calionauta/stelow/issues).
 
 ---
 
@@ -418,10 +418,10 @@ stelow is designed to be **self-contained** — the 28 skills + installer cover 
 | [plannotator](https://plannotator.ai/) | Optional | Visual review gate annotation | `plannotator annotate ... --gate --json` via bash on any agent | Manual review with approval receipt file — no structured annotation |
 | [safe-change](https://github.com/PriNova/pi-agent-codebase-workflows) | Optional | Pre-execution code safety checks | `npx skills add Prinova/pi-agent-codebase-workflows -g` (works in any agent that installs from skill registries) | Skip — pre-execution check omitted |
 | Subagents (built-in to any agent) | Optional | Parallel reviewer orchestration during Plan Critique | `subagent(...)` / agent native subagent | Sequential execution — slower, same outcome (single-context review) |
-| Acceptance-native subagent loop | Optional | Same-context self-correction during scope execution (child fixes gaps before returning) | Any harness with fresh-context subagents (e.g. Pi-class agents via a subagents package); otherwise the parent-controlled re-delegation fallback below | Without it: scope-executor falls back to parent-controlled loop (slower); no agent types — embed role in prompt |
-
-> **Note:** stelow's cli-tools (`references/cli-tools/subagents.md`) document the invocation syntax. Host variability is handled by the skills themselves (`stages.yaml#tools` vocabulary + `references/cli-tools/*.md`), not by host-specific code — no skill changes needed when switching agents.
+| Acceptance-native subagent loop | Optional | Same-context self-correction during scope execution (child fixes gaps before returning) | Any harness with fresh-context subagents (otherwise the parent-controlled re-delegation fallback below) | Without it: scope-executor falls back to parent-controlled loop (slower); no agent types — embed role in prompt |
 | Conversation supervision | Optional | Supervision during execution | Agent-native supervision where available | Skip — no supervision; rely on `stages-guard` for invariant enforcement |
+
+> **Note:** stelow's cli-tools (`skills/stelow-workflow-orchestrator/references/cli-tools/subagents.md`) document the invocation syntax. Host variability is handled by the skills themselves (`stages.yaml#tools` vocabulary + `skills/stelow-workflow-orchestrator/references/cli-tools/*.md`), not by host-specific code — no skill changes needed when switching agents.
 
 **Design principle:** stelow is **host-agnostic, skills-agnostic**. The 28 skills run identically in any agent that reads `~/.agents/skills/` — the full Shape Up workflow (plans, critique, scopes) works everywhere, driven by the `scripts/stelow` CLI for state mechanics. There is no extension layer and no compiled plugin in the repo; optional baseline tools install on top of any agent. No external tool is *required* to run the workflow — each optional integration enhances a phase but never blocks progress. `./install.sh` is the canonical skills installer: it flattens the skills into `~/.agents/skills/` (and prunes retired ones), then offers the optional cymbal/sem/ctx7 tooling. The cymbal/ast-grep **CLIs** and `sem`/`ctx7` remain user-managed (offered interactively during setup, or see the tools table above).
 
@@ -624,9 +624,9 @@ Open **Stelow** in bb's navigation, select a project, choose Appetite and Review
 ## 🌐 Host Support
 
 stelow runs on **any agent that reads `~/.agents/skills/<name>/SKILL.md`** —
-this repo ships no host-specific code, so there is no host matrix to maintain
-here. Per-host activation recipes live in `references/host-levers.md` (Claude
-Code, Cursor, OpenCode, Codex CLI, Gemini CLI, Pi, Goose).
+this repo ships no host-specific code. The hosting contract lives in
+[`HOSTING.md`](HOSTING.md); per-harness activation recipes live in
+`references/host-levers.md`.
 
 | Host | How it runs stelow |
 |---|---|
@@ -640,8 +640,8 @@ Owner paths in this repo:
 - `types/stages.ts` + `skills/stelow-workflow-orchestrator/stages.yaml` — the stage model and transitions.
 
 To add a new host you need **no code** — just an agent that reads
-agentskills.io skill directories. Host-specific knobs are documented in
-`references/host-levers.md`.
+agentskills.io skill directories. See [`HOSTING.md`](HOSTING.md) for the
+contract and `references/host-levers.md` for per-harness knobs.
 
 ---
 

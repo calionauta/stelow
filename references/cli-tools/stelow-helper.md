@@ -1,14 +1,10 @@
-# stelow helper (SCOPE-2)
+# stelow helper
 
-The `scripts/stelow` helper is the canonical CLI for the stelow skills-only
-workflow. It reads/writes the project `state.md` and `.stelow/invariants.json`,
+The `scripts/stelow` CLI is the canonical state machine behind the `/sw-*`
+skill commands. It reads/writes the project `state.md` and `.stelow/invariants.json`,
 validates stage transitions against
 `skills/stelow-workflow-orchestrator/references/transitions.md`, and exposes
 a passive doctor that detects four classes of drift.
-
-It replaces the legacy `/sw-*` and `/stelow-*` slash commands with a script
-that any host (any agentskills-compatible agent, or a human
-in a terminal) can invoke.
 
 ## Usage
 
@@ -56,11 +52,11 @@ on `warn` / `info`; only `error` flips `ok` to false.
 | `state.md` | workflow state (YAML frontmatter + body markdown) | LLM + `stelow advance` |
 | `.stelow/invariants.json` | audit trail of stage transitions | `stelow advance` only |
 | `.stelow/lock/` | mkdir lock with TTL | `stelow advance` |
-| `skills/stelow-workflow-orchestrator/references/transitions.md` | stage table (read-only mirror of `stages.yaml`) | generator (read SCOPE-1 contract) |
+| `skills/stelow-workflow-orchestrator/references/transitions.md` | stage table (read-only mirror of `stages.yaml`) | generator — edit `stages.yaml`, regen; never by hand |
 
-## Old `/sw-*` → `stelow` mapping
+## `/sw-*` → `stelow` mapping
 
-| Legacy command | New helper invocation |
+| Skill command | Helper invocation |
 |---|---|
 | `/sw-status` | `scripts/stelow status` |
 | `/sw-status --json` | `scripts/stelow status --json` |
@@ -68,8 +64,8 @@ on `warn` / `info`; only `error` flips `ok` to false.
 | `/sw-doctor` | `scripts/stelow doctor` |
 | `/sw-doctor --json` | `scripts/stelow doctor --json` |
 
-Slash-command versions remain registered in host adapters for
-backward compatibility but always delegate to this helper at runtime.
+Slash-command versions remain available as skill commands and always delegate
+to this helper at runtime.
 
 ## Env overrides
 
@@ -90,5 +86,4 @@ backward compatibility but always delegate to this helper at runtime.
 ## NFR
 
 - Deterministic, offline, fail-closed.
-- POSIX sh + node + python3 only — no npm deps.
-- ≤ ~350 lines of bash + ~80 lines of inline python.
+- Bash + python3 only — no npm deps.

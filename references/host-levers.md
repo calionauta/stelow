@@ -39,6 +39,24 @@ The router skill additionally requires `STELOW_STATE` to be set when
 
 ## Per-Harness Activation Recipe
 
+### bb (via bb-plugin-stelow) — reference implementation
+
+No marker protocol needed — the plugin drives the workflow itself:
+
+- **Install:** `bb plugin install git:https://github.com/calionauta/bb-plugin-stelow.git --yes`
+  (requires bb ≥ 0.38; pending marketplace approval, install via repository URL).
+- **Use:** open **Stelow** in bb's navigation, select a project with a local
+  workspace source, choose Appetite and Review mode, create a card. The plugin
+  seeds `state.md` / `stelow.json`, starts the worker thread, and projects
+  stages onto a Kanban board + inbox.
+- **Mechanics:** the 14 `stelow-workflow-*` skills are vendored in the plugin
+  and auto-synced from this repo; the 14 `stelow-product-*` playbooks come
+  from the skills hub (`npx skills add calionauta/stelow -g`). The worker
+  advances via `bb stelow advance` (same state machine as `scripts/stelow`).
+- **Contract:** `HOSTING.md` at the repo root.
+
+---
+
 ### Claude Code
 
 **Activation:**
@@ -48,7 +66,7 @@ claude --print "workflow" --system "Activate stelow: set STELOW_WORKFLOW=1 STELO
 
 # Option B: prompt template in .claude/commands/stelow.md
 # /path/to/state.md is injected by the user or the entry skill on first run
-@stelow-workflow-orchestrator/entry/SKILL.md
+skills/stelow-workflow-entry/SKILL.md
 Set: STELOW_WORKFLOW=1, STELOW_STATE=<path>
 ```
 
@@ -73,7 +91,7 @@ On completion, echo the ## Hand-off block verbatim to confirm."
 **Activation:**
 ```bash
 # Cursor Composer or Agent mode: paste or reference the skill path
-# Entry skill path: skills/stelow-workflow-orchestrator/entry/SKILL.md
+# Entry skill: skills/stelow-workflow-entry/SKILL.md
 # Set Cursor agent environment variables before the session:
 STELOW_WORKFLOW=1
 STELOW_STATE=<path>
@@ -159,7 +177,7 @@ turn of the subagent task.
 
 ---
 
-### Pi (pi.dev)
+### Pi
 
 **Activation:**
 ```bash
@@ -241,8 +259,8 @@ Pi, Goose, and any other Agent Skills-compatible harness.
 | TUI / notifications | Surface within the host natively. Stelow's router and entry skills render no UI. |
 | Slash commands | Register only `/stelow` (description-match is the fallback). `stelow status` and `stelow doctor` are bash commands, not slash commands. |
 | Subagent spawning | Pass stage skills explicitly in the task + require echo-validation. Subagents do NOT inherit skills automatically. |
-| Visual review | Already covered in `references/cli-tools/`: use `visual_review` when present, else write `.stelow/approvals/<dirHash>/<file>.approved.md` as a receipt. |
-| Session persistence | `state.md` at `<git-root>/state.md` is the persistence boundary. `git log` is the audit trail. |
+| Visual review | Covered in `skills/stelow-workflow-orchestrator/references/cli-tools/visual_review.md`: use `visual_review` when present, else write `.stelow/approvals/<dirHash>/<file>.approved.md` as a receipt. |
+| Session persistence | `$STELOW_STATE` (per-workflow state, under `.stelow/{date}/{dirHash}/`; `<root>/state.md` in standalone mode) is the persistence boundary. `git log` is the audit trail. |
 | Concurrent session protection | The `stelow advance` helper uses a `mkdir`-based lock with TTL. If two sessions race, the second fails with a clear message. |
 
 ---
@@ -280,4 +298,5 @@ export STELOW_STATE=$(pwd)/state.md
 
 | Date | Change |
 |---|---|
-| 2026-08-13 | Initial version. 8 harnesses documented. |
+| 2026-08-13 | Initial version. 7 harnesses documented. |
+| 2026-09-07 | Added bb reference-implementation section; fixed entry skill paths; corrected count. |
