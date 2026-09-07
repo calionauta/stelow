@@ -365,7 +365,7 @@ If detection is ambiguous or incorrect, you can change the category before the w
 `/sw-resume` checks for git changes before resuming a paused workflow. If files changed while paused, it warns you and asks for confirmation before proceeding.
 
 See [docs/INSTALLATION.md](docs/INSTALLATION.md) for detailed options.
-Per-agent configuration files (commands, install scripts) are in [`cli-agents/`](cli-agents/).
+Host command guide: [`HOSTING.md`](HOSTING.md). Per-harness activation recipes: [`references/host-levers.md`](references/host-levers.md).
 
 ---
 

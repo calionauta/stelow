@@ -18,7 +18,10 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
 SOURCE="$PROJECT_ROOT/skills/stelow-workflow-orchestrator/references/cli-tools"
 
-# Files in SOURCE that are orchestrator-only and should NOT be synced to sub-skills
+# Orchestrator-only filenames that must NOT live in sub-skill copies.
+# Both files were removed from SOURCE (unreferenced orphans); their names stay
+# listed here so the stale-excluded cleanup below deletes any lingering copies
+# in existing checkouts on the next sync.
 SYNC_EXCLUDE=("context-efficiency.md" "execution-loop.md")
 
 # All skills except the orchestrator itself (source)

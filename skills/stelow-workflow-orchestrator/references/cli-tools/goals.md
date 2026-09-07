@@ -1,25 +1,27 @@
-# Tool: Goal System
+# Acceptance contracts
 
-> **Acceptance-native:** when the harness's delegate tool supports an
-> acceptance contract (`criteria`, `evidence`, `verify`, `review`, `stopRules`),
-> pass it directly — the child self-corrects in the same context.
+> scope → delegate call + verifiable contract (`criteria`, `evidence`,
+> `verify`, `stopRules`).
+>
+> **Acceptance-native:** when the harness's delegate tool supports the
+> contract, pass it directly — the child self-corrects in the same context.
 > **Fallback:** harnesses without it use parent-controlled re-delegation
 > (implement → verify → fix → repeat) with the same contract data.
 
 ---
 
-## Core Concept: Goals = acceptance contracts
+## Core Concept: scopes become acceptance contracts
 
 Every scope type becomes a delegate call with an acceptance contract.
 No separate extensions needed — the contract travels with the delegation,
 whether the harness enforces it natively or the parent loops over it.
 
-| Scope Type | How it becomes a goal |
+| Scope Type | How it is delegated |
 |------------|----------------------|
-| `feature` | worker + iteration loop (see scope-executor Step 3) |
-| `spike` | scout + researcher (see subagents.md) |
-| `optimization` | subagent + acceptance with **benchmark verify** commands (see Optimization Goals below) |
-| `test-*` | subagent + acceptance with testing/security gates |
+| `feature` | delegate worker + iteration loop (see scope-executor Step 3) |
+| `spike` | delegate recon + research (see subagents.md) |
+| `optimization` | delegate + acceptance with **benchmark verify** commands (see Optimization Goals below) |
+| `test-*` | delegate + acceptance with testing/security gates |
 
 ---
 
@@ -45,7 +47,7 @@ subagent({
 })
 ```
 
-This replaces the need for external goal packages *and* autoresearch extensions.
+This replaces the need for external goal packages.
 
 ---
 
@@ -57,11 +59,11 @@ criteria pass or max iterations exhaust. Same contract data, more turns.
 
 ---
 
-## Optimization Goals (replaces autoresearch/experiment-loop)
+## Optimization Goals
 
-**Optimization scopes are goals with benchmark `verify` commands.**
-The same `subagent() + acceptance` pattern handles optimization — no separate
-experiment-loop extension needed.
+**Optimization scopes are contracts with benchmark `verify` commands.**
+The same delegate + acceptance pattern handles optimization — no separate
+experiment loop needed.
 
 ### How it works
 

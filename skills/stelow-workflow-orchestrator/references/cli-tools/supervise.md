@@ -76,9 +76,9 @@ out).
 
 ## When to Use
 
-| Phase | Purpose |
+| Stage | Purpose |
 |-------|---------|
-| Phase 12 (Execution) | Steering during execution |
+| Execution | Steering during execution |
 
 ---
 
@@ -115,10 +115,10 @@ determines whether and how aggressively to supervise:
 
 ## Activation Rules
 
-**⚠️ IMPORTANT:** Never activate during Phases 3-11.
-Supervisor re-submits visual review, causing loops.
+**⚠️ IMPORTANT:** Never activate before the Execution stage.
+Supervision re-submits visual review, causing loops.
 
-Activate ONLY when STARTING each scope in Phase 12.
+Activate ONLY when STARTING each scope in Execution.
 
 Respect the Appetite-Based Activation table above for sensitivity and skip decisions.
 
@@ -140,5 +140,4 @@ Respect the Appetite-Based Activation table above for sensitivity and skip decis
 
 The calling code (skill/stage) constructs the verification prompt with scope
 context, DoD, and expected output format, then runs it through the harness's
-non-interactive command. No harness-specific adapter code ships in this repo —
-hosts wrap the same `scripts/stelow` state machine (see `cli-agents/COMMANDS.md`).
+non-interactive command. No harness-specific adapter code ships in this repo.
