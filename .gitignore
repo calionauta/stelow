@@ -2,7 +2,6 @@
 
 # Host/tooling config dirs — removed from the repo (kept local)
 .changeset/
-.github/
 .husky/
 .opencode/
 

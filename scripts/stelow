@@ -850,7 +850,7 @@ PY
 
 usage() {
   cat <<EOF
-$PROG — stelow workflow helper (status / advance / doctor / seed / schema)
+$PROG — stelow workflow helper (status / advance / doctor / seed / schema / ask)
 
 Usage:
   $PROG status [--json]
@@ -858,6 +858,7 @@ Usage:
   $PROG doctor [--json]
   $PROG seed --name <n> --intent <i> [--appetite Lean|Core|Complete] [--review-mode M] [--json]
   $PROG schema [command]
+  $PROG ask --question <t> [--multiple] --option <label>... (repeat --question groups)
   $PROG --help
 
 State file:  $STATE
