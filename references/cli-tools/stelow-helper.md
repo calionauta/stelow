@@ -15,6 +15,9 @@ scripts/stelow doctor [--json]
 scripts/stelow seed --name <n> --intent <i> [--appetite Lean|Core|Complete] [--review-mode M] [--json]
 scripts/stelow ask --question <t> [--multiple] --option <label>... (repeat --question groups)
 scripts/stelow sync-scopes [--name <workflow>] [--json]
+scripts/stelow lock acquire --scope <id> --file <f>... [--ttl N] [--json]
+scripts/stelow lock release --scope <id> --file <f>...
+scripts/stelow lock check [--scope <id>] [--file <f>...] [--json]
 scripts/stelow schema [command]
 scripts/stelow --help
 ```
@@ -51,6 +54,12 @@ on `warn` / `info`; only `error` flips `ok` to false.
 missing input is an exit-0 no-op; existing state is never replaced with an
 empty scope list. This is the single canonical scope parser — hosts shell
 out instead of maintaining a mirror.
+
+`lock` implements file-reservation locks for parallel scope dispatch
+(acquire/release/check under `<statedir>/locks/`). Exit 0 ok, 1 conflict
+(stderr names holder), 2 usage. See
+`skills/stelow-workflow-orchestrator/references/cli-tools/file-locking.md`
+for the protocol (opt-in, TTL + stale-steal semantics).
 
 ## Files
 

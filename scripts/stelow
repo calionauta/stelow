@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# scripts/stelow — stelow workflow CLI (status / advance / doctor / seed / schema / ask / sync-scopes).
+# scripts/stelow — stelow workflow CLI (status / advance / doctor / seed / schema / ask / sync-scopes / lock).
 #
 # Passive: reads/writes one workflow state. Hosts may point at a per-workflow
 # directory with STELOW_STATEDIR/STELOW_STATE; root paths remain the legacy
@@ -14,6 +14,8 @@
 #   scripts/stelow seed --name <n> --intent <i> [--json]
 #   scripts/stelow schema [command]
 #   scripts/stelow ask ...
+#   scripts/stelow sync-scopes [--name <workflow>] [--json]
+#   scripts/stelow lock acquire|release|check ...
 #   scripts/stelow --help
 
 set -euo pipefail
@@ -699,6 +701,13 @@ commands = {
     "exit_codes": {"0": "synced or nothing-to-do (idempotent no-op)", "1": "unreadable state", "2": "usage or ambiguous workflow"},
     "output": "text summary or {synced, specTechFile, dirHash} with --json",
   },
+  "lock": {
+    "usage": "stelow lock acquire|release|check --scope <id> [--file <f>...] [--ttl N] [--json]",
+    "flags": ["--scope", "--file", "--ttl", "--json"],
+    "env": ["STELOW_STATEDIR"],
+    "exit_codes": {"0": "ok / no conflicting locks", "1": "lock conflict or runtime failure", "2": "usage"},
+    "output": "text lines or {acquired|locks} JSON with --json",
+  },
 }
 if want and want not in commands:
     print(f"schema: unknown command '{want}' (known: {', '.join(sorted(commands))})", file=sys.stderr)
@@ -993,11 +1002,157 @@ else:
 PY
 }
 
+# --- lock-files ------------------------------------------------------------
+
+# File-reservation locks for parallel scope dispatch (opt-in). Deterministic
+# replacement for the old LLM-run bash snippets: no jq, no GNU date, same
+# layout (`<statedir>/locks/<sha1[:12]>.lock`). Atomic create via O_EXCL;
+# stale locks are stolen, live foreign locks refuse with exit 1.
+do_lock() {
+  local op="${1:-}"; shift || true
+  case "$op" in
+    acquire|release|check) ;;
+    *) usage_error "lock needs acquire|release|check (try --help)" ;;
+  esac
+  python3 - "$STATEDIR" "$op" "$@" <<'PY' || exit $?
+import sys, os, json, hashlib, datetime
+statedir, op, argv = sys.argv[1], sys.argv[2], sys.argv[3:]
+DEFAULT_TTL = 1800
+
+def usage(text):
+    print(f"lock {op}: {text} (try --help)", file=sys.stderr)
+    sys.exit(2)
+
+scope = None
+files: list = []
+ttl = DEFAULT_TTL
+want_json = False
+i = 0
+while i < len(argv):
+    arg = argv[i]
+    if arg == "--scope":
+        i += 1
+        if i >= len(argv) or not argv[i].strip(): usage("--scope needs a value")
+        scope = argv[i]
+    elif arg == "--file":
+        i += 1
+        if i >= len(argv) or not argv[i].strip(): usage("--file needs a value")
+        files.append(argv[i])
+    elif arg == "--ttl":
+        i += 1
+        try: ttl = int(argv[i])
+        except Exception: usage("--ttl needs an integer number of seconds")
+        if ttl <= 0: usage("--ttl must be positive")
+    elif arg == "--json":
+        want_json = True
+    elif arg == "--":
+        files.extend(argv[i + 1:])
+        break
+    elif arg.startswith("--"):
+        usage(f"unknown flag '{arg}'")
+    else:
+        files.append(arg)
+    i += 1
+if op in ("acquire", "release") and not scope:
+    usage("acquire/release need --scope <scope-id>")
+if op == "acquire" and not files:
+    usage("acquire needs at least one file (--file or positional)")
+
+def lock_path(root, name):
+    digest = hashlib.sha1(name.encode("utf-8")).hexdigest()[:12]
+    return os.path.join(root, "locks", digest + ".lock")
+
+def now_iso():
+    return datetime.datetime.now(datetime.timezone.utc).isoformat()
+
+def is_live(entry):
+    try:
+        exp = datetime.datetime.fromisoformat(entry.get("expires_at", ""))
+        if exp.tzinfo is None:
+            exp = exp.replace(tzinfo=datetime.timezone.utc)
+        return exp > datetime.datetime.now(datetime.timezone.utc)
+    except Exception:
+        return False
+
+lockdir = os.path.join(statedir, "locks")
+os.makedirs(lockdir, exist_ok=True)
+
+if op == "acquire":
+    conflicts = []
+    for name in files:
+        path = lock_path(statedir, name)
+        entry = {"scope_id": scope, "file": name, "acquired_at": now_iso(),
+                 "expires_at": (datetime.datetime.now(datetime.timezone.utc)
+                                + datetime.timedelta(seconds=ttl)).isoformat(),
+                 "ttl_seconds": ttl}
+        body = (json.dumps(entry, indent=2, sort_keys=True) + "\n").encode()
+        try:
+            fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+        except FileExistsError:
+            try:
+                current = json.loads(open(path).read())
+            except Exception:
+                current = {}
+            if current.get("scope_id") == scope or not is_live(current):
+                open(path, "w").write(body.decode())
+                continue
+            conflicts.append({"file": name, "held_by": current.get("scope_id"),
+                              "expires_at": current.get("expires_at")})
+            continue
+        with os.fdopen(fd, "w") as handle:
+            handle.write(body.decode())
+    if conflicts:
+        for conflict in conflicts:
+            print(f"LOCK CONFLICT: {conflict['file']} held by {conflict['held_by']}", file=sys.stderr)
+        if want_json:
+            print(json.dumps({"acquired": False, "conflicts": conflicts}, indent=2, sort_keys=True))
+        sys.exit(1)
+    if want_json:
+        print(json.dumps({"acquired": True, "files": files, "scope": scope}))
+    else:
+        for name in files:
+            print(f"LOCK ACQUIRED: {name}")
+    sys.exit(0)
+
+if op == "release":
+    for name in files:
+        path = lock_path(statedir, name)
+        try:
+            current = json.loads(open(path).read())
+        except Exception:
+            continue
+        if current.get("scope_id") == scope or not is_live(current):
+            try: os.unlink(path)
+            except Exception: pass
+    sys.exit(0)
+
+# check: live locks held by OTHER scopes (pre-scope room check)
+held = []
+for name in files:
+    path = lock_path(statedir, name)
+    try:
+        current = json.loads(open(path).read())
+    except Exception:
+        continue
+    if current.get("scope_id") != scope and is_live(current):
+        held.append({"file": name, "held_by": current.get("scope_id"),
+                     "expires_at": current.get("expires_at")})
+if want_json:
+    print(json.dumps({"locks": held}, indent=2, sort_keys=True))
+else:
+    for item in held:
+        print(f"LOCK HELD: {item['file']} by {item['held_by']} until {item['expires_at']}")
+    if not held:
+        print("no conflicting locks")
+sys.exit(0)
+PY
+}
+
 # --- dispatch ----------------------------------------------------------------
 
 usage() {
   cat <<EOF
-$PROG — stelow workflow helper (status / advance / doctor / seed / schema / ask)
+$PROG — stelow workflow helper (status / advance / doctor / seed / schema / ask / sync-scopes / lock)
 
 Usage:
   $PROG status [--json]
@@ -1007,6 +1162,9 @@ Usage:
   $PROG schema [command]
   $PROG ask --question <t> [--multiple] --option <label>... (repeat --question groups)
   $PROG sync-scopes [--name <workflow>] [--json]
+  $PROG lock acquire --scope <id> --file <f>... [--ttl N] [--json]
+  $PROG lock release --scope <id> --file <f>...
+  $PROG lock check [--scope <id>] [--file <f>...] [--json]
   $PROG --help
 
 State file:  $STATE
@@ -1055,6 +1213,10 @@ case "${1:-}" in
   sync-scopes)
     shift
     do_sync_scopes "$@"
+    ;;
+  lock)
+    shift
+    do_lock "$@"
     ;;
   doctor)
     shift

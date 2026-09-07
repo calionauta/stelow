@@ -87,7 +87,7 @@ describe("helper self-description covers the contract", () => {
     } catch (err: any) {
       out = String(err.stdout ?? "");
     }
-    for (const cmd of ["status", "advance", "doctor", "seed", "schema", "ask", "sync-scopes"]) {
+    for (const cmd of ["status", "advance", "doctor", "seed", "schema", "ask", "sync-scopes", "lock"]) {
       expect(out, `--help mentions ${cmd}`).toMatch(new RegExp(`\\b${cmd}\\b`));
     }
   });
@@ -95,7 +95,7 @@ describe("helper self-description covers the contract", () => {
   it("schema subcommand emits JSON for every subcommand", () => {
     const out = execFileSync(join(ROOT, "scripts", "stelow"), ["schema"], { encoding: "utf8" });
     const body = JSON.parse(out);
-    for (const cmd of ["status", "advance", "doctor", "seed", "ask", "sync-scopes"]) {
+    for (const cmd of ["status", "advance", "doctor", "seed", "ask", "sync-scopes", "lock"]) {
       expect(body, `schema documents ${cmd}`).toHaveProperty(cmd);
     }
   });

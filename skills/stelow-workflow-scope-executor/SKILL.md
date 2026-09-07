@@ -306,45 +306,25 @@ Record this SHA in `iteration-state-{SCOPE-ID}.md` so the post-execution `git di
 
 **Acquire file-reservation locks (prevention layer):**
 
-If the scope declared `[TARGET_FILES]` (see Step 2e) AND the orchestrator plans parallel dispatch, acquire locks via the protocol in `references/cli-tools/file-locking.md`:
+If the scope declared `[TARGET_FILES]` (see Step 2e) AND the orchestrator plans parallel dispatch, check room then acquire via the CLI (protocol in `references/cli-tools/file-locking.md`):
 
 ```bash
 # Resolve TTL from `[LOCK_TTL_SECONDS]` block if present; default 1800.
-# Validated by file-locking.md; here we just export to env for the acquire snippet.
-if [ -n "${LOCK_TTL_BLOCK:-}" ]; then
-  export LOCK_TTL_SECONDS="$LOCK_TTL_BLOCK"   # bash escapes; the acquire snippet re-validates
-else
-  unset LOCK_TTL_SECONDS
-fi
+TTL_ARGS=()
+if [ -n "${LOCK_TTL_BLOCK:-}" ]; then TTL_ARGS=(--ttl "$LOCK_TTL_BLOCK"); fi
 
 # Check existing locks for any of this scope's target_files
-LOCK_DIR=".stelow/${DATE}/${DIR}/locks"
-mkdir -p "$LOCK_DIR"
-CONFLICTS=()
-for f in ${TARGET_FILES[@]}; do
-  LOCK="$LOCK_DIR/$(printf '%.12s' "$(printf '%s' "$f" | sha1sum | cut -d' ' -f1)").lock"
-  if [ -f "$LOCK" ]; then
-    HOLDER=$(jq -r '.scope_id' "$LOCK" 2>/dev/null)
-    EXPIRES=$(jq -r '.expires_at' "$LOCK" 2>/dev/null)
-    if [ "$HOLDER" != "$SCOPE_ID" ] && [ "$(date -u -d "$EXPIRES" +%s)" -gt "$(date -u +%s)" ]; then
-      CONFLICTS+=("$f held by $HOLDER")
-    fi
-  fi
-done
-if [ ${#CONFLICTS[@]} -gt 0 ]; then
-  echo "⚠️ Lock conflicts — aborting parallel dispatch:" >&2
-  printf '  • %s\n' "${CONFLICTS[@]}" >&2
-  echo "Either: (a) sequential re-dispatch, or (b) wait for lock expiry." >&2
-  # Orchestrator decides next step (sequential re-run or wait)
-fi
+scripts/stelow lock check --scope "$SCOPE_ID" "${TARGET_FILES[@]}" --json
+# → {"locks": []} means room; non-empty means abort parallel dispatch:
+# either (a) sequential re-dispatch, or (b) wait for lock expiry.
+# Orchestrator decides next step (sequential re-run or wait).
 
-# Acquire locks (skip files held by stale/expired locks — see file-locking.md)
-for f in ${TARGET_FILES[@]}; do
-  # ... full acquire snippet in file-locking.md ...
-done
+# Acquire locks
+scripts/stelow lock acquire --scope "$SCOPE_ID" "${TARGET_FILES[@]}" "${TTL_ARGS[@]}"
+# exit 1 names the holder: LOCK CONFLICT: <file> held by <scope>
 ```
 
-The lock protocol is **opt-in for the agent**: skip this step entirely if the scope has no `target_files` declared OR sequential dispatch is in use. See `file-locking.md` for full bash, TTL semantics, and stale-lock stealing.
+The lock protocol is **opt-in for the agent**: skip this step entirely if the scope has no `target_files` declared OR sequential dispatch is in use. See `file-locking.md` for TTL semantics and stale-lock stealing.
 
 **Mark scope as in-progress:**
 ```bash
@@ -555,7 +535,7 @@ if (wf?.scopes) {
 
 **Release file-reservation locks:**
 
-If locks were acquired in Step 3c, release them now. Lock release uses the same atomic-create pattern inverted (just `rm -f`). Stale locks (TTL expired) auto-recover on next acquire. See `references/cli-tools/file-locking.md`.
+If locks were acquired in Step 3c, release them now (`scripts/stelow lock release --scope "$SCOPE_ID" "${TARGET_FILES[@]}"`). See `references/cli-tools/file-locking.md`.
 
 **Report per scope:**
 ```

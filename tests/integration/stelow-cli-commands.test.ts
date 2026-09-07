@@ -132,7 +132,7 @@ describe("schema", () => {
     const r = run(wd, ["schema"]);
     expect(r.status).toBe(0);
     const j = JSON.parse(r.stdout);
-    for (const cmd of ["status", "advance", "doctor", "seed", "ask", "sync-scopes"]) {
+    for (const cmd of ["status", "advance", "doctor", "seed", "ask", "sync-scopes", "lock"]) {
       expect(Object.keys(j), `schema covers ${cmd}`).toContain(cmd);
       expect(j[cmd].usage, `${cmd} usage`).toBeTruthy();
       expect(j[cmd].exit_codes, `${cmd} exit codes`).toBeTruthy();
