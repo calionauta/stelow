@@ -1,27 +1,22 @@
 # Tool: safe-change
 
-> Regression check before planning using pi-agent-codebase-workflows.
+> Regression check before planning (impact analysis, affected files, risks).
 
 ---
 
 ## Install
 
-**Pi:**
-```bash
-pi install git:github.com/PriNova/pi-agent-codebase-workflows
-```
+Any agent that supports skill installation:
 
-**Universal fallback (any agent that supports skill installation):**
 ```bash
 npx skills add Prinova/pi-agent-codebase-workflows -g
 ```
-The `-a <cli>` flag is no longer required — the skill installs to `~/.agents/skills/` and
-the agent picks it up automatically. The flagship install path (`pi install git:...`)
-remains for Pi users who prefer the registry install.
+
+The skill installs to `~/.agents/skills/` and the agent picks it up automatically.
 
 ---
 
-## Specific Command (PI)
+## Command
 
 ```bash
 safe-change

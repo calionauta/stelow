@@ -56,7 +56,7 @@ Memory Cache ←→ .stelow/{date}/{dir}/checklist.md
      └── onResume ──────┘
 ```
 
-- **File** = source of truth. CLI-native todos are display only.
+- **File** = source of truth. Harness-native todos are display only.
 - **Write policy** = every turn end
 - **Read policy** = session start
 
@@ -70,10 +70,9 @@ All CLIs MUST persist the checklist to file:
 .stelow/{date}/{dir}/checklist.md
 ```
 
-| CLI | Tool (for display) | Persistence | Strategy |
+| Harness capability | Tool (for display) | Persistence | Strategy |
 |-----|--------------------|-------------|----------|
-| Pi + pi-tasks (current) | `TaskCreate`, `TaskList`, `TaskUpdate` | ✅ Session/project scoped JSON | Use tool for widget + write checklist.md for persistence |
-| Pi + rpiv-todo (legacy) | `todo` | ✅ Branch replay | Use tool for sidebar + write checklist.md for persistence |
+| Native todo/task tools | The harness's own task tools | ✅ Where the harness persists | Use tool for display + always write checklist.md for persistence |
 | Any other agent | n/a | ❌ Session only | Write checklist.md, read on resume |
 
 CLI native todos are for **DISPLAY** only. `checklist.md` is always the source of truth.
@@ -84,30 +83,19 @@ CLI native todos are for **DISPLAY** only. `checklist.md` is always the source o
 
 ## CLI Commands
 
-### pi (with @tintinweb/pi-tasks)
+### Harness with native task tools
 
-**Tools:** `TaskCreate`, `TaskList`, `TaskGet`, `TaskUpdate`
-
-> **Required:** Install with `pi install npm:@tintinweb/pi-tasks`
-
-pi-tasks provides a persistent widget above the editor with status icons (✔/◼/◻), dependency management, and session/project-scoped storage.
+If the harness exposes task tools (create/list/update or equivalent):
 
 ```typescript
-TaskCreate({
-  subject: "[PHASE-1] Task description",
-  description: "Detailed context and acceptance criteria"
-})
-
-TaskUpdate({
-  taskId: "1",
-  status: "completed"
-})
-
+// Shape varies by harness — adapt to the registered tool:
+TaskCreate({ subject: "[PHASE-1] Task", description: "..." })
+TaskUpdate({ taskId: "1", status: "completed" })
 TaskList()
 // Returns all tasks with status, owner, blocked-by info
 ```
 
-Tasks are created in `pending` status, updated to `in_progress` when started, `completed` when done. For cross-CLI compatibility, ALWAYS write checklist.md too:
+Tasks are created in `pending` status, updated to `in_progress` when started, `completed` when done. For cross-harness compatibility, ALWAYS write checklist.md too:
 
 ```typescript
 TaskCreate({ subject: "[PHASE-1] Task", description: "..." })
@@ -117,24 +105,7 @@ TaskList()
 write({ path: ".stelow/{date}/{dir}/checklist.md", content: checklistContent })
 ```
 
-Storage modes (set via `/tasks` → Settings):
-- `memory` — in-memory only (lost on session end)
-- `session` (default) — per-session file, survives resume
-- `project` — shared across all sessions in the project
-
-### pi (with rpiv-todo — legacy)
-
-**Tool:** `todo` (via `@juicesharp/rpiv-todo`)
-
-> **Required:** Install with `pi install npm:@juicesharp/rpiv-todo`
-
-```typescript
-todo({ action: "create", subject: "[PHASE-1] Task", description: "..." })
-todo({ action: "update", id: todoId, status: "completed" })
-todo({ action: "list" })
-```
-
-### generic (Fallback)
+### Generic (fallback)
 
 When no native todo tool is available:
 

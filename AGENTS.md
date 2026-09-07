@@ -10,8 +10,8 @@ zero-dependency shell helper (`scripts/stelow`). There is **no extension code,
 no compiled plugin, and no per-host adapter** in the repo.
 **Stack:** bash + python3 (runtime), Node 20+, TypeScript strict (tooling/tests).
 **Hosts:** any agent that reads `~/.agents/skills/<name>/SKILL.md` (the
-agentskills.io standard) — pi.dev, Claude Code, Codex, Cursor,
-Continue, OpenCode, …
+agentskills.io standard) — Claude Code, Codex, Cursor, OpenCode, Gemini CLI,
+Goose, Pi, …
 
 ## Architecture
 
@@ -218,7 +218,7 @@ Enforcement:
 - **ctx7** — live library docs during execution setup. Use: `npx @vedanth/context7`. Fallback: skip.
 - **sem** ([Ataraxy-Labs/sem](https://github.com/Ataraxy-Labs/sem)) — entity-level diff for Execution Critique (functions, types, methods instead of raw lines). Cross-platform install: `curl -fsSL https://raw.githubusercontent.com/Ataraxy-Labs/sem/main/install.sh | sh` (macOS / Linux), `winget install AtaraxyLabs.sem` (Windows), `brew install sem-cli` (macOS / Linuxbrew). Fallback: `git diff` — raw line-level only.
 
-All optional — workflow runs without them. `scripts/setup.sh` auto-detects + offers install (default Y).
+All optional — workflow runs without them. `./install.sh` offers install (default Y).
 
 ## Token Efficiency
 

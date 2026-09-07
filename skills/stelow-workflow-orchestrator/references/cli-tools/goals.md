@@ -1,15 +1,18 @@
 # Tool: Goal System
 
-> **Built-in:** pi-subagents `subagent()` tool supports acceptance-based goals natively
-> (see `acceptance` parameter with `criteria`, `evidence`, `verify`, `review`, `stopRules`)
-> **Fallback:** Other CLIs use `/sisyphus`, `/goals` commands when native is unavailable
+> **Acceptance-native:** when the harness's delegate tool supports an
+> acceptance contract (`criteria`, `evidence`, `verify`, `review`, `stopRules`),
+> pass it directly — the child self-corrects in the same context.
+> **Fallback:** harnesses without it use parent-controlled re-delegation
+> (implement → verify → fix → repeat) with the same contract data.
 
 ---
 
 ## Core Concept: Goals = acceptance contracts
 
-Every scope type becomes a `subagent()` call with an acceptance contract.
-No separate extensions needed — pi-subagents acceptance handles it all.
+Every scope type becomes a delegate call with an acceptance contract.
+No separate extensions needed — the contract travels with the delegation,
+whether the harness enforces it natively or the parent loops over it.
 
 | Scope Type | How it becomes a goal |
 |------------|----------------------|
@@ -20,9 +23,10 @@ No separate extensions needed — pi-subagents acceptance handles it all.
 
 ---
 
-## Subagent with acceptance (preferred for pi)
+## Subagent with acceptance (acceptance-native harnesses)
 
-Pass an acceptance contract directly to `subagent()`:
+Pass an acceptance contract directly to the harness's delegate tool
+(shape varies — see `subagents.md` for the capability tiers):
 
 ```typescript
 subagent({
@@ -45,29 +49,11 @@ This replaces the need for external goal packages *and* autoresearch extensions.
 
 ---
 
-## Command Variants (Fallback for other CLIs)
+## Delegation without native acceptance (parent-controlled loop)
 
-When the native goal system is not available, four CLI modes exist:
-
-| Semantic name | Command | Discussion | Preserves order | Best for |
-|---------------|---------|-------------|-----------------|----------|
-| **ordered-execution-goal** | `/sisyphus-set` | No | ✅ | Post-approval execution, automatic workflow |
-| **ordered-discussion-goal** | `/sisyphus` | Yes | ✅ | Discuss before executing, blocked needs clarification |
-| **flexible-execution-goal** | `/goals-set` | No | ❌ | Open-ended work without fixed sequence |
-| **flexible-discussion-goal** | `/goals` | Yes | ❌ | Vague objectives needing research/grill |
-
-### When to use each
-
-```
-After Tech Planning approval:
-  → ordered-execution-goal (/sisyphus-set) — no discussion, starts immediately
-
-During execution, blocked:
-  → ordered-discussion-goal (/sisyphus) — stop and ask
-
-Exploratory work:
-  → flexible-discussion-goal (/goals) or flexible-execution-goal (/goals-set)
-```
+When the harness delegate tool takes no acceptance contract, the parent runs
+the loop itself: delegate → verify commands → re-delegate with feedback until
+criteria pass or max iterations exhaust. Same contract data, more turns.
 
 ---
 

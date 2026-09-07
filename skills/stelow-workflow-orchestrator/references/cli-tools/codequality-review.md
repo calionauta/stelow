@@ -25,14 +25,7 @@ This tool is **not installed by default** and is **not a replacement** for:
 
 ## Install
 
-**Pi-native path:**
-
-```bash
-pi install git:github.com/cursor/plugins
-# Then use via skill reference
-```
-
-**Universal fallback for any other agent:**
+Any agent that supports skill installation:
 
 ```bash
 npx skills add cursor/plugins -g

@@ -10,10 +10,14 @@
  *   D. No raw pi.on or pi.registerTool calls.
  *   E. SKILL.md frontmatter declares name and description per agentskills.io.
  *   F. No host-private API references.
+ *   G. No harness package install commands (pi install / npm ls probes).
+ *   H. No harness-specific package names or config paths.
  *
  * The cli-tools/plannotator.md reference doc is the ONLY allowed
  * exception to A and B: it documents the Pi-native path alongside the
- * universal fallback.
+ * universal fallback. The cli-tools/agent_browser.md reference doc is
+ * the ONLY allowed exception to H for the @earendil-works scope: it
+ * documents a functional npx CLI invocation, not a harness dependency.
  */
 import { describe, it, expect } from "vitest";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
@@ -78,6 +82,12 @@ function stripFrontmatter(content: string): string {
 function isExemptFromAudit(filePath: string): boolean {
   return filePath.endsWith("/cli-tools/plannotator.md")
     || filePath.endsWith("/references/cli-tools/subagents.md");
+}
+
+function isExemptFromPackageScopeAudit(filePath: string): boolean {
+  // agent_browser.md documents a functional npx CLI (usable from any
+  // harness), not a harness dependency — same precedent as plannotator.md.
+  return filePath.endsWith("/references/cli-tools/agent_browser.md");
 }
 
 // ── audit ─────────────────────────────────────────────────────────────
@@ -148,6 +158,46 @@ describe("per-skill host-agnostic compliance", () => {
           const visualReviewRefs = (noFences.match(/\bvisual_review\b/g) ?? []).length;
           if (plannotatorRefs > 0) {
             expect(visualReviewRefs, file + ": plannotator without visual_review canonical").toBeGreaterThan(0);
+          }
+        }
+      });
+
+      it("body has no harness package install commands", () => {
+        for (const file of files) {
+          if (isExemptFromAudit(file)) continue;
+          const content = stripFrontmatter(readFileSync(file, "utf8"));
+          const noFences = content.replace(/```[\s\S]*?```/g, "");
+          expect(noFences, file).not.toMatch(/\bpi install\b/i);
+          expect(noFences, file).not.toMatch(/\bnpm ls @?\S*pi-/i);
+        }
+      });
+
+      it("body has no harness-specific package names or config paths", () => {
+        for (const file of files) {
+          if (isExemptFromAudit(file)) continue;
+          const content = stripFrontmatter(readFileSync(file, "utf8"));
+          const noFences = content.replace(/```[\s\S]*?```/g, "");
+          for (const pattern of [
+            /tintinweb/i,
+            /nicobailon/i,
+            /pi-subagents/,
+            /pi-supervisor/,
+            /pi-tasks/,
+            /pi-intercom/,
+            /rpiv-/i,
+            /condensed-milk/i,
+            /caveman-milk/i,
+            /@ff-labs\//,
+            /@juicesharp\//,
+            /@plannotator\/pi-extension/,
+            /~\/\.pi\//,
+            /commandcode/i,
+            /deepseek/i,
+          ]) {
+            expect(noFences, file + " " + String(pattern)).not.toMatch(pattern);
+          }
+          if (!isExemptFromPackageScopeAudit(file)) {
+            expect(noFences, file).not.toMatch(/@earendil-works\//);
           }
         }
       });

@@ -3,7 +3,7 @@ name: stelow-workflow-scope-executor
 description: >
   [stelow] Reads an approved product plan with typed scopes (feature, optimization, spike, test-*)
   and routes each scope to its correct executor. Acts as the autonomous overnight
-  "set and forget" orchestrator — the pi equivalent of /goal for approved plans.
+  "set and forget" orchestrator for approved plans.
   For test-* scopes, enforces hard blocks (critical-path tests, security gates).
   Part of stelow but can be used standalone.
 metadata:
@@ -49,7 +49,7 @@ If the plan has the optional **"Execution routing"** section (from stelow), use 
 
 You are an **execution orchestrator** — a senior engineering lead running a shift-left review of an approved plan. Your job is NOT to redesign or question the plan (that already happened in earlier phases). Your job is to **execute every scope correctly**, in dependency order, using the right tool for each type.
 
-You have access to all pi tools and subagents. Use them.
+You have access to the harness's tools and subagents. Use them.
 
 ---
 
@@ -406,12 +406,11 @@ The delegation mechanism varies by harness. The contract data stays the same; on
 
 | Harness | Delegation pattern | Self-correction mechanism |
 |---------|-------------------|--------------------------|
-| **pi** (pi-subagents) | `subagent({ agent, task, acceptance })` | `acceptance.maxFinalizationTurns` — runtime reopens child session for self-correction |
-| **Pi (with pi-subagents)** | `subagent({ agent, task, context: "fresh", acceptance })` | Child self-validates; parent receives structured result |
-| **Pi (built-in subagent)** | `subagent({ agent, task })` | Always-isolated child; parent reads checkpoint after child returns |
-| **Universal fallback** | Execute directly in current session, save outputs to files | Manual iteration in parent context |
+| **Acceptance-native** | Delegate tool with acceptance contract | Runtime reopens child session for self-correction |
+| **Isolated subagents** | Delegate tool with `agent` + `task` (+ fresh context per the tool's default) | Child self-validates; parent receives structured result, re-delegates on gaps |
+| **Headless / universal** | Execute directly in current session, save outputs to files | Manual iteration in parent context |
 
-**Example: pi-subagents (acceptance-native)**
+**Example: acceptance-native delegation**
 
 When the harness supports acceptance contracts natively, delegate once and let the runtime handle self-correction. The worker runs **fresh** with **explicit reads** — the acceptance contract IS the contract, orchestrator deliberation history is noise.
 
@@ -589,7 +588,7 @@ If locks were acquired in Step 3c, release them now. Lock release uses the same 
 ⚠️ [SCOPE-2] Dashboard — ESCALATED (3 iterations, last error: e2e test timeout)
 ```
 
-> **Why file persistence?** LLM context can be compacted (pi's `/compact`, `/clear`, or tool-level resets). The state file ensures the iteration loop resumes correctly after any context loss. This pattern is CLI-agnostic — any agent with file system access can read/write the same format. The `actual_files` field enables the post-execution overlap check (Step 8).
+> **Why file persistence?** LLM context can be compacted or cleared. The state file ensures the iteration loop resumes correctly after any context loss. This pattern is harness-agnostic — any agent with file system access can read/write the same format. The `actual_files` field enables the post-execution overlap check (Step 8).
 
 #### 3e-bis. Record convention (claim-proof evidence before close)
 

@@ -172,7 +172,7 @@ pi
 ```
 
 **Subagent skill passing:** Pi's agent system supports `.pi/skills/` as the
-standard skill directory. Symlink the 25 stelow skills there:
+standard skill directory. Symlink the 28 stelow skills there:
 ```bash
 ln -s $(pwd)/.agents/skills ~/.pi/skills/stelow-product
 ```

@@ -34,7 +34,7 @@ You are a strategic product planner following the Shape Up method. This is the *
 | `subagent` | `references/cli-tools/subagents.md` |
 | `structured question` | `references/cli-tools/ask.md` |
 | `visual_review annotate --gate` | `references/cli-tools/visual_review.md` |
-| `goal-system` (ordered + flexible) | `references/cli-tools/goals.md` |
+| `goal-system` (acceptance contracts) | `references/cli-tools/goals.md` |
 | `safe-change` | `references/cli-tools/safe-change.md` |
 | `intercom` | `references/cli-tools/intercom.md` |
 | `supervise` | `references/cli-tools/supervise.md` |
@@ -155,7 +155,7 @@ LLMs suffer from **context rot**: compliance with their own rules drops from
 - Activate only during execution, WHEN STARTING each scope.
 
 ### Execution
-- **DO NOT ask** "Would you like to execute?", "Create ordered-execution-goal?", "Review plan first?"
+- **DO NOT ask** "Would you like to execute?", "Create a goal?", "Review plan first?"
 - **Execution is automatic** after Tech Planning approval. Proceed directly.
 - see the `stelow-workflow-scope-executor` skill for instructions for scope routing.
 - See `stages/execution.md` for details.
@@ -323,7 +323,7 @@ When completing a stage and moving to the next:
 **Auto-advance is the default.** Do NOT ask the user for permission or wait for `/sw-next`.
 Update the tracking file directly via bash, then continue to the next stage in the same response.
 
-**Mechanism (all CLIs):** Update `stelow.json` only — the TS extension's `writeTracking()` automatically mirrors changes to `index.json` (write-through via `updateWorkflowIndexJson`). No manual sync needed.
+**Mechanism (all harnesses):** Update `stelow.json` directly — it is the canonical source of truth. No manual sync needed.
 
    ```bash
    node -e "

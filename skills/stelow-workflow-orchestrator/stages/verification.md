@@ -113,9 +113,9 @@ esac
 **Rule:** even at Lean, code review is never skipped. If file count is low (≤2), the reviewer uses a lighter checklist (correctness, security baseline) instead of architectural analysis. This keeps quality floor while keeping cost proportionate to scope.
 
 If running, launch a fresh-context reviewer.
-See `references/cli-tools/subagents.md` for the `subagent()` pattern — this works
-on pi.dev, OpenCode, and Claude Code (all have native subagent support).
-Run **automatically** with `context: "fresh"` — the fresh session provides
+See `references/cli-tools/subagents.md` for the delegation pattern — this works
+on any harness with native subagent support.
+Run **automatically** with fresh context — the fresh session provides
 independent review without the degraded context of the original session.
 This mitigates the shallow review trap (Ox Security 2025) even with the
 same model, because the issue isn't identical models but contaminated context
@@ -338,9 +338,9 @@ the "invisible 20%" (Osmani 2026, GitClear 2025).
 After all verification steps pass, **automatically proceed to Code Quality Review when required, then Execution Critique**.
 
 > **Note on browser dependency:** The Quick Tier (browserless) in
-> `ui-quality` and `interactive-testing` works on ALL CLIs. The Full Tier
-> (agent-browser) is pi.dev only per
-> [agent_browser.md](references/cli-tools/agent_browser.md). Other CLIs should
-> rely on the Quick Tier and note what couldn't be verified for human review.
+> `ui-quality` and `interactive-testing` works on ALL harnesses. The Full Tier
+> (agent-browser) needs a browser-capable tool per
+> [agent_browser.md](references/cli-tools/agent_browser.md). Without one, rely
+> on the Quick Tier and note what couldn't be verified for human review.
 
 See the `stelow-workflow-testing-execution` skill for the full testing protocol reference.

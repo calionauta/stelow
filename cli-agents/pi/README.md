@@ -6,7 +6,7 @@ Commands and host activation are documented in `COMMANDS.md` (single source of t
 ## Installation
 
 Since 1.0.0 the product is **skills-only** — there is no Pi extension to build
-or install. pi.dev consumes the same 28 skills as every other agent:
+or install. Pi consumes the same 28 skills as every other agent:
 
 ```bash
 # Run from project root

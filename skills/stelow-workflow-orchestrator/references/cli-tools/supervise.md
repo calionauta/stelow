@@ -1,7 +1,7 @@
 # Supervision — Scope Execution Steering
 
-> CLI-agnostic checkpoint supervision using headless CLI verification.
-> Falls back to Pi's `/supervise` tool when available (more granular).
+> Checkpoint supervision using headless CLI verification.
+> Falls back to harness-native supervision where available (more granular).
 
 ---
 
@@ -16,11 +16,11 @@ Two approaches:
 
 | Approach | Coverage | Portability | Latency |
 |----------|----------|-------------|---------|
-| **Headless CLI checkpoint** (any CLI) | Discrete — checks at N tool call intervals | ✅ All harnesses | ~5-15s per check |
-| **`/supervise`** (Pi only) | Continuous — inspects every response | ❌ Pi only | ~0s (in-loop) |
+| **Headless CLI checkpoint** (any harness) | Discrete — checks at N tool call intervals | ✅ All harnesses | ~5-15s per check |
+| **Harness-native supervision** (where available) | Continuous — inspects every response | ❌ Harness-specific | ~0s (in-loop) |
 
-**Recommendation:** Use headless CLI checkpoint by default. Use `/supervise`
-on Pi for long, complex scopes where continuous monitoring matters.
+**Recommendation:** Use headless CLI checkpoint by default. Use harness-native
+supervision for long, complex scopes where continuous monitoring matters.
 
 ---
 
@@ -30,10 +30,10 @@ After every N tool calls (recommended: 5-10 for feature scopes, 3-5 for spikes),
 run the harness non-interactively with a verification prompt:
 
 ```bash
-# Pattern (adapt per CLI):
-#   pi: pi --print "..."
+# Pattern (adapt per harness — use its documented non-interactive mode):
+#   <agent-cli> --print/-p "$prompt"
 
-pi --print --output-format json "
+<agent-cli> --print "
 Read the current scope state in .stelow/<date>/<hash>/plans/scopes/.
 Compare against the DoD and acceptance criteria.
 
@@ -46,12 +46,11 @@ Return JSON only:
 "
 ```
 
-### Per-CLI command
+### Per-harness command
 
-| CLI | Headless command | Structured output |
+| Harness | Headless command | Structured output |
 |-----|-----------------|-------------------|
-| pi | `pi --print "$prompt"` | `--output-format json` or prompt-instructed |
-| Claude Code | `claude -p "$prompt"` | `--output-format json` |
+| Any coding-agent CLI | `<agent-cli> --print/-p "$prompt"` | Flag-supported JSON or prompt-instructed |
 | Universal fallback | Agent's own headless mode, if exposed | Prompt-instructed (ask for JSON) |
 
 ### Decision matrix
@@ -65,20 +64,13 @@ Return JSON only:
 
 ---
 
-## Approach 2: `/supervise` (Pi only)
+## Approach 2: harness-native supervision (where available)
 
-Available when `pi-supervisor` extension is installed. Provides continuous,
-real-time response inspection — every LLM response is checked against the
-outcome before the next tool call runs.
-
-```bash
-/supervise [outcome]
-```
-
-| Info | Value |
-|------|-------|
-| Package | pi-supervisor (tintinweb) |
-| Command | `/supervise` |
+Some harnesses ship continuous, real-time response inspection — every LLM
+response is checked against the outcome before the next tool call runs.
+Consult the harness's own docs for the exact tool/command; the stelow-side
+contract is identical (DoD + acceptance criteria in, on-track/gaps/needs-human
+out).
 
 ---
 
@@ -106,8 +98,8 @@ determines whether and how aggressively to supervise:
 | Appetite | Recommended approach | Frequency |
 |----------|---------------------|-----------|
 | `Lean` | Headless CLI checkpoint | Every 10 tool calls |
-| `Core` | Headless checkpoint or `/supervise` (Pi) | Every 5-7 tool calls |
-| `Complete` | `/supervise` (Pi) or checkpoint | Every 3 tool calls |
+| `Core` | Headless checkpoint or harness-native supervision | Every 5-7 tool calls |
+| `Complete` | Harness-native supervision or checkpoint | Every 3 tool calls |
 
 ### Skip conditions
 
@@ -140,21 +132,13 @@ Respect the Appetite-Based Activation table above for sensitivity and skip decis
 | `optimization` | Headless checkpoint (every 3 calls) | Metrics verify success automatically |
 | `spike` | Headless checkpoint (at end) | Investigative — only need final validation |
 | `test-*` | None — tests pass/fail speaks for itself | Binary outcome, no drift possible |
-| High-risk feature | `/supervise` (if Pi) or checkpoint every 3 calls | Continuous monitoring catches subtle drift |
+| High-risk feature | Harness-native supervision or checkpoint every 3 calls | Continuous monitoring catches subtle drift |
 
 ---
 
 ## Implementation notes
 
-The adapter's `execHeadless(task)` method implements this pattern.
-Each CLI adapter calls its own non-interactive command:
-
-```typescript
-// PiAdapter: execSync(\`pi --print \${JSON.stringify(task)}\`)
-// ClaudeCodeAdapter: execSync(\`claude -p \${JSON.stringify(task)}\`)
-// Historical: removed adapters used per-agent headless commands. The stelow
-// extension ships PiAdapter + GenericAdapter only.
-```
-
-The verification prompt is constructed by the calling code (skill/stage)
-and includes scope context, DoD, and expected output format.
+The calling code (skill/stage) constructs the verification prompt with scope
+context, DoD, and expected output format, then runs it through the harness's
+non-interactive command. No harness-specific adapter code ships in this repo —
+hosts wrap the same `scripts/stelow` state machine (see `cli-agents/COMMANDS.md`).

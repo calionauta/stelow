@@ -33,7 +33,6 @@ stryker-reports/
 # Local workflow artifacts (auto-generated at runtime)
 .pi/
 .pi-*
-.pi-subagents/
 # .stelow/ — runtime artifacts (state, session knowledge, plans)
 .stelow/
 !.stelow/.gitkeep
@@ -94,7 +93,7 @@ pnpm-lock.yaml
 gap-analysis.md
 edge-case-review.md
 
-# Local skills (pi installs here)
+# Local skills
 .agents/
 
 # Generated cli-tools (synced from orchestrator at build/install time)

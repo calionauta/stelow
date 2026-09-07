@@ -137,7 +137,7 @@ Output: Append to interfaces.md per hybrid-recommendation.md
 
 **After all selected proposals (+ Hybrid when applicable), use the visual review gate** (see `references/cli-tools/visual_review.md` for the correct command). Execute it directly — do NOT describe it to the user.
 
-Prefer the `visual_review` tool (registered by stelow extension). Fall back to bash CLI if unavailable:
+Prefer the harness-registered `visual_review` tool when available. Fall back to bash CLI if unavailable:
 
 ```
 # Primary (tool, works when bash is blocked):

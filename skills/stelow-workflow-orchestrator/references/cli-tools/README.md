@@ -1,36 +1,35 @@
 # CLI Tools Reference
 
 This directory contains tool abstractions for the stelow orchestrator. Each file
-documents how to invoke a specific tool for two surfaces:
+documents how to invoke a specific capability on two surfaces:
 
-1. **Pi-native path** — the registered tool name (e.g. `ask_user_question`,
-   `subagent`, `visual_review`, `todo`) that the stelow extension provides
-   as a first-class wrapper around the underlying CLI binary or subagent
-   harness.
+1. **Harness-native path** — the registered tool name (e.g. a delegate/subagent
+    tool, a question tool, a todo tool) that the agent's harness provides
+    as a first-class wrapper.
 
-2. **Universal fallback** — the equivalent CLI invocation a non-Pi agent
-   can use directly via the standard `bash` / `read` / `write` / `edit`
-   tools. This works in any agent that follows the
-   [agentskills.io](https://agentskills.io/) standard (Pi, Claude Code,
-   Codex, Cursor, Continue, OpenCode) since the skills are installed at
-   `~/.agents/skills/<name>/` and the agent picks them up automatically.
+2. **Universal fallback** — the equivalent invocation any agent can use
+    directly via the standard `bash` / `read` / `write` / `edit`
+    tools. This works on any agent that follows the
+    [agentskills.io](https://agentskills.io/) standard, since the skills are
+    installed at `~/.agents/skills/<name>/` and the agent picks them up
+    automatically.
 
 ## Detection Strategy
 
 The orchestrator picks the path at runtime via two mechanisms:
 
-1. **`PRODUCT_WORKFLOW_CLI` env var** — explicit override.
-   - `pi` → use Pi-native paths
-   - `generic` → use universal fallback for every tool
-   - any other value → log warning, fall back to `generic`
-2. **Directory probe** — if env var unset, check `~/.pi/`. If present, use Pi-native paths; otherwise `generic`.
+1. **Explicit override** — `STELOW_WORKFLOW=1` + `STELOW_STATE=<path>` activates
+   workflow mode (see `references/host-levers.md`); capability probing below
+   decides the invocation shape.
+2. **Capability probe** — check the tool registry top-down: acceptance-native
+   delegate tool? native subagent/task tool? headless CLI binary on PATH?
+   Otherwise `generic`.
 
-Default is `generic`, not `pi`. This is intentional: the Pi-native wrapper
-tools (`ask_user_question`, `subagent`, etc.) only exist when the stelow
-extension has loaded. Until that happens, every agent looks identical to
-the orchestrator and gets the universal-fallback instructions.
+Default is `generic`. This is intentional: harness-native wrapper tools only
+exist when the harness provides them. Until probed, every agent looks
+identical to the orchestrator and gets the universal-fallback instructions.
 
-> **Important:** Default is `generic`, NOT a specific CLI.
+> **Important:** Default is `generic`, NOT a specific harness.
 > - If we don't know the agent, we fall back to universal instructions
 > - Universal means "use built-in tools with standard names"
 > - This is safer than assuming a specific tool registry
@@ -45,10 +44,9 @@ Each tool file follows this structure:
 ## Quick Summary
 > One-line description for LLM to find equivalent when unavailable.
 
-## Pi-native path
+## Harness-native path
 
-The `tool_name` registered by the stelow extension is the recommended
-invocation when the agent has the extension loaded.
+The registered tool is the recommended invocation when the harness provides it.
 
 ```typescript
 tool_name({ ... })
@@ -59,7 +57,7 @@ sees a single tool call that maps to one or more CLI invocations.
 
 ## Universal fallback
 
-For agents without the extension, fall back to the equivalent CLI
+For harnesses without the tool, fall back to the equivalent CLI
 binary or shell construct. Use the same tool namespace (bash, read,
 write, edit, glob, grep) the agent already provides.
 
@@ -107,7 +105,7 @@ In skills, reference tools like this:
 ```
 
 The LLM should:
-1. Check whether `ask_user_question`, `subagent`, `visual_review`, `todo` etc. are
-   available in its tool registry.
-2. If yes, use the Pi-native path.
+1. Check whether a delegate/subagent tool, question tool, todo tool etc. are
+    available in its tool registry.
+2. If yes, use the harness-native path.
 3. If no, fall back to the universal CLI invocation in the tool's file.

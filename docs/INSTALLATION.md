@@ -19,12 +19,11 @@ or host registration step; any agent that reads `~/.agents/skills/<name>/SKILL.m
 npx skills add calionauta/stelow -g
 ```
 
-**Zero-to-running on a new machine** (optionally bootstraps Node + pi.dev +
-toolchain before installing the skills):
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/calionauta/stelow/main/setup.sh | sh
-```
+**Zero-to-running on a new machine:** install a coding-agent CLI first (e.g.
+Claude Code, Codex, OpenCode, Pi — authenticated with your provider), then
+install [bb desktop](https://getbb.app) and
+`bb plugin install git:https://github.com/calionauta/bb-plugin-stelow.git --yes`
+(see the README's Path A).
 
 ---
 
@@ -53,18 +52,15 @@ The 17-stage model, data flow, and state layout are documented in
 ## Commands
 
 ```bash
-./install.sh                    # Flatten skills to ~/.agents/skills/ (default)
-./install.sh --minimal          # Skills only, no optional toolchain (same as default in practice)
+./install.sh                    # Full setup: skills + optional tooling (default)
+./install.sh --minimal          # Skills only, no optional toolchain
 ./install.sh update             # Re-copy skills + prune retired/orphaned
-./install.sh remove             # Remove skills from all detected agents
+./install.sh remove             # Remove installed skills
 ./install.sh --help             # Show help
 
 # Non-interactive (CI)
 ASSUME_YES=1 ./install.sh
 ```
-
-`./install.sh --minimal` is the default behavior: only the skills are installed.
-There is no Pi-extension step anymore (removed in 1.0.0).
 
 ---
 

@@ -338,9 +338,6 @@ This package is **skills-only and host-agnostic** — its 28 skills run on any a
 | **bb desktop** (recommended) | Download at [getbb.app](https://getbb.app), then `bb plugin install git:https://github.com/calionauta/bb-plugin-stelow.git --yes` | Kanban board + inbox + `bb stelow` worker CLI (workflow skills vendored & auto-synced; see [Path A](#-path-a-bb-desktop-recommended)) |
 | **Any other agent** | `npx skills add calionauta/stelow -g` | All 28 skills, copied to `~/.agents/skills/` |
 | **Existing repo / offline** | `git clone ... && ./install.sh` | All 28 skills + prune of retired/orphaned skills |
-| **New machine, Pi CLI** (legacy bootstrap) | `curl -fsSL https://raw.githubusercontent.com/calionauta/stelow/main/setup.sh \| sh` | Node.js (optional) + all 28 skills + Pi agent toolchain (see `PI_PACKAGES` in `setup.sh` — not required) |
-
-> `setup.sh` is a legacy Pi-CLI bootstrap: it installs the Pi agent, Pi packages (including stelow itself as a Pi package, pre-1.0.0 model), and writes `~/.pi/agent/settings.json` with opinionated defaults. It is only useful if Pi is your agent. The canonical paths are bb desktop (Path A) or skills-only install (Path B).
 
 ### Intent-Aware Start
 
@@ -414,11 +411,11 @@ stelow is designed to be **self-contained** — the 28 skills + installer cover 
 
 | Dependency | Required? | Used by | Install method | Fallback if absent |
 |---|---|---|---|---|
-| [cymbal](https://github.com/1broseidon/cymbal) | Optional | Tech Preview, Codebase Feature Recon, Alignment Check | `brew install 1broseidon/tap/cymbal` (macOS), or `go install` / binary release (on Pi-class agents also available as the `raphapr/pi-cymbal` package) | Basic `find` + `git log` — no cross-references or impact data |
+| [cymbal](https://github.com/1broseidon/cymbal) | Optional | Tech Preview, Codebase Feature Recon, Alignment Check | `brew install 1broseidon/tap/cymbal` (macOS), or `go install` / binary release | Basic `find` + `git log` — no cross-references or impact data |
 | [npx skills](https://github.com/vercel-labs/skills) | Optional | Stack-matched skill discovery during execution setup | Part of Node.js ecosystem (`npx` bundled with npm) | Skip — workflow runs without stack-matched skills |
 | [ctx7](https://github.com/upstash/context7) | Optional | Current library doc fetching during execution setup | `npx @vedanth/context7` (auto-install via npx) | Skip — docs not fetched (less informed execution) |
 | [sem](https://github.com/Ataraxy-Labs/sem) | Optional | Entity-level diff in Execution Critique (functions, types, methods instead of raw lines); enhanced changelog + bump detection in releases | `curl -fsSL https://raw.githubusercontent.com/Ataraxy-Labs/sem/main/install.sh \| sh` (macOS / Linux), `winget install AtaraxyLabs.sem` (Windows), `brew install sem-cli` (macOS / Linuxbrew) | `git diff` — raw line-level only, no structural awareness |
-| [plannotator](https://plannotator.ai/) | Optional | Visual review gate annotation | Any agent: `plannotator annotate ... --gate --json` via bash (on Pi-class agents also available as the `@plannotator/pi-extension` package) | Manual review with approval receipt file — no structured annotation |
+| [plannotator](https://plannotator.ai/) | Optional | Visual review gate annotation | `plannotator annotate ... --gate --json` via bash on any agent | Manual review with approval receipt file — no structured annotation |
 | [safe-change](https://github.com/PriNova/pi-agent-codebase-workflows) | Optional | Pre-execution code safety checks | `npx skills add Prinova/pi-agent-codebase-workflows -g` (works in any agent that installs from skill registries) | Skip — pre-execution check omitted |
 | Subagents (built-in to any agent) | Optional | Parallel reviewer orchestration during Plan Critique | `subagent(...)` / agent native subagent | Sequential execution — slower, same outcome (single-context review) |
 | Acceptance-native subagent loop | Optional | Same-context self-correction during scope execution (child fixes gaps before returning) | Any harness with fresh-context subagents (e.g. Pi-class agents via a subagents package); otherwise the parent-controlled re-delegation fallback below | Without it: scope-executor falls back to parent-controlled loop (slower); no agent types — embed role in prompt |
@@ -426,19 +423,23 @@ stelow is designed to be **self-contained** — the 28 skills + installer cover 
 > **Note:** stelow's cli-tools (`references/cli-tools/subagents.md`) document the invocation syntax. Host variability is handled by the skills themselves (`stages.yaml#tools` vocabulary + `references/cli-tools/*.md`), not by host-specific code — no skill changes needed when switching agents.
 | Conversation supervision | Optional | Supervision during execution | Agent-native supervision where available | Skip — no supervision; rely on `stages-guard` for invariant enforcement |
 
-**Design principle:** stelow is **host-agnostic, skills-agnostic**. The 28 skills run identically in any agent that reads `~/.agents/skills/` — the full Shape Up workflow (plans, critique, scopes) works everywhere, driven by the `scripts/stelow` CLI for state mechanics. There is no extension layer and no compiled plugin in the repo; optional baseline tools install on top of any agent. No external tool is *required* to run the workflow — each optional integration enhances a phase but never blocks progress. `./install.sh` is the canonical path: it only flattens the skills into `~/.agents/skills/` (and prunes retired ones). `./setup.sh` is a legacy bootstrap that additionally installs an agent + toolchain (see `PI_PACKAGES` in `setup.sh`). The cymbal/ast-grep **CLIs** and `sem`/`ctx7` remain user-managed (offered interactively during setup, or see the tools table above).
+**Design principle:** stelow is **host-agnostic, skills-agnostic**. The 28 skills run identically in any agent that reads `~/.agents/skills/` — the full Shape Up workflow (plans, critique, scopes) works everywhere, driven by the `scripts/stelow` CLI for state mechanics. There is no extension layer and no compiled plugin in the repo; optional baseline tools install on top of any agent. No external tool is *required* to run the workflow — each optional integration enhances a phase but never blocks progress. `./install.sh` is the canonical skills installer: it flattens the skills into `~/.agents/skills/` (and prunes retired ones), then offers the optional cymbal/sem/ctx7 tooling. The cymbal/ast-grep **CLIs** and `sem`/`ctx7` remain user-managed (offered interactively during setup, or see the tools table above).
 
 For every external tool above, the workflow teaches the agent the **specific fallback strategy** in `skills/stelow-workflow-orchestrator/references/cli-tools/<tool>.md`. When a tool is unavailable, the orchestrator instructs the agent to use harness-native capabilities (built-in `subagent()`, `git grep`, terminal-based review with approval receipts) rather than skipping the workflow step entirely. Degraded capability is the trade-off — see the Fallback column above for what you lose without each tool.
 
 ### 🚀 Path A: bb desktop (recommended)
 
 **The full experience: board, inbox, workers.** bb is a free, open-source,
-local-first IDE ([getbb.app](https://getbb.app)) where your agents (Claude Code,
-Codex, Cursor, Pi, OpenCode, …) run on your own subscriptions. stelow runs
-there as a visual plugin — no terminal setup, no skill copying.
+local-first IDE ([getbb.app](https://getbb.app)) where your agents run on your
+own subscriptions. stelow runs there as a visual plugin — no terminal setup,
+no skill copying.
 
-**1. Install bb** (requires nothing else — agents connect with the provider
-logins you already have):
+**0. Prerequisite: a coding-agent CLI, installed and authenticated.** bb drives
+the coding-agent CLI you already have — e.g. Claude Code, Codex, OpenCode, Pi,
+or any harness in `references/host-levers.md`. Install and log in with the
+provider first; bb connects to it, it does not replace it.
+
+**1. Install bb:**
 
 - **macOS:** one-click download at [getbb.app](https://getbb.app)
 - **Any OS with Node:** `npx bb-app@latest` (npm 12+: add `--allow-scripts=better-sqlite3,node-pty,@parcel/watcher`)
@@ -481,7 +482,7 @@ cd stelow
 ./install.sh
 ```
 
-The installer detects your CLI and installs the **skills + command reference files**. No extensions, no TUI - just the 28 skills that run the workflow.
+The installer copies the **skills + command reference files**. No extensions, no TUI - just the 28 skills that run the workflow.
 
 **Or, with npx (no clone needed):**
 
@@ -492,25 +493,6 @@ npx skills add calionauta/stelow -g
 This installs all 28 skills to `~/.agents/skills/` - works on any CLI.
 
 > For per-agent configuration (if your agent needs more than the universal skill path), see [docs/INSTALLATION.md](docs/INSTALLATION.md).
-
-### 📋 Path C: Pi CLI bootstrap (legacy)
-
-`setup.sh` predates the skills-only 1.0.0 era: it installs the Pi agent
-(`@earendil-works/pi-coding-agent`), Pi packages via `pi install` (including
-stelow itself as a Pi package), copies the skills to `~/.agents/skills/`, and
-writes `~/.pi/agent/settings.json` with opinionated defaults (provider, model,
-skill shortcuts). Only useful if Pi is your agent — and even then, Path B plus
-the packages you actually want is usually saner:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/calionauta/stelow/main/setup.sh | sh
-# flags: --dry-run (preview), --skip-node, ASSUME_YES=1 (non-interactive)
-```
-
-> The exact package list lives in `setup.sh` (`PI_PACKAGES`) — that file is the
-> source of truth, not this README. Optional tools (cymbal, ctx7, safe-change)
-> prompt interactively during setup and all have documented fallbacks (see
-> [External Dependencies](#external-dependencies)).
 
 ### Manual setup & dependencies
 
@@ -601,10 +583,11 @@ cd stelow
 npx skills add calionauta/stelow -g
 ```
 
-- **Zero-to-running** (new machine): install [bb desktop](https://getbb.app),
-  then `bb plugin install git:https://github.com/calionauta/bb-plugin-stelow.git --yes`
-  (see [Path A](#-path-a-bb-desktop-recommended)). Legacy alternative for Pi-CLI
-  users: `curl -fsSL https://raw.githubusercontent.com/calionauta/stelow/main/setup.sh | sh`
+- **Zero-to-running** (new machine): install a coding-agent CLI first (e.g.
+  Claude Code, Codex, OpenCode, Pi — authenticated with your provider), then
+  install [bb desktop](https://getbb.app), then
+  `bb plugin install git:https://github.com/calionauta/bb-plugin-stelow.git --yes`
+  (see [Path A](#-path-a-bb-desktop-recommended))
 - **Activating the workflow:** the entry skill loads when the host sets
   `STELOW_WORKFLOW=1` + `STELOW_STATE=<path>` (see
   `references/host-levers.md`). Without the marker, the

@@ -1,139 +1,64 @@
 /**
- * Integration Tests: CLI Dispatch Syntax Smoke Test
+ * Integration Tests: dispatch syntax smoke test
  *
- * Validates that the documented PARALLEL dispatch invocation
- * shape (in `subagents.md`) for the surviving CLIs (`pi`, `generic`)
- * at least passes parser-level validation. Does NOT launch real
- * subagents — that requires a live model session which isn't
- * appropriate for unit/integration CI.
+ * Validates the documented dispatch shapes (in
+ * `skills/stelow-workflow-orchestrator/references/cli-tools/subagents.md`)
+ * at parser level. Does NOT launch real subagents — that requires a live
+ * model session which isn't appropriate for unit/integration CI.
  *
- * What "passes parser-level validation" means per CLI:
- *   - `pi-subagents`  : shape conforms to the documented `subagent({})`
- *                       tool-call object structure.
- *   - `pi` (built-in) : binary is invokable (--version or --help).
- *   - `generic`       : shell-level (no binary to test).
+ * Capability tiers (harness-agnostic):
+ *   - `acceptance-native` : delegate tool with acceptance contract
+ *                           (criteria, evidence, verify, stopRules).
+ *   - `isolated`          : delegate tool with agent + task only;
+ *                           parent loops with feedback.
+ *   - `headless`          : agent CLI binary in non-interactive mode.
+ *   - `generic`           : shell-level (no binary to test).
  *
- * **v0.45.0 narrowing:** opencode/claude-code/codex dispatch shapes
- * were removed when those harnesses lost dedicated integration.
- * See `docs/archive/2026-07-09-deprecated-multi-cli-integration/`.
- *
- * Reference: docs/scope-execution-strategy.md + subagents.md PARALLEL
- * dispatch table.
+ * Reference: docs/scope-execution-strategy.md + subagents.md dispatch table.
  */
 
 import { describe, it, expect } from "vitest";
-import { execSync } from "node:child_process";
 
 /**
- * Resolve a CLI binary by reading the user's original PATH (NOT vitest's
- * test-runner PATH, which has node_modules/.bin prepended and shadows
- * real installed binaries). Skip dirs that point inside the test cwd
- * (where node_modules/.bin lives).
- */
-function resolveCli(name: string): string | null {
-  const paths = (process.env.PATH ?? "").split(":");
-  for (const dir of paths) {
-    if (!dir) continue;
-    if (dir.includes("/node_modules/")) continue;
-    if (dir === "." || dir.endsWith("/.")) continue;
-    const candidate = `${dir}/${name}`;
-    try {
-      execSync(`test -x "${candidate}"`, { stdio: "pipe" });
-      return candidate;
-    } catch {
-      // not in this dir
-    }
-  }
-  return null;
-}
-
-function commandExists(name: string): boolean {
-  return resolveCli(name) !== null;
-}
-
-function probeCli(name: string, args = "--version"): string | null {
-  const resolved = resolveCli(name);
-  if (!resolved) return null;
-  try {
-    return execSync(`${resolved} ${args}`, {
-      stdio: ["pipe", "pipe", "pipe"],
-      timeout: 5000,
-    })
-      .toString()
-      .trim()
-      .slice(0, 200);
-  } catch {
-    return null;
-  }
-}
-
-describe("PARALLEL dispatch — CLI binary availability (pi only)", () => {
-  // pi-dependent tests are skipped in CI (no global pi binary available)
-  // but run locally where pi is expected to be installed.
-  const isCI = !!process.env.CI;
-
-  (isCI ? it.skip : it)(
-    "pi (built-in) is on PATH and answers --version",
-    { retry: 2, timeout: 15000 },
-    () => {
-      if (!commandExists("pi")) {
-        throw new Error(
-          "pi is not on PATH. Install via `npm install -g @earendil-works/pi-coding-agent`.",
-        );
-      }
-      const out = probeCli("pi");
-      expect(out).not.toBeNull();
-      expect(out!.length).toBeGreaterThan(0);
-    },
-  );
-
-  (isCI ? it.skip : it)("pi-subagents extension is discoverable", () => {
-    const home = process.env.HOME ?? "/tmp";
-    const candidates = [
-      `${home}/.pi/agent/npm/node_modules/pi-subagents`,
-      `${home}/.pi/agent/node_modules/pi-subagents`,
-      `${home}/.pi/agent/npm/node_modules/@tintinweb/pi-subagents`,
-      `${home}/.pi/agent/node_modules/@tintinweb/pi-subagents`,
-    ];
-    const found = candidates.some((p) => {
-      try {
-        return require("node:fs").statSync(p).isDirectory();
-      } catch {
-        return false;
-      }
-    });
-    expect(found).toBe(true);
-  });
-});
-
-/**
- * Static validation of the documented call shapes for the surviving CLIs.
+ * Static validation of the documented call shapes per capability tier.
  * These tests don't invoke the subagents — they validate that a
- * TypeScript-constructed call-shape OBJECT is well-formed per the
- * shape documented in subagents.md PARALLEL dispatch table.
+ * constructed call-shape OBJECT is well-formed per the shape documented
+ * in subagents.md dispatch table.
  *
  * If the shape changes (new required field, renamed parameter), this
  * will fail loudly instead of silently drifting.
  */
-describe("PARALLEL dispatch — call shape validation (static)", () => {
-  it("pi-subagents shape: subagent({ tasks: [...], concurrency: N, context: 'fresh' })", () => {
+describe("dispatch — call shape validation (static)", () => {
+  it("acceptance-native shape: delegate with criteria + verify + stopRules", () => {
     const shape = {
-      tasks: [
-        { agent: "worker", task: "Implement auth" },
-        { agent: "worker", task: "Implement API" },
-      ],
-      concurrency: 2,
-      context: "fresh" as const,
+      agent: "worker",
+      task: "Implement scope SCOPE-1",
+      acceptance: {
+        criteria: [{ id: "SC-1", must: "Feature X works", severity: "required" }],
+        evidence: ["changed-files", "commands-run"],
+        verify: [{ id: "V-1", command: "go test ./..." }],
+        stopRules: ["Do not change public API signatures"],
+      },
     };
-    expect(Array.isArray(shape.tasks)).toBe(true);
-    expect(shape.tasks.length).toBeGreaterThan(0);
-    for (const t of shape.tasks) {
+    expect(typeof shape.agent).toBe("string");
+    expect(typeof shape.task).toBe("string");
+    expect(Array.isArray(shape.acceptance.criteria)).toBe(true);
+    expect(shape.acceptance.criteria.length).toBeGreaterThan(0);
+    expect(Array.isArray(shape.acceptance.verify)).toBe(true);
+    expect(Array.isArray(shape.acceptance.stopRules)).toBe(true);
+  });
+
+  it("parallel acceptance-native shape: multiple delegates in one message", () => {
+    const delegates = [
+      { agent: "worker", task: "Implement auth" },
+      { agent: "worker", task: "Implement API" },
+    ];
+    expect(Array.isArray(delegates)).toBe(true);
+    expect(delegates.length).toBeGreaterThan(0);
+    for (const t of delegates) {
       expect(typeof t.agent).toBe("string");
       expect(typeof t.task).toBe("string");
     }
-    expect(typeof shape.concurrency).toBe("number");
-    expect(shape.concurrency).toBeGreaterThan(0);
-    expect(shape.context).toBe("fresh");
   });
 
   it("generic shape: shell-level fan-out ('&' + 'wait')", () => {
@@ -156,15 +81,17 @@ describe("PARALLEL dispatch — call shape validation (static)", () => {
     expect(handoff.file).toMatch(/^\.stelow\/.+\/handoff\.md$/);
   });
 
-  it("pi shape: built-in subagent runs in its own context window", () => {
-    // The pi built-in subagent has no special parameters; child
-    // sessions are always isolated. The only contract is that the
-    // parent must NOT pass any context-inheritance flags.
+  it("isolated shape: delegate runs in its own context window", () => {
+    // An isolated delegate takes agent + task only; child sessions are
+    // always isolated. The only contract is that the parent must NOT
+    // pass any context-inheritance flags.
     const invocation = {
-      prompt: "Review correctness of the auth refactor",
+      agent: "reviewer",
+      task: "Review correctness of the auth refactor",
     };
-    expect(typeof invocation.prompt).toBe("string");
+    expect(typeof invocation.agent).toBe("string");
+    expect(typeof invocation.task).toBe("string");
     // Sanity: no `context` field at all
-    expect(Object.keys(invocation)).toEqual(["prompt"]);
+    expect(Object.keys(invocation).sort()).toEqual(["agent", "task"]);
   });
 });

@@ -1,10 +1,10 @@
 # Tool: intercom
 
-> Cross-session messaging for PI using pi-intercom (nicobailon).
+> Cross-session messaging via the harness's message tool where available.
 
 ---
 
-## Specific Command (PI)
+## Command (harness-native)
 
 ```typescript
 intercom({ action: "send", to: "session-name", message: "..." })
@@ -13,7 +13,6 @@ intercom({ action: "ask", to: "session-name", message: "..." })
 
 | Info | Value |
 |------|-------|
-| Package | pi-intercom (nicobailon) |
 | Actions | `send`, `ask`, `reply`, `pending`, `list`, `status` |
 
 ---
@@ -31,9 +30,9 @@ intercom({ action: "ask", to: "session-name", message: "..." })
 
 ---
 
-## Fallback (Other Harnesses)
+## Fallback (no message tool)
 
-If `intercom` is not available:
+If no cross-session message tool is available:
 - Use shared file communication
 - Schedule checkpoint for cross-session
 

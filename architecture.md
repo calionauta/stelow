@@ -18,7 +18,7 @@ same workflow. Hosts only add an optional marker protocol
 | `skills/stelow-product-<area>/` | The 23 other product/planning sub-skills (shape-up, plan-critique, tech-planning, ux-critique, domain playbooks, etc.). |
 | `scripts/stelow` | Portable helper (bash + python3): `status`, `advance`, `doctor`, `seed`, `schema`, `ask`. Single source of runtime mechanics. |
 | `scripts/sync-cli-tools.sh` | Regenerates each sub-skill's `references/cli-tools/` from the orchestrator's copy. Run after editing a cli-tools reference. |
-| `scripts/setup.sh` / `install.sh` | Installers. `install.sh` flattens `skills/*` into `~/.agents/skills/` and prunes retired/orphaned skills; `setup.sh` is the zero-to-running path (optionally pi.dev + toolchain). |
+| `install.sh` | Installer. Flattens `skills/*` into `~/.agents/skills/`, prunes retired/orphaned skills, offers optional tooling (cymbal, sem, ctx7). |
 | `types/stages.ts` | Shared TypeScript interfaces for the `stages.yaml` stage model (transitions, gates, supervisor). |
 | `stelow.schema.json` / `stelow.json` | Workflow tracking JSON schema + per-project runtime tracking state. |
 | `tests/` | Vitest suite (`unit/`, `integration/`, `skills/`) + contract tests (skill-count, dual-mode, fs/e2e). |

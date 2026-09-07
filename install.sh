@@ -39,23 +39,11 @@ get_project_skills() {
   printf '%s\n' "${skills[@]}"
 }
 
-# CLI Detection
-has_pi() {
-  [[ -d "$HOME/.pi" ]] || command -v pi &>/dev/null
-}
-
-detect_all_clis() {
-  if [[ -n "${PRODUCT_WORKFLOW_CLI:-}" ]]; then echo "$PRODUCT_WORKFLOW_CLI"; return; fi
-  if has_pi; then echo "pi"; else echo "generic"; fi
-}
-
-# Print manual AGENTS.md setup instructions
+# Print manual AGENTS.md setup instructions (harness-agnostic)
 print_agents_setup() {
   echo ""
   log_info "${BOLD}━━ Manual setup ━━${RESET}"
   log_info "Add this to your agent's AGENTS.md / CLAUDE.md:"
-  echo ""
-  if has_pi; then log_info "  - Pi:          ~/.pi/agent/AGENTS.md"; fi
   echo ""
   cat << 'EOF'
 \`\`\`
@@ -64,8 +52,8 @@ print_agents_setup() {
 When working on software projects, trigger the product workflow:
 
 1. **Trigger:** Use `/skill:stelow-workflow-orchestrator`
-2. **Process:** Follow the 15-stage workflow (see Stage Index in `skills/stelow-workflow-orchestrator/SKILL.md`)
-3. **Execute:** Only after visual review gate (Plannotator approval)
+2. **Process:** Follow the 17-stage workflow (see Stage Index in `skills/stelow-workflow-orchestrator/SKILL.md`)
+3. **Execute:** Only after visual review gate approval
 \`\`\`
 EOF
   echo ""
@@ -81,19 +69,11 @@ EOF
   echo ""
 }
 
-# Route to CLI-specific installer
-install_for_cli() {
-  case "$1" in
-    pi) install_pi ;;
-    *) install_generic ;;
-  esac
-}
-
 # Install skills to ~/.agents/skills/ (flat)
 install_skills_flat() {
   # Ensure cli-tools are generated before copy (they're gitignored, generated at build/install)
   log_info "Syncing cli-tools to sub-skills..."
-  "$SCRIPT_DIR/sync-cli-tools.sh" 2>/dev/null || log_warn "  cli-tools sync skipped (non-fatal)"
+  "$SCRIPT_DIR/scripts/sync-cli-tools.sh" 2>/dev/null || log_warn "  cli-tools sync skipped (non-fatal)"
 
   log_info "Installing skills to ~/.agents/skills/..."
   mkdir -p "$SKILLS_DIR"
@@ -166,137 +146,7 @@ install_skills_flat() {
   if [[ $pruned -gt 0 ]]; then log_warn "  Pruned $pruned retired/orphaned skill(s)"; fi
 }
 
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Pi Package Filter — prevents skill conflicts
-# ─────────────────────────────────────────────────────────────────────────────
-# Pi discovers skills by directory convention: any skills/ dir in a git clone
-# is auto-discovered. To avoid "Skill conflicts" warnings (Pi sees the same
-# skills from BOTH ~/.agents/skills/ and the git clone), we set
-# "skills": [] on the package entry in settings.json.
-#
-# Skills stay fresh via the extension's syncSkillsFromClone(), which runs
-# on every session_start: compares git HEAD hash, and if changed,
-# rm -rf + cp -r all skills from clone → ~/.agents/skills/.
-#
-# This is also why the pi manifest in package.json does NOT declare "skills" —
-# skills are served exclusively from ~/.agents/skills/ (DotAgents Protocol).
-# ─────────────────────────────────────────────────────────────────────────────
-_configure_pi_skills_filter() {
-  local pi_settings="$HOME/.pi/agent/settings.json"
-  if [[ ! -f "$pi_settings" ]]; then
-    log_warn "    Pi settings not found at $pi_settings"
-    return
-  fi
-  if ! command -v jq &>/dev/null; then
-    log_warn "    jq not found — cannot configure package filter. Run: brew install jq"
-    return
-  fi
-
-  log_info "    Configuring Pi package filter (skills: [] via settings.json)..."
-  local tmp=$(mktemp)
-  jq '
-    (.packages // []) |= map(
-      if type == "object" and .source == "git:github.com/calionauta/stelow" then
-        .skills = []
-      else
-        .
-      end
-    )
-  ' "$pi_settings" > "$tmp" && mv "$tmp" "$pi_settings"
-  log_success "    Pi package filter configured — skills excluded from git clone"
-}
-
-# Pi
-# ── Pi extensions (single source of truth) ──────────────────────────────
-# All Pi extensions for deep integration. Convention: a full Pi install
-# enables every extension (skills stay active — no filters). cymbal/ast-grep
-# extensions are installed here; their CLI tools are still required on the
-# host (offer_optional_clis installs them, or see README).
-PI_EXTENSIONS=(
-  "npm:@tintinweb/pi-subagents"
-  "npm:@tintinweb/pi-tasks"
-  "npm:pi-web-access"
-  "npm:pi-supervisor"
-  "npm:pi-agent-browser-native"
-  "npm:@juicesharp/rpiv-ask-user-question"
-  "npm:@ff-labs/pi-fff"
-  "npm:@plannotator/pi-extension"
-  "npm:@sting8k/pi-vcc"
-  
-  "npm:pi-cache-optimizer"
-  "git:github.com/calionauta/pi-leakguard"
-  "npm:@tomooshi/condensed-milk-pi"
-  "https://github.com/tomooshi/caveman-milk-pi"
-  "git:github.com/PriNova/pi-agent-codebase-workflows"
-  "git:github.com/calionauta/pi-tool-repair-layer"
-  "git:github.com/raphapr/pi-cymbal"
-  "git:github.com/joelhooks/pi-ast-grep"
-)
-
-# Install all Pi supporting extensions from the single PI_EXTENSIONS list.
-install_pi_extensions() {
-  log_info "  Installing Pi supporting extensions..."
-  local installed=0
-  for pkg in "${PI_EXTENSIONS[@]}"; do
-    local display
-    if [[ "$pkg" == http* ]]; then
-      display=$(basename "$pkg")
-    else
-      display="${pkg#npm:}"; display="${display#git:}"
-    fi
-    if pi install "$pkg" 2>/dev/null; then
-      log_success "    $display"
-    else
-      log_warn "    $display (may already be installed)"
-    fi
-    ((installed++)) || true
-  done
-  log_success "  $installed Pi extensions processed."
-}
-
-install_pi() {
-  log_info "  -> Installing for Pi..."
-  if ! command -v pi &>/dev/null; then log_warn "    pi not found. Skipping."; return; fi
-
-  # Install extension via git package.
-  # Skills: [] filter (configured below) prevents Pi from discovering skills
-  # from the git clone by convention. Skills are served from ~/.agents/skills/
-  # and kept fresh by the extension's syncSkillsFromClone() on session_start.
-
-  log_info "    Installing Pi extension (git package)..."
-  pi install "git:github.com/calionauta/stelow" 2>/dev/null || true
-
-  # Configure Pi to ignore skills/ from the git clone via native package filter.
-  # Skills are served from ~/.agents/skills/ (kept fresh by extension sync).
-  _configure_pi_skills_filter
-
-  # Install skills flat (for any agent that reads ~/\.agents/skills/)
-  install_skills_flat
-
-  # Install supporting packages (single source of truth: PI_EXTENSIONS)
-  if [[ -z "${INSTALL_SKILLS_ONLY:-}" ]]; then
-    install_pi_extensions
-    # NOTE: ctx7 is NOT auto-installed (requires OAuth setup, interactive).
-    # cymbal (raphapr/pi-cymbal) and ast-grep (joelhooks/pi-ast-grep) ARE
-    # auto-installed above. The cymbal CLI is still required on the host
-    # (offer_optional_clis installs it, or see README); if absent the
-    # workflow falls back gracefully to bash `cymbal` / find + git log.
-  else
-    log_info "    INSTALL_SKILLS_ONLY set -- skipping npm packages"
-  fi
-
-  # Clean up project-level duplicates
-  rm -rf "$SCRIPT_DIR/.pi/skills/stelow" 2>/dev/null || true
-
-  log_success "  v Pi done"
-}
-
-# ── Optional cross-harness CLIs (generic / non-Pi installs) ─────────────
-# Convention over configuration: we only offer a CLI when a stelow skill or
-# reference actually uses it (detected via grep). Pi auto-installs the
-# cymbal/ast-grep *extensions*; for other harnesses we offer the bare CLIs.
+# ── Optional cross-harness CLIs ─────────────
 offer_cli() {
   local name="$1" pattern="$2" cmd="$3" desc="$4" refs="$5"
   command -v "$name" &>/dev/null && return            # already installed
@@ -317,7 +167,7 @@ offer_optional_clis() {
     "Entity-level diff for Execution Critique" "$refs"
 }
 
-# Generic (no CLI detected)
+# Install for any agentskills-compatible agent: skills + optional CLIs
 install_generic() {
   log_info "  -> Installing skills for all agents..."
   install_skills_flat
@@ -342,22 +192,6 @@ update_all() {
     fi
   done
 
-  # Reinstall command files + Pi extension per CLI
-  local clis=$(detect_all_clis)
-  for cli in $clis; do
-    case "$cli" in
-      pi)
-        if command -v pi &>/dev/null; then
-          log_info "  Reinstalling Pi extension (git package)..."
-          pi remove "$SCRIPT_DIR/extensions/stelow" 2>/dev/null || true
-          pi install "git:github.com/calionauta/stelow" 2>/dev/null || true
-          # Re-apply package filter (pi update re-clones repo with skills/)
-          _configure_pi_skills_filter
-        fi
-        ;;
-    esac
-  done
-
   echo ""
   log_info "To get the latest from GitHub before next update:"
   log_info "  cd $SCRIPT_DIR && git pull origin main && ./install.sh update"
@@ -367,39 +201,12 @@ update_all() {
 
 # Uninstall
 uninstall_all() {
-  local clis=$(detect_all_clis)
-  log_info "Uninstalling for: $clis"
   log_info "Removing skills from $SKILLS_DIR..."
-  
+
   local project_skills=()
   while IFS= read -r s; do project_skills+=("$s"); done < <(get_project_skills)
   for skill in "${project_skills[@]}"; do
     rm -rf "$SKILLS_DIR/$skill"
-  done
-  
-  for cli in $clis; do
-    case "$cli" in
-      pi)
-        pi remove "git:github.com/calionauta/stelow" 2>/dev/null || true
-        rm -rf "$HOME/.pi/agent/skills/stelow" 2>/dev/null || true
-        # Clean package filter from settings.json
-        if command -v jq &>/dev/null; then
-          local pi_settings="$HOME/.pi/agent/settings.json"
-          if [[ -f "$pi_settings" ]]; then
-            local tmp=$(mktemp)
-            jq '
-              (.packages // []) |= map(
-                if type == "object" and .source == "git:github.com/calionauta/stelow" then
-                  del(.skills)
-                else
-                  .
-                end
-              )
-            ' "$pi_settings" > "$tmp" && mv "$tmp" "$pi_settings"
-          fi
-        fi
-        log_success "  v Pi" ;;
-      esac
   done
 
   echo ""
@@ -431,41 +238,26 @@ confirm() {
 # ── Full Setup (Default) ───────────────────────────────────────────────
 
 setup_full() {
-  local clis=$(detect_all_clis)
   echo ""; log_info "${BOLD}stelow Full Setup${RESET}"; echo ""
-  log_info "This will install stelow and optional dependencies for: ${BOLD}$clis${RESET}"
-  log_info "You can say N to skip any step."
+  log_info "This installs the skills plus optional tooling. You can say N to skip any step."
   echo ""
 
   # Step 1: Skills (always installed)
   log_info "[1/4] Installing workflow skills..."
-  for cli in $clis; do install_skills_flat; done
+  install_skills_flat
   log_success "Skills installed."
   echo ""
 
-  # Step 2: Pi extension + packages
-  if echo "$clis" | grep -qw "pi"; then
-    log_info "[2/4] Pi deep integration"
-    if confirm "Install Pi extension (gates, TUI, slash commands)?" Y; then
-      install_pi_extension
-      if [[ -z "${INSTALL_SKILLS_ONLY:-}" ]] && confirm "Install Pi supporting packages (subagents, supervisor)?" Y; then
-        install_pi_extensions
-      fi
-    fi
-    echo ""
-  fi
-
-
-  # Steps 3-4: optional cross-harness CLIs (only those used by stelow skills).
+  # Step 2: optional cross-harness CLIs (only those used by stelow skills).
   # cymbal + sem are offered (used by Tech Preview / Execution Critique skills);
   # ast-grep is skipped automatically (no skill references it). ctx7 remains a
   # guided OAuth setup below (not a plain install).
-  log_info "[3/4] Optional CLI tools (cymbal, sem)"
+  log_info "[2/4] Optional CLI tools (cymbal, sem)"
   offer_optional_clis
   echo ""
 
-  # Step 4: ctx7 (library docs — guided OAuth, not auto-installed)
-  log_info "[4/4] ctx7 — live library documentation"
+  # Step 3: ctx7 (library docs — guided OAuth, not auto-installed)
+  log_info "[3/4] ctx7 — live library documentation"
   if ! command -v ctx7 &>/dev/null; then
     log_info "  ctx7 provides current API docs during execution (prevents hallucinated APIs)."
     log_info "  Requires OAuth setup (opens browser once)."
@@ -478,8 +270,8 @@ setup_full() {
   fi
   echo ""
 
-  # Step 6: sem (entity-level diff)
-  log_info "[5/5] sem — entity-level diff for Execution Critique"
+  # Step 4: sem (entity-level diff)
+  log_info "[4/4] sem — entity-level diff for Execution Critique"
   if ! command -v sem &>/dev/null; then
     if confirm "Install sem? Replaces git diff with function/type/method-level diff in Execution Critique." Y; then
       curl -fsSL https://raw.githubusercontent.com/Ataraxy-Labs/sem/main/install.sh | sh 2>/dev/null || log_warn "  Could not auto-install sem. See https://github.com/Ataraxy-Labs/sem"
@@ -497,20 +289,12 @@ setup_full() {
 # ── Minimal Setup (skills only) ────────────────────────────────────────
 
 setup_minimal() {
-  local clis=$(detect_all_clis)
-  echo ""; log_info "Minimal setup for: ${BOLD}$clis${RESET}"; echo ""
-  for cli in $clis; do install_for_cli "$cli"; done
+  echo ""; log_info "Minimal setup (skills only)"; echo ""
+  install_skills_flat
   echo ""; log_success "Minimal installation complete!"; print_agents_setup
 }
 
 # ── Tool-specific installers ───────────────────────────────────────────
-
-install_pi_extension() {
-  log_info "  Installing Pi extension..."
-  pi install "git:github.com/calionauta/stelow" 2>/dev/null || true
-  _configure_pi_skills_filter
-}
-
 
 install_cymbal() {
   if [[ "$OSTYPE" == "darwin"* ]] && command -v brew &>/dev/null; then
@@ -548,16 +332,14 @@ Options:
 
 Commands:
   update      Update installed skills
-  remove      Uninstall from all detected CLIs
+  remove      Remove installed skills
 
 Environment:
   ASSUME_YES=1     Auto-confirm all prompts (non-interactive)
-  PRODUCT_WORKFLOW_CLI  Limit to one CLI (pi)
 
 What gets installed (full):
 
   ✓ Workflow skills (always)
-  ✓ Pi extension + npm packages (if Pi detected, with confirmation)
   ✓ cymbal — codebase navigation (with confirmation)
   ✓ ctx7 — live library docs (with confirmation, requires OAuth)
   ✓ sem — entity-level diff (with confirmation)
@@ -570,7 +352,6 @@ Examples:
   ./install.sh                         # Interactive full setup
   ASSUME_YES=1 ./install.sh            # Non-interactive, install everything
   ./install.sh --minimal               # Skills only
-  PRODUCT_WORKFLOW_CLI=pi ./install.sh # Pi only
   ./install.sh update                  # Update skills
   ./install.sh remove                  # Uninstall
 EOF

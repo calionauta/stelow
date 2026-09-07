@@ -57,24 +57,26 @@ describe('subagent acceptance contract (G8 — docs contract)', () => {
     expect(src).toMatch(/verify_commands/);
   });
 
-  it('lists the CLI dispatch table (deterministic per detected_cli)', () => {
+  it('lists the dispatch table (deterministic per capability tier)', () => {
     const src = readFileSync(DOCS_PATH, 'utf-8');
-    expect(src).toMatch(/Deterministic CLI dispatch/);
-    // Each CLI row must be present
-    for (const cli of ['tintinweb', 'nicobailon', 'built-in', 'generic']) {
-      expect(src, `expected to mention CLI variant: ${cli}`).toContain(cli);
+    expect(src).toMatch(/Deterministic dispatch/);
+    // Each capability tier must be present
+    for (const tier of ['acceptance-native', 'isolated', 'headless', 'generic']) {
+      expect(src, `expected to mention capability tier: ${tier}`).toContain(tier);
     }
   });
 
-  it('states that context: "fresh" is mandatory for nicobailon subagents', () => {
+  it('states that fresh context is mandatory for every subagent call', () => {
     const src = readFileSync(DOCS_PATH, 'utf-8');
-    expect(src).toMatch(/context:\s*"fresh".*mandatory/);
+    expect(src).toMatch(/FRESH/);
+    expect(src).toMatch(/Fresh is non-negotiable/);
   });
 
-  it('explains the TINTINWEB vs NICOBAILON vs BUILTIN_ONLY detection', () => {
+  it('probes harness capabilities instead of installed packages', () => {
     const src = readFileSync(DOCS_PATH, 'utf-8');
-    expect(src).toMatch(/TINTINWEB/);
-    expect(src).toMatch(/NICOBAILON/);
-    expect(src).toMatch(/BUILTIN_ONLY/);
+    expect(src).toMatch(/How to detect the tier|probe/i);
+    expect(src).not.toMatch(/TINTINWEB/);
+    expect(src).not.toMatch(/NICOBAILON/);
+    expect(src).not.toMatch(/BUILTIN_ONLY/);
   });
 });

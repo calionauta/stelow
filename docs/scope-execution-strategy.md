@@ -120,12 +120,12 @@ REPORT   Step 8: 4-class classification
 
 | Tool | Where it adds value | Auto-install? |
 |---|---|---|
-| **cymbal** | `[TARGET_FILES]` authoring: `cymbal impact <scope>` → symbols/functions affected → author populates the block with informed paths instead of guessing | Detected + offered during `scripts/setup.sh` (cross-platform: brew on macOS/Linux, PowerShell on Windows) |
-| **sem** ([Ataraxy-Labs/sem](https://github.com/Ataraxy-Labs/sem)) | Step 8 4-class report: `sem diff $start_sha HEAD` → entity-level changes (functions added/removed/modified) per scope, instead of file-path-only. Much clearer human decision support. | Detected + offered during `scripts/setup.sh` (cross-platform: curl\|sh, brew, winget, choco). NOTE: GNU Parallel has its own `sem` binary; setup.sh detects and warns. |
+| **cymbal** | `[TARGET_FILES]` authoring: `cymbal impact <scope>` → symbols/functions affected → author populates the block with informed paths instead of guessing | Detected + offered during `./install.sh` (cross-platform: brew on macOS/Linux, PowerShell on Windows) |
+| **sem** ([Ataraxy-Labs/sem](https://github.com/Ataraxy-Labs/sem)) | Step 8 4-class report: `sem diff $start_sha HEAD` → entity-level changes (functions added/removed/modified) per scope, instead of file-path-only. Much clearer human decision support. | Detected + offered during `./install.sh` (cross-platform: curl\|sh, brew, winget, choco). NOTE: GNU Parallel has its own `sem` binary; install.sh detects and warns. |
 
 ### Detection at setup time
 
-`scripts/setup.sh` runs after every install/upgrade. It detects both tools via `command -v` and offers cross-platform install with cascading fallbacks:
+`./install.sh` offers both tools via `command -v` detection with cascading fallbacks:
 
 - **Already installed** → logs ✅, no action.
 - **macOS + Linuxbrew** → `brew install <formula>`. Default `[Y]` prompt.

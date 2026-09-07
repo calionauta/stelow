@@ -4,15 +4,18 @@ Automated web browser for live testing, accessibility checks, and visual inspect
 
 ## How to invoke
 
-### Pi-native path
-The `agent_browser` tool registered by the stelow extension handles invocation and result parsing. Use it when available.
+### Harness-native browser tool
+
+If the harness exposes a browser/automation tool, prefer it — it handles
+invocation and result parsing. Adapt the args below to the registered tool:
 
 ```typescript
 agent_browser({ args: ["open", "--url", "{URL}", "--", "snapshot", "-i"] })
 ```
 
-### Universal fallback for any agent
-For any agent that does not have the stelow extension loaded, use the `agent-browser` CLI directly via bash:
+### CLI fallback (any agent)
+
+Otherwise use the `agent-browser` CLI directly via bash:
 
 ```bash
 npx -y @earendil-works/pi-agent-browser open --url "{URL}" -- snapshot -i

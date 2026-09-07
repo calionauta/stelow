@@ -4,9 +4,9 @@
 
 > **EVERY stelow subagent call uses FRESH context.**
 >
-> - **Nicobailon (legacy):** pass `context: "fresh"` explicitly — packaged `worker`/`planner`/`oracle` default to `fork` (context rot ~73% → ~33% rule adherence over 16 turns).
-> - **Tintinweb:** `inherit_context` defaults to `false` (fresh). No extra param needed. Pass `inherit_context: true` ONLY for fork (rare in stelow).
-> - **Pi built-in:** Always isolated context. No `context` param exists.
+> - **Tools whose packaged agents default to fork:** pass fresh explicitly
+>   (context rot ~73% → ~33% rule adherence over 16 turns).
+> - **Tools that default to fresh/isolated:** no extra param needed.
 > - **Enforcement:** every example in this file uses fresh context. Every skill's subagent invocation in `skills/*/` uses fresh context. Do not deviate.
 >
 > **TL;DR:** Fresh is non-negotiable. Fork is fallback only.
@@ -17,104 +17,69 @@
 
 ## Available Invocations
 
-| Surface | Invocation | Context behavior |
+Pick by **capability**, not by harness brand. Probe the tool registry top-down;
+use the first tier available.
+
+| Capability | Invocation | Context behavior |
 |---------|------------|-----------------|
-| **Pi + tintinweb** (current) | `Agent({ subagent_type, prompt, description, ... })` via `@tintinweb/pi-subagents` | `inherit_context: false` (default) = fresh. No extra param needed. |
-| **Pi + nicobailon** (legacy) | `subagent({ agent, task, context: "fresh", reads, acceptance })` via `npm:pi-subagents` | Explicit `context: "fresh"` overrides packaged-agent `fork` defaults |
-| **Pi built-in** (fallback) | `subagent({ agent, task })` | Always isolated — separate `pi` process; no `context` param |
+| **Acceptance-native subagents** | Delegate tool with an acceptance contract (`criteria`, `verify`, `stopRules`) | Fresh by default or explicit; child self-corrects in the same context (see `goals.md`) |
+| **Isolated subagents** | Delegate tool with `agent` + `task` only | Always isolated; parent re-delegates with feedback until criteria pass |
+| **Headless CLI** | `<agent-cli> --print/-p "task" > out.md` (parallel via `&` + `wait`) | Fresh process per call; no agent types |
 | **Universal fallback** (any agent) | Execute directly; file-based handoff (`write` → next stage `read`) | Fresh-context by construction |
 
 ## Command Details
 
-### pi + tintinweb/pi-subagents (current)
+### Acceptance-native (child self-corrects)
 
-Tool: `Agent`, `get_subagent_result`, `steer_subagent`
+Tool shapes vary by harness — two common examples:
 
 ```typescript
+// Example A — Agent() style
 Agent({
   subagent_type: "[type]",
   prompt: "Full task description with context and instructions",
   description: "Short 3-5 word label",
   // Optional:
   model: "provider/model",       // model override
-  thinking: "low",               // thinking level
   run_in_background: true,       // parallel: multiple Agent() calls in one message
   max_turns: 30,                 // cap turns
-  isolated: true,                // no extension/MCP tools
-  inherit_context: false,        // DEFAULT — fresh. Omit unless fork needed (rare)
 })
 ```
-
-| Package | Source |
-|---------|--------|
-| `@tintinweb/pi-subagents` | tintinweb |
-
-**Context:** `inherit_context: false` is the default. No extra param needed for fresh context. Pass `inherit_context: true` ONLY when child needs parent's filtered session history (extremely rare in stelow).
-
-**Parallel:** Send multiple `Agent()` calls with `run_in_background: true` in a single LLM message. You will be notified on completion — never poll or sleep.
-
-**Get results:** `get_subagent_result({ agent_id, wait: true })` blocks until the agent finishes and returns its output.
-
-**Steer mid-run:** `steer_subagent({ agent_id, message })` sends a redirect message to a running background agent.
-
-**Built-in agent types:**
-
-| Type | Tools | Use for |
-|------|-------|---------|
-| `general-purpose` | All 7 | Parent twin — inherits parent's system prompt. Use for implementation, code review, delegated work. |
-| `Explore` | read, bash, grep, find, ls | Fast codebase recon (read-only). Good replacement for nicobailon's `scout`. |
-| `Plan` | read, bash, grep, find, ls | Architecture/planning (read-only). |
-
-Custom agents in `.pi/agents/<name>.md` (project) or `~/.pi/agent/agents/<name>.md` (global) are auto-discovered.
-
-### pi + nicobailon/pi-subagents (legacy)
-
-Tool: `subagent()`
 
 ```typescript
-subagent({
-  agent: "[type]",
-  task: "...",
-  output: "...",
-  context: "fresh"  // MUST pass explicitly — packaged agents default to fork
+// Example B — Task() style
+Task({
+  subagent_type: "[type]",
+  prompt: "Full task description with context and instructions",
+  description: "Short 3-5 word label",
 })
 ```
 
-| Package | Source |
-|---------|--------|
-| pi-subagents | nicobailon |
+In both cases pass the acceptance contract (`criteria`, `evidence`, `verify`,
+`stopRules` — see `goals.md`) in the harness's native shape, and fresh context
+per the tool's default (override only when the tool defaults to fork).
 
-**Packaged-agent gotcha:** `worker`, `planner`, `oracle` ship with `defaultContext: "fork"`. **Always override with `context: "fresh"`**:
+**Parallel:** dispatch multiple delegate calls in a single message with the
+harness's background option. You will be notified on completion — never poll
+or sleep.
 
-| Agent | Default | Stelow use |
-|-------|---------|------------|
-| `oracle` | `fork` | NOT used by stelow |
-| `planner` | `fork` | NOT used by stelow |
-| `worker` | `fork` | Scope executor; **must override with `context: "fresh"`** |
-| `scout`, `reviewer`, `researcher`, `delegate`, `context-builder` | `fresh` | No override needed |
+**Custom agents:** project/global agent definition files (e.g. `<name>.md`
+under the harness's agents directory) are auto-discovered — prefer named types
+over embedding roles in prompts.
 
-**Agent types (nicobailon):**
+### Isolated subagents (parent loops)
 
-| Type | Stelow use |
-|------|------------|
-| `scout` | Codebase recon |
-| `researcher` | Web/docs research |
-| `context-builder` | Context gathering before planning |
-| `delegate` | Proposals, consolidation, skill-based delegation |
-| `reviewer` | Code review |
-| `worker` | Scope execution (from spec-tech.md) |
-
-### pi built-in (fallback)
-
-When no pi-subagents extension is installed:
+When the harness offers subagents but no acceptance contract:
 
 ```typescript
 subagent({ agent: "[type]", task: "..." })
 ```
 
 Always isolated context. No `reads` param — embed file paths in the task string.
+The parent evaluates the result against the acceptance criteria and re-delegates
+with feedback until they pass or max iterations exhaust.
 
-### generic (Fallback)
+### Generic (fallback)
 
 When subagent is not available:
 
@@ -129,47 +94,47 @@ read({ path: "output.md" })
 
 ---
 
-## Deterministic CLI dispatch
+## Deterministic dispatch
 
-Read `detected_cli` from `stelow.json#workflows[].detected_cli`. Emit the literal call shape for that CLI:
+Read `detected_cli` from `stelow.json#workflows[].detected_cli`. Emit the invocation shape for that capability tier:
 
 | `detected_cli` | **Required** invocation |
 |---|---|
-| `pi` (tintinweb) | `Agent({ subagent_type, prompt, description })` — omit `inherit_context` (defaults to fresh). Use `run_in_background: true` for parallelism. |
-| `pi` (nicobailon) | `subagent({ agent, task, reads, context: "fresh", acceptance? })` — `context: "fresh"` is mandatory. |
-| `pi` (built-in, no extension) | `subagent({ agent, task })` — embed file paths in task string. |
-| `generic` | Execute directly; save output to file; next stage reads it. |
+| `acceptance-native` | Delegate tool with acceptance contract — child self-corrects; fresh context per the tool's default (override only when it defaults to fork) |
+| `isolated` | Delegate tool with `agent` + `task` — embed file paths in the task string; parent re-delegates with feedback |
+| `headless` | `<agent-cli> --print/-p "task" > out.md` — fresh process per call |
+| `generic` | Execute directly; save output to file; next stage reads it |
 
 ### PARALLEL dispatch
 
 | `detected_cli` | **PARALLEL** invocation |
 |---|---|
-| `pi` (tintinweb) | Multiple `Agent({...description, run_in_background: true})` calls in same message. True concurrency via background queue. |
-| `pi` (nicobailon) | `subagent({ tasks: [...], concurrency: N, context: "fresh" })` |
-| `pi` (built-in) | Multiple `subagent(...)` calls — queues serially (no true concurrency) |
+| `acceptance-native` | Multiple delegate calls in the same message with the harness's background option |
+| `isolated` | Multiple delegate calls (harness may queue serially — no true concurrency guaranteed) |
+| `headless` | `<agent-cli> --print "task A" > a.md & <agent-cli> --print "task B" > b.md & wait` (POSIX) |
 | `generic` | `cmd_a & cmd_b & wait` (POSIX) |
 
 **Selection rule:** Read `detected_cli` from `stelow.json`, pick the row, emit verbatim.
 
 ---
 
-## Fallback — pi without subagents extension
+## Fallback — harness without acceptance-native subagents
 
-| Feature | pi built-in | pi + subagents |
-|---------|-------------|----------------|
-| Invocation | `subagent({ agent, task })` | `Agent(...)` or `subagent({...})` with full params |
-| `reads` | Embed in task string | ✅ Explicit param |
-| `acceptance` | Parent-controlled loop | ✅ Native self-correction |
-| Parallel fan-out | Sequential calls | ✅ Background concurrency |
+| Feature | Isolated subagents | Acceptance-native |
+|---------|-------------------|-------------------|
+| Invocation | Delegate with `agent` + `task` | Delegate with acceptance contract |
+| File reads | Embed in task string | Explicit param where supported |
+| Self-correction | Parent-controlled loop | Native (child fixes gaps before returning) |
+| Parallel fan-out | Sequential calls possible | Background concurrency where supported |
 
-### How to detect which is installed
+### How to detect the tier
 
-```bash
-# Check which subagents extension is installed
-npm ls @tintinweb/pi-subagents 2>/dev/null && echo "TINTINWEB" && exit 0
-npm ls pi-subagents 2>/dev/null | grep -q pi-subagents && echo "NICOBAILON" && exit 0
-echo "BUILTIN_ONLY"
-```
+Probe the harness, top-down — no package-manager checks:
+
+1. Tool registry exposes a delegate tool with an acceptance/criteria contract → `acceptance-native`
+2. Tool registry exposes a delegate/subagent tool without one → `isolated`
+3. An agent CLI binary answers `--version`/`--help` on PATH → `headless`
+4. Otherwise → `generic`
 
 The orchestrator reads `detected_cli` from `stelow.json` and picks the correct row.
 
@@ -225,18 +190,20 @@ Subagents should receive inputs as explicit artifacts, not inherited conversatio
 
 ## Headless CLI fallback (any agent)
 
-When no native subagent tool is available, spawn pi as a headless subprocess:
+When no native subagent tool is available, spawn the coding-agent CLI as a
+headless subprocess (`--print`/`-p` flag varies by harness — use the harness's
+documented non-interactive mode):
 
 ```bash
-pi --print "generate report and save to output.md"
-pi --print "You are a code reviewer. Review this diff for correctness." > review.md
+<agent-cli> --print "generate report and save to output.md"
+<agent-cli> --print "You are a code reviewer. Review this diff for correctness." > review.md
 ```
 
 ### Parallel headless
 
 ```bash
-pi --print "task A" > output-a.md &
-pi --print "task B" > output-b.md &
+<agent-cli> --print "task A" > output-a.md &
+<agent-cli> --print "task B" > output-b.md &
 wait
 ```
 
@@ -258,21 +225,17 @@ Steps:
 ## Degradation Ladder
 
 ```
-1. Check detected_cli from stelow.json
+1. Probe the harness top-down
    │
-   ├── pi detected?
-   │   ├── tintinweb?   →  ✅ Agent({ subagent_type, prompt, description })
-   │   ├── nicobailon?  →  ✅ subagent({ agent, task, reads, context:"fresh", acceptance? })
-   │   └── built-in?    →  ⚠️ subagent({ agent, task }) — embed paths in task
-   │
-   ├── any other agent? →  ⚠️ Headless CLI or Universal Fallback
+   ├── acceptance-native? →  ✅ Delegate with contract (child self-corrects)
+   ├── isolated subagents? →  ⚠️ Delegate agent+task (parent loops w/ feedback)
+   ├── headless CLI binary? →  ⚠️ <agent-cli> --print (fresh process per call)
    ├── generic/unknown? →  ❌ Universal Fallback (write + read)
    └── subagent failed? →  ❌ retry once → Headless CLI → Universal Fallback
 ```
 
 **Summary by quality:**
-1. ✅ **pi + tintinweb** — `Agent()` tool, true parallelism via background, fresh by default
-2. ✅ **pi + nicobailon** — agent types, `reads`, `acceptance`, native parallelism
-3. ⚠️ **pi built-in** — same agent types, always isolated, no extra params
-4. ⚠️ **Headless CLI** — no agent types, parallel via `&` + `wait`
-5. ❌ **Universal Fallback** — synchronous, same session. Works on EVERY agent
+1. ✅ **Acceptance-native** — delegate tool with contract, background parallelism where supported, fresh by default
+2. ⚠️ **Isolated** — same delegation without contract, parent-controlled loop
+3. ⚠️ **Headless CLI** — no agent types, parallel via `&` + `wait`
+4. ❌ **Universal Fallback** — synchronous, same session. Works on EVERY agent
