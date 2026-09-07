@@ -335,11 +335,12 @@ This package is **skills-only and host-agnostic** — its 28 skills run on any a
 
 | Your situation | Recommended command | What you get |
 |----------------|--------------------|-------------|
-| **Any agent** (recommended) | `npx skills add calionauta/stelow -g` | All 28 skills, copied to `~/.agents/skills/` |
+| **bb desktop** (recommended) | Download at [getbb.app](https://getbb.app), then `bb plugin install git:https://github.com/calionauta/bb-plugin-stelow.git --yes` | Kanban board + inbox + `bb stelow` worker CLI (workflow skills vendored & auto-synced; see [Path A](#-path-a-bb-desktop-recommended)) |
+| **Any other agent** | `npx skills add calionauta/stelow -g` | All 28 skills, copied to `~/.agents/skills/` |
 | **Existing repo / offline** | `git clone ... && ./install.sh` | All 28 skills + prune of retired/orphaned skills |
-| **New machine** (legacy bootstrap) | `curl -fsSL https://raw.githubusercontent.com/calionauta/stelow/main/setup.sh \| sh` | Node.js (optional) + all 28 skills + optional agent toolchain (see `PI_PACKAGES` in `setup.sh` — not required) |
+| **New machine, Pi CLI** (legacy bootstrap) | `curl -fsSL https://raw.githubusercontent.com/calionauta/stelow/main/setup.sh \| sh` | Node.js (optional) + all 28 skills + Pi agent toolchain (see `PI_PACKAGES` in `setup.sh` — not required) |
 
-> `setup.sh` is a legacy zero-to-machine bootstrap that optionally installs an agent and its toolchain. The canonical path is `./install.sh` (or `npx skills add`) — skills only, no agent setup, no extensions.
+> `setup.sh` is a legacy Pi-CLI bootstrap: it installs the Pi agent, Pi packages (including stelow itself as a Pi package, pre-1.0.0 model), and writes `~/.pi/agent/settings.json` with opinionated defaults. It is only useful if Pi is your agent. The canonical paths are bb desktop (Path A) or skills-only install (Path B).
 
 ### Intent-Aware Start
 
@@ -429,27 +430,46 @@ stelow is designed to be **self-contained** — the 28 skills + installer cover 
 
 For every external tool above, the workflow teaches the agent the **specific fallback strategy** in `skills/stelow-workflow-orchestrator/references/cli-tools/<tool>.md`. When a tool is unavailable, the orchestrator instructs the agent to use harness-native capabilities (built-in `subagent()`, `git grep`, terminal-based review with approval receipts) rather than skipping the workflow step entirely. Degraded capability is the trade-off — see the Fallback column above for what you lose without each tool.
 
-### 🚀 Path A: From Zero (agent + toolchain bootstrap — legacy)
+### 🚀 Path A: bb desktop (recommended)
 
-**One command, everything included.** Pick this only if you are on a new machine
-with no agent installed yet. For every other case, prefer Path B below.
+**The full experience: board, inbox, workers.** bb is a free, open-source,
+local-first IDE ([getbb.app](https://getbb.app)) where your agents (Claude Code,
+Codex, Cursor, Pi, OpenCode, …) run on your own subscriptions. stelow runs
+there as a visual plugin — no terminal setup, no skill copying.
+
+**1. Install bb** (requires nothing else — agents connect with the provider
+logins you already have):
+
+- **macOS:** one-click download at [getbb.app](https://getbb.app)
+- **Any OS with Node:** `npx bb-app@latest` (npm 12+: add `--allow-scripts=better-sqlite3,node-pty,@parcel/watcher`)
+- Windows via WSL; Linux & remote machines supported — see [get-bb/bb](https://github.com/get-bb/bb)
+
+**2. Install the stelow plugin from its repository** (requires bb ≥ 0.38;
+it is awaiting marketplace approval, so install via git URL for now):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/calionauta/stelow/main/setup.sh | sh
+bb plugin install git:https://github.com/calionauta/bb-plugin-stelow.git --yes
+bb plugin list   # stelow should show as running
 ```
 
-**What gets installed (in order):**
+Or in the UI: Extensions → Plugins → Add plugin, paste
+`git:https://github.com/calionauta/bb-plugin-stelow.git`, Install.
+To track a fixed release instead of the default branch, append `@vX.Y.Z`
+(e.g. `@v0.1.57`); updates arrive via `bb plugin update stelow`.
 
-| Step | Component | Details | Works on |
-|---|---|---|---|
-| 1 | Node.js | v20+ via Homebrew (macOS) or nvm (Linux/Windows) | - |
-| 2 | Agent | An agent CLI (see `PI_PACKAGES` in `setup.sh` for the current default) + its packages (subagents, tasks, supervision, visual-review gate, memory/compaction, file finder, code navigation) | Agent-specific |
-| 3 | Skills (28) | 14 workflow + 14 product skills, copied to `~/.agents/skills/` | **All agents** ✅ |
-| 4 | cymbal | codebase navigation via `brew install 1broseidon/tap/cymbal` (macOS) or `go install` (Linux); skipped gracefully if brew/Go absent | macOS, Linux |
-| 5 | ctx7 | library docs fetcher via `npx @vedanth/context7` (interactive OAuth — prompts the user) | All agents |
-| 6 | safe-change | pre-planning regression check via `npx skills add PrinNova/pi-agent-codebase-workflows -g` | All agents |
+**3. Product playbooks (for research cards):**
 
-> The exact agent package list lives in `setup.sh` (`PI_PACKAGES`) — that file is the source of truth, not this table. Skills land in `~/.agents/skills/` and work on any agent that reads them. The workflow itself runs fine without the toolchain — see [agentskills.io](https://agentskills.io/) for the cross-agent standard.
+```bash
+npx skills add calionauta/stelow -g
+```
+
+The plugin already vendors the 14 workflow skills and auto-syncs them; this
+adds the 14 product playbooks to the agent skills hub (`bb skill list` to
+confirm).
+
+**4. Open Stelow** in bb's navigation, select a project (a normal project with
+a local workspace source), choose Appetite and Review mode, and create a card.
+Details in [🗂️ Visual Management](#️-visual-management-kanban-board).
 
 ### 📋 Path B: Any agent (universal, canonical)
 
@@ -472,6 +492,25 @@ npx skills add calionauta/stelow -g
 This installs all 28 skills to `~/.agents/skills/` - works on any CLI.
 
 > For per-agent configuration (if your agent needs more than the universal skill path), see [docs/INSTALLATION.md](docs/INSTALLATION.md).
+
+### 📋 Path C: Pi CLI bootstrap (legacy)
+
+`setup.sh` predates the skills-only 1.0.0 era: it installs the Pi agent
+(`@earendil-works/pi-coding-agent`), Pi packages via `pi install` (including
+stelow itself as a Pi package), copies the skills to `~/.agents/skills/`, and
+writes `~/.pi/agent/settings.json` with opinionated defaults (provider, model,
+skill shortcuts). Only useful if Pi is your agent — and even then, Path B plus
+the packages you actually want is usually saner:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/calionauta/stelow/main/setup.sh | sh
+# flags: --dry-run (preview), --skip-node, ASSUME_YES=1 (non-interactive)
+```
+
+> The exact package list lives in `setup.sh` (`PI_PACKAGES`) — that file is the
+> source of truth, not this README. Optional tools (cymbal, ctx7, safe-change)
+> prompt interactively during setup and all have documented fallbacks (see
+> [External Dependencies](#external-dependencies)).
 
 ### Manual setup & dependencies
 
@@ -562,8 +601,10 @@ cd stelow
 npx skills add calionauta/stelow -g
 ```
 
-- **Zero-to-running** (new machine; legacy bootstrap that optionally installs an agent + toolchain):
-  `curl -fsSL https://raw.githubusercontent.com/calionauta/stelow/main/setup.sh | sh`
+- **Zero-to-running** (new machine): install [bb desktop](https://getbb.app),
+  then `bb plugin install git:https://github.com/calionauta/bb-plugin-stelow.git --yes`
+  (see [Path A](#-path-a-bb-desktop-recommended)). Legacy alternative for Pi-CLI
+  users: `curl -fsSL https://raw.githubusercontent.com/calionauta/stelow/main/setup.sh | sh`
 - **Activating the workflow:** the entry skill loads when the host sets
   `STELOW_WORKFLOW=1` + `STELOW_STATE=<path>` (see
   `references/host-levers.md`). Without the marker, the
@@ -577,12 +618,12 @@ npx skills add calionauta/stelow -g
 [bb-plugin-stelow](https://github.com/calionauta/bb-plugin-stelow) is the reference visual host for Stelow: a Kanban board, inbox, and worker CLI inside bb. It keeps `stelow.json` and `.stelow/` as the source of truth — it maintains no second workflow database.
 
 ```bash
-git clone https://github.com/calionauta/bb-plugin-stelow.git
-cd bb-plugin-stelow
-npm install
-bb plugin build
-bb plugin install . --yes
+bb plugin install git:https://github.com/calionauta/bb-plugin-stelow.git --yes
 ```
+
+(requires bb ≥ 0.38; pending marketplace approval, so install via the repository
+URL — or Extensions → Plugins → Add plugin in the UI and paste the same URL.
+ Pin a release with `@vX.Y.Z`; update with `bb plugin update stelow`.)
 
 **What it adds:**
 
