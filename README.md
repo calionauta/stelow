@@ -7,7 +7,6 @@
 [![Ask DeepWiki](https://img.shields.io/badge/Ask%20DeepWiki-007ACC)](https://deepwiki.com/calionauta/stelow)
 [![Ask zRead](https://img.shields.io/badge/Ask%20zRead-10B981)](https://zread.ai/calionauta/stelow)
 [![Version](https://img.shields.io/github/v/release/calionauta/stelow?logo=github&label=release)](https://github.com/calionauta/stelow/releases)
-[![Pi](https://img.shields.io/badge/Native-Pi-8B5CF6)](https://pi.dev)
 [![CLI](https://img.shields.io/badge/Skills%20run%20on-Any%20agent-3B82F6)](https://github.com/calionauta/stelow#-host-support)
 
 I'm trying to make ai agents behave less like coding assistants and more like cross-functional product team.
