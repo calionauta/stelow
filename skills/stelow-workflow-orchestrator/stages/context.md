@@ -102,8 +102,8 @@ wf.config.domains_detected = {selected_domains_json};
 t.updated = new Date().toISOString();
 fs.writeFileSync('stelow.json', JSON.stringify(t, null, 2));
 "
-  # stelow.json is the only file persisted — writeTracking() handles all subsequent updates.
+  # stelow.json is the only file persisted — subsequent stages update it directly.
 fi
 ```
 
-**If nothing detected or user declines:** proceed directly to Shape Up or end (set `domains_detected: []` in `stelow.json` via setup or the LLM's default; the TS extension seeds it as `[]` in `cmdStart`).
+**If nothing detected or user declines:** proceed directly to Shape Up or end (set `domains_detected: []` in `stelow.json`; default is `[]`).

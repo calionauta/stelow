@@ -13,8 +13,8 @@
  *   G. No harness package install commands (pi install / npm ls probes).
  *   H. No harness-specific package names or config paths.
  *
- * The cli-tools/plannotator.md reference doc is the ONLY allowed
- * exception to A and B: it documents the Pi-native path alongside the
+ * The cli-tools/visual_review.md reference doc is the ONLY allowed
+ * exception to A and B: it documents the gate annotation CLI alongside the
  * universal fallback. The cli-tools/agent_browser.md reference doc is
  * the ONLY allowed exception to H for the @earendil-works scope: it
  * documents a functional npx CLI invocation, not a harness dependency.
@@ -80,13 +80,12 @@ function stripFrontmatter(content: string): string {
 }
 
 function isExemptFromAudit(filePath: string): boolean {
-  return filePath.endsWith("/cli-tools/plannotator.md")
-    || filePath.endsWith("/references/cli-tools/subagents.md");
+  return filePath.endsWith("/cli-tools/visual_review.md");
 }
 
 function isExemptFromPackageScopeAudit(filePath: string): boolean {
   // agent_browser.md documents a functional npx CLI (usable from any
-  // harness), not a harness dependency — same precedent as plannotator.md.
+  // harness), not a harness dependency — same precedent as visual_review.md.
   return filePath.endsWith("/references/cli-tools/agent_browser.md");
 }
 

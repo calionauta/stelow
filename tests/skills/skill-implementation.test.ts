@@ -137,9 +137,9 @@ describe('Main SKILL.md Structure', () => {
       }
     });
 
-    it('plannotator should reference plannotator.md', () => {
-      if (content.includes('plannotator')) {
-        expect(content).toMatch(/plannotator\.md/);
+    it('gate doc should be referenced as visual_review.md', () => {
+      if (content.includes('visual_review')) {
+        expect(content).toMatch(/visual_review\.md/);
       }
     });
   });
@@ -309,8 +309,8 @@ describe('Per-Skill Implementation', () => {
           expect(content).toMatch(/visual_review/i);
         });
 
-        it('should reference gate command (plannotator.md or --gate)', () => {
-          expect(content).toMatch(/plannotator\.md|--gate|plannotator annotate/i);
+        it('should reference gate command (visual_review.md or --gate)', () => {
+          expect(content).toMatch(/visual_review\.md|--gate|visual_review annotate/i);
         });
       }
     });
@@ -322,8 +322,8 @@ describe('Per-Skill Implementation', () => {
       join(PROJECT_ROOT, 'skills', 'stelow-workflow-tech-planning', 'SKILL.md'),
       'utf8'
     );
-    it('should have plannotator --gate or plannotator.md reference', () => {
-      expect(techContent).toMatch(/plannotator.*--gate|--gate|plannotator\.md/i);
+    it('should have visual_review --gate reference', () => {
+      expect(techContent).toMatch(/visual_review.*--gate|--gate|visual_review\.md/i);
     });
   });
 });
@@ -434,14 +434,14 @@ describe('cli-tools References', () => {
 
   // Map of SKILL.md reference -> actual cli-tools file
   const toolFileMap: Record<string, string> = {
-    'plannotator': 'plannotator.md',
+    'visual_review': 'visual_review.md',
     'subagents': 'subagents.md',
     'goals': 'goals.md',
     'ask': 'ask.md',
     'todo': 'todo.md',
     'stage-status': 'stage-status.md',
     'subagent': 'subagents.md',
-    'plannotator.md': 'plannotator.md',
+    'visual_review.md': 'visual_review.md',
     'subagents.md': 'subagents.md',
     'goals.md': 'goals.md',
     'todo.md': 'todo.md',

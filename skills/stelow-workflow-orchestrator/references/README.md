@@ -7,7 +7,7 @@ All paths below are relative to `skills/stelow-workflow-orchestrator/references/
 
 | File | Purpose |
 |------|---------|
-| `cli-tools/goals.md` | Goal creation, optimization goals, pause/tweak |
+| `cli-tools/goals.md` | Acceptance contracts, optimization goals, scope iteration |
 | `cli-tools/intercom.md` | Inter-session communication |
 | `cli-tools/visual_review.md` | visual review gate command + after-approval workflow |
 | `cli-tools/safe-change.md` | Safe-change tool reference |

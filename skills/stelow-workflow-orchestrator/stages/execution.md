@@ -122,7 +122,7 @@ of truth — harness-native todos are display-only.
 ### execution:10 — Scope Executor Routing
 
 > **Goal system:** See `references/cli-tools/goals.md` for all scope types —
-> optimization scopes use the goals tool with benchmark verify commands.
+> optimization scopes use the acceptance contract with benchmark verify commands.
 
 **Before routing, read appetite from spec-product.md.**
 ```bash
@@ -142,17 +142,17 @@ APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-
 
 | Scope Type | Executor | Supervision |
 |---|---|---|
-| `[TYPE] optimization` | goals tool (see `references/cli-tools/goals.md`, Optimization Goals) | Metric verify (auto) |
-| `[EXECUTOR] optimization-goal` | goals tool (see `references/cli-tools/goals.md`, Optimization Goals) | Metric verify (auto) |
-| Spike with metric | goals tool (see `references/cli-tools/goals.md`, Optimization Goals) | Metric verify (auto) |
+| `[TYPE] optimization` | acceptance contract (see `references/cli-tools/goals.md`, Optimization Goals) | Metric verify (auto) |
+| `[EXECUTOR] optimization-goal` | acceptance contract (see `references/cli-tools/goals.md`, Optimization Goals) | Metric verify (auto) |
+| Spike with metric | acceptance contract (see `references/cli-tools/goals.md`, Optimization Goals) | Metric verify (auto) |
 | `feature` | iteration loop (see scope-executor Step 3 — implement → verify → review → quality, repeat until criteria met or `[MAX_ITERATIONS]` exhausted) | supervision checkpoint (DoD as outcome) |
-| Refactoring without metric | goals tool (see `references/cli-tools/goals.md`) — without native acceptance: parent-controlled loop | supervision checkpoint (DoD as outcome) |
-| Investigative spike | goals tool (see `references/cli-tools/goals.md`) — without native acceptance: parent-controlled loop | supervision checkpoint (DoD as outcome) |
-| Interface alternatives | goals tool (see `references/cli-tools/goals.md`) — without native acceptance: parent-controlled loop | supervision checkpoint (DoD as outcome) |
-| `test-unit` | goals tool (see `references/cli-tools/goals.md`) — without native acceptance: parent-controlled loop | Testing gates (see below) |
-| `test-integration` | goals tool (see `references/cli-tools/goals.md`) — without native acceptance: parent-controlled loop | Testing gates (see below) |
-| `test-security` | goals tool (see `references/cli-tools/goals.md`) — without native acceptance: parent-controlled loop | Testing gates (see below) |
-| `test-behavior` | goals tool (see `references/cli-tools/goals.md`) — without native acceptance: parent-controlled loop | Testing gates (see below) |
+| Refactoring without metric | acceptance contract (see `references/cli-tools/goals.md`) — without native acceptance: parent-controlled loop | supervision checkpoint (DoD as outcome) |
+| Investigative spike | acceptance contract (see `references/cli-tools/goals.md`) — without native acceptance: parent-controlled loop | supervision checkpoint (DoD as outcome) |
+| Interface alternatives | acceptance contract (see `references/cli-tools/goals.md`) — without native acceptance: parent-controlled loop | supervision checkpoint (DoD as outcome) |
+| `test-unit` | acceptance contract (see `references/cli-tools/goals.md`) — without native acceptance: parent-controlled loop | Testing gates (see below) |
+| `test-integration` | acceptance contract (see `references/cli-tools/goals.md`) — without native acceptance: parent-controlled loop | Testing gates (see below) |
+| `test-security` | acceptance contract (see `references/cli-tools/goals.md`) — without native acceptance: parent-controlled loop | Testing gates (see below) |
+| `test-behavior` | acceptance contract (see `references/cli-tools/goals.md`) — without native acceptance: parent-controlled loop | Testing gates (see below) |
 
 ### When starting execution of each scope:
 
@@ -161,13 +161,13 @@ APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-
    APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "Core")
    ```
 
-2. **Feature/refactor/spike without metric → goals tool** (see `references/cli-tools/goals.md`)
+2. **Feature/refactor/spike without metric → acceptance contract** (see `references/cli-tools/goals.md`)
    - Without native acceptance: **parent-controlled loop** (delegate → verify → fix → repeat, no discussion, starts immediately)
    - **Supervisor:** See the canonical appetite-based decision table in `execution:20` above. Activate a supervision checkpoint with outcome="Execute scope '{scope_name}' per spec-tech.md. DoD: {DoD}. AC: {acceptance criteria}. Do not deviate from approved scope." Add `sensitivity: "medium"` if appetite = Core.
    - The supervisor detects deviation and re-centers if the LLM leaves scope
 
-3. **Optimization/spike with metric → goals tool** (see `references/cli-tools/goals.md`, Optimization Goals)
-   - No supervisor needed (goals tool with benchmark verify is self-supervising via metric)
+3. **Optimization/spike with metric → acceptance contract** (see `references/cli-tools/goals.md`, Optimization Goals)
+   - No supervisor needed (acceptance contract with benchmark verify is self-supervising via metric)
 
 3. **If blocked:** record the blockage with reason, pause the scope, flag to user
 
@@ -214,10 +214,10 @@ After visual review approval on spec-tech_v{N}.md:
 
 | Scope Type | Executor | Command |
 |------------|----------|--------|
-| `feature` | goals tool (see `references/cli-tools/goals.md`) + supervision checkpoint | see the `stelow-workflow-scope-executor` skill for instructions |
-| `optimization` | goals tool (see `references/cli-tools/goals.md`, Optimization Goals) | see the `stelow-workflow-scope-executor` skill for instructions |
-| `spike` | goals tool (see `references/cli-tools/goals.md`) + supervision checkpoint | see the `stelow-workflow-scope-executor` skill for instructions |
-| `test-*` | goals tool (see `references/cli-tools/goals.md`) + testing gates | see the `stelow-workflow-scope-executor` skill for instructions |
+| `feature` | acceptance contract (see `references/cli-tools/goals.md`) + supervision checkpoint | see the `stelow-workflow-scope-executor` skill for instructions |
+| `optimization` | acceptance contract (see `references/cli-tools/goals.md`, Optimization Goals) | see the `stelow-workflow-scope-executor` skill for instructions |
+| `spike` | acceptance contract (see `references/cli-tools/goals.md`) + supervision checkpoint | see the `stelow-workflow-scope-executor` skill for instructions |
+| `test-*` | acceptance contract (see `references/cli-tools/goals.md`) + testing gates | see the `stelow-workflow-scope-executor` skill for instructions |
 
 ### Executing Scopes
 
@@ -232,7 +232,7 @@ success or `[MAX_ITERATIONS]` exhaustion (default: 3), then escalates to human.
 
 **For optimization scopes:**
 
-Use the goals tool (see `references/cli-tools/goals.md` → Optimization Goals) to create an optimization goal with benchmark verify commands and iteration loop.
+Use the acceptance contract (see `references/cli-tools/goals.md` → Optimization Goals) to create an optimization goal with benchmark verify commands and iteration loop.
 
 **For iteration loops:** feature scopes use `stelow-workflow-scope-executor` Step 3;
 optimization scopes use `goals.md` → Optimization Goals section.

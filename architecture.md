@@ -15,7 +15,7 @@ same workflow. Hosts only add an optional marker protocol
 | `skills/stelow-workflow-entry/` | Entry point. Classifies intent, scaffolds `state.md`, picks the first stage. Loaded when `STELOW_WORKFLOW=1`. Never runs stage logic. |
 | `skills/stelow-workflow-router/` | Router. Validates the next candidate against `transitions.md`, calls `scripts/stelow advance`, loads the next stage skill, appends the hand-off audit record. |
 | `skills/stelow-workflow-orchestrator/` | Orchestrator. Coordinates the 17-stage pipeline (Setup → Shape → Critique → Gate → Scope → Interface → Planning → Execution → Verification → Audit). |
-| `skills/stelow-product-<area>/` | The 23 other product/planning sub-skills (shape-up, plan-critique, tech-planning, ux-critique, domain playbooks, etc.). |
+| `skills/stelow-product-<area>/` | Product strategy playbooks + domain tactics (14 total, reference-only). |
 | `scripts/stelow` | Portable helper (bash + python3): `status`, `advance`, `doctor`, `seed`, `schema`, `ask`. Single source of runtime mechanics. |
 | `scripts/sync-cli-tools.sh` | Regenerates each sub-skill's `references/cli-tools/` from the orchestrator's copy. Run after editing a cli-tools reference. |
 | `install.sh` | Installer. Flattens `skills/*` into `~/.agents/skills/`, prunes retired/orphaned skills, offers optional tooling (cymbal, sem, ctx7). |

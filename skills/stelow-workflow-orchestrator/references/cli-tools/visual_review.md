@@ -5,9 +5,13 @@ The orchestrator resolves its implementation through `stages.yaml#tools.visual_r
 A host without a native implementation must silently approve and write:
 `.stelow/approvals/{dirHash}/{filename}.approved.md`.
 
-## Pi implementation fallback
+## CLI implementation
 
-When the Pi adapter is active, it maps `visual_review` to the host-native
-Plannotator executable (`plannotator annotate <file> --gate --json`). The
-`.stelow/approvals/` receipt remains the portable contract; `.plannotator/`
-is a Pi compatibility location only.
+When no native review UI is available, annotate via the `plannotator` CLI:
+
+```bash
+plannotator annotate <file> --gate --json
+```
+
+The `.stelow/approvals/` receipt remains the portable contract regardless of
+which UI produced the approval.

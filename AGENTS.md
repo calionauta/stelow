@@ -31,8 +31,8 @@ see `stages.yaml`.
 | `skills/stelow-workflow-entry/` | Entry point: intent classification, `state.md` scaffold, first-stage selection (loaded when `STELOW_WORKFLOW=1`). |
 | `skills/stelow-workflow-router/` | Router: validate next candidate, `advance` via helper, load next stage, append hand-off audit. |
 | `skills/stelow-workflow-orchestrator/` | Orchestrator + `stages.yaml` + `stages/*.md` + `references/transitions.md`. |
-| `skills/stelow-product-*/` + `skills/stelow-workflow-*/` | The 23 other self-contained planning sub-skills. |
-| `scripts/stelow` | Portable helper: `status [--json]`, `advance <candidate>`, `doctor [--json]` (lock + TTL, invariants). |
+| `skills/stelow-product-*/` + `skills/stelow-workflow-*/` | The other 25 self-contained skills (11 stage/execution workflow + 14 product). |
+| `scripts/stelow` | Portable CLI: `status`, `advance`, `doctor`, `seed`, `schema`, `ask` (lock + TTL, invariants). |
 | `types/stages.ts` | Stage-model TS interfaces mirroring `stages.yaml`. |
 | `stelow.schema.json` / `stelow.json` | Workflow tracking schema + per-project runtime state. |
 | `tests/` | Vitest: `unit/` + `integration/` + `skills/` contract tests. |

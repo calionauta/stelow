@@ -21,7 +21,7 @@ describe("skill host-agnostic vocabulary", () => {
     expect(files.length).toBeGreaterThanOrEqual(20);
     for (const file of files) {
       const content = readFileSync(file, "utf8");
-      if (file.endsWith("/references/cli-tools/plannotator.md")) continue;
+      if (file.endsWith("/references/cli-tools/visual_review.md")) continue;
       expect(content, file).not.toMatch(/\.plannotator\/approvals/);
       expect(content, file).not.toMatch(/\bplannotator\s+(annotate|review)/i);
     }
