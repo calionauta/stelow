@@ -14,6 +14,7 @@ scripts/stelow advance <candidate> [--dry-run] [--json]
 scripts/stelow doctor [--json]
 scripts/stelow seed --name <n> --intent <i> [--appetite Lean|Core|Complete] [--review-mode M] [--json]
 scripts/stelow ask --question <t> [--multiple] --option <label>... (repeat --question groups)
+scripts/stelow sync-scopes [--name <workflow>] [--json]
 scripts/stelow schema [command]
 scripts/stelow --help
 ```
@@ -34,7 +35,6 @@ or `.stelow/invariants.json`. Revertibility is therefore trivial: a bad
 candidate leaves both files byte-identical.
 
 `doctor` runs the four drift checks:
-
 | Class | Severity | Trigger |
 |---|---|---|
 | `stale-lock` | warn | `.stelow/lock` mtime older than TTL (default 120s) |
@@ -44,6 +44,13 @@ candidate leaves both files byte-identical.
 
 `--json` returns `{"findings": [...], "ok": <bool>}` and never exits non-zero
 on `warn` / `info`; only `error` flips `ok` to false.
+
+`sync-scopes` parses `[SCOPE-N]` blocks from the latest `spec-tech_*.md` into
+`wf.scopes[]` (`id`, `type`, `name`, `blockedBy`, `targetFiles`,
+`maxIterations`, `status: 'pending'`). Idempotent via `wf.specTechFile`;
+missing input is an exit-0 no-op; existing state is never replaced with an
+empty scope list. This is the single canonical scope parser — hosts shell
+out instead of maintaining a mirror.
 
 ## Files
 

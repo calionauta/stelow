@@ -23,6 +23,7 @@ layer on top (like [bb-plugin-stelow](https://github.com/calionauta/bb-plugin-st
    `schema`, `ask`, `sync-scopes`. Usage errors exit 2, runtime failures exit 1. No npm
    dependencies (bash + python3). Scope parsing lives here too
    (`sync-scopes`) — hosts must not maintain a parser mirror.
+   Full CLI reference: `references/cli-tools/stelow-helper.md`.
 3. **Stage slugs + transitions** — the 17 stages in
    `skills/stelow-workflow-orchestrator/references/transitions.md`
    (generated from `stages.yaml` via `scripts/generate-transitions.py`).

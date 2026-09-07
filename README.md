@@ -552,26 +552,10 @@ host shells out to. No npm dependencies: bash + python3 only. Hosts point at a
 per-workflow state dir via `STELOW_STATEDIR` / `STELOW_STATE`; usage errors exit
 2 (worker misuse), runtime failures exit 1.
 
-```bash
-scripts/stelow status [--json]
-scripts/stelow advance <candidate> [--dry-run] [--json]
-scripts/stelow doctor [--json]
-scripts/stelow seed --name <n> --intent <new-product|feature|bugfix|refactor|investigate> [--appetite Lean|Core|Complete] [--review-mode <mode>] [--json]
-scripts/stelow schema [command]
-scripts/stelow ask ...            # structured questions (see --help)
-scripts/stelow sync-scopes [--name <workflow>] [--json]
-scripts/stelow --help
-```
-
-| Subcommand | What it does |
-|---|---|
-| `status [--json]` | Read-only snapshot: workflow, intent, stage, status, appetite, review mode, lock |
-| `advance <candidate> [--dry-run] [--json]` | Enforce `transitions.md` and move to the next stage; records produced artifacts in the manifest; never mutates on invalid input |
-| `doctor [--json]` | Detect drift: orphan dirs, missing dirs, live locks, state↔transitions mismatch |
-| `seed --name --intent ...` | Mint `.stelow/<date>/<dirHash>/` with scaffolded `state.md` + `stelow.json` entry; prints the state dir (export as `STELOW_STATEDIR`) |
-| `schema [command]` | Print the machine-readable contract for a subcommand |
-| `ask` | Structured human questions (the primitive hosts wrap for blocking input) |
-| `sync-scopes [--name]` | Parse `[SCOPE-N]` blocks from the latest `spec-tech_*.md` into `wf.scopes[]` (idempotent, fail-safe) |
+Subcommands: `status`, `advance`, `doctor`, `seed`, `schema`, `ask`,
+`sync-scopes` — full reference in
+[`references/cli-tools/stelow-helper.md`](references/cli-tools/stelow-helper.md)
+(or run `scripts/stelow --help` / `scripts/stelow schema`).
 
 > When running inside bb, you don't call this binary directly — the plugin wraps
 > the same operations as `bb stelow status|ask|seed|advance|doctor|preset`
