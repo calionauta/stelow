@@ -20,8 +20,9 @@ layer on top (like [bb-plugin-stelow](https://github.com/calionauta/bb-plugin-st
    `stelow-product-*` (reference playbooks). Vendor them, sync them from this
    repo's `main`, or install via `npx skills add calionauta/stelow -g`.
 2. **`scripts/stelow` semantics** — `status`, `advance`, `doctor`, `seed`,
-   `schema`, `ask`. Usage errors exit 2, runtime failures exit 1. No npm
-   dependencies (bash + python3).
+   `schema`, `ask`, `sync-scopes`. Usage errors exit 2, runtime failures exit 1. No npm
+   dependencies (bash + python3). Scope parsing lives here too
+   (`sync-scopes`) — hosts must not maintain a parser mirror.
 3. **Stage slugs + transitions** — the 17 stages in
    `skills/stelow-workflow-orchestrator/references/transitions.md`
    (generated from `stages.yaml` via `scripts/generate-transitions.py`).

@@ -387,7 +387,8 @@ t.updated = new Date().toISOString();
 fs.writeFileSync(path, JSON.stringify(t, null, 2));
 console.log('Config saved to stelow.json (workflow: ' + wf.name + ')');
 "
-# stelow.json is the only file persisted — writeTracking() handles all subsequent updates.
+# stelow.json is the only file persisted — later stages update it directly
+# (`scripts/stelow advance`, `scripts/stelow sync-scopes`).
 ```
 
 #### Step 4: Inject into spec-product.md frontmatter

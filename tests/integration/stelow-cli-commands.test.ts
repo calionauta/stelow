@@ -132,7 +132,7 @@ describe("schema", () => {
     const r = run(wd, ["schema"]);
     expect(r.status).toBe(0);
     const j = JSON.parse(r.stdout);
-    for (const cmd of ["status", "advance", "doctor", "seed", "ask"]) {
+    for (const cmd of ["status", "advance", "doctor", "seed", "ask", "sync-scopes"]) {
       expect(Object.keys(j), `schema covers ${cmd}`).toContain(cmd);
       expect(j[cmd].usage, `${cmd} usage`).toBeTruthy();
       expect(j[cmd].exit_codes, `${cmd} exit codes`).toBeTruthy();
@@ -276,5 +276,78 @@ describe("read-only commands never touch the filesystem", () => {
     run(wd, ["status"], env);
     run(wd, ["doctor"], env);
     expect(existsSync(ghost)).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+
+describe("sync-scopes", () => {
+  const SPEC = [
+    "[SCOPE-1] Login",
+    "[TYPE] feature",
+    "[MAX_ITERATIONS] 5",
+    "Objective: Implement login",
+    "Dependencies: None",
+    "DoD: works",
+    "[TARGET_FILES]",
+    "- src/auth/**",
+    "",
+    "[SCOPE-2] Speed",
+    "[TYPE] optimization",
+    "Objective: Faster",
+    "Dependencies: SCOPE-1",
+    "DoD: fast",
+    "",
+  ].join("\n");
+
+  function seedWithSpec(wdName: string): { wd: any; statedir: string } {
+    const wd = makeWorkdir();
+    const seed = run(wd, ["seed", "--name", wdName, "--intent", "feature", "--json"]);
+    expect(seed.status).toBe(0);
+    const statedir = (JSON.parse(seed.stdout) as any).statedir as string;
+    mkdirSync(join(statedir, "plans"), { recursive: true });
+    writeFileSync(join(statedir, "plans", "spec-tech_v1.md"), SPEC);
+    return { wd, statedir };
+  }
+
+  it("parses [SCOPE-N] blocks into wf.scopes[]", () => {
+    const { wd, statedir } = seedWithSpec("sync-parse");
+    const env = { STELOW_STATEDIR: statedir };
+    const r = run(wd, ["sync-scopes", "--json"], env);
+    expect(r.status).toBe(0);
+    expect(JSON.parse(r.stdout).synced).toBe(2);
+    const tracking = JSON.parse(readFileSync(join(wd.dir, "stelow.json"), "utf8"));
+    const scopes = tracking.workflows[0].scopes;
+    expect(scopes.map((s: any) => s.id)).toEqual(["scope-1", "scope-2"]);
+    expect(scopes[0]).toMatchObject({ type: "feature", name: "Login", maxIterations: 5, status: "pending" });
+    expect(scopes[0].targetFiles).toEqual(["src/auth/**"]);
+    expect(scopes[1]).toMatchObject({ type: "optimization", maxIterations: 3 });
+    expect(scopes[1].blockedBy).toEqual(["scope-1"]);
+    expect(tracking.workflows[0].specTechFile).toBe("spec-tech_v1.md");
+  });
+
+  it("is idempotent on second run", () => {
+    const { wd, statedir } = seedWithSpec("sync-idem");
+    const env = { STELOW_STATEDIR: statedir };
+    expect(run(wd, ["sync-scopes", "--json"], env).status).toBe(0);
+    const second = run(wd, ["sync-scopes", "--json"], env);
+    expect(second.status).toBe(0);
+    expect(JSON.parse(second.stdout).synced).toBe(0);
+  });
+
+  it("missing spec-tech is an exit-0 no-op", () => {
+    const wd = makeWorkdir();
+    const seed = run(wd, ["seed", "--name", "sync-empty", "--intent", "feature", "--json"]);
+    expect(seed.status).toBe(0);
+    const statedir = (JSON.parse(seed.stdout) as any).statedir as string;
+    const r = run(wd, ["sync-scopes"], { STELOW_STATEDIR: statedir });
+    expect(r.status).toBe(0);
+    const tracking = JSON.parse(readFileSync(join(wd.dir, "stelow.json"), "utf8"));
+    expect(tracking.workflows[0].scopes ?? []).toEqual([]);
+  });
+
+  it("rejects unknown flags with exit 2", () => {
+    const wd = makeWorkdir();
+    expect(run(wd, ["sync-scopes", "--bogus"]).status).toBe(2);
   });
 });

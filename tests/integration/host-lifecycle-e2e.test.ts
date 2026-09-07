@@ -142,6 +142,26 @@ describe("host lifecycle e2e", () => {
     expect(readFileSync(JSON.parse(seed.stdout).state, "utf8")).toBe(before);
   });
 
+  it("sync-scopes populates wf.scopes[] the way a host would at execution setup", () => {
+    const seed = run(ctx.helper, ["seed", "--name", "e2e-sync", "--intent", "feature", "--json"], ctx.dir);
+    expect(seed.status).toBe(0);
+    const parsed = JSON.parse(seed.stdout);
+    const e2 = { STELOW_STATEDIR: parsed.statedir as string };
+    mkdirSync(join(parsed.statedir as string, "plans"), { recursive: true });
+    writeFileSync(
+      join(parsed.statedir as string, "plans", "spec-tech_v1.md"),
+      "[SCOPE-1] Login\n[TYPE] feature\nObjective: login\nDependencies: None\nDoD: works\n",
+    );
+    const sync = run(ctx.helper, ["sync-scopes", "--json"], ctx.dir, e2);
+    expect(sync.status).toBe(0);
+    expect(JSON.parse(sync.stdout).synced).toBe(1);
+    const tracking = JSON.parse(readFileSync(join(ctx.dir, "stelow.json"), "utf8"));
+    const wf = tracking.workflows.find((w: any) => w.name === "e2e-sync");
+    expect(wf.scopes.map((s: any) => s.id)).toEqual(["scope-1"]);
+    // Tracking stays valid for subsequent advances.
+    expect(run(ctx.helper, ["advance", "context"], ctx.dir, e2).status).toBe(0);
+  });
+
   it("status --json exposes the workflow contract shape", () => {
     const r = run(ctx.helper, ["status", "--json"], ctx.dir, env());
     expect(r.status).toBe(0);

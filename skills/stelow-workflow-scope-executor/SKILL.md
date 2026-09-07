@@ -158,58 +158,33 @@ If the user says yes, proceed autonomously. If no, ask what they'd like to adjus
 ### Step 2e: Initialize scope tracking in `stelow.json`
 
 Before executing scopes, `wf.scopes[]` must be populated from the latest
-`spec-tech.md`. **How that happens depends on host capability**: hosts with
-a native scope-sync hook sync automatically, while hosts without one use
-the documented fallback.
-
-#### Native scope-sync hook
-
-A host adapter with `writeTracking()` auto-syncs scopes on every persisted
-`stelow.json` write. The LLM does NOT need to run a bash snippet for this —
-the host reaches the shared `parseSpecTechScopes` parser through its own
-`syncScopesIfNeeded()` integration.
-
-#### Managed write path
-
-A host with a compiled plugin performs the sync through the same
-host-agnostic `parseSpecTechScopes` parser. The LLM does NOT need to run
-a bash snippet for this.
-
-#### Explicit fallback (no native hook)
-
-Hosts **without** a native `writeTracking` or scope-sync hook: run the bash
-fallback in
+`spec-tech.md`. Run the canonical subcommand (see
 [`references/cli-tools/scope-init-fallback.md`](references/cli-tools/scope-init-fallback.md)
-before Step 3. It loads the same compiled `parseSpecTechScopes` artifact and
-writes `wf.scopes[]` from the latest
-`.stelow/{date}/{hash}/plans/spec-tech_*.md`.
+for the full contract) before Step 3:
 
-The fallback handles empty and populated workflows, version-aware replacement
-when a newer `spec-tech_*.md` appears, missing or malformed planning files, and
-non-coercible timestamps. Missing or malformed input is a safe no-op; a
-missing parser artifact is reported as an actionable error rather than being
-silently replaced by a second parser.
+```bash
+scripts/stelow sync-scopes [--name <workflow>] [--json]
+# inside bb: the plugin wraps the same operation
+```
 
-**How the shared parser is reached:**
+With `STELOW_STATEDIR` pointing at the workflow's state dir, no `--name` is
+needed. The subcommand is idempotent (re-run on spec-tech v2+ re-syncs) and
+fail-safe (missing input is an exit-0 no-op; existing state is never replaced
+with an empty scope list).
 
-`parseSpecTechScopes` is the single host-agnostic parser for `[SCOPE-N]` blocks. It returns a `Scope[]` containing
-`id`, `type`, `name`, dependency, target-file, and iteration metadata, with every
-scope set to `status: 'pending'`. Hosts with native write paths invoke it through
-their own integration; hosts without invoke the same compiled artifact through the
-fallback. All paths discover the conventional
-`.stelow/{date}/{hash}/plans/spec-tech_*.md` location and honor the
-`wf.specTechFile` version marker.
+**How the parser is reached:**
 
-| Capability | Trigger | Idempotent skip |
-|------|---------|-----------------|
-| Native scope-sync hook | Every tracking write once the workflow reaches Execution phase | `wf.specTechFile === latest && wf.scopes.length > 0` |
-| Managed write path | Host-managed write using the shared parser | Same as above |
-| Explicit fallback | LLM runs the documented bash fallback | Same filename-keyed skip (`specTechFile === latest`) |
+`scripts/stelow sync-scopes` is the single canonical parser for `[SCOPE-N]`
+blocks. It returns scopes containing `id`, `type`, `name`, `blockedBy`,
+`targetFiles`, and `maxIterations`, with every scope set to `status: 'pending'`.
+All hosts shell out to it — there is no per-host parser and no compiled
+artifact to install. Discovery is by convention:
+`.stelow/{date}/{hash}/plans/spec-tech_*.md`, with the `wf.specTechFile`
+version marker for idempotent skips.
 
 This follows KISS + DRY + Convention over Configuration:
-- **KISS:** One canonical parser, with host-specific triggers only.
-- **DRY:** Native, managed, and fallback paths all consume the compiled
-  `parseSpecTechScopes` artifact; the fallback contains only filesystem glue.
+- **KISS:** One subcommand, zero host-specific triggers.
+- **DRY:** Every host consumes the same parser; the skill holds no copy.
 - **CoC:** `spec-tech_*.md` is found by convention at
   `.stelow/{date}/{hash}/plans/`; the date stamp comes from `wf.created` and the
   directory hash from `wf.dirHash`.
@@ -668,8 +643,8 @@ if (wf?.scopes) {
 **Enforcement:**
 - By default, `record` is an advisory convention. `stelow-workflow-execution-critique`
   Criterion 6 flags scopes with `status: 'completed'` AND `record.verified !== true`.
-- `STELOW_VALIDATE=1` enables runtime validation in `writeTracking()`. The
-  `schema-record.ts` validators check every scope's `record` and `tasks`
+- `STELOW_VALIDATE=1` enables runtime validation (see `scripts/pre-commit-record.sh`). The
+  record validators check every scope's `record` and `tasks`
   before persisting the tracking file.
 - Pre-commit hook at `scripts/pre-commit-record.sh` blocks commits with
   unverified completed scopes.
@@ -896,19 +871,15 @@ const undeclared = completed.map(s => ({
   declared: s.target_files ?? [],
   actual: s.actual_files,
   undeclared_writes: s.actual_files.filter(f => {
-    // Use the SSOT matcher exported by the package. Consumers must have
-    // stelow installed (it's a peer dep), so the build output is available
-    // under the package's name. If the `require()` fails (missing package,
-    // stale build), fall back silently — the 4-class report degrades to
-    // exact path comparison only.
+    // Minimal glob match (`*` within a segment, `**` across segments)
+    // so declared patterns like src/auth/** actually match.
     const declared = s.target_files ?? [];
-    try {
-      const { matchesDeclaredGlob } = require('@calionauta/stelow/build/extensions/stelow/scope');
-      return !declared.some(g => matchesDeclaredGlob(f, g));
-    } catch {
-      // Fallback: exact path only (no wildcards, no braces).
-      return !declared.includes(f);
-    }
+    const globToRegExp = (g) => new RegExp("^" + g.split("**")
+      .map((part) => part.split("*")
+        .map((s) => s.replace(/[.+?^${}()|[\]\\]/g, "\\$&"))
+        .join("[^/]*"))
+      .join(".*") + "$");
+    return !declared.some((g) => g === f || globToRegExp(g).test(f));
   })
 })).filter(s => s.undeclared_writes.length > 0);
 

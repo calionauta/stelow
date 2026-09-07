@@ -384,7 +384,7 @@ worker CLI) lives in a separate repo,
 | Feature | Any agentskills-compatible agent |
 |---|---|
 | **28 skills (14 workflow + 14 product)** | ✅ |
-| **`scripts/stelow` CLI (status / advance / doctor / seed / schema / ask)** | ✅ (bash + python3) |
+| **`scripts/stelow` CLI (status / advance / doctor / seed / schema / ask / sync-scopes)** | ✅ (bash + python3) |
 | **`/sw-*` workflow commands** | ✅ Routed by the entry + router skills |
 | **`visual_review` gate** | ✅ Portable approval receipts under `.stelow/approvals/` |
 | **Scope sync from spec-tech.md** | ✅ Skill-instructed parse into `stelow.json` |
@@ -394,12 +394,20 @@ worker CLI) lives in a separate repo,
 
 ### Auto-sync scopes from spec-tech.md
 
-A common pain point used to be initializing `wf.scopes[]` in `stelow.json` — it required the LLM to run a 20-line bash snippet during Execution phase setup, which most agents skipped. **Starting in v0.44.0, scopes auto-sync from `spec-tech.md` by convention:**
+Scopes populate from `spec-tech.md` via one canonical subcommand — run it at
+Execution phase setup (and re-run when spec-tech bumps to v2+):
 
-- **How:** At Execution phase setup, the executor skill finds the latest `.stelow/{date}/{hash}/plans/spec-tech_*.md`, parses `[SCOPE-N]` blocks into `{ id, type, name, blockedBy, targetFiles, maxIterations }`, and writes them to `stelow.json` with `status: 'pending'`.
-- **When:** First read/write after a workflow enters Execution phase with empty scopes (idempotent).
-- **Re-sync on v2+:** Tracks `wf.specTechFile` — if spec-tech bumps to v2, scopes are re-synced automatically.
-- **Consistent across agents:** the parse runs as skill-instructed bash/python against `spec-tech.md`, so every host behaves the same.
+```bash
+scripts/stelow sync-scopes [--name <workflow>] [--json]
+# inside bb: the plugin wraps the same operation
+```
+
+- **How:** parses `[SCOPE-N]` blocks from the latest `.stelow/{date}/{hash}/plans/spec-tech_*.md`
+  into `{ id, type, name, blockedBy, targetFiles, maxIterations }` with `status: 'pending'`,
+  tracked by `wf.specTechFile` for idempotent re-sync.
+- **Fail-safe:** missing input is an exit-0 no-op; existing state is never replaced
+  with an empty scope list. See `skills/stelow-workflow-scope-executor/references/cli-tools/scope-init-fallback.md`
+  for the full contract.
 
 Known edge cases (race window, legacy workflows without `dirHash`) are handled idempotently; report new ones as [issues](https://github.com/calionauta/stelow/issues).
 
@@ -509,7 +517,7 @@ This project distributes exclusively via GitHub (no npm) — see [docs/SECURITY.
 The `/sw-*` workflow commands are **skill-provided entry points**: they are
 routed by the entry + router skills, not registered by host code. The single
 source of truth for state mechanics is the `scripts/stelow` CLI
-(`status`, `advance`, `doctor`, `seed`, `schema`, `ask` — see
+(`status`, `advance`, `doctor`, `seed`, `schema`, `ask`, `sync-scopes` — see
 [🧰 stelow CLI](#-stelow-cliscriptsstelow) below).
 
 | Command | Description |
@@ -551,6 +559,7 @@ scripts/stelow doctor [--json]
 scripts/stelow seed --name <n> --intent <new-product|feature|bugfix|refactor|investigate> [--appetite Lean|Core|Complete] [--review-mode <mode>] [--json]
 scripts/stelow schema [command]
 scripts/stelow ask ...            # structured questions (see --help)
+scripts/stelow sync-scopes [--name <workflow>] [--json]
 scripts/stelow --help
 ```
 
@@ -562,6 +571,7 @@ scripts/stelow --help
 | `seed --name --intent ...` | Mint `.stelow/<date>/<dirHash>/` with scaffolded `state.md` + `stelow.json` entry; prints the state dir (export as `STELOW_STATEDIR`) |
 | `schema [command]` | Print the machine-readable contract for a subcommand |
 | `ask` | Structured human questions (the primitive hosts wrap for blocking input) |
+| `sync-scopes [--name]` | Parse `[SCOPE-N]` blocks from the latest `spec-tech_*.md` into `wf.scopes[]` (idempotent, fail-safe) |
 
 > When running inside bb, you don't call this binary directly — the plugin wraps
 > the same operations as `bb stelow status|ask|seed|advance|doctor|preset`
@@ -636,7 +646,7 @@ this repo ships no host-specific code. The hosting contract lives in
 Owner paths in this repo:
 
 - `skills/` (28 portable skills: 14 `stelow-product-*` and 14 `stelow-workflow-*`) — the only runtime content; loaded by any agentskills-compatible agent.
-- `scripts/stelow` — portable CLI (`status`, `advance`, `doctor`, `seed`, `schema`, `ask`); every host shells out to it.
+- `scripts/stelow` — portable CLI (`status`, `advance`, `doctor`, `seed`, `schema`, `ask`, `sync-scopes`); every host shells out to it.
 - `types/stages.ts` + `skills/stelow-workflow-orchestrator/stages.yaml` — the stage model and transitions.
 
 To add a new host you need **no code** — just an agent that reads

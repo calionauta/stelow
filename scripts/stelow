@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# scripts/stelow — stelow workflow CLI (status / advance / doctor / seed / schema / ask).
+# scripts/stelow — stelow workflow CLI (status / advance / doctor / seed / schema / ask / sync-scopes).
 #
 # Passive: reads/writes one workflow state. Hosts may point at a per-workflow
 # directory with STELOW_STATEDIR/STELOW_STATE; root paths remain the legacy
@@ -692,6 +692,13 @@ commands = {
     "exit_codes": {"0": "submitted (answer JSON)", "1": "waiting (persisted) or explicit cancel", "2": "usage or unknown identity"},
     "output": "answer JSON, or pending.json surviving under ask/ for host fulfillment",
   },
+  "sync-scopes": {
+    "usage": "stelow sync-scopes [--name <workflow>] [--json]",
+    "flags": ["--name", "--json"],
+    "env": ["STELOW_STATEDIR"],
+    "exit_codes": {"0": "synced or nothing-to-do (idempotent no-op)", "1": "unreadable state", "2": "usage or ambiguous workflow"},
+    "output": "text summary or {synced, specTechFile, dirHash} with --json",
+  },
 }
 if want and want not in commands:
     print(f"schema: unknown command '{want}' (known: {', '.join(sorted(commands))})", file=sys.stderr)
@@ -846,6 +853,146 @@ while True:
 PY
 }
 
+# --- sync-scopes -------------------------------------------------------------
+
+# Parse [SCOPE-N] blocks from the latest spec-tech_*.md into wf.scopes[].
+# Single canonical parser: hosts shell out instead of maintaining mirrors
+# (the old compiled-artifact path is gone — this subcommand IS the parser).
+do_sync_scopes() {
+  local name="" json=""
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --name) name="${2:-}"; shift 2 ;;
+      --json) json="1"; shift ;;
+      *) usage_error "sync-scopes: unknown arg '$1' (try --help)" ;;    esac
+  done
+  python3 - "$ROOT" "$STATEDIR" "$name" "$json" <<'PY' || exit $?
+import sys, os, re, json, glob, datetime, tempfile
+root, statedir, name, want_json = sys.argv[1:5]
+
+def warn(text):
+    print(f"sync-scopes: {text}", file=sys.stderr)
+
+tracking_path = os.path.join(root, "stelow.json")
+try:
+    tracking = json.loads(open(tracking_path).read())
+except Exception as error:
+    warn(f"could not read {tracking_path}; leaving state unchanged ({error})")
+    sys.exit(0)
+workflows = tracking.get("workflows")
+if not isinstance(workflows, list) or not workflows:
+    warn("no workflows in tracking; leaving state unchanged")
+    sys.exit(0)
+
+workflow = None
+if name:
+    workflow = next((w for w in workflows if w.get("name") == name), None)
+    if workflow is None:
+        warn(f"no workflow named '{name}'; leaving state unchanged")
+        sys.exit(0)
+else:
+    leaf = os.path.basename(os.path.normpath(statedir))
+    workflow = next((w for w in workflows if w.get("dirHash") == leaf), None)
+    if workflow is None:
+        active = [w for w in workflows if w.get("status") == "in-progress"]
+        if len(active) == 1:
+            workflow = active[0]
+        else:
+            print("sync-scopes: ambiguous workflow (pass --name) or set STELOW_STATEDIR", file=sys.stderr)
+            sys.exit(2)
+
+dirhash = workflow.get("dirHash")
+if not dirhash:
+    warn("workflow has no dirHash; leaving state unchanged")
+    sys.exit(0)
+try:
+    created = datetime.datetime.fromisoformat(str(workflow.get("created", "")))
+    date = created.strftime("%Y-%m-%d")
+except Exception:
+    date = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
+plans = os.path.join(root, ".stelow", date, dirhash, "plans")
+try:
+    files = sorted(f for f in os.listdir(plans) if f.startswith("spec-tech_") and f.endswith(".md"))
+except Exception as error:
+    warn(f"could not read plans dir {plans}; leaving state unchanged ({error})")
+    sys.exit(0)
+if not files:
+    warn(f"no spec-tech_*.md under {plans}; leaving state unchanged")
+    sys.exit(0)
+latest = files[-1]
+if workflow.get("scopes") and workflow.get("specTechFile") == latest:
+    msg = f"scopes already in sync with {latest}"
+    if want_json:
+        print(json.dumps({"synced": 0, "specTechFile": latest, "dirHash": dirhash, "note": msg}))
+    else:
+        print(f"sync-scopes: {msg}")
+    sys.exit(0)
+
+content = open(os.path.join(plans, latest)).read()
+blocks = re.split(r"(?m)^\[SCOPE-(\d+)\]\s*(.*)$", content)
+# split keeps [full, num, title, body, num, title, body, ...]
+scopes = []
+for i in range(1, len(blocks), 3):
+    num, title, body = blocks[i], blocks[i + 1].strip(), blocks[i + 2]
+    fields: dict = {}
+    targets: list = []
+    in_targets = False
+    for line in body.splitlines():
+        key = re.match(r"^\[([A-Z_]+)\]\s*(.*)$", line.strip())
+        if key:
+            in_targets = key.group(1) == "TARGET_FILES"
+            if not in_targets:
+                fields[key.group(1)] = key.group(2).strip()
+            continue
+        if in_targets:
+            item = re.match(r"^\s*-\s*(.+)$", line)
+            if item:
+                targets.append(item.group(1).strip())
+            elif line.strip():
+                in_targets = False
+    dep_line = ""
+    for line in body.splitlines():
+        dep = re.match(r"^Dependencies:\s*(.+)$", line.strip())
+        if dep:
+            dep_line = dep.group(1)
+            break
+    blocked = [f"scope-{n}" for n in re.findall(r"SCOPE-(\d+)", dep_line)]
+    try:
+        max_iter = int(re.search(r"\d+", fields.get("MAX_ITERATIONS", "3")).group(0))
+    except Exception:
+        max_iter = 3
+    scopes.append({
+        "id": f"scope-{num}",
+        "type": fields.get("TYPE", "feature").strip().lower() or "feature",
+        "name": title,
+        "blockedBy": blocked,
+        "targetFiles": targets,
+        "maxIterations": max_iter,
+        "status": "pending",
+    })
+if not scopes:
+    warn(f"{latest} had no [SCOPE-N] blocks; scopes left as-is")
+    sys.exit(0)
+
+workflow["scopes"] = scopes
+workflow["specTechFile"] = latest
+workflow["updated"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+fd, temporary = tempfile.mkstemp(prefix=".stelow.", dir=root)
+try:
+    with os.fdopen(fd, "w") as handle:
+        handle.write(json.dumps(tracking, indent=2, sort_keys=True) + "\n")
+    os.replace(temporary, tracking_path)
+finally:
+    if os.path.exists(temporary):
+        try: os.unlink(temporary)
+        except Exception: pass
+if want_json:
+    print(json.dumps({"synced": len(scopes), "specTechFile": latest, "dirHash": dirhash}))
+else:
+    print(f"sync-scopes: synced {len(scopes)} scopes from {latest}")
+PY
+}
+
 # --- dispatch ----------------------------------------------------------------
 
 usage() {
@@ -859,6 +1006,7 @@ Usage:
   $PROG seed --name <n> --intent <i> [--appetite Lean|Core|Complete] [--review-mode M] [--json]
   $PROG schema [command]
   $PROG ask --question <t> [--multiple] --option <label>... (repeat --question groups)
+  $PROG sync-scopes [--name <workflow>] [--json]
   $PROG --help
 
 State file:  $STATE
@@ -903,6 +1051,10 @@ case "${1:-}" in
   ask)
     shift
     do_ask "$@"
+    ;;
+  sync-scopes)
+    shift
+    do_sync_scopes "$@"
     ;;
   doctor)
     shift
