@@ -17,7 +17,7 @@ same workflow. Hosts only add an optional marker protocol
 | `skills/stelow-workflow-orchestrator/` | Orchestrator. Coordinates the 17-stage pipeline (Setup → Shape → Critique → Gate → Scope → Interface → Planning → Execution → Verification → Audit). |
 | `skills/stelow-product-<area>/` | Product strategy playbooks + domain tactics (14 total, reference-only). |
 | `scripts/stelow` | Portable helper (bash + python3): `status`, `advance`, `doctor`, `seed`, `schema`, `ask`. Single source of runtime mechanics. |
-| `scripts/sync-cli-tools.sh` | Regenerates each sub-skill's `references/cli-tools/` from the orchestrator's copy. Run after editing a cli-tools reference. |
+| `skills/stelow-workflow-orchestrator/references/cli-tools/` | Single source for shared tool references. Sub-skills link it via sibling-relative paths (`../stelow-workflow-orchestrator/...`) — no copies, no sync step. |
 | `install.sh` | Installer. Flattens `skills/*` into `~/.agents/skills/`, prunes retired/orphaned skills, offers optional tooling (cymbal, sem, ctx7). |
 | `types/stages.ts` | Shared TypeScript interfaces for the `stages.yaml` stage model (transitions, gates, supervisor). |
 | `stelow.schema.json` / `stelow.json` | Workflow tracking JSON schema + per-project runtime tracking state. |

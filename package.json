@@ -29,7 +29,7 @@
     "node": ">=20.0.0"
   },
   "scripts": {
-    "build": "./scripts/sync-cli-tools.sh && tsc -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.build.json",
     "gen:transitions": "python3 scripts/generate-transitions.py",
     "gen:transitions:check": "python3 scripts/generate-transitions.py --check",
     "test": "vitest run",

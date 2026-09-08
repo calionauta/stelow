@@ -217,7 +217,7 @@ Same scope body may declare a lock TTL override:
 - src/migration/**
 ```
 
-Parse the integer value into `wf.scopes[i].lock_ttl_seconds: number` (optional). Default is 1800 (30 min); see `references/cli-tools/file-locking.md#ttl-configuration` for range / clamping rules. At Step 3c, the orchestrator exports this to `$LOCK_TTL_SECONDS` for the acquire snippet.
+Parse the integer value into `wf.scopes[i].lock_ttl_seconds: number` (optional). Default is 1800 (30 min); see `../stelow-workflow-orchestrator/references/cli-tools/file-locking.md` for TTL semantics. At Step 3c, pass it via `--ttl` to the acquire subcommand.
 
 Convention is **advisory** — no enforcement at the tracking layer. The file-reservation lock protocol (see `../stelow-workflow-orchestrator/references/cli-tools/file-locking.md` in `stelow-workflow-orchestrator`) uses these declared paths at scope-execution time. If undeclared, the post-execution `actual_files ∩ declared` diff in Step 8 still flags undeclared writes.
 
