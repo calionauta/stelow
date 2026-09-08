@@ -90,6 +90,7 @@ cli-binary ...args
 | `todo.md` | Phase task management |
 | `agent_browser.md` | Automated web browser for UI verification |
 | `file-locking.md` | Convention-based scope locking (no git worktrees) |
+| `web-research.md` | Layered web evidence procedure (host search → primary sources → last30days) |
 
 > **See also:** `../../../stelow-workflow-orchestrator/references/permissions.md` (stage permissions) and `../../../stelow-workflow-orchestrator/references/capabilities.md` (allowed tools per stage)
 

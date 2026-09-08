@@ -60,13 +60,13 @@ Organize the analysis into:
 
 ### How to Apply
 
-1. **Ask the user for their inputs** (if not already provided):
-   - Use `question` tool to confirm:
+1. **Ask the user for their inputs** (if not already provided, via the portable ask contract in `../stelow-workflow-orchestrator/references/cli-tools/ask.md`):
+   - Confirm:
      - **Variant**: "General Deep Analysis" (broad strategic study) or "Weekly Intelligence Canvas" (7-day competitive intelligence)
      - **Study Topic**: The market, industry, or topic to analyze
      - **Geographic Focus**: "Global" or specific country/region
    - Always include option: "I want you to recommend based on context"
-   - Fallback (no question tool): "What would you like to analyze? (variant: General Deep or Weekly Intelligence, topic: [your topic], focus: Global or [region])"
+   - Fallback (no question tool at all): "What would you like to analyze? (variant: General Deep or Weekly Intelligence, topic: [your topic], focus: Global or [region])"
 
 2. Apply all four methodologies to each time horizon.
 3. Synthesize findings into a coherent narrative, not just isolated frameworks.
@@ -83,7 +83,7 @@ Use this for a structured 7-day competitive intelligence report. Best suited for
   - `{my business}`: The user's company or product
   - `{my job to be done or niche}`: The market/niche to analyze
 - Always include option: "I want you to recommend based on context"
-- Fallback (no question tool): Ask directly for business and niche/topic
+- Fallback (no question tool at all): Ask directly for business and niche/topic
 
 ### Prompt Template
 

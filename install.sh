@@ -239,7 +239,7 @@ setup_full() {
   echo ""
 
   # Step 1: Skills (always installed)
-  log_info "[1/4] Installing workflow skills..."
+  log_info "[1/5] Installing workflow skills..."
   install_skills_flat
   log_success "Skills installed."
   echo ""
@@ -249,12 +249,12 @@ setup_full() {
   # ast-grep is offered when referenced (codebase-critique structural queries).
   # ctx7 remains a
   # guided OAuth setup below (not a plain install).
-  log_info "[2/4] Optional CLI tools (cymbal, sem)"
+  log_info "[2/5] Optional CLI tools (cymbal, sem)"
   offer_optional_clis
   echo ""
 
   # Step 3: ctx7 (library docs — guided OAuth, not auto-installed)
-  log_info "[3/4] ctx7 — live library documentation"
+  log_info "[3/5] ctx7 — live library documentation"
   if ! command -v ctx7 &>/dev/null; then
     log_info "  ctx7 provides current API docs during execution (prevents hallucinated APIs)."
     log_info "  Requires OAuth setup (opens browser once)."
@@ -268,13 +268,26 @@ setup_full() {
   echo ""
 
   # Step 4: sem (entity-level diff)
-  log_info "[4/4] sem — entity-level diff for Execution Critique"
+  log_info "[4/5] sem — entity-level diff for Execution Critique"
   if ! command -v sem &>/dev/null; then
     if confirm "Install sem? Replaces git diff with function/type/method-level diff in Execution Critique." Y; then
       curl -fsSL https://raw.githubusercontent.com/Ataraxy-Labs/sem/main/install.sh | sh 2>/dev/null || log_warn "  Could not auto-install sem. See https://github.com/Ataraxy-Labs/sem"
     fi
   else
     log_success "  sem already installed."
+  fi
+  echo ""
+
+  # Step 5: last30days (community/recency signal for web research — optional skill, not auto-installed)
+  log_info "[5/5] last30days — community sentiment and last-30-day signals"
+  log_info "  Complements host web search for market-analysis, JTBD, discovery and sibling playbooks."
+  log_info "  Best-effort only: the workflow never fails without it."
+  if npx skills list 2>/dev/null | grep -qi "last30days"; then
+    log_success "  last30days already installed."
+  elif confirm "Install last30days skill (npx skills, no credentials needed)?" N; then
+    npx skills add mvanhorn/last30days-skill@last30days 2>&1 | tail -3 || log_warn "  Could not install last30days. Try: npx skills find last30days"
+  else
+    log_info "  Skipped. Install later with: npx skills add mvanhorn/last30days-skill@last30days"
   fi
   echo ""
 
@@ -340,6 +353,7 @@ What gets installed (full):
   ✓ cymbal — codebase navigation (with confirmation)
   ✓ ctx7 — live library docs (with confirmation, requires OAuth)
   ✓ sem — entity-level diff (with confirmation)
+  ✓ last30days — recency signals (with confirmation, best-effort)
 
 What gets installed (minimal):
 

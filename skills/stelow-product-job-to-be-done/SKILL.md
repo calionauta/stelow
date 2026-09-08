@@ -72,18 +72,18 @@ For a complete JTBD analysis, follow this logical sequence:
 
 ## Interaction Tool Guidelines
 
-**IMPORTANT**: When the user needs to choose between predefined options, ALWAYS use the `question` tool (if available) with enumerated format:
+**IMPORTANT**: When the user needs to choose between predefined options, ALWAYS ask through the portable ask contract (`../stelow-workflow-orchestrator/references/cli-tools/ask.md` — host-native question tool, else `stelow ask`, else enumerated text) with enumerated format:
 - Options with short `label` and `description`
 - Examples: prompt selection (1-10), analysis type, next steps, etc.
 
-When `question` tool is not available, use enumerated text in chat (A/B/C/D or 1/2/3).
+When no question tool is available, use enumerated text in chat (A/B/C/D or 1/2/3).
 
 ---
 
 ## General Instructions for the Agent
 
-- **Ask which prompt the user wants to run** (unless already clear from context):
-  - Use `question` tool with options 1-10 for the 10 JTBD prompts
+- **Ask which prompt the user wants to run** (unless already clear from context) — offer three modes: **Full Mapping** (run all ten prompts sequentially), **Targeted** (exactly one prompt), or **Recommend** (agent picks from context):
+  - Use the portable ask contract with options 1-10 for the 10 JTBD prompts
   - Always include option: "I want you to recommend based on context" (in the user's language)
   - Fallback: "Which JTBD analysis do you want to perform? (1-10, or 'recommend based on context')"
 - **Fill in the variables** indicated by `[brackets]` or `{{braces}}` with the information provided by the user before executing the prompt.
