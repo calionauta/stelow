@@ -3,6 +3,26 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.3.0] - 2026-09-08
+
+### Added
+
+- **`scripts/stelow config get <field> [default]`.** Single tested config
+  reader; `read-config.sh` delegates to it when the helper exists.
+- **`tests/integration/skill-links.test.ts`.** Every relative link resolves
+  per file; repo-absolute `skills/...` links banned.
+- **Fence-balance guard** in the host-agnostic audit (fixed 4 swallowed
+  sections total).
+- **Code-map ladder** (`ripwire → cymbal → fff → ast-grep`) wired into the
+  four recon points; plannotator install line on `visual_review.md`.
+
+### Changed
+
+- **Single-source cli-tools.** Sibling-relative links everywhere; deleted
+  `sync-cli-tools.sh`, the 18x synced copies, `SYNC_EXCLUDE`,
+  `global-setup.ts`; copy-asserting tests reworked into a no-copies
+  invariant. Fixes 55 broken refs in the bb-plugin tree.
+
 ## [1.2.0] - 2026-09-08
 
 ### Added
