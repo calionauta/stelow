@@ -3,6 +3,17 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.3.1] - 2026-09-08
+
+### Fixed
+
+- **Link extraction shadowing in `skill-links.test.ts`.** Backtick spans
+  could swallow `](url)` links, hiding real breakage. Two-pass extraction
+  (paren links first).
+- **3 broken skill links.** `verification.md` agent_browser pointer and
+  tech-planning sibling refs now resolve in repo, hub-flat and vendored
+  layouts.
+
 ## [1.3.0] - 2026-09-08
 
 ### Added
