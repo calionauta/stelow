@@ -57,10 +57,11 @@ tests — not from this file:
 - **Stages (17)**: `skills/stelow-workflow-orchestrator/stages.yaml` + its mirror `references/transitions.md` (the `triage`..`audit` chain).
 - **Stage transitions and conditional gates**: `skills/stelow-workflow-orchestrator/stages.yaml`.
 - **Helper mechanics**: `scripts/stelow` (status/advance/doctor), pinned by `tests/unit/stelow-helper.test.ts`, `tests/integration/stelow-fs.test.ts`, `tests/integration/stelow-e2e.test.ts`.
+- **Product strategies**: `product-strategies.json` (id → skill → contract + substeps) is the canonical contract hosts consume. Any change to `skills/stelow-product-*` (add, remove, rename, new substeps) MUST update the registry in the same commit — enforced by the host-surface contract test.
 
 ```bash
 npm run build            # Compile TypeScript + skill-sync sanity
-npm test                 # Run all tests (523)
+npm test                 # Run all tests
 npm run test:unit        # Unit tests only
 npm run test:integration # Integration tests only
 npm run test:skills      # Skill structure tests
