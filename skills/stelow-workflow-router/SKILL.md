@@ -5,7 +5,7 @@ description: >
   ## Hand-off block, validates next-candidate against transitions.md,
   advances via scripts/stelow, and loads the next stage skill. Rejects
   unknown candidates; the rework path returns to the previous stage.
-  Loaded by host-levers.md on every stage hand-off.
+  Loaded by the host on every stage hand-off.
 metadata:
   frequency: per-stage
   category: workflow

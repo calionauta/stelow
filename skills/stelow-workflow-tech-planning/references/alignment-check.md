@@ -70,7 +70,7 @@ If skipped, log: `context/alignment-skipped.md` with reason.
 
 **If `product_needs_update` or `blocking` and Review Mode >= Product Spec + Interface Gates:**
 
-Use `ask_user_question` (see `references/cli-tools/ask.md`):
+Use `ask_user_question` (see `cli-tools/ask.md`):
 
 ```
 ask tool: {

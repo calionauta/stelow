@@ -24,7 +24,7 @@ convention instead:
 
   Repeat `--question` groups (each with its own `--option` labels) in ONE
   call to ask several independent questions together — see the batching
-  rule in `stelow-workflow-orchestrator/stages/ask-patterns.md`
+  rule in `../../../stelow-workflow-orchestrator/stages/ask-patterns.md`
   (Usage Rules). Ask dependent questions one at a time.
 
   `stelow ask` writes `ask/pending.json` in the state dir and blocks until

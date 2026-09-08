@@ -1,6 +1,6 @@
 ## Strategic Context (optional)
 
-> **Part of stelow** — See [`SKILL.md`](./SKILL.md) for stage sequence, safety rules, and capability reference.
+> **Part of stelow** — See [`SKILL.md`](../SKILL.md) for stage sequence, safety rules, and capability reference.
 > **Tool Restrictions:** See `stages.yaml` for blocked/allowed tools in this stage.
 
 **After Setup**, the flow enters Strategic Context to enrich planning with optional context.
@@ -40,14 +40,14 @@ echo "Proceeding directly to shape:10"
 
 ### context:10 — Strategic Exploration (always ask unless gated by `context:5`)
 
-**ALWAYS ask** — use **Pattern 1** from `stages/ask-patterns.md` for the question format.
+**ALWAYS ask** — use **Pattern 1** from `ask-patterns.md` for the question format.
 **ALSO read** the "Strategic Approaches" table in the main `SKILL.md` for the full approach list with skill names and outputs.
 
 > **⚠️ Multi-Select Rule:** When using `multiSelect: true`, DO NOT include "None", "Skip", or similar meta-options. User can select nothing to skip.
 
 **If user selects one or more approaches:**
-1. Read `references/strategic-exploration.md` for each approach's details
-2. (Unless `context:5` reduced this to opt-in.) Execute the selected ones **in parallel** using the subagents tool (see `references/cli-tools/subagents.md`):
+1. Read `../references/strategic-exploration.md` for each approach's details
+2. (Unless `context:5` reduced this to opt-in.) Execute the selected ones **in parallel** using the subagents tool (see `../references/cli-tools/subagents.md`):
 3. Consolidate into `strategic-insights.md`
 4. Incorporate outputs as Shape Up input
 
@@ -77,7 +77,7 @@ The user's request is exclusively about one of these domains (e.g., "help me def
 
 **Mode B — General product request with domain overlap** (user asks for product planning but mentions domains):
 The user wants full product planning but the input also contains domain signals.
-→ Offer domain libraries as **complementary context** using the ask tool (see `references/cli-tools/ask.md`), referencing patterns from `stages/ask-patterns.md`:
+→ Offer domain libraries as **complementary context** using the ask tool (see `../references/cli-tools/ask.md`), referencing patterns from `ask-patterns.md`:
 
 ```
 ask tool: multiSelect question with detected domain options

@@ -294,7 +294,7 @@ Read the stelow-workflow-scope-executor skill for routing rules.
 | `spike` | scout + researcher (see `references/cli-tools/subagents.md`) |
 | `test-*` | subagent + acceptance (see `references/cli-tools/goals.md`) with testing gates |
 
-See `stages/execution.md` for full execution flow.
+See `../stelow-workflow-orchestrator/stages/execution.md` for full execution flow.
 
 ### ⚠️ DoD Verification — Mandatory Before Completion
 
@@ -362,7 +362,7 @@ fi
 In **standalone mode** (no marker), run the existing skill body unchanged.
 In **workflow mode**, skip to `### Workflow slice` and emit a complete
 `## Hand-off (workflow mode)` block at the end. See
-`references/host-levers.md` for the full marker protocol (SCOPE-9).
+`../stelow-workflow-entry/SKILL.md` for the full marker protocol.
 
 ## Hand-off (workflow mode)
 

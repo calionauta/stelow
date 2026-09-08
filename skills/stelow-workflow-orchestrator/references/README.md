@@ -36,8 +36,6 @@ All paths below are relative to `skills/stelow-workflow-orchestrator/references/
 
 ## Common Path Mistakes (what NOT to use)
 
-| Wrong path | Correct path | Why it fails |
-|------------|-------------|--------------|
-| `references/stages.yml` | `stages.yaml` (skill root) | Wrong extension (`.yml` vs `.yaml`) + wrong directory |
-| `references/workflow.md` | `SKILL.md` (skill root) | File does not exist |
-| `stages/ask-patterns.md` (as `references/../stages/ask-patterns.md`) | `stages/ask-patterns.md` | Resolve paths relative to skill root, not `references/` |
+- There is no `stages.yml` — the stage model lives in `../stages.yaml` (skill root).
+- There is no `workflow.md` — the entry point is `../SKILL.md` (skill root).
+- From inside `references/`, reach stage files as `../stages/…` (with `../`), never as a bare relative that drops the parent step.

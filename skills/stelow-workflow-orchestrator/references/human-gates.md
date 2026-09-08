@@ -34,7 +34,7 @@ decision** under each `review_mode` (frontmatter in `spec-product.md`,
 
 1. **Read `review_mode` before any human wait.** A wait issued in the
    wrong mode is a stuck workflow, not diligence. When in doubt, the mode
-   table in `stelow-workflow-shape-up/references/proposal-structure.md`
+   table in `../../stelow-workflow-shape-up/references/proposal-structure.md`
    (Mode section) is canonical for the full matrix; this file is the
    condensed enforcement copy.
 2. **A parked wait needs a live question.** Waiting without a structured
@@ -47,6 +47,6 @@ decision** under each `review_mode` (frontmatter in `spec-product.md`,
 
 ## Canonical References
 
-- Full mode matrix: `stelow-workflow-shape-up/references/proposal-structure.md` (Mode section)
-- Gate mechanics (tool gates, transitions): `references/transitions.md`
-- Ask patterns: `stages/ask-patterns.md` (Pattern 2 for picks)
+- Full mode matrix: `../../stelow-workflow-shape-up/references/proposal-structure.md` (Mode section)
+- Gate mechanics (tool gates, transitions): `transitions.md`
+- Ask patterns: `../stages/ask-patterns.md` (Pattern 2 for picks)

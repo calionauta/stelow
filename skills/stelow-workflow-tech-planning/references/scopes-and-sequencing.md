@@ -162,7 +162,7 @@ Add when ALL conditions are true:
 Optimization goals NEVER run in the main agent. The routing is:
 
 ```
-optimization scope → stelow-workflow-scope-executor → subagent → **optimization goal** (see `references/cli-tools/goals.md` → Optimization Goals)
+optimization scope → stelow-workflow-scope-executor → subagent → **optimization goal** (see `cli-tools/goals.md` → Optimization Goals)
 ```
 
 The stelow-workflow-scope-executor delegates to a subagent with an acceptance contract that includes benchmark verify commands.

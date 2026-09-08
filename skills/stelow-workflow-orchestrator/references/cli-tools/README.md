@@ -19,7 +19,7 @@ documents how to invoke a specific capability on two surfaces:
 The orchestrator picks the path at runtime via two mechanisms:
 
 1. **Explicit override** — `STELOW_WORKFLOW=1` + `STELOW_STATE=<path>` activates
-   workflow mode (see `references/host-levers.md`); capability probing below
+   workflow mode; capability probing below
    decides the invocation shape.
 2. **Capability probe** — check the tool registry top-down: acceptance-native
    delegate tool? native subagent/task tool? headless CLI binary on PATH?
@@ -91,7 +91,7 @@ cli-binary ...args
 | `agent_browser.md` | Automated web browser for UI verification |
 | `file-locking.md` | Convention-based scope locking (no git worktrees) |
 
-> **See also:** `references/permissions.md` (stage permissions) and `references/capabilities.md` (allowed tools per stage)
+> **See also:** `../../../stelow-workflow-orchestrator/references/permissions.md` (stage permissions) and `../../../stelow-workflow-orchestrator/references/capabilities.md` (allowed tools per stage)
 
 ---
 

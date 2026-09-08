@@ -90,7 +90,7 @@ if (wf?.scopes) {
 
 | Source | Origin | When to use |
 |---|---|---|
-| `planned` | Parsed from the `\| # \| Task \| ... \|` table in spec-tech.md (see `skills/stelow-workflow-tech-planning/references/scopes-and-sequencing.md#Scope Detail Template`). | Tasks defined at planning time. |
+| `planned` | Parsed from the `\| # \| Task \| ... \|` table in spec-tech.md (see `../../stelow-workflow-tech-planning/references/scopes-and-sequencing.md#Scope Detail Template`). | Tasks defined at planning time. |
 | `discovered` | Appended by the executor (LLM child) during execution when reality reveals new work — a test flake, a missing index on a slow query, a refactor needed for the ACs. | Always requires a `note:` explaining the trigger. |
 
 **Seeding planned tasks (scope start, in Step 3c):**

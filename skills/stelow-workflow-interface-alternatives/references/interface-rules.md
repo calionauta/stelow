@@ -18,7 +18,7 @@ This approach treats design taste as a **named system**, not intuition:
 
 The act of naming and checking anti-patterns changes output quality *before* any visual tokens are generated — because the model now has vocabulary for what to avoid and a system for why.
 
-**Canonical source:** `skills/stelow-workflow-ux-critique/references/ui-audit-dimensions.md` contains the 14-tell AI Slop Detection audit (superset of the 10 smells here, plus gradient text, nested cards, gray-on-color, and redundant microcopy). Cross-reference when doing post-generation audit.
+**Canonical source:** `../../stelow-workflow-ux-critique/references/ui-audit-dimensions.md` contains the 14-tell AI Slop Detection audit (superset of the 10 smells here, plus gradient text, nested cards, gray-on-color, and redundant microcopy). Cross-reference when doing post-generation audit.
 
 ---
 

@@ -36,7 +36,7 @@ Preview limits:
 
 ## Pattern 1: Strategic Exploration (Context stage)
 
-Used in `stages/context.md` for strategic approach selection.
+Used in the context stage for strategic approach selection.
 
 > **Gate awareness:** Before applying this pattern, run `context:5` (appetite/mode gate). If `Lean` + `Auto`, skip the question entirely. If `Lean` + non-Auto, present this pattern with opt-in execution note (subagents not automatic). If `Core`/`Complete`, apply as-is.
 
@@ -240,7 +240,7 @@ ask_user_question({
 
 ## Pattern 5: Stage Selection (Setup stage)
 
-Used in `stages/setup.md` for workflow stage selection and safe-change.
+Used in the setup stage for workflow stage selection and safe-change.
 
 > **Note:** This pattern is only shown for Product Spec + Interface Gates and above.
 > Auto/Product Spec Gate modes auto-define stages.
@@ -385,7 +385,7 @@ Review Mode will be asked separately in the next step.
 
 **Cut policy:** Lean cuts edge cases, secondary flows, alternative strategies, and non-critical integrations. Core cuts only low-value variants. Complete cuts nothing unless impossible. Quality gates are not cut: build/test/lint/typecheck run for every appetite, and a11y checks run whenever UI files exist; Appetite only changes interface/test exploration depth.
 
-**Storage:** Save to `stelow.json` as `workflows[].config.appetite` (single source of truth), and inject into `spec-product.md` frontmatter as `appetite: {chosen_appetite}`. Review Mode follows the same pattern (`workflows[].config.review_mode` + `review_mode:` in frontmatter). Both are canonical subagent inputs — see `references/cli-tools/subagents.md` (Input Files table).
+**Storage:** Save to `stelow.json` as `workflows[].config.appetite` (single source of truth), and inject into `spec-product.md` frontmatter as `appetite: {chosen_appetite}`. Review Mode follows the same pattern (`workflows[].config.review_mode` + `review_mode:` in frontmatter). Both are canonical subagent inputs — see `../references/cli-tools/subagents.md` (Input Files table).
 
 > **Key rule:** Appetite is FIXED for the cycle. The LLM cannot extend it. If scope doesn't fit, the LLM splits — the human decides whether to accept the split or extend appetite in a NEW cycle.
 

@@ -117,4 +117,4 @@ knowing what the codebase already does, what it enables, and what it constrains.
 If cymbal is not installed:
 - Brownfield: use `find` + `wc -l` for basic size analysis, `git log --oneline` for activity.
 - Greenfield: skip tech preview entirely.
-- Consider installing cymbal for future sessions (see `references/cli-tools/cymbal.md`).
+- Consider installing cymbal for future sessions (see `cli-tools/cymbal.md`).

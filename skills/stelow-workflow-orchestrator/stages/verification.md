@@ -1,6 +1,6 @@
 ## Verification
 
-> **Part of stelow** — See [`SKILL.md`](./SKILL.md) for stage sequence, safety rules, and capability reference.
+> **Part of stelow** — See [`SKILL.md`](../SKILL.md) for stage sequence, safety rules, and capability reference.
 > **Tool Restrictions:** See `stages.yaml` for blocked/allowed tools in this stage.
 
 After all scopes are executed, run the testing protocol before delivery audit.
@@ -113,7 +113,7 @@ esac
 **Rule:** even at Lean, code review is never skipped. If file count is low (≤2), the reviewer uses a lighter checklist (correctness, security baseline) instead of architectural analysis. This keeps quality floor while keeping cost proportionate to scope.
 
 If running, launch a fresh-context reviewer.
-See `references/cli-tools/subagents.md` for the delegation pattern — this works
+See `../references/cli-tools/subagents.md` for the delegation pattern — this works
 on any harness with native subagent support.
 Run **automatically** with fresh context — the fresh session provides
 independent review without the degraded context of the original session.
@@ -211,7 +211,7 @@ If the feature has interactive elements (forms, clicks, inputs):
 
 **Appetite-gated:** runs in Complete by default, in Core when a complex flow is in scope, in Lean only when explicitly requested.
 
-See `references/cli-tools/agent_browser.md` for browser automation details.
+See `../references/cli-tools/agent_browser.md` for browser automation details.
 Use `dogfood` skill for structured exploratory testing:
 1. Open the feature in browser
 2. Test happy path
@@ -273,7 +273,7 @@ case "$APPETITE" in
 esac
 ```
 
-Use `/skill:thermo-nuclear-code-quality-review` only when `REVIEW_TIER` is `nuclear` (or `conditional` AND risk is high). See `references/cli-tools/codequality-review.md` for the full trigger matrix.
+Use `/skill:thermo-nuclear-code-quality-review` only when `REVIEW_TIER` is `nuclear` (or `conditional` AND risk is high). See `../references/cli-tools/codequality-review.md` for the full trigger matrix.
 
 When Thermo-Nuclear runs, save or copy the result to:
 
@@ -290,7 +290,7 @@ When Thermo-Nuclear runs, save or copy the result to:
 - `Product Spec + Interface + Tech Review + Code Diff`: P0/P1 findings are blocking. Code diff gate will re-run after fix.
 
 **Fallback:** if the skill is not installed, run the manual fallback from
-`references/cli-tools/codequality-review.md` and document the fallback in the
+`../references/cli-tools/codequality-review.md` and document the fallback in the
 verification notes.
 
 ### final-checklist

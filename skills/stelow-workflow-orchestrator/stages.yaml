@@ -63,7 +63,7 @@ stages:
   - name: context
     order: 25
     model_hint: standard
-    description: "Strategic context. Market analysis, JTBD, domain detection. Gated by `context:5` (appetite/review mode): Product Spec Gate+Auto skips; others use reduced ask. See `stages/context.md#context:5`."
+    description: "Strategic context. Market analysis, JTBD, domain detection. Gated by `context:5` (appetite/review mode): Product Spec Gate+Auto skips; others use reduced ask. See the context stage, section 5."
     blocked_tools: []
     allowed_tools: [ask_user_question, read, grep, ls, write, subagent]
     preferred_tools: [read, write]

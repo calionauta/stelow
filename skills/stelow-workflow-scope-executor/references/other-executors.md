@@ -4,13 +4,13 @@ For each scope with `[TYPE] optimization`:
 
 **Mark scope as in-progress:** (same bash pattern as Step 3 — update scope status to `'in-progress'`)
 
-1. **Create an optimization goal** via acceptance contract (see `references/cli-tools/goals.md` → Optimization Goals for patterns, benchmark verify commands, and iteration loops).
+1. **Create an optimization goal** via acceptance contract (see `cli-tools/goals.md` → Optimization Goals for patterns, benchmark verify commands, and iteration loops).
 
 2. **Set a stopping condition:**
    - If metric target is defined in the plan: stop when target is met
    - If no target: run for a reasonable number of iterations (5-10) or until improvements plateau
 
-3. **When optimization completes**, run parallel code review (see `references/cli-tools/subagents.md`)
+3. **When optimization completes**, run parallel code review (see `cli-tools/subagents.md`)
 4. **DoD verification** (see Step 7)
 5. **Update scope tracking** — set scope status to `'completed'` (or `'escalated'` on failure) in `stelow.json` (same bash pattern as Step 3)
 
@@ -20,7 +20,7 @@ For each scope with `[TYPE] spike`:
 
 **Mark scope as in-progress:** (same bash pattern as Step 3 — update scope status to `'in-progress'`)
 
-1. **Run parallel investigation via subagents** (see `references/cli-tools/subagents.md`):
+1. **Run parallel investigation via subagents** (see `cli-tools/subagents.md`):
    - **recon**: investigate existing codebase for the objective — find relevant files, patterns, constraints
    - **research**: best practices and solutions for the objective — concrete options with pros/cons
    Concurrency: 2, context: fresh

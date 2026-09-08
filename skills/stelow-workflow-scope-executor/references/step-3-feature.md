@@ -66,7 +66,7 @@ Record this SHA in `iteration-state-{SCOPE-ID}.md` so the post-execution `git di
 
 **Acquire file-reservation locks (prevention layer):**
 
-If the scope declared `[TARGET_FILES]` (see Step 2e) AND the orchestrator plans parallel dispatch, check room then acquire via the CLI (protocol in `references/cli-tools/file-locking.md`):
+If the scope declared `[TARGET_FILES]` (see Step 2e) AND the orchestrator plans parallel dispatch, check room then acquire via the CLI (protocol in `cli-tools/file-locking.md`):
 
 ```bash
 # Resolve TTL from `[LOCK_TTL_SECONDS]` block if present; default 1800.
@@ -295,7 +295,7 @@ if (wf?.scopes) {
 
 **Release file-reservation locks:**
 
-If locks were acquired in Step 3c, release them now (`scripts/stelow lock release --scope "$SCOPE_ID" "${TARGET_FILES[@]}"`). See `references/cli-tools/file-locking.md`.
+If locks were acquired in Step 3c, release them now (`scripts/stelow lock release --scope "$SCOPE_ID" "${TARGET_FILES[@]}"`). See `cli-tools/file-locking.md`.
 
 **Report per scope:**
 ```

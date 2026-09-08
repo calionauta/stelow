@@ -20,7 +20,7 @@ after any change to verify.
 | 10 | triage | Initial assessment. Determine if this is a valid request. |
 | 15 | select | Item selection. Rank accepted items, user picks one. |
 | 20 | setup | Setup context. Explore codebase, gather requirements. |
-| 25 | context | Strategic context. Market analysis, JTBD, domain detection. Gated by `context:5` (appetite/review mode): Product Spec Gate+Auto skips; others use reduced ask. See `stages/context.md#context:5`. |
+| 25 | context | Strategic context. Market analysis, JTBD, domain detection. Gated by `context:5` (appetite/review mode): Product Spec Gate+Auto skips; others use reduced ask. See the context stage, section 5. |
 | 40 | shape | Shape stage. Define appetite, hill chart, rabbit holes. |
 | 45 | critique | Plan critique. Pre-flight check before gate. |
 | 60 | gate | Gate review. Visual approval via visual review required. Use `visual_review` tool (not bash). |

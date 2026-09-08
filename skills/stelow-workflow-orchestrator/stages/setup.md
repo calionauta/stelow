@@ -1,8 +1,8 @@
 ## Project Setup
 
-> **Part of stelow** — See [`SKILL.md`](./SKILL.md) for stage sequence, safety rules, and capability reference.
+> **Part of stelow** — See [`SKILL.md`](../SKILL.md) for stage sequence, safety rules, and capability reference.
 > **Tool Restrictions:** See `stages.yaml` for blocked/allowed tools in this stage.
-> **Stage Status:** Read `references/cli-tools/stage-status.md` for ASCII status display and CLI commands.
+> **Stage Status:** Read `../references/cli-tools/stage-status.md` for ASCII status display and CLI commands.
 
 ### setup:0.10 — Inbox Check
 
@@ -16,7 +16,7 @@ if [ -f "$INBOX" ]; then
 fi
 ```
 
-If deferred items exist, show the full list to the user (from the inbox file above) and ask how to proceed. Use **Pattern 4** from `stages/ask-patterns.md`:
+If deferred items exist, show the full list to the user (from the inbox file above) and ask how to proceed. Use **Pattern 4** from `ask-patterns.md`:
 
 ```
 ask_user_question({
@@ -158,7 +158,7 @@ fi
    ```
 
 3. **If only 1 (not fresh):** ask using the ask tool
-   (see `references/cli-tools/ask.md`):
+   (see `../references/cli-tools/ask.md`):
 
    ```
    ask tool: 'Workflow "{name}" in progress at stage {current_stage}. Continue?'
@@ -166,7 +166,7 @@ fi
    ```
 
 4. **If multiple:** show the list and recommend `/sw-clean`
-   (see `references/cli-tools/ask.md`):
+   (see `../references/cli-tools/ask.md`):
 
    ```
    ask tool: 'There are {count} active workflows. Use /sw-clean to organize.'
@@ -284,7 +284,7 @@ Appetite defines the **depth of scope** (what the LLM prepares). Review Mode wil
 
 #### Step 1: Ask Appetite
 
-Use **Pattern 7 (Appetite Declaration)** from `stages/ask-patterns.md`.
+Use **Pattern 7 (Appetite Declaration)** from `ask-patterns.md`.
 
 Present three options for appetite:
 
@@ -332,7 +332,7 @@ Review Mode defines the **level of human review** (which gates and approvals are
 
 #### Step 2: Ask Review Mode
 
-Use **Pattern 8 (Review Mode)** from `stages/ask-patterns.md`.
+Use **Pattern 8 (Review Mode)** from `ask-patterns.md`.
 
 > **If the draft contains items marked `[human-in-the-loop]`, `[hitl]`, or `[human]`:** These items need human judgement.
 > Default to a Review Mode higher than Auto (Product Spec Gate or above).
@@ -433,7 +433,7 @@ cut or reshaped. Appetite is a constraint, not a target — never extended.
 
 **For Auto / Product Spec Gate modes:** auto-define stages without asking. Proceed directly to setup:30.
 
-**For Product Spec + Interface Gates / Product Spec + Interface + Scopes / Product Spec + Interface + Tech Review / Product Spec + Interface + Tech Review + Code Diff:** Use **Pattern 5** from `stages/ask-patterns.md`.
+**For Product Spec + Interface Gates / Product Spec + Interface + Scopes / Product Spec + Interface + Tech Review / Product Spec + Interface + Tech Review + Code Diff:** Use **Pattern 5** from `ask-patterns.md`.
 
 **Safe-change behavior (review mode-dependent):**
 

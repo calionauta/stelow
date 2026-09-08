@@ -1,6 +1,6 @@
 ## Execution Critique
 
-> **Part of stelow** — See [`SKILL.md`](./SKILL.md) for stage sequence.
+> **Part of stelow** — See [`SKILL.md`](../SKILL.md) for stage sequence.
 > **Tool Restrictions:** See `stages.yaml` for blocked/allowed tools.
 
 Delegates to standalone skill `stelow-workflow-execution-critique`:
@@ -38,7 +38,7 @@ ask_user_question({
 **If Review Mode = Auto:** skip the question and generate automatically.
 
 **If user chooses "Yes" (or Auto):**
-1. Read `references/cli-tools/audit-trail-template.md` for the template
+1. Read `../references/cli-tools/audit-trail-template.md` for the template
 2. Fill placeholders from data already read during this stage (no extra file reads needed)
 3. Write to `.stelow/{YYYY-MM-DD}/{_dir}/audit-trail.md`
 4. The audit-trail.md path is stored in `stelow.json#workflows[].artifacts` (or .stelow/{date}/{dir}/ is the filesystem convention)

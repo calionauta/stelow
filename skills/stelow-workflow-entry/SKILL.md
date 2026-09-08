@@ -4,8 +4,7 @@ description: >
   [stelow] Workflow entry point. Classifies the user's intent, scaffolds
   state.md from the template, and picks the first stage from
   transitions.md. Never runs stage logic itself — that is the router's
-  job. Loaded only when STELOW_WORKFLOW=1 is set on the host (see
-  references/host-levers.md).
+  job. Loaded only when STELOW_WORKFLOW=1 is set on the host.
 metadata:
   frequency: per-workflow
   category: workflow
@@ -72,7 +71,7 @@ is non-empty and `stelow status` renders.
 ## Pick the first stage
 
 Look up `current_stage` from the canonical first stage in
-`skills/stelow-workflow-orchestrator/references/transitions.md`. Today
+`../stelow-workflow-orchestrator/references/transitions.md`. Today
 that is `setup` for `feature`/`bugfix`/`refactor`/`investigate` and
 `triage` for `new-product` (the new-product flow always starts with a
 triage assessment).

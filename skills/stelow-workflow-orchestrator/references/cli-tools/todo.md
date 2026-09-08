@@ -127,7 +127,7 @@ visual_review annotate .stelow/{date}/{dir}/checklist.md
 
 visual review renders `- [ ]` / `- [x]` as interactive checkboxes in the browser. When the LLM updates the file, refreshing the visual review tab shows current progress.
 
-**Auto-open during Execution:** The LLM runs this command automatically when the checklist is first created (see `stages/execution.md`).
+**Auto-open during Execution:** The LLM runs this command automatically when the checklist is first created (see `../../../stelow-workflow-orchestrator/stages/execution.md`).
 
 ---
 

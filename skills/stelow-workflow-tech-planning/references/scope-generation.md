@@ -2,8 +2,8 @@
 
 Use the references above to generate technical scopes.
 
-Delegate to a planner subagent (see `references/cli-tools/subagents.md`):
-- Agent: `planner` (if the harness's packaged planner defaults to fork, pass fresh explicitly — see `references/cli-tools/subagents.md`)
+Delegate to a planner subagent (see `cli-tools/subagents.md`):
+- Agent: `planner` (if the harness's packaged planner defaults to fork, pass fresh explicitly — see `cli-tools/subagents.md`)
 - Task: generate typed scopes (feature/optimization/spike) from the approved spec-product.md
 - Follow steps: strategic stability check → codebase awareness → risk analysis → spike identification → scope definition → sequencing → DoD + ACs → formatting
 - Output: `.stelow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_{v}.md`

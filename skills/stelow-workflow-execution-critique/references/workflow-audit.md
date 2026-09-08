@@ -69,7 +69,7 @@ Check all changed files for:
 - Broken references
 - Anti-patterns: secrets in code, global mutable state, god functions (>100 lines)
 - Optional code quality review findings: files >1000 lines, functions >150 lines, complexity >5, leaky abstractions, dead code
-- **Dead code candidates**: see `references/cli-tools/dead-code-candidates.md`
+- **Dead code candidates**: see `cli-tools/dead-code-candidates.md`
 
 **Invisible 20% (criteria 3):**
 | Dimension | Check |

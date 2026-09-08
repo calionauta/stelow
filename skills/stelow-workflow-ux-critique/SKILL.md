@@ -70,7 +70,7 @@ Read this file and jump to the relevant mode.
 The testing-execution orchestrator loads this skill automatically when `Has visual UI? → YES`.
 
 ### Via stelow (Stage Verification)
-The `ui-quality` stage in `stages/verification.md` delegates to this skill.
+The `ui-quality` stage in `../stelow-workflow-orchestrator/stages/verification.md` delegates to this skill.
 
 ---
 
@@ -254,7 +254,7 @@ Phase 3: UI/UX Quality
 
 ### stelow (Stage Verification)
 
-The `ui-quality` stage in `stages/verification.md` delegates to this skill on tiers
+The `ui-quality` stage in `../stelow-workflow-orchestrator/stages/verification.md` delegates to this skill on tiers
 Quick (codebase mode) and Full (live site mode).
 
 ### stelow-workflow-scope-executor
@@ -286,7 +286,7 @@ fi
 In **standalone mode** (no marker), run the existing skill body unchanged.
 In **workflow mode**, skip to `### Workflow slice` and emit a complete
 `## Hand-off (workflow mode)` block at the end. See
-`references/host-levers.md` for the full marker protocol (SCOPE-9).
+`../stelow-workflow-entry/SKILL.md` for the full marker protocol.
 
 ## Hand-off (workflow mode)
 

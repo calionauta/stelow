@@ -232,8 +232,8 @@ If both subagent acceptance and goal system are unavailable:
 
 ## Related
 
-- Execution stage (see `stages/execution.md`)
-- Verification stage (see `stages/verification.md`)
+- Execution stage (see `../../../stelow-workflow-orchestrator/stages/execution.md`)
+- Verification stage (see `../../../stelow-workflow-orchestrator/stages/verification.md`)
 - spec-tech scopes
 - Testing strategy (see the `stelow-workflow-testing-ai-code` skill)
 - Testing protocol (see the `stelow-workflow-testing-execution` skill)

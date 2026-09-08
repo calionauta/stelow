@@ -103,7 +103,7 @@ Only `Int` components are scored against the baseline. `Disp` components are inf
 
 **Scoring** (over applicable states only): ≥6 = ✅, 4-5 = ⚠️, <4 = ❌
 Scoring aligns with `interface-alternatives` Section 7: coverage = `(✅ + ⬆️) / (✅ + ❌ + ⬆️)`, N/A excluded.
-See `interface-alternatives/references/interface-rules.md` for full N/A semantics and escape hatches.
+See `../../stelow-workflow-interface-alternatives/references/interface-rules.md` for full N/A semantics and escape hatches.
 
 ### 2.1 Visual Hierarchy
 

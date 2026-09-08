@@ -14,7 +14,7 @@ Look for user mentions of:
 
 ## Ask
 
-Use the ask tool (see `references/cli-tools/ask.md`):
+Use the ask tool (see `cli-tools/ask.md`):
     options: [
       {
         label: "Job-to-Be-Done Framework",
@@ -45,7 +45,7 @@ Use the ask tool (see `references/cli-tools/ask.md`):
 
 If user selects one or more:
 
-1. Run each selected skill via parallel subagent (see `references/cli-tools/subagents.md`), **fresh context, ALL concurrently**.
+1. Run each selected skill via parallel subagent (see `cli-tools/subagents.md`), **fresh context, ALL concurrently**.
 
    **Task string must include the user's verbatim request** — strategic-context subagents do NOT inherit orchestrator deliberation. Pass:
    - `USER REQUEST (verbatim): ${userOriginalRequest}` — the literal text the user typed at workflow start
@@ -71,7 +71,7 @@ If user selects one or more:
 
 4. Show summary in chat with file links
 
-5. For each skill, ask granular integration using the ask tool (see `references/cli-tools/ask.md`).
+5. For each skill, ask granular integration using the ask tool (see `cli-tools/ask.md`).
 ```
    - If no insights selected from a skill → skip that skill
    - Proceed to next or Shape Up

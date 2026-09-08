@@ -38,7 +38,7 @@ This skill runs **after** the visual review gate approves the plan, replacing ma
 
 ### With supervision (recommended for autonomous execution)
 
-Activate execution steering (see `references/cli-tools/supervise.md`) before starting:
+Activate execution steering (see `cli-tools/supervise.md`) before starting:
 ```text
 Outcome: Execute the approved plan routing scopes correctly. Save report to execution-report.md.
 ```
@@ -51,7 +51,7 @@ Read this SKILL.md and follow the steps directly.
 
 ### From a parent agent (programmatic)
 
-Delegate to a subagent (see `references/cli-tools/subagents.md`):
+Delegate to a subagent (see `cli-tools/subagents.md`):
 - Agent: `delegate` or `worker`
 - Skills: `stelow-workflow-scope-executor` + `goals` (optimization goals via subagent + acceptance)
 - Context: fresh
@@ -61,16 +61,16 @@ Delegate to a subagent (see `references/cli-tools/subagents.md`):
 
 | Concern | Reference |
 |---------|-----------|
-| Goal creation and tracking | `references/cli-tools/goals.md` |
-| Subagent delegation (worker, reviewer, scout, researcher) | `references/cli-tools/subagents.md` |
-| Execution steering | `references/cli-tools/supervise.md` |
-| Optimization goals | `references/cli-tools/goals.md` (Optimization Goals section) |
-| Visual review gate | `references/cli-tools/visual_review.md` |
+| Goal creation and tracking | `cli-tools/goals.md` |
+| Subagent delegation (worker, reviewer, scout, researcher) | `cli-tools/subagents.md` |
+| Execution steering | `cli-tools/supervise.md` |
+| Optimization goals | `cli-tools/goals.md` (Optimization Goals section) |
+| Visual review gate | `cli-tools/visual_review.md` |
 
 ## Environment Adaptation
 
 If a tool is unavailable, check:
-`references/cli-tools/`
+`cli-tools/`
 
 ## Input Detection (Standalone Mode)
 

@@ -2,7 +2,7 @@
 
 > **Part of stelow** — See [`SKILL.md`](../SKILL.md) for stage sequence, safety rules, and capability reference.
 > **Tool Restrictions:** See `stages.yaml` for blocked/allowed tools in this stage.
-> **Stage Status:** Read `references/cli-tools/stage-status.md` for ASCII status display and CLI commands.
+> **Stage Status:** Read `../references/cli-tools/stage-status.md` for ASCII status display and CLI commands.
 ### When This Stage Activates
 
 After Triage completes with one or more accepted items. If the user had a single idea (no Triage), this stage is skipped — proceed directly to Setup.
