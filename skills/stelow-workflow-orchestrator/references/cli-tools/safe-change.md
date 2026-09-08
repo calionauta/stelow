@@ -1,31 +1,36 @@
 # Tool: safe-change
 
-> Regression check before planning (impact analysis, affected files, risks).
+> Pre-execution impact check: what breaks if this plan touches the codebase?
+> No third-party package — this is a code-map query plus `git status`.
 
 ---
 
-## Install
+## Check
 
-Any agent that supports skill installation:
+Before tech planning generates scopes, answer three questions with the
+code-map ladder (see `code-map.md`):
 
-```bash
-npx skills add Prinova/pi-agent-codebase-workflows -g
-```
+1. **What exists?** Orient on the touched area (entry points, modules).
+2. **Who connects?** References/callers of the modules in scope.
+3. **What breaks?** Blast radius of the planned change.
 
-The skill installs to `~/.agents/skills/` and the agent picks it up automatically.
+Plus `git status` for uncommitted work that changes the baseline.
 
 ---
 
 ## Command
 
+No install. This is a procedure, not a package:
+
 ```bash
-safe-change
+# 1. Orient (see code-map.md for the ladder)
+# 2. git baseline
+git status --short
 ```
 
 | Info | Value |
 |------|-------|
-| Package | pi-agent-codebase-workflows (PriNova) |
-| Command | `safe-change` |
+| Command | (procedure — no binary) |
 
 ---
 
@@ -46,9 +51,9 @@ Returns analysis of:
 
 ---
 
-## Fallback (Not Installed)
+## Fallback (no code-map CLI available)
 
-If `safe-change` is not available:
+If no code-map tool is installed:
 - Manually check relevant files with `git diff`
 - Run existing tests to verify regressions
 - Document manual analysis

@@ -61,6 +61,28 @@ The belief that value resides in the secrecy of code creates constant friction:
 - **"Paid Convenience" Experiment**: offer a small layer of paid convenience on an existing project (installer or premium documentation).
 - **Minimum Open-Core Experiment**: release a "core" version of a product and see if this drives interest in the paid version with advanced features.
 
+## Examples
+
+### Example: devtool considering open-sourcing the core
+
+**Input:** "Should we open-source our parser?"
+
+**Steps:**
+1. Name what openness buys (adoption, contributions, trust) vs risks (competitor capture).
+2. Pick the protection layer (license, hosted moat, trademark).
+3. Propose the smallest reversible experiment (one repo, not the company).
+
+**Output:** Openness thesis + moat design + experiment scope.
+
+## Edge Cases
+
+### Competitor already forked similar work
+- License choice matters more than timing; address capture explicitly.
+### Team fears support burden
+- Scope community surface (discussions, not SLAs); openness ≠ free support.
+### No community shows up
+- Distribution precedes community; the experiment failed at reach, not at openness.
+
 ## Entry (mode detection)
 
 When this skill loads, check for the stelow workflow marker:

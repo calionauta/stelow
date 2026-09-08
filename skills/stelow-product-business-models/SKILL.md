@@ -64,6 +64,28 @@ Creativity triggers from Strategyn (Outcome-Driven Innovation / Jobs to Be Done)
 14. Collect revenue during downtime.
 15. Own the content and the infrastructure.
 
+## Examples
+
+### Example: SaaS with crushing onboarding costs
+
+**Input:** "Each new customer costs us 4 hours of onboarding. Ideas?"
+
+**Steps:**
+1. Map cost type (variable, human-driven).
+2. Pull variable-cost reducers (self-serve onboarding, productized setup, community support).
+3. Pair with a revenue-side move (setup fee or onboarding tier).
+
+**Output:** 2-3 model tweaks with cost math, not a pricing change.
+
+## Edge Cases
+
+### Costs are fixed, not variable
+- Use the fixed-cost section instead; don't force variable-cost plays.
+### Regulated pricing constraints
+- Note what the model cannot change before proposing.
+### Model change needs sales buy-in
+- Flag the stakeholder; models die without the team that sells them.
+
 ## Entry (mode detection)
 
 When this skill loads, check for the stelow workflow marker:

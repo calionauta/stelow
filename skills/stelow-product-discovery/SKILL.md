@@ -124,6 +124,28 @@ under `skills/` (historically published at
 **Install:** already vendored in this repo — no separate install needed.
 **Note:** These are optional enhancements. The core method works without them — the references/ contain all the necessary content.
 
+## Examples
+
+### Example: validate a meal-planning app idea in two weeks
+
+**Input:** "I have an idea for an app. What do I do first?"
+
+**Steps:**
+1. Frame the riskiest assumption (will busy parents pay for planning?).
+2. Pick the shortest-cycle experiment (concierge week, not a build).
+3. Define abort criteria before running.
+
+**Output:** Experiment plan with success/abort thresholds and next step either way.
+
+## Edge Cases
+
+### User wants to build immediately
+- Slow down explicitly: name the unvalidated assumption building would bet on.
+### No access to users
+- Proxy with adjacent audiences; mark evidence weaker.
+### Experiment succeeds ambiguously
+- Treat as not-validated; tighten the threshold and re-run once.
+
 ## Entry (mode detection)
 
 When this skill loads, check for the stelow workflow marker:

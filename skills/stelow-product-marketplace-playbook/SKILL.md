@@ -60,6 +60,28 @@ disable-model-invocation: true
 
 19. **Pay users with tokens.** If you create a token for the market, you can pay people to join, even when there's no activity.
 
+## Examples
+
+### Example: tutors won't join the tutoring marketplace
+
+**Input:** "We have students waiting, no tutors. What now?"
+
+**Steps:**
+1. Name the harder side (supply: tutors).
+2. Pull supply-side tactics (guaranteed first earnings, concierge onboarding, single-player value).
+3. Sequence: unblock supply before stimulating more demand.
+
+**Output:** 2-3 tactics ordered by effort, with the side-constraint each removes.
+
+## Edge Cases
+
+### Both sides are thin
+- Constrain geography or niche first; a thin everywhere marketplace dies.
+### Supply joins but doesn't transact
+- The problem is trust/matching, not acquisition — switch tactic families.
+### One side subsidizes forever
+- Name the path to take-rate; permanent subsidy is a bug, not a model.
+
 ## Entry (mode detection)
 
 When this skill loads, check for the stelow workflow marker:

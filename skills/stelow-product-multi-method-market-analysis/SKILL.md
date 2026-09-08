@@ -231,6 +231,28 @@ Users
 - Variant 1: Structured markdown report organized by time horizon and methodology
 - Variant 2: Executive Canvas in markdown, ready for Notion, Miro, or Canva
 
+## Examples
+
+### Example: should we enter the AI meeting-notes space?
+
+**Input:** "Is there room for another meeting-notes tool?"
+
+**Steps:**
+1. Run the general deep analysis (landscape, incumbents, wedge).
+2. Add the weekly canvas only if tracking over time.
+3. Deliver verdict with disconfirming evidence, not just confirmation.
+
+**Output:** Landscape map + wedge hypothesis + what would prove it wrong.
+
+## Edge Cases
+
+### Data is stale or paywalled
+- Mark confidence low; use proxy signals (hiring, reviews, changelogs).
+### Analysis paralysis risk
+- Timebox: a weekly canvas exists precisely to stop one-shot mega-reports.
+### Client wants a number (TAM)
+- Give ranges with method attached; single-point TAMs are fiction.
+
 ## Entry (mode detection)
 
 When this skill loads, check for the stelow workflow marker:

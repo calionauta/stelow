@@ -123,6 +123,28 @@ These prompts are the result of years of experimentation and refinement, documen
 
 The prompts in this skill represent a curated, production-ready selection of the most effective JTBD analyses developed through extensive real-world application.
 
+## Examples
+
+### Example: why users hire a note app
+
+**Input:** "Users say they love us but keep churning. Why?"
+
+**Steps:**
+1. Run a JTBD interview (past-tense, struggle-first, no feature questions).
+2. Extract the job (e.g. "feel in control Monday morning").
+3. Map competing hires (spreadsheets, memory, nothing).
+
+**Output:** Job statement + forces diagram + what the product must do to win the hire.
+
+## Edge Cases
+
+### Interviewee talks features
+- Redirect to the last time they struggled; features are solutions, not jobs.
+### Multiple jobs surface
+- Rank by struggle intensity; design for the strongest, note the rest.
+### Job is emotional, not functional
+- Keep it: progress has functional, emotional, and social dimensions.
+
 ## Entry (mode detection)
 
 When this skill loads, check for the stelow workflow marker:

@@ -233,342 +233,19 @@ Avoid:
 
 # Evolutionary Forces
 
-The skill analyzes ideas through six evolutionary forces.
+Six forces (selection, mutation, drift, flow, exaptation, competition) with
+citizen-science framings. Full catalog: `references/forces-catalog.md`.
 
----
+# Genotype, Phenotype & Mappings
 
-## 1. Selection Pressure
-
-Selection pressure acts as an optimization force.
-
-In product systems, this includes:
-- market forces
-- business constraints
-- user adoption
-- operational viability
-- sustainability
-
-Questions:
-- what pressures shape survival?
-- what is being optimized?
-- are we over-optimizing too early?
-- are metrics narrowing discovery?
-
-Warnings:
-- excessive objective fixation can reduce innovation
-- rigid KPIs can eliminate valuable exploration
-- optimization without exploration leads to convergence
-
----
-
-## 2. Mutation
-
-Mutation represents small variations or unexpected deviations.
-
-In products:
-- accidental discoveries
-- unusual user behavior
-- unexpected workflows
-- productive “misuse”
-- surprising experiments
-- emergent patterns
-
-Questions:
-- what unexpected behaviors could emerge?
-- how might we create conditions for new behaviors to appear?
-- what kinds of productive misuse should the system allow?
-- what experimentation surfaces increase the chance of discovering novelty?
-- what edge cases could become meaningful future patterns?
-
----
-
-## 3. Genetic Drift
-
-Drift represents subtle changes that accumulate over time.
-
-In products:
-- small workflow shifts
-- architectural evolution
-- gradual behavior changes
-- incremental cultural adaptation
-- unnoticed ecosystem shifts
-
-Questions:
-- what subtle shifts could compound into major future changes?
-- what seemingly-neutral decisions may later reshape the ecosystem?
-- what latent capabilities are worth accumulating even before they appear valuable?
-- how can we preserve room for slow, emergent adaptation?
-- what future possibilities become easier if we slightly change direction now?
-
----
-
-## 4. Gene Flow
-
-Gene flow represents cross-pollination between systems.
-
-In products:
-- integrations
-- ecosystem participation
-- importing external ideas
-- interdisciplinary influence
-- community extensions
-- APIs and plugins
-
-Questions:
-- what external systems could introduce entirely new behaviors or workflows?
-- what adjacent ecosystems could reshape how this product evolves?
-- what ideas from other domains should intentionally migrate inward?
-- how can outside communities influence future directions?
-- what integrations could unlock unexpected combinations and niches?
-
----
-
-## 5. Exaptation
-
-Exaptation occurs when something built for one purpose
-becomes valuable for another.
-
-Examples:
-- infrastructure reused unexpectedly
-- workflows repurposed
-- APIs becoming platforms
-- internal tools becoming products
-- side features becoming core value
-
-Questions:
-- what future purposes could emerge from this capability?
-- what reusable primitives might become valuable later in unexpected contexts?
-- how can we design this so future teams can reinterpret and repurpose it?
-- what secondary uses could emerge if the product evolves into adjacent spaces?
-- what would make this capability useful far beyond its original intent?
-
----
-
-## 6. Local Competition
-
-Local competition encourages niche diversity.
-
-Instead of competing globally on everything,
-products evolve by:
-- specializing
-- serving niches
-- differentiating workflows
-- reducing direct competition
-
-Questions:
-- what niche are we uniquely adapted for?
-- where can diversity create resilience?
-- are we converging too much with the market?
-
----
-
-# Genotype vs Phenotype
-
-This skill distinguishes:
-
-## Genotype
-
-The adaptable underlying structure.
-
-Examples:
-- architecture
-- primitives
-- APIs
-- capabilities
-- composability
-- extensibility
-- reusable systems
-
-## Phenotype
-
-The visible expression experienced by users.
-
-Examples:
-- workflows
-- templates
-- configurations
-- UI manifestations
-- specialized use cases
-
-Strategic insight:
-
-Strong products often have:
-- flexible genotypes
-- multiple possible phenotypes
-- contextual adaptability
-- reusable primitives
-
-Questions:
-- does the system support multiple expressions?
-- can users adapt it to different contexts?
-- are templates/extensions enabling phenotypic diversity?
-
----
-
-# Connection Mapping
-
-This skill strongly values connection mapping.
-
-Evaluate not only:
-- isolated feature value
-
-But also:
-- relationship networks
-- enabling potential
-- dependency structures
-- ecosystem influence
-- adjacency effects
-
----
-
-# Solution Space Mapping
-
-Analyze:
-- how features connect to other features
-- what capabilities they unlock
-- what workflows they influence
-- what future paths they enable
-
-Questions:
-- what does this unlock?
-- what becomes easier afterward?
-- what future experiments become possible?
-- does this increase optionality?
-
----
-
-# Problem Space Mapping
-
-Analyze:
-- how ideas connect to user intentions
-- how multiple jobs-to-be-done overlap
-- what adjacent use cases emerge
-- what new user groups become reachable
-
-Questions:
-- what adjacent needs appear?
-- what additional jobs become reachable?
-- what communities benefit indirectly?
-
----
-
-# Evolutionary Prioritization
-
-Prioritize not only by:
-- impact
-- effort
-- revenue
-
-Also evaluate:
-- enabling power
-- network effects
-- optionality creation
-- future adaptability
-- ecosystem leverage
-- exaptation potential
-- experimentation acceleration
-- strategic flexibility
-
----
+Genotype/phenotype split plus connection/solution/problem-space mappings.
+Full reference: `references/mappings.md`.
 
 # Evolutionary Evaluation Criteria
 
-Use the following categories as reflection lenses.
+Five criteria (alignment, differentiation, flexibility, ecosystem,
+sustainability). Full rubrics: `references/evaluation-criteria.md`.
 
-These are NOT objective scoring systems.
-
-They are:
-- strategic prompts
-- discussion catalysts
-- prioritization lenses
-- exploration aids
-
----
-
-## 1. Strategic Alignment
-
-Evaluate:
-- alignment with long-term direction
-- reinforcement of core principles
-- contribution to organizational resilience
-- support for strategic adaptability
-
-Questions:
-- does this strengthen strategic positioning?
-- does this reinforce product identity?
-- does this improve organizational health?
-
----
-
-## 2. Differentiation and Niche Fitness
-
-Evaluate:
-- difficult-to-copy advantages
-- differentiation quality
-- niche strength
-- unique positioning
-- workflow superiority
-- community potential
-
-Questions:
-- what makes this hard to imitate?
-- what niche does this dominate?
-- does this create meaningful distinction?
-
----
-
-## 3. Flexibility and Adaptability
-
-Evaluate:
-- configurability
-- modularity
-- future extensibility
-- support for multiple workflows
-- reuse potential
-- experimentation support
-
-Questions:
-- can this evolve?
-- can users adapt it?
-- does this enable future products?
-
----
-
-## 4. Ecosystem and Connectivity
-
-Evaluate:
-- integration potential
-- API leverage
-- plugin ecosystems
-- interoperability
-- external participation
-- cognitive diversity in design
-
-Questions:
-- what ecosystems connect here?
-- can others build on top of this?
-- does this encourage external innovation?
-
----
-
-## 5. Sustainability and Long-Term Impact
-
-Evaluate:
-- human sustainability
-- operational sustainability
-- environmental implications
-- organizational resilience
-- long-term ecosystem health
-
-Questions:
-- does this improve long-term health?
-- what hidden costs emerge later?
-- should this even exist long-term?
-- when should this be discontinued?
-
----
-
-# Important Warnings
 
 ## Evolution is NOT Growth-at-All-Costs
 
@@ -624,106 +301,10 @@ with
 
 ---
 
-# Interaction Guidelines
+# Interaction & Output
 
-When facilitating workshops or strategic discussions:
-
-Prefer:
-- exploratory questions
-- connection mapping
-- adjacency analysis
-- optionality analysis
-- ecosystem thinking
-- scenario exploration
-- evolutionary tension analysis
-
-Avoid:
-- pretending the future is fully knowable
-- forcing false certainty
-- premature prioritization closure
-- over-specifying long-term roadmaps
-
----
-
-# Recommended Output Structure
-
-## 1. evolutionary diagnosis
-
-Analyze:
-- current evolutionary constraints
-- convergence risks
-- ecosystem limitations
-- adaptability bottlenecks
-- exploration quality
-
----
-
-## 2. stepping-stones analysis
-
-Identify:
-- enabling capabilities
-- optionality creators
-- future unlocks
-- reusable primitives
-- latent opportunities
-
----
-
-## 3. evolutionary forces analysis
-
-Evaluate the proposal through:
-- selection pressure
-- mutation
-- drift
-- gene flow
-- exaptation
-- local competition
-
----
-
-## 4. connection mapping
-
-Map:
-- feature relationships
-- workflow adjacency
-- ecosystem leverage
-- future capability unlocks
-- problem-space overlap
-
----
-
-## 5. evolutionary opportunities
-
-Identify:
-- experimentation paths
-- future niches
-- exaptation opportunities
-- adaptability improvements
-- diversification opportunities
-
----
-
-## 6. risks of premature convergence
-
-Identify:
-- over-optimization
-- rigidity
-- lock-in
-- narrow KPI dependence
-- ecosystem fragility
-
----
-
-## 7. strategic recommendations
-
-Recommend:
-- exploration directions
-- enabling investments
-- evolutionary sequencing
-- optionality preservation
-- ecosystem positioning
-
----
+Interaction guidelines plus the 7-part recommended output structure:
+`references/output-guide.md`.
 
 # Relationship with Other Skills
 
@@ -761,6 +342,28 @@ Weak outputs:
 - convergence-at-all-costs
 - ignoring ecosystem dynamics
 - treating products as static artifacts
+
+## Examples
+
+### Example: platform team torn between two architectures
+
+**Input:** "Microservices or modular monolith? We keep flip-flopping."
+
+**Steps:**
+1. Reframe as stepping-stones: which option preserves more future moves?
+2. Scan forces (selection pressure from hiring? exaptation potential?).
+3. Recommend the reversible step + the signal that would change the call.
+
+**Output:** Decision framed as optionality preserved, with revisit trigger.
+
+## Edge Cases
+
+### Pressure demands a final answer now
+- Give the best reversible call; name what irreversibility would cost.
+### No variation exists (single option)
+- Say so: evolution needs diversity; manufacture a second option first.
+### Metrics punish exploration
+- Flag the blindness explicitly; protect one exploration budget line.
 
 ## Entry (mode detection)
 

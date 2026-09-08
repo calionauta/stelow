@@ -2,9 +2,9 @@
 
 Automated web browser for live testing, accessibility checks, and visual inspection.
 
-## How to invoke
+## How to invoke (ladder — first available wins)
 
-### Harness-native browser tool
+### 1. Harness-native browser tool
 
 If the harness exposes a browser/automation tool, prefer it — it handles
 invocation and result parsing. Adapt the args below to the registered tool:
@@ -13,15 +13,15 @@ invocation and result parsing. Adapt the args below to the registered tool:
 agent_browser({ args: ["open", "--url", "{URL}", "--", "snapshot", "-i"] })
 ```
 
-### CLI fallback (any agent)
+### 2. URL review via the review gate
 
-Otherwise use the `agent-browser` CLI directly via bash:
+For reviewing a rendered page (no interaction), run it through
+`visual_review.md` tooling against the URL instead of a file.
 
-```bash
-npx -y @earendil-works/pi-agent-browser open --url "{URL}" -- snapshot -i
-```
+### 3. Source-level review (always available)
 
-The `npx` invocation downloads the binary on first run. Subsequent calls reuse the cache. Watch for the same-level `--` separator that splits the open command from the snapshot subcommand.
+If neither path exists, fall back to source-level review for CSS/HTML audit
+and skip the rendered-UI verification tier.
 
 > Note: the LLM CLI ecosystem does not have a standardized browser tool. If neither path is available, fall back to source-level review for CSS/HTML audit and skip the rendered-UI verification tier.
 

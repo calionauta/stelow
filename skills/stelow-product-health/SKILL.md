@@ -97,6 +97,28 @@ As a product evolves, optimization for more experienced users can, unintentional
 - Video editing software: "the completion rate of the initial tutorial by new users" or "the satisfaction level (CSAT) of users with less than 30 days of use"
 - Online community: "the rate of new members who make their first post or comment in their first week"
 
+## Examples
+
+### Example: engagement is up, support tickets doubled
+
+**Input:** "DAU grew 40% but churn didn't move. Healthy?"
+
+**Steps:**
+1. Name the success signal (DAU) and hunt its tension pair (support load, session quality).
+2. Build the 3-set board: growth, quality, sustainability.
+3. Call it: growth without quality is not health.
+
+**Output:** Tension board with verdict + the metric to watch next.
+
+## Edge Cases
+
+### Only one signal exists
+- Say the product is unmeasurable on health; propose the missing pair before judging.
+### Signals agree (all green)
+- Distrust briefly: check for vanity definitions and lagging indicators.
+### Tension is irreconcilable
+- Escalate to strategy (positioning), not to more metrics.
+
 ## Entry (mode detection)
 
 When this skill loads, check for the stelow workflow marker:

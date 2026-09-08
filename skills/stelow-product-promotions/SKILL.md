@@ -91,6 +91,28 @@ Instead of giving a price discount, you **add more value to the original offer**
 - **Differential in the freebie**: the extra sessions can include a premium service that's not in the normal package
 - **Limit**: to create urgency, the offer can be limited to the first 5 customers
 
+## Examples
+
+### Example: launch week for a course
+
+**Input:** "Course launches in 3 weeks. Promotion plan?"
+
+**Steps:**
+1. Pick the MAGIC strategy fitting the goal (e.g. limited high-value package for revenue + testimonials).
+2. Set scarcity honestly (real caps, real dates).
+3. Define the post-launch price ladder before discounting anything.
+
+**Output:** Dated promotion calendar with offer, cap, and rollback price.
+
+## Edge Cases
+
+### Audience is cold (no list)
+- Borrowed audiences first (partners, affiliates); paid cold traffic last.
+### Discount trains bargain hunters
+- Bundle value instead of cutting price; protect the anchor.
+### Launch flops
+- Debrief in public if the brand allows; silent flops teach nothing.
+
 ## Entry (mode detection)
 
 When this skill loads, check for the stelow workflow marker:

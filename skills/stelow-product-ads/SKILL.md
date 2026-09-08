@@ -81,6 +81,28 @@ The solution's audience can be in 5 stages according to the **Transtheoretical M
 - **Inspiring Customer Stories**: share stories of customers who overcame challenges and achieved significant results
 - **User-Generated Content**: encourage customers to create and share content related to the solution
 
+## Examples
+
+### Example: launch ads for a new B2B scheduling tool
+
+**Input:** "We launch next month. Where should we advertise?"
+
+**Steps:**
+1. Classify audience awareness (likely stage 1-2: unaware of the problem).
+2. Pick stage-matched categories (problem-agitation + category-creation, not feature-comparison).
+3. Propose 2-3 channels per category with a test budget split.
+
+**Output:** Channel plan mapped to awareness stages, with kill criteria per channel.
+
+## Edge Cases
+
+### Audience spans multiple stages
+- Segment creative by stage; never run stage-1 and stage-4 copy in the same ad set.
+### No budget for testing
+- Say so explicitly; recommend one organic channel instead of thin-paid spread.
+### Regulated domain (finance, health)
+- Flag claim restrictions before proposing any copy.
+
 ## Entry (mode detection)
 
 When this skill loads, check for the stelow workflow marker:

@@ -214,6 +214,28 @@ If the user input is too vague, ambiguous, or irrelevant, output:
   - The context in which the problem occurs.
   - The desired outcome or goal to be achieved.
 
+## Examples
+
+### Example: where to focus after a flat quarter
+
+**Input:** "Growth stalled. Map where we should look."
+
+**Steps:**
+1. Collect required input (segments, pains, evidence).
+2. Generate the opportunity space (needs × segments).
+3. Rank by evidence strength × strategic fit, not by excitement.
+
+**Output:** Ranked opportunity map with the top 3 bets and why the rest wait.
+
+## Edge Cases
+
+### No evidence, only opinions
+- Mark every node low-confidence; prescribe the cheapest evidence per node.
+### Everything looks high-value
+- Force trade-offs: appetite is fixed, so something must be cut.
+### Map goes stale
+- Re-run on a cadence; opportunities decay as markets move.
+
 ## Entry (mode detection)
 
 When this skill loads, check for the stelow workflow marker:

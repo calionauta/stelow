@@ -111,6 +111,12 @@ Input received:
 
 ### 1. Discover structure
 
+Tool ladder first (`references/cli-tools/code-map.md`): orient unfamiliar
+code with ripwire, navigate symbols with cymbal, fall back to find/grep.
+For structural questions (nesting shapes, API misuse patterns, god-function
+candidates), query with ast-grep (`sg -p '<pattern>' -l <lang>); install via
+`brew install ast-grep` if absent.
+
 ```bash
 find {INPUT_PATH} -maxdepth 3 -type f \( -name "*.templ" -o -name "*.go" -o -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.css" -o -name "*.html" \) | head -50
 ```

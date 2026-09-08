@@ -13,5 +13,12 @@ When no native review UI is available, annotate via the `plannotator` CLI:
 plannotator annotate <file> --gate --json
 ```
 
+Install (binary only, checksum-verified, no hooks/skills):
+
+```bash
+curl -fsSL https://plannotator.ai/install.sh | bash -s -- --minimal
+```
+
 The `.stelow/approvals/` receipt remains the portable contract regardless of
-which UI produced the approval.
+which UI produced the approval. If `plannotator` is absent, write the receipt
+file directly after manual review.

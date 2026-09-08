@@ -67,6 +67,28 @@ In contexts of high demand or rare opportunities, the absence of a guarantee can
 - **Option B**: choose two conditional guarantees around small and large results with different terms.
 - **Option C**: choose two conditional guarantees with the same terms, but short and long deadlines to show what they could achieve.
 
+## Examples
+
+### Example: users hesitate at the payment step
+
+**Input:** "Checkout abandonment is 70%. Help."
+
+**Steps:**
+1. Diagnose success perception (what looks risky?).
+2. Pick the guarantee matching the fear (money-back, trial, social proof).
+3. Place it at the decision point, not on the about page.
+
+**Output:** Fear → guarantee mapping + placement + wording.
+
+## Edge Cases
+
+### Guarantee gets abused
+- Constrain scope (time window, usage cap), keep the promise.
+### Trust problem is the product, not perception
+- Say so: no guarantee fixes a broken core.
+### B2B committee buying
+- One guarantee rarely fits all stakeholders; layer them.
+
 ## Entry (mode detection)
 
 When this skill loads, check for the stelow workflow marker:

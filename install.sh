@@ -161,7 +161,7 @@ offer_optional_clis() {
   local refs="$SCRIPT_DIR/skills"
   offer_cli "cymbal"   "cymbal"   "install_cymbal" \
     "Transforms codebase recon from find/grep to full symbol navigation" "$refs"
-  offer_cli "ast-grep" "ast_grep" "brew install ast-grep" \
+  offer_cli "ast-grep" "ast-grep|ast_grep" "brew install ast-grep" \
     "Structural (AST-based) code search" "$refs"
   offer_cli "sem"      "\\bsem\\b"  "curl -fsSL https://raw.githubusercontent.com/Ataraxy-Labs/sem/main/install.sh | sh" \
     "Entity-level diff for Execution Critique" "$refs"
@@ -250,7 +250,8 @@ setup_full() {
 
   # Step 2: optional cross-harness CLIs (only those used by stelow skills).
   # cymbal + sem are offered (used by Tech Preview / Execution Critique skills);
-  # ast-grep is skipped automatically (no skill references it). ctx7 remains a
+  # ast-grep is offered when referenced (codebase-critique structural queries).
+  # ctx7 remains a
   # guided OAuth setup below (not a plain install).
   log_info "[2/4] Optional CLI tools (cymbal, sem)"
   offer_optional_clis

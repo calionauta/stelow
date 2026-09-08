@@ -114,6 +114,28 @@ The exit barrier of a service cannot be the difficulty of taking their data away
 
 **Why Adopting These Principles is Also a Business Strategy**: a company that facilitates customer entry and exit is making a bold bet on the quality of its own product, signaling that it intends to retain customers **by merit, and not by lock-in**.
 
+## Examples
+
+### Example: price a new analytics add-on
+
+**Input:** "What should we charge for the add-on?"
+
+**Steps:**
+1. Pick the exchange base (seats, events, value metric?).
+2. Check consumption control (what stops runaway cost?).
+3. Align interest (does the price grow when customer value grows?).
+
+**Output:** Metric recommendation + guardrails + perception framing.
+
+## Edge Cases
+
+### Costs scale faster than willingness to pay
+- Redesign the metric before discounting; discounts don't fix unit economics.
+### Enterprise demands custom pricing
+- Contain it: custom quotes, standard metric.
+### Price increase on existing customers
+- Grandfather explicitly; trust compounds, surprises destroy it.
+
 ## Entry (mode detection)
 
 When this skill loads, check for the stelow workflow marker:
