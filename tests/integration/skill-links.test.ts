@@ -26,10 +26,16 @@ function extractLinks(content: string): string[] {
   const found: string[] = [];
   // Strip fenced code blocks: commands and snippets, not navigable links.
   const prose = content.replace(/```[\s\S]*?```/g, "");
-  const re = /(\]\(([^)]+)\)|`([^`]*?(?:refs|references|skills|stages)\/[^`]*?)`)/g;
+  // Pass 1: markdown links — first, so pass 2 cannot swallow them.
+  const withoutLinks = prose.replace(/\]\(([^)]+)\)/g, (_whole, target: string) => {
+    found.push(target);
+    return " ";
+  });
+  // Pass 2: backticked paths.
+  const re = /`([^`]*?(?:refs|references|skills|stages)\/[^`]*?)`/g;
   let m: RegExpExecArray | null;
-  while ((m = re.exec(prose)) !== null) {
-    found.push(m[2] ?? m[3]);
+  while ((m = re.exec(withoutLinks)) !== null) {
+    found.push(m[1]);
   }
   return found;
 }

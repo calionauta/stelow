@@ -83,8 +83,8 @@ Read the `references/` files to guide the process:
 **Rule:** if a discovered task grows large enough to be its own delivery unit, **escalate it as a new scope**. Do not bloat the current scope. The hill chart's job is to make scope size honest, not to encourage scope creep in disguise.
 
 **See also:**
-- `skills/stelow-workflow-scope-executor/SKILL.md#3e-ter` — task seeding, append, mark-done.
-- `skills/stelow-workflow-tech-planning/references/scopes-and-sequencing.md#Scope Detail Template` — the markdown table format.
+- `../stelow-workflow-scope-executor/SKILL.md#3e-ter` — task seeding, append, mark-done.
+- `references/scopes-and-sequencing.md#Scope Detail Template` — the markdown table format.
 
 ## Process
 

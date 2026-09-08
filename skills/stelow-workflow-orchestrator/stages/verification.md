@@ -340,7 +340,7 @@ After all verification steps pass, **automatically proceed to Code Quality Revie
 > **Note on browser dependency:** The Quick Tier (browserless) in
 > `ui-quality` and `interactive-testing` works on ALL harnesses. The Full Tier
 > (agent-browser) needs a browser-capable tool per
-> [agent_browser.md](references/cli-tools/agent_browser.md). Without one, rely
+> [agent_browser.md](../references/cli-tools/agent_browser.md). Without one, rely
 > on the Quick Tier and note what couldn't be verified for human review.
 
 See the `stelow-workflow-testing-execution` skill for the full testing protocol reference.
