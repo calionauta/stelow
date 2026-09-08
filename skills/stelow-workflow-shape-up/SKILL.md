@@ -15,7 +15,7 @@ metadata:
 
 # Shape Up Planning
 
-> **Tools:** See `references/cli-tools/subagents.md` for subagent patterns.
+> **Tools:** See `../stelow-workflow-orchestrator/references/cli-tools/subagents.md` for subagent patterns.
 
 ## Overview
 
@@ -52,7 +52,7 @@ This skill works standalone. Use the Input Detection section below to tell the s
 
 Before shaping, launch `subagent` to map context:
 
-Use the subagents tool (see `references/cli-tools/subagents.md`) in parallel for optional recon:
+Use the subagents tool (see `../stelow-workflow-orchestrator/references/cli-tools/subagents.md`) in parallel for optional recon:
 
 ```
 2 parallel scouts (fresh context):
@@ -77,7 +77,7 @@ Read the outputs before proceeding.
 Run appetite-gated codebase recon before shaping (Lean: existence search;
 Core: structure + refs; Complete: + blast radius), then search existing
 features by workflow name/topic. Tool ladder (orient → navigate → fallback):
-`references/cli-tools/code-map.md`. Full depth table, cymbal
+`../stelow-workflow-orchestrator/references/cli-tools/code-map.md`. Full depth table, cymbal
 commands, fallback and output format: `references/tech-preview.md`.
 
 
@@ -114,7 +114,7 @@ fi
 |-------------|----------|
 | **Auto/Product Spec Gate** | Auto-resolve. AI fills assumptions in spec as notes. No questions. |
 | **Product Spec + Interface Gates** | Top-3 most critical assumptions. Each presented with AI recommendation.
-  Use the ask tool (see `references/cli-tools/ask.md`).
+  Use the ask tool (see `../stelow-workflow-orchestrator/references/cli-tools/ask.md`).
   Option format: "{assumption}. Recom: {resolution}" with "(Recommended)" marker. |
 | **Product Spec + Interface + Scopes / Product Spec + Interface + Tech Review** | Top-5 assumptions. User responds to each.
   AI recommendation marked as "(Recommended)". |
@@ -150,7 +150,7 @@ Read the `references/` files to guide the process:
 | `references/proposal-structure.md` | Output structure for the shaped proposal |
 | `references/output-expectations.md` | Strong vs weak output criteria |
 
-Use the ask tool (see `references/cli-tools/ask.md`) for strategic questions when needed.
+Use the ask tool (see `../stelow-workflow-orchestrator/references/cli-tools/ask.md`) for strategic questions when needed.
 
 After shaping:
 - Save to `.stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md`
@@ -296,10 +296,10 @@ When triggered by the orchestrator:
 
 Show the IN/OUT scope table. Ask:
 
-1. **Remove from IN?** — use the ask tool with multiSelect (see `references/cli-tools/ask.md`) with current IN scopes
-2. **Add to IN?** — use the ask tool with multiSelect (see `references/cli-tools/ask.md`) with OUT scope items
+1. **Remove from IN?** — use the ask tool with multiSelect (see `../stelow-workflow-orchestrator/references/cli-tools/ask.md`) with current IN scopes
+2. **Add to IN?** — use the ask tool with multiSelect (see `../stelow-workflow-orchestrator/references/cli-tools/ask.md`) with OUT scope items
 
-[Use the ask tool — see `references/cli-tools/ask.md`]
+[Use the ask tool — see `../stelow-workflow-orchestrator/references/cli-tools/ask.md`]
 
 > **⚡ Estimation Bias:** When asking "Remove from IN?", the model tends to suggest
 > removing items that **seem** complex, but could be simple to implement.

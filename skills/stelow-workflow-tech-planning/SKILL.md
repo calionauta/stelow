@@ -15,7 +15,7 @@ metadata:
 
 # Tech Planning Sequencing
 
-> **Tools:** See `references/cli-tools/subagents.md` for subagent patterns, `references/cli-tools/goals.md` for goal commands.
+> **Tools:** See `../stelow-workflow-orchestrator/references/cli-tools/subagents.md` for subagent patterns, `../stelow-workflow-orchestrator/references/cli-tools/goals.md` for goal commands.
 
 This skill executes the Tech Planning phase.
 
@@ -137,7 +137,7 @@ Parallel queries:
 ```
 
 Consolidate into a recommendation with alternatives. Use `ask_user_question`
-(see `references/cli-tools/ask.md`) to present:
+(see `../stelow-workflow-orchestrator/references/cli-tools/ask.md`) to present:
 
 > **Recommendation:** {chosen stack} (Recommended)
 > **Alternatives:** {alt1} | {alt2}
@@ -179,7 +179,7 @@ Compare tech plan against product spec; resolve misalignment per `review_mode`
 
 1. **Generate testing-strategy.md via subagent:**
 
-   Delegate to a testing-strategy subagent (see `references/cli-tools/subagents.md`):
+   Delegate to a testing-strategy subagent (see `../stelow-workflow-orchestrator/references/cli-tools/subagents.md`):
    - Agent: `stelow-workflow-testing-ai-code` or equivalent
    - Input: spec-product.md frontmatter with `product_type: software`
    - Output: `.stelow/{YYYY-MM-DD}/{_dir}/plans/testing-strategy.md`
@@ -223,7 +223,7 @@ visual_review filePath=.stelow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_v{N}.md
 visual_review annotate .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_v{N}.md --gate --json
 ```
 
-See `references/cli-tools/visual_review.md` for command format, after-approval workflow, and frozen file rules.
+See `../stelow-workflow-orchestrator/references/cli-tools/visual_review.md` for command format, after-approval workflow, and frozen file rules.
 
 | Scenario | Action |
 |---------|--------|
@@ -237,30 +237,30 @@ See `references/cli-tools/visual_review.md` for command format, after-approval w
 
 **If user requests changes:**
 1. Adjust the tech plan
-2. Re-submit via the visual review gate command (see `references/cli-tools/visual_review.md`)
+2. Re-submit via the visual review gate command (see `../stelow-workflow-orchestrator/references/cli-tools/visual_review.md`)
 3. Repeat until approved
 
 ### planning:40 — Goal Generation
 
 After tech plan approval, convert each scope into a **goal**
-using the goals tool (see `references/cli-tools/goals.md`). Goals are mandatory —
+using the goals tool (see `../stelow-workflow-orchestrator/references/cli-tools/goals.md`). Goals are mandatory —
 never use simple todo lists as a substitute; goals carry DoD, ACs, dependencies,
 verification commands, and evidence types that todo items cannot express.
 
 **For each feature/test scope in the approved spec-tech.md:**
 
-Create a goal using the goals tool (see `references/cli-tools/goals.md`).
+Create a goal using the goals tool (see `../stelow-workflow-orchestrator/references/cli-tools/goals.md`).
 The goals reference documents acceptance patterns, evidence types, verify commands,
 and CLI fallbacks.
 
 **Optimization scopes with metrics:**
 These become optimization goals using the goals tool
-(see `references/cli-tools/goals.md` → Optimization Goals section).
+(see `../stelow-workflow-orchestrator/references/cli-tools/goals.md` → Optimization Goals section).
 
 **Rules:**
 - Scopes with dependencies: create goal AFTER the dependency is complete
-- Use the goal pause command (see `references/cli-tools/goals.md`) if a scope gets blocked
-- Use the goal tweak command (see `references/cli-tools/goals.md`) for scope adjustments during execution
+- Use the goal pause command (see `../stelow-workflow-orchestrator/references/cli-tools/goals.md`) if a scope gets blocked
+- Use the goal tweak command (see `../stelow-workflow-orchestrator/references/cli-tools/goals.md`) for scope adjustments during execution
 - ⚠️ **Never substitute todo items for goals** — goals carry structured DoDs, ACs, and dependency tracking
 
 ## Output
@@ -289,10 +289,10 @@ Read the stelow-workflow-scope-executor skill for routing rules.
 
 | Scope type | Route to |
 |------------|----------|
-| `feature` | worker + iteration loop (see scope-executor Step 3 — implement → verify → review → quality, repeat) + supervision (see `references/cli-tools/supervise.md`) |
-| `optimization` | subagent + acceptance with benchmark verify (see `references/cli-tools/goals.md` → Optimization Goals) |
-| `spike` | scout + researcher (see `references/cli-tools/subagents.md`) |
-| `test-*` | subagent + acceptance (see `references/cli-tools/goals.md`) with testing gates |
+| `feature` | worker + iteration loop (see scope-executor Step 3 — implement → verify → review → quality, repeat) + supervision (see `../stelow-workflow-orchestrator/references/cli-tools/supervise.md`) |
+| `optimization` | subagent + acceptance with benchmark verify (see `../stelow-workflow-orchestrator/references/cli-tools/goals.md` → Optimization Goals) |
+| `spike` | scout + researcher (see `../stelow-workflow-orchestrator/references/cli-tools/subagents.md`) |
+| `test-*` | subagent + acceptance (see `../stelow-workflow-orchestrator/references/cli-tools/goals.md`) with testing gates |
 
 See `../stelow-workflow-orchestrator/stages/execution.md` for full execution flow.
 

@@ -25,7 +25,7 @@ Run a structured audit after any implementation — whether it followed the full
 `stelow` or was done ad-hoc. Every evaluation criterion runs in
 every mode; only the **source of truth** differs based on what input is available.
 
-> **Tools:** See `references/cli-tools/subagents.md` for subagent patterns.
+> **Tools:** See `../stelow-workflow-orchestrator/references/cli-tools/subagents.md` for subagent patterns.
 > For large outputs, use `bash` with output truncation, or `read` with offset/limit.
 
 ---
@@ -214,7 +214,7 @@ fi
 
 ### URL input
 
-Use the browser tool (see `references/cli-tools/agent_browser.md`) to open the site:
+Use the browser tool (see `../stelow-workflow-orchestrator/references/cli-tools/agent_browser.md`) to open the site:
 
 ```
 agent_browser: open URL → snapshot → explore flows → snapshot → compare vs spec
@@ -368,8 +368,8 @@ Always save or display in this format. The Lessons Learned section also writes t
 | Reference | Purpose | When to consult |
 |-----------|---------|-----------------|
 | [Tool Availability & Fallbacks](#-tool-availability--fallbacks) | sem/git fallback strategy | Before any mode |
-| `references/cli-tools/subagents.md` | Subagent patterns for parallel audit | Workflow mode with many scopes |
-| `references/cli-tools/README.md` | Tool capability references | Any tool reference needed |
+| `../stelow-workflow-orchestrator/references/cli-tools/subagents.md` | Subagent patterns for parallel audit | Workflow mode with many scopes |
+| `../stelow-workflow-orchestrator/references/cli-tools/README.md` | Tool capability references | Any tool reference needed |
 | `references/cli-tools/dead-code-candidates.md` | Dead code detection via `sem graph --json` | Implementation Quality check (criteria 2) |
 
 ## Environment Adaptation

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# scripts/stelow — stelow workflow CLI (status / advance / doctor / seed / schema / ask / sync-scopes / lock).
+# scripts/stelow — stelow workflow CLI (status / advance / doctor / seed / schema / ask / sync-scopes / lock / config).
 #
 # Passive: reads/writes one workflow state. Hosts may point at a per-workflow
 # directory with STELOW_STATEDIR/STELOW_STATE; root paths remain the legacy
@@ -15,6 +15,7 @@
 #   scripts/stelow schema [command]
 #   scripts/stelow ask ...
 #   scripts/stelow sync-scopes [--name <workflow>] [--json]
+#   scripts/stelow config get <field> [default]
 #   scripts/stelow lock acquire|release|check ...
 #   scripts/stelow --help
 
@@ -708,6 +709,13 @@ commands = {
     "exit_codes": {"0": "ok / no conflicting locks", "1": "lock conflict or runtime failure", "2": "usage"},
     "output": "text lines or {acquired|locks} JSON with --json",
   },
+  "config": {
+    "usage": "stelow config get <field> [default]",
+    "flags": [],
+    "env": [],
+    "exit_codes": {"0": "prints value or default (missing state yields default)", "2": "usage"},
+    "output": "scalar value, JSON for arrays/objects",
+  },
 }
 if want and want not in commands:
     print(f"schema: unknown command '{want}' (known: {', '.join(sorted(commands))})", file=sys.stderr)
@@ -1148,11 +1156,42 @@ sys.exit(0)
 PY
 }
 
+# --- config ------------------------------------------------------------------
+
+# Read Workflow.config from stelow.json (in-progress workflow only).
+# Same semantics as the read-config.sh fallback: missing file, no active
+# workflow, or null/empty field all yield the default (exit 0).
+do_config() {
+  local sub="${1:-}"; shift || true
+  [ "$sub" = "get" ] || usage_error "config needs get (try --help)"
+  local field="${1:-}"; shift || true
+  [ -n "$field" ] || usage_error "config get needs <field> [default]"
+  local default="${1:-}"; shift || true
+  [ $# -eq 0 ] || usage_error "config get takes only <field> [default]"
+  python3 - "$ROOT" "$field" "$default" <<'PY' || exit $?
+import sys, os, json
+root, field, default = sys.argv[1:4]
+tracking_path = os.path.join(root, "stelow.json")
+try:
+    tracking = json.loads(open(tracking_path).read())
+    workflows = tracking.get("workflows") or []
+    workflow = next((w for w in workflows if w.get("status") == "in-progress"), None)
+    config = (workflow or {}).get("config") or {}
+    value = config.get(field)
+except Exception:
+    value = None
+if value is None or value == "":
+    print(default)
+else:
+    print(json.dumps(value) if isinstance(value, (list, dict)) else str(value))
+PY
+}
+
 # --- dispatch ----------------------------------------------------------------
 
 usage() {
   cat <<EOF
-$PROG — stelow workflow helper (status / advance / doctor / seed / schema / ask / sync-scopes / lock)
+$PROG — stelow workflow helper (status / advance / doctor / seed / schema / ask / sync-scopes / lock / config)
 
 Usage:
   $PROG status [--json]
@@ -1162,6 +1201,7 @@ Usage:
   $PROG schema [command]
   $PROG ask --question <t> [--multiple] --option <label>... (repeat --question groups)
   $PROG sync-scopes [--name <workflow>] [--json]
+  $PROG config get <field> [default]
   $PROG lock acquire --scope <id> --file <f>... [--ttl N] [--json]
   $PROG lock release --scope <id> --file <f>...
   $PROG lock check [--scope <id>] [--file <f>...] [--json]
@@ -1213,6 +1253,10 @@ case "${1:-}" in
   sync-scopes)
     shift
     do_sync_scopes "$@"
+    ;;
+  config)
+    shift
+    do_config "$@"
     ;;
   lock)
     shift

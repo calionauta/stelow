@@ -384,7 +384,7 @@ worker CLI) lives in a separate repo,
 | Feature | Any agentskills-compatible agent |
 |---|---|
 | **28 skills (14 workflow + 14 product)** | ✅ |
-| **`scripts/stelow` CLI (status / advance / doctor / seed / schema / ask / sync-scopes / lock)** | ✅ (bash + python3) |
+| **`scripts/stelow` CLI (status / advance / doctor / seed / schema / ask / sync-scopes / lock / config)** | ✅ (bash + python3) |
 | **`/sw-*` workflow commands** | ✅ Routed by the entry + router skills |
 | **`visual_review` gate** | ✅ Portable approval receipts under `.stelow/approvals/` |
 | **Scope sync from spec-tech.md** | ✅ Skill-instructed parse into `stelow.json` |
@@ -517,7 +517,7 @@ This project distributes exclusively via GitHub (no npm) — see [docs/SECURITY.
 The `/sw-*` workflow commands are **skill-provided entry points**: they are
 routed by the entry + router skills, not registered by host code. The single
 source of truth for state mechanics is the `scripts/stelow` CLI
-(`status`, `advance`, `doctor`, `seed`, `schema`, `ask`, `sync-scopes`, `lock` — see
+(`status`, `advance`, `doctor`, `seed`, `schema`, `ask`, `sync-scopes`, `lock`, `config` — see
 [🧰 stelow CLI](#-stelow-cliscriptsstelow) below).
 
 | Command | Description |
@@ -630,7 +630,7 @@ this repo ships no host-specific code. The hosting contract lives in
 Owner paths in this repo:
 
 - `skills/` (28 portable skills: 14 `stelow-product-*` and 14 `stelow-workflow-*`) — the only runtime content; loaded by any agentskills-compatible agent.
-- `scripts/stelow` — portable CLI (`status`, `advance`, `doctor`, `seed`, `schema`, `ask`, `sync-scopes`, `lock`); every host shells out to it.
+- `scripts/stelow` — portable CLI (`status`, `advance`, `doctor`, `seed`, `schema`, `ask`, `sync-scopes`, `lock`, `config`); every host shells out to it.
 - `types/stages.ts` + `skills/stelow-workflow-orchestrator/stages.yaml` — the stage model and transitions.
 
 To add a new host you need **no code** — just an agent that reads

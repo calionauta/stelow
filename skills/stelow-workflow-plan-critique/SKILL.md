@@ -21,7 +21,7 @@ metadata:
 > **Input:** `spec-product.md` (single file).
 > **Output:** Classified gap report (🚨/🤔/🔎) with actionable questions.
 
-> **Tools:** See `references/cli-tools/subagents.md` for subagent patterns.
+> **Tools:** See `../stelow-workflow-orchestrator/references/cli-tools/subagents.md` for subagent patterns.
 
 ## Overview
 
@@ -169,7 +169,7 @@ esac
 ### critique:30 — Run parallel subagents (5 dimensions)
 
 Instead of a single reviewer running all 7 checklists, launch 5 parallel reviewers
-using the subagents tool (see `references/cli-tools/subagents.md`),
+using the subagents tool (see `../stelow-workflow-orchestrator/references/cli-tools/subagents.md`),
 each evaluating a different dimension of the same spec-product.md with fresh context.
 
 ```
@@ -190,7 +190,7 @@ The parent applies mode-based behavior (resolve / ask) after consolidation.
 ```
 
 > **Error recovery:** If any parallel subagent fails, retry once per the
-> retry pattern in `references/cli-tools/subagents.md`. If it fails again,
+> retry pattern in `../stelow-workflow-orchestrator/references/cli-tools/subagents.md`. If it fails again,
 > log as SKIPPED and proceed with remaining dimensions. A missing dimension
 > is better than a deadlocked workflow.
 
@@ -216,7 +216,7 @@ Do NOT auto-resolve yet — that depends on mode (next step).
 This step runs in the **parent LLM** (same context as critic=40).
 All 7 checklists run regardless of mode — mode only changes how gaps are resolved.
 
-See `references/cli-tools/ask.md` for the `ask_user_question` tool.
+See `../stelow-workflow-orchestrator/references/cli-tools/ask.md` for the `ask_user_question` tool.
 
 **If `$REVIEW_MODE` is `Auto` or `Product Spec Gate`:**
 

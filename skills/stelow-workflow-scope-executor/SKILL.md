@@ -102,7 +102,7 @@ For each scope in the plan:
 |---|---|---|
 | `feature` | *absent* → worker + **iteration loop** (see Step 3) |
 | `feature` | `research` → **research loop** (override) |
-| `optimization` | *absent* → goals tool (see `references/cli-tools/goals.md`, Optimization Goals) |
+| `optimization` | *absent* → goals tool (see `../stelow-workflow-orchestrator/references/cli-tools/goals.md`, Optimization Goals) |
 | `optimization` | `worker` → **worker** (override) |
 | `spike` | *absent* → scout + researcher |
 | `spike` | `research` → **research loop** (override, rare) |
@@ -219,7 +219,7 @@ Same scope body may declare a lock TTL override:
 
 Parse the integer value into `wf.scopes[i].lock_ttl_seconds: number` (optional). Default is 1800 (30 min); see `references/cli-tools/file-locking.md#ttl-configuration` for range / clamping rules. At Step 3c, the orchestrator exports this to `$LOCK_TTL_SECONDS` for the acquire snippet.
 
-Convention is **advisory** — no enforcement at the tracking layer. The file-reservation lock protocol (see `references/cli-tools/file-locking.md` in `stelow-workflow-orchestrator`) uses these declared paths at scope-execution time. If undeclared, the post-execution `actual_files ∩ declared` diff in Step 8 still flags undeclared writes.
+Convention is **advisory** — no enforcement at the tracking layer. The file-reservation lock protocol (see `../stelow-workflow-orchestrator/references/cli-tools/file-locking.md` in `stelow-workflow-orchestrator`) uses these declared paths at scope-execution time. If undeclared, the post-execution `actual_files ∩ declared` diff in Step 8 still flags undeclared writes.
 
 ### Step 2d: Complete Human-in-loop execution mode
 
@@ -296,7 +296,7 @@ above.
 
 Full autonomous (default) or scope-by-scope; standalone input detection, tool
 interaction, environment adaptation: `references/invocation.md`. Visual review
-gate doc: `references/cli-tools/visual_review.md`.
+gate doc: `../stelow-workflow-orchestrator/references/cli-tools/visual_review.md`.
 
 ## Entry (mode detection)
 

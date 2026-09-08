@@ -10,11 +10,19 @@
 
 # stelow_config <field> [<default>]
 # Internal: read a single field from the active workflow's config.
+# Prefers `scripts/stelow config get` (single tested parser) when the helper
+# is available at the git root; falls back to the inline reader for
+# standalone installs without a helper checkout.
 # Returns the default if stelow.json absent OR no in-progress workflow OR
 # wf.config[field] is null/empty.
 stelow_config() {
   local field="$1"
   local default="${2:-}"
+  local helper
+  helper="$(git rev-parse --show-toplevel 2>/dev/null)/scripts/stelow"
+  if [ -x "$helper" ]; then
+    "$helper" config get "$field" "$default" 2>/dev/null && return
+  fi
   local value=""
   if [ -f "stelow.json" ]; then
     value=$(node -e "
@@ -39,6 +47,11 @@ stelow_read_review_mode() {
 
 # Public: read domains_detected as JSON array (default: [])
 stelow_read_domains() {
+  local helper
+  helper="$(git rev-parse --show-toplevel 2>/dev/null)/scripts/stelow"
+  if [ -x "$helper" ]; then
+    "$helper" config get domains_detected "[]" 2>/dev/null && return
+  fi
   if [ -f "stelow.json" ]; then
     node -e "
       const t = JSON.parse(require('fs').readFileSync('stelow.json','utf8'));

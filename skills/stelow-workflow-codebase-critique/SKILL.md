@@ -21,7 +21,7 @@ metadata:
 > **Input:** Source code directory.
 > **Output:** Classified gap report (🚨/🤔/🔎) with recommendations.
 
-> **Tools:** See `references/cli-tools/subagents.md` for subagent patterns.
+> **Tools:** See `../stelow-workflow-orchestrator/references/cli-tools/subagents.md` for subagent patterns.
 
 **Standalone awareness:** inside stelow, appetite gates critique depth (Lean → light, Core → quick, Complete → full). Standalone defaults to Core appetite (quick single-reviewer). Works with any source directory — no stelow dependency for the audit logic.
 
@@ -111,7 +111,7 @@ Input received:
 
 ### 1. Discover structure
 
-Tool ladder first (`references/cli-tools/code-map.md`): orient unfamiliar
+Tool ladder first (`../stelow-workflow-orchestrator/references/cli-tools/code-map.md`): orient unfamiliar
 code with ripwire, navigate symbols with cymbal, fall back to find/grep.
 For structural questions (nesting shapes, API misuse patterns, god-function
 candidates), query with ast-grep (`sg -p '<pattern>' -l <lang>); install via
@@ -131,7 +131,7 @@ find {INPUT_PATH} -maxdepth 3 -type f \( -name "*.templ" -o -name "*.go" -o -nam
 
 ### 3. Run critique via subagent
 
-Use the subagents tool (see `references/cli-tools/subagents.md`) to critique the codebase:
+Use the subagents tool (see `../stelow-workflow-orchestrator/references/cli-tools/subagents.md`) to critique the codebase:
 
 ```
 Agent: reviewer

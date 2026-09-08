@@ -132,7 +132,7 @@ describe("schema", () => {
     const r = run(wd, ["schema"]);
     expect(r.status).toBe(0);
     const j = JSON.parse(r.stdout);
-    for (const cmd of ["status", "advance", "doctor", "seed", "ask", "sync-scopes", "lock"]) {
+    for (const cmd of ["status", "advance", "doctor", "seed", "ask", "sync-scopes", "lock", "config"]) {
       expect(Object.keys(j), `schema covers ${cmd}`).toContain(cmd);
       expect(j[cmd].usage, `${cmd} usage`).toBeTruthy();
       expect(j[cmd].exit_codes, `${cmd} exit codes`).toBeTruthy();
@@ -349,5 +349,48 @@ describe("sync-scopes", () => {
   it("rejects unknown flags with exit 2", () => {
     const wd = makeWorkdir();
     expect(run(wd, ["sync-scopes", "--bogus"]).status).toBe(2);
+  });
+});
+
+// ---------------------------------------------------------------------------
+
+describe("config get", () => {
+  function seedTracking(wd: any, workflows: unknown): void {
+    writeFileSync(join(wd.dir, "stelow.json"), JSON.stringify({ workflows }));
+  }
+
+  it("reads fields from the in-progress workflow", () => {
+    const wd = makeWorkdir();
+    seedTracking(wd, [{ name: "w", status: "in-progress", config: { appetite: "Lean" } }]);
+    const r = run(wd, ["config", "get", "appetite", "Core"]);
+    expect(r.status).toBe(0);
+    expect(r.stdout.trim()).toBe("Lean");
+  });
+
+  it("falls back to the default when missing", () => {
+    const wd = makeWorkdir();
+    seedTracking(wd, [{ name: "w", status: "in-progress", config: {} }]);
+    expect(run(wd, ["config", "get", "appetite", "Core"]).stdout.trim()).toBe("Core");
+    expect(run(wd, ["config", "get", "domains_detected", "[]"]).stdout.trim()).toBe("[]");
+  });
+
+  it("missing tracking yields the default with exit 0", () => {
+    const wd = makeWorkdir();
+    const r = run(wd, ["config", "get", "appetite", "Core"]);
+    expect(r.status).toBe(0);
+    expect(r.stdout.trim()).toBe("Core");
+  });
+
+  it("preserves arrays as JSON", () => {
+    const wd = makeWorkdir();
+    seedTracking(wd, [{ name: "w", status: "in-progress", config: { domains_detected: ["pricing"] } }]);
+    const r = run(wd, ["config", "get", "domains_detected", "[]"]);
+    expect(JSON.parse(r.stdout)).toEqual(["pricing"]);
+  });
+
+  it("rejects missing field with exit 2", () => {
+    const wd = makeWorkdir();
+    expect(run(wd, ["config", "get"]).status).toBe(2);
+    expect(run(wd, ["config"]).status).toBe(2);
   });
 });

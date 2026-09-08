@@ -171,7 +171,7 @@ pytest
 - Config-only change
 - Documentation update
 
-Use the subagents tool (see `references/cli-tools/subagents.md`) in parallel for context gathering:
+Use the subagents tool (see `../stelow-workflow-orchestrator/references/cli-tools/subagents.md`) in parallel for context gathering:
 
 ```
 2 parallel scouts (fresh context):
@@ -179,7 +179,7 @@ Use the subagents tool (see `references/cli-tools/subagents.md`) in parallel for
 2. Map technical risks → context/risks.md
 ```
 
-**Error handling:** If a scout fails, retry per the retry pattern in `references/cli-tools/subagents.md`.
+**Error handling:** If a scout fails, retry per the retry pattern in `../stelow-workflow-orchestrator/references/cli-tools/subagents.md`.
 
 ## Phase 5: Final Checklist
 
@@ -350,7 +350,7 @@ Input:
 ## References
 
 - **stelow-workflow-testing-ai-code**: Use this BEFORE implementation to generate testing strategy, coverage/risk targets, and test scopes. This execution skill uses those targets as quality gates.
-- `references/cli-tools/subagents.md` — Subagent task structure patterns
+- `../stelow-workflow-orchestrator/references/cli-tools/subagents.md` — Subagent task structure patterns
 
 ## Entry (mode detection)
 

@@ -23,7 +23,7 @@ metadata:
 > **Inputs:** URL (live site), directory (source code), or screenshot (image).
 > **Output:** Classified report with gaps (🚨/🤔/🔎) + actionable recommendations.
 
-> **Tools:** See `references/cli-tools/agent_browser.md` and `references/cli-tools/subagents.md` for tool patterns.
+> **Tools:** See `../stelow-workflow-orchestrator/references/cli-tools/agent_browser.md` and `../stelow-workflow-orchestrator/references/cli-tools/subagents.md` for tool patterns.
 
 ## Overview
 
@@ -107,11 +107,11 @@ Audita um site ao vivo abrindo no browser e avaliando a UX completa.
 
 ### 2. Open and explore
 
-Use the browser tool (see `references/cli-tools/agent_browser.md`) to open the URL and explore main flows (login, primary action, empty state, error state, destructive confirmation, forms).
+Use the browser tool (see `../stelow-workflow-orchestrator/references/cli-tools/agent_browser.md`) to open the URL and explore main flows (login, primary action, empty state, error state, destructive confirmation, forms).
 
 ### 3. Run audit via subagent
 
-Use the subagents tool (see `references/cli-tools/subagents.md`) to audit the live site:
+Use the subagents tool (see `../stelow-workflow-orchestrator/references/cli-tools/subagents.md`) to audit the live site:
 
 ```
 Agent: reviewer
@@ -155,7 +155,7 @@ find {INPUT_PATH} -maxdepth 3 -type f \( -name "*.templ" -o -name "*.html" -o -n
 
 ### 3. Run audit via subagent
 
-Use the subagents tool (see `references/cli-tools/subagents.md`) to audit the codebase:
+Use the subagents tool (see `../stelow-workflow-orchestrator/references/cli-tools/subagents.md`) to audit the codebase:
 
 ```
 Agent: reviewer
@@ -192,7 +192,7 @@ Audits a screenshot image for quick visual analysis (~60% coverage).
 
 ### 2. Analyze screenshot
 
-Read the image file for visual analysis. Use o subagents tool (see `references/cli-tools/subagents.md`) to audit:
+Read the image file for visual analysis. Use o subagents tool (see `../stelow-workflow-orchestrator/references/cli-tools/subagents.md`) to audit:
 
 ```
 Agent: reviewer
@@ -269,7 +269,7 @@ this skill.
 If agent_browser is not available (e.g. other CLIs), use Codebase mode
 (~80% coverage) and note in the report what could not be verified.
 
-See `references/cli-tools/agent_browser.md` for availability details.
+See `../stelow-workflow-orchestrator/references/cli-tools/agent_browser.md` for availability details.
 
 ## Entry (mode detection)
 

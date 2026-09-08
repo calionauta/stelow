@@ -15,7 +15,7 @@ metadata:
 
 # Interface Alternatives
 
-> **Tools:** See `references/cli-tools/subagents.md` for subagent patterns.
+> **Tools:** See `../stelow-workflow-orchestrator/references/cli-tools/subagents.md` for subagent patterns.
 
 ## Overview
 
@@ -90,7 +90,7 @@ esac
 
 ## Generate Proposals (Step 1-2)
 
-Use the subagents tool (see `references/cli-tools/subagents.md`) to generate the appetite-selected proposals in parallel. For `Lean`, run one worker only. For `Core`, run 3 workers. For `Complete`, run 5 workers.
+Use the subagents tool (see `../stelow-workflow-orchestrator/references/cli-tools/subagents.md`) to generate the appetite-selected proposals in parallel. For `Lean`, run one worker only. For `Core`, run 3 workers. For `Complete`, run 5 workers.
 
 ```
 $INTERFACE_COUNT parallel workers (fresh context, explicit reads):
@@ -122,7 +122,7 @@ Each outputs to .stelow/{date}/{dir}/interfaces/proposal-{letter}.md
 
 **CRITICAL:** Hybrid is generated only when `$HYBRID = yes` (Core or Complete appetite) and **AFTER** all selected proposals are complete to avoid bias.
 
-Use the subagents tool (see `references/cli-tools/subagents.md`) to merge:
+Use the subagents tool (see `../stelow-workflow-orchestrator/references/cli-tools/subagents.md`) to merge:
 
 ```
 Agent: worker
@@ -134,7 +134,7 @@ Output: Append to interfaces.md per hybrid-recommendation.md
 
 ## Visual Review (Interface Gate — Automatic)
 
-**After all selected proposals (+ Hybrid when applicable), use the visual review gate** (see `references/cli-tools/visual_review.md` for the correct command). Execute it directly — do NOT describe it to the user.
+**After all selected proposals (+ Hybrid when applicable), use the visual review gate** (see `../stelow-workflow-orchestrator/references/cli-tools/visual_review.md` for the correct command). Execute it directly — do NOT describe it to the user.
 
 Prefer the harness-registered `visual_review` tool when available. Fall back to bash CLI if unavailable:
 
@@ -148,7 +148,7 @@ visual_review annotate .stelow/{YYYY-MM-DD}/{_dir}/interfaces/interfaces_v{N}.md
 
 Wait for the decision. If `approved`, the tool auto-creates the receipt. Then advance to Interface Selection.
 
-Then use **Pattern 2** from `references/cli-tools/ask.md` to let the user pick one proposal — **but only when the review mode requires a human pick**. Check `review_mode` first (see `../stelow-workflow-orchestrator/references/human-gates.md`):
+Then use **Pattern 2** from `../stelow-workflow-orchestrator/references/cli-tools/ask.md` to let the user pick one proposal — **but only when the review mode requires a human pick**. Check `review_mode` first (see `../stelow-workflow-orchestrator/references/human-gates.md`):
 
 - `Auto` / `Product Spec Gate` → **LLM decides.** Adopt the hybrid recommendation (or the single proposal for Lean appetite) as the choice: extract it to `selected-interface.md` per the section below with `selected_by: llm (review_mode=<mode>)` noted, and advance. Do NOT park waiting for a human pick — a wait with no mode mandate is a stuck workflow.
 - `Product Spec + Interface Gates` and above → **user chooses.** Execute the Pattern 2 ask.
@@ -157,7 +157,7 @@ Do NOT just describe what comes next — execute the mandated path.
 
 ## User Selection (Interface Selection)
 
-When the review mode requires a human pick, after visual review and approval use **Pattern 2** from `references/cli-tools/ask.md` to ask the user which proposal to follow. In `Auto` / `Product Spec Gate` modes skip this section entirely (the hybrid adoption above replaces it).
+When the review mode requires a human pick, after visual review and approval use **Pattern 2** from `../stelow-workflow-orchestrator/references/cli-tools/ask.md` to ask the user which proposal to follow. In `Auto` / `Product Spec Gate` modes skip this section entirely (the hybrid adoption above replaces it).
 
 ### Save Selected Interface as Permanent Artifact
 

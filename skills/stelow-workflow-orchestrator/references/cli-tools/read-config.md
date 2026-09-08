@@ -4,6 +4,8 @@
 
 **Canonical source:** `Workflow.config.{appetite,review_mode,domains_detected}` lives in `stelow.json#workflows[]`. This is the single source of truth for the active workflow's config.
 
+**Preferred form (helper available):** `scripts/stelow config get <field> [default]` — single tested parser. The sourced functions below delegate to it automatically and fall back to the inline reader on standalone installs without a helper checkout.
+
 **Invariants:**
 
 - `stelow.json` lives at project root — always relative to **cwd**, never to `WF_DIR`.

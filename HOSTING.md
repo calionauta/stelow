@@ -20,7 +20,7 @@ layer on top (like [bb-plugin-stelow](https://github.com/calionauta/bb-plugin-st
    `stelow-product-*` (reference playbooks). Vendor them, sync them from this
    repo's `main`, or install via `npx skills add calionauta/stelow -g`.
 2. **`scripts/stelow` semantics** — `status`, `advance`, `doctor`, `seed`,
-   `schema`, `ask`, `sync-scopes`, `lock`. Usage errors exit 2, runtime failures exit 1. No npm
+   `schema`, `ask`, `sync-scopes`, `lock`, `config`. Usage errors exit 2, runtime failures exit 1. No npm
    dependencies (bash + python3). Scope parsing (`sync-scopes`) and file locks
    (`lock`) live here too — hosts must not maintain mirrors.
    Full CLI reference: `references/cli-tools/stelow-helper.md`.

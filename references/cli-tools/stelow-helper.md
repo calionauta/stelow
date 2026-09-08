@@ -18,6 +18,7 @@ scripts/stelow sync-scopes [--name <workflow>] [--json]
 scripts/stelow lock acquire --scope <id> --file <f>... [--ttl N] [--json]
 scripts/stelow lock release --scope <id> --file <f>...
 scripts/stelow lock check [--scope <id>] [--file <f>...] [--json]
+scripts/stelow config get <field> [default]
 scripts/stelow schema [command]
 scripts/stelow --help
 ```
