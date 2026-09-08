@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "strategies": [
+    { "id": "business-models", "skill": "stelow-product-business-models", "contract": "single" },
+    { "id": "evolutionary", "skill": "stelow-product-evolutionary-principles", "contract": "single" },
+    {
+      "id": "job-to-be-done",
+      "skill": "stelow-product-job-to-be-done",
+      "contract": "composite",
+      "substeps": [
+        "contextual-segmentation",
+        "thinking-styles",
+        "jtbd-discovery",
+        "competitors",
+        "job-actors",
+        "situational-variables",
+        "functional-needs",
+        "financial-needs",
+        "emotional-social-jobs",
+        "job-map-steps"
+      ]
+    },
+    { "id": "promotions", "skill": "stelow-product-promotions", "contract": "single" },
+    { "id": "market-analysis", "skill": "stelow-product-multi-method-market-analysis", "contract": "variant" },
+    { "id": "marketplace", "skill": "stelow-product-marketplace-playbook", "contract": "single" },
+    { "id": "open-source", "skill": "stelow-product-open-source", "contract": "single" },
+    { "id": "opportunity-mapping", "skill": "stelow-product-opportunity-mapping", "contract": "single" },
+    { "id": "paywall", "skill": "stelow-product-paywall", "contract": "single" },
+    { "id": "pricing", "skill": "stelow-product-pricing", "contract": "single" },
+    { "id": "ads", "skill": "stelow-product-ads", "contract": "single" },
+    { "id": "discovery", "skill": "stelow-product-discovery", "contract": "single" },
+    { "id": "product-health", "skill": "stelow-product-health", "contract": "single" },
+    { "id": "trust-building", "skill": "stelow-product-trust-building", "contract": "single" }
+  ]
+}

@@ -34,6 +34,16 @@
     }
   },
   "definitions": {
+    "product-strategy": {
+      "type": "object",
+      "required": ["id", "skill", "contract"],
+      "properties": {
+        "id": {"type": "string", "description": "Stable strategy identifier used by hosts for routing and validation"},
+        "skill": {"type": "string", "description": "stelow-product-* skill directory implementing the playbook"},
+        "contract": {"type": "string", "enum": ["single", "variant", "composite"], "description": "Output cardinality: single integrated result, one selected variant, or named composite suboutputs"},
+        "substeps": {"type": "array", "items": {"type": "string"}, "description": "Expected suboutput slugs (composite only)"}
+      }
+    },
     "workflow": {
       "type": "object",
       "required": ["name", "status", "phases"],

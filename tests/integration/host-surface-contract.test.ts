@@ -100,3 +100,42 @@ describe("helper self-description covers the contract", () => {
     }
   });
 });
+
+describe("product-strategies registry mirrors skills/", () => {
+  const registry = JSON.parse(
+    readFileSync(join(ROOT, "product-strategies.json"), "utf8"),
+  ) as {
+    version: number;
+    strategies: Array<{ id: string; skill: string; contract: string; substeps?: string[] }>;
+  };
+
+  it("every strategy maps to an existing skill with SKILL.md", () => {
+    const ids = new Set<string>();
+    for (const entry of registry.strategies) {
+      expect(entry.id, "non-empty id").toBeTruthy();
+      expect(ids.has(entry.id), `duplicate id ${entry.id}`).toBe(false);
+      ids.add(entry.id);
+      expect(
+        existsSync(join(ROOT, "skills", entry.skill, "SKILL.md")),
+        `${entry.id} skill dir`,
+      ).toBe(true);
+    }
+  });
+
+  it("every product skill appears exactly once", () => {
+    const dirs = skillDirs("stelow-product-");
+    const mapped = new Set(registry.strategies.map((entry) => entry.skill));
+    expect(dirs.sort()).toEqual([...mapped].sort());
+  });
+
+  it("contracts are valid; only composite names substeps", () => {
+    for (const entry of registry.strategies) {
+      expect(["single", "variant", "composite"]).toContain(entry.contract);
+      if (entry.contract === "composite") {
+        expect(Array.isArray(entry.substeps) && entry.substeps.length > 0).toBe(true);
+      } else {
+        expect(entry.substeps ?? []).toEqual([]);
+      }
+    }
+  });
+});

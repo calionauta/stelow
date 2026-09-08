@@ -19,6 +19,10 @@ layer on top (like [bb-plugin-stelow](https://github.com/calionauta/bb-plugin-st
 1. **Skills content** — 14 `stelow-workflow-*` (delivery machinery) + 14
    `stelow-product-*` (reference playbooks). Vendor them, sync them from this
    repo's `main`, or install via `npx skills add calionauta/stelow -g`.
+   Per-strategy output contracts live in `product-strategies.json`
+   (id → skill → `single`/`variant`/`composite` + substeps); translate the
+   presentation (labels, icons, picker copy) to your host, never fork the
+   contracts.
 2. **`scripts/stelow` semantics** — `status`, `advance`, `doctor`, `seed`,
    `schema`, `ask`, `sync-scopes`, `lock`, `config`. Usage errors exit 2, runtime failures exit 1. No npm
    dependencies (bash + python3). Scope parsing (`sync-scopes`) and file locks
