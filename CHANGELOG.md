@@ -3,6 +3,54 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.2.0] - 2026-09-08
+
+### Added
+
+- **`scripts/stelow sync-scopes` subcommand.** Canonical `[SCOPE-N]` parser
+  (`id`, `type`, `name`, `blockedBy`, `targetFiles`, `maxIterations`,
+  `status: 'pending'`), idempotent via `specTechFile`, fail-safe no-ops,
+  atomic writes. Replaces the dead compiled-artifact path.
+- **`scripts/stelow lock` subcommands** (`acquire`/`release`/`check`).
+  Deterministic file-reservation locks (`O_EXCL` create, TTL expiry with
+  stale-steal, JSON check output); no `jq`, no GNU `date`. Skills instruct
+  the call instead of hand-rolled bash snippets.
+- **Host-lifecycle e2e + host-surface contract tests** (`--help`/`schema`
+  coverage, fail-closed advances, ask waiting path) and **CI on
+  ubuntu+macOS** (typecheck + `test:ci`).
+- **`HOSTING.md`** — the explicit host contract (provides vs consumes),
+  with `bb-plugin-stelow` as reference implementation.
+- **Code-map ladder** (`references/cli-tools/code-map.md`): ripwire
+  orient-first → cymbal navigate → fff fallback → ast-grep structural,
+  wired into the four recon points.
+- **Examples + Edge Cases** on all 14 product skills; plannotator install
+  line on `visual_review.md`.
+
+### Changed
+
+- **R4 splits: every SKILL.md under 500 lines.** scope-executor 1117→344,
+  shape-up 513→400, tech-planning 648→393, testing-ai-code 631→265,
+  execution-critique 787→422, evolutionary-principles 808→389. Sections
+  moved verbatim to `references/`, order preserved via stubs.
+- **`visual_review.md` is the canonical gate doc** (renamed from
+  `plannotator.md`, which every skill already referenced); Pi-adapter
+  section dropped.
+- **`safe-change.md` is a procedure, not a package** (code-map impact
+  check + `git status`); `agent_browser.md` is a ladder
+  (harness-native → review-gate URL review → source review).
+- **CLI reference is single-sourced** in
+  `references/cli-tools/stelow-helper.md` (README/HOSTING link to it).
+
+### Removed
+
+- **Pi coupling and legacy install paths.** `setup.sh`,
+  `scripts/setup.sh`, `scripts/setup-pulse.sh`, copy-pulse stub,
+  `types/pi/`, Pi extension machinery in `install.sh` (now skills-only),
+  pi keywords/optionalPeerDependencies, Pi-first cli-tools tables,
+  `/sisyphus`, `/supervise`, `pause_goal`, `goal-tweak` vocabulary.
+- **Dead cli-tools orphans** (`context-efficiency.md`, `execution-loop.md`)
+  and the `cli-agents/` directory (absorbed into `HOSTING.md`).
+
 ## [Unreleased]
 
 ### Removed
