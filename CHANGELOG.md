@@ -3,6 +3,15 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.4.1] - 2026-09-08
+
+### Added
+
+- **`product-strategies.json` upstream contract registry** (id → skill →
+  `single`/`variant`/`composite` + substeps) with a consistency test
+  against `skills/`, so hosts stop maintaining per-strategy copies.
+  `product-strategy` definition added to `stelow.schema.json`.
+
 ## [1.4.0] - 2026-09-08
 
 ### Added
