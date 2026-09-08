@@ -112,6 +112,14 @@ describe("per-skill host-agnostic compliance", () => {
         expect(fm!.description.length, skill + " description under 1024").toBeLessThanOrEqual(1024);
       });
 
+      it("markdown fences are balanced (unclosed fence swallows sections)", () => {
+        for (const file of files) {
+          const content = readFileSync(file, "utf8");
+          const fences = content.split("\n").filter((line) => /^(\s*)```/.test(line)).length;
+          expect(fences % 2, `${file}: odd fence count (${fences}) — an unclosed \`\`\` hides every section below it`).toBe(0);
+        }
+      });
+
       it("body has no Pi-only review receipts or CLI invocations", () => {
         for (const file of files) {
           if (isExemptFromAudit(file)) continue;

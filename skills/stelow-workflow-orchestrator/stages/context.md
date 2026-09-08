@@ -82,8 +82,6 @@ The user wants full product planning but the input also contains domain signals.
 ```
 ask tool: multiSelect question with detected domain options
 ```
-})
-```
 
 **If user selects libraries:**
 1. Load the selected skill(s) content as additional context

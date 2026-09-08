@@ -85,7 +85,6 @@ Options:
   - Greenfield — New product: Full TDD + risk-based coverage. No legacy constraints.
   - Brownfield — Existing product: Focus on regression + characterization tests.
   - Hybrid — Feature addition: Protect invariants, test new carefully.
-```})
 ```
 
 **Based on answer:**

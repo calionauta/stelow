@@ -4,6 +4,8 @@
 > Check, codebase critique). Probe top-down; use the first tier available.
 > All four tools are read-only analysis. Never install from inside a workflow
 > — offer once at setup (`install.sh` does), otherwise fall back.
+> In doubt about flags, or after any tool error: run `<tool> --help` first —
+> never guess invocations.
 
 ## The ladder
 
