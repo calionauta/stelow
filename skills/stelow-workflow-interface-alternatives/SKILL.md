@@ -130,7 +130,6 @@ Task: Generate Hybrid Proposal
 Reads: selected proposal files
 Output: Append to interfaces.md per hybrid-recommendation.md
 ```
-```
 
 
 ## Visual Review (Interface Gate — Automatic)

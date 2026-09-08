@@ -203,6 +203,8 @@ _(Continue for all opportunities)_
 
 ---
 
+```
+
 ## Error Handling
 
 If the user input is too vague, ambiguous, or irrelevant, output:
