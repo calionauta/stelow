@@ -3,6 +3,18 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.4.0] - 2026-09-08
+
+### Added
+
+- **Shared web-research contract** (`cli-tools/web-research.md`):
+  host search → primary sources → `last30days` → coverage record.
+  Optional `last30days` install hook in `install.sh` (confirmed,
+  best-effort).
+- **Portable ask contract in JTBD, market-analysis, opportunity-mapping**
+  (replacing generic `question` tool prose); JTBD offers Full Mapping,
+  Targeted, and Recommend modes explicitly.
+
 ## [1.3.1] - 2026-09-08
 
 ### Fixed
