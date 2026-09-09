@@ -148,16 +148,18 @@ visual_review annotate .stelow/{YYYY-MM-DD}/{_dir}/interfaces/interfaces_v{N}.md
 
 Wait for the decision. If `approved`, the tool auto-creates the receipt. Then advance to Interface Selection.
 
-Then use **Pattern 2** from `../stelow-workflow-orchestrator/references/cli-tools/ask.md` to let the user pick one proposal — **but only when the review mode requires a human pick**. Check `review_mode` first (see `../stelow-workflow-orchestrator/references/human-gates.md`):
+Then use **Pattern 2** from `../stelow-workflow-orchestrator/stages/ask-patterns.md` (mechanism: `../stelow-workflow-orchestrator/references/cli-tools/ask.md`) to let the user pick one proposal — **but only when the review mode requires a human pick**. Check `review_mode` first (see `../stelow-workflow-orchestrator/references/human-gates.md`):
 
 - `Auto` / `Product Spec Gate` → **LLM decides.** Adopt the hybrid recommendation (or the single proposal for Lean appetite) as the choice: extract it to `selected-interface.md` per the section below with `selected_by: llm (review_mode=<mode>)` noted, and advance. Do NOT park waiting for a human pick — a wait with no mode mandate is a stuck workflow.
-- `Product Spec + Interface Gates` and above → **user chooses.** Execute the Pattern 2 ask.
+- `Product Spec + Interface Gates` and above → **user chooses.** Execute the Pattern 2 ask (`../stelow-workflow-orchestrator/stages/ask-patterns.md`).
 
 Do NOT just describe what comes next — execute the mandated path.
 
 ## User Selection (Interface Selection)
 
-When the review mode requires a human pick, after visual review and approval use **Pattern 2** from `../stelow-workflow-orchestrator/references/cli-tools/ask.md` to ask the user which proposal to follow. In `Auto` / `Product Spec Gate` modes skip this section entirely (the hybrid adoption above replaces it).
+When the review mode requires a human pick, after visual review and approval use **Pattern 2** from `../stelow-workflow-orchestrator/stages/ask-patterns.md` (mechanism: `../stelow-workflow-orchestrator/references/cli-tools/ask.md`) to ask the user which proposal to follow. In `Auto` / `Product Spec Gate` modes skip this section entirely (the hybrid adoption above replaces it).
+
+Fill every option so the human can review before picking — labels alone force a blind choice. Per option pass the proposal's ASCII wireframe as the inline preview and the proposal artifact file as the openable reference (host CLIs accept `--preview` / `--artifact` per `--option`; the `ask_user_question` tool takes `preview` / `artifact` fields — see the Schema Reference in `ask-patterns.md`). The artifact path must be workspace-relative and already written; a missing file degrades to the preview, never blocks the question.
 
 ### Save Selected Interface as Permanent Artifact
 

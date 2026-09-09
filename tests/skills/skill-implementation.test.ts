@@ -19,7 +19,7 @@
  *   `readFileSync` for content reads.
  */
 import { describe, it, expect } from 'vitest';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -457,5 +457,40 @@ describe('Execution Phase', () => {
 
   it('should document worktree decision', () => {
     expect(readFileSync(execPath, 'utf8')).toMatch(/worktree|branch/i);
+  });
+});
+
+describe('Ask Single Source', () => {
+  const workflowSkills = readdirSync(join(PROJECT_ROOT, 'skills'))
+    .filter((name: string) => name.startsWith('stelow-workflow-'))
+    .map((name: string) => join(PROJECT_ROOT, 'skills', name, 'SKILL.md'))
+    .filter((p: string) => existsSync(p));
+  const readAll = () => workflowSkills.map((p: string) => ({ path: p, text: readFileSync(p, 'utf8') }));
+
+  it('no skill asks in prose (structured tool only)', () => {
+    const banned = [/waiting for your choice/i, /let me know which (one|proposal|option)/i];
+    const hits: string[] = [];
+    for (const { path, text } of readAll()) {
+      // The orchestrator rule names the banned phrase to forbid it — scrub
+      // that self-reference so the lint flags real prose asks, not the rule.
+      const scrubbed = text.replace(/Never write prose like "waiting for your choice"\.?/g, "");
+      for (const re of banned) if (re.test(scrubbed)) hits.push(`${path} matches ${re}`);
+    }
+    expect(hits).toEqual([]);
+  });
+
+  it('every Pattern N mention resolves to stages/ask-patterns.md', () => {
+    const hits: string[] = [];
+    for (const { path, text } of readAll()) {
+      if (!/Pattern \d+/.test(text)) continue;
+      if (!/stages\/ask-patterns\.md/.test(text)) hits.push(path);
+    }
+    expect(hits).toEqual([]);
+  });
+
+  it('schema documents preview and artifact with one shared meaning', () => {
+    const schema = readFileSync(join(PROJECT_ROOT, 'skills/stelow-workflow-orchestrator/stages/ask-patterns.md'), 'utf8');
+    expect(schema).toMatch(/preview\?/);
+    expect(schema).toMatch(/artifact\?/);
   });
 });

@@ -477,7 +477,12 @@ When the Plan Critique finds gaps via the 7 checklists, each gap is classified a
 2. **Use the appropriate pattern** for the context
 3. **Adapt labels/summaries** to the specific situation
 4. **Use preview** when visual comparison adds value
-5. **Keep previews under 20 rows** (side-by-side) or 15 rows (stacked)
+5. **Use artifact** when the human must review full details before picking
+   (interface proposals, plan documents, generated reports): pass the
+   workspace-relative path of the already-written file. `preview` is the
+   inline glance (≤20 rows side-by-side, ≤15 stacked); `artifact` is the
+   openable source of truth — they compose, never compete. A missing file
+   degrades to the preview and never blocks the question.
 6. **Batch independent questions** in one call (repeat question blocks);
    sequence dependent ones. Appetite (Pattern 7) and Review Mode
    (Pattern 8) always stay separate — deliberate sequencing, not dependency
@@ -499,7 +504,11 @@ The following labels are auto-added by the tool and must NOT be used in options:
 interface Option {
   label: string;       // 1-5 words, max 60 chars
   description: string; // explains choice/trade-offs
-  preview?: string;    // markdown/ASCII for visual comparison
+  preview?: string;    // inline markdown/ASCII for visual comparison (≤20 rows side-by-side, ≤15 stacked)
+  artifact?: {         // openable reference for full details (workspace-relative path, already written)
+    path: string;      // e.g. ".stelow/2026-09-09/abc123/interfaces/proposal-a.md"
+    display: string;   // short name shown on the open affordance
+  };
 }
 
 interface Question {
