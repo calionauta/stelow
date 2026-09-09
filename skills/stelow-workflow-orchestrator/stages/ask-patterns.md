@@ -97,15 +97,17 @@ Justification: [1-2 sentences].`,
         label: "A — Proposal A",
         description: "Archetype A ({name}) — {summary}",
         preview: `{first ASCII wireframe from Proposal A}
-        
+
 ### Key Characteristics
 - {bullet point}
-- {bullet point}`
+- {bullet point}`,
+        artifact: { path: ".stelow/{YYYY-MM-DD}/{dir}/interfaces/proposal-a.md", display: "proposal-a.md" }
       },
       {
         label: "B — Proposal B",
         description: "Archetype B ({name}) — {summary}",
-        preview: `{first ASCII wireframe from Proposal B}`
+        preview: `{first ASCII wireframe from Proposal B}`,
+        artifact: { path: ".stelow/{YYYY-MM-DD}/{dir}/interfaces/proposal-b.md", display: "proposal-b.md" }
       },
       {
         label: "C — Proposal C",
