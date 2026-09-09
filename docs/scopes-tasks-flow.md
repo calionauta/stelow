@@ -38,15 +38,15 @@ Shape Up's core insight: **scope boundaries are set before execution, but the wo
 
 ```mermaid
 flowchart LR
-    A[Tech Planning<br/>planning:10] -->|spec-tech.md<br/>with Tasks table| B[Scope start<br/>Scope-executor 3c]
-    B -->|seed tasks<br/>source planned| C[Iteration loop<br/>Scope-executor 3a-3b]
-    C -->|discovered work?<br/>append source='discovered'| C
-    C -->|acceptance met?| D[Scope close<br/>Scope-executor 3e]
-    D -->|capture Record<br/>+ tasks snapshot| E[Audit<br/>Execution-critique]
-    E -->|Criterion 6: Record| F{All gaps fixed?}
-    E -->|Criterion 11: Tasks| F
+    A[Tech Planning<br/>planning 10] -->|spec tech with Tasks table| B[Scope start<br/>Scope executor]
+    B -->|seed tasks, source planned| C[Iteration loop<br/>Scope executor]
+    C -->|discovered work, append as discovered| C
+    C -->|acceptance met| D[Scope close<br/>Scope executor]
+    D -->|capture Record and tasks snapshot| E[Audit<br/>Execution critique]
+    E -->|Criterion 6 Record| F{All gaps fixed}
+    E -->|Criterion 11 Tasks| F
     F -->|Yes| G[Close cycle]
-    F -->|No (ESCALATED)| B
+    F -->|No, escalated| B
 ```
 
 ## Three skills, one model
