@@ -39,7 +39,7 @@ Shape Up's core insight: **scope boundaries are set before execution, but the wo
 ```mermaid
 flowchart LR
     A[Tech Planning<br/>planning:10] -->|spec-tech.md<br/>with Tasks table| B[Scope start<br/>Scope-executor 3c]
-    B -->|seed tasks[]<br/>source='planned'| C[Iteration loop<br/>Scope-executor 3a-3b]
+    B -->|seed tasks<br/>source planned| C[Iteration loop<br/>Scope-executor 3a-3b]
     C -->|discovered work?<br/>append source='discovered'| C
     C -->|acceptance met?| D[Scope close<br/>Scope-executor 3e]
     D -->|capture Record<br/>+ tasks snapshot| E[Audit<br/>Execution-critique]
@@ -54,7 +54,7 @@ flowchart LR
 | Skill | Handles | File |
 |---|---|---|
 | `stelow-workflow-tech-planning` | Generates scopes + planned tasks table in spec-tech.md | `skills/stelow-workflow-tech-planning/SKILL.md` |
-| `stelow-workflow-scope-executor` | Seeds tasks, appends discovered, marks done/skipped, creates Record at close | `skills/stelow-workflow-scope-executor/SKILL.md` (Steps 3a-3e, 3e-bis, 3e-ter) |
+| `stelow-workflow-scope-executor` | Seeds tasks, appends discovered, marks done/skipped, creates Record at close | `skills/stelow-workflow-scope-executor/SKILL.md` (Steps 2–3; Record/Tasks conventions in `references/records-and-tasks.md` 3e-bis/3e-ter) |
 | `stelow-workflow-execution-critique` | Criterion 6 (Record) + Criterion 11 (Tasks Tracking) — audits both layers | `skills/stelow-workflow-execution-critique/SKILL.md` |
 
 ## Field status
@@ -63,7 +63,7 @@ flowchart LR
 |---|---|
 | `scope.record` | Required for `status: 'completed'`. Runtime validation ON by default. Pre-commit hook blocks commits with missing records. |
 | `scope.tasks` | Optional. Checked by execution-critique Criterion 11. No write-time block (tasks are a checklist, not proof). |
-| `scope.discovered_tasks_count` | Bash-incremented counter. Validated when present by `schema-record.ts`. |
+| `scope.discovered_tasks_count` | Bash-incremented counter. Documented in the state contract; validated at runtime when present. |
 
 ## Rules of thumb
 
