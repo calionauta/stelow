@@ -73,6 +73,10 @@ npm test
 pytest
 ```
 
+Run affected tests first: for each changed entity, `sem impact <entity> --tests`
+lists the tests that touch it — run those before the full suite so failures
+surface fast. When `sem` is absent, run the full suite directly.
+
 **Block until tests pass.** Do not proceed with failing tests.
 
 ### code-review (appetite-aware depth)
@@ -81,7 +85,15 @@ Code review is **quality protection** and runs at every appetite — appetite on
 
 ```bash
 APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "Core")
-DIFF_FILES=$(git diff --name-only HEAD~1 2>/dev/null | wc -l | tr -d ' ')
+# Entity-first sizing: what changed (functions/types) decides review depth,
+# not raw file count. sem → git fallback (same convention as the audit skill).
+if command -v sem &>/dev/null; then
+  DIFF_UNITS=$(sem diff HEAD~1 --format json 2>/dev/null | python3 -c "import json,sys; print(json.load(sys.stdin).get('summary',{}).get('total',0))" 2>/dev/null || echo "0")
+  DIFF_UNIT="entities"
+else
+  DIFF_UNITS=$(git diff --name-only HEAD~1 2>/dev/null | wc -l | tr -d ' ')
+  DIFF_UNIT="files"
+fi
 
 # Quality Floor: code review always runs at least one reviewer.
 # Appetite adds parallelism and review depth, never skips the floor.
@@ -91,11 +103,11 @@ case "$APPETITE" in
     REVIEWER_COUNT=1
     ;;
   Core)
-    if [ "$DIFF_FILES" -ge 3 ]; then
-      echo "CODE_REVIEW_PARALLEL: appetite Core, $DIFF_FILES files changed — launching parallel reviewers."
+    if [ "$DIFF_UNITS" -ge 3 ]; then
+      echo "CODE_REVIEW_PARALLEL: appetite Core, $DIFF_UNITS $DIFF_UNIT changed — launching parallel reviewers."
       REVIEWER_COUNT=3
     else
-      echo "CODE_REVIEW_LIGHT: appetite Core, $DIFF_FILES file(s) — single reviewer."
+      echo "CODE_REVIEW_LIGHT: appetite Core, $DIFF_UNITS $DIFF_UNIT — single reviewer."
       REVIEWER_COUNT=1
     fi
     ;;
@@ -110,7 +122,7 @@ case "$APPETITE" in
 esac
 ```
 
-**Rule:** even at Lean, code review is never skipped. If file count is low (≤2), the reviewer uses a lighter checklist (correctness, security baseline) instead of architectural analysis. This keeps quality floor while keeping cost proportionate to scope.
+**Rule:** even at Lean, code review is never skipped. If the change is small (≤2 entities/files), the reviewer uses a lighter checklist (correctness, security baseline) instead of architectural analysis. This keeps quality floor while keeping cost proportionate to scope.
 
 If running, launch a fresh-context reviewer.
 See `../references/cli-tools/subagents.md` for the delegation pattern — this works
@@ -130,7 +142,7 @@ subagent({
   task: `Review diff for {dimension} (correctness | tests | simplicity | architecture).
 
 Appetite: ${configAppetite}  // Lean = single reviewer, Core/Complete = parallel
-Diff (git diff HEAD~1):
+Diff (sem diff HEAD~1 entity diff when available, else git diff HEAD~1):
 ${diffOutput}
 
 Read .stelow/{date}/{dir}/plans/spec-product_{v}.md for spec context (frontmatter: appetite, review_mode, domains_detected; body: scope, DoD).
