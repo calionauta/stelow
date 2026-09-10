@@ -237,6 +237,11 @@ Use the acceptance contract (see `../references/cli-tools/goals.md` → Optimiza
 **For iteration loops:** feature scopes use `stelow-workflow-scope-executor` Step 3;
 optimization scopes use `goals.md` → Optimization Goals section.
 
+**Renames across files:** a rename that spans files is a structural change,
+never a text edit. Use `sg -r 'OLD' 'NEW'` (ast-grep rewrite: AST-safe,
+skips strings/comments) — never grep+sed. See `../references/cli-tools/code-map.md`
+(structural section) for the pattern form.
+
 ### ⚠️ NEVER ASK
 
 After Tech Planning approval, **DO NOT** ask:
