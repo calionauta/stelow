@@ -2,7 +2,7 @@
   <img src="./stelow.png?1=1" alt="Stelow - Your Product Team" width="400">
 </p>
 
-# stelow · opinionated agentic product workflow
+# stelow · your agentic product team
 
 [![Ask DeepWiki](https://img.shields.io/badge/Ask%20DeepWiki-007ACC)](https://deepwiki.com/calionauta/stelow)
 [![Ask zRead](https://img.shields.io/badge/Ask%20zRead-10B981)](https://zread.ai/calionauta/stelow)
