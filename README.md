@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./stelow.png" alt="Stelow logo" width="400">
+  <img src="./stelow.png?1=1" alt="Stelow - Your Product Team" width="400">
 </p>
 
 # stelow · opinionated agentic product workflow
