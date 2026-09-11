@@ -1,0 +1,59 @@
+{
+  "repo_notes": [
+    {
+      "content": "Stelow is a skills-only, host-agnostic agentic product workflow: ~28 portable agentskills-compatible skills plus one zero-dependency shell helper (scripts/stelow). There is no extension host code, no compiled plugin, and no per-host adapter in this repo — any agent that can read ~/.agents/skills/<name>/SKILL.md runs the same workflow. Hosts only add an optional marker protocol (STELOW_WORKFLOW=1 + STELOW_STATE=<path>). See architecture.md for the full layout.",
+      "author": "calionauta"
+    },
+    {
+      "content": "The 17-stage pipeline (Setup → Shape → Critique → Gate → Scope → Interface → Planning → Execution → Verification → Audit) is a state machine, not prose: skills/stelow-workflow-orchestrator/stages.yaml is the single source of truth for stages, skills/stelow-workflow-orchestrator/references/transitions.md is the enforced transition table, and skills/stelow-workflow-orchestrator/references/state-contract.md defines state.md. scripts/stelow (bash + python3: status, advance, doctor, seed, schema, ask) is the single source of runtime mechanics. skills/stelow-workflow-entry classifies intent and scaffolds state.md; skills/stelow-workflow-router validates candidates against transitions.md. install.sh flattens skills/* into ~/.agents/skills/. docs/design and docs/agents-md-refs are historical artifacts, not the current contract — prefer architecture.md, SKILL.md files, stages.yaml, and transitions.md.",
+      "author": "calionauta"
+    }
+  ],
+  "pages": [
+    {
+      "title": "Overview",
+      "purpose": "What Stelow is and why it exists: Shape Up methodology for AI agents, skills-only host-agnostic distribution, and how the pieces (skills, helper, installer) fit together.",
+      "parent": null
+    },
+    {
+      "title": "Getting Started",
+      "purpose": "Installation via install.sh, host support matrix, STELOW_WORKFLOW=1 marker protocol, and the first workflow run from triage to audit.",
+      "parent": "Overview"
+    },
+    {
+      "title": "Stage Machine and Transitions",
+      "purpose": "The 17-stage pipeline: stages.yaml as source of truth, the transitions.md enforcement table, state.md contract, gates, and how advance moves work forward.",
+      "parent": null
+    },
+    {
+      "title": "Entry, Router, and Orchestrator",
+      "purpose": "The three control skills: stelow-workflow-entry (intent classification, state.md scaffolding), stelow-workflow-router (transition validation, helper advance), stelow-workflow-orchestrator (17-stage coordination).",
+      "parent": "Stage Machine and Transitions"
+    },
+    {
+      "title": "Shaping and Planning Skills",
+      "purpose": "stelow-workflow-shape-up (IN/OUT scope, appetite sizing), interface alternatives, and tech planning with typed scopes (feature, spike, optimize, test-*).",
+      "parent": null
+    },
+    {
+      "title": "Critique and Testing Skills",
+      "purpose": "Adversarial plan critique, execution critique, visual review gate with approval receipts, and the AI-aware testing strategy skills.",
+      "parent": null
+    },
+    {
+      "title": "Domain Library",
+      "purpose": "The stelow-product-* reference playbooks (pricing, trust, ads, promotions, paywall, open source, health, marketplace, business models, discovery, JTBD, experimentation) and how the orchestrator auto-selects them.",
+      "parent": null
+    },
+    {
+      "title": "scripts/stelow Helper",
+      "purpose": "The portable bash+python3 helper contract: status, advance, doctor, seed, schema, ask — the single source of runtime mechanics shared by every host.",
+      "parent": null
+    },
+    {
+      "title": "Installation and Hosting",
+      "purpose": "install.sh skill flattening and pruning, HOSTING.md host integration contract, host-levers per-harness recipes, and the stelow.json tracking state.",
+      "parent": null
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+name: refresh-wikis
+
+# Keeps third-party hosted docs fresh on every release. zread.ai re-indexes
+# only when poked: `zread stat` submits unindexed repos and refreshes stale
+# ones (no token needed). DeepWiki regenerates on its own schedule for
+# badged repos (see README badge + .devin/wiki.json steering); nothing to
+# trigger from here.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  zread:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install zread
+      - run: zread stat calionauta/stelow
