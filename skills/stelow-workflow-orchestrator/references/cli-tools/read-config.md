@@ -10,6 +10,12 @@
 
 - `stelow.json` lives at project root — always relative to **cwd**, never to `WF_DIR`.
 - A workflow is **active** when `status === "in-progress"`. Always filter for active when multiple workflows exist (e.g., 1 archived + 1 in-progress).
+- Hosts that run the helper against a per-workflow state dir (`STELOW_STATEDIR`) 
+  make that workflow authoritative: the helper resolves its own entry by 
+  `workflowId`, then by the directory's `dirHash`, and only then falls back to 
+  the active-by-status filter. Card-based hosts keep several workflows in 
+  flight in one project, where the status filter alone returns whichever entry 
+  happens to come first.
 
 ## Canonical helper
 

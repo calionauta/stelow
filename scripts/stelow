@@ -712,7 +712,7 @@ commands = {
   "config": {
     "usage": "stelow config get <field> [default]",
     "flags": [],
-    "env": [],
+    "env": ["STELOW_STATEDIR", "STELOW_STATE"],
     "exit_codes": {"0": "prints value or default (missing state yields default)", "2": "usage"},
     "output": "scalar value, JSON for arrays/objects",
   },
@@ -1168,18 +1168,47 @@ do_config() {
   [ -n "$field" ] || usage_error "config get needs <field> [default]"
   local default="${1:-}"; shift || true
   [ $# -eq 0 ] || usage_error "config get takes only <field> [default]"
-  python3 - "$ROOT" "$field" "$default" <<'PY' || exit $?
-import sys, os, json
-root, field, default = sys.argv[1:4]
+  python3 - "$ROOT" "$STATE" "$STATEDIR" "$field" "$default" <<'PY' || exit $?
+import sys, os, json, re
+root, state_path, statedir, field, default = sys.argv[1:6]
 tracking_path = os.path.join(root, "stelow.json")
+
+
+def state_owner_id(path):
+    """The state's immutable workflow_id, or "" for pre-ownership states."""
+    try:
+        text = open(path).read()
+    except Exception:
+        return ""
+    block = re.match(r"^---\n(.*?)\n---", text, re.DOTALL)
+    if not block:
+        return ""
+    for line in block.group(1).splitlines():
+        mm = re.match(r"^workflow_id:\s*(.*)$", line)
+        if mm:
+            return mm.group(1).strip().strip("'\"")
+    return ""
+
+
 try:
     tracking = json.loads(open(tracking_path).read())
     workflows = tracking.get("workflows") or []
-    workflow = next((w for w in workflows if w.get("status") == "in-progress"), None)
-    config = (workflow or {}).get("config") or {}
-    value = config.get(field)
 except Exception:
-    value = None
+    workflows = []
+
+# THIS workflow's entry first: by immutable owner id, then by the state dir the
+# host pointed at. "First in-progress" is the standalone fallback only — with
+# several workflows in flight in one project it hands back whichever entry
+# happens to come first, i.e. another workflow's appetite and review gates.
+owner_id = state_owner_id(state_path)
+dir_hash = os.path.basename(statedir.rstrip("/"))
+workflow = next((w for w in workflows if owner_id and w.get("workflowId") == owner_id), None)
+if workflow is None:
+    workflow = next((w for w in workflows if w.get("dirHash") and w.get("dirHash") == dir_hash), None)
+if workflow is None:
+    workflow = next((w for w in workflows if w.get("status") == "in-progress"), None)
+config = (workflow or {}).get("config") or {}
+value = config.get(field)
 if value is None or value == "":
     print(default)
 else:

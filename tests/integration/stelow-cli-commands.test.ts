@@ -388,6 +388,36 @@ describe("config get", () => {
     expect(JSON.parse(r.stdout)).toEqual(["pricing"]);
   });
 
+  it("reads the workflow its state dir belongs to, not the first entry", () => {
+    // Several workflows in flight in one project is normal for card-based
+    // hosts: the status-only filter handed back whichever entry came first, so
+    // a worker read another workflow's appetite and review gates.
+    const wd = makeWorkdir();
+    seedTracking(wd, [
+      { name: "a", status: "in-progress", dirHash: "pw-a", config: { appetite: "Lean", review_mode: "Auto" } },
+      { name: "b", status: "in-progress", dirHash: "pw-b", config: { appetite: "Complete", review_mode: "Product Spec + Interface + Tech Review + Code Diff" } },
+    ]);
+    const forB = { STELOW_STATEDIR: join(wd.dir, ".stelow", "2026-01-01", "pw-b") };
+    expect(run(wd, ["config", "get", "appetite", "Core"], forB).stdout.trim()).toBe("Complete");
+    expect(run(wd, ["config", "get", "review_mode", "Auto"], forB).stdout.trim())
+      .toBe("Product Spec + Interface + Tech Review + Code Diff");
+    expect(run(wd, ["config", "get", "appetite", "Core"], { STELOW_STATEDIR: join(wd.dir, ".stelow", "2026-01-01", "pw-a") }).stdout.trim())
+      .toBe("Lean");
+  });
+
+  it("prefers the state's owner id over its directory name", () => {
+    const wd = makeWorkdir();
+    seedTracking(wd, [
+      { name: "a", workflowId: "card_a", status: "in-progress", dirHash: "pw-a", config: { appetite: "Lean" } },
+      { name: "b", workflowId: "card_b", status: "in-progress", dirHash: "pw-b", config: { appetite: "Complete" } },
+    ]);
+    const stateDir = join(wd.dir, ".stelow", "2026-01-01", "pw-b");
+    mkdirSync(stateDir, { recursive: true });
+    writeFileSync(join(stateDir, "state.md"),
+      "---\nworkflow_id: card_a\nname: a\nintent: feature\ncurrent_stage: execution\nstatus: active\n---\n");
+    expect(run(wd, ["config", "get", "appetite", "Core"], { STELOW_STATEDIR: stateDir }).stdout.trim()).toBe("Lean");
+  });
+
   it("rejects missing field with exit 2", () => {
     const wd = makeWorkdir();
     expect(run(wd, ["config", "get"]).status).toBe(2);

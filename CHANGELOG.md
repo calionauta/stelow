@@ -3,6 +3,17 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.4.4-alpha] - 2026-09-12
+
+### Fixed
+
+- **`config get` resolves the calling workflow.** With several workflows in
+  flight in one project, the command returned whichever `in-progress` entry
+  came first — another workflow's `appetite` and `review_mode`, i.e. the wrong
+  review gates for the worker asking. It now reads this workflow's own entry
+  (by `workflowId`, then by the state dir's `dirHash`) and keeps the
+  active-by-status filter as the standalone fallback.
+
 ## [1.4.3-alpha] - 2026-09-12
 
 ### Changed
