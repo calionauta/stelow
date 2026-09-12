@@ -2,8 +2,8 @@
 # scripts/stelow — stelow workflow CLI (status / advance / doctor / seed / schema / ask / sync-scopes / lock / config).
 #
 # Passive: reads/writes one workflow state. Hosts may point at a per-workflow
-# directory with STELOW_STATEDIR/STELOW_STATE; root paths remain the legacy
-# standalone fallback.
+# directory with STELOW_STATEDIR/STELOW_STATE; root paths are the standalone
+# fallback.
 # Idempotent on bad input (never mutates on invalid candidate). Fail-closed.
 # No npm deps — bash + python3 only.
 #

@@ -7,7 +7,6 @@ Documentation of what permissions the stelow requires per stage.
 | Path | Stage | Access | Purpose |
 |------|-------|--------|---------|
 | `stelow.json` | All | Read/Write | **Stage state — single source of truth** (phases, currentPhase, stage) |
-| `.stelow/state/current-stage.json` | All | Read (write via state-manager) | Legacy — maintained for backward compat; LLM prefers stelow.json |
 | host inbox surface | triage | Read/Write | The host's own inbox or task surface (Stelow core no longer mirrors `.stelow/inbox/`) |
 | `.stelow/{yyyy-mm-dd}/` | setup+ | Read/Write | Workflow artifacts |
 | `stages.yaml` | All | Read | Tool restriction metadata |

@@ -20,7 +20,7 @@ Writes are atomic (tempfile + rename). Unknown flags exit 2.
   `STELOW_STATEDIR` dirHash, or (single in-progress workflow) by default.
   Ambiguous selection without `--name` is a usage error (exit 2).
 - Derives `.stelow/{date}/{dirHash}/plans/` from the workflow (`created`
-  timestamp; today UTC as fallback, matching legacy behavior).
+  timestamp; today UTC when it is missing or unusable).
 - Selects the lexicographically latest `spec-tech_*.md` file.
 - Skips when non-empty `scopes[]` already records that filename
   (`wf.specTechFile`); re-syncs when a newer filename appears.
@@ -42,5 +42,5 @@ Writes are atomic (tempfile + rename). Unknown flags exit 2.
 | No `spec-tech_*.md` | Exit 0 with a stderr warning; preserve tracking |
 | No `[SCOPE-N]` blocks | Exit 0 with a stderr warning; preserve scopes and version |
 | Multiple versions | Use the lexicographically latest filename |
-| Invalid/legacy `wf.created` | Look under today's UTC date |
+| Unusable `wf.created` | Look under today's UTC date |
 | Malformed `stelow.json` | Exit 0 with a stderr warning; preserve the bytes |

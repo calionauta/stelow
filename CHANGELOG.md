@@ -3,6 +3,18 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.4.5-alpha] - 2026-09-12
+
+### Changed
+
+- **Removed the last legacy wording from the shipped surface.** The helper's
+  header no longer calls the root state path a legacy fallback, and three
+  references went with it: a permissions row that documented
+  `.stelow/state/current-stage.json` (a file the helper stopped writing, so the
+  row sent readers looking for something that is not there), a scope-init row
+  and a note that called a missing `created` timestamp "legacy behavior", and
+  the entry skill's mention of the older command names.
+
 ## [1.4.4-alpha] - 2026-09-12
 
 ### Fixed

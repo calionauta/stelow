@@ -29,7 +29,7 @@ Load this skill when:
   `bugfix`, `refactor`, `investigate`).
 
 If `STELOW_WORKFLOW` is unset, fall back to standalone skill loading
-(legacy `/sw-*` and `/stelow-*` commands).
+(the older `/sw-*` and `/stelow-*` command names).
 
 ## Intent classification
 
