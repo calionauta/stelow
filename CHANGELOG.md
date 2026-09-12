@@ -3,6 +3,20 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.4.3-alpha] - 2026-09-12
+
+### Changed
+
+- **Quality and security CI gates.** Generated transition validation and
+  dependency checks now run as part of continuous integration.
+
+### Fixed
+
+- **Reliable macOS generated checks.** CI installs PyYAML before validating
+  generated transition files.
+- **Transitive dependency audit.** The `qs` override is pinned to the patched
+  6.16.0 release.
+
 ## [1.4.2] - 2026-09-12
 
 ### Added
