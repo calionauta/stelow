@@ -271,13 +271,13 @@ All 28 skills live flat in `skills/` and install into `~/.agents/skills/`: **14 
 | Prefix | Count | Meaning | Distribution |
 |---|---|---|---|
 | `stelow-workflow-*` | 14 | Skills that run the 17-stage workflow: the orchestrator, the stage skills, and the execution/verification support they invoke | **Core** — auto-vendored into `bb-plugin-stelow` and auto-refreshed from this repo (no manual step) |
-| `stelow-product-*` | 14 | Product strategy & domain libraries consulted during stages (reference only, none execute stages) | **Optional** — standalone, installed via `npx skills`/`install.sh`; the plugin consumes them from the hub |
+| `stelow-product-*` | 14 | Product strategy & domain libraries consulted during stages (reference only, none execute stages) | **Vendored too** — `bb-plugin-stelow` ships all 28 and auto-refreshes them; standalone install via `npx skills`/`install.sh` unchanged |
 | Total | **14 workflow skills + 14 product skills = 28** | Entry and router are part of the workflow family | — |
 
 The prefix is the grouping: `stelow-workflow-*` is the machinery that executes the process, `stelow-product-*` is the knowledge consulted while doing it. Distribution differs by design:
 
 - **`stelow-workflow-*` = core, auto-vendored.** When running inside bb, `bb-plugin-stelow` vendors these and **auto-syncs them from this repo on a schedule** (`bb.background.schedule` + fetch of the GitHub tree), so a workflow-skill update here propagates to the plugin automatically — no manual re-install and no `~/.agents/skills` pollution. On other hosts they remain standalone-installable exactly as before.
-- **`stelow-product-*` = optional, standalone.** Stable host-agnostic playbooks — install them with `npx skills add calionauta/stelow` and use them with no dependency on stelow or bb.
+- **`stelow-product-*` = reference, vendored everywhere.** `bb-plugin-stelow` ships them like the workflow skills (auto-synced, workers load locally with `npx skills add` as fallback only); standalone install via `npx skills`/`install.sh` unchanged.
 
 Every skill is fully self-contained - the installer copies the complete directory tree including its own `references/cli-tools/`, `references/`, and `stages/` files. This means:
 - ✅ **Skills work standalone** - invoke any sub-skill (e.g., `stelow-workflow-shape-up`, `stelow-product-pricing`) independently of the orchestrator
@@ -619,7 +619,8 @@ Open **Stelow** in bb's navigation, select a project, choose Appetite and Review
 
 stelow runs on **any agent that reads `~/.agents/skills/<name>/SKILL.md`** —
 this repo ships no host-specific code. The hosting contract lives in
-[`HOSTING.md`](HOSTING.md); per-harness activation recipes live in
+[`HOSTING.md`](HOSTING.md) with the build guide in
+[`docs/host-plugin-blueprint.md`](docs/host-plugin-blueprint.md); per-harness activation recipes live in
 `references/host-levers.md`.
 
 | Host | How it runs stelow |
@@ -635,7 +636,8 @@ Owner paths in this repo:
 
 To add a new host you need **no code** — just an agent that reads
 agentskills.io skill directories. See [`HOSTING.md`](HOSTING.md) for the
-contract and `references/host-levers.md` for per-harness knobs.
+contract, [`docs/host-plugin-blueprint.md`](docs/host-plugin-blueprint.md) for the build guide,
+and `references/host-levers.md` for per-harness knobs.
 
 ---
 

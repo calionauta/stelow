@@ -24,6 +24,11 @@ data-only mirror that `scripts/stelow advance` and the router validate against
 (`gate`, `int-gate`, `plan-gate`, `diff-gate`) are conditional by review mode —
 see `stages.yaml`.
 
+Building a visual host plugin (board/inbox/workers)? Read
+[docs/host-plugin-blueprint.md](docs/host-plugin-blueprint.md) first — the
+extracted lifecycle, inbox, ask/answer, sync, and UI rules with the
+`bb-plugin-stelow` file mapping.
+
 ### Top-level layout
 
 | Directory | Purpose |
@@ -149,7 +154,7 @@ Run before releases. A test file moving from OK to REVIEW over time signals rot.
 - **Product name:** `stelow` (canonical). All runtime paths, skill prefixes, and filesystem artifacts use the `stelow` prefix.
 - **Skill validator scope:** `SKILL.md` stays under 500 lines (move bodies to `references/`, never delete instructions). `Examples`/`Edge Cases` sections are required on `stelow-product-*` (standalone-invoked); pipeline stage skills (`entry`/`router`/stage executors) are exempt — they are only invoked via entry/router with full context, and stage behavior is covered by e2e, not by per-skill activation examples.
 - **Single working clone:** on the deploy host, `~/repos/stelow` is the **only** clone where methodology/skill work happens. Never edit skills in a throwaway `/tmp` clone — if you did, re-do or rebase the work onto `~/repos/stelow`. **Run `git pull --ff-only` here FIRST** before starting any edit, so work advances from `origin/main` and the auto-sync below propagates it. Push is the trigger: a local-only commit is invisible to consumers.
-- **Propagation is automatic but on a schedule:** pushing to `calionauta/stelow@main` propagates automatically — the workflow skills (`stelow-workflow-*` + entry/router) reach `bb-plugin-stelow` via its 6h cron auto-sync, and the product playbooks (`stelow-product-*`) reach the agent skills hub on the daily 03:00 `npx skills update -g`. Neither needs a manual copy step.
+- **Propagation is automatic but on a schedule:** pushing to `calionauta/stelow@main` propagates automatically — all 28 skills reach `bb-plugin-stelow` via its 6h cron auto-sync (plus a fail-soft pass at boot), and the product playbooks (`stelow-product-*`) additionally reach the agent skills hub on the daily 03:00 `npx skills update -g`. Neither needs a manual copy step.
 
 ## Versioning
 

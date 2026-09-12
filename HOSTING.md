@@ -51,7 +51,9 @@ above (board/inbox/CLI) the way `bb-plugin-stelow` does.
 
 ## Reference implementation
 
-`bb-plugin-stelow` vendors the 14 workflow skills + `scripts/stelow` and
-auto-syncs them from this repo; product playbooks come from the skills hub.
-Its `workflow-contracts` test pins the shared surface (17 stages, board
-order, transitions) — the executable version of this contract.
+`bb-plugin-stelow` vendors all 28 skills + `scripts/stelow` and auto-syncs
+them from this repo (see [host-plugin-blueprint](docs/host-plugin-blueprint.md),
+the build guide extracted from it: lifecycle, inbox, ask/answer protocol,
+sync recipe, UI patterns). Its `workflow-contracts` test pins the shared
+surface (17 stages, board order, transitions) — the executable version of
+this contract.
