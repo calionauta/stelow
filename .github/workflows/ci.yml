@@ -21,6 +21,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run typecheck
+      - run: npm run quality:report
+      - run: npm run verify:generated
       # transitions-generator test regenerates transitions.md via
       # scripts/generate-transitions.py, which requires PyYAML
       # (absent from the macOS runner image; present on ubuntu).

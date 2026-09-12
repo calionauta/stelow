@@ -490,6 +490,24 @@ cd stelow
 ./install.sh
 ```
 
+### Development checks
+
+For contributors and coding agents, install the development dependencies once
+and use the same commands as CI:
+
+```bash
+npm install
+npm run quality:report
+npm run verify:generated
+npm run security:full
+```
+
+The quality report surfaces lint, unused-code, and duplication backlog without
+making an existing checkout unusable. Generated workflow transitions are an
+enforced freshness check; the security command fails on high/critical npm
+advisories. A deeper Socket scan remains optional because it requires a
+repository-owned API token.
+
 The installer copies the **skills + command reference files**. No extensions, no TUI - just the 28 skills that run the workflow.
 
 **Or, with npx (no clone needed):**
