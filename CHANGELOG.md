@@ -3,6 +3,25 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.4.2] - 2026-09-12
+
+### Added
+
+- **`docs/host-plugin-blueprint.md`** — build guide for visual host
+  plugins extracted from `bb-plugin-stelow`: card lifecycle, inbox event
+  model, ask/answer protocol, skills sync recipe, worker presets, UI
+  patterns, portable modules, anti-patterns. Linked from `HOSTING.md`,
+  `AGENTS.md`, and `README.md`.
+
+### Changed
+
+- **Host docs synced with the plugin reality** — `HOSTING.md`,
+  `README.md`, and `AGENTS.md` no longer say product playbooks come only
+  from the skills hub (`bb-plugin-stelow` vendors all 28 skills).
+- **DeepWiki steering** — official badge markup + `.devin/wiki.json`
+  with `repo_notes` (pages list deliberately omitted so future coverage
+  isn't frozen).
+
 ## [1.4.1] - 2026-09-08
 
 ### Added
