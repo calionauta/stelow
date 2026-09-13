@@ -16,7 +16,7 @@ board specifically needs beyond skill execution:
 | Structured blocking input (form with options + timeout) | The ask/answer protocol (§4); plain chat text is not routable |
 | Realtime pub/sub or polling | Card, board, and inbox refresh (§7) |
 | Key/value or SQLite storage | Cards, comments, inbox events, ledger, sync state |
-| Skill registry readable by workers | `bb skill list` equivalent so workers load vendored skills |
+| Host-served reading list | exact state/transitions/stage-playbook paths per card — workers read what they are given, never discover skills through shell pipelines over content-hashed ids |
 | Scheduler (cron-like) | 6h skills sync; idle reconciliation sweeps |
 
 Missing structured input? Then questions degrade to chat text and the inbox
@@ -45,6 +45,12 @@ Invariants (encode every one; each has bitten us):
   reseed) live behind confirm dialogs; never as the prominent choice.
 - **Completed reopens only through defined paths** (user comment on
   lightweight tracks; explicit reseed/move) — never as a poll side effect.
+- **Done is an explicit commit, never an inference.** The worker declares
+  completion; the host verifies in code (terminal stage, artifact gates,
+  no pending question) and every refusal names the fix. Inferring
+  done-ness from `audit` + idle made narrate-and-stop indistinguishable
+  from stuck — the same confusion that produced the stop-per-turn
+  incidents.
 - ** terminal cards show terminal UI**: history + final state only, no worker
   controls except Delete.
 
@@ -131,6 +137,13 @@ X ago" + inventory dialog) — silent syncs become mystery meat otherwise.
 - Restart (same state, fresh thread) beats reseed (restart from triage)
   for broken workers; reseed is for broken *direction*.
 - Research/Explore run single stages with their own band and default.
+- **Completion is a worker verb with a host-side gate** (§2): build
+  completes only at the terminal stage, research/explore only with
+  passing artifact checks and no pending question.
+- **Fence shared-config mutation off worker threads.** Preset/model
+  assignment is a host/UI concern; a worker rewriting it mid-flight
+  changes every other card's brain. Refuse with a redirect (ask for it
+  via the structured ask protocol instead of reassigning it yourself).
 
 ## 7. UI patterns that survived contact with users
 
@@ -158,7 +171,7 @@ encode the rules above as tested pure functions: `worker-action-policy`,
 `inbox-events`, `inbox-event-presentation`, `question-batch`,
 `tracks`, `stage-bands`, `workflow-intent-policy`, `worker-ledger`,
 `worker-failure`, `research-*`, `kanban-layout`, `github-lists`,
-`promote-card`, `workflow-lineage`. Mirror the pattern (pure `lib/` +
+`promote-card`, `workflow-lineage`, `completion`, `playbook`. Mirror the pattern (pure `lib/` +
 node-test per rule, never inline-only in handlers) rather than the code.
 
 ## 9. Anti-patterns (each paid for at least once)
@@ -170,11 +183,17 @@ node-test per rule, never inline-only in handlers) rather than the code.
 - Compat shims for dead RPCs (delete, don't shim).
 - Status changes from activity signals (§2).
 - Compat `fr` units stretching kanban columns (bounded minmax instead).
+- Inferring completion from stage + idle instead of an explicit
+  worker commit verified in code (§2).
+- Workers discovering playbooks through skill-list shell pipelines
+  instead of reading host-served paths (§1).
 
 ## 10. Contract tests to mirror
 
 Pin the shared surface so upstream changes break your build loudly, not
 your users silently: stage count + board order + transitions (see
 `workflow-contracts`), card-insert placeholders derived from columns,
-skill-count vectors. The reference `bb-plugin-stelow` suite is 42 checks;
-steal its shape, not just its assertions.
+skill-count vectors. The reference `bb-plugin-stelow` suite pins every
+contract above plus a suite-wiring test that fails when any test file is
+unwired from CI (unwired tests once shipped green-but-never-run); steal
+its shape, not just its assertions.
