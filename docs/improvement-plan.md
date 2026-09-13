@@ -312,7 +312,7 @@ Look for `stelow.config.yaml` in the project root. If it exists, use its model m
 
 ### Per-agent hint handling (historical, superseded)
 
-The original notes below used a pre-v0.55 Pi-first model-routing assumption. That assumption is no longer current. Today, `detectHost()` selects `pi`, `fusion`, or `generic` (with `STELOW_HOST` as the canonical explicit setting, Fusion precedence, filesystem probes, and a generic fallback). The Pi adapter may use Pi-native question and model facilities; the Fusion adapter/plugin maps Fusion-native interaction and emits generated workflow resources; and the generic agentskills path provides a limited fallback where hints remain informational or are resolved by the host. See [`docs/design/host-agnostic-architecture.md`](design/host-agnostic-architecture.md) for the architecture record.
+The original notes below used a pre-v0.55 Pi-first model-routing assumption. That assumption is no longer current, and the adapters themselves are gone: the skills-only rewrite (SCOPE-7) removed the Pi extension, the Fusion plugin, and every host adapter, so there is no `detectHost()`, no `STELOW_HOST`, and no adapter/plugin mapping in this repo. Hosts consume the contract in [`HOSTING.md`](../HOSTING.md) instead. See [`docs/design/host-agnostic-architecture.md`](design/host-agnostic-architecture.md) for the architecture record.
 
 For backward reference, the prior matrix listed per-agent mechanisms; that work was later folded into the agentskills standard and per-host adapters. Historical paths and proposals elsewhere in this archived document are not current requirements.
 | Generic | ❌ No | Hints are informational only |

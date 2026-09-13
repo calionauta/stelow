@@ -64,7 +64,7 @@ Thumbs.db
 dist/
 build/
 
-# Rust build artifacts (herdr plugin)
+# Rust build artifacts
 target/
 
 # Dependencies
