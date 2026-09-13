@@ -63,8 +63,8 @@ describe('Skill Orchestration', () => {
   let workflowDir: string;
 
   beforeEach(() => {
-    tempDir = mkdtempSync(join(tmpdir(), 'pw-skill-test-'));
-    workflowDir = createWorkflowDir(tempDir, 'test-workflow', 'pw-test-skill-001');
+    tempDir = mkdtempSync(join(tmpdir(), 'sw-skill-test-'));
+    workflowDir = createWorkflowDir(tempDir, 'test-workflow', 'sw-test-skill-001');
   });
 
   afterEach(() => {
@@ -378,7 +378,7 @@ it('should validate workflow status after gate', () => {
           name: 'test-wf', description: '',
           status: 'in-progress', currentPhase: 2, phases: [],
           stage: { current_stage: 'setup', previous_stage: null, transitioned_at: now, history: [], supervisor_active: false },
-          created: now, updated: now, dirHash: 'pw-test-skill-001',
+          created: now, updated: now, dirHash: 'sw-test-skill-001',
           detectedCLI: 'pi', intent: 'unknown',
           config: { appetite: undefined, review_mode: undefined, domains_detected: [] },
         }],

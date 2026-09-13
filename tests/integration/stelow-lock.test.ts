@@ -20,7 +20,7 @@ function workdir(): { dir: string; statedir: string } {
   execSync("git init -q", { cwd: dir });
   execSync("git config user.email t@t", { cwd: dir });
   execSync("git config user.name t", { cwd: dir });
-  const statedir = join(dir, ".stelow", "2026-09-07", "pw-test");
+  const statedir = join(dir, ".stelow", "2026-09-07", "sw-test");
   return { dir, statedir };
 }
 

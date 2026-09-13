@@ -603,7 +603,7 @@ if first not in stages:
     print(f"seed: first stage '{first}' not in transitions reference", file=sys.stderr); sys.exit(1)
 date = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
 now = datetime.datetime.now(datetime.timezone.utc).isoformat()
-dirhash = "pw-%s-%s" % (secrets.token_hex(3), secrets.token_hex(3))
+dirhash = "sw-%s-%s" % (secrets.token_hex(3), secrets.token_hex(3))
 statedir = os.path.join(statedir, date, dirhash)
 os.makedirs(statedir, exist_ok=True)
 fm = ["---", f"name: {name}", f"intent: {intent}", f"current_stage: {first}",

@@ -62,7 +62,7 @@ function makeWorkflowEntry(overrides?: Partial<Record<string, unknown>>) {
     },
     created: now,
     updated: now,
-    dirHash: 'pw-test-abc123',
+    dirHash: 'sw-test-abc123',
     detectedCLI: 'pi',
     intent: 'unknown',
     config: {
@@ -80,7 +80,7 @@ describe('Workflow Lifecycle (post v0.53.0)', () => {
   let tempDir: string;
 
   beforeEach(() => {
-    tempDir = mkdtempSync(join(tmpdir(), 'pw-lifecycle-'));
+    tempDir = mkdtempSync(join(tmpdir(), 'sw-lifecycle-'));
   });
 
   afterEach(() => {
@@ -91,7 +91,7 @@ describe('Workflow Lifecycle (post v0.53.0)', () => {
 
   describe('Workflow Creation', () => {
     it('creates workflow directory structure with artifact subdirs', () => {
-      const wfDir = createWorkflowDir(tempDir, 'pw-test-abc123');
+      const wfDir = createWorkflowDir(tempDir, 'sw-test-abc123');
 
       expect(existsSync(wfDir)).toBe(true);
       expect(existsSync(join(wfDir, 'specs'))).toBe(true);
@@ -102,30 +102,30 @@ describe('Workflow Lifecycle (post v0.53.0)', () => {
     });
 
     it('adds workflow entry to stelow.json (canonical source)', () => {
-      createWorkflowDir(tempDir, 'pw-test-abc123');
+      createWorkflowDir(tempDir, 'sw-test-abc123');
       writeTracking(tempDir, {
         $schema: '', version: '1.0',
         created: new Date().toISOString(), updated: new Date().toISOString(),
-        workflows: [makeWorkflowEntry({ name: 'my-project', dirHash: 'pw-my-proj-xyz' })],
+        workflows: [makeWorkflowEntry({ name: 'my-project', dirHash: 'sw-my-proj-xyz' })],
       });
 
       const tracking = readTracking(tempDir);
       expect(tracking.workflows).toHaveLength(1);
       expect(tracking.workflows[0].name).toBe('my-project');
-      expect(tracking.workflows[0].dirHash).toBe('pw-my-proj-xyz');
+      expect(tracking.workflows[0].dirHash).toBe('sw-my-proj-xyz');
       expect(tracking.workflows[0].currentPhase).toBe(2);
       expect(tracking.workflows[0].config).toBeDefined();
     });
 
     it('supports multiple workflows in stelow.json', () => {
-      createWorkflowDir(tempDir, 'pw-multi-001');
+      createWorkflowDir(tempDir, 'sw-multi-001');
       writeTracking(tempDir, {
         $schema: '', version: '1.0',
         created: new Date().toISOString(), updated: new Date().toISOString(),
         workflows: [
-          makeWorkflowEntry({ name: 'wf-a', dirHash: 'pw-a' }),
-          makeWorkflowEntry({ name: 'wf-b', dirHash: 'pw-b' }),
-          makeWorkflowEntry({ name: 'wf-c', dirHash: 'pw-c' }),
+          makeWorkflowEntry({ name: 'wf-a', dirHash: 'sw-a' }),
+          makeWorkflowEntry({ name: 'wf-b', dirHash: 'sw-b' }),
+          makeWorkflowEntry({ name: 'wf-c', dirHash: 'sw-c' }),
         ],
       });
 
@@ -137,11 +137,11 @@ describe('Workflow Lifecycle (post v0.53.0)', () => {
 
   describe('Workflow Rename', () => {
     it('updates workflow name in stelow.json (dirHash stays stable)', () => {
-      createWorkflowDir(tempDir, 'pw-stable-001');
+      createWorkflowDir(tempDir, 'sw-stable-001');
       writeTracking(tempDir, {
         $schema: '', version: '1.0',
         created: new Date().toISOString(), updated: new Date().toISOString(),
-        workflows: [makeWorkflowEntry({ name: 'old-name', dirHash: 'pw-stable-001' })],
+        workflows: [makeWorkflowEntry({ name: 'old-name', dirHash: 'sw-stable-001' })],
       });
 
       // Rename: update stelow.json only (dirHash stays stable)
@@ -152,11 +152,11 @@ describe('Workflow Lifecycle (post v0.53.0)', () => {
 
       const after = readTracking(tempDir);
       expect(after.workflows[0].name).toBe('new-name');
-      expect(after.workflows[0].dirHash).toBe('pw-stable-001');
+      expect(after.workflows[0].dirHash).toBe('sw-stable-001');
     });
 
     it('preserves dirHash after rename (filesystem path stays stable)', () => {
-      const originalDirHash = 'pw-preserve-123';
+      const originalDirHash = 'sw-preserve-123';
       createWorkflowDir(tempDir, originalDirHash);
 
       writeTracking(tempDir, {
@@ -200,7 +200,7 @@ describe('Workflow Lifecycle (post v0.53.0)', () => {
     it('preserves archived workflow data (no field loss)', () => {
       const wf = makeWorkflowEntry({
         name: 'preserve-me',
-        dirHash: 'pw-keep',
+        dirHash: 'sw-keep',
         config: { appetite: 'Core', review_mode: 'Auto', domains_detected: ['pricing'] },
       });
       writeTracking(tempDir, {
@@ -216,7 +216,7 @@ describe('Workflow Lifecycle (post v0.53.0)', () => {
       const after = readTracking(tempDir);
       expect(after.workflows[0].config.appetite).toBe('Core');
       expect(after.workflows[0].config.domains_detected).toEqual(['pricing']);
-      expect(after.workflows[0].dirHash).toBe('pw-keep');
+      expect(after.workflows[0].dirHash).toBe('sw-keep');
     });
   });
 
@@ -267,7 +267,7 @@ describe('Workflow Lifecycle (post v0.53.0)', () => {
 
   describe('Artifact Storage', () => {
     it('writes spec artifact to .stelow/{date}/{dir}/specs/', () => {
-      const wfDir = createWorkflowDir(tempDir, 'pw-artifact-001');
+      const wfDir = createWorkflowDir(tempDir, 'sw-artifact-001');
       const specPath = join(wfDir, 'specs', 'spec-product_v1.md');
       writeFileSync(specPath, '# Spec content\n');
 
@@ -283,7 +283,7 @@ describe('Workflow Lifecycle (post v0.53.0)', () => {
         created: new Date().toISOString(), updated: new Date().toISOString(),
         workflows: [makeWorkflowEntry({
           name: 'with-artifacts',
-          dirHash: 'pw-art-001',
+          dirHash: 'sw-art-001',
           artifacts: {
             specs: ['spec-product_v1.md'],
             critiques: ['critique-report.md'],

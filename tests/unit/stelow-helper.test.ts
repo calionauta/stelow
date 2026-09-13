@@ -210,7 +210,7 @@ describe("advance", () => {
   });
 
   it("isolates status, state, invariants, and lock in STELOW_STATEDIR", () => {
-    const stateDir = join(wd.dir, ".stelow", "2026-09-02", "pw-test");
+    const stateDir = join(wd.dir, ".stelow", "2026-09-02", "sw-test");
     mkdirSync(stateDir, { recursive: true });
     const rootState = join(wd.dir, "state.md");
     const workflowState = join(stateDir, "state.md");
