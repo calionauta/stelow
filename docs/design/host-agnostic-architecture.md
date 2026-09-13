@@ -1,5 +1,10 @@
 # Host-Agnostic Architecture for Stelow
 
+> **Implemented.** The refactor below landed as the skills-only rewrite
+> (SCOPE-7): no extension host code, no compiled plugin, no per-host
+> adapter remains in the repo. Kept as the architecture record; the live
+> contract is [HOSTING.md](../../HOSTING.md).
+
 > **Audience:** SW-002 (executor of the host-agnostic refactor).
 > **Status:** Plan-of-record for the refactor. Build the index.ts, the adapters,
 > the deletion of Muxy/Herdr, and the skill audit against this document.
