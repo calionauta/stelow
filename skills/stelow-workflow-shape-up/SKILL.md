@@ -159,7 +159,10 @@ After shaping:
 
 Each shaped proposal should include **product-level DoD and ACs** that define what "done"
 means from the user's perspective. These are distinct from technical DoD/ACs (added during
-Tech Planning) — they describe the **outcome**, not the implementation.
+Tech Planning) — they describe the **outcome**, not the implementation. For UI-bearing
+products, ground candidate ACs in curated checklists (see
+`../stelow-workflow-orchestrator/references/cli-tools/acceptance-checklist.md`) —
+appetite-scaled, sourced, and skipped gracefully when irrelevant or unreachable.
 
 Include in `spec-product.md`:
 
