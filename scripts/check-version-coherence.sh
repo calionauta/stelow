@@ -15,6 +15,9 @@ set -euo pipefail
 POST_MORTEM="docs/agents-md-refs/post-mortems/v0.55.2-release-drift.md"
 RELEASE_BUMP_RE='^Release-Bump: v[0-9]+\.[0-9]+\.[0-9]+$'
 ROLLBACK_RE='^Rollback: v[0-9]+\.[0-9]+\.[0-9]+ → v[0-9]+\.[0-9]+\.[0-9]+ — [^[:space:]].*'
+# Version identifiers are intentionally not ordered here: the project can
+# return from a historical 1.x milestone to its active pre-1.0 release line.
+VERSION_TAG_RE='^v[0-9]+\.[0-9]+\.[0-9]+$'
 
 warning() {
   printf '::warning::%s\n' "$*"
@@ -45,7 +48,7 @@ latest_annotated_tag() {
     [ "$(git cat-file -t "$tag" 2>/dev/null || true)" = "tag" ] || continue
     git merge-base --is-ancestor "$tag^{}" origin/main 2>/dev/null || continue
     printf '%s\n' "$tag"
-  done | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1 || true
+  done | grep -E "$VERSION_TAG_RE" | sort -V | tail -1 || true
 }
 
 run_commit_msg_check() {

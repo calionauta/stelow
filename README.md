@@ -9,6 +9,11 @@
 [![Version](https://img.shields.io/github/v/release/calionauta/stelow?logo=github&label=release)](https://github.com/calionauta/stelow/releases)
 [![CLI](https://img.shields.io/badge/Skills%20run%20on-Any%20agent-3B82F6)](https://github.com/calionauta/stelow#-host-support)
 
+> **Pre-1.0 status:** Stelow is under active product and market validation. Its
+> public release line is `0.x`; APIs, workflow contracts, and skills may change
+> incompatibly before a stable `1.0.0`. Historical `1.x` GitHub releases are
+> retained as internal milestones and do not signal production stability.
+
 I'm trying to make ai agents behave less like coding assistants and more like cross-functional product team.
 
 This package brings product methodology to AI coding agents. Instead of open-ended feature lists, you shape proposals with clear scope boundaries, validate them through adversarial critique, and generate typed technical scopes ready for autonomous execution.

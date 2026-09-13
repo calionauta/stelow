@@ -158,6 +158,11 @@ Run before releases. A test file moving from OK to REVIEW over time signals rot.
 
 ## Versioning
 
+- **Pre-1.0 policy:** Stelow is in active product and market validation. Keep
+  public releases in the `0.x` line until explicit human approval to declare
+  stable `1.0.0`; incompatible changes are allowed during this period. The
+  historical `1.x` tags/releases are retained milestones, not a compatibility
+  or stability promise. New releases continue from `0.58.0`.
 - **Single source:** `package.json#version`. There is no plugin/artifact sync step — the repo distributes via Git/GitHub only.
 - **Distribution:** Stelow ships **via Git/GitHub only** — there is no `npm publish` step. Release agents must not run `npm publish`.
 - **Tag and Release are linked — never create one without the other.** A git tag alone does not create a GitHub Release; the landing page shows only Releases, not tags.

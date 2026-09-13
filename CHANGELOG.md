@@ -3,6 +3,15 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.58.0-alpha] - 2026-09-12
+
+### Changed
+
+- **Versioning reset to the pre-1.0 series.** Stelow remains in active
+  validation and may make incompatible changes. The earlier 1.x tags and
+  GitHub releases are retained as historical internal milestones, not a
+  stability or compatibility promise. New releases continue from 0.58.0.
+
 ## [1.4.5-alpha] - 2026-09-12
 
 ### Changed

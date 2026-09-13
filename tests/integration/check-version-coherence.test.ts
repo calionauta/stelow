@@ -262,6 +262,21 @@ describe('SW-034: check-version-coherence.sh tag-aware guard', () => {
     expect(result.stdout).not.toContain('::error::');
   });
 
+  it('accepts a declared reset from a historical 1.x tag to the active 0.x line', async () => {
+    const fx = await buildFixture({
+      annotatedTag: 'v1.4.2',
+      initialVersion: '1.4.2',
+      followupVersion: '0.58.0-alpha',
+      followupMessage:
+        'chore: return to the pre-1.0 release line\n\nRollback: v1.4.2 → v0.58.0 — active product validation continues before stable 1.0',
+    });
+
+    const result = await runScript(fx.workDir, fx.scriptPath, ['--mode=ci']);
+
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain('declared intent trailer');
+  });
+
   it('scenario 5: Rollback: trailer WITHOUT reason (fail — commit-msg mode)', async () => {
     const fx = await buildFixture({
       annotatedTag: 'v0.55.2',
