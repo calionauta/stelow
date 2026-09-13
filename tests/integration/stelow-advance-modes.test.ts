@@ -25,7 +25,7 @@ const TRANSITIONS = join(REPO_ROOT, "skills", "stelow-workflow-orchestrator", "r
 const dirs: string[] = [];
 
 function makeStateDir(base: string, stage: string, reviewMode: string, appetite = "Core", intent = "feature"): string {
-  const stateDir = join(base, ".stelow", "2026-09-06", `pw-${randomBytes(3).toString("hex")}`);
+  const stateDir = join(base, ".stelow", "2026-09-06", `sw-${randomBytes(3).toString("hex")}`);
   mkdirSync(stateDir, { recursive: true });
   writeFileSync(join(stateDir, "state.md"), `---
 name: t

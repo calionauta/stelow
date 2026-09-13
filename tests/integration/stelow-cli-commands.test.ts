@@ -77,13 +77,13 @@ describe("seed", () => {
     const r = run(wd, ["seed", "--name", "demo", "--intent", "feature"]);
     expect(r.status).toBe(0);
     const statePath = r.stdout.trim();
-    expect(statePath).toMatch(/\.stelow\/\d{4}-\d{2}-\d{2}\/pw-[a-z0-9-]+\/state\.md$/);
+    expect(statePath).toMatch(/\.stelow\/\d{4}-\d{2}-\d{2}\/sw-[a-z0-9-]+\/state\.md$/);
     expect(existsSync(statePath)).toBe(true);
     const blob = readFileSync(statePath, "utf8");
     expect(blob).toMatch(/current_stage:\s*setup/);
     const tracking = JSON.parse(readFileSync(join(wd.dir, "stelow.json"), "utf8"));
     expect(tracking.workflows).toHaveLength(1);
-    expect(tracking.workflows[0].dirHash).toMatch(/^pw-/);
+    expect(tracking.workflows[0].dirHash).toMatch(/^sw-/);
   });
 
   it("starts new-product at triage", () => {
@@ -99,7 +99,7 @@ describe("seed", () => {
     expect(r.status).toBe(0);
     const j = JSON.parse(r.stdout);
     expect(j.state).toMatch(/state\.md$/);
-    expect(j.dirHash).toMatch(/^pw-/);
+    expect(j.dirHash).toMatch(/^sw-/);
     expect(j.statedir).toContain(j.dirHash);
   });
 
@@ -271,7 +271,7 @@ describe("ask file protocol", () => {
 describe("read-only commands never touch the filesystem", () => {
   it("status/doctor/dry-run do not create a missing state dir", () => {
     const wd = makeWorkdir();
-    const ghost = join(wd.dir, ".stelow", "2099-01-01", "pw-ghost");
+    const ghost = join(wd.dir, ".stelow", "2099-01-01", "sw-ghost");
     const env = { STELOW_STATEDIR: ghost, STELOW_TRANSITIONS: TRANSITIONS_SRC };
     run(wd, ["status"], env);
     run(wd, ["doctor"], env);
@@ -394,24 +394,24 @@ describe("config get", () => {
     // a worker read another workflow's appetite and review gates.
     const wd = makeWorkdir();
     seedTracking(wd, [
-      { name: "a", status: "in-progress", dirHash: "pw-a", config: { appetite: "Lean", review_mode: "Auto" } },
-      { name: "b", status: "in-progress", dirHash: "pw-b", config: { appetite: "Complete", review_mode: "Product Spec + Interface + Tech Review + Code Diff" } },
+      { name: "a", status: "in-progress", dirHash: "sw-a", config: { appetite: "Lean", review_mode: "Auto" } },
+      { name: "b", status: "in-progress", dirHash: "sw-b", config: { appetite: "Complete", review_mode: "Product Spec + Interface + Tech Review + Code Diff" } },
     ]);
-    const forB = { STELOW_STATEDIR: join(wd.dir, ".stelow", "2026-01-01", "pw-b") };
+    const forB = { STELOW_STATEDIR: join(wd.dir, ".stelow", "2026-01-01", "sw-b") };
     expect(run(wd, ["config", "get", "appetite", "Core"], forB).stdout.trim()).toBe("Complete");
     expect(run(wd, ["config", "get", "review_mode", "Auto"], forB).stdout.trim())
       .toBe("Product Spec + Interface + Tech Review + Code Diff");
-    expect(run(wd, ["config", "get", "appetite", "Core"], { STELOW_STATEDIR: join(wd.dir, ".stelow", "2026-01-01", "pw-a") }).stdout.trim())
+    expect(run(wd, ["config", "get", "appetite", "Core"], { STELOW_STATEDIR: join(wd.dir, ".stelow", "2026-01-01", "sw-a") }).stdout.trim())
       .toBe("Lean");
   });
 
   it("prefers the state's owner id over its directory name", () => {
     const wd = makeWorkdir();
     seedTracking(wd, [
-      { name: "a", workflowId: "card_a", status: "in-progress", dirHash: "pw-a", config: { appetite: "Lean" } },
-      { name: "b", workflowId: "card_b", status: "in-progress", dirHash: "pw-b", config: { appetite: "Complete" } },
+      { name: "a", workflowId: "card_a", status: "in-progress", dirHash: "sw-a", config: { appetite: "Lean" } },
+      { name: "b", workflowId: "card_b", status: "in-progress", dirHash: "sw-b", config: { appetite: "Complete" } },
     ]);
-    const stateDir = join(wd.dir, ".stelow", "2026-01-01", "pw-b");
+    const stateDir = join(wd.dir, ".stelow", "2026-01-01", "sw-b");
     mkdirSync(stateDir, { recursive: true });
     writeFileSync(join(stateDir, "state.md"),
       "---\nworkflow_id: card_a\nname: a\nintent: feature\ncurrent_stage: execution\nstatus: active\n---\n");
