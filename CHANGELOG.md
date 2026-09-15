@@ -3,6 +3,16 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.58.1-alpha] - 2026-09-15
+
+### Fixed
+
+- **Context stage skips the strategy pitch for refactor/bugfix.** The
+  `context:5` gate only looked at appetite and review mode, so a refactor
+  with a verifiable baseline and no domain signals still got the full
+  strategic-analyses ask. An intent pre-check now downgrades those cards to
+  a reduced opt-in ask regardless of appetite.
+
 ## [0.58.0-alpha] - 2026-09-12
 
 ### Changed

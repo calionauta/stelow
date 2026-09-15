@@ -16,6 +16,10 @@ Before executing `context:10` or `context:20`, check the declared appetite and r
 - Appetite: `Lean` | `Core` (Recommended) | `Complete`
 - Review Mode: `Auto` | `Product Spec Gate` | `Product Spec + Interface Gates` | `Product Spec + Interface + Scopes` | `Product Spec + Interface + Tech Review` | `Product Spec + Interface + Tech Review + Code Diff`
 
+**Intent pre-check (runs before the matrix below):** read `state.md` intent first.
+- If intent is `refactor` or `bugfix` AND the request carries no product/domain signals (none of the `context:20` signal phrases, no pricing/growth/trust/marketplace/discovery language) AND the baseline is verifiable (typecheck, lint, and tests runnable in the workspace): **Reduced ask** regardless of appetite — present the 5 strategic approaches as opt-in with the one-line rationale "refactor/bugfix with a verifiable baseline — strategic analyses are usually overhead here", no automatic parallel subagents. Log the rationale to `session.log`.
+- Otherwise: fall through to the appetite/mode matrix below.
+
 **Gate matrix:**
 
 | Appetite | Review Mode | `context:10` (Strategic Approaches — 5 options) | `context:20` (Domain Libraries — 8 options) |
