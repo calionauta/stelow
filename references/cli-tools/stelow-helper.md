@@ -58,16 +58,18 @@ empty scope list. This is the single canonical scope parser — hosts shell
 out instead of maintaining a mirror.
 
 `audit-trail build` writes a canonical, deterministic `audit-trail.md` from
-the workflow state, the registered artifacts, and a repository snapshot, all
-as SHA-256 content hashes. The snapshot is the whole tree the work was
-verified in, not only the commit: Git repository root, `HEAD`, the tracked
-worktree diff (`git diff HEAD`), and a manifest of every untracked file. A
-later commit, an uncommitted edit, or a new untracked file therefore all make
-the receipt stale — which is the point, since a Done card is reviewed for
-exactly that work.
+the workflow state, registered artifacts, and a repository snapshot, all as
+SHA-256 content hashes. The snapshot covers the reviewable Git tree, not only
+the commit: Git repository root, `HEAD`, the tracked worktree diff (excluding
+only `audit-trail.md` itself), and a manifest of every non-ignored untracked
+file. A later commit, uncommitted edit, or new non-ignored file therefore makes
+the receipt stale. Ignored files are intentionally outside that snapshot; if
+one is material evidence, register it as an artifact.
 
 `audit-trail check` recomputes the projection and fails when it is missing or
-stale. Artifact paths come from the manifest `advance` maintains, and are
+stale. `--strict` also refuses every unregistered durable workflow output,
+regardless of its file extension. Artifact paths come from the manifest
+`advance` maintains, and are
 resolved against the directory the workflow was advanced from — the same base
 `advance` wrote them against, which is not the Git toplevel when the project is
 a subdirectory of its repository. Any absolute path or `..` traversal is

@@ -3,6 +3,17 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.59.9-alpha] - 2026-09-16
+
+### Changed
+
+- **Audit trail contract `v3`.** Strict validation now inventories every
+  durable workflow output, not only Markdown, and `advance` registers those
+  files automatically. The receipt excludes only itself from both tracked and
+  untracked worktree evidence, so a committed stale receipt can be rebuilt.
+- **Snapshot scope is explicit.** Ignored files are not part of the worktree
+  snapshot; material ignored output must be registered as an artifact.
+
 ## [0.59.8-alpha] - 2026-09-16
 
 ### Fixed

@@ -185,6 +185,17 @@ describe("advance", () => {
     expect((state.match(/generated_at:/g) ?? []).length).toBe(2);
   });
 
+  it("records non-Markdown workflow output so strict audit can attest it", () => {
+    const stateDir = join(wd.dir, ".stelow", "2026-09-02", "artifact-output-test");
+    mkdirSync(join(stateDir, "verification"), { recursive: true });
+    const statePath = join(stateDir, "state.md");
+    writeFileSync(statePath, readFileSync(join(wd.dir, "state.md"), "utf8").replace("---\n# t", "artifacts: []\n---\n# t"));
+    writeFileSync(join(stateDir, "verification", "report.json"), '{"passed":true}\n');
+
+    expect(run(wd, ["advance", "critique"], { STELOW_STATEDIR: stateDir }).status).toBe(0);
+    expect(readFileSync(statePath, "utf8")).toMatch(/- stage: shape\n    kind: artifact\n    label: report\n    path: \.stelow\/2026-09-02\/artifact-output-test\/verification\/report\.json/);
+  });
+
   it("fails when lock is held by another process (non-fatal exit)", () => {
     // manually hold the lock
     mkdirSync(join(wd.dir, ".stelow", "lock"), { recursive: true });
@@ -310,7 +321,7 @@ describe("audit-trail", () => {
     const { stateDir, env, state } = setup();
     expect(run(wd, ["audit-trail", "build"], env).status).toBe(0);
     const trail = readFileSync(join(stateDir, "audit-trail.md"), "utf8");
-    expect(trail).toContain("<!-- stelow-audit-trail: v2 -->");
+    expect(trail).toContain("<!-- stelow-audit-trail: v3 -->");
     expect(trail).toContain("[technical plan](plans/spec-tech_v1.md)");
     expect(trail).toMatch(/[a-f0-9]{64}/);
     expect(run(wd, ["audit-trail", "check"], env).status).toBe(0);
@@ -333,7 +344,7 @@ describe("audit-trail", () => {
     const build = run(wd, ["audit-trail", "build", "--json"], env);
     expect(build.status).toBe(0);
     const result = JSON.parse(build.stdout);
-    expect(result.contract).toBe("v2");
+    expect(result.contract).toBe("v3");
     expect(result.snapshot.head).toMatch(/^[a-f0-9]{40}$/);
     expect(result.snapshot.root).toBe(realpathSync(wd.dir));
     expect(result.snapshot.tracked).toMatch(/^[a-f0-9]{64}$/);
@@ -356,6 +367,16 @@ describe("audit-trail", () => {
     const rebuilt = JSON.parse(run(wd, ["audit-trail", "check", "--json"], env).stdout);
     expect(rebuilt.ok).toBe(true);
     expect(rebuilt.snapshot.untracked_count).toBeGreaterThan(result.snapshot.untracked_count);
+  });
+
+  it("rebuilds a stale audit trail after that receipt was committed", () => {
+    const { stateDir, env } = setup();
+    expect(run(wd, ["audit-trail", "build"], env).status).toBe(0);
+    execSync(`git add ${join(stateDir, "audit-trail.md")} && git commit -qm tracked-audit-trail`, { cwd: wd.dir });
+
+    writeFileSync(join(stateDir, "plans", "spec-tech_v1.md"), "# Revised plan\n");
+    expect(run(wd, ["audit-trail", "build"], env).status).toBe(0);
+    expect(run(wd, ["audit-trail", "check"], env).status).toBe(0);
   });
 
   // A project can be a subdirectory of its repository (a monorepo package).
@@ -410,25 +431,41 @@ describe("audit-trail", () => {
   it("--strict refuses unregistered workflow documents", () => {
     const { stateDir, env } = setup();
     expect(run(wd, ["audit-trail", "build"], env).status).toBe(0);
-    expect(readFileSync(join(stateDir, "audit-trail.md"), "utf8")).toContain("| Unregistered workflow documents | 0 |");
+    expect(readFileSync(join(stateDir, "audit-trail.md"), "utf8")).toContain("| Unregistered workflow files | 0 |");
     writeFileSync(join(stateDir, "lessons.md"), "# Lessons\n");
 
     const strict = run(wd, ["audit-trail", "build", "--strict"], env);
     expect(strict.status).toBe(1);
-    expect(strict.stderr).toContain("unregistered workflow documents");
+    expect(strict.stderr).toContain("unregistered workflow documents or artifacts");
     expect(strict.stderr).toContain("lessons.md");
     const strictJson = JSON.parse(run(wd, ["audit-trail", "build", "--strict", "--json"], env).stdout);
     expect(strictJson.ok).toBe(false);
-    expect(strictJson.contract).toBe("v2");
+    expect(strictJson.contract).toBe("v3");
 
     // Without --strict the trail still records the gap instead of hiding it.
     expect(run(wd, ["audit-trail", "build"], env).status).toBe(0);
-    expect(readFileSync(join(stateDir, "audit-trail.md"), "utf8")).toContain("| Unregistered workflow documents | 1 |");
+    expect(readFileSync(join(stateDir, "audit-trail.md"), "utf8")).toContain("| Unregistered workflow files | 1 |");
 
     // Registering it is the fix, and then the gate passes.
     const state = readFileSync(join(stateDir, "state.md"), "utf8").replace(
       "---\n# t",
       `  - stage: audit\n    kind: document\n    label: lessons\n    path: .stelow/2026-09-16/sw-audit/lessons.md\n---\n# t`,
+    );
+    writeFileSync(join(stateDir, "state.md"), state);
+    expect(run(wd, ["audit-trail", "build", "--strict"], env).status).toBe(0);
+    expect(run(wd, ["audit-trail", "check", "--strict"], env).status).toBe(0);
+  });
+
+  it("--strict refuses unregistered non-Markdown output", () => {
+    const { stateDir, env } = setup();
+    writeFileSync(join(stateDir, "verification.json"), '{"passed":true}\n');
+    const strict = run(wd, ["audit-trail", "build", "--strict"], env);
+    expect(strict.status).toBe(1);
+    expect(strict.stderr).toContain("verification.json");
+
+    const state = readFileSync(join(stateDir, "state.md"), "utf8").replace(
+      "---\n# t",
+      `  - stage: audit\n    kind: artifact\n    label: verification\n    path: .stelow/2026-09-16/sw-audit/verification.json\n---\n# t`,
     );
     writeFileSync(join(stateDir, "state.md"), state);
     expect(run(wd, ["audit-trail", "build", "--strict"], env).status).toBe(0);

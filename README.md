@@ -35,7 +35,7 @@ This package brings product methodology to AI coding agents. Instead of open-end
 - **Typed technical scopes** - feature, spike, optimize, test-* with dependency mapping and sequencing for autonomous execution.
 - **Acceptance-based scope execution** - each scope is delegated with a contract (criteria, verify commands, stop rules). On acceptance-native harnesses (fresh-context subagents with self-correction), the child fixes gaps in the same context before returning. On other harnesses, the parent re-delegates with feedback until criteria pass or max iterations exhaust.
 - **Audit gap-to-scope loop** — post-execution audit classifies gaps (FIXED / DOCUMENTED / ESCALATED). ESCALATED gaps become new scopes in the tracking file. `/sw-next` validates the move (transition + required artifacts); the critique routes Audit back to Execution via the reject transition. The cycle repeats until no scopes remain pending — the loop is procedural (skill-driven), not a scope check in code.
-- **Deterministic audit trail — full lineage record** — the final audit always generates `audit-trail.md`, a stable projection of the workflow state, the registered artifacts, and the repository snapshot (Git root, `HEAD`, the tracked worktree diff, and a manifest of untracked files), all as SHA-256 evidence hashes. `scripts/stelow audit-trail check` fails closed if any of those inputs change — a later commit, an uncommitted edit, a new untracked file — so hosts can gate completion on the exact tree that was verified. `--strict` additionally refuses to build while a produced workflow document is still unregistered.
+- **Deterministic audit trail — full lineage record** — the final audit always generates `audit-trail.md`, a stable projection of the workflow state, registered artifacts, and repository snapshot (Git root, `HEAD`, the tracked worktree diff, and non-ignored untracked files), all as SHA-256 evidence hashes. `scripts/stelow audit-trail check` fails closed if any of those inputs change — a later commit, an uncommitted edit, a new non-ignored file — so hosts can gate completion on the exact tree that was verified. `--strict` additionally refuses while any durable workflow output is unregistered; material ignored output must be registered as an artifact.
 - **Scopes, Tasks & Records — three-layer execution model**. Scopes are appetite-bounded delivery units committed at planning (Lean ≤2, Core ≤5, Complete ≈10). Tasks are sub-item checklists inside a scope — planned tasks seed from the spec-tech table; discovered tasks emerge during execution (always with a `note:` explaining the trigger). Records capture claim-proof evidence (files touched, commands run, verification checklist) before a scope is closed. Validation is ON by default (set `STELOW_VALIDATE=0` to disable). See [`docs/scopes-tasks-flow.md`](docs/scopes-tasks-flow.md) for the full pipeline.
 - **Bidirectional product ↔ tech flow** — tech constraints and opportunities inform product decisions *before* execution. Tech Preview uses cymbal for appetite-gated codebase recon; Alignment Check catches product-vs-tech misalignment with mode-dependent resolution (auto or user-flagged).
 - **Stack-matched skills + fresh docs** — during execution setup, the workflow discovers skills (via `npx skills`) optimized for the chosen tech stack and fetches current library docs (via `ctx7`). Both skip if already installed or unavailable. Skills install in project scope only, after user confirmation.
@@ -551,9 +551,9 @@ host. The deterministic, cross-host interface is the `scripts/stelow` CLI
 
 Use `scripts/stelow audit-trail build` to create the mandatory deterministic
 lineage report and `scripts/stelow audit-trail check` to verify it is current.
-`--strict` adds the completion gate: it refuses to build while any workflow
-document in the state directory is still unregistered, so the receipt can
-never quietly omit something the audit produced.
+`--strict` adds the completion gate: it refuses to build while any durable
+workflow output in the state directory is still unregistered, so the receipt
+can never quietly omit something the audit produced.
 
 Other actions such as archive, pause, thread navigation, or visual review are
 host-surface responsibilities. A host may offer aliases for them, but they are
@@ -694,7 +694,7 @@ receipt; users never need to create the workflow bookkeeping by hand.
 | `execution/iteration-state-{SCOPE-ID}.md` | Per-scope execution record (tasks, evidence, checklist) | Scope Executor | 13 |
 | `execution/scope-{N}/events.jsonl` | Per-scope event log (delegate, verify, completed, escalated) | Scope Executor | 13 |
 | `verification/code-quality-review.md` | Code quality review output (lint, thermo-nuclear) | Verification | 14 |
-| `audit-trail.md` | Deterministic linked lineage receipt from origin through validation, including the repository snapshot (`v2` contract) | `scripts/stelow audit-trail build` | Audit |
+| `audit-trail.md` | Deterministic linked lineage receipt from origin through validation, including the repository snapshot (`v3` contract) | `scripts/stelow audit-trail build --strict` | Audit |
 | `group-context/manifest.json` | Triage group manifest (when multiple items grouped) | Triage grouping | 0 |
 | `checklist.md` | Current phase task checklist (Plannotator-visible) | LLM (todo tool) | Any |
 

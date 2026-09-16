@@ -401,9 +401,9 @@ elif lines[history_start] == "history: []":
 else:
     lines[history_end:history_end] = history_entry
 
-# Advancing is the durable workflow boundary: record every Markdown file that
-# appeared since an earlier transition as produced by the stage being left.
-# The manifest is a list so a stage can own more than one artifact.
+# Advancing is the durable workflow boundary: record every durable output
+# that appeared since an earlier transition as produced by the stage being
+# left. The manifest is a list so a stage can own more than one artifact.
 artifacts = []
 artifact_start, artifact_end = block_bounds("artifacts")
 if artifact_start is not None:
@@ -418,17 +418,28 @@ if artifact_start is not None:
             entry[field.group(1)] = field.group(2).strip()
     if entry: artifacts.append(entry)
 known_paths = {item.get("path") for item in artifacts}
+CONTROL_FILES = {"state.md", "audit-trail.md", "invariants.json"}
+def workflow_output(absolute):
+    relative = os.path.relpath(os.path.realpath(absolute), os.path.realpath(statedir)).replace(os.sep, "/")
+    first = relative.split("/", 1)[0]
+    return (
+        os.path.isfile(absolute)
+        and relative not in CONTROL_FILES
+        and first != "lock"
+        and not any(part.startswith(".") for part in relative.split("/"))
+    )
 for walk_root, _, files in os.walk(statedir):
     for filename in files:
-        if not filename.endswith(".md") or filename == "state.md": continue
         absolute = os.path.join(walk_root, filename)
+        if not workflow_output(absolute): continue
         # realpath both sides: os.getcwd() is physical (symlinks resolved)
         # while statedir may be logical (e.g. /var → /private/var on macOS).
         # Without this, relpath emits ../.. chains + an absolute remainder.
         relative = os.path.relpath(os.path.realpath(absolute), os.path.realpath(os.getcwd())).replace(os.sep, "/")
         if relative in known_paths: continue
         stem = os.path.splitext(filename)[0].replace("_", " ").replace("-", " ").strip()
-        artifacts.append({"stage": current, "kind": "document", "label": stem, "path": relative, "generated_at": timestamp})
+        kind = "document" if filename.endswith(".md") else "artifact"
+        artifacts.append({"stage": current, "kind": kind, "label": stem, "path": relative, "generated_at": timestamp})
         known_paths.add(relative)
 manifest = ["artifacts:"]
 for item in artifacts:
@@ -1251,7 +1262,7 @@ base_real = os.path.realpath(os.getcwd())
 # Bumped only when this projection's shape changes. Hosts pin it so a helper
 # they do not recognize fails closed instead of completing on an unknown
 # receipt format.
-CONTRACT = "v2"
+CONTRACT = "v3"
 
 def result(ok, **fields):
     print(json.dumps({"ok": ok, "contract": CONTRACT, **fields}, default=str))
@@ -1324,18 +1335,28 @@ for artifact in artifacts:
         registered.append(artifact)
 if invalid_paths: fail("artifact path must stay inside the project: " + ", ".join(invalid_paths))
 artifacts = registered
-def unregistered_documents():
+CONTROL_FILES = {"state.md", "audit-trail.md", "invariants.json"}
+def workflow_output(absolute):
+    """A durable workflow output, excluding the CLI's own control files."""
+    relative = os.path.relpath(os.path.realpath(absolute), os.path.realpath(statedir)).replace(os.sep, "/")
+    first = relative.split("/", 1)[0]
+    return (
+        os.path.isfile(absolute)
+        and relative not in CONTROL_FILES
+        and first != "lock"
+        and not any(part.startswith(".") for part in relative.split("/"))
+    )
+def unregistered_outputs():
     registered_paths = {artifact["_absolute"] for artifact in artifacts}
     found = []
     for directory, _, names in os.walk(statedir):
         for name in names:
-            if not name.endswith(".md") or name in ("state.md", "audit-trail.md"): continue
             absolute = os.path.realpath(os.path.join(directory, name))
-            if absolute not in registered_paths: found.append(absolute)
+            if workflow_output(absolute) and absolute not in registered_paths: found.append(absolute)
     return sorted(found)
-unregistered = unregistered_documents()
+unregistered = unregistered_outputs()
 if strict and unregistered:
-    fail("unregistered workflow documents: " + ", ".join(link(path) for path in unregistered))
+    fail("unregistered workflow documents or artifacts: " + ", ".join(link(path) for path in unregistered))
 def git_snapshot():
     def run(args): return subprocess.run(["git", "-C", root, *args], capture_output=True)
     head = run(["rev-parse", "HEAD"])
@@ -1343,7 +1364,14 @@ def git_snapshot():
         return {"root": "not a Git repository", "head": "not a Git repository", "tracked": "not available", "untracked": "not available", "untracked_count": 0}
     toplevel = run(["rev-parse", "--show-toplevel"]).stdout.decode().strip() or root_real
     toplevel_real = os.path.realpath(toplevel)
-    diff = run(["diff", "--no-ext-diff", "--binary", "HEAD"])
+    # The projection cannot hash its own tracked diff: rebuilding a stale,
+    # committed receipt changes that diff after it was sampled. Exclude only
+    # this exact file; every other tracked change remains attested.
+    trail_relative = os.path.relpath(os.path.realpath(trail_path), toplevel_real).replace(os.sep, "/")
+    diff_args = ["diff", "--no-ext-diff", "--binary", "HEAD"]
+    if trail_relative != ".." and not trail_relative.startswith("../"):
+        diff_args += ["--", ".", f":(exclude,literal){trail_relative}"]
+    diff = run(diff_args)
     untracked = run(["ls-files", "--others", "--exclude-standard", "-z"])
     entries = []
     if untracked.returncode == 0:
@@ -1365,6 +1393,7 @@ def git_snapshot():
         "tracked": hashlib.sha256(diff.stdout).hexdigest() if diff.returncode == 0 else "not available",
         "untracked": hashlib.sha256(b"".join(sorted(entries))).hexdigest(),
         "untracked_count": len(entries),
+        "ignored": "excluded unless registered as an artifact",
     }
 snapshot = git_snapshot()
 metadata_path = os.path.join(root_real, "stelow.json")
@@ -1380,8 +1409,9 @@ out = [
     f"| Git repository | `{snapshot['root']}` |",
     f"| Git HEAD | `{snapshot['head']}` |",
     f"| Tracked worktree diff SHA-256 | `{snapshot['tracked']}` |",
-    f"| Untracked files | {snapshot['untracked_count']} |",
-    f"| Untracked manifest SHA-256 | `{snapshot['untracked']}` |", "", "## Evidence", "",
+    f"| Untracked non-ignored files | {snapshot['untracked_count']} |",
+    f"| Untracked non-ignored manifest SHA-256 | `{snapshot['untracked']}` |",
+    "| Ignored files | Excluded unless registered as an artifact |", "", "## Evidence", "",
     "| Source | Location | SHA-256 |", "| --- | --- | --- |",
     f"| Workflow state | [state.md](state.md) | `{digest(state_path)}` |",
     f"| Project metadata | [{os.path.basename(metadata_path)}]({link(metadata_path)}) | `{digest(metadata_path)}` |",
@@ -1392,7 +1422,7 @@ if artifacts:
         label = artifact.get("label") or os.path.basename(artifact["path"])
         out.append(f"| {artifact.get('stage', 'unknown')} | {artifact.get('kind', 'document')} | [{label}]({link(artifact['_absolute'])}) | `{digest(artifact['_absolute'])}` |")
 else: out.append("| — | — | No registered artifacts | — |")
-out += ["", "## Integrity", "", f"| Contract | `{CONTRACT}` |", f"| Registered artifacts | {len(artifacts)} |", f"| Unregistered workflow documents | {len(unregistered)} |", "", "This file is a deterministic projection generated by `scripts/stelow audit-trail build`. The repository snapshot covers committed HEAD plus the tracked worktree diff and the untracked manifest, so any later code change makes it stale. Run `scripts/stelow audit-trail check` after any workflow-state, artifact, or worktree change.", ""]
+out += ["", "## Integrity", "", f"| Contract | `{CONTRACT}` |", f"| Registered artifacts | {len(artifacts)} |", f"| Unregistered workflow files | {len(unregistered)} |", "", "This file is a deterministic projection generated by `scripts/stelow audit-trail build`. The repository snapshot covers committed HEAD plus the tracked worktree diff (excluding only this receipt) and non-ignored untracked files. Register any material ignored output as an artifact. Run `scripts/stelow audit-trail check` after any workflow-state, artifact, or worktree change.", ""]
 expected = "\n".join(out)
 if action == "check":
     if not os.path.isfile(trail_path): fail("audit-trail.md is missing; run audit-trail build")
