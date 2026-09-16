@@ -1242,6 +1242,12 @@ import hashlib, json, os, re, subprocess, sys, tempfile
 root, statedir, state_path, action, want_json, strict = sys.argv[1:]
 trail_path = os.path.join(statedir, "audit-trail.md")
 root_real = os.path.realpath(root)
+# `stelow advance` records each artifact as a path relative to the directory it
+# was run from, so the manifest only digests correctly against that same base.
+# The repository snapshot keeps using the Git toplevel, which is what a commit
+# actually identifies; the two differ for a project that is a subdirectory of
+# its repository.
+base_real = os.path.realpath(os.getcwd())
 # Bumped only when this projection's shape changes. Hosts pin it so a helper
 # they do not recognize fails closed instead of completing on an unknown
 # receipt format.
@@ -1293,13 +1299,14 @@ for line in lines:
         item = {m.group(1): m.group(2).strip()}
     elif field and item: item[field.group(1)] = field.group(2).strip()
 if item: artifacts.append(item)
-def safe_artifact_path(path):
+def safe_path(path, base):
+    """A manifest or git-relative path resolved inside `base`, or None."""
     if not isinstance(path, str) or not path or os.path.isabs(path): return None
     normalized = os.path.normpath(path)
     if normalized in (".", "..") or normalized.startswith(".." + os.sep): return None
-    absolute = os.path.realpath(os.path.join(root_real, normalized))
+    absolute = os.path.realpath(os.path.join(base, normalized))
     try:
-        if os.path.commonpath([root_real, absolute]) != root_real: return None
+        if os.path.commonpath([base, absolute]) != base: return None
     except ValueError: return None
     return absolute
 def link(absolute):
@@ -1310,7 +1317,7 @@ def digest(absolute):
         return hashlib.sha256(handle.read()).hexdigest()
 registered, invalid_paths = [], []
 for artifact in artifacts:
-    absolute = safe_artifact_path(artifact.get("path"))
+    absolute = safe_path(artifact.get("path"), base_real)
     if not absolute: invalid_paths.append(str(artifact.get("path", "")))
     elif os.path.realpath(absolute) != os.path.realpath(trail_path):
         artifact["_absolute"] = absolute
@@ -1342,7 +1349,9 @@ def git_snapshot():
         for raw in untracked.stdout.split(b"\0"):
             if not raw: continue
             path = os.fsdecode(raw)
-            absolute = safe_artifact_path(path)
+            # `git ls-files` yields repository-relative paths, so this one
+            # resolves against the toplevel rather than the invocation dir.
+            absolute = safe_path(path, root_real)
             if not absolute: fail("untracked path must stay inside the project: " + path)
             # The trail is written after this digest and must not digest itself:
             # including it would make every check() of its own output stale.

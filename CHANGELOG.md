@@ -3,6 +3,18 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.59.7-alpha] - 2026-09-16
+
+### Fixed
+
+- **Manifest paths resolve the way `advance` recorded them.** `stelow advance`
+  writes each artifact relative to the directory it runs in, but the trail
+  resolved them against the Git toplevel. For a project that is a subdirectory
+  of its repository (a monorepo package) every artifact hashed as `missing`
+  and linked through `../..` chains. The trail now uses the same base; the
+  repository snapshot still names the toplevel, which is what a commit
+  identifies.
+
 ## [0.59.6-alpha] - 2026-09-16
 
 ### Added

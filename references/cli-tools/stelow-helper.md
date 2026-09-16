@@ -67,8 +67,11 @@ the receipt stale — which is the point, since a Done card is reviewed for
 exactly that work.
 
 `audit-trail check` recomputes the projection and fails when it is missing or
-stale. Artifact paths come from the agent-authored manifest, so any absolute
-path or `..` traversal is refused instead of being hashed or linked.
+stale. Artifact paths come from the manifest `advance` maintains, and are
+resolved against the directory the workflow was advanced from — the same base
+`advance` wrote them against, which is not the Git toplevel when the project is
+a subdirectory of its repository. Any absolute path or `..` traversal is
+refused instead of being hashed or linked.
 `--strict` additionally refuses to build while any workflow document in the
 state directory is still unregistered — the host-facing completion gate, so a
 produced document can never be missing from the receipt's links.

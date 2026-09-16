@@ -71,9 +71,9 @@ stages:
 `);
 }
 
-function run(wd: Workdir, args: string[], env: Record<string, string> = {}): { status: number; stdout: string; stderr: string } {
+function run(wd: Workdir, args: string[], env: Record<string, string> = {}, cwd: string = wd.dir): { status: number; stdout: string; stderr: string } {
   const r = spawnSync("bash", [wd.helper, ...args], {
-    cwd: wd.dir, encoding: "utf8", env: { ...process.env, PATH: process.env.PATH ?? "", ...env },
+    cwd, encoding: "utf8", env: { ...process.env, PATH: process.env.PATH ?? "", ...env },
   });
   return { status: r.status ?? -1, stdout: r.stdout ?? "", stderr: r.stderr ?? "" };
 }
@@ -356,6 +356,28 @@ describe("audit-trail", () => {
     const rebuilt = JSON.parse(run(wd, ["audit-trail", "check", "--json"], env).stdout);
     expect(rebuilt.ok).toBe(true);
     expect(rebuilt.snapshot.untracked_count).toBeGreaterThan(result.snapshot.untracked_count);
+  });
+
+  // A project can be a subdirectory of its repository (a monorepo package).
+  // `advance` records artifact paths relative to the directory it ran in, so
+  // the trail has to resolve them the same way — resolving against the Git
+  // toplevel instead would report every artifact as a missing file.
+  it("resolves manifest paths the way advance recorded them, in a subdirectory project", () => {
+    makeState(wd, "audit");
+    const project = join(wd.dir, "packages", "app");
+    const stateDir = join(project, ".stelow", "2026-09-16", "sw-audit");
+    mkdirSync(join(stateDir, "plans"), { recursive: true });
+    const state = readFileSync(join(wd.dir, "state.md"), "utf8").replace(
+      "---\n# t",
+      `artifacts:\n  - stage: planning\n    kind: document\n    label: technical plan\n    path: .stelow/2026-09-16/sw-audit/plans/spec-tech_v1.md\n---\n# t`,
+    );
+    writeFileSync(join(stateDir, "state.md"), state);
+    writeFileSync(join(stateDir, "plans", "spec-tech_v1.md"), "# Plan\n");
+    const env = { STELOW_STATEDIR: stateDir };
+    expect(run(wd, ["audit-trail", "build"], env, project).status).toBe(0);
+    const trail = readFileSync(join(stateDir, "audit-trail.md"), "utf8");
+    expect(trail).toMatch(/\| planning \| document \| \[technical plan\]\(plans\/spec-tech_v1\.md\) \| `[a-f0-9]{64}` \|/);
+    expect(run(wd, ["audit-trail", "check"], env, project).status).toBe(0);
   });
 
   // Artifact manifests are agent-authored input, so a path that leaves the
