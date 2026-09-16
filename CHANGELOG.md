@@ -3,6 +3,17 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.59.4-alpha] - 2026-09-16
+
+### Added
+
+- **Evidence provenance for JTBD voice examples.** Thinking Styles now renders
+  a `Voice example` alongside `Source & status`: direct quote, paraphrase, or
+  synthesis derived from user-provided interview/research inputs; or an
+  explicitly simulated hypothesis. The same provenance rules apply throughout
+  the JTBD playbook, keeping real supplied evidence distinct from plausible
+  examples.
+
 ## [0.59.3-alpha] - 2026-09-16
 
 ### Fixed
