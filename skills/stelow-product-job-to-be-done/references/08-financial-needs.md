@@ -9,6 +9,18 @@ Focuses on the perspective of the financial decision maker — whoever approves 
 - `[include here the market definition of the segment, if chosen by the user, or job to be done mapped]`
 - `[all info of the segment chosen by the user]` — if available
 
+## Research Assist (optional)
+
+When current alternatives, pricing, buying constraints, or cost structures
+would materially change the candidate financial needs, use the shared
+web-research contract (`../../stelow-workflow-orchestrator/references/cli-tools/web-research.md`).
+Use `last30days` only when recent pricing, procurement, or category changes
+could alter the candidate set. Treat all research-led scores as **bet
+prioritization**, not measurements of demand, willingness to pay, or solution
+failure. When research contributed, append the required
+[Research-led Draft Bets](../SKILL.md#hypothesis-and-bet-discipline) section
+after the native output.
+
 ---
 
 ## Prompt Completo

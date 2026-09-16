@@ -16,6 +16,8 @@ or workarounds, use the shared web-research contract
 generate candidate situational variables. Use `last30days` only for recent
 context shifts. Treat the result as hypotheses about circumstances, not claims
 about their frequency or impact, until interviews or observation validate them.
+When research contributed, append the required [Research-led Draft Bets](../SKILL.md#hypothesis-and-bet-discipline)
+section after the native output.
 
 ---
 

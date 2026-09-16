@@ -18,7 +18,9 @@ surface candidate steps, tools, handoffs, and failure points when the job or
 niche is unfamiliar. Use `last30days` only when a recent workflow change could
 matter. The resulting Job Map remains a draft guide: label research-led steps
 as bets and validate their sequence, frequency, and importance with people who
-perform the job.
+perform the job. When research contributed, append the required
+[Research-led Draft Bets](../SKILL.md#hypothesis-and-bet-discipline) section
+after the native output.
 
 ---
 

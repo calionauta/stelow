@@ -20,7 +20,9 @@ find candidate desired outcomes, constraints, and alternatives in an unfamiliar
 niche. Use `last30days` only when recent changes could alter those candidates.
 Do not treat feature requests, reviews, or product marketing as validated
 desired outcomes; label research-led criteria as draft bets and specify the
-interview or behavioral evidence needed to test them.
+interview or behavioral evidence needed to test them. When research
+contributed, append the required [Research-led Draft Bets](../SKILL.md#hypothesis-and-bet-discipline)
+section after the native output.
 
 ---
 

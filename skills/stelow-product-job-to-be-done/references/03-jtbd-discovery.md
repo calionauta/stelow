@@ -16,7 +16,9 @@ surface the language, workarounds, and contexts that may imply candidate Jobs.
 Use `last30days` only when recent practitioner signals could reveal a new or
 changed context. A source mentioning a solution is not evidence of the Job it
 serves: return each research-led Job as a draft hypothesis and name the next
-interview or observation that could disconfirm it.
+interview or observation that could disconfirm it. When research contributed,
+append the required [Research-led Draft Bets](../SKILL.md#hypothesis-and-bet-discipline)
+section after the native output.
 
 ---
 

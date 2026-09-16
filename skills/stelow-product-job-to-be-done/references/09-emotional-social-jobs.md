@@ -9,6 +9,15 @@ social jobs (how they want to be perceived/avoid being perceived) related to the
 - `[include here the market definition of the segment, if chosen by the user, or job to be done mapped]`
 - `[segment chosen by the user]` — segment information, if available
 
+## Research Guardrail
+
+Do not use web research to assert what people feel, fear, value, or want others
+to think of them. Research may surface language for candidate emotional or
+social Jobs, but it cannot establish their prevalence, intensity, or cause.
+Return research-led statements as hypotheses for interview validation, and
+append the required [Research-led Draft Bets](../SKILL.md#hypothesis-and-bet-discipline)
+section only when research contributed.
+
 ---
 
 ## Prompt Completo

@@ -18,7 +18,9 @@ Use `last30days` only when recent launches, practitioner discussion, or niche
 movement could change the map; it complements primary sources and does not
 prove that people hire a solution for this job. Distinguish unverified
 hypotheses from findings, record coverage limitations, and do not invent
-competitors when research coverage is incomplete.
+competitors when research coverage is incomplete. When research contributed,
+append the required [Research-led Draft Bets](../SKILL.md#hypothesis-and-bet-discipline)
+section after the native output.
 
 ---
 

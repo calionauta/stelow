@@ -16,6 +16,9 @@ current niche conditions rather than supplied evidence, use the shared
 web-research contract (`../../stelow-workflow-orchestrator/references/cli-tools/web-research.md`).
 Use `last30days` only if a recent signal could change the segment ranking;
 treat it as context, not validation that the segment has the stated struggle.
+When research contributed, append the required
+[Research-led Draft Bets](../SKILL.md#hypothesis-and-bet-discipline) section
+after the native output.
 
 ---
 

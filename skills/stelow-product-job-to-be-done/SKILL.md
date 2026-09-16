@@ -131,6 +131,23 @@ For a prioritized research-led bet, record:
 - **Next validation:** the cheapest interview, observation, or behavioral-data
   check that could disconfirm it.
 
+### Required Research Appendix
+
+When research contributed to the output, append this section after the native
+prompt output. Do not add an empty appendix when no research was used.
+
+```markdown
+## Research-led Draft Bets
+
+> Directional guide, not a market measurement or validated JTBD finding.
+
+### Bet: [candidate Job, step, outcome, segment, or alternative]
+- **Why now:** [decision context and signals]
+- **Evidence and bias:** [source types, recency, coverage gaps, and missing or overrepresented perspectives]
+- **Confidence:** [low | medium | high — directional only]
+- **Next validation:** [the cheapest interview, observation, or behavioral-data check that could disconfirm it]
+```
+
 Interviews and user-provided behavioral evidence establish why people hire,
 switch, or struggle. Record coverage limitations and do not fabricate findings
 when research is unavailable.
