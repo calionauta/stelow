@@ -1,0 +1,30 @@
+name: notify bb-plugin-stelow
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  dispatch:
+    if: ${{ secrets.BB_PLUGIN_STELOW_DISPATCH_TOKEN != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
+          fetch-depth: 1
+      - id: source
+        run: echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.BB_PLUGIN_STELOW_DISPATCH_TOKEN }}
+          script: |
+            await github.rest.repos.createDispatchEvent({
+              owner: "calionauta",
+              repo: "bb-plugin-stelow",
+              event_type: "stelow-release",
+              client_payload: {
+                commit: "${{ steps.source.outputs.commit }}",
+                version: context.payload.release.tag_name
+              }
+            });
