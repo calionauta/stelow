@@ -91,6 +91,29 @@ For a complete JTBD analysis, follow this logical sequence:
 
 ---
 
+## Research Mode (current or niche context)
+
+JTBD is grounded first in the user's context and in interviews: use the LLM to
+form hypotheses, not to invent evidence about people. Do not search by default
+for a full mapping or a conceptual job analysis.
+
+Use the shared web-research contract (`../stelow-workflow-orchestrator/references/cli-tools/web-research.md`)
+only when current or niche-specific facts would materially change the work —
+for example, named competitors or alternatives, a recently changing category,
+an emerging practice, or a score based on the current solution landscape. Use
+host-native search and primary sources to verify those facts. Add `last30days`
+only when recent launches, practitioner discussion, or a current niche signal
+matters; it complements primary evidence and is never proof of a job or a
+customer struggle on its own.
+
+Keep the boundary explicit in the output: external research can establish what
+exists and what has recently changed; interviews and user-provided evidence
+establish why people hire, switch, or struggle. Mark unverified insights as
+hypotheses, record coverage limitations, and do not fabricate findings if
+research is unavailable.
+
+---
+
 ## References
 
 The 10 complete prompts are located in:

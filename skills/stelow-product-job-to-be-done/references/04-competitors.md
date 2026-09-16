@@ -10,7 +10,15 @@ but any solution that fulfills the same job. Includes direct, indirect, and hidd
 
 ## Evidence Policy
 
-When naming specific existing products or making claims about the current market, verify them through the shared web-research contract (`../../stelow-workflow-orchestrator/references/cli-tools/web-research.md`). Treat user-provided examples as context, distinguish unverified hypotheses from findings, and do not invent competitors when research coverage is incomplete.
+Start with the user's examples and the LLM's solution categories to form
+candidate direct, indirect, and hidden competitors. When naming specific
+existing products or making claims about the current market, verify them
+through the shared web-research contract (`../../stelow-workflow-orchestrator/references/cli-tools/web-research.md`).
+Use `last30days` only when recent launches, practitioner discussion, or niche
+movement could change the map; it complements primary sources and does not
+prove that people hire a solution for this job. Distinguish unverified
+hypotheses from findings, record coverage limitations, and do not invent
+competitors when research coverage is incomplete.
 
 ---
 
