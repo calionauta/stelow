@@ -60,6 +60,10 @@ disable-model-invocation: true
 
 19. **Pay users with tokens.** If you create a token for the market, you can pay people to join, even when there's no activity.
 
+## Research First (market context)
+
+Tactics fail most often from wrong context, not wrong execution. Before picking tactics, establish market type, sides, and comparables via the shared web-research contract (`../stelow-workflow-orchestrator/references/cli-tools/web-research.md`): host search for market facts and comparable marketplaces first, `last30days` as a recency check on the shortlisted tactics ("has anyone tried tactic N in this niche recently, and what happened?"). Skip when the user already supplied context.
+
 ## Examples
 
 ### Example: tutors won't join the tutoring marketplace
@@ -67,6 +71,7 @@ disable-model-invocation: true
 **Input:** "We have students waiting, no tutors. What now?"
 
 **Steps:**
+0. Establish context via Research First (tutoring vertical, supply-constrained, comparables) — skip if already known.
 1. Name the harder side (supply: tutors).
 2. Pull supply-side tactics (guaranteed first earnings, concierge onboarding, single-player value).
 3. Sequence: unblock supply before stimulating more demand.
@@ -81,6 +86,8 @@ disable-model-invocation: true
 - The problem is trust/matching, not acquisition — switch tactic families.
 ### One side subsidizes forever
 - Name the path to take-rate; permanent subsidy is a bug, not a model.
+### Picked tactics without market context
+- Go back to Research First; a thin-everywhere diagnosis without comparables is a guess.
 
 ## Entry (mode detection)
 
