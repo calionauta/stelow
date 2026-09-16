@@ -18,18 +18,20 @@ A skill for producing rigorous, structured market analysis using multiple comple
 
 ## Interaction Tool Guidelines
 
-**IMPORTANT**: When the user needs to choose between predefined options, ALWAYS use the `question` tool (if available) with enumerated format:
+**IMPORTANT**: When the user needs to choose between predefined options, ALWAYS ask through the portable ask contract (`../stelow-workflow-orchestrator/references/cli-tools/ask.md` — host-native question tool, else `stelow ask`, else enumerated text) with enumerated format:
 - Options with short `label` and `description`
 - Examples: variant selection (General Deep/Weekly Intelligence), topic confirmation, geographic focus, etc.
-
-When `question` tool is not available, use enumerated text in chat (A/B/C/D or 1/2/3).
 
 ---
 
 ## When to Use Each Variant
 
 - **General Deep Analysis**: For broad, timeless strategic studies of a topic, market, or industry over time horizons (past → present → future 5 years).
-- **Weekly Intelligence Canvas**: For fast-moving, 7-day competitive intelligence reports. Works best with real-time search tools (e.g., Grok, Perplexity, or Claude with web search).
+- **Weekly Intelligence Canvas**: For fast-moving, 7-day competitive intelligence reports.
+
+## Evidence Policy
+
+When either variant relies on external market facts rather than context the user supplied, use the shared web-research contract (`../stelow-workflow-orchestrator/references/cli-tools/web-research.md`). It establishes source quality, recency, coverage, and no-fabrication rules; `last30days` is complementary when current signals materially affect the analysis.
 
 ---
 
@@ -79,7 +81,7 @@ Use this for a structured 7-day competitive intelligence report. Best suited for
 
 ### Required Inputs (ask the user if not provided)
 
-- Use `question` tool to gather:
+- Ask through the portable ask contract (`../stelow-workflow-orchestrator/references/cli-tools/ask.md`) to gather:
   - `{my business}`: The user's company or product
   - `{my job to be done or niche}`: The market/niche to analyze
 - Always include option: "I want you to recommend based on context"
@@ -102,7 +104,7 @@ For the past 7 days, collect and analyze all relevant:
 - 🔍 Strategic signals and foresight indicators
 
 ### 🌐 Data Sources
-Search across:
+Following the Evidence Policy, search across:
 - Company blogs, press releases, GitHub changelogs
 - News sites relevant to the niche
 - LinkedIn, X (Twitter), Reddit (practitioner communities)
@@ -211,7 +213,7 @@ Users
 - Keep all text scannable (< 2 pages)
 - Use **bold** for emphasis, not italics
 - Include a Mermaid flow in section 3 and an ASCII Wardley Map in section 6
-- Cite sources with real clickable links — no inline citations
+- Cite material factual claims inline with a real clickable link and source date; include the complete source list in section 8
 
 ---
 
@@ -296,4 +298,3 @@ the rest of this file (unchanged). Summary:
 Primary actions (per stages.yaml): `read, write`. Run only the actions that
 produce the artifacts promised in `## Hand-off`; skip anything that does
 not advance the workflow.
-

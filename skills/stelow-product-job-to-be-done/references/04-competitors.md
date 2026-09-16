@@ -8,6 +8,10 @@ but any solution that fulfills the same job. Includes direct, indirect, and hidd
 **Variables to fill in:**
 - `[fill in]`: The Job To Be Done to be analyzed
 
+## Evidence Policy
+
+When naming specific existing products or making claims about the current market, verify them through the shared web-research contract (`../../stelow-workflow-orchestrator/references/cli-tools/web-research.md`). Treat user-provided examples as context, distinguish unverified hypotheses from findings, and do not invent competitors when research coverage is incomplete.
+
 ---
 
 ## Prompt Completo

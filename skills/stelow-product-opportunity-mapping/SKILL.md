@@ -18,11 +18,9 @@ A skill for generating structured strategic analyses that surface opportunities 
 
 ## Interaction Tool Guidelines
 
-**IMPORTANT**: When the user needs to choose between predefined options, ALWAYS use the `question` tool (if available) with enumerated format:
+**IMPORTANT**: When the user needs to choose between predefined options, ALWAYS ask through the portable ask contract (`../stelow-workflow-orchestrator/references/cli-tools/ask.md` — host-native question tool, else `stelow ask`, else enumerated text) with enumerated format:
 - Options with short `label` and `description`
 - Examples: input confirmation, analysis type, next steps, etc.
-
-When `question` tool is not available, use enumerated text in chat (A/B/C/D or 1/2/3).
 
 ---
 
@@ -33,7 +31,10 @@ When `question` tool is not available, use enumerated text in chat (A/B/C/D or 1
    - **`<PRODUTOS ATUAIS PARA CLIENTES EXTERNOS>` (optional)**: Current external-facing products or services — used to inspire integration or expansion ideas.
    - **`<ORGANIZATION CURRENT INTERNAL TOOLS>` (optional)**: Internal tools/platforms — used only when the input relates to internal organizational changes.
    - Always include option: "I want you to recommend based on context"
-   - Fallback (no question tool at all): "Provide the main input (problem/idea) and optionally current products and internal tools"
+
+## Evidence Policy
+
+Treat the user's input as primary. When an opportunity ranking depends on external market, competitor, regulatory, or trend claims that the user did not supply, gather and report that evidence through the shared web-research contract (`../stelow-workflow-orchestrator/references/cli-tools/web-research.md`). Skip research when it would not change the recommendation; mark any remaining unsupported assumptions as low-confidence.
 
 ---
 
@@ -223,7 +224,7 @@ If the user input is too vague, ambiguous, or irrelevant, output:
 **Input:** "Growth stalled. Map where we should look."
 
 **Steps:**
-1. Collect required input (segments, pains, evidence).
+1. Collect required input (segments, pains, evidence); use the Evidence Policy when the ranking depends on external facts.
 2. Generate the opportunity space (needs × segments).
 3. Rank by evidence strength × strategic fit, not by excitement.
 
@@ -281,4 +282,3 @@ the rest of this file (unchanged). Summary:
 Primary actions (per stages.yaml): `read, write`. Run only the actions that
 produce the artifacts promised in `## Hand-off`; skip anything that does
 not advance the workflow.
-

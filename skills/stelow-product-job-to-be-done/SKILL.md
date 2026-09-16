@@ -76,8 +76,6 @@ For a complete JTBD analysis, follow this logical sequence:
 - Options with short `label` and `description`
 - Examples: prompt selection (1-10), analysis type, next steps, etc.
 
-When no question tool is available, use enumerated text in chat (A/B/C/D or 1/2/3).
-
 ---
 
 ## General Instructions for the Agent
@@ -188,4 +186,3 @@ the rest of this file (unchanged). Summary:
 Primary actions (per stages.yaml): `read, write`. Run only the actions that
 produce the artifacts promised in `## Hand-off`; skip anything that does
 not advance the workflow.
-

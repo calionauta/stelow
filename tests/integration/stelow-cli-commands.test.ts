@@ -18,7 +18,8 @@
  */
 import { describe, it, expect, afterAll } from "vitest";
 import { execSync, spawnSync, spawn } from "node:child_process";
-import { mkdtempSync, writeFileSync, mkdirSync, readFileSync, existsSync, rmSync } from "node:fs";import { tmpdir } from "node:os";
+import { mkdtempSync, writeFileSync, mkdirSync, readFileSync, existsSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { randomBytes } from "node:crypto";
@@ -26,6 +27,8 @@ import { randomBytes } from "node:crypto";
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const HELPER = join(REPO_ROOT, "scripts", "stelow");
 const TRANSITIONS_SRC = join(REPO_ROOT, "skills", "stelow-workflow-orchestrator", "references", "transitions.md");
+const POLL_INTERVAL_MS = 25;
+const PENDING_FILE_ATTEMPTS = 100;
 
 interface Workdir { dir: string; stateDir: string; env: Record<string, string>; }
 
@@ -61,6 +64,14 @@ function run(wd: Workdir, args: string[], extraEnv: Record<string, string> = {})
     env: { ...process.env, PATH: process.env.PATH ?? "", ...wd.env, ...extraEnv },
   });
   return { status: r.status ?? -1, stdout: r.stdout ?? "", stderr: r.stderr ?? "" };
+}
+
+async function waitForFile(path: string, attempts = PENDING_FILE_ATTEMPTS): Promise<boolean> {
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    if (existsSync(path)) return true;
+    await new Promise<void>((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
+  }
+  return existsSync(path);
 }
 
 afterAll(() => {
@@ -216,13 +227,8 @@ describe("ask file protocol", () => {
     });
     let stdout = "";
     child.stdout.on("data", (chunk) => { stdout += String(chunk); });
-    // wait for pending.json, then answer
-    const deadline = Date.now() + 10000;
-    while (Date.now() < deadline) {
-      if (existsSync(join(askDir, "pending.json"))) break;
-      await new Promise((resolve) => setTimeout(resolve, 100));
-    }
-    expect(existsSync(join(askDir, "pending.json"))).toBe(true);
+    // Wait for the helper's durable handoff before writing the answer.
+    expect(await waitForFile(join(askDir, "pending.json"))).toBe(true);
     writeFileSync(join(askDir, "answer.json"), JSON.stringify({ answers: { q1: ["Red"] } }));
     const exit: number = await new Promise((resolve) => child.on("close", resolve));
     expect(exit).toBe(0);
@@ -254,11 +260,7 @@ describe("ask file protocol", () => {
     });
     let stdout = "";
     child.stdout.on("data", (chunk) => { stdout += String(chunk); });
-    const deadline = Date.now() + 10000;
-    while (Date.now() < deadline) {
-      if (existsSync(join(askDir, "pending.json"))) break;
-      await new Promise((resolve) => setTimeout(resolve, 100));
-    }
+    expect(await waitForFile(join(askDir, "pending.json"))).toBe(true);
     writeFileSync(join(askDir, "answer.json"), JSON.stringify({ cancelled: true, reason: "user" }));
     const exit: number = await new Promise((resolve) => child.on("close", resolve));
     expect(exit).toBe(1);
