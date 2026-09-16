@@ -3,6 +3,16 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.59.8-alpha] - 2026-09-16
+
+### Fixed
+
+- **Untracked worktree evidence now uses the Git toplevel.** In a monorepo
+  package, `git ls-files --others` emits repository-relative paths, not paths
+  relative to the package. The receipt now hashes those files from the
+  toplevel, so edits to an untracked file beside the package make the trail
+  stale as promised.
+
 ## [0.59.7-alpha] - 2026-09-16
 
 ### Fixed

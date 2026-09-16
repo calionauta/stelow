@@ -378,6 +378,15 @@ describe("audit-trail", () => {
     const trail = readFileSync(join(stateDir, "audit-trail.md"), "utf8");
     expect(trail).toMatch(/\| planning \| document \| \[technical plan\]\(plans\/spec-tech_v1\.md\) \| `[a-f0-9]{64}` \|/);
     expect(run(wd, ["audit-trail", "check"], env, project).status).toBe(0);
+
+    // Git reports paths from its toplevel, not from `packages/app`. An
+    // untracked repository-root file must therefore be hashed by contents;
+    // otherwise its edits would leave this receipt incorrectly current.
+    const rootScratch = join(wd.dir, "repo-level-scratch.txt");
+    writeFileSync(rootScratch, "first version\n");
+    expect(run(wd, ["audit-trail", "build"], env, project).status).toBe(0);
+    writeFileSync(rootScratch, "second version\n");
+    expect(run(wd, ["audit-trail", "check"], env, project).status).toBe(1);
   });
 
   // Artifact manifests are agent-authored input, so a path that leaves the

@@ -1342,6 +1342,7 @@ def git_snapshot():
     if head.returncode != 0:
         return {"root": "not a Git repository", "head": "not a Git repository", "tracked": "not available", "untracked": "not available", "untracked_count": 0}
     toplevel = run(["rev-parse", "--show-toplevel"]).stdout.decode().strip() or root_real
+    toplevel_real = os.path.realpath(toplevel)
     diff = run(["diff", "--no-ext-diff", "--binary", "HEAD"])
     untracked = run(["ls-files", "--others", "--exclude-standard", "-z"])
     entries = []
@@ -1349,9 +1350,10 @@ def git_snapshot():
         for raw in untracked.stdout.split(b"\0"):
             if not raw: continue
             path = os.fsdecode(raw)
-            # `git ls-files` yields repository-relative paths, so this one
-            # resolves against the toplevel rather than the invocation dir.
-            absolute = safe_path(path, root_real)
+            # `git ls-files` yields repository-relative paths, so resolve
+            # against the Git toplevel rather than the project invocation
+            # directory. Those differ when Stelow runs in a monorepo package.
+            absolute = safe_path(path, toplevel_real)
             if not absolute: fail("untracked path must stay inside the project: " + path)
             # The trail is written after this digest and must not digest itself:
             # including it would make every check() of its own output stale.
