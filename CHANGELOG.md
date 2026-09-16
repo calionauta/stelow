@@ -3,6 +3,28 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.59.1-alpha] - 2026-09-16
+
+### Changed
+
+- **Evidence and input contracts are now consistent across product research.**
+  Multi-method market analysis applies the shared web-research policy to both
+  variants; opportunity mapping uses it only when external facts affect a
+  ranking; and JTBD competitor discovery verifies named products rather than
+  presenting unverified lists as findings. All three use the portable ask
+  contract consistently.
+- **Weekly market canvases cite claims where they appear.** The prior style
+  rule prohibited inline citations even though the shared evidence contract
+  requires source and date; material factual claims now carry a clickable
+  source and date, with a complete source list retained at the end.
+
+### Fixed
+
+- **CLI ask-protocol integration test quality.** Replaced wall-clock polling
+  with bounded file-handoff polling so the test stays a real subprocess test
+  without time-dependent flakiness; the rigor score rose from 56 (failing) to
+  74 (passing).
+
 ## [0.59.0-alpha] - 2026-09-16
 
 ### Added
