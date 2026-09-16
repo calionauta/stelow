@@ -3,6 +3,25 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.59.3-alpha] - 2026-09-16
+
+### Fixed
+
+- **Research-led JTBD output is now structurally accountable.** Every prompt
+  that uses research must append a Draft Bets section with the candidate,
+  rationale, source bias and gaps, directional confidence, and a cheapest
+  disconfirming validation step. Empty appendices are forbidden.
+- **Financial needs now use current-market research carefully.** Pricing,
+  alternatives, procurement constraints, and cost structures can inform
+  candidate needs, while their scores remain bets rather than demand or
+  willingness-to-pay measurements.
+- **Guardrails against inferred mental states.** Thinking Styles and Emotional
+  & Social Jobs can use research only for candidate language and context;
+  inner states remain interview hypotheses, and generated excerpts cannot be
+  presented as real user quotes.
+- **Alpha release metadata.** `v0.59.2-alpha` is now marked as a GitHub
+  pre-release; subsequent alpha releases follow the same setting.
+
 ## [0.59.2-alpha] - 2026-09-16
 
 ### Added
