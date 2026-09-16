@@ -3,6 +3,24 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.59.2-alpha] - 2026-09-16
+
+### Added
+
+- **Research-assisted JTBD discovery.** The JTBD playbook can now use the
+  shared web-research contract to surface candidate Jobs, situational
+  variables, Job Map steps, desired outcomes, and alternatives in unfamiliar
+  or changing niches. `last30days` is a conditional complementary signal for
+  recent practitioner discussion or category movement.
+
+### Changed
+
+- **Research-led JTBD outputs are draft bets, not market facts.** Each
+  research-assisted candidate is framed as a hypothesis and prioritized by
+  decision context, evidence fit, coverage, and recency. The playbook records
+  source bias and gaps, directional confidence, and the cheapest next
+  interview, observation, or behavioral-data check that could disconfirm it.
+
 ## [0.59.1-alpha] - 2026-09-16
 
 ### Changed
