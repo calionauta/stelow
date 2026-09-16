@@ -8,6 +8,16 @@ Useful when the user has a product/solution idea and wants to understand the und
 **Variables to fill in:**
 - `[if the user has already chosen a segment, fill in with the market of the segment, otherwise fill in with the job to be done or solution filled in by the user]`
 
+## Research Assist (optional)
+
+For an unfamiliar or fast-moving niche, use the shared web-research contract
+(`../../stelow-workflow-orchestrator/references/cli-tools/web-research.md`) to
+surface the language, workarounds, and contexts that may imply candidate Jobs.
+Use `last30days` only when recent practitioner signals could reveal a new or
+changed context. A source mentioning a solution is not evidence of the Job it
+serves: return each research-led Job as a draft hypothesis and name the next
+interview or observation that could disconfirm it.
+
 ---
 
 ## Prompt Completo

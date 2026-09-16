@@ -10,6 +10,16 @@ sequence of actions the customer needs to execute to complete the job. Use after
 - `[segment chosen by the user; if none chosen, consider all discovered]`: Segment (optional)
 - `[actor chosen by the user]`: Perspective/actor to be considered (e.g., Beneficiary, Performer)
 
+## Research Assist (optional)
+
+Use the shared web-research contract
+(`../../stelow-workflow-orchestrator/references/cli-tools/web-research.md`) to
+surface candidate steps, tools, handoffs, and failure points when the job or
+niche is unfamiliar. Use `last30days` only when a recent workflow change could
+matter. The resulting Job Map remains a draft guide: label research-led steps
+as bets and validate their sequence, frequency, and importance with people who
+perform the job.
+
 ---
 
 ## Prompt Completo

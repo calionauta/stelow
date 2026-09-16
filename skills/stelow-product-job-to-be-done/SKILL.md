@@ -93,24 +93,47 @@ For a complete JTBD analysis, follow this logical sequence:
 
 ## Research Mode (current or niche context)
 
-JTBD is grounded first in the user's context and in interviews: use the LLM to
-form hypotheses, not to invent evidence about people. Do not search by default
-for a full mapping or a conceptual job analysis.
+JTBD is grounded first in the user's context and in interviews. The LLM and
+external research can generate useful candidates — they do not invent evidence
+about people or replace validation.
 
 Use the shared web-research contract (`../stelow-workflow-orchestrator/references/cli-tools/web-research.md`)
-only when current or niche-specific facts would materially change the work —
-for example, named competitors or alternatives, a recently changing category,
-an emerging practice, or a score based on the current solution landscape. Use
-host-native search and primary sources to verify those facts. Add `last30days`
-only when recent launches, practitioner discussion, or a current niche signal
-matters; it complements primary evidence and is never proof of a job or a
-customer struggle on its own.
+when current or niche-specific material can help discover or test candidates:
 
-Keep the boundary explicit in the output: external research can establish what
-exists and what has recently changed; interviews and user-provided evidence
-establish why people hire, switch, or struggle. Mark unverified insights as
-hypotheses, record coverage limitations, and do not fabricate findings if
-research is unavailable.
+- language people use for a struggle, workaround, or desired progress;
+- possible Jobs, situational variables, Job Map steps, and desired outcomes;
+- named competitors or alternatives, a changing category, or an emerging
+  practice; and
+- a score that relies on the current solution landscape.
+
+Use host-native search and primary sources to establish what exists and what
+has changed. Add `last30days` when recent launches, practitioner discussion,
+or a current niche signal could change the candidate set or its priority. It
+complements primary evidence; a frequent discussion or launch is never proof
+of a Job, a struggle, prevalence, or causal relationship.
+
+### Hypothesis and Bet Discipline
+
+When research contributes to a JTBD output, call it a **draft guide**, not a
+market finding. Mark each research-led Job, step, desired outcome, or ranking
+as a **hypothesis**. Prioritize hypotheses as **bets** using the decision
+context, fit with the supplied evidence, source coverage, and recency — not as
+a scientific measurement of demand or truth.
+
+For a prioritized research-led bet, record:
+
+- **Bet:** the candidate Job, step, outcome, or segment;
+- **Why now:** the supplied context and signals that made it worth exploring;
+- **Evidence and bias:** source types, gaps, recency, and whose perspective is
+  overrepresented or missing;
+- **Confidence:** directional only (low, medium, or high), never a statistical
+  claim; and
+- **Next validation:** the cheapest interview, observation, or behavioral-data
+  check that could disconfirm it.
+
+Interviews and user-provided behavioral evidence establish why people hire,
+switch, or struggle. Record coverage limitations and do not fabricate findings
+when research is unavailable.
 
 ---
 

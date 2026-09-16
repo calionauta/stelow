@@ -12,6 +12,16 @@ Run AFTER Prompt 6 (Situational Variables) for richer, more specific results.
 - `[all info of the segment chosen by the user]` — if available
 - `[include here the list of factors and variables discovered in the previous step]` — output of Prompt 6
 
+## Research Assist (optional)
+
+Use the shared web-research contract
+(`../../stelow-workflow-orchestrator/references/cli-tools/web-research.md`) to
+find candidate desired outcomes, constraints, and alternatives in an unfamiliar
+niche. Use `last30days` only when recent changes could alter those candidates.
+Do not treat feature requests, reviews, or product marketing as validated
+desired outcomes; label research-led criteria as draft bets and specify the
+interview or behavioral evidence needed to test them.
+
 ---
 
 ## Prompt Completo
