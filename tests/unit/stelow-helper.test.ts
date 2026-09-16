@@ -14,7 +14,7 @@
 
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import { execSync, spawnSync } from "node:child_process";
-import { mkdtempSync, writeFileSync, mkdirSync, readFileSync, existsSync, rmSync, utimesSync } from "node:fs";
+import { mkdtempSync, writeFileSync, mkdirSync, readFileSync, existsSync, realpathSync, rmSync, utimesSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { randomBytes } from "node:crypto";
@@ -285,18 +285,32 @@ stages: {}
 
 describe("audit-trail", () => {
   let wd: Workdir;
-  beforeEach(() => { wd = makeWorkdir(); makeState(wd, "audit"); });
+  beforeEach(() => { wd = makeWorkdir(); });
 
-  it("builds a canonical trace and rejects state or artifact drift", () => {
+  const PLAN = ".stelow/2026-09-16/sw-audit/plans/spec-tech_v1.md";
+
+  // One registered artifact under the workflow's own state dir: the minimum
+  // the trail exists to link. Returns the state dir the helper is pointed at.
+  function setup(artifactPath: string = PLAN): { stateDir: string; env: Record<string, string>; state: string } {
+    makeState(wd, "audit");
     const stateDir = join(wd.dir, ".stelow", "2026-09-16", "sw-audit");
     mkdirSync(join(stateDir, "plans"), { recursive: true });
-    const state = readFileSync(join(wd.dir, "state.md"), "utf8").replace("---\n# t", "artifacts:\n  - stage: planning\n    kind: document\n    label: technical plan\n    path: .stelow/2026-09-16/sw-audit/plans/spec-tech_v1.md\n---\n# t");
+    const state = readFileSync(join(wd.dir, "state.md"), "utf8").replace(
+      "---\n# t",
+      `artifacts:\n  - stage: planning\n    kind: document\n    label: technical plan\n    path: ${artifactPath}\n---\n# t`,
+    );
     writeFileSync(join(stateDir, "state.md"), state);
-    writeFileSync(join(stateDir, "plans", "spec-tech_v1.md"), "# Plan\n");
-    const env = { STELOW_STATEDIR: stateDir };
+    if (!artifactPath.startsWith("/") && !artifactPath.split("/").includes("..")) {
+      writeFileSync(join(wd.dir, artifactPath), "# Plan\n");
+    }
+    return { stateDir, env: { STELOW_STATEDIR: stateDir }, state };
+  }
+
+  it("builds a canonical trace and rejects state or artifact drift", () => {
+    const { stateDir, env, state } = setup();
     expect(run(wd, ["audit-trail", "build"], env).status).toBe(0);
     const trail = readFileSync(join(stateDir, "audit-trail.md"), "utf8");
-    expect(trail).toContain("<!-- stelow-audit-trail: v1 -->");
+    expect(trail).toContain("<!-- stelow-audit-trail: v2 -->");
     expect(trail).toContain("[technical plan](plans/spec-tech_v1.md)");
     expect(trail).toMatch(/[a-f0-9]{64}/);
     expect(run(wd, ["audit-trail", "check"], env).status).toBe(0);
@@ -309,5 +323,84 @@ describe("audit-trail", () => {
     const stale = run(wd, ["audit-trail", "check"], env);
     expect(stale.status).toBe(1);
     expect(stale.stderr).toContain("stale");
+  });
+
+  // The receipt must attest the whole tree the work was verified in, not only
+  // the commit: uncommitted and untracked code is exactly what a Done card is
+  // reviewed for, and it used to pass the check untouched under a fixed HEAD.
+  it("pins the repository snapshot and goes stale on worktree drift", () => {
+    const { stateDir, env } = setup();
+    const build = run(wd, ["audit-trail", "build", "--json"], env);
+    expect(build.status).toBe(0);
+    const result = JSON.parse(build.stdout);
+    expect(result.contract).toBe("v2");
+    expect(result.snapshot.head).toMatch(/^[a-f0-9]{40}$/);
+    expect(result.snapshot.root).toBe(realpathSync(wd.dir));
+    expect(result.snapshot.tracked).toMatch(/^[a-f0-9]{64}$/);
+    expect(result.snapshot.untracked_count).toBeGreaterThan(0);
+    // The trail is written after its own digest and must never digest itself,
+    // or every check of its own output would read as stale.
+    expect(readFileSync(join(stateDir, "audit-trail.md"), "utf8")).toContain("| Git repository |");
+    expect(run(wd, ["audit-trail", "check"], env).status).toBe(0);
+
+    // Uncommitted change to a tracked file: same HEAD, different tree.
+    writeFileSync(join(wd.dir, "scripts", "stelow"), `${readFileSync(join(wd.dir, "scripts", "stelow"), "utf8")}\n# drift\n`);
+    expect(run(wd, ["audit-trail", "check"], env).status).toBe(1);
+    expect(run(wd, ["audit-trail", "build"], env).status).toBe(0);
+    expect(run(wd, ["audit-trail", "check"], env).status).toBe(0);
+
+    // A new untracked file is a change too, without touching HEAD at all.
+    writeFileSync(join(wd.dir, "scratch.txt"), "new work\n");
+    expect(run(wd, ["audit-trail", "check"], env).status).toBe(1);
+    expect(run(wd, ["audit-trail", "build"], env).status).toBe(0);
+    const rebuilt = JSON.parse(run(wd, ["audit-trail", "check", "--json"], env).stdout);
+    expect(rebuilt.ok).toBe(true);
+    expect(rebuilt.snapshot.untracked_count).toBeGreaterThan(result.snapshot.untracked_count);
+  });
+
+  // Artifact manifests are agent-authored input, so a path that leaves the
+  // project must fail closed instead of letting the trail hash or link a file
+  // outside the workspace.
+  it("refuses artifact paths that leave the project", () => {
+    const escaped = setup("../outside.md");
+    const traversal = run(wd, ["audit-trail", "build"], escaped.env);
+    expect(traversal.status).toBe(1);
+    expect(traversal.stderr).toContain("stay inside the project");
+    expect(() => readFileSync(join(escaped.stateDir, "audit-trail.md"), "utf8")).toThrow();
+
+    const absolute = setup("/etc/hostname");
+    const outside = run(wd, ["audit-trail", "build"], absolute.env);
+    expect(outside.status).toBe(1);
+    expect(outside.stderr).toContain("stay inside the project");
+  });
+
+  // --strict is the host completion gate: a workflow document that was written
+  // but never registered would otherwise be missing from the receipt's links.
+  it("--strict refuses unregistered workflow documents", () => {
+    const { stateDir, env } = setup();
+    expect(run(wd, ["audit-trail", "build"], env).status).toBe(0);
+    expect(readFileSync(join(stateDir, "audit-trail.md"), "utf8")).toContain("| Unregistered workflow documents | 0 |");
+    writeFileSync(join(stateDir, "lessons.md"), "# Lessons\n");
+
+    const strict = run(wd, ["audit-trail", "build", "--strict"], env);
+    expect(strict.status).toBe(1);
+    expect(strict.stderr).toContain("unregistered workflow documents");
+    expect(strict.stderr).toContain("lessons.md");
+    const strictJson = JSON.parse(run(wd, ["audit-trail", "build", "--strict", "--json"], env).stdout);
+    expect(strictJson.ok).toBe(false);
+    expect(strictJson.contract).toBe("v2");
+
+    // Without --strict the trail still records the gap instead of hiding it.
+    expect(run(wd, ["audit-trail", "build"], env).status).toBe(0);
+    expect(readFileSync(join(stateDir, "audit-trail.md"), "utf8")).toContain("| Unregistered workflow documents | 1 |");
+
+    // Registering it is the fix, and then the gate passes.
+    const state = readFileSync(join(stateDir, "state.md"), "utf8").replace(
+      "---\n# t",
+      `  - stage: audit\n    kind: document\n    label: lessons\n    path: .stelow/2026-09-16/sw-audit/lessons.md\n---\n# t`,
+    );
+    writeFileSync(join(stateDir, "state.md"), state);
+    expect(run(wd, ["audit-trail", "build", "--strict"], env).status).toBe(0);
+    expect(run(wd, ["audit-trail", "check", "--strict"], env).status).toBe(0);
   });
 });

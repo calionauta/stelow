@@ -29,10 +29,18 @@ scripts/stelow audit-trail build
 scripts/stelow audit-trail check
 ```
 
-The CLI owns the format and validates freshness against `state.md`, registered
-artifacts, and the current Git HEAD. Do not hand-write `audit-trail.md` or ask
-for permission to create it: it is the mandatory, deterministic receipt of a
-completed audit.
+The CLI owns the format and validates freshness against `state.md`, the
+registered artifacts, and the repository snapshot (Git root, `HEAD`, the
+tracked worktree diff, and the untracked manifest) — so the receipt covers the
+code as it stands, not just the last commit. Do not hand-write
+`audit-trail.md` or ask for permission to create it: it is the mandatory,
+deterministic receipt of a completed audit.
+
+Every document the audit produced must be registered in `state.md` first. The
+CLI never digests its own output, so `audit-trail.md` itself stays out of the
+manifest — but any *other* unregistered workflow document is invisible to the
+receipt, and a host that completes through `--strict` will refuse until it is
+registered. Registering it is the fix; do not reword the manifest.
 
 **Standalone usage:** This skill can be invoked outside the workflow
 by calling `stelow-workflow-execution-critique` with any path, URL, or no input.

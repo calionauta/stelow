@@ -19,7 +19,7 @@ scripts/stelow lock acquire --scope <id> --file <f>... [--ttl N] [--json]
 scripts/stelow lock release --scope <id> --file <f>...
 scripts/stelow lock check [--scope <id>] [--file <f>...] [--json]
 scripts/stelow config get <field> [default]
-scripts/stelow audit-trail build|check|path [--json]
+scripts/stelow audit-trail build|check|path [--strict] [--json]
 scripts/stelow schema [command]
 scripts/stelow --help
 ```
@@ -58,9 +58,27 @@ empty scope list. This is the single canonical scope parser — hosts shell
 out instead of maintaining a mirror.
 
 `audit-trail build` writes a canonical, deterministic `audit-trail.md` from
-the workflow state, registered artifacts, Git HEAD, and SHA-256 content hashes.
-`audit-trail check` fails when that projection is missing or stale. Hosts may
-render the result, but must not generate a competing format.
+the workflow state, the registered artifacts, and a repository snapshot, all
+as SHA-256 content hashes. The snapshot is the whole tree the work was
+verified in, not only the commit: Git repository root, `HEAD`, the tracked
+worktree diff (`git diff HEAD`), and a manifest of every untracked file. A
+later commit, an uncommitted edit, or a new untracked file therefore all make
+the receipt stale — which is the point, since a Done card is reviewed for
+exactly that work.
+
+`audit-trail check` recomputes the projection and fails when it is missing or
+stale. Artifact paths come from the agent-authored manifest, so any absolute
+path or `..` traversal is refused instead of being hashed or linked.
+`--strict` additionally refuses to build while any workflow document in the
+state directory is still unregistered — the host-facing completion gate, so a
+produced document can never be missing from the receipt's links.
+
+Both actions emit the same JSON envelope: `{ok, contract, path, artifacts,
+snapshot, unregistered}` on success, and `{ok: false, contract, path, error}`
+on refusal. `contract` pins the projection's shape (`v2`); a host that does
+not recognize the version must fail closed rather than complete on an unknown
+receipt format. Hosts may render the result, but must not generate a competing
+format.
 
 `lock` implements file-reservation locks for parallel scope dispatch
 (acquire/release/check under `<statedir>/locks/`). Exit 0 ok, 1 conflict
@@ -87,8 +105,10 @@ for the protocol (opt-in, TTL + stale-steal semantics).
 | `/sw-doctor` | `scripts/stelow doctor` |
 | `/sw-doctor --json` | `scripts/stelow doctor --json` |
 
-Slash-command versions remain available as skill commands and always delegate
-to this helper at runtime.
+The `/sw-*` spellings are conversational aliases an agent may recognize while
+reading a skill; they are not a portable interface. Every deterministic
+equivalent above is the CLI subcommand in the right-hand column — hosts and
+workers call that, and nothing in the core simulates a slash command.
 
 ## Env overrides
 

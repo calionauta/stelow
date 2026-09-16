@@ -717,11 +717,11 @@ commands = {
     "output": "scalar value, JSON for arrays/objects",
   },
   "audit-trail": {
-    "usage": "stelow audit-trail build|check|path [--json]",
-    "flags": ["--json"],
+    "usage": "stelow audit-trail build|check|path [--strict] [--json]",
+    "flags": ["--json", "--strict"],
     "env": ["STELOW_STATEDIR", "STELOW_STATE"],
-    "exit_codes": {"0": "built, valid, or path printed", "1": "missing state/trail or stale trail", "2": "usage"},
-    "output": "canonical audit-trail.md path or {ok, path, artifacts}",
+    "exit_codes": {"0": "built, valid, or path printed", "1": "missing state/trail, stale trail, unsafe artifact path, or unregistered documents with --strict", "2": "usage"},
+    "output": "canonical audit-trail.md path or {ok, contract, path, artifacts, snapshot}",
   },
 }
 if want and want not in commands:
@@ -1231,19 +1231,27 @@ PY
 # Agents author the work artifacts; this command links and inventories them
 # without trusting conversational memory or a host-specific database.
 do_audit_trail() {
-  local action="${1:-}" json=""
+  local action="${1:-}" json="" strict=""
   shift || true
   for arg in "$@"; do
-    case "$arg" in --json) json="1" ;; *) usage_error "audit-trail: unknown arg '$arg'" ;; esac
+    case "$arg" in --json) json="1" ;; --strict) strict="1" ;; *) usage_error "audit-trail: unknown arg '$arg'" ;; esac
   done
   case "$action" in build|check|path) ;; *) usage_error "audit-trail requires build, check, or path" ;; esac
-  python3 - "$ROOT" "$STATEDIR" "$STATE" "$action" "$json" <<'PY'
+  python3 - "$ROOT" "$STATEDIR" "$STATE" "$action" "$json" "$strict" <<'PY'
 import hashlib, json, os, re, subprocess, sys, tempfile
-root, statedir, state_path, action, want_json = sys.argv[1:]
+root, statedir, state_path, action, want_json, strict = sys.argv[1:]
 trail_path = os.path.join(statedir, "audit-trail.md")
+root_real = os.path.realpath(root)
+# Bumped only when this projection's shape changes. Hosts pin it so a helper
+# they do not recognize fails closed instead of completing on an unknown
+# receipt format.
+CONTRACT = "v2"
+
+def result(ok, **fields):
+    print(json.dumps({"ok": ok, "contract": CONTRACT, **fields}, default=str))
 
 def fail(message):
-    if want_json: print(json.dumps({"ok": False, "path": trail_path, "error": message}))
+    if want_json: result(False, path=trail_path, error=message)
     else: print(f"audit-trail: {message}", file=sys.stderr)
     sys.exit(1)
 
@@ -1253,7 +1261,7 @@ def frontmatter(blob):
     return match.group(1).splitlines()
 
 if action == "path":
-    print(json.dumps({"path": trail_path}) if want_json else trail_path)
+    print(json.dumps({"path": trail_path, "contract": CONTRACT}) if want_json else trail_path)
     sys.exit(0)
 if not os.path.isfile(state_path): fail("state.md not found")
 blob = open(state_path, encoding="utf-8").read()
@@ -1285,49 +1293,109 @@ for line in lines:
         item = {m.group(1): m.group(2).strip()}
     elif field and item: item[field.group(1)] = field.group(2).strip()
 if item: artifacts.append(item)
-artifacts = [a for a in artifacts if a.get("path") and os.path.normpath(a["path"]) != os.path.normpath(os.path.relpath(trail_path, root))]
-def link(path):
-    absolute = path if os.path.isabs(path) else os.path.join(root, path)
+def safe_artifact_path(path):
+    if not isinstance(path, str) or not path or os.path.isabs(path): return None
+    normalized = os.path.normpath(path)
+    if normalized in (".", "..") or normalized.startswith(".." + os.sep): return None
+    absolute = os.path.realpath(os.path.join(root_real, normalized))
+    try:
+        if os.path.commonpath([root_real, absolute]) != root_real: return None
+    except ValueError: return None
+    return absolute
+def link(absolute):
     return os.path.relpath(os.path.realpath(absolute), os.path.realpath(statedir)).replace(os.sep, "/")
-def digest(path):
-    absolute = path if os.path.isabs(path) else os.path.join(root, path)
+def digest(absolute):
     if not os.path.isfile(absolute): return "missing"
     with open(absolute, "rb") as handle:
         return hashlib.sha256(handle.read()).hexdigest()
-head = "not a Git repository"
-git_head = subprocess.run(["git", "-C", root, "rev-parse", "HEAD"], text=True, capture_output=True).stdout.strip()
-if git_head: head = git_head
+registered, invalid_paths = [], []
+for artifact in artifacts:
+    absolute = safe_artifact_path(artifact.get("path"))
+    if not absolute: invalid_paths.append(str(artifact.get("path", "")))
+    elif os.path.realpath(absolute) != os.path.realpath(trail_path):
+        artifact["_absolute"] = absolute
+        registered.append(artifact)
+if invalid_paths: fail("artifact path must stay inside the project: " + ", ".join(invalid_paths))
+artifacts = registered
+def unregistered_documents():
+    registered_paths = {artifact["_absolute"] for artifact in artifacts}
+    found = []
+    for directory, _, names in os.walk(statedir):
+        for name in names:
+            if not name.endswith(".md") or name in ("state.md", "audit-trail.md"): continue
+            absolute = os.path.realpath(os.path.join(directory, name))
+            if absolute not in registered_paths: found.append(absolute)
+    return sorted(found)
+unregistered = unregistered_documents()
+if strict and unregistered:
+    fail("unregistered workflow documents: " + ", ".join(link(path) for path in unregistered))
+def git_snapshot():
+    def run(args): return subprocess.run(["git", "-C", root, *args], capture_output=True)
+    head = run(["rev-parse", "HEAD"])
+    if head.returncode != 0:
+        return {"root": "not a Git repository", "head": "not a Git repository", "tracked": "not available", "untracked": "not available", "untracked_count": 0}
+    toplevel = run(["rev-parse", "--show-toplevel"]).stdout.decode().strip() or root_real
+    diff = run(["diff", "--no-ext-diff", "--binary", "HEAD"])
+    untracked = run(["ls-files", "--others", "--exclude-standard", "-z"])
+    entries = []
+    if untracked.returncode == 0:
+        for raw in untracked.stdout.split(b"\0"):
+            if not raw: continue
+            path = os.fsdecode(raw)
+            absolute = safe_artifact_path(path)
+            if not absolute: fail("untracked path must stay inside the project: " + path)
+            # The trail is written after this digest and must not digest itself:
+            # including it would make every check() of its own output stale.
+            if os.path.realpath(absolute) == os.path.realpath(trail_path): continue
+            entries.append(path.encode("utf-8", "surrogateescape") + b"\0" + digest(absolute).encode() + b"\0")
+    return {
+        "root": toplevel,
+        "head": head.stdout.decode().strip(),
+        "tracked": hashlib.sha256(diff.stdout).hexdigest() if diff.returncode == 0 else "not available",
+        "untracked": hashlib.sha256(b"".join(sorted(entries))).hexdigest(),
+        "untracked_count": len(entries),
+    }
+snapshot = git_snapshot()
+metadata_path = os.path.join(root_real, "stelow.json")
 out = [
     f"# Audit Trail: {name}",
-    "", "<!-- stelow-audit-trail: v1 -->", "",
+    "", f"<!-- stelow-audit-trail: {CONTRACT} -->", "",
     "## Workflow", "",
     "| Field | Value |", "| --- | --- |",
     f"| Intent | {intent} |", f"| Current stage | {stage} |", f"| Status | {status} |",
     f"| Appetite | {config.get('appetite', 'unknown')} |", f"| Review mode | {config.get('review_mode', 'unknown')} |",
-    f"| Git HEAD | `{head}` |", "", "## Evidence", "",
+    "", "## Repository snapshot", "",
+    "| Field | Value |", "| --- | --- |",
+    f"| Git repository | `{snapshot['root']}` |",
+    f"| Git HEAD | `{snapshot['head']}` |",
+    f"| Tracked worktree diff SHA-256 | `{snapshot['tracked']}` |",
+    f"| Untracked files | {snapshot['untracked_count']} |",
+    f"| Untracked manifest SHA-256 | `{snapshot['untracked']}` |", "", "## Evidence", "",
     "| Source | Location | SHA-256 |", "| --- | --- | --- |",
     f"| Workflow state | [state.md](state.md) | `{digest(state_path)}` |",
-    f"| Project metadata | [{os.path.basename(os.path.join(root, 'stelow.json'))}]({link('stelow.json')}) | `{digest('stelow.json')}` |",
+    f"| Project metadata | [{os.path.basename(metadata_path)}]({link(metadata_path)}) | `{digest(metadata_path)}` |",
     "", "## Artifacts", "", "| Stage | Kind | Artifact | SHA-256 |", "| --- | --- | --- | --- |",
 ]
 if artifacts:
     for artifact in sorted(artifacts, key=lambda a: (a.get("stage", ""), a["path"])):
         label = artifact.get("label") or os.path.basename(artifact["path"])
-        out.append(f"| {artifact.get('stage', 'unknown')} | {artifact.get('kind', 'document')} | [{label}]({link(artifact['path'])}) | `{digest(artifact['path'])}` |")
+        out.append(f"| {artifact.get('stage', 'unknown')} | {artifact.get('kind', 'document')} | [{label}]({link(artifact['_absolute'])}) | `{digest(artifact['_absolute'])}` |")
 else: out.append("| — | — | No registered artifacts | — |")
-out += ["", "## Integrity", "", "This file is a deterministic projection generated by `scripts/stelow audit-trail build`. Run `scripts/stelow audit-trail check` after any workflow-state or artifact change.", ""]
+out += ["", "## Integrity", "", f"| Contract | `{CONTRACT}` |", f"| Registered artifacts | {len(artifacts)} |", f"| Unregistered workflow documents | {len(unregistered)} |", "", "This file is a deterministic projection generated by `scripts/stelow audit-trail build`. The repository snapshot covers committed HEAD plus the tracked worktree diff and the untracked manifest, so any later code change makes it stale. Run `scripts/stelow audit-trail check` after any workflow-state, artifact, or worktree change.", ""]
 expected = "\n".join(out)
 if action == "check":
     if not os.path.isfile(trail_path): fail("audit-trail.md is missing; run audit-trail build")
     actual = open(trail_path, encoding="utf-8").read()
     if actual != expected: fail("audit-trail.md is stale; run audit-trail build")
-    print(json.dumps({"ok": True, "path": trail_path, "artifacts": len(artifacts)}) if want_json else f"audit-trail: PASS ({len(artifacts)} artifact(s))")
+    if want_json: result(True, path=trail_path, artifacts=len(artifacts), snapshot=snapshot, unregistered=len(unregistered))
+    else: print(f"audit-trail: PASS ({len(artifacts)} artifact(s))")
     sys.exit(0)
 os.makedirs(statedir, exist_ok=True)
 fd, temporary = tempfile.mkstemp(prefix=".audit-trail.", dir=statedir, text=True)
 with os.fdopen(fd, "w", encoding="utf-8") as handle: handle.write(expected)
 os.replace(temporary, trail_path)
-print(json.dumps({"ok": True, "path": trail_path, "artifacts": len(artifacts)}) if want_json else trail_path)
+if want_json: result(True, path=trail_path, artifacts=len(artifacts), snapshot=snapshot, unregistered=len(unregistered))
+else: print(trail_path)
 PY
 }
 
@@ -1344,7 +1412,7 @@ Usage:
   $PROG ask --question <t> [--multiple] --option <label>... (repeat --question groups)
   $PROG sync-scopes [--name <workflow>] [--json]
   $PROG config get <field> [default]
-  $PROG audit-trail build|check|path [--json]
+  $PROG audit-trail build|check|path [--strict] [--json]
   $PROG lock acquire --scope <id> --file <f>... [--ttl N] [--json]
   $PROG lock release --scope <id> --file <f>...
   $PROG lock check [--scope <id>] [--file <f>...] [--json]

@@ -235,7 +235,7 @@ harness.
 | Slash commands | Register only `/stelow` (description-match is the fallback). `stelow status` and `stelow doctor` are bash commands, not slash commands. |
 | Subagent spawning | Pass stage skills explicitly in the task + require echo-validation. Subagents do NOT inherit skills automatically. |
 | Visual review | Covered in `skills/stelow-workflow-orchestrator/references/cli-tools/visual_review.md`: use `visual_review` when present, else write `.stelow/approvals/<dirHash>/<file>.approved.md` as a receipt. |
-| Session persistence | `$STELOW_STATE` (per-workflow state, under `.stelow/{date}/{dirHash}/`; `<root>/state.md` in standalone mode) is the persistence boundary. `scripts/stelow audit-trail build` produces the audit receipt. |
+| Session persistence | `$STELOW_STATE` (per-workflow state, under `.stelow/{date}/{dirHash}/`; `<root>/state.md` in standalone mode) is the persistence boundary. `scripts/stelow audit-trail build` produces the audit receipt, a deterministic projection of that state plus the repository snapshot (Git root, `HEAD`, tracked diff, untracked manifest); `audit-trail check` fails closed once any of it changes. |
 | Concurrent session protection | The `stelow advance` helper uses a `mkdir`-based lock with TTL. If two sessions race, the second fails with a clear message. |
 
 ---

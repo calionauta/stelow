@@ -3,6 +3,36 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.59.6-alpha] - 2026-09-16
+
+### Added
+
+- **`audit-trail --strict` completion gate.** `build` and `check` refuse to
+  proceed while any workflow document in the state directory is still
+  unregistered, so the receipt's links can never silently omit something the
+  audit produced. Registering the document is the fix.
+
+### Changed
+
+- **The audit receipt attests the whole tree, not only the commit.** The
+  `audit-trail.md` projection now records the Git repository root, `HEAD`, the
+  tracked worktree diff, and a manifest of every untracked file. A later
+  commit, an uncommitted edit, or a new untracked file all make it stale —
+  which is the point: a Done card is reviewed for exactly that work.
+- **The projection's shape is pinned as contract `v2`** (was `v1`) and is
+  surfaced in the JSON envelope (`{ok, contract, path, artifacts, snapshot,
+  unregistered}`), so a host can fail closed on a receipt format it does not
+  recognize instead of completing against an unknown one.
+
+### Fixed
+
+- **Artifact paths from an agent-authored manifest can no longer leave the
+  project.** An absolute path or a `..` traversal is now refused instead of
+  being hashed or linked.
+- **The trail no longer digests its own output.** It is written after the
+  snapshot is computed and excluded from the untracked manifest, so checking
+  the same tree twice passes instead of reporting itself stale.
+
 ## [0.59.5-alpha] - 2026-09-16
 
 ### Added
