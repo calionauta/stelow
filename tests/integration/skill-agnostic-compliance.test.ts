@@ -13,7 +13,7 @@ function markdownFiles(root: string): string[] {
 }
 
 describe("skill host-agnostic vocabulary", () => {
-  it("keeps every SKILL.md free of Pi-only review paths and tool names", () => {
+  it("keeps every SKILL.md free of host-private review paths and tool names", () => {
     const skillRoots = readdirSync(join(process.cwd(), "skills"), { withFileTypes: true })
       .filter(entry => entry.isDirectory() && entry.name.startsWith("stelow-product-"))
       .map(entry => join(process.cwd(), "skills", entry.name));

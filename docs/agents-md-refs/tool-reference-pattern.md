@@ -24,4 +24,4 @@ that documents the tool. The exception is the `.md` files inside
 
 **Reference from AGENTS.md:** When writing/editing any stage file in
 `skills/stelow-workflow-orchestrator/stages/`, this is the rule. Violating it
-breaks portability across Pi / OpenCode / Claude Code.
+breaks portability across Agent Skills-compatible hosts.

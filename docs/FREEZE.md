@@ -8,7 +8,7 @@
 - The SCOPE-5 "skills-only" refactor froze `extensions/` behind
   `scripts/check-extensions-freeze.sh`, blocking accidental drift during the
   transition window.
-- SCOPE-7 removed the entire tree (Pi extension host code, Fusion adapter,
+- SCOPE-7 removed the entire legacy host-integration tree (extensions,
   the `WORKFLOW_COMMANDS` command registry, and the rest of the core) plus the
   freeze guard itself.
 

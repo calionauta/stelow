@@ -282,3 +282,32 @@ stages: {}
     expect(j.findings.some((f: any) => f.class === "missing-dir")).toBe(true);
   });
 });
+
+describe("audit-trail", () => {
+  let wd: Workdir;
+  beforeEach(() => { wd = makeWorkdir(); makeState(wd, "audit"); });
+
+  it("builds a canonical trace and rejects state or artifact drift", () => {
+    const stateDir = join(wd.dir, ".stelow", "2026-09-16", "sw-audit");
+    mkdirSync(join(stateDir, "plans"), { recursive: true });
+    const state = readFileSync(join(wd.dir, "state.md"), "utf8").replace("---\n# t", "artifacts:\n  - stage: planning\n    kind: document\n    label: technical plan\n    path: .stelow/2026-09-16/sw-audit/plans/spec-tech_v1.md\n---\n# t");
+    writeFileSync(join(stateDir, "state.md"), state);
+    writeFileSync(join(stateDir, "plans", "spec-tech_v1.md"), "# Plan\n");
+    const env = { STELOW_STATEDIR: stateDir };
+    expect(run(wd, ["audit-trail", "build"], env).status).toBe(0);
+    const trail = readFileSync(join(stateDir, "audit-trail.md"), "utf8");
+    expect(trail).toContain("<!-- stelow-audit-trail: v1 -->");
+    expect(trail).toContain("[technical plan](plans/spec-tech_v1.md)");
+    expect(trail).toMatch(/[a-f0-9]{64}/);
+    expect(run(wd, ["audit-trail", "check"], env).status).toBe(0);
+    writeFileSync(join(stateDir, "plans", "spec-tech_v1.md"), "# Changed plan\n");
+    const artifactStale = run(wd, ["audit-trail", "check"], env);
+    expect(artifactStale.status).toBe(1);
+    expect(artifactStale.stderr).toContain("stale");
+    expect(run(wd, ["audit-trail", "build"], env).status).toBe(0);
+    writeFileSync(join(stateDir, "state.md"), state.replace("status: active", "status: completed"));
+    const stale = run(wd, ["audit-trail", "check"], env);
+    expect(stale.status).toBe(1);
+    expect(stale.stderr).toContain("stale");
+  });
+});

@@ -173,7 +173,7 @@ gate:      requires_approval: true
 {{TRANSITIONS:execution:reject}}
 rework:    shape    (full rework path — returns to shape)
 gate:      (none)
-           supervisor: true (pi/supervisor pattern active)
+           supervisor: true (host-native supervision when available)
 ```
 
 ### verification

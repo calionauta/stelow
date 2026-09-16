@@ -397,27 +397,27 @@ In **workflow mode**, skip to `### Workflow slice` and emit a complete
 ## Hand-off (workflow mode)
 
 ```
-stage          : execution
-description    : Implementation. Execute planned scopes.
+stage          : audit
+description    : Final audit. Verify the finished work, classify gaps, and record evidence.
 status         : <done|partial|blocked>
 artifacts      : <paths created or modified>
-next-candidate : verification
+next-candidate : <none — audit is terminal; execution only when rework is required>
 gate           : none
-rework-on      : shape
+rework-on      : execution
 ```
 
-Workflow mode: emit the above Hand-off block verbatim, then stop. The
-router skill consumes the next-candidate field and calls
-`scripts/stelow advance <next-candidate>` to move state forward.
+Workflow mode: this is the terminal `audit` stage. Do not advance with
+`scripts/stelow` after a passing audit; let the host record completion. If
+the gap registry contains ESCALATED work, make that explicit in the report
+and return to `execution` through the host's reject/rework path.
 
 ### Workflow slice
 
-Workflow mode for the **execution** stage. Standalone behavior lives in
+Workflow mode for the **audit** stage. Standalone behavior lives in
 the rest of this file (unchanged). Summary:
 
-> Implementation. Execute planned scopes.
+> Final audit. Verify all requirements met and preserve the evidence.
 
 Primary actions (per stages.yaml): `read, write`. Run only the actions that
 produce the artifacts promised in `## Hand-off`; skip anything that does
 not advance the workflow.
-

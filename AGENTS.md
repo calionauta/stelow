@@ -11,7 +11,7 @@ no compiled plugin, and no per-host adapter** in the repo.
 **Stack:** bash + python3 (runtime), Node 20+, TypeScript strict (tooling/tests).
 **Hosts:** any agent that reads `~/.agents/skills/<name>/SKILL.md` (the
 agentskills.io standard) — Claude Code, Codex, Cursor, OpenCode, Gemini CLI,
-Goose, Pi, …
+Goose, and other Agent Skills-compatible hosts.
 
 ## Architecture
 
@@ -178,12 +178,8 @@ following two trailers:
   The `— <reason>` segment is **mandatory**: a `Rollback:` trailer without a
   non-empty reason is rejected by the guard.
 
-The contract exists because SW-028 (`27188f7`) deliberately rolled the
-`package.json#version` field back from `v0.55.2` to `v0.55.1` without any
-declared intent in the commit message, and the drift was only caught by
-manual `git show` inspection long after merge. See the post-mortem at
-`docs/agents-md-refs/post-mortems/v0.55.2-release-drift.md` §"Proposed guard"
-for the full rationale.
+The contract exists to make every version change explicit and reviewable,
+including an intentional rollback.
 
 Enforcement:
 

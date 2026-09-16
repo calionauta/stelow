@@ -295,7 +295,7 @@ audit — Execution Critique
 **Verification** runs automatically after Execution — test suite, code review, UI audit, browser testing.
 **Interface Gate** shows all proposals visually before selection.
 **Execution** runs automatically after Tech Planning — DO NOT ask user what to do next.
-**Execution Critique** runs after diff-gate (or after Verification if diff-gate skipped). Uses the `stelow-workflow-execution-critique` skill for all 8 evaluation criteria.
+**Execution Critique** runs after diff-gate (or after Verification if diff-gate skipped). Uses the `stelow-workflow-execution-critique` skill for all 11 evaluation criteria.
 **Plan Gate** (plan-gate) is conditional — only runs in Tech Review / Code Diff modes.
 **Diff Gate** (diff-gate) is conditional — only runs in Code Diff mode.
 
@@ -361,7 +361,6 @@ The extension handles all three tracking mechanisms (TUI, resume, tool restricti
 ### Cross-CLI Portability
 
 The single file works on ALL harnesses:
-- **Pi TUI** reads `stelow.json` for status display
 - **Any agentskills-compatible agent** reads `stelow.json` directly via
   the standard `read` / `bash` tools; the orchestrator interprets `currentPhase`
   per `stages.yaml`
@@ -373,10 +372,8 @@ The single file works on ALL harnesses:
 Before calling any tool, check:
 1. `RULES.md` for hard constraints
 2. `stages.yaml` for stage-specific `blocked_tools`
-3. If using Pi: stages-guard enforces automatically
-4. If using other CLI: you are responsible for self-enforcement
+3. You are responsible for self-enforcement
 
 ## Cross-CLI Notes
 
-- **Pi:** stages-guard.ts enforces tool restrictions via PreToolUse hooks
-- **Any other agent:** Read RULES.md + stages.yaml and self-enforce
+- **Any agent:** Read RULES.md + stages.yaml and self-enforce

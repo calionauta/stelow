@@ -3,6 +3,22 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.59.5-alpha] - 2026-09-16
+
+### Added
+
+- **Deterministic audit trail contract.** `scripts/stelow audit-trail build`
+  creates the canonical lineage report from durable workflow state,
+  registered artifacts, Git HEAD, and SHA-256 evidence hashes; `check` rejects
+  missing or stale output.
+  Hosts render the same file instead of maintaining competing audit formats.
+
+### Changed
+
+- **Slash commands are now documented as conversational aliases.** The
+  portable contract is the Stelow CLI; no removed host command registry is
+  implied.
+
 ## [0.59.4-alpha] - 2026-09-16
 
 ### Added

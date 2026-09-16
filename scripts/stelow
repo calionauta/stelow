@@ -716,6 +716,13 @@ commands = {
     "exit_codes": {"0": "prints value or default (missing state yields default)", "2": "usage"},
     "output": "scalar value, JSON for arrays/objects",
   },
+  "audit-trail": {
+    "usage": "stelow audit-trail build|check|path [--json]",
+    "flags": ["--json"],
+    "env": ["STELOW_STATEDIR", "STELOW_STATE"],
+    "exit_codes": {"0": "built, valid, or path printed", "1": "missing state/trail or stale trail", "2": "usage"},
+    "output": "canonical audit-trail.md path or {ok, path, artifacts}",
+  },
 }
 if want and want not in commands:
     print(f"schema: unknown command '{want}' (known: {', '.join(sorted(commands))})", file=sys.stderr)
@@ -1218,6 +1225,112 @@ PY
 
 # --- dispatch ----------------------------------------------------------------
 
+# --- audit trail -------------------------------------------------------------
+
+# The audit trail is a deterministic projection of durable workflow state.
+# Agents author the work artifacts; this command links and inventories them
+# without trusting conversational memory or a host-specific database.
+do_audit_trail() {
+  local action="${1:-}" json=""
+  shift || true
+  for arg in "$@"; do
+    case "$arg" in --json) json="1" ;; *) usage_error "audit-trail: unknown arg '$arg'" ;; esac
+  done
+  case "$action" in build|check|path) ;; *) usage_error "audit-trail requires build, check, or path" ;; esac
+  python3 - "$ROOT" "$STATEDIR" "$STATE" "$action" "$json" <<'PY'
+import hashlib, json, os, re, subprocess, sys, tempfile
+root, statedir, state_path, action, want_json = sys.argv[1:]
+trail_path = os.path.join(statedir, "audit-trail.md")
+
+def fail(message):
+    if want_json: print(json.dumps({"ok": False, "path": trail_path, "error": message}))
+    else: print(f"audit-trail: {message}", file=sys.stderr)
+    sys.exit(1)
+
+def frontmatter(blob):
+    match = re.match(r"^---\n(.*?)\n---", blob, re.S)
+    if not match: return []
+    return match.group(1).splitlines()
+
+if action == "path":
+    print(json.dumps({"path": trail_path}) if want_json else trail_path)
+    sys.exit(0)
+if not os.path.isfile(state_path): fail("state.md not found")
+blob = open(state_path, encoding="utf-8").read()
+lines = frontmatter(blob)
+if not lines: fail("state.md has no YAML frontmatter")
+def scalar(key, default="unknown"):
+    for line in lines:
+        m = re.match(r"^" + re.escape(key) + r":\s*(.*)$", line)
+        if m: return m.group(1).strip() or default
+    return default
+name, intent, stage, status = (scalar(k) for k in ("name", "intent", "current_stage", "status"))
+config = {}
+inside = False
+for line in lines:
+    if line == "config:": inside = True; continue
+    if inside and re.match(r"^[A-Za-z_][\w-]*:", line): break
+    if inside:
+        m = re.match(r"^  ([\w-]+):\s*(.*)$", line)
+        if m: config[m.group(1)] = m.group(2).strip()
+artifacts, item = [], None
+inside = False
+for line in lines:
+    if line == "artifacts:" or line == "artifacts: []": inside = line == "artifacts:"; continue
+    if inside and re.match(r"^[A-Za-z_][\w-]*:", line): break
+    m = re.match(r"^  - ([a-z_]+):\s*(.+)$", line) if inside else None
+    field = re.match(r"^    ([a-z_]+):\s*(.+)$", line) if inside else None
+    if m:
+        if item: artifacts.append(item)
+        item = {m.group(1): m.group(2).strip()}
+    elif field and item: item[field.group(1)] = field.group(2).strip()
+if item: artifacts.append(item)
+artifacts = [a for a in artifacts if a.get("path") and os.path.normpath(a["path"]) != os.path.normpath(os.path.relpath(trail_path, root))]
+def link(path):
+    absolute = path if os.path.isabs(path) else os.path.join(root, path)
+    return os.path.relpath(os.path.realpath(absolute), os.path.realpath(statedir)).replace(os.sep, "/")
+def digest(path):
+    absolute = path if os.path.isabs(path) else os.path.join(root, path)
+    if not os.path.isfile(absolute): return "missing"
+    with open(absolute, "rb") as handle:
+        return hashlib.sha256(handle.read()).hexdigest()
+head = "not a Git repository"
+git_head = subprocess.run(["git", "-C", root, "rev-parse", "HEAD"], text=True, capture_output=True).stdout.strip()
+if git_head: head = git_head
+out = [
+    f"# Audit Trail: {name}",
+    "", "<!-- stelow-audit-trail: v1 -->", "",
+    "## Workflow", "",
+    "| Field | Value |", "| --- | --- |",
+    f"| Intent | {intent} |", f"| Current stage | {stage} |", f"| Status | {status} |",
+    f"| Appetite | {config.get('appetite', 'unknown')} |", f"| Review mode | {config.get('review_mode', 'unknown')} |",
+    f"| Git HEAD | `{head}` |", "", "## Evidence", "",
+    "| Source | Location | SHA-256 |", "| --- | --- | --- |",
+    f"| Workflow state | [state.md](state.md) | `{digest(state_path)}` |",
+    f"| Project metadata | [{os.path.basename(os.path.join(root, 'stelow.json'))}]({link('stelow.json')}) | `{digest('stelow.json')}` |",
+    "", "## Artifacts", "", "| Stage | Kind | Artifact | SHA-256 |", "| --- | --- | --- | --- |",
+]
+if artifacts:
+    for artifact in sorted(artifacts, key=lambda a: (a.get("stage", ""), a["path"])):
+        label = artifact.get("label") or os.path.basename(artifact["path"])
+        out.append(f"| {artifact.get('stage', 'unknown')} | {artifact.get('kind', 'document')} | [{label}]({link(artifact['path'])}) | `{digest(artifact['path'])}` |")
+else: out.append("| — | — | No registered artifacts | — |")
+out += ["", "## Integrity", "", "This file is a deterministic projection generated by `scripts/stelow audit-trail build`. Run `scripts/stelow audit-trail check` after any workflow-state or artifact change.", ""]
+expected = "\n".join(out)
+if action == "check":
+    if not os.path.isfile(trail_path): fail("audit-trail.md is missing; run audit-trail build")
+    actual = open(trail_path, encoding="utf-8").read()
+    if actual != expected: fail("audit-trail.md is stale; run audit-trail build")
+    print(json.dumps({"ok": True, "path": trail_path, "artifacts": len(artifacts)}) if want_json else f"audit-trail: PASS ({len(artifacts)} artifact(s))")
+    sys.exit(0)
+os.makedirs(statedir, exist_ok=True)
+fd, temporary = tempfile.mkstemp(prefix=".audit-trail.", dir=statedir, text=True)
+with os.fdopen(fd, "w", encoding="utf-8") as handle: handle.write(expected)
+os.replace(temporary, trail_path)
+print(json.dumps({"ok": True, "path": trail_path, "artifacts": len(artifacts)}) if want_json else trail_path)
+PY
+}
+
 usage() {
   cat <<EOF
 $PROG — stelow workflow helper (status / advance / doctor / seed / schema / ask / sync-scopes / lock / config)
@@ -1231,6 +1344,7 @@ Usage:
   $PROG ask --question <t> [--multiple] --option <label>... (repeat --question groups)
   $PROG sync-scopes [--name <workflow>] [--json]
   $PROG config get <field> [default]
+  $PROG audit-trail build|check|path [--json]
   $PROG lock acquire --scope <id> --file <f>... [--ttl N] [--json]
   $PROG lock release --scope <id> --file <f>...
   $PROG lock check [--scope <id>] [--file <f>...] [--json]
@@ -1294,6 +1408,10 @@ case "${1:-}" in
   doctor)
     shift
     do_doctor "${1:-}"
+    ;;
+  audit-trail)
+    shift
+    do_audit_trail "$@"
     ;;
   -h|--help|help|"") usage ;;
   *) usage_error "unknown subcommand '$1' (try --help)" ;;

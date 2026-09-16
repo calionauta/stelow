@@ -19,6 +19,7 @@ scripts/stelow lock acquire --scope <id> --file <f>... [--ttl N] [--json]
 scripts/stelow lock release --scope <id> --file <f>...
 scripts/stelow lock check [--scope <id>] [--file <f>...] [--json]
 scripts/stelow config get <field> [default]
+scripts/stelow audit-trail build|check|path [--json]
 scripts/stelow schema [command]
 scripts/stelow --help
 ```
@@ -55,6 +56,11 @@ on `warn` / `info`; only `error` flips `ok` to false.
 missing input is an exit-0 no-op; existing state is never replaced with an
 empty scope list. This is the single canonical scope parser — hosts shell
 out instead of maintaining a mirror.
+
+`audit-trail build` writes a canonical, deterministic `audit-trail.md` from
+the workflow state, registered artifacts, Git HEAD, and SHA-256 content hashes.
+`audit-trail check` fails when that projection is missing or stale. Hosts may
+render the result, but must not generate a competing format.
 
 `lock` implements file-reservation locks for parallel scope dispatch
 (acquire/release/check under `<statedir>/locks/`). Exit 0 ok, 1 conflict

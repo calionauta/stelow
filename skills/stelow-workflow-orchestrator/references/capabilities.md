@@ -16,5 +16,4 @@ For **blocked tools** per stage, see `stages.yaml` in the skill root.
 
 ## Cross-CLI Behavior
 
-- **Pi**: enforcement via `extensions/.../adapters/stages-guard.ts`
-- **Claude/OpenCode**: self-enforcement by reading `RULES.md` + `stages.yaml`
+- **Any host**: self-enforcement by reading `RULES.md` + `stages.yaml`

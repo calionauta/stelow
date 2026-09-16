@@ -7,7 +7,7 @@
 - stelow added `model_hint: economy|standard|best` to every stage in `stages.yaml`
 - The orchestrator SKILL.md documents: "Use economy for triage, best for shape"
 - But without knowing the user's provider, these hints are abstract
-- The LLM can still request a specific model IF the harness supports it (Pi does via subagent `model` param)
+- The LLM can still request a specific model if the harness supports it.
 
 ## Alternatives
 
@@ -68,7 +68,8 @@ During `setup:15` or dedicated `setup:13`:
 
 ### D — Read harness config files
 
-Read `~/.pi/agent/settings.json` (Pi), `~/.config/opencode/opencode.json` (OpenCode), etc.
+Read only the active host's documented settings source when it explicitly
+supports model configuration.
 
 | Pro | Con |
 |---|---|
@@ -170,7 +171,8 @@ Once provider is known, the orchestrator can output concrete model names:
 | best | claude-opus-4-6 | shape, critique, interface, planning |
 ```
 
-The LLM can then request `model: "claude-haiku-4-5"` when the harness supports per-call model selection (Pi subagent, LiteLLM, OpenRouter).
+The LLM can then request `model: "claude-haiku-4-5"` when the harness supports
+per-call model selection.
 
 ### Effort: Medium (4-6 hours)
 ### Risk: Low (all paths have fallback — status quo if nothing detected)

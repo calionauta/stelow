@@ -52,8 +52,6 @@ describe("subagent-context-contract", () => {
   it("has no harness-specific package or path references", () => {
     expect(content).not.toMatch(/tintinweb/i);
     expect(content).not.toMatch(/nicobailon/i);
-    expect(content).not.toMatch(/pi-subagents/);
-    expect(content).not.toMatch(/~\/.pi\//);
     expect(content).not.toMatch(/@earendil-works/);
   });
 

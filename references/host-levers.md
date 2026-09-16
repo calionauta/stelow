@@ -49,9 +49,8 @@ No marker protocol needed — the plugin drives the workflow itself:
   workspace source, choose Appetite and Review mode, create a card. The plugin
   seeds `state.md` / `stelow.json`, starts the worker thread, and projects
   stages onto a Kanban board + inbox.
-- **Mechanics:** the 14 `stelow-workflow-*` skills are vendored in the plugin
-  and auto-synced from this repo; the 14 `stelow-product-*` playbooks come
-  from the skills hub (`npx skills add calionauta/stelow -g`). The worker
+- **Mechanics:** all 28 Stelow skills are vendored in the plugin and
+  auto-synced from this repo. The worker
   advances via `bb stelow advance` (same state machine as `scripts/stelow`).
 - **Contract:** `HOSTING.md` at the repo root.
 
@@ -177,30 +176,6 @@ turn of the subagent task.
 
 ---
 
-### Pi
-
-**Activation:**
-```bash
-# Pi: set environment before starting the session
-export STELOW_WORKFLOW=1
-export STELOW_STATE=/path/to/project/state.md
-pi
-
-# Inside Pi: "start stelow workflow" — the entry skill sees the vars
-```
-
-**Subagent skill passing:** Pi's agent system supports `.pi/skills/` as the
-standard skill directory. Symlink the 28 stelow skills there:
-```bash
-ln -s $(pwd)/.agents/skills ~/.pi/skills/stelow-product
-```
-
-**Failure modes:**
-- Pi may not propagate env vars from the parent shell — use `pi env set`
-  or set in `~/.pi/env` before starting
-- Echo-validation: Pi agents return structured output; require the subagent
-  to include the `## Hand-off` block in its final message
-
 ---
 
 ### Goose (ossHAI/goose)
@@ -245,8 +220,8 @@ When spawning a subagent for a stage:
    re-runs the stage.
 ```
 
-This pattern is harness-agnostic. It works with Claude Code, Cursor Composer,
-Pi, Goose, and any other Agent Skills-compatible harness.
+This pattern is harness-agnostic. It works with any Agent Skills-compatible
+harness.
 
 ---
 
@@ -260,7 +235,7 @@ Pi, Goose, and any other Agent Skills-compatible harness.
 | Slash commands | Register only `/stelow` (description-match is the fallback). `stelow status` and `stelow doctor` are bash commands, not slash commands. |
 | Subagent spawning | Pass stage skills explicitly in the task + require echo-validation. Subagents do NOT inherit skills automatically. |
 | Visual review | Covered in `skills/stelow-workflow-orchestrator/references/cli-tools/visual_review.md`: use `visual_review` when present, else write `.stelow/approvals/<dirHash>/<file>.approved.md` as a receipt. |
-| Session persistence | `$STELOW_STATE` (per-workflow state, under `.stelow/{date}/{dirHash}/`; `<root>/state.md` in standalone mode) is the persistence boundary. `git log` is the audit trail. |
+| Session persistence | `$STELOW_STATE` (per-workflow state, under `.stelow/{date}/{dirHash}/`; `<root>/state.md` in standalone mode) is the persistence boundary. `scripts/stelow audit-trail build` produces the audit receipt. |
 | Concurrent session protection | The `stelow advance` helper uses a `mkdir`-based lock with TTL. If two sessions race, the second fails with a clear message. |
 
 ---
@@ -274,7 +249,6 @@ Pi, Goose, and any other Agent Skills-compatible harness.
 | OpenCode | Env vars from parent shell need explicit prefix | `STELOW_WORKFLOW=1 opencode` |
 | Codex CLI | No skill registry | Inline skill markdown in task prompt |
 | Gemini CLI | Skill directory convention unclear | Use `.agents/skills/` (Agent Skills standard) |
-| Pi | Env propagation from parent shell | `pi env set` or `~/.pi/env` before session |
 | Goose | Skill registry is file-based | Symlink `.agents/skills/` → `~/.goose/skills/` |
 
 ---

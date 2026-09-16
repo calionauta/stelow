@@ -35,7 +35,7 @@ This package brings product methodology to AI coding agents. Instead of open-end
 - **Typed technical scopes** - feature, spike, optimize, test-* with dependency mapping and sequencing for autonomous execution.
 - **Acceptance-based scope execution** - each scope is delegated with a contract (criteria, verify commands, stop rules). On acceptance-native harnesses (fresh-context subagents with self-correction), the child fixes gaps in the same context before returning. On other harnesses, the parent re-delegates with feedback until criteria pass or max iterations exhaust.
 - **Audit gap-to-scope loop** — post-execution audit classifies gaps (FIXED / DOCUMENTED / ESCALATED). ESCALATED gaps become new scopes in the tracking file. `/sw-next` validates the move (transition + required artifacts); the critique routes Audit back to Execution via the reject transition. The cycle repeats until no scopes remain pending — the loop is procedural (skill-driven), not a scope check in code.
-- **Audit trail — full lineage record** — after execution, generates `audit-trail.md` linking every decision from origin to delivery: why it exists (appetite, intent), what was decided (IN/OUT, interface selection, trade-offs), what was committed (scopes, gates, dependencies), what actually happened (iterations, discovered tasks, records), and how it was validated (tests, reviews, audit). Every line links to the source artifact. View with `/sw-audit`, filter by scope with `--scope scope-1`, or export as JSON with `--format json`.
+- **Deterministic audit trail — full lineage record** — the final audit always generates `audit-trail.md`, a stable projection of the workflow state, registered artifacts, Git HEAD, and SHA-256 evidence hashes. `scripts/stelow audit-trail check` fails closed if its inputs change, so hosts can reliably gate completion on it.
 - **Scopes, Tasks & Records — three-layer execution model**. Scopes are appetite-bounded delivery units committed at planning (Lean ≤2, Core ≤5, Complete ≈10). Tasks are sub-item checklists inside a scope — planned tasks seed from the spec-tech table; discovered tasks emerge during execution (always with a `note:` explaining the trigger). Records capture claim-proof evidence (files touched, commands run, verification checklist) before a scope is closed. Validation is ON by default (set `STELOW_VALIDATE=0` to disable). See [`docs/scopes-tasks-flow.md`](docs/scopes-tasks-flow.md) for the full pipeline.
 - **Bidirectional product ↔ tech flow** — tech constraints and opportunities inform product decisions *before* execution. Tech Preview uses cymbal for appetite-gated codebase recon; Alignment Check catches product-vs-tech misalignment with mode-dependent resolution (auto or user-flagged).
 - **Stack-matched skills + fresh docs** — during execution setup, the workflow discovers skills (via `npx skills`) optimized for the chosen tech stack and fetches current library docs (via `ctx7`). Both skip if already installed or unavailable. Skills install in project scope only, after user confirmation.
@@ -286,7 +286,7 @@ The prefix is the grouping: `stelow-workflow-*` is the machinery that executes t
 
 Every skill is fully self-contained - the installer copies the complete directory tree including its own `references/cli-tools/`, `references/`, and `stages/` files. This means:
 - ✅ **Skills work standalone** - invoke any sub-skill (e.g., `stelow-workflow-shape-up`, `stelow-product-pricing`) independently of the orchestrator
-- ✅ **Portable across agents** - Claude Code, Codex, Cursor, OpenCode, Gemini CLI, Goose, Pi, and others all reference skills by name (`~/.agents/skills/`)
+- ✅ **Portable across agents** - any Agent Skills-compatible host references skills by name (`~/.agents/skills/`)
 - ✅ **References resolve locally** - every `references/cli-tools/*.md` path is relative to the skill's own directory
 - ❌ **Not in `~/.agents/skills/`?** Use `./install.sh` or `npx skills add calionauta/stelow -g`
 
@@ -336,7 +336,7 @@ Every skill is fully self-contained - the installer copies the complete director
 
 ## 🚀 Quick Start
 
-This package is **skills-only and host-agnostic** — its 28 skills run on any agentskills-compatible agent (Claude Code, Codex, Cursor, OpenCode, Gemini CLI, Goose, Pi, … — see `references/host-levers.md` for the per-host recipes). There is no compiled plugin and no per-host adapter; the runtime is the portable `scripts/stelow` CLI plus the skills themselves.
+This package is **skills-only and host-agnostic** — its 28 skills run on any Agent Skills-compatible host (see `references/host-levers.md` for activation recipes). There is no compiled plugin or per-host adapter; the runtime is the portable `scripts/stelow` CLI plus the skills themselves.
 
 | Your situation | Recommended command | What you get |
 |----------------|--------------------|-------------|
@@ -429,7 +429,6 @@ stelow is designed to be **self-contained** — the 28 skills + installer cover 
 | [ctx7](https://github.com/upstash/context7) | Optional | Current library doc fetching during execution setup | `npx @vedanth/context7` (auto-install via npx) | Skip — docs not fetched (less informed execution) |
 | [sem](https://github.com/Ataraxy-Labs/sem) | Optional | Entity-level diff in Execution Critique (functions, types, methods instead of raw lines); enhanced changelog + bump detection in releases | `curl -fsSL https://raw.githubusercontent.com/Ataraxy-Labs/sem/main/install.sh \| sh` (macOS / Linux), `winget install AtaraxyLabs.sem` (Windows), `brew install sem-cli` (macOS / Linuxbrew) | `git diff` — raw line-level only, no structural awareness |
 | [plannotator](https://plannotator.ai/) | Optional | Visual review gate annotation | `plannotator annotate ... --gate --json` via bash on any agent | Manual review with approval receipt file — no structured annotation |
-| [safe-change](https://github.com/PriNova/pi-agent-codebase-workflows) | Optional | Pre-execution code safety checks | `npx skills add Prinova/pi-agent-codebase-workflows -g` (works in any agent that installs from skill registries) | Skip — pre-execution check omitted |
 | Subagents (built-in to any agent) | Optional | Parallel reviewer orchestration during Plan Critique | `subagent(...)` / agent native subagent | Sequential execution — slower, same outcome (single-context review) |
 | Acceptance-native subagent loop | Optional | Same-context self-correction during scope execution (child fixes gaps before returning) | Any harness with fresh-context subagents (otherwise the parent-controlled re-delegation fallback below) | Without it: scope-executor falls back to parent-controlled loop (slower); no agent types — embed role in prompt |
 | Conversation supervision | Optional | Supervision during execution | Agent-native supervision where available | Skip — no supervision; rely on `stages-guard` for invariant enforcement |
@@ -448,8 +447,8 @@ own subscriptions. stelow runs there as a visual plugin — no terminal setup,
 no skill copying.
 
 **0. Prerequisite: a coding-agent CLI, installed and authenticated.** bb drives
-the coding-agent CLI you already have — e.g. Claude Code, Codex, OpenCode, Pi,
-or any harness in `references/host-levers.md`. Install and log in with the
+the coding-agent CLI you already have, or any harness in
+`references/host-levers.md`. Install and log in with the
 provider first; bb connects to it, it does not replace it.
 
 **1. Install bb:**
@@ -537,34 +536,25 @@ This project distributes exclusively via GitHub (no npm) — see [docs/SECURITY.
 
 ## 🎮 Commands
 
-The `/sw-*` workflow commands are **skill-provided entry points**: they are
-routed by the entry + router skills, not registered by host code. The single
-source of truth for state mechanics is the `scripts/stelow` CLI
-(`status`, `advance`, `doctor`, `seed`, `schema`, `ask`, `sync-scopes`, `lock`, `config` — see
-[🧰 stelow CLI](#-stelow-cliscriptsstelow) below).
+The `/sw-*` names are **conversational aliases** that a skill-capable agent
+may interpret; the skills-only core no longer registers slash commands with a
+host. The deterministic, cross-host interface is the `scripts/stelow` CLI
+(`status`, `advance`, `doctor`, `seed`, `schema`, `ask`, `sync-scopes`, `lock`,
+`config`, `audit-trail` — see [🧰 stelow CLI](#-stelow-cliscriptsstelow) below).
 
-| Command | Description |
-|---------|-------------|
-| `/sw-start` | Start a new product workflow |
-| `/sw-abort` | Abort and archive workflow(s) |
-| `/sw-pause` | Pause active workflow |
-| `/sw-resume` | Resume paused workflow |
-| `/sw-status` | Show active workflow status |
-| `/sw-ls` | List workflows |
-| `/sw-setphase` | Jump to phase |
-| `/sw-next` | Advance to next phase |
-| `/sw-complete` | Mark active workflow complete |
-| `/sw-info` | Go to a workflow |
-| `/sw-rename` | Rename active workflow |
-| `/sw-doctor` | Diagnose workflow tracking health |
-| `/sw-archive` | Archive workflows |
-| `/sw-unarchive` | Unarchive a workflow |
-| `/sw-recover` | Recover orphan workflow directories |
-| `/sw-audit` | Show audit trail (full lineage, scope, JSON) |
+| Alias | Deterministic equivalent |
+|-------|--------------------------|
+| `/sw-status` | `scripts/stelow status` |
+| `/sw-next` / `/sw-setphase` | `scripts/stelow advance <stage>` after the agent resolves the valid transition |
+| `/sw-doctor` | `scripts/stelow doctor` |
+| `/sw-start` | Agent-led entry flow, which seeds state with `scripts/stelow seed` |
 
-Every command works on **every** agentskills-compatible host. There is no
-`npm run sw-status` script — `/sw-start`, `/sw-status`, etc. are skill
-commands, not package scripts.
+Use `scripts/stelow audit-trail build` to create the mandatory deterministic
+lineage report and `scripts/stelow audit-trail check` to verify it is current.
+
+Other actions such as archive, pause, thread navigation, or visual review are
+host-surface responsibilities. A host may offer aliases for them, but they are
+not portable Stelow command contracts. There is no `npm run sw-status` script.
 
 ---
 
@@ -600,8 +590,8 @@ cd stelow
 npx skills add calionauta/stelow -g
 ```
 
-- **Zero-to-running** (new machine): install a coding-agent CLI first (e.g.
-  Claude Code, Codex, OpenCode, Pi — authenticated with your provider), then
+- **Zero-to-running** (new machine): install and authenticate any Agent
+  Skills-compatible coding-agent CLI, then
   install [bb desktop](https://getbb.app), then
   `bb plugin install git:https://github.com/calionauta/bb-plugin-stelow.git --yes`
   (see [Path A](#-path-a-bb-desktop-recommended))
@@ -666,22 +656,24 @@ and `references/host-levers.md` for per-harness knobs.
 
 ## 📁 Artifact Directory
 
-All workflow artifacts live under `<project>/.stelow/`. The layout below is generated automatically by the workflow skills and `scripts/stelow` — you never need to create these manually.
+Workflow state lives at `<project>/stelow.json`; per-workflow artifacts and
+approval receipts live under `<project>/.stelow/`. Skills create the documents
+as their stages run, while `scripts/stelow` seeds and advances the durable
+state. The final audit always writes and validates its `audit-trail.md`
+receipt; users never need to create the workflow bookkeeping by hand.
 
 ### Top-level
 
 | Path | Contents | Generated by |
 |------|----------|---------------|
 | `stelow.json` | Local tracking — workflow metadata, scopes, status | Workflow skills (schema: `stelow.schema.json`) |
-| `~/.stelow-global.json` | Global index — catalog of all workflows across projects | Workflow skills |
 | `lessons-learned/` | Cross-cycle patterns generated by Execution Critique | Audit stage |
 | `session-knowledge/` | Passive context notes saved by the user mid-session | User (manual) |
 
 > The Stelow core no longer maintains an inbox mirror (`.stelow/inbox/`)
 > or provenance log (`.stelow/inbox/history.jsonl`) — those were removed in
-> v0.57.0. Hosts own their own inbox surface. The workflow's own audit trail lives
-> in `.stelow/{date}/{dirHash}/audit-trail.md` (generated by the audit
-> stage skill from `scripts/stelow` state + stage artifacts).
+> v0.57.0. Hosts own their own inbox surface. The mandatory final-audit receipt
+> lives in `.stelow/{date}/{dirHash}/audit-trail.md`.
 
 ### Per-workflow: `.stelow/{YYYY-MM-DD}/{dirHash}/`
 
@@ -695,10 +687,11 @@ All workflow artifacts live under `<project>/.stelow/`. The layout below is gene
 | `plans/scopes/` | Scope detail files | Tech Planning | 11 |
 | `critiques/critique-report.md` | Adversarial gap analysis (flows, states, feasibility) | Plan Critique | 5 |
 | `approvals/` | Gate approval receipts | Gate stages | 6, 9, 12, 15 |
-| `sessions/checkpoint.json` | Session checkpoint for resume | Workflow skills | Any |
+| `sessions/{session-id}/checkpoint.json` | Session checkpoint for resume, when the host supports it | Workflow skills | Any |
 | `execution/iteration-state-{SCOPE-ID}.md` | Per-scope execution record (tasks, evidence, checklist) | Scope Executor | 13 |
 | `execution/scope-{N}/events.jsonl` | Per-scope event log (delegate, verify, completed, escalated) | Scope Executor | 13 |
 | `verification/code-quality-review.md` | Code quality review output (lint, thermo-nuclear) | Verification | 14 |
+| `audit-trail.md` | Deterministic linked lineage receipt from origin through validation | Execution Critique | Audit |
 | `group-context/manifest.json` | Triage group manifest (when multiple items grouped) | Triage grouping | 0 |
 | `checklist.md` | Current phase task checklist (Plannotator-visible) | LLM (todo tool) | Any |
 

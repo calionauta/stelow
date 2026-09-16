@@ -19,8 +19,8 @@ or host registration step; any agent that reads `~/.agents/skills/<name>/SKILL.m
 npx skills add calionauta/stelow -g
 ```
 
-**Zero-to-running on a new machine:** install a coding-agent CLI first (e.g.
-Claude Code, Codex, OpenCode, Pi — authenticated with your provider), then
+**Zero-to-running on a new machine:** install and authenticate any
+Agent Skills-compatible coding-agent CLI, then
 install [bb desktop](https://getbb.app) and
 `bb plugin install git:https://github.com/calionauta/bb-plugin-stelow.git --yes`
 (see the README's Path A).
@@ -110,7 +110,6 @@ Some phases of the workflow reference third-party skills:
 
 | Skill | Required for | Install |
 |-------|-------------|---------|
-| `pi-agent-codebase-workflows` (safe-change) | Pre-execution impact analysis | `npx skills add Prinova/pi-agent-codebase-workflows -g` |
 | `thermo-nuclear` (code-quality-review) | optional ultra-strict final gate | `npx skills add cursor/plugins -g` |
 
 Both work in any agent via the same `npx skills add ... -g` invocation. See the

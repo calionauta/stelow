@@ -12,7 +12,6 @@
 
 set -euo pipefail
 
-POST_MORTEM="docs/agents-md-refs/post-mortems/v0.55.2-release-drift.md"
 RELEASE_BUMP_RE='^Release-Bump: v[0-9]+\.[0-9]+\.[0-9]+$'
 ROLLBACK_RE='^Rollback: v[0-9]+\.[0-9]+\.[0-9]+ → v[0-9]+\.[0-9]+\.[0-9]+ — [^[:space:]].*'
 # Version identifiers are intentionally not ordered here: the project can
@@ -156,7 +155,7 @@ run_ci_check() {
   fi
 
   error "package.json#version (${current_version}) differs from latest annotated tag ${latest_tag} without Rollback/Release-Bump trailer"
-  error "See ${POST_MORTEM} for the v0.55.2 release-drift guard rationale"
+  error 'Version changes require an explicit Release-Bump or Rollback trailer'
   return 1
 }
 

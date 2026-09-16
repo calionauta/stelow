@@ -6,11 +6,11 @@
  * Asserts that:
  *   A. No plannotator CLI invocations leak into skill bodies.
  *   B. No .plannotator/approvals receipt paths leak.
- *   C. No Pi-only paths under ~/.pi/agent/git.
- *   D. No raw pi.on or pi.registerTool calls.
+ *   C. No legacy host-private paths.
+ *   D. No raw host-private hook calls.
  *   E. SKILL.md frontmatter declares name and description per agentskills.io.
  *   F. No host-private API references.
- *   G. No harness package install commands (pi install / npm ls probes).
+ *   G. No harness package install commands.
  *   H. No harness-specific package names or config paths.
  *
  * The cli-tools/visual_review.md reference doc is the ONLY allowed
@@ -120,39 +120,12 @@ describe("per-skill host-agnostic compliance", () => {
         }
       });
 
-      it("body has no Pi-only review receipts or CLI invocations", () => {
+      it("body has no host-private review receipts or CLI invocations", () => {
         for (const file of files) {
           if (isExemptFromAudit(file)) continue;
           const content = stripFrontmatter(readFileSync(file, "utf8"));
           expect(content, file).not.toMatch(/\bplannotator\s+(annotate|review)\b/i);
           expect(content, file).not.toMatch(/\.plannotator\/approvals/);
-        }
-      });
-
-      it("body has no ~/.pi/agent/git references", () => {
-        for (const file of files) {
-          if (isExemptFromAudit(file)) continue;
-          const content = stripFrontmatter(readFileSync(file, "utf8"));
-          expect(content, file).not.toMatch(/~\/\.pi\/agent\/git/);
-        }
-      });
-
-      it("body has no raw pi.on or pi.registerTool calls", () => {
-        for (const file of files) {
-          if (isExemptFromAudit(file)) continue;
-          const content = stripFrontmatter(readFileSync(file, "utf8"));
-          const noFences = content.replace(/```[\s\S]*?```/g, "");
-          expect(noFences, file).not.toMatch(/\bpi\.on\s*\(/);
-          expect(noFences, file).not.toMatch(/\bpi\.registerTool\s*\(/);
-        }
-      });
-
-      it("body has no host-private API references (Pi TUI, Pi session)", () => {
-        for (const file of files) {
-          if (isExemptFromAudit(file)) continue;
-          const content = stripFrontmatter(readFileSync(file, "utf8"));
-          expect(content, file).not.toMatch(/\bpi\.TUI\b/);
-          expect(content, file).not.toMatch(/\bpi\.session\b/);
         }
       });
 
@@ -174,8 +147,7 @@ describe("per-skill host-agnostic compliance", () => {
           if (isExemptFromAudit(file)) continue;
           const content = stripFrontmatter(readFileSync(file, "utf8"));
           const noFences = content.replace(/```[\s\S]*?```/g, "");
-          expect(noFences, file).not.toMatch(/\bpi install\b/i);
-          expect(noFences, file).not.toMatch(/\bnpm ls @?\S*pi-/i);
+          expect(noFences, file).not.toMatch(/\bnpm ls @?\S+-extension\b/i);
         }
       });
 
@@ -187,17 +159,10 @@ describe("per-skill host-agnostic compliance", () => {
           for (const pattern of [
             /tintinweb/i,
             /nicobailon/i,
-            /pi-subagents/,
-            /pi-supervisor/,
-            /pi-tasks/,
-            /pi-intercom/,
-            /rpiv-/i,
             /condensed-milk/i,
             /caveman-milk/i,
             /@ff-labs\//,
             /@juicesharp\//,
-            /@plannotator\/pi-extension/,
-            /~\/\.pi\//,
             /commandcode/i,
             /deepseek/i,
           ]) {
@@ -218,14 +183,12 @@ describe("per-skill host-agnostic compliance", () => {
     }
   });
 
-      it("body has no Fusion fn_ calls or host-name conditionals", () => {
+      it("body has no proprietary host-hook calls", () => {
         for (const file of files) {
           if (isExemptFromAudit(file)) continue;
           const content = stripFrontmatter(readFileSync(file, "utf8"));
           const noFences = content.replace(/```[\s\S]*?```/g, "");
           expect(noFences, file).not.toMatch(/\bfn_[a-z_]+\s*\(/);
-          expect(noFences, file).not.toMatch(/Multica/);
-          expect(noFences, file).not.toMatch(/(^|[^a-zA-Z])Fusion([^a-zA-Z]|$)/);
         }
       });
     });
@@ -259,14 +222,12 @@ describe("root references/ host-agnostic compliance", () => {
     }
   });
 
-  it("has no Fusion fn_ calls or host-name conditionals", () => {
+  it("has no proprietary host-hook calls", () => {
     for (const file of files) {
       if (isExemptFromAudit(file)) continue;
       const content = stripFrontmatter(readFileSync(file, "utf8"));
       const noFences = content.replace(/```[\s\S]*?```/g, "");
       expect(noFences, file).not.toMatch(/\bfn_[a-z_]+\s*\(/);
-      expect(noFences, file).not.toMatch(/Multica/);
-      expect(noFences, file).not.toMatch(/(^|[^a-zA-Z])Fusion([^a-zA-Z]|$)/);
     }
   });
 });

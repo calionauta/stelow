@@ -1,10 +1,7 @@
 /**
  * check-version-coherence.test.ts
  *
- * SW-034 integration test for the v0.55.2 release-drift guard. The guard
- * exists because SW-028 (`27188f7`) deliberately rolled back the source-side
- * `package.json#version` from v0.55.2 to v0.55.1 without declaring intent; the
- * drift was only caught by manual `git show` long after merge.
+ * Integration test for the tag-aware version-coherence guard.
  *
  * These tests exercise the full guard against real bare-remote git fixtures.
  * Each scenario builds its own tmpdir with a `git init --bare origin.git`
@@ -12,9 +9,7 @@
  * fixture — without that, every mismatch scenario would silently fall into
  * the no-tag fallback and pass.
  *
- * If any scenario regresses, the post-mortem at
- * docs/agents-md-refs/post-mortems/v0.55.2-release-drift.md has resurfaced.
- * Do NOT skip.
+ * Do not skip these scenarios: the guard protects release intent.
  */
 import { describe, it, expect, afterEach } from 'vitest';
 import { execFile, execFileSync } from 'node:child_process';
@@ -188,7 +183,7 @@ async function stagePendingVersionChange(fx: Fixture, version: string): Promise<
   execFileSync('git', ['add', 'package.json'], { cwd: fx.workDir, stdio: 'pipe' });
 }
 
-describe('SW-034: check-version-coherence.sh tag-aware guard', () => {
+describe('check-version-coherence.sh tag-aware guard', () => {
   it('scenario 1: matching tag, no trailer (pass — proves the tag-match path independently)', async () => {
     const fx = await buildFixture({ annotatedTag: 'v0.55.2', initialVersion: '0.55.2' });
 
@@ -200,12 +195,12 @@ describe('SW-034: check-version-coherence.sh tag-aware guard', () => {
     expect(result.stdout).toContain('matches latest annotated tag');
   });
 
-  it('scenario 2: mismatch without trailer (fail — symptom-reproduction of SW-028)', async () => {
+  it('scenario 2: mismatch without trailer fails', async () => {
     const fx = await buildFixture({
       annotatedTag: 'v0.55.2',
       initialVersion: '0.55.2',
       followupVersion: '0.55.1',
-      followupMessage: 'chore(SW-028): restore canonical v0.55.1 baseline',
+      followupMessage: 'chore: restore canonical v0.55.1 baseline',
     });
 
     const result = await runScript(fx.workDir, fx.scriptPath, ['--mode=ci']);
@@ -215,7 +210,7 @@ describe('SW-034: check-version-coherence.sh tag-aware guard', () => {
     expect(result.stdout).toContain('package.json#version');
     expect(result.stdout).toContain('0.55.1');
     expect(result.stdout).toContain('v0.55.2');
-    expect(result.stdout).toContain('v0.55.2-release-drift.md');
+    expect(result.stdout).toContain('Version changes require an explicit');
   });
 
   it('scenario 3: mismatch with Rollback: trailer including reason (pass — commit-msg mode)', async () => {
@@ -224,7 +219,7 @@ describe('SW-034: check-version-coherence.sh tag-aware guard', () => {
       initialVersion: '0.55.2',
       followupVersion: '0.55.1',
       followupMessage:
-        'chore(SW-028): restore canonical v0.55.1 baseline\n\nRollback: v0.55.2 → v0.55.1 — defer v0.55.2 release artifacts; see post-mortem',
+        'chore: restore canonical v0.55.1 baseline\n\nRollback: v0.55.2 → v0.55.1 — defer release artifacts',
     });
     // Stage a DIFFERENT version (HEAD is already 0.55.1 from the followup
     // commit) so the index diff is non-empty. Writing 0.55.1 here would
@@ -236,7 +231,7 @@ describe('SW-034: check-version-coherence.sh tag-aware guard', () => {
     const messagePath = join(fx.workDir, 'msg');
     await writeFile(
       messagePath,
-      'chore(SW-028): restore canonical v0.55.1 baseline\n\nRollback: v0.55.2 → v0.55.1 — defer v0.55.2 release artifacts; see post-mortem\n',
+      'chore: restore canonical v0.55.1 baseline\n\nRollback: v0.55.2 → v0.55.1 — defer release artifacts\n',
       'utf8',
     );
 
@@ -283,7 +278,7 @@ describe('SW-034: check-version-coherence.sh tag-aware guard', () => {
       initialVersion: '0.55.2',
       followupVersion: '0.55.1',
       followupMessage:
-        'chore(SW-028): restore canonical v0.55.1 baseline\n\nRollback: v0.55.2 → v0.55.1',
+        'chore: restore canonical v0.55.1 baseline\n\nRollback: v0.55.2 → v0.55.1',
     });
     // Stage a different version (the forward bump) so the index diff is
     // non-empty; the message-file rollback reason check is what fails.
@@ -292,7 +287,7 @@ describe('SW-034: check-version-coherence.sh tag-aware guard', () => {
     const messagePath = join(fx.workDir, 'msg');
     await writeFile(
       messagePath,
-      'chore(SW-028): restore canonical v0.55.1 baseline\n\nRollback: v0.55.2 → v0.55.1\n',
+      'chore: restore canonical v0.55.1 baseline\n\nRollback: v0.55.2 → v0.55.1\n',
       'utf8',
     );
 

@@ -63,7 +63,7 @@ function makeWorkflowEntry(overrides?: Partial<Record<string, unknown>>) {
     created: now,
     updated: now,
     dirHash: 'sw-test-abc123',
-    detectedCLI: 'pi',
+    detectedCLI: 'generic',
     intent: 'unknown',
     config: {
       appetite: undefined,
