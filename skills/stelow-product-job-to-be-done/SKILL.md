@@ -124,12 +124,34 @@ For a prioritized research-led bet, record:
 
 - **Bet:** the candidate Job, step, outcome, or segment;
 - **Why now:** the supplied context and signals that made it worth exploring;
-- **Evidence and bias:** source types, gaps, recency, and whose perspective is
-  overrepresented or missing;
+- **Evidence, origin, and bias:** whether it is user-provided input, external
+  research, or a simulation; source types, gaps, recency, and whose
+  perspective is overrepresented or missing;
 - **Confidence:** directional only (low, medium, or high), never a statistical
   claim; and
 - **Next validation:** the cheapest interview, observation, or behavioral-data
   check that could disconfirm it.
+
+### Source and Status for Evidence
+
+User-provided interviews and research are first-class inputs. Use them when
+they support the analysis, and make their origin clear without inventing a
+sample size, method, or representativeness. Use one of these statuses wherever
+an insight, example, or voice depends on supplied material:
+
+- **Input-derived — direct quote:** exact wording present in the material the
+  user supplied; preserve its meaning and do not add a participant identity.
+- **Input-derived — paraphrase:** a faithful restatement of one supplied
+  account; do not put it in quotation marks.
+- **Input-derived — synthesis:** a pattern drawn from multiple supplied
+  interviews or research artifacts; state the supplied scope and limitations.
+- **Simulated hypothesis — not participant data:** a plausible invented
+  example used to make a candidate concrete, never evidence about a group.
+
+This provenance discipline applies to every JTBD prompt. Only call a finding
+validated when the supplied material actually supports it; otherwise preserve
+it as a hypothesis or bet. Keep participant information anonymized and avoid
+repeating unnecessary sensitive details.
 
 ### Required Research Appendix
 
@@ -143,7 +165,7 @@ prompt output. Do not add an empty appendix when no research was used.
 
 ### Bet: [candidate Job, step, outcome, segment, or alternative]
 - **Why now:** [decision context and signals]
-- **Evidence and bias:** [source types, recency, coverage gaps, and missing or overrepresented perspectives]
+- **Evidence, origin, and bias:** [user-provided input, external sources, or simulation; recency, coverage gaps, and missing or overrepresented perspectives]
 - **Confidence:** [low | medium | high — directional only]
 - **Next validation:** [the cheapest interview, observation, or behavioral-data check that could disconfirm it]
 ```
