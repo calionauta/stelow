@@ -3,6 +3,28 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.59.0-alpha] - 2026-09-16
+
+### Added
+
+- **Sustenance via Sponsorship in the open-source playbook.** How the money
+  moves (GitHub Sponsors, Open Collective, Patreon/Ko-fi, Tidelift, direct
+  corporate), persona-based tiers, Sponsorware, and honest numbers
+  (SerenityOS, komorebi, Vue.js, TanStack).
+- **Education as a Moat in the open-source playbook.** Screencasts, courses,
+  in-company workshops, and certification as revenue that deepens brand,
+  community, and curation — with the content-treadmill and docs-SEO
+  (Tailwind) caveats.
+- **Combining Models in the open-source playbook.** Context-gated mix
+  suggestion (project type, audience, distribution, team, enterprise
+  surface) with starter mixes per archetype, two new experiments, a worked
+  mix-choice example, and four new edge cases.
+- **Research First in the marketplace playbook.** First `stelow-product-*`
+  consumer of the shared `web-research` contract: host search for market
+  facts and comparables, `last30days` as recency check on shortlisted
+  tactics, skipped when context is supplied. Research step in the worked
+  example plus a no-context edge case.
+
 ## [0.58.1-alpha] - 2026-09-15
 
 ### Fixed
