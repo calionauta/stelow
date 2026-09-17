@@ -164,6 +164,20 @@ stages:
     allowed_tools: [ask_user_question, read, grep, ls, subagent]
     preferred_tools: [ask_user_question, read]
     primary_actions: [ask_user_question]
+    # Machine-readable question contract.  The host owns enforcement; this
+    # describes who resolves the interface decision in each review mode.
+    # Keep methodology prose in stages/selection.md and human-gates.md.
+    questions:
+      - id: interface-pick
+        kind: human-ask
+        modes: ["Product Spec + Interface Gates", "Product Spec + Interface + Scopes", "Product Spec + Interface + Tech Review", "Product Spec + Interface + Tech Review + Code Diff"]
+        appetite: [Core, Complete]
+        evidence: per-option
+        receipt: interfaces/selected-interface.md
+      - id: interface-pick-auto
+        kind: agent-receipt
+        modes: [Auto, "Product Spec Gate"]
+        receipt: interfaces/selected-interface.md
     transitions:
       next: [planning]
       accept: [planning]
