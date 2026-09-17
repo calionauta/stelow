@@ -14,8 +14,8 @@ describe("portable reconnaissance contract", () => {
     const body = readFileSync(script, "utf8");
     expect(statSync(script).mode & 0o111).not.toBe(0);
     expect(body).toContain("RECON_REFUSED");
-    expect(body).toContain("context/recon-receipt.json");
-    expect(body).toContain("stelow-recon-v1");
+    expect(body).toContain("recon-receipt.json");
+    expect(body).toContain("stelow-recon-v2");
     expect(body).not.toMatch(/install(\.sh)?\s*\|/i);
   });
 
@@ -24,7 +24,7 @@ describe("portable reconnaissance contract", () => {
     execFileSync("git", ["init", "-q"], { cwd: workspace });
     execFileSync(scriptPath(), ["tech-preview"], { cwd: workspace });
     const receipt = JSON.parse(readFileSync(join(workspace, "context", "recon-receipt.json"), "utf8"));
-    expect(receipt).toMatchObject({ contract: "stelow-recon-v1", kind: "tech-preview", workspace: { root: workspace, git: true } });
+    expect(receipt).toMatchObject({ contract: "stelow-recon-v2", kind: "tech-preview", workspace: { root: workspace, git: true }, workflow: { stateDir: null } });
     expect(receipt.tools).toHaveProperty("cymbal");
   });
 
