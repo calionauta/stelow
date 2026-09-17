@@ -36,6 +36,14 @@ exist?) at every appetite to prevent scope duplication.
 - Core: `search` + `cymbal refs` — where is it, who connects
 - Complete: `search` + `refs` + `cymbal impact` — blast radius
 
+Start from the target repository root and run the canonical preflight. It
+creates a receipt that must be cited by `spec-tech.md`; optional tools are
+never installed from a workflow.
+
+```bash
+bash <skill-dir>/../../stelow-workflow-orchestrator/references/cli-tools/recon.sh feature-recon
+```
+
 ```bash
 # Detect brownfield
 if [ ! -f "go.mod" ] && [ ! -f "package.json" ] && \
@@ -89,7 +97,10 @@ fi
 - "Feature `checkout` connects to `payment.go` and `inventory.go` — new scope must respect existing interfaces"
 - "Business rule `max_items` in `cart.go` conflicts with scope 3 proposal"
 
-Fallback: if cymbal is unavailable, skip silently.
+Fallback: if cymbal is unavailable, use `find` + `git log` + `grep` to record
+candidate locations in `context/feature-locations.md`, and put
+`TOOL_MISSING:cymbal` plus the path to `context/recon-receipt.json` in
+`spec-tech.md`. Do not skip recon silently.
 
 #### planning:10.10 — Output Validation Guard
 
@@ -150,4 +161,3 @@ Generate spec-tech.md INLINE using the same process. Read the references files
 (`tech-context.md`, `scopes-and-sequencing.md`, `tech-output.md`)
 and read `stelow-workflow-coding-standards` for universal coding principles,
 then produce the spec-tech artifact directly in the current context.
-

@@ -1,11 +1,38 @@
 # Code map — which navigation tool, when
 
 > One ladder for every recon moment (Tech Preview, Feature Recon, Alignment
-> Check, codebase critique). Probe top-down; use the first tier available.
-> All four tools are read-only analysis. Never install from inside a workflow
-> — offer once at setup (`install.sh` does), otherwise fall back.
+> Check, codebase critique). All four tools are optional, read-only analysis.
+> Never install from inside a workflow — offer once at setup (`install.sh`
+> does), otherwise fall back.
 > In doubt about flags, or after any tool error: run `<tool> --help` first —
 > never guess invocations.
+
+## Required portable preflight
+
+Recon always runs from the target workspace root (or a child directory that
+resolves to it with `git rev-parse --show-toplevel`), never from a skill or
+card-state directory. Before using this ladder, run the bundled wrapper:
+
+```bash
+bash <skill-dir>/references/cli-tools/recon.sh <tech-preview|feature-recon>
+```
+
+It writes `context/recon-receipt.json`, which records the Git workspace and
+the live availability of cymbal, ripwire, sem, and ast-grep. Treat it as
+evidence, not a requirement to install anything:
+
+- `RECON_READY:cymbal` — use cymbal for the applicable commands below.
+- `RECON_READY:ripwire` — orient with ripwire, then use portable file/text
+  inspection for symbol-level work.
+- `RECON_READY:portable` — use the documented `find` + `git log` + `grep`
+  fallback and state that the richer analysis was unavailable.
+- `RECON_REFUSED` — change to the target Git workspace and re-run; do not
+  silently skip recon.
+
+Every planning or audit output that relied on recon must cite the receipt and
+name any missing tool. A missing optional tool is not a failed workflow; an
+unexplained missing receipt is a warning that must be repaired before a
+blocking gate is introduced.
 
 ## The ladder
 

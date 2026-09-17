@@ -45,7 +45,17 @@ Tech preview informs shape-up; appetite adds depth but never removes the floor. 
 
 **Rationale:** Skipping tech preview entirely on Lean brownfield creates the same Estimation Bias trap as cutting quality — the LLM then shapes a product spec without knowing what already exists, leading to redundant scope or missed constraints. Appetite cuts scope (lines per spec, number of alternatives explored), not tech context.
 
-### Run cymbal (if available)
+### Run the portable preflight, then cymbal when available
+
+Start from the project workspace root, not the workflow state directory:
+
+```bash
+bash <skill-dir>/../../stelow-workflow-orchestrator/references/cli-tools/recon.sh tech-preview
+```
+
+Read `context/recon-receipt.json` before choosing a tool. It is the durable
+record of the host's live capability probe and must be cited in the preview.
+Do not install a missing tool inside the workflow.
 
 ```bash
 if command -v cymbal &>/dev/null; then
@@ -59,7 +69,7 @@ If cymbal is available AND appetite ≥ Core AND brownfield:
 # Ensure index is fresh (safe to run multiple times — incremental)
 cymbal index 2>/dev/null
 
-# cymbal requires a git repo — stelow always runs in one
+# The preflight already verified this is the target Git workspace.
 cymbal structure --json 2>/dev/null > context/cymbal-structure.json
 
 # If Complete, also run impact on key files
@@ -117,4 +127,5 @@ knowing what the codebase already does, what it enables, and what it constrains.
 If cymbal is not installed:
 - Brownfield: use `find` + `wc -l` for basic size analysis, `git log --oneline` for activity.
 - Greenfield: skip tech preview entirely.
-- Consider installing cymbal for future sessions (see `cli-tools/cymbal.md`).
+- In `context/tech-preview.md`, cite `context/recon-receipt.json` and state
+  `TOOL_MISSING:cymbal`; consider installing it only after this workflow.
