@@ -205,7 +205,7 @@ Enforcement:
   3. `git add -A && git commit -m "chore: bump to v<version>" -m "Release-Bump: v<version>"`
   4. `git tag -a v$(node -p "require('./package.json').version") -m "v<version>: <summary>"`
   5. `git push origin main --tags`
-  6. **`gh release create v$(node -p "require('./package.json').version") --title "v<version>" --notes-file <changelog-section>`** — required for GitHub landing page visibility
+  6. **`gh release create v$(node -p "require('./package.json').version") --title "v<version>" --notes-file <changelog-section>`** — required for GitHub landing page visibility. Publish `-alpha` tags as full releases (default flags, never `--prerelease`): prereleases never take the `Latest` badge from a full release, so an alpha shipped as prerelease is invisible on the landing page.
 - **Never guess the version** — always read `package.json` first.
 
 ## Don'ts
