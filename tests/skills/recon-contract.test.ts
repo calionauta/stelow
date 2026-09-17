@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { mkdtempSync, readFileSync, statSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, statSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
@@ -26,6 +26,18 @@ describe("portable reconnaissance contract", () => {
     const receipt = JSON.parse(readFileSync(join(workspace, "context", "recon-receipt.json"), "utf8"));
     expect(receipt).toMatchObject({ contract: "stelow-recon-v2", kind: "tech-preview", workspace: { root: workspace, git: true }, workflow: { stateDir: null } });
     expect(receipt.tools).toHaveProperty("cymbal");
+  });
+
+  it("isolates two workflow receipts in one workspace", () => {
+    const workspace = mkdtempSync(join(tmpdir(), "stelow-recon-two-"));
+    execFileSync("git", ["init", "-q"], { cwd: workspace });
+    const first = join(workspace, ".stelow", "a");
+    const second = join(workspace, ".stelow", "b");
+    mkdirSync(first, { recursive: true }); mkdirSync(second, { recursive: true });
+    execFileSync(scriptPath(), ["tech-preview", first], { cwd: workspace });
+    execFileSync(scriptPath(), ["feature-recon", second], { cwd: workspace });
+    expect(JSON.parse(readFileSync(join(first, "context", "recon-receipt.json"), "utf8")).workflow.stateDir).toBe(first);
+    expect(JSON.parse(readFileSync(join(second, "context", "recon-receipt.json"), "utf8")).workflow.stateDir).toBe(second);
   });
 
   it("makes preflight, workspace discipline, and the fallback visible to skills", () => {
