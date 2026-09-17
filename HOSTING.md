@@ -49,6 +49,14 @@ No code is required in this repo. An agent that reads agentskills.io skill
 directories can run the workflow today; a visual host wraps the contract
 above (board/inbox/CLI) the way `bb-plugin-stelow` does.
 
+Downstream freshness is the consumer's job: poll `GET
+/repos/calionauta/stelow/releases` (or the pinned `main` commit) on your
+own schedule — daily is plenty, methodology changes gradually — and open
+your own sync PR when the pin moves. This repo sends no per-consumer
+notifications and holds no downstream secrets: push-model fan-out needs
+one secret and one workflow file per consumer and does not scale past
+the first one.
+
 ## Reference implementation
 
 `bb-plugin-stelow` vendors all 28 skills + `scripts/stelow` and auto-syncs
