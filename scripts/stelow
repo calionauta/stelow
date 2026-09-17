@@ -700,8 +700,8 @@ commands = {
     "output": "state path or {state, statedir, dirHash, created} with --json",
   },
   "ask": {
-    "usage": "stelow ask --question <t> [--multiple] --option <label>... (repeat --question groups)",
-    "flags": ["--question", "--option", "--multiple"],
+    "usage": "stelow ask --question <t> [--contract <id>] [--multiple] --option <label>... (repeat --question groups)",
+    "flags": ["--question", "--option", "--multiple", "--contract"],
     "env": ["STELOW_THREAD_ID", "STELOW_ASK_TIMEOUT_MS"],
     "exit_codes": {"0": "submitted (answer JSON)", "1": "waiting (persisted) or explicit cancel", "2": "usage or unknown identity"},
     "output": "answer JSON, or pending.json surviving under ask/ for host fulfillment",
@@ -757,14 +757,14 @@ do_ask() {
   local ask_dir="$STATEDIR/ask"
   mkdir -p "$ask_dir"
   python3 - "$ask_dir" "$thread_id" "$timeout_ms" "$@" <<'PY' || exit $?
-import sys, os, json, time, datetime
+import sys, os, json, time, datetime, re
 ask_dir, thread_id, timeout_ms = sys.argv[1:4]
 timeout_ms = int(timeout_ms)
 argv = sys.argv[4:]
 
 def fail_usage(msg):
     print(f"ask: {msg}", file=sys.stderr)
-    print("Usage: stelow ask --question <text> [--multiple] --option <label>... (repeat --question groups)", file=sys.stderr)
+    print("Usage: stelow ask --question <text> [--contract <id>] [--multiple] --option <label>... (repeat --question groups)", file=sys.stderr)
     sys.exit(2)
 
 # --- parse groups (same grammar as every host adapter) ---
@@ -779,7 +779,7 @@ while i < len(argv):
         i += 1
         if i >= len(argv) or not argv[i].strip():
             fail_usage("Each --question needs a non-empty text.")
-        current = {"question": argv[i], "multiple": False, "options": []}
+        current = {"question": argv[i], "multiple": False, "options": [], "contract": None}
         groups.append(current)
     elif arg == "--option":
         i += 1
@@ -788,6 +788,13 @@ while i < len(argv):
         if i >= len(argv) or not argv[i].strip():
             fail_usage("Each --option needs a non-empty label.")
         current["options"].append({"label": argv[i], "description": ""})
+    elif arg == "--contract":
+        if current is None:
+            fail_usage("Contract ids follow a --question: --question <text> --contract <id>...")
+        i += 1
+        if i >= len(argv) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9-]{0,59}", (argv[i] or "").strip()):
+            fail_usage("Each --contract needs a slug id (letters, digits, dashes, up to 60 chars).")
+        current["contract"] = argv[i].strip()
     elif arg == "--multiple":
         if current is None:
             fail_usage("--multiple must follow a --question.")

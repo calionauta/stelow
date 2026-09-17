@@ -219,6 +219,25 @@ describe("ask file protocol", () => {
     expect(pending.thread_id).toBe("thr_test123");
   });
 
+  it("contract ids travel with their group into pending.json", () => {
+    const wd = makeWorkdir();
+    const askDir = join(wd.stateDir, "ask");
+    const r = run(wd, ["ask", "--question", "Color?", "--contract", "interface-pick", "--option", "Red", "--option", "Blue"]);
+    expect(r.status).toBe(1);
+    const pending = JSON.parse(readFileSync(join(askDir, "pending.json"), "utf8"));
+    expect(pending.questions[0].contract).toBe("interface-pick");
+    const plain = run(wd, ["ask", "--question", "Other?", "--option", "A", "--option", "B"]);
+    expect(plain.status).toBe(1);
+    const pendingPlain = JSON.parse(readFileSync(join(askDir, "pending.json"), "utf8"));
+    expect(pendingPlain.questions[0].contract).toBeNull();
+  });
+
+  it("contract misuse fails fast with usage errors", () => {
+    const wd = makeWorkdir();
+    expect(run(wd, ["ask", "--question", "Q?", "--contract", "not a slug!", "--option", "A", "--option", "B"]).status).toBe(2);
+    expect(run(wd, ["ask", "--contract", "x", "--question", "Q?", "--option", "A", "--option", "B"]).status).toBe(2);
+  });
+
   it("collects an arrived answer and consumes it", async () => {
     const wd = makeWorkdir();
     const askDir = join(wd.stateDir, "ask");

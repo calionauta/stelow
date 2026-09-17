@@ -27,6 +27,12 @@ convention instead:
   rule in `../../../stelow-workflow-orchestrator/stages/ask-patterns.md`
   (Usage Rules). Ask dependent questions one at a time.
 
+  A group may declare the question contract it answers
+  (`--contract <id>`, e.g. `--contract interface-pick`): the id travels
+  with the group into `ask/pending.json` so hosts can link the eventual
+  answer back to the contract. Ids are slugs (letters, digits, dashes, up
+  to 60 chars); groups without one behave exactly as before.
+
   `stelow ask` writes `ask/pending.json` in the state dir and blocks until
   the host records `ask/answer.json` or the timeout lapses. The host
   fulfills with its own UI (or by watching the directory) and the workflow
