@@ -51,6 +51,12 @@ Invariants (encode every one; each has bitten us):
   done-ness from `audit` + idle made narrate-and-stop indistinguishable
   from stuck — the same confusion that produced the stop-per-turn
   incidents.
+- **Discard ≠ archive.** Archive parks with work intact; discard destroys
+  unpushed work (worktree drop, branch reset to the pre-card base, or
+  folder delete — refused on pushed history, shared lines, detached
+  HEAD), then archives. Preview proves the blast radius (files, commits)
+  and the confirm states it in full; execution stops the worker,
+  re-validates, verifies clean, and leaves a trail comment.
 - ** terminal cards show terminal UI**: history + final state only, no worker
   controls except Delete.
 
@@ -96,6 +102,15 @@ deep link — a single text rule for active/resolved/archived).
 5. Cancellation splits in two: transient (timeout/reload/abort) persists
    like a timeout; explicit end states (dismissed, thread stopped) return
    as-is for the worker to interpret.
+6. Optional contract linkage: a group may declare `--contract <id>`; answers
+   naming it are trailed with the contract. Undeclared flows behave exactly
+   as before — provenance without enforcement.
+7. Selection asks carry evidence **per option** (wireframe preview +
+   proposal artifact each); one evidenced option must never launder blind
+   siblings. Other gates review one shared document — a single evidence
+   anywhere in the ask suffices there.
+8. Failed submits keep the draft and stay open with a persistent inline
+   warning naming the cause — a transient toast alone loses the retry.
 
 Reference: `question-batch.mjs` (pure parsing/grouping; the only
 host-shaped corner is reading the payload top-level vs nested) +
@@ -113,7 +128,10 @@ plus `scripts/stelow`, `data/stelow`, `data/product-strategies.json`:
 3. Compare git blob-sha per file against local state; download only what
    differs; verify downloaded bytes against the tree sha (CDN staleness
    guard) before recording.
-4. Write atomically (tmp + rename); prune local `stelow-*` dirs missing
+4. Publish atomically per skill: stage each skill fully in a sibling
+   directory invisible to scanners, then rename-swap into place, so a
+   concurrent reader hashes a complete tree (old or new), never a
+   half-written one. Prune local `stelow-*` dirs missing
    upstream (never touch non-`stelow-*` entries); record a verification
    timestamp **only on fully clean runs**.
 5. Keep sync state **outside ephemeral install paths** (beside the plugin
@@ -140,6 +158,17 @@ X ago" + inventory dialog) — silent syncs become mystery meat otherwise.
 - **Completion is a worker verb with a host-side gate** (§2): build
   completes only at the terminal stage, research/explore only with
   passing artifact checks and no pending question.
+- **Retry transient start failures with backoff, bounded and idempotent**
+  (one in flight per card, attempts claimed per failed thread,
+  fresh-state revalidation; inbox pings only on exhaustion).
+  Deterministic failures fail fast — backoff never fixes the same input
+  failing twice.
+- **Workers write conventional commits on repos that release from them**
+  (detect release automation from repo markers; freeform elsewhere,
+  never empty/`wip`).
+- **Verify question-contract receipts at advance time** (agent receipts
+  by fresh file + marker, human asks by recorded answer; unreadable
+  state fails open, never deadlocks).
 - **Fence shared-config mutation off worker threads.** Preset/model
   assignment is a host/UI concern; a worker rewriting it mid-flight
   changes every other card's brain. Refuse with a redirect (ask for it
@@ -159,6 +188,14 @@ X ago" + inventory dialog) — silent syncs become mystery meat otherwise.
 - **Freshness signals over vibes**: show running build version + build
   time and skills verification age so "did the reload take effect?" is
   checkable.
+- **Update status as a tone-coded box under the plugin title**
+  (`role="status"`): current/available/checking/not-managed/unreachable
+  each name their state and path forward. Installs the manager cannot
+  update additionally surface the newest upstream release (fail-soft
+  lookup) with the manual path; one update signal drives every badge
+  (sidebar row, tab, status box).
+- **Creation failures stay open**: a failed submit keeps the dialog and
+  draft with a persistent inline warning — never a toast alone.
 - **Static assets**: if the host bundler has no image loader, serve brand
   marks as data URIs over RPC — never runtime relative URLs (they 404 on
   managed installs).
@@ -169,9 +206,15 @@ These `bb-plugin-stelow/lib/*.mjs` files import nothing host-specific and
 encode the rules above as tested pure functions: `worker-action-policy`,
 `card-move`, `card-detail-presentation`, `card-question-state`,
 `inbox-events`, `inbox-event-presentation`, `question-batch`,
+`question-contracts`, `advance-contracts`, `ask-gate`, `ask-contracts`,
+`gate-ask-evidence`, `context-ask-gate`, `stage-skips`, `split-proposal`,
 `tracks`, `stage-bands`, `workflow-intent-policy`, `worker-ledger`,
-`worker-failure`, `research-*`, `kanban-layout`, `github-lists`,
-`promote-card`, `workflow-lineage`, `completion`, `playbook`. Mirror the pattern (pure `lib/` +
+`worker-failure`, `spawn-retry`, `discard-policy`, `github-release`,
+`research-*`, `kanban-layout`, `github-lists`,
+`promote-card`, `workflow-lineage`, `completion`, `playbook`,
+`preview-session`, `preview-runtime`, `audit-receipt`,
+`audit-trail-contract`, `audit-verification`, `vcs-publication`,
+`workspace-recovery`, `workflow-config`, `remote-url`. Mirror the pattern (pure `lib/` +
 node-test per rule, never inline-only in handlers) rather than the code.
 
 ## 9. Anti-patterns (each paid for at least once)
@@ -187,12 +230,18 @@ node-test per rule, never inline-only in handlers) rather than the code.
   worker commit verified in code (§2).
 - Workers discovering playbooks through skill-list shell pipelines
   instead of reading host-served paths (§1).
+- Fail-closed on unreadable contract/methodology sources (fail open;
+  pin the source with tests so drift breaks the build instead).
+- Pasted prompt clauses across spawn paths (single-source consts with a
+  test pinning definition + references).
 
 ## 10. Contract tests to mirror
 
 Pin the shared surface so upstream changes break your build loudly, not
 your users silently: stage count + board order + transitions (see
 `workflow-contracts`), card-insert placeholders derived from columns,
+methodology-mirror pins (vendored `stages.yaml`/`transitions.md` against
+the host mirror), refusal-matrix tests for every gate,
 skill-count vectors. The reference `bb-plugin-stelow` suite pins every
 contract above plus a suite-wiring test that fails when any test file is
 unwired from CI (unwired tests once shipped green-but-never-run); steal
