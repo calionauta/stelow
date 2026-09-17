@@ -240,7 +240,7 @@ Only genuinely ambiguous gaps are noted in the report but do NOT block the gate.
 - **Unselected** → treated as **accepted** (AI recommendation stands).
   No re-resolution needed.
 
-**If `$REVIEW_MODE` is `Product Spec + Interface + Scopes` or `Product Spec + Interface + Tech Review`:**
+**If `$REVIEW_MODE` is `Product Spec + Interface + Scopes`, `Product Spec + Interface + Tech Review`, or `Product Spec + Interface + Tech Review + Code Diff`:**
 
 - 🔎 gaps → auto-resolved
 - 🤔 gaps → **top-5** batched into one multiSelect question
@@ -252,7 +252,14 @@ Only genuinely ambiguous gaps are noted in the report but do NOT block the gate.
 
 **Review Mode not found (standalone):** Default to `Product Spec + Interface + Scopes` behavior.
 
-**After resolving (all modes):** 
+**After resolving (all modes):** write frontmatter to the report. It is the
+durable zero-gap receipt as well as the record of resolved gaps:
+
+```yaml
+---
+gap_verdict: "0 gaps" # or "gaps resolved"
+---
+```
 
 Save the resolved report:
 ```bash
@@ -390,4 +397,3 @@ the rest of this file (unchanged). Summary:
 Primary actions (per stages.yaml): `read, write`. Run only the actions that
 produce the artifacts promised in `## Hand-off`; skip anything that does
 not advance the workflow.
-

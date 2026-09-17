@@ -81,6 +81,15 @@ stages:
     allowed_tools: [ask_user_question, read, grep, ls, write, subagent]
     preferred_tools: [read, write]
     primary_actions: [read, write]
+    questions:
+      - id: assumptions-auto-resolved
+        kind: agent-receipt
+        modes: [Auto, "Product Spec Gate"]
+        receipt: plans/spec-product*.md
+      - id: assumptions-confirmed
+        kind: human-ask
+        modes: ["Product Spec + Interface Gates", "Product Spec + Interface + Scopes", "Product Spec + Interface + Tech Review", "Product Spec + Interface + Tech Review + Code Diff"]
+        receipt: plans/spec-product*.md
     transitions:
       next: [critique]
       rework: [shape]
@@ -95,6 +104,15 @@ stages:
     allowed_tools: [ask_user_question, read, grep, ls, write, subagent]
     preferred_tools: [read, write]
     primary_actions: [read, write]
+    questions:
+      - id: critique-report
+        kind: agent-receipt
+        modes: [Auto, "Product Spec Gate"]
+        receipt: critiques/critique-report.md
+      - id: critique-gap-resolution
+        kind: human-ask
+        modes: ["Product Spec + Interface Gates", "Product Spec + Interface + Scopes", "Product Spec + Interface + Tech Review", "Product Spec + Interface + Tech Review + Code Diff"]
+        receipt: critiques/critique-report.md
     transitions:
       next: [gate]
       accept: [gate]
@@ -123,6 +141,15 @@ stages:
     allowed_tools: [ask_user_question, read, grep, ls, write, subagent]
     preferred_tools: [read, write]
     primary_actions: [read, write]
+    questions:
+      - id: scope-adjustment-auto
+        kind: agent-receipt
+        modes: [Auto, "Product Spec Gate", "Product Spec + Interface Gates"]
+        receipt: plans/spec-product*.md
+      - id: scope-adjustment-confirmed
+        kind: human-ask
+        modes: ["Product Spec + Interface + Scopes", "Product Spec + Interface + Tech Review", "Product Spec + Interface + Tech Review + Code Diff"]
+        receipt: plans/spec-product*.md
     transitions:
       next: [interface]
       accept: [interface]

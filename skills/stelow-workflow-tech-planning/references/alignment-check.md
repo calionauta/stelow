@@ -59,6 +59,7 @@ If skipped, log: `context/alignment-skipped.md` with reason.
 | **Product Spec + Interface Gates** | Segue | **Flag user** (ask tool): "Tech planning suggests updating scope. Allow?" Recom: update. | **Flag user**: "Tech plan contradicts product spec. Reshape required?" Recom: reshape. |
 | **Product Spec + Interface + Scopes** | Segue | **Ask user**: show diff, let them choose update/ignore/reshape. | **Ask user**: show contradiction. Offer reshape or abort. |
 | **Product Spec + Interface + Tech Review** | Segue | **Ask user** with detailed tech impact. | **Ask user** with detailed tech impact. |
+| **Product Spec + Interface + Tech Review + Code Diff** | Segue | **Ask user** with detailed tech impact. | **Ask user** with detailed tech impact. |
 
 **Appetite affects check depth:**
 
@@ -113,4 +114,3 @@ What do you want to do?`,
 1. Log the warning to `context/deferred-constraints.md`
 2. Proceed with planning:20
 3. Constraint may surface again in audit stage
-

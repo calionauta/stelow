@@ -116,7 +116,7 @@ fi
 | **Product Spec + Interface Gates** | Top-3 most critical assumptions. Each presented with AI recommendation.
   Use the ask tool (see `../stelow-workflow-orchestrator/references/cli-tools/ask.md`).
   Option format: "{assumption}. Recom: {resolution}" with "(Recommended)" marker. |
-| **Product Spec + Interface + Scopes / Product Spec + Interface + Tech Review** | Top-5 assumptions. User responds to each.
+| **Product Spec + Interface + Scopes / Product Spec + Interface + Tech Review / Product Spec + Interface + Tech Review + Code Diff** | Top-5 assumptions. User responds to each.
   AI recommendation marked as "(Recommended)". |
 
 After resolving, note in spec frontmatter:
@@ -125,6 +125,9 @@ assumptions_resolved:
   - core_flow: confirmed (user reports bug, not describes)
   - target_user: devs
 ```
+
+This frontmatter is mandatory for both human-confirmed and auto-resolved
+assumptions; auto-resolved entries must name the applied default.
 
 ## shape:20 — Shaping
 
@@ -313,6 +316,15 @@ Show the IN/OUT scope table. Ask:
 **If user adds items:** create `spec-product_{v+1}.md` (user is aware)
 **If user selects nothing:** proceed without changes
 
+Always write the scope-adjustment receipt to the resulting product-spec
+frontmatter, including the no-change case:
+
+```yaml
+scope_adjustment:
+  at: <ISO-8601 timestamp>
+  changes: [] # selected IN/OUT adjustments, or [] when none were selected
+```
+
 **Note:** No visual review re-run — ask tool already confirms selections.
 
 ## Output
@@ -401,4 +413,3 @@ the rest of this file (unchanged). Summary:
 Primary actions (per stages.yaml): `read, write`. Run only the actions that
 produce the artifacts promised in `## Hand-off`; skip anything that does
 not advance the workflow.
-

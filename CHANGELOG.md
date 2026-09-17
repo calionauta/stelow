@@ -3,6 +3,18 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.60.0-alpha] - 2026-09-17
+
+### Added
+
+- Machine-readable question contracts for assumption resolution, critique-gap
+  resolution, and scope adjustment.
+
+### Changed
+
+- `context:5` is the canonical context gate, and Scopes review mode no longer
+  receives an unpromised tech-plan gate.
+
 ## [0.59.9-alpha] - 2026-09-16
 
 ### Changed

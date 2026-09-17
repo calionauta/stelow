@@ -231,15 +231,13 @@ gate:      (none)
 
 | Stage | review_mode | Blocked? | Gate rule |
 |---|---|---|---|
-| context | Auto | skip | appetite=Core? Reduced ask only |
-| context | Product Spec Gate | skip | skipped entirely |
-| context | Product Spec + Interface + Scopes | skip | skipped entirely |
-| context | Product Spec + Interface + Tech Review + Code Diff | skip | skipped entirely |
+| context | all | see `context:5` | `context:5` is canonical: it decides skip, reduced ask, or full ask from appetite and intent. |
 | gate | all | block | `requires_approval: true`, `visual_review` required |
 | int-gate | all | block | `requires_approval: true`, `visual_review` required |
 | plan-gate | Auto | skip | skipped |
 | plan-gate | Product Spec Gate | skip | skipped |
-| plan-gate | others | block | `requires_approval: true`, `visual_review` required |
+| plan-gate | Product Spec + Interface + Scopes | skip | skipped |
+| plan-gate | Product Spec + Interface Gates / Product Spec + Interface + Tech Review / Product Spec + Interface + Tech Review + Code Diff | block | `requires_approval: true`, `visual_review` required |
 | diff-gate | Auto | skip | skipped |
 | diff-gate | Product Spec Gate | skip | skipped |
 | diff-gate | Product Spec + Interface + Scopes | skip | skipped |
