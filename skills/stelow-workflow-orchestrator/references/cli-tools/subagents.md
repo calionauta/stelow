@@ -11,6 +11,15 @@
 >
 > **TL;DR:** Fresh is non-negotiable. Fork is fallback only.
 
+## BB child-thread substrate
+
+On hosts backed by BB, a fresh BB child thread is an equivalent execution
+substrate for an independent subagent task. Apply the identical contract:
+fresh context, no communication with sibling work, and one independently
+owned output file. The parent alone reads and synthesizes those files. Never
+use child threads for parallel code execution, shared live state, lifecycle
+commands, or structured questions.
+
 ## Quick Summary
 
 > Delegate parallel work to built-in subagents with task handoff. Alternative: execute directly with context preservation.

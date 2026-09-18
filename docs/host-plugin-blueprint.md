@@ -173,6 +173,10 @@ X ago" + inventory dialog) — silent syncs become mystery meat otherwise.
   assignment is a host/UI concern; a worker rewriting it mid-flight
   changes every other card's brain. Refuse with a redirect (ask for it
   via the structured ask protocol instead of reassigning it yourself).
+- **Surface child threads under their worker, never as peers.** Workers
+  may fan work out to fresh BB child threads under the `subagents.md`
+  contract; the host lists each child (title, status, provider, open
+  link) beneath its worker row and leaves synthesis to the parent.
 
 ## 7. UI patterns that survived contact with users
 
@@ -196,6 +200,9 @@ X ago" + inventory dialog) — silent syncs become mystery meat otherwise.
   (sidebar row, tab, status box).
 - **Creation failures stay open**: a failed submit keeps the dialog and
   draft with a persistent inline warning — never a toast alone.
+- **Automation proposes, never disposes**: scheduled rules may only
+  create unstarted drafts and notifications — never start workers, move
+  cards, clear labels, merge code, or import work behind the user's back.
 - **Static assets**: if the host bundler has no image loader, serve brand
   marks as data URIs over RPC — never runtime relative URLs (they 404 on
   managed installs).
@@ -210,6 +217,7 @@ encode the rules above as tested pure functions: `worker-action-policy`,
 `gate-ask-evidence`, `context-ask-gate`, `stage-skips`, `split-proposal`,
 `tracks`, `stage-bands`, `workflow-intent-policy`, `worker-ledger`,
 `worker-failure`, `spawn-retry`, `discard-policy`, `github-release`,
+`automation-rules`, `thread-children`,
 `research-*`, `kanban-layout`, `github-lists`,
 `promote-card`, `workflow-lineage`, `completion`, `playbook`,
 `preview-session`, `preview-runtime`, `audit-receipt`,
@@ -234,6 +242,8 @@ node-test per rule, never inline-only in handlers) rather than the code.
   pin the source with tests so drift breaks the build instead).
 - Pasted prompt clauses across spawn paths (single-source consts with a
   test pinning definition + references).
+- Fire-and-forget RPC writes that update UI before the server confirms
+  (await, then write from the response — or revert on failure).
 
 ## 10. Contract tests to mirror
 
