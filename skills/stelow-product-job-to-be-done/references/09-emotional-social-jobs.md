@@ -54,4 +54,8 @@ Process:
   - {bullet points}
 ### Social Jobs:
   - {bullet points}
+
+Completeness contract (the host validates these counts — never submit fewer):
+- Both sections present: Emotional Jobs and Social Jobs.
+- At least 5 Emotional Jobs and at least 5 Social Jobs, each a full statement following the statement rules (no opposing pairs for the same outcome).
 ```

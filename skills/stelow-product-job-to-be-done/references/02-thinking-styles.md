@@ -70,5 +70,10 @@ Example:
 - Emotional Jobs: Feel secure, avoid frustration.
 - Social Jobs: Be perceived as organized, avoid being seen as negligent.
 
+Completeness contract (the host validates these counts — never submit fewer):
+- Exactly 5 thinking styles, each under its own ## Name heading.
+- Every style carries the 3-row Element table (Thought, Emotion, Personal Rule) with Voice example and Source & status, plus: 1-line description, Context, Differentiation/Solution Adaptation, Top 3 Functional Jobs, Top 2 Emotional Jobs, Top 2 Social Jobs.
+- A closing justification of why these five styles were chosen.
+
 Respond without introduction.
 ```

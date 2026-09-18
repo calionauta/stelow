@@ -99,4 +99,9 @@ Composite Score = (R + P + H) * (Inc + Inv)
 - Current solutions: {types of existing solutions (mental, physical, virtual, procedural or methodological) with examples of specific existing product-brands to use}
 
 `</Template of the output>`
+
+Completeness contract (the host validates these counts — never submit fewer):
+- A ## 30 Raw Success Criteria section with 30 bulleted statements.
+- A ## Top 20 section with exactly 20 detailed criteria (#### 1/20 … 20/20 headings).
+- Every Top 20 criterion carries all five fields: Alternative, Justification, Score, Metrics, Current solutions.
 ```

@@ -82,4 +82,8 @@ PROCESS:
 ## Higher functional JTBDs
 -
  </TEMPLATE FOR the result>
+
+Completeness contract (the host validates these counts — never submit fewer):
+- All three sections present: Rewritten JTBDs, Contextual JTBDs, Higher functional JTBDs.
+- Contextual JTBDs holds exactly 20 jobs meeting the Specific Rules; Rewritten and Higher hold at least 1 job each.
 ```

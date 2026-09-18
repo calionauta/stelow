@@ -51,4 +51,8 @@ Template for result (replacing the placeholder {} by the content):
 ## Category: {Category}
 ### Situational factor: {Situational factor}: {description}
 - {place the variable name}: {justification and specific examples}
+
+Completeness contract (the host validates these counts — never submit fewer):
+- All 5 categories present (Where, With Whom & Local Culture, When, Why, How), each under its own ## Category heading.
+- Every category holds at least 2 situational factors (### headings); every factor holds at least 2 variables with justification and examples.
 ```

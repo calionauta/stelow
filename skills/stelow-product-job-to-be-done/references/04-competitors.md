@@ -54,4 +54,8 @@ Use this structured output:
 ## Key Insights
 *Strategic observations about the competitive landscape*
 - [List key takeaways]
+
+Completeness contract (the host validates these counts — never submit fewer):
+- All four sections present: Direct, Indirect, Hidden Competitors, Key Insights.
+- Each competitor section names at least 3 examples with brief descriptions; Key Insights holds at least 3 takeaways.
 ```

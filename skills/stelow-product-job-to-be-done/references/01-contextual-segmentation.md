@@ -73,4 +73,8 @@ Template and fields for result:
     - 
     - 
     -
+
+Completeness contract (the host validates these counts — never submit fewer):
+- 20 initial candidate segments, then a maximum of 10 final segments.
+- Every final segment has all five fields: Market, Justification, Situational factors, 3 Desired Outcomes, 3 Constraints.
 ```

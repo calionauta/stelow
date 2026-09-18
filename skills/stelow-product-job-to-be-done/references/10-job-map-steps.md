@@ -67,4 +67,8 @@ Rules:
 - The steps MUST NECESSARILY be mutually exclusive, collectively exhaustive and non-redundant.
 - Do not use conjunctions "AND" or "OR" to combine steps.
 - Do not mention any specific solution or method that did not exist 10,000 years ago (e.g. "write", "bank accounts", "photos", "online", "WhatsApp", "spreadsheets", etc.) except if it is specified in the job to be done.
+
+Completeness contract (the host validates these counts — never submit fewer):
+- All 6 stages present, each under its own # heading: Define and Plan, Prepare and Execute, Evaluate and Adjust, Conclude and Organize, Document and Share, Monitor subsequent effects.
+- Every stage holds at least 2 steps (### headings with brief explanations).
 ```

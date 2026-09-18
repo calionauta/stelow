@@ -107,4 +107,8 @@ Follow this output format, replacing the placeholders [] and {}, and translating
 ## {Role}
 ### {a respectful emoji that represents the actor} {actor name in plural}
 - {market definition of the actor: [actor name] + " trying to " + [job to be done: start with verb in the infinitive]}
+
+Completeness contract (the host validates these counts — never submit fewer):
+- All 12 roles present, each under its own ## heading with at least one named actor plus market definition: Beneficiary, Performer, Provider, Indirect Beneficiary, Threatened, Assistant, Decision Maker, Purchaser, Buyer, Supervisor, Influencer, Expert.
+- Roles that ask for "top 3" list 3 entries; Beneficiary and Performer list 1–3.
 ```

@@ -131,4 +131,9 @@ Role: {Role provided by the user, otherwise consider the beneficiary of the Job}
 | {Criterion 2} | {Alternative 2} |
 | ... | ... |
     `</Template of the output>`
+
+Completeness contract (the host validates these counts — never submit fewer):
+- A ## Top 10 section with exactly 10 criteria (#### 1/10 … 10/10 headings).
+- Every criterion carries all five fields: Alternative, Justification, Score, Metrics, Current solutions.
+- A ## Summary of Success Criteria table with 10 data rows (Success Criterion + Alternative).
 ```
