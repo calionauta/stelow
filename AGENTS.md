@@ -167,6 +167,17 @@ Run before releases. A test file moving from OK to REVIEW over time signals rot.
 - **Distribution:** Stelow ships **via Git/GitHub only** — there is no `npm publish` step. Release agents must not run `npm publish`.
 - **Tag and Release are linked — never create one without the other.** A git tag alone does not create a GitHub Release; the landing page shows only Releases, not tags.
 
+### What merits a release (behavioral vs editorial `.md`)
+
+`skills/**`, `scripts/stelow`, `product-strategies.json`, and
+`stages.yaml`/`transitions.md` are executable methodology — an LLM reads
+them as behavior, not prose. Any change that alters what a worker does
+(new substrate, flag, gate, contract, default, guard) ships as `feat:` /
+`fix:` and merits a release, even when the diff is only Markdown.
+Reserve `docs:` for editorial changes that alter no behavior (typos,
+formatting, `docs/`, `HOSTING.md`, `README.md`). Mislabeling a behavioral
+change as `docs:` silently skips the release it deserves.
+
 ### Commit-message trailer contract
 
 Any commit that edits `package.json#version` **must** carry exactly one of the
