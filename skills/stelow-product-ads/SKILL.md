@@ -81,6 +81,14 @@ The solution's audience can be in 5 stages according to the **Transtheoretical M
 - **Inspiring Customer Stories**: share stories of customers who overcame challenges and achieved significant results
 - **User-Generated Content**: encourage customers to create and share content related to the solution
 
+## Completeness contract
+
+The host validates these minima — never submit fewer:
+
+- Channel plan covering all 5 awareness stages (Pre-Contemplation, Contemplation, Preparation, Action, Maintenance).
+- Kill criteria per channel.
+- At least 500 words and 5 headings.
+
 ## Examples
 
 ### Example: launch ads for a new B2B scheduling tool

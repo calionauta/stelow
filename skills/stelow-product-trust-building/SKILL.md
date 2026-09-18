@@ -67,6 +67,13 @@ In contexts of high demand or rare opportunities, the absence of a guarantee can
 - **Option B**: choose two conditional guarantees around small and large results with different terms.
 - **Option C**: choose two conditional guarantees with the same terms, but short and long deadlines to show what they could achieve.
 
+## Completeness contract
+
+The host validates these minima — never submit fewer:
+
+- Fear → guarantee mapping with placement and wording.
+- At least 500 words and 3 headings.
+
 ## Examples
 
 ### Example: users hesitate at the payment step

@@ -97,6 +97,13 @@ As a product evolves, optimization for more experienced users can, unintentional
 - Video editing software: "the completion rate of the initial tutorial by new users" or "the satisfaction level (CSAT) of users with less than 30 days of use"
 - Online community: "the rate of new members who make their first post or comment in their first week"
 
+## Completeness contract
+
+The host validates these minima — never submit fewer:
+
+- Tension board with verdict plus the metric to watch next.
+- At least 500 words and 3 headings.
+
 ## Examples
 
 ### Example: engagement is up, support tickets doubled

@@ -343,6 +343,13 @@ Weak outputs:
 - ignoring ecosystem dynamics
 - treating products as static artifacts
 
+## Completeness contract
+
+The host validates these minima — never submit fewer:
+
+- Decision framed as optionality preserved, with a revisit trigger.
+- At least 600 words and 3 headings.
+
 ## Examples
 
 ### Example: platform team torn between two architectures

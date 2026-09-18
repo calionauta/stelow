@@ -64,6 +64,13 @@ disable-model-invocation: true
 
 Tactics fail most often from wrong context, not wrong execution. Before picking tactics, establish market type, sides, and comparables via the shared web-research contract (`../stelow-workflow-orchestrator/references/cli-tools/web-research.md`): host search for market facts and comparable marketplaces first, `last30days` as a recency check on the shortlisted tactics ("has anyone tried tactic N in this niche recently, and what happened?"). Skip when the user already supplied context.
 
+## Completeness contract
+
+The host validates these minima — never submit fewer:
+
+- 2–3 tactics ordered by effort, each with the side-constraint it removes, grounded in the market context.
+- At least 600 words and 3 headings.
+
 ## Examples
 
 ### Example: tutors won't join the tutoring marketplace

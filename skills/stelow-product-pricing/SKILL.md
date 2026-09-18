@@ -114,6 +114,13 @@ The exit barrier of a service cannot be the difficulty of taking their data away
 
 **Why Adopting These Principles is Also a Business Strategy**: a company that facilitates customer entry and exit is making a bold bet on the quality of its own product, signaling that it intends to retain customers **by merit, and not by lock-in**.
 
+## Completeness contract
+
+The host validates these minima — never submit fewer:
+
+- Metric recommendation with guardrails and perception framing.
+- At least 600 words and 3 headings.
+
 ## Examples
 
 ### Example: price a new analytics add-on

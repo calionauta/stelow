@@ -124,6 +124,13 @@ under `skills/` (historically published at
 **Install:** already vendored in this repo — no separate install needed.
 **Note:** These are optional enhancements. The core method works without them — the references/ contain all the necessary content.
 
+## Completeness contract
+
+The host validates these minima — never submit fewer:
+
+- Experiment plan with success/abort thresholds and the next step either way.
+- At least 600 words and 3 headings.
+
 ## Examples
 
 ### Example: validate a meal-planning app idea in two weeks

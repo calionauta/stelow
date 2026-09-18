@@ -109,6 +109,13 @@ Before recommending, gather context — never prescribe blindly:
 - **Sponsor Button Experiment**: add `FUNDING.yml`, three persona-based tiers, and a one-line ask in the README/docs ("If this saves you or your company time, consider sponsoring maintenance"). Run 30 days; measure profile clicks → sponsor conversion before investing in perks.
 - **Docs-Funnel Screencast Experiment**: publish 5 free videos inside the docs plus 3 sponsor-only advanced ones. Measure sponsor conversion per thousand doc visitors before committing to a full course.
 
+## Completeness contract
+
+The host validates these minima — never submit fewer:
+
+- Openness thesis, moat design, and experiment scope.
+- At least 600 words and 3 headings.
+
 ## Examples
 
 ### Example: devtool considering open-sourcing the core

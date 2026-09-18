@@ -64,6 +64,14 @@ Creativity triggers from Strategyn (Outcome-Driven Innovation / Jobs to Be Done)
 14. Collect revenue during downtime.
 15. Own the content and the infrastructure.
 
+## Completeness contract
+
+The host validates these minima — never submit fewer:
+
+- 2–3 model tweaks (not a pricing change), each with cost math.
+- Cost and revenue implications plus the experiment that tests each tweak.
+- At least 600 words and 3 headings.
+
 ## Examples
 
 ### Example: SaaS with crushing onboarding costs

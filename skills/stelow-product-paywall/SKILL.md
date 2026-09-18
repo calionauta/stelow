@@ -199,6 +199,14 @@ writes the rules, you don't fully own your business.
 Output: a funnel spec (screens, questions, offers, build order) ready for
 the shape/planning stages of the stelow workflow.
 
+## Completeness contract
+
+The host validates these minima — never submit fewer (one mode per run):
+
+- Mode A (diagnosis): funnel data, scores against the three benchmarks, and verdict + fix plan.
+- Mode B (design): screen anatomy, paywall options, trial policy, and build order.
+- At least 600 words and 3 headings.
+
 ## Examples
 
 ### Example 1: Diagnose a dropping paywall rate

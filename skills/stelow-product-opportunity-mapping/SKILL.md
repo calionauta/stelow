@@ -206,6 +206,15 @@ _(Continue for all opportunities)_
 
 ```
 
+## Completeness contract
+
+The host validates these minima — never submit fewer:
+
+- Index of Opportunities and Solutions plus at least 3 ranked opportunity sections (`##`, with 🥇 🥈 🥉).
+- At least 4 solution subsections (`###`) per opportunity.
+- Every solution states Time Appetite (2, 4, or 6 weeks), scope with IN/OUT trade-offs, strategy, value areas, and assumptions.
+- At least 1200 words.
+
 ## Error Handling
 
 If the user input is too vague, ambiguous, or irrelevant, output:

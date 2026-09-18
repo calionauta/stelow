@@ -91,6 +91,13 @@ Instead of giving a price discount, you **add more value to the original offer**
 - **Differential in the freebie**: the extra sessions can include a premium service that's not in the normal package
 - **Limit**: to create urgency, the offer can be limited to the first 5 customers
 
+## Completeness contract
+
+The host validates these minima — never submit fewer:
+
+- Dated promotion calendar; every offer carries its cap and rollback price.
+- At least 600 words and 3 headings.
+
 ## Examples
 
 ### Example: launch week for a course

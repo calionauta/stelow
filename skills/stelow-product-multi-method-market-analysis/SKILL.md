@@ -233,6 +233,13 @@ Users
 - Variant 1: Structured markdown report organized by time horizon and methodology
 - Variant 2: Executive Canvas in markdown, ready for Notion, Miro, or Canva
 
+## Completeness contract
+
+The host validates these minima — never submit fewer (one variant per run):
+
+- Variant 1 (General Deep Analysis): all three time horizons (Recent Past, Current Trends, Future Predictions) each covered through all four methodologies (PESTLE, Foresight, Delphi, Wardley); at least 800 words and 6 headings.
+- Variant 2 (Weekly Intelligence Canvas): all 7 numbered sections plus Sources & Links, one Mermaid flow, one ASCII Wardley map, and at least 3 table rows; at least 500 words.
+
 ## Examples
 
 ### Example: should we enter the AI meeting-notes space?
