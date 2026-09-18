@@ -59,11 +59,20 @@ Invariants (encode every one; each has bitten us):
   re-validates, verifies clean, and leaves a trail comment.
 - ** terminal cards show terminal UI**: history + final state only, no worker
   controls except Delete.
+- **Terminal states release workspace claims.** `done`, archive, cancel, and
+  delete drop every file claim the card holds on its checkout, and the host
+  resumes exactly the cards that waited on each freed file (paused event
+  resolved as `resumed` plus an agent-only nudge to re-acquire). Per-card
+  lock dirs are invisible to sibling cards — claims are keyed by workspace
+  path, not by card state dir — so a parked card can never hold files
+  hostage.
 
 Reference (copyable, zero host imports): `worker-action-policy.mjs`
 (action visibility), `card-move.mjs` (board-move decisions),
 `workflow-intent-policy.mjs` (type edits), `card-detail-presentation.mjs`
-(archived hero copy), `tracks.mjs` (build vs lightweight routing).
+(archived hero copy), `tracks.mjs` (build vs lightweight routing),
+`card-claims.mjs` (workspace claim registry, terminal release, waiter
+resume).
 
 ## 3. Inbox event model
 
@@ -79,6 +88,12 @@ Four kinds, each with its own lifecycle — never blanket-resolve:
 - **Dedupe by stable identity** (interaction/question id), never by
   timestamp: a state flap (`awaiting-answer → running → awaiting-answer`)
   must not duplicate alerts.
+- **Lock-blocked pauses name the holder and the unlock.** A card that hits a
+  file claimed by another live card parks that scope (never a retry loop)
+  and gets one `paused` event per file (`lock-blocked:<card>:<file>` dedupe)
+  naming the holder and the automatic release (owner release or lease
+  expiry). Release resolves it as `resumed` and nudges the worker to
+  re-acquire — the scope, not the human, does the retrying.
 - **Badge counts unresolved action items only**, plus unseen fresh
   completions (7-day window). Resolved items persist under history.
 - Render sections: needs-you, recent updates, resolved (collapsed),
@@ -220,7 +235,7 @@ encode the rules above as tested pure functions: `worker-action-policy`,
 `worker-failure`, `spawn-retry`, `discard-policy`, `github-release`,
 `automation-rules`, `thread-children`,
 `research-*`, `kanban-layout`, `github-lists`,
-`promote-card`, `workflow-lineage`, `completion`, `playbook`,
+`promote-card`, `workflow-lineage`, `completion`, `card-claims`, `playbook`,
 `preview-session`, `preview-runtime`, `audit-receipt`,
 `audit-trail-contract`, `audit-verification`, `vcs-publication`,
 `workspace-recovery`, `workflow-config`, `remote-url`. Mirror the pattern (pure `lib/` +
@@ -245,6 +260,8 @@ node-test per rule, never inline-only in handlers) rather than the code.
   test pinning definition + references).
 - Fire-and-forget RPC writes that update UI before the server confirms
   (await, then write from the response — or revert on failure).
+- Per-card lock directories as cross-card coordination (sibling cards never
+  see each other's state-dir locks; key claims by workspace path, §2).
 
 ## 10. Contract tests to mirror
 
