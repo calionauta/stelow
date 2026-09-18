@@ -56,7 +56,7 @@ This package brings product methodology to AI coding agents. Instead of open-end
 - [🎮 Commands](#-commands)
 - [🧰 stelow CLI (`scripts/stelow`)](#-stelow-cliscriptsstelow)
 - [🛠️ Host Installation Guide](#️-host-installation-guide)
-- [🗂️ Visual Management (Kanban Board)](#️-visual-management-kanban-board)
+- [🗂️ Visual Board and Inbox](#️-visual-board-and-inbox)
 - [🌐 Host Support](#-host-support)
 - [📁 Artifact Directory](#-artifact-directory)
 - [📖 Evidence & Limitations](#-evidence--limitations)
@@ -340,7 +340,7 @@ This package is **skills-only and host-agnostic** — its 28 skills run on any A
 
 | Your situation | Recommended command | What you get |
 |----------------|--------------------|-------------|
-| **bb desktop** (recommended) | Download at [getbb.app](https://getbb.app), then `bb plugin install git:https://github.com/calionauta/bb-plugin-stelow.git --yes` | Kanban board + inbox + `bb stelow` worker CLI (workflow skills vendored & auto-synced; see [Path A](#-path-a-bb-desktop-recommended)) |
+| **bb desktop** (recommended) | Download at [getbb.app](https://getbb.app), then `bb plugin install git:https://github.com/calionauta/bb-plugin-stelow.git --yes` | Visual board + inbox + `bb stelow` worker CLI (all 28 skills vendored & auto-synced; see [Path A](#-path-a-bb-desktop-recommended)) |
 | **Any other agent** | `npx skills add calionauta/stelow -g` | All 28 skills, copied to `~/.agents/skills/` |
 | **Existing repo / offline** | `git clone ... && ./install.sh` | All 28 skills + prune of retired/orphaned skills |
 
@@ -382,7 +382,7 @@ The skills work in any agent that reads `~/.agents/skills/<name>/SKILL.md` — t
 agentskills.io standard. This repo ships **no host-specific code**: every
 compatible agent consumes the same skill tree. Host specialization is optional
 and lives in the environment (`STELOW_WORKFLOW=1` + `STELOW_STATE=<path>` —
-see `references/host-levers.md`). The visual host integration (board, inbox,
+see `references/host-levers.md`). The visual app (board, inbox,
 worker CLI) lives in a separate repo,
 [bb-plugin-stelow](https://github.com/calionauta/bb-plugin-stelow).
 
@@ -470,19 +470,16 @@ Or in the UI: Extensions → Plugins → Add plugin, paste
 To track a fixed release instead of the default branch, append `@vX.Y.Z`
 (e.g. `@v0.1.57`); updates arrive via `bb plugin update stelow`.
 
-**3. Product playbooks (for research cards):**
+**3. Skills (already bundled):**
 
-```bash
-npx skills add calionauta/stelow -g
-```
-
-The plugin already vendors the 14 workflow skills and auto-syncs them; this
-adds the 14 product playbooks to the agent skills hub (`bb skill list` to
-confirm).
+The plugin ships all 28 skills (14 `stelow-workflow-*` + 14 `stelow-product-*`)
+in its own `skills/` and auto-syncs them from this repo — no manual installation
+step. `npx skills add calionauta/stelow -g` is only needed for non-bb agents.
+(`bb skill list` to confirm the bundled copies.)
 
 **4. Open Stelow** in bb's navigation, select a project (a normal project with
 a local workspace source), choose Appetite and Review mode, and create a card.
-Details in [🗂️ Visual Management](#️-visual-management-kanban-board).
+Details in [🗂️ Visual Board and Inbox](#️-visual-board-and-inbox).
 
 ### 📋 Path B: Any agent (universal, canonical)
 
@@ -575,7 +572,7 @@ Subcommands: `status`, `advance`, `doctor`, `seed`, `schema`, `ask`,
 
 > When running inside bb, you don't call this binary directly — the plugin wraps
 > the same operations as `bb stelow status|ask|seed|advance|doctor|preset`
-> (see [🗂️ Visual Management](#️-visual-management-kanban-board)). The semantics
+> (see [🗂️ Visual Board and Inbox](#️-visual-board-and-inbox)). The semantics
 > are identical; only the invocation surface changes.
 
 ---
@@ -606,9 +603,9 @@ npx skills add calionauta/stelow -g
   scheduled prompts. The repository does not ship a scheduler or inbox mirror —
   the bb plugin below is the reference implementation that provides both.
 
-## 🗂️ Visual Management (Kanban Board)
+## 🗂️ Visual Board and Inbox
 
-[bb-plugin-stelow](https://github.com/calionauta/bb-plugin-stelow) is the reference visual host for Stelow: a Kanban board, inbox, and worker CLI inside bb. It keeps `stelow.json` and `.stelow/` as the source of truth — it maintains no second workflow database.
+[bb-plugin-stelow](https://github.com/calionauta/bb-plugin-stelow) is the reference Stelow app: a visual board and inbox with a `bb stelow` worker CLI, running inside bb (the local-first IDE from Path A). It keeps `stelow.json` and `.stelow/` as the source of truth — it maintains no second workflow database.
 
 ```bash
 bb plugin install git:https://github.com/calionauta/bb-plugin-stelow.git --yes
@@ -624,7 +621,7 @@ URL — or Extensions → Plugins → Add plugin in the UI and paste the same UR
 - **Blocking questions** — single/multi-choice forms via `bb stelow ask` (batch several `--question` groups in one call). Unanswered questions stay answerable on the card; late answers are delivered to the worker thread.
 - **Worker CLI** — the same state machine as [`scripts/stelow`](#-stelow-cliscriptsstelow), wrapped for bb:
   `bb stelow status [--json]`, `ask`, `seed`, `advance <stage>`, `doctor [--json]`, `preset list|add|remove|assign`.
-- **Skills distribution** — the 14 `stelow-workflow-*` skills are vendored in the plugin's `skills/` and auto-synced from this repo on a schedule (default `33 */6 * * *`), plus the helper script (synced copy of `scripts/stelow`). The 14 `stelow-product-*` playbooks are **not** vendored — they come from the agent skills hub (`npx skills add calionauta/stelow`). Never hand-edit the vendored copies; fix methodology upstream and let the sync propagate.
+- **Skills distribution** — all 28 skills (14 `stelow-workflow-*` + 14 `stelow-product-*`) are vendored in the plugin's `skills/` and auto-synced from this repo on a schedule (default `33 */6 * * *`), plus the helper script (synced copy of `scripts/stelow`). Never hand-edit the vendored copies; fix methodology upstream and let the sync propagate.
 - **Gates, presets, mentions** — artifact review with contextual comments, approval receipts in the canonical filenames (`.stelow/approvals/{dirHash}/{gate,int-gate,plan-gate,diff-gate}-approved.md`), agent presets (provider/model/reasoning/permission per card), `@workflow-name` mentions resolving fresh state, and a sidebar badge counting unresolved inbox items + unseen completions.
 
 Open **Stelow** in bb's navigation, select a project, choose Appetite and Review mode, then create a card. The plugin seeds the workflow, starts the worker, and reflects its stages and generated artifacts in the board. Requires a normal bb project with a local workspace source. See the [plugin README](https://github.com/calionauta/bb-plugin-stelow#readme) for details.
@@ -642,7 +639,7 @@ this repo ships no host-specific code. The hosting contract lives in
 | Host | How it runs stelow |
 |---|---|
 | **Any agentskills-compatible agent** | Reads the skills directly from `~/.agents/skills/`; no plugin import needed. Set `STELOW_WORKFLOW=1` + `STELOW_STATE=<path>` to auto-load the workflow. Stage state can additionally be projected onto the host's native surface (e.g. issue labels) via the skill instructions. `visual_review` writes portable receipts under `.stelow/approvals/`. State mechanics go through the [`scripts/stelow` CLI](#-stelow-cliscriptsstelow). |
-| **bb (via [bb-plugin-stelow](https://github.com/calionauta/bb-plugin-stelow))** | Reference visual host in a separate repo: Kanban board, inbox, blocking questions, presets, and the `bb stelow ...` worker CLI wrapping the same state machine. Workflow skills auto-sync from this repo; product playbooks come from the skills hub. |
+| **bb (via [bb-plugin-stelow](https://github.com/calionauta/bb-plugin-stelow))** | Reference app in a separate repo: visual board, inbox, blocking questions, presets, and the `bb stelow ...` worker CLI wrapping the same state machine. All 28 skills auto-sync from this repo. |
 
 Owner paths in this repo:
 
