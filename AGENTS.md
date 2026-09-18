@@ -203,8 +203,11 @@ Enforcement:
     `package.json` change lacks one of the trailers above (the `.husky/commit-msg`
     hook was removed with the tooling-dirs cleanup; run this mode manually or
     re-add the hook). (Bypass with `git commit --no-verify`.)
-- Annotated-tag-only tag resolution (`git for-each-ref` + `cat-file -t` filter).
-  Lightweight tags and `v<X.Y.Z>-rc.N` pre-release tags are ignored.
+- Annotated-tag-only tag resolution scoped to the active `v0.x` line
+  (`git for-each-ref` + `cat-file -t` filter; frozen `1.x` milestones
+  ignored, `-alpha` tags count as releases). Lightweight tags and
+  `v<X.Y.Z>-rc.N` pre-release tags are ignored. Enforced in CI via
+  `--mode=ci`.
 - The canonical trailer contract is documented in this section and enforced by
   `scripts/check-version-coherence.sh`. (The old `.changeset/sw-034-version-coherence-guard.md`
   template was removed with the `.changeset/` cleanup; release notes are composed
