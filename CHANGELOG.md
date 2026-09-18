@@ -3,6 +3,27 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.61.0-alpha] - 2026-09-18
+
+### Added
+
+- **BB child-thread substrate** (`skills/stelow-workflow-orchestrator/references/cli-tools/subagents.md`).
+  On BB-backed hosts a fresh BB child thread is an equivalent execution
+  substrate for an independent subagent task under the identical contract
+  (fresh context, no sibling communication, one independently owned output
+  file, parent synthesizes). Parallel code execution, shared live state,
+  lifecycle commands, and structured questions remain forbidden.
+- **Host-plugin blueprint surfacing rules** (`docs/host-plugin-blueprint.md`):
+  child threads listed under their worker, automation proposes-never-disposes,
+  fire-and-forget RPC writes await the server response, `automation-rules`
+  and `thread-children` indexed as portable lib modules.
+
+### Changed
+
+- Downstream freshness is the consumer's job: poll the releases API (or the
+  pinned `main` commit) on your own schedule instead of per-consumer release
+  notifications (`HOSTING.md`; notify workflow removed).
+
 ## [0.60.0-alpha] - 2026-09-17
 
 ### Added
