@@ -3,6 +3,19 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.62.0-alpha] - 2026-09-18
+
+### Added
+
+- **Completeness contracts on all ten JTBD prompts**
+  (`skills/stelow-product-job-to-be-done/references/`). Each prompt ends
+  with a machine-checkable contract restating its countable minima
+  (20 initial segments → max 10 detailed; exactly 5 thinking styles;
+  20 contextual jobs; 4 competitor sections; 12 actor roles; 5 variable
+  categories; Top 10 + summary table; 30 raw + Top 20 financial criteria;
+  emotional/social floors; 6 job-map stages) so hosts can validate counts
+  instead of trusting prose depth.
+
 ## [0.61.0-alpha] - 2026-09-18
 
 ### Added
