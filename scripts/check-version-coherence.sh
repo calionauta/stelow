@@ -14,9 +14,11 @@ set -euo pipefail
 
 RELEASE_BUMP_RE='^Release-Bump: v[0-9]+\.[0-9]+\.[0-9]+$'
 ROLLBACK_RE='^Rollback: v[0-9]+\.[0-9]+\.[0-9]+ → v[0-9]+\.[0-9]+\.[0-9]+ — [^[:space:]].*'
-# Version identifiers are intentionally not ordered here: the project can
-# return from a historical 1.x milestone to its active pre-1.0 release line.
-VERSION_TAG_RE='^v[0-9]+\.[0-9]+\.[0-9]+$'
+# Tag resolution is scoped to the active pre-1.0 line: the frozen 1.x
+# milestones stay on main's history but are not the release baseline
+# (see AGENTS.md "Pre-1.0 policy": new releases continue from 0.58.0).
+# -alpha tags are release tags here, not pre-release noise.
+VERSION_TAG_RE='^v0\.[0-9]+\.[0-9]+(-alpha)?$'
 
 warning() {
   printf '::warning::%s\n' "$*"

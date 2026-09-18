@@ -21,6 +21,10 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run typecheck
+      # Version coherence: package.json must match the latest v0.x release
+      # tag unless the HEAD commit declares a Release-Bump/Rollback trailer.
+      # Fail-soft on missing remotes (warns and skips instead of failing).
+      - run: bash scripts/check-version-coherence.sh --mode=ci
       - run: npm run quality:report
       # transitions-generator test regenerates transitions.md via
       # scripts/generate-transitions.py, which requires PyYAML
