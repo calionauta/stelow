@@ -278,10 +278,17 @@ setup_full() {
   fi
   echo ""
 
-  # Step 5: last30days (community/recency signal for web research — optional skill, not auto-installed)
-  log_info "[5/5] last30days — community sentiment and last-30-day signals"
-  log_info "  Complements host web search for market-analysis, JTBD, discovery and sibling playbooks."
-  log_info "  Best-effort only: the workflow never fails without it."
+  # Step 5: web-research signals (fetch router + recency synthesis — optional skills, not auto-installed)
+  log_info "[5/5] Web-research signals — agent-reach (fetch router) + last30days (recency synthesis)"
+  log_info "  Complement host web search for market-analysis, JTBD, discovery and sibling playbooks."
+  log_info "  Best-effort only: the workflow never fails without them."
+  if npx skills list 2>/dev/null | grep -qi "agent-reach"; then
+    log_success "  agent-reach already installed."
+  elif confirm "Install agent-reach (fetch router for 13 platforms, doctor-guided)?" N; then
+    log_info "  Paste this to your agent: help me install Agent Reach: https://raw.githubusercontent.com/Panniantong/agent-reach/main/docs/install.md"
+  else
+    log_info "  Skipped. See https://github.com/Panniantong/agent-reach later."
+  fi
   if npx skills list 2>/dev/null | grep -qi "last30days"; then
     log_success "  last30days already installed."
   elif confirm "Install last30days skill (npx skills, no credentials needed)?" N; then
@@ -353,7 +360,7 @@ What gets installed (full):
   ✓ cymbal — codebase navigation (with confirmation)
   ✓ ctx7 — live library docs (with confirmation, requires OAuth)
   ✓ sem — entity-level diff (with confirmation)
-  ✓ last30days — recency signals (with confirmation, best-effort)
+  ✓ last30days + agent-reach — web-research signals (with confirmation, best-effort)
 
 What gets installed (minimal):
 
