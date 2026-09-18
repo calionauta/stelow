@@ -175,8 +175,9 @@ X ago" + inventory dialog) — silent syncs become mystery meat otherwise.
   via the structured ask protocol instead of reassigning it yourself).
 - **Surface child threads under their worker, never as peers.** Workers
   may fan work out to fresh BB child threads under the `subagents.md`
-  contract; the host lists each child (title, status, provider, open
-  link) beneath its worker row and leaves synthesis to the parent.
+  contract; the host lists each child (title, status, provider,
+  per-child token total, open link) beneath its worker row and leaves
+  synthesis to the parent.
 
 ## 7. UI patterns that survived contact with users
 
