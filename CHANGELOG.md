@@ -3,6 +3,15 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.64.0-alpha] - 2026-09-18
+
+### Added
+
+- **Completeness contracts on the eight explore/build stage skills.**
+  Shape Up, interface alternatives, tech planning, plan/codebase/UX
+  critiques, testing strategy, and execution critique each state
+  host-validated minima mirroring their output formats.
+
 ## [0.63.0-alpha] - 2026-09-18
 
 ### Added
