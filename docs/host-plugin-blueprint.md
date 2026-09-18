@@ -59,13 +59,15 @@ Invariants (encode every one; each has bitten us):
   re-validates, verifies clean, and leaves a trail comment.
 - ** terminal cards show terminal UI**: history + final state only, no worker
   controls except Delete.
-- **Terminal states release workspace claims.** `done`, archive, cancel, and
-  delete drop every file claim the card holds on its checkout, and the host
+- **Terminal states release workspace claims.** `done`, archive, cancel,
+  `blocked`, and delete drop every file claim the card holds, and the host
   resumes exactly the cards that waited on each freed file (paused event
   resolved as `resumed` plus an agent-only nudge to re-acquire). Per-card
-  lock dirs are invisible to sibling cards — claims are keyed by workspace
-  path, not by card state dir — so a parked card can never hold files
-  hostage.
+  lock dirs are invisible to sibling cards — claims are keyed by the
+  checkout the worker actually writes to (falling back to the project
+  source), not by card state dir — so a parked card can never hold files
+  hostage, and cards isolated in their own worktrees do not falsely
+  serialize.
 
 Reference (copyable, zero host imports): `worker-action-policy.mjs`
 (action visibility), `card-move.mjs` (board-move decisions),
