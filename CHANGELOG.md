@@ -3,6 +3,17 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.63.0-alpha] - 2026-09-18
+
+### Added
+
+- **Completeness contracts on the remaining thirteen strategy skills.**
+  Opportunity mapping (3 opportunities × 4 solutions with appetite and
+  trade-offs), both market-analysis variants (deep horizons × methods;
+  canvas sections, tables, Mermaid, Wardley), and paywall modes
+  (diagnosis vs design) get countable contracts; the ten guidance skills
+  get section + word floors grounded in their Output statements.
+
 ## [0.62.0-alpha] - 2026-09-18
 
 ### Added
