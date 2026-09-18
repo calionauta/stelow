@@ -264,6 +264,9 @@ node-test per rule, never inline-only in handlers) rather than the code.
   (await, then write from the response — or revert on failure).
 - Per-card lock directories as cross-card coordination (sibling cards never
   see each other's state-dir locks; key claims by workspace path, §2).
+- Gating composite output on the primary file alone (validate every
+  registered substep individually — a 200-char file with the right filename
+  is not a playbook result).
 
 ## 10. Contract tests to mirror
 
