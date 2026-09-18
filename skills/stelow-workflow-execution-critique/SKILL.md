@@ -277,6 +277,10 @@ Same evaluation as Workflow mode. Inferred scopes replace planned scopes.
 Always save or display in this format. The Lessons Learned section also writes to
 `.stelow/lessons-learned/{date}-{name}.md` for cross-session injection.
 
+Completeness contract (the host validates these minima — never submit fewer):
+Summary table plus all 8 numbered evaluation criteria, Gap Registry table,
+Lessons Learned, and Decision; at least 800 words.
+
 ```markdown
 # Execution Critique Report
 

@@ -233,6 +233,10 @@ keyboard, screen reader, focus, interactive states, animation.
   {mode}-audit-report.md     ← main report
 ```
 
+Completeness contract (the host validates these minima — never submit fewer):
+all five body sections per `references/output-format.md` (Executive Summary,
+Critical, Important, Minor, Strengths); at least 600 words.
+
 ---
 
 ## Integration with Other Skills

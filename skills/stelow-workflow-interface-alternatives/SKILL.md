@@ -197,6 +197,12 @@ The chosen interface (after user selection) is saved to:
 .stelow/{YYYY-MM-DD}/{_dir}/interfaces/selected-interface.md
 ```
 
+Completeness contract (the host validates these minima — never submit fewer,
+per proposal; proposal count follows appetite):
+all 8 numbered sections per `references/output-format.md` (Work Pattern,
+Philosophy, Breadboarding, ASCII sketch, Interaction Flow, Trade-Off,
+Smell Audit, State Coverage Table); at least 800 words.
+
 ## Related Skills
 
 - **stelow-workflow-shape-up**: Produces the shaped proposal that feeds this phase

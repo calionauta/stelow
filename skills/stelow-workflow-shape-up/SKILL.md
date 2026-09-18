@@ -336,6 +336,11 @@ The shaped proposal is saved to:
 
 See `references/proposal-structure.md` for the expected output format.
 
+Completeness contract (the host validates these minima — never submit fewer):
+YAML frontmatter with `appetite:` and `product_type:`; all four structure
+sections (unanswered questions, alternatives, proposal with problem/solution/
+dangers/out-of-scope, OUT/IN Scope Table); at least 800 words.
+
 ## Related Skills
 
 - **stelow**: Coordinates this skill with other phases

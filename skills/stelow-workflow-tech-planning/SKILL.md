@@ -270,6 +270,11 @@ Tech plan is saved to:
 .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_{v}.md
 ```
 
+Completeness contract (the host validates these minima — never submit fewer):
+Product Context, Identified Scopes, High-Level Sequence, and Detailed
+Sequence per scope with the task table (`#`, Task, Done Criterion, Order
+Rationale) per `references/tech-output.md`; at least 800 words.
+
 ## After Tech Planning — EXECUTE AUTOMATICALLY
 
 **DO NOT ask user what to do next. Execution is automatic.**

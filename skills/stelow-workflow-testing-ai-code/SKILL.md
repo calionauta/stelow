@@ -201,6 +201,11 @@ generated_at: {YYYY-MM-DD}
 - [ ] CI/CD gates documented
 - [ ] Anti-patterns checklist included
 
+Completeness contract (the host validates these minima — never submit fewer):
+YAML frontmatter (`version:`, `product_type:`); Tech Stack, Coverage and
+Risk Targets table, Test Scopes table, CI/CD Gates, Anti-Patterns; at
+least 600 words.
+
 ---
 
 ## Fallback

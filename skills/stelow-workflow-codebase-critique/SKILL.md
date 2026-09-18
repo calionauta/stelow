@@ -173,6 +173,10 @@ Save to .stelow-codebase-critique/critique-report.md.
   critique-report.md     ← gap report
 ```
 
+Completeness contract (the host validates these minima — never submit fewer):
+all five body sections per `references/output-format.md` (Executive Summary,
+Critical, Important, Minor, Strengths); at least 600 words.
+
 ---
 
 ## Integration with Other Skills

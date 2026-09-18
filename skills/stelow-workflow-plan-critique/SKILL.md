@@ -320,6 +320,12 @@ and prepare it for the visual review Gate:
   → Inline updates applied per mode resolution
 ```
 
+Completeness contract (the host validates these minima on `critique-report.md` —
+never submit fewer): YAML frontmatter with `gaps:` (severity/tag/title/
+description/recommendation) and `verdict:`; all five body sections per
+`references/output-format.md` (Executive Summary, Critical, Important,
+Minor, Strengths); at least 600 words.
+
 ---
 
 ## Integration with other skills
