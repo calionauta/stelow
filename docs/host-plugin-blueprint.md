@@ -286,10 +286,12 @@ Thin files with right filenames read as complete work unless the host
 says otherwise in code. Layer the guarantee:
 
 1. **Countable contracts in the skills.** Every playbook states its
-   machine-checkable minima (sections, item counts, tables, scores) in a
-   Completeness contract the worker reads. Counts restate what the
+   machine-checkable minima (sections, item counts, tables with required
+   columns, scores) in a Completeness contract the worker reads. Counts restate what the
    methodology already demands — never invent rigor the playbook doesn't
-   promise.
+   promise. Prefer column presence over prose mentions: a criterion named
+   once in passing must not satisfy a per-item requirement — the table
+   carrying the per-item column is the check.
 2. **Deterministic host validation as the blocking gate.** The host
    validates every registered artifact individually (including composite
    substeps, not just the primary file) and refuses completion with
