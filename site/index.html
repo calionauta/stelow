@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stelow — your agentic product team</title>
+<meta name="description" content="Stelow brings product methodology to AI coding agents: shaped proposals, adversarial critique, visual gates, and typed scopes. Host-agnostic. 14 product strategies built in.">
+<link rel="icon" href="assets/stelow.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="nav">
+  <a class="brand" href="#top" aria-label="Stelow home">
+    <img src="assets/stelow.png" alt="Stelow logo" width="40" height="28">
+    <span>stelow</span>
+  </a>
+  <nav class="links" aria-label="Primary">
+    <a href="#why">Why</a>
+    <a href="#how">How it works</a>
+    <a href="#edge">Edge</a>
+    <a href="#strategies">Strategies</a>
+    <a href="#paths">Install</a>
+    <a class="icon-link" href="https://github.com/calionauta/stelow" rel="noopener" aria-label="Stelow on GitHub">
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+      <span>GitHub</span>
+    </a>
+  </nav>
+  <a class="btn small" href="#paths">Try it</a>
+</header>
+
+<main id="top">
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <p class="kicker">Agentic product team · not another software factory</p>
+        <h1>Your AI writes code.<br>Stelow gives it the rest of the team.</h1>
+        <p class="lede">Most agent pipelines skip straight to code. Stelow slows down first: shape the proposal, argue with it, approve what matters, then hand typed scopes to workers. I built it from years leading product teams and shipping software.</p>
+        <div class="cta-row">
+          <a class="btn primary" href="#paths">Start with bb or any agent</a>
+          <a class="btn ghost icon-link" href="https://github.com/calionauta/stelow" rel="noopener">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+            <span>Read the code</span>
+          </a>
+        </div>
+        <div class="install-line" role="region" aria-label="Quick install">
+          <code id="installCmd">npx skills add calionauta/stelow -g</code>
+          <button class="copy" id="copyBtn" type="button">Copy</button>
+        </div>
+        <p class="proof">28 skills · host-agnostic · MIT · pre-1.0 and honest about it</p>
+      </div>
+      <div class="hero-mascot" aria-label="Stelow page mascot">
+        <div class="mascot-stage">
+          <!-- Custom mascot in the spirit of koboyo.com/page-mascot:
+               follows the cursor, blinks, squashes when poked. Original art, inline SVG. -->
+          <svg id="mascot" viewBox="0 0 220 210" role="img" aria-label="Round teammate that watches your cursor. Click to poke it.">
+            <ellipse cx="110" cy="192" rx="52" ry="10" class="shadow"/>
+            <g id="mascotBody">
+              <rect x="48" y="52" width="124" height="128" rx="58" class="body"/>
+              <rect x="66" y="30" width="14" height="34" rx="7" class="antenna" transform="rotate(-12 73 47)"/>
+              <circle cx="68" cy="28" r="7" class="antenna-tip"/>
+              <rect x="140" y="30" width="14" height="34" rx="7" class="antenna" transform="rotate(12 147 47)"/>
+              <circle cx="152" cy="28" r="7" class="antenna-tip"/>
+              <g id="eyes">
+                <g class="eye" id="eyeL">
+                  <ellipse cx="88" cy="112" rx="17" ry="19" class="eye-white"/>
+                  <g id="pupilL"><circle cx="88" cy="114" r="7.5" class="pupil"/><circle cx="90.5" cy="111.5" r="2.4" class="glint"/></g>
+                </g>
+                <g class="eye" id="eyeR">
+                  <ellipse cx="132" cy="112" rx="17" ry="19" class="eye-white"/>
+                  <g id="pupilR"><circle cx="132" cy="114" r="7.5" class="pupil"/><circle cx="134.5" cy="111.5" r="2.4" class="glint"/></g>
+                </g>
+              </g>
+              <g id="lids">
+                <rect class="lid" x="69" y="92" width="38" height="0" rx="8"/>
+                <rect class="lid" x="113" y="92" width="38" height="0" rx="8"/>
+              </g>
+              <path id="mouth" d="M 96 142 Q 110 152 124 142" fill="none" stroke-linecap="round"/>
+              <g class="cheek" id="cheekL"><ellipse cx="70" cy="134" rx="8" ry="5"/></g>
+              <g class="cheek" id="cheekR"><ellipse cx="150" cy="134" rx="8" ry="5"/></g>
+              <g id="arms">
+                <rect class="arm left" x="30" y="110" width="26" height="14" rx="7"/>
+                <rect class="arm right" x="164" y="110" width="26" height="14" rx="7"/>
+              </g>
+            </g>
+          </svg>
+          <p class="mascot-hint" id="mascotHint">It watches your cursor. Poke it.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHY -->
+  <section id="why" class="section reveal">
+    <p class="kicker">The problem</p>
+    <h2>Software factories ship fast. They still skip the product work.</h2>
+    <div class="two-col">
+      <div>
+        <p>Give an agent a prompt and it codes. That covers one job: typing. A real team does more before anyone opens an editor. Someone defines what is out of scope. Someone checks the plan for holes. Someone picks the interface before the code locks it in.</p>
+        <p>Without those roles you get the usual failure set: scope creep, plans nobody questioned, features that should not exist, and tests added after the fact.</p>
+      </div>
+      <div class="compare">
+        <div class="card flat">
+          <h3>Factory pipeline</h3>
+          <p class="mono">prompt → code → done</p>
+          <p>Fast. One role. No memory of why a decision was made.</p>
+        </div>
+        <div class="card accent">
+          <h3>Stelow team</h3>
+          <p class="mono">shape → critique → approve → scope → build → audit</p>
+          <p>Slower at the start. Fewer rewrites at the end.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW -->
+  <section id="how" class="section reveal">
+    <p class="kicker">How it works</p>
+    <h2>Measure three times, cut once.</h2>
+    <p class="section-lede">Three phases, 17 stages. You set two dials at the start and the workflow follows them. Type <code>/sw-start "what you want"</code> and it asks, shapes, reviews, then builds.</p>
+    <div class="grid-3">
+      <div class="card">
+        <p class="step">1 · Shape</p>
+        <h3>Write down the bet</h3>
+        <p>IN/OUT boundaries, appetite, risks. Tech preview reads the codebase first so the proposal fits what exists. No code yet.</p>
+      </div>
+      <div class="card">
+        <p class="step">2 · Review</p>
+        <h3>Argue before building</h3>
+        <p>Fresh-context reviewers pick the plan apart. You approve the product spec and the interface direction in a visual gate, with receipts on disk.</p>
+      </div>
+      <div class="card">
+        <p class="step">3 · Build</p>
+        <h3>Hand off typed scopes</h3>
+        <p>Feature, spike, optimize, and test scopes run in dependency order under acceptance contracts. Audit closes the loop or opens new scopes.</p>
+      </div>
+    </div>
+    <div class="dials">
+      <div class="card">
+        <h3>Appetite: how deep to prepare</h3>
+        <ul>
+          <li><strong>Lean:</strong> one idea, 1–2 scopes, one interface suggestion.</li>
+          <li><strong>Core:</strong> a normal feature, 3–5 scopes, 3 directions plus a hybrid.</li>
+          <li><strong>Complete:</strong> risky work, 8–15 scopes, 5 directions plus a hybrid.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Review mode: how much you check</h3>
+        <ul>
+          <li><strong>Auto:</strong> no gates. For throwaway spikes.</li>
+          <li><strong>Spec gate:</strong> one approval before tech planning.</li>
+          <li><strong>Full:</strong> spec, interface, scopes, and tech plan all gated, plus an optional code-diff review.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- EDGE -->
+  <section id="edge" class="section reveal">
+    <p class="kicker">What changes</p>
+    <h2>The parts factories leave out.</h2>
+    <p class="section-lede">Each one maps to a role on a product team. Together they keep small decisions from becoming rewrites.</p>
+    <div class="grid-3">
+      <div class="card">
+        <h3>Shaped bets, not wishlists</h3>
+        <p>Every proposal states what is in and what is out, the appetite it must fit, and the risks. A fit check runs before planning continues. If it does not fit, the scope gets cut. The budget never grows to fit the scope.</p>
+      </div>
+      <div class="card">
+        <h3>Reviewers with fresh eyes</h3>
+        <p>Plans go to parallel reviewers who never see each other's notes. They check flows, states, data, feasibility, and assumptions. The author cannot review its own work and pass.</p>
+      </div>
+      <div class="card">
+        <h3>Gates with receipts</h3>
+        <p>Spec, interface, tech plan, and diff each get a visual approval. Each approval writes a receipt under <code>.stelow/approvals/</code>. No receipt, no advance.</p>
+      </div>
+      <div class="card">
+        <h3>Typed scopes under contract</h3>
+        <p>Work breaks into feature, spike, optimize, and test scopes with dependencies, acceptance criteria, verify commands, and stop rules. Spikes come first when the unknown is large. A scope closes only when its criteria pass.</p>
+      </div>
+      <div class="card">
+        <h3>Audit that closes the loop</h3>
+        <p>After execution, gaps sort into fixed, documented, or escalated. Escalated gaps become new scopes instead of fading. The run ends with a SHA-256 audit trail, and strict mode refuses to seal it while registered output is missing.</p>
+      </div>
+      <div class="card">
+        <h3>Tech talks back early</h3>
+        <p>Before shaping, a preview reads the codebase for constraints. Before planning, recon maps what the change touches. An alignment check compares the tech plan against the spec while edits are still cheap.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- STRATEGIES -->
+  <section id="strategies" class="section reveal">
+    <p class="kicker">14 product strategies</p>
+    <h2>Coding is one skill. Product takes fourteen.</h2>
+    <p class="section-lede">Each strategy is a callable playbook the workflow consults during research, shaping, and audit. Pick one for a single study, or let a build card pull in what it needs.</p>
+    <div class="strat-grid">
+      <div class="strat"><span aria-hidden="true">🎯</span><div><h3>Jobs to be done</h3><p>What people hire the product to do, mapped step by step.</p></div></div>
+      <div class="strat"><span aria-hidden="true">🗺️</span><div><h3>Opportunity mapping</h3><p>Ranked options for one problem, from openings to bets.</p></div></div>
+      <div class="strat"><span aria-hidden="true">🧪</span><div><h3>Product discovery</h3><p>Short learning cycles: test the idea before building it.</p></div></div>
+      <div class="strat"><span aria-hidden="true">🔭</span><div><h3>Market analysis</h3><p>PESTLE, foresight, Delphi, and Wardley maps on a niche.</p></div></div>
+      <div class="strat"><span aria-hidden="true">🧬</span><div><h3>Evolutionary strategy</h3><p>Optionality and small tests instead of fixed roadmaps.</p></div></div>
+      <div class="strat"><span aria-hidden="true">💰</span><div><h3>Pricing</h3><p>How to charge, package, limit, and frame value.</p></div></div>
+      <div class="strat"><span aria-hidden="true">💼</span><div><h3>Business models</h3><p>Cost and revenue triggers worth trying.</p></div></div>
+      <div class="strat"><span aria-hidden="true">🤝</span><div><h3>Trust building</h3><p>Perception pillars and guarantees that make trust concrete.</p></div></div>
+      <div class="strat"><span aria-hidden="true">📣</span><div><h3>Product ads</h3><p>Message by awareness stage, not one ad for everyone.</p></div></div>
+      <div class="strat"><span aria-hidden="true">🎁</span><div><h3>Launch promotions</h3><p>MAGIC offers: loss leader, gift cards, freebies that pull.</p></div></div>
+      <div class="strat"><span aria-hidden="true">🎟️</span><div><h3>Paywall &amp; onboarding</h3><p>Consumer funnel from paywall to trial policy.</p></div></div>
+      <div class="strat"><span aria-hidden="true">🏪</span><div><h3>Marketplace playbook</h3><p>Supply and demand moves that start the flywheel.</p></div></div>
+      <div class="strat"><span aria-hidden="true">🔓</span><div><h3>Open source strategy</h3><p>When giving up control creates the moat.</p></div></div>
+      <div class="strat"><span aria-hidden="true">💓</span><div><h3>Product health</h3><p>Success signals held against counter-signals, so growth does not rot the product.</p></div></div>
+    </div>
+  </section>
+
+  <!-- BB PLUGIN -->
+  <section id="paths" class="section reveal">
+    <p class="kicker">Two ways to run it</p>
+    <h2>Host-agnostic at the core. Visual in bb.</h2>
+    <p class="section-lede">The 28 skills and the <code>scripts/stelow</code> helper run on any agent that reads skills. No lock-in. The bb plugin is my official interface for running the full loop without living in a terminal.</p>
+    <div class="two-col">
+      <div class="card accent">
+        <p class="step">Path A · recommended</p>
+        <h3>bb desktop + Stelow plugin</h3>
+        <p>Board, inbox, blocking questions, presets, and a worker CLI. The plugin vendors all 28 skills and syncs them from this repo on a schedule.</p>
+        <ul class="ticks">
+          <li>Build cards: Triage → Analyse → Plan → Execute → Review → Done</li>
+          <li>Research cards across the 14 strategies; Explore cards for one-shot techniques</li>
+          <li>Approvals write portable receipts; audit binds to the exact commit</li>
+          <li>GitHub issues can seed inbox drafts; done cards can comment back</li>
+          <li>Skills stay current: vendored copies auto-sync from this repo on a schedule</li>
+        </ul>
+        <div class="install-line"><code>bb plugin install git:https://github.com/calionauta/bb-plugin-stelow.git --yes</code></div>
+        <p class="fine">Needs bb ≥ 0.38 from <a href="https://getbb.app" rel="noopener">getbb.app</a>. Details in the <a href="https://github.com/calionauta/bb-plugin-stelow" rel="noopener">plugin repo</a>.</p>
+      </div>
+      <div class="card">
+        <p class="step">Path B · any agent</p>
+        <h3>Skills straight into your setup</h3>
+        <p>Same workflow, no app. Install once, then drive it from chat with <code>/sw-start</code>, <code>/sw-status</code>, and <code>/sw-next</code> aliases backed by the helper script.</p>
+        <div class="install-line"><code>npx skills add calionauta/stelow -g</code></div>
+        <div class="install-line"><code>git clone https://github.com/calionauta/stelow.git &amp;&amp; ./install.sh</code></div>
+        <p class="fine">Optional helpers with fallbacks: cymbal for codebase recon, ctx7 for fresh docs, plannotator for visual gates, sem for structural diffs.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- HONESTY -->
+  <section class="section reveal">
+    <p class="kicker">Honest trade-offs</p>
+    <h2>What it is not.</h2>
+    <div class="grid-3">
+      <div class="card flat"><h3>Pre-1.0</h3><p>Public line is 0.x. Workflow contracts and skills can change before 1.0. Old 1.x tags are internal milestones, not stability claims.</p></div>
+      <div class="card flat"><h3>Planning costs tokens</h3><p>Full gates and Complete appetite write long specs. For a typo fix, use Lean + Auto and skip the ceremony.</p></div>
+      <div class="card flat"><h3>No scheduler of its own</h3><p>Each host drives invocations. bb is the reference with board + inbox; other hosts use their own background runs.</p></div>
+    </div>
+  </section>
+
+  <!-- QUICKSTART -->
+  <section class="section reveal">
+    <p class="kicker">Try it today</p>
+    <h2>One command, then one sentence.</h2>
+    <ol class="steps">
+      <li><code>npx skills add calionauta/stelow -g</code>. Or install the bb plugin from Path A.</li>
+      <li><code>/sw-start "what you want to build"</code>. Answer two setup questions (appetite, review mode).</li>
+      <li>Review the shaped spec, pick an interface, approve the plan, watch scopes run.</li>
+    </ol>
+    <div class="cta-row">
+      <a class="btn primary icon-link" href="https://github.com/calionauta/stelow" rel="noopener">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+        <span>calionauta/stelow</span>
+      </a>
+      <a class="btn ghost icon-link" href="https://github.com/calionauta/bb-plugin-stelow" rel="noopener">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+        <span>calionauta/bb-plugin-stelow</span>
+      </a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p>Stelow by Renato Caliari · MIT</p>
+  <p class="social">
+    <a class="icon-link" href="https://github.com/calionauta/stelow" rel="noopener" aria-label="Stelow repo on GitHub">
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+      <span>calionauta/stelow</span>
+    </a>
+    <a class="icon-link" href="https://github.com/calionauta/bb-plugin-stelow" rel="noopener" aria-label="bb plugin repo on GitHub">
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+      <span>bb-plugin-stelow</span>
+    </a>
+    <a class="icon-link" href="https://www.linkedin.com/in/calionauta" rel="noopener" aria-label="Renato Caliari on LinkedIn">
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.225 0z"/></svg>
+      <span>linkedin/in/calionauta</span>
+    </a>
+  </p>
+  <p class="fine">Mascot is original inline SVG, cursor-following in the spirit of koboyo page mascots.</p>
+</footer>
+
+<script src="mascot.js" defer></script>
+<script>
+document.getElementById('copyBtn').addEventListener('click', async () => {
+  const t = document.getElementById('installCmd').textContent;
+  try { await navigator.clipboard.writeText(t); } catch (e) {}
+  const b = document.getElementById('copyBtn');
+  b.textContent = 'Copied'; setTimeout(() => b.textContent = 'Copy', 1400);
+});
+// Reveal on scroll
+const io = new IntersectionObserver((entries) => {
+  for (const e of entries) if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+</body>
+</html>
