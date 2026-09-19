@@ -336,3 +336,13 @@ says otherwise in code. Layer the guarantee:
    completion on per-item human confirmation stalls autonomous runs,
    while over-escalation is cheap and visible and under-escalation is
    blocked by the rule above.
+6. **Critique generated UI once, after implementation — never before
+   and after.** Visual critique (accessibility, heuristics, design
+   quality) runs post-implementation, gated by appetite and whether
+   UI files actually changed; its gap report feeds the execution
+   critique as evidence. The "before" is already covered without LLM
+   cost by the interface stage (proposals + review gate). Running the
+   full critique twice per visual card doubles the most expensive
+   audit for no new signal — the pre-implementation direction is
+   chosen by proposal, the post-implementation reality is what needs
+   checking.
