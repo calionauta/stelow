@@ -352,6 +352,17 @@ says otherwise in code. Layer the guarantee:
    completion on per-item human confirmation stalls autonomous runs,
    while over-escalation is cheap and visible and under-escalation is
    blocked by the rule above.
+7. **Commit the run bundle, link it with trailers.** Git commits cannot
+   carry file attachments and hosting UIs show no git-notes, so the
+   convention is two halves: (a) a flat `docs/runs/<card-id>/` directory
+   in the checkout holding the registered artifacts under stable
+   basenames plus a `manifest.md` (SHA pin per file, gap counts,
+   unreadable entries listed, trailer embedded) — committed with the
+   work, versioned by git log, never per-commit subdirectories;
+   (b) a `Stelow-*` trailer block below the commit subject (card id,
+   artifact paths, gap counts) as the grepable audit link. The host
+   provides an idempotent, path-confined export command; the worker
+   protocol requires export → commit → trailer on every commit.
 6. **Critique generated UI once, after implementation — never before
    and after.** Visual critique (accessibility, heuristics, design
    quality) runs post-implementation, gated by appetite and whether
