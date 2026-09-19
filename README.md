@@ -14,6 +14,14 @@
 > incompatibly before a stable `1.0.0`. Historical `1.x` GitHub releases are
 > retained as internal milestones and do not signal production stability.
 
+> 💡 **New here? Start with the official app.** Get [bb](https://getbb.app)
+> (free), then run
+> `bb plugin install git:https://github.com/calionauta/bb-plugin-stelow.git --yes`.
+> Board, inbox, worker CLI, and all 28 skills auto-synced — details in
+> [Quick Start](#-quick-start), or go straight to the
+> [bb-plugin-stelow repo](https://github.com/calionauta/bb-plugin-stelow).
+> Prefer another agent? The skills-only path is below and works anywhere.
+
 I'm trying to make ai agents behave less like coding assistants and more like cross-functional product team.
 
 This package brings product methodology to AI coding agents. Instead of open-ended feature lists, you shape proposals with clear scope boundaries, validate them through adversarial critique, and generate typed technical scopes ready for autonomous execution.
