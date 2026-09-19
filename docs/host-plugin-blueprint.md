@@ -279,3 +279,31 @@ skill-count vectors. The reference `bb-plugin-stelow` suite pins every
 contract above plus a suite-wiring test that fails when any test file is
 unwired from CI (unwired tests once shipped green-but-never-run); steal
 its shape, not just its assertions.
+
+## 11. Artifact quality strategy
+
+Thin files with right filenames read as complete work unless the host
+says otherwise in code. Layer the guarantee:
+
+1. **Countable contracts in the skills.** Every playbook states its
+   machine-checkable minima (sections, item counts, tables, scores) in a
+   Completeness contract the worker reads. Counts restate what the
+   methodology already demands — never invent rigor the playbook doesn't
+   promise.
+2. **Deterministic host validation as the blocking gate.** The host
+   validates every registered artifact individually (including composite
+   substeps, not just the primary file) and refuses completion with
+   file + expected-vs-found. Prompts teach the contract; code enforces it.
+   Unknown shapes never block — only matched documents that fail depth do.
+3. **Optional cross-lineage review, never blocking by default.** A reviewer
+   from a different model family judges only what code cannot (coherence,
+   scope fit), against the deterministic report as rubric, with findings
+   anchored to verbatim quotes the host re-verifies. Reviews cost budget:
+   explicit opt-in, shift-left refusal on thin files, no silent fallback
+   to the worker's own preset. Enforcement waits for a golden set with
+   measured agreement — wire the rubric to the gate only then.
+4. **Provenance seals, not truth claims.** Surfaces show checked
+   provenance (verified / hypothesis-only / needs-revision / unverified)
+   resolved live from revalidation, with progressive disclosure down to
+   the failing checks. A seal without backing content reads unverified —
+   a first-class state, never an error, never "true".
