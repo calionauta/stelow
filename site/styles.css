@@ -156,6 +156,17 @@ body {
 .strat p { margin: 0; color: var(--muted); font-size: 15px; }
 .steps { max-width: 70ch; }
 .steps li { margin-bottom: 10px; }
+.curious-card {
+  background: #14110e; color: #f5efe4;
+  border-radius: var(--radius);
+  padding: 28px clamp(20px, 4vw, 36px);
+  display: flex; gap: 20px; align-items: center; flex-wrap: wrap;
+}
+.curious-card > div { min-width: 0; flex: 1 1 280px; }
+.curious-card .kicker { color: #e89a6b; }
+.curious-card h2 { color: #fff; margin: 0 0 8px; font-size: clamp(22px, 3vw, 30px); letter-spacing: -0.02em; line-height: 1.2; }
+.curious-card p { color: #cfc6b8; margin: 0; max-width: 62ch; }
+.curious-card .btn.light { margin-left: auto; background: #f5efe4; color: #14110e; border-color: #f5efe4; }
 .fine { color: var(--muted); font-size: 14px; }
 footer { border-top: 1px solid var(--line); padding: 22px; text-align: center; color: var(--muted); font-size: 14px; }
 footer a { color: var(--ink); }
