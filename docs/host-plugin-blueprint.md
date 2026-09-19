@@ -221,6 +221,14 @@ X ago" + inventory dialog) — silent syncs become mystery meat otherwise.
 - **Automation proposes, never disposes**: scheduled rules may only
   create unstarted drafts and notifications — never start workers, move
   cards, clear labels, merge code, or import work behind the user's back.
+- **Progress hero above work detail**: one glanceable readout (scope/task
+  bars with percentages, doing-now names, blocked names) over the same
+  scopes/tasks contract the detail list renders — presentation only, no
+  second data source, refreshed by the same realtime channel.
+- **Destructive confirms state the full blast radius**: name data rows,
+  run files, and what explicitly survives (e.g. Git checkouts) before
+  anything runs — the dialog text must match what the handler deletes,
+  in both directions (no silent leftovers, no silent preservation).
 - **Static assets**: if the host bundler has no image loader, serve brand
   marks as data URIs over RPC — never runtime relative URLs (they 404 on
   managed installs).
