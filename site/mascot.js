@@ -24,7 +24,7 @@
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var timers = [];
   var boops = { count: 0, at: 0 };
-  var direction = 'center';
+  var direction = 'left';
   var reaction = null;
 
   function cell(index) {
@@ -57,7 +57,7 @@
       var dy = pointer.y - (box.top + box.height / 2);
       if (Math.hypot(dx, dy) < DEAD_ZONE) {
         sector = -1;
-        if (direction !== 'center') { direction = 'center'; render(); }
+        if (direction !== 'left') { direction = 'left'; render(); }
         return;
       }
       var angle = Math.atan2(dy, dx);

@@ -55,7 +55,7 @@
       </div>
       <div class="hero-mascot">
         <p class="mascot-says" id="mascotSays" aria-hidden="true">boop me.</p>
-        <button id="mascot" type="button" aria-label="Boop the scout" style="--mascot-size: min(350px, 76vw)">
+        <button id="mascot" type="button" aria-label="Boop the scout" style="--mascot-size: min(380px, 78vw)">
           <span id="mascotSquash">
             <span id="mascotDirections" aria-hidden="true"></span>
             <span id="mascotReactions" aria-hidden="true"></span>
@@ -214,9 +214,10 @@
         <p>One board for the whole loop. Cards move, questions arrive, approvals happen, workers run. All skills bundled and kept current automatically.</p>
         <ol class="mini-steps">
           <li>Get <a href="https://getbb.app" rel="noopener">bb</a>, free.</li>
-          <li>Run the install command at the top of this page.</li>
+          <li>Run the command below.</li>
           <li>Open Stelow, create a card, describe the outcome.</li>
         </ol>
+        <div class="install-line"><code>curl -fsSL https://calionauta.github.io/stelow/install.sh | bash</code><button class="copy" type="button">Copy</button></div>
         <p class="fine">Details in the <a href="https://github.com/calionauta/bb-plugin-stelow" rel="noopener">plugin repo</a>.</p>
       </div>
       <div class="card">
@@ -289,11 +290,13 @@
 
 <script src="mascot.js" defer></script>
 <script>
-document.getElementById('copyBtn').addEventListener('click', async () => {
-  const t = document.getElementById('installCmd').textContent;
-  try { await navigator.clipboard.writeText(t); } catch (e) {}
-  const b = document.getElementById('copyBtn');
-  b.textContent = 'Copied'; setTimeout(() => b.textContent = 'Copy', 1400);
+document.querySelectorAll('.copy').forEach((b) => {
+  b.addEventListener('click', async () => {
+    const code = b.parentElement.querySelector('code');
+    try { await navigator.clipboard.writeText(code.textContent); } catch (e) {}
+    const orig = b.textContent;
+    b.textContent = 'Copied'; setTimeout(() => b.textContent = orig, 1400);
+  });
 });
 // Reveal on scroll
 const io = new IntersectionObserver((entries) => {

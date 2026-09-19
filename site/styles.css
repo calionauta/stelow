@@ -81,7 +81,7 @@ body {
   background: #14110e; color: #f5efe4; border-radius: 12px; padding: 10px 12px;
   max-width: 560px;
 }
-.install-line code { white-space: normal; overflow-wrap: anywhere; word-break: break-word; min-width: 0; }
+.install-line code { white-space: nowrap; overflow-x: auto; min-width: 0; scrollbar-width: thin; }
 .install-line + .install-line { margin-top: 10px; }
 .copy {
   margin-left: auto; border: 1px solid #4a443c; background: transparent; color: #fff;
@@ -89,7 +89,7 @@ body {
 }
 .copy:hover { background: #26211b; }
 .proof { color: var(--muted); font-size: 14px; }
-.hero-mascot { position: relative; display: flex; justify-content: center; align-items: flex-start; min-width: 0; padding-top: 34px; margin-left: -64px; transform: rotate(2.5deg); }
+.hero-mascot { position: relative; display: flex; justify-content: center; align-items: flex-start; min-width: 0; padding-top: 0; margin-left: -120px; transform: rotate(2.5deg); }
 .mascot-says {
   position: absolute; top: 2%; left: 50%; z-index: 2;
   transform: translateX(-88%) rotate(-3deg);
@@ -185,6 +185,8 @@ footer a { color: var(--ink); }
   .links { display: none; }
   .mascot-says { transform: translateX(-50%) rotate(-3deg); }
   .hero-mascot { margin-left: 0; padding-top: 0; transform: none; }
+  .install-line { flex-wrap: wrap; }
+  .install-line code { white-space: normal; overflow-wrap: anywhere; word-break: break-word; }
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
