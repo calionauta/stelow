@@ -374,7 +374,9 @@ says otherwise in code. Layer the guarantee:
    call site where output is disposable by construction — never user
    choice per task, never a band × tier matrix. Rule of thumb: when the
    worker rewrites over 20% of a burst's output, that call site belongs
-   back on Reliable.
+   back on Reliable. Every spawn is fresh by contract: context travels
+   inside the call, never as inherited history — previous threads are
+   referenced for selective retrieval, never forked.
 6. **Critique generated UI once, after implementation — never before
    and after.** Visual critique (accessibility, heuristics, design
    quality) runs post-implementation, gated by appetite and whether
