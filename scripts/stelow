@@ -1056,12 +1056,31 @@ if cycle:
 # the rework loop and the executor's findings on every spec revision.
 previous = workflow.get("scopes") if isinstance(workflow.get("scopes"), list) else []
 by_id = {s["id"]: s for s in scopes}
+taken = set(by_id)
+def _num(sid):
+    try:
+        return int(str(sid).split("scope-")[1])
+    except Exception:
+        return 0
 for old in previous:
     if not isinstance(old, dict):
         continue
     if old.get("source") == "audit-gap" and old.get("id") not in by_id:
         scopes.append(old)
         by_id[old["id"]] = old
+        taken.add(old["id"])
+        continue
+    if old.get("source") == "audit-gap" and old.get("id") in by_id:
+        # A revised spec reused the rework scope's number: never drop the
+        # rework silently — rehouse it under the next free number. Gap
+        # matching elsewhere keys on gap text, not scope id, so the loop
+        # stays intact.
+        fresh = max([_num(sid) for sid in taken] + [0]) + 1
+        old["id"] = f"scope-{fresh}"
+        old["supersedes"] = True
+        scopes.append(old)
+        by_id[old["id"]] = old
+        taken.add(old["id"])
         continue
     current = by_id.get(old.get("id"))
     if isinstance(current, dict) and isinstance(old.get("tasks"), list):

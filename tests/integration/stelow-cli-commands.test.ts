@@ -441,6 +441,23 @@ describe("sync-scopes", () => {
     expect(after[0].tasks).toEqual([{ id: "1.1", name: "Index", source: "discovered", status: "pending", note: "slow query" }]);
     expect(after[0].discovered_tasks_count).toBe(1);
   });
+
+  it("rehouses an audit-gap scope when a revised spec reuses its number", () => {
+    const { wd, statedir } = seedWithSpec("sync-collide");
+    const env = { STELOW_STATEDIR: statedir };
+    expect(run(wd, ["sync-scopes", "--json"], env).status).toBe(0);
+    const trackingPath = join(wd.dir, "stelow.json");
+    const tracking = JSON.parse(readFileSync(trackingPath, "utf8"));
+    tracking.workflows[0].scopes.push({ id: "scope-3", name: "Rework", status: "in-progress", source: "audit-gap", gap: "late gap", tasks: [] });
+    writeFileSync(trackingPath, JSON.stringify(tracking));
+    // v2 adds a third spec scope that collides with the rework number.
+    writeFileSync(join(statedir, "plans", "spec-tech_v2.md"), SPEC + "\n[SCOPE-3] Third\n[TYPE] feature\nObjective: more\nDependencies: None\nDoD: more\n");
+    expect(run(wd, ["sync-scopes", "--json"], env).status).toBe(0);
+    const after = JSON.parse(readFileSync(trackingPath, "utf8")).workflows[0].scopes;
+    const rework = after.find((s: any) => s.source === "audit-gap");
+    expect(rework).toMatchObject({ id: "scope-4", status: "in-progress", gap: "late gap" });
+    expect(after.find((s: any) => s.id === "scope-3" && !s.source)).toMatchObject({ name: "Third" });
+  });
 });
 
 // ---------------------------------------------------------------------------
