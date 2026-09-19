@@ -183,6 +183,21 @@ body {
 .step { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); margin: 0 0 6px; }
 .card h3 { margin: 0 0 8px; font-size: 20px; letter-spacing: -0.01em; }
 .compare { display: grid; gap: 12px; }
+/* stage chips — readable pipeline steps instead of a flat mono line */
+.chips {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin: 0 0 10px; padding: 0; list-style: none;
+}
+.chips li { display: flex; align-items: center; gap: 6px; margin: 0; }
+.chips li span {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px; font-weight: 700;
+  background: #efe5d2; border: 1px solid var(--line);
+  padding: 3px 11px; border-radius: 999px;
+  white-space: nowrap;
+}
+.chips li:not(:last-child)::after { content: '→'; color: var(--muted); font-weight: 400; }
+.card.accent .chips li span { background: #f6e3d3; border-color: #d9b79f; }
 .dials { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
 .dials ul, .ticks { margin: 10px 0 0; padding-left: 20px; }
 .mini-steps { margin: 12px 0 0; padding-left: 22px; }
