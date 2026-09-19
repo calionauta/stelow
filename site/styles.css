@@ -203,6 +203,17 @@ body {
 .mini-steps { margin: 12px 0 0; padding-left: 22px; }
 .mini-steps li { margin-bottom: 6px; }
 .mini-steps a { color: var(--ink); font-weight: 700; }
+/* quiet notice strip — a caveat, not a feature; whispers instead of shouting */
+.notice {
+  background: #fff6ec;
+  border: 1px solid #d9b79f;
+  border-radius: var(--radius);
+  padding: 22px 24px;
+}
+.notice .kicker { margin-bottom: 4px; }
+.notice h2 { font-size: 20px; margin: 0 0 6px; }
+.notice p { margin: 0; }
+.notice a { color: var(--ink); font-weight: 600; }
 .strat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 18px; }
 .strat {
   display: flex; gap: 12px; align-items: flex-start;
