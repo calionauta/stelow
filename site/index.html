@@ -55,7 +55,7 @@
       </div>
       <div class="hero-mascot">
         <p class="mascot-says" id="mascotSays" aria-hidden="true">boop me.</p>
-        <button id="mascot" type="button" aria-label="Boop the scout" style="--mascot-size: min(320px, 72vw)">
+        <button id="mascot" type="button" aria-label="Boop the scout" style="--mascot-size: min(350px, 76vw)">
           <span id="mascotSquash">
             <span id="mascotDirections" aria-hidden="true"></span>
             <span id="mascotReactions" aria-hidden="true"></span>
@@ -297,7 +297,7 @@ const io = new IntersectionObserver((entries) => {
 document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 // Scout speech bubble rotation
 const saysEl = document.getElementById('mascotSays');
-const saysLines = ['boop me.', 'shape first.', "what's out of scope?", 'measure three times, cut once.', 'argue before building.', 'receipts, please.'];
+const saysLines = ['boop me.', 'shape first.', "what's out of scope?", 'argue before building.', 'receipts, please.', 'where do I wait for you?'];
 let saysIdx = 0;
 if (saysEl && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
   setInterval(() => {

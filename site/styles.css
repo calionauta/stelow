@@ -63,7 +63,7 @@ body {
 .hero { padding: 56px 22px 30px; }
 .hero-grid {
   max-width: 1100px; margin: 0 auto;
-  display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 36px; align-items: center;
+  display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 8px; align-items: start;
 }
 .kicker {
   text-transform: uppercase; letter-spacing: 0.12em; font-size: 12.5px;
@@ -89,7 +89,7 @@ body {
 }
 .copy:hover { background: #26211b; }
 .proof { color: var(--muted); font-size: 14px; }
-.hero-mascot { position: relative; display: flex; justify-content: center; align-items: center; min-width: 0; }
+.hero-mascot { position: relative; display: flex; justify-content: center; align-items: flex-start; min-width: 0; padding-top: 34px; margin-left: -64px; transform: rotate(2.5deg); }
 .mascot-says {
   position: absolute; top: 2%; left: 50%; z-index: 2;
   transform: translateX(-88%) rotate(-3deg);
@@ -182,6 +182,7 @@ footer a { color: var(--ink); }
   .strat-grid { grid-template-columns: 1fr; }
   .links { display: none; }
   .mascot-says { transform: translateX(-50%) rotate(-3deg); }
+  .hero-mascot { margin-left: 0; padding-top: 0; transform: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
