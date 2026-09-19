@@ -362,7 +362,10 @@ says otherwise in code. Layer the guarantee:
    (b) a `Stelow-*` trailer block below the commit subject (card id,
    artifact paths, gap counts) as the grepable audit link. The host
    provides an idempotent, path-confined export command; the worker
-   protocol requires export → commit → trailer on every commit.
+   protocol requires export → commit → trailer on every commit. Seeding
+   a git checkout ignores the live runtime dir (`.stelow/`) so a worker
+   `git add -A` can never sweep live runs into history — only the
+   exported bundle is committed.
 6. **Critique generated UI once, after implementation — never before
    and after.** Visual critique (accessibility, heuristics, design
    quality) runs post-implementation, gated by appetite and whether
