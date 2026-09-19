@@ -20,6 +20,7 @@
     <a href="#edge">Edge</a>
     <a href="#strategies">Strategies</a>
     <a href="#paths">Install</a>
+    <a href="#early" class="early"><i aria-hidden="true"></i>Still early</a>
     <a class="icon-link" href="https://github.com/calionauta/stelow" rel="noopener" aria-label="Stelow on GitHub">
       <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
       <span>GitHub</span>
@@ -44,17 +45,17 @@
           </a>
         </div>
         <div class="install-steps">
-          <p class="install-step"><strong>1.</strong> Get <a href="https://getbb.app" rel="noopener">bb desktop</a>, free. macOS one-click download, or <code>npx bb-app@latest</code> anywhere else.</p>
-          <div class="install-line" role="region" aria-label="Plugin install command">
-            <span aria-hidden="true"><strong>2.</strong></span>
-            <code id="installCmd">bb plugin install git:https://github.com/calionauta/bb-plugin-stelow.git --yes</code>
+          <div class="install-line" role="region" aria-label="Quick install command">
+            <code id="installCmd">curl -fsSL https://calionauta.github.io/stelow/install.sh | bash</code>
             <button class="copy" id="copyBtn" type="button">Copy</button>
           </div>
+          <p class="install-note">One command: it checks bb is present, then installs the plugin. No bb yet? Get it free at <a href="https://getbb.app" rel="noopener">getbb.app</a>, then re-run. <a href="https://github.com/calionauta/stelow/blob/main/site/install.sh" rel="noopener">Read the script first</a>.</p>
         </div>
         <p class="proof">Board, inbox, and all 28 skills bundled · MIT · pre-1.0 and honest about it</p>
       </div>
       <div class="hero-mascot">
-        <button id="mascot" type="button" aria-label="Boop the scout" style="--mascot-size: min(300px, 70vw)">
+        <p class="mascot-says" id="mascotSays" aria-hidden="true">shape first.</p>
+        <button id="mascot" type="button" aria-label="Boop the scout" style="--mascot-size: min(320px, 72vw)">
           <span id="mascotSquash">
             <span id="mascotDirections" aria-hidden="true"></span>
             <span id="mascotReactions" aria-hidden="true"></span>
@@ -102,7 +103,7 @@
       <div class="card">
         <p class="step">2 · Review</p>
         <h3>Argue before building</h3>
-        <p>Fresh-context reviewers pick the plan apart. You approve the product spec and the interface direction in a visual gate, with receipts on disk.</p>
+        <p>Fresh-context reviewers pick the plan apart. You approve the product spec and the interface direction in a visual gate, with receipts on disk. Review mode sets how much waits for you: Auto runs untouched, Full gates spec, interface, scopes, and plan.</p>
       </div>
       <div class="card">
         <p class="step">3 · Build</p>
@@ -146,7 +147,7 @@
       </div>
       <div class="card">
         <h3>Gates with receipts</h3>
-        <p>Spec, interface, tech plan, and diff each get a visual approval. Each approval writes a receipt under <code>.stelow/approvals/</code>. No receipt, no advance.</p>
+        <p>Spec, interface, tech plan, and diff each get a visual approval, and each approval writes a receipt under <code>.stelow/approvals/</code>. No receipt, no advance. Oversight is a dial, not a lottery: Auto runs untouched, Full gates everything.</p>
       </div>
       <div class="card">
         <h3>Typed scopes under contract</h3>
@@ -203,8 +204,8 @@
           <li>GitHub issues can seed inbox drafts; done cards can comment back</li>
           <li>Skills stay current: vendored copies auto-sync from this repo on a schedule</li>
         </ul>
-        <div class="install-line"><code>bb plugin install git:https://github.com/calionauta/bb-plugin-stelow.git --yes</code></div>
-        <p class="fine">Needs bb ≥ 0.38 from <a href="https://getbb.app" rel="noopener">getbb.app</a>. Details in the <a href="https://github.com/calionauta/bb-plugin-stelow" rel="noopener">plugin repo</a>.</p>
+        <div class="install-line"><code>curl -fsSL https://calionauta.github.io/stelow/install.sh | bash</code></div>
+        <p class="fine">Checks bb is present, then installs the plugin. Needs bb ≥ 0.38 from <a href="https://getbb.app" rel="noopener">getbb.app</a>. Details in the <a href="https://github.com/calionauta/bb-plugin-stelow" rel="noopener">plugin repo</a>.</p>
       </div>
       <div class="card">
         <p class="step">Advanced · without the app</p>
@@ -217,14 +218,14 @@
     </div>
   </section>
 
-  <!-- HONESTY -->
-  <section class="section reveal">
-    <p class="kicker">Honest trade-offs</p>
+  <!-- EARLY -->
+  <section id="early" class="section reveal">
+    <p class="kicker">Still early</p>
     <h2>Worth knowing before you start.</h2>
     <div class="grid-3">
-      <div class="card flat"><h3>Still pre-1.0</h3><p>Public line is 0.x. Workflow contracts and skills can change before 1.0. Old 1.x tags are internal milestones, not stability claims.</p></div>
+      <div class="card flat"><h3>Built in public, pre-1.0</h3><p>Public line is 0.x. Workflow contracts and skills can change before 1.0. Old 1.x tags are internal milestones, not stability claims. Found a rough edge? Open an issue: <a href="https://github.com/calionauta/bb-plugin-stelow/issues" rel="noopener">plugin repo</a> for anything practical (board, workers, install), <a href="https://github.com/calionauta/stelow/issues" rel="noopener">upstream repo</a> for methodology (stages, strategies, skills).</p></div>
       <div class="card flat"><h3>Depth costs tokens</h3><p>Complete appetite with full gates writes long specs. For a typo fix, pick Lean with Auto and skip the ceremony.</p></div>
-      <div class="card flat"><h3>Gates wait for you</h3><p>Spec, interface, and plan approvals pause the worker until you answer. If you want a run with no interruptions, use Auto.</p></div>
+      <div class="card flat"><h3>Git URL today, marketplace soon</h3><p>The plugin installs from git while marketplace approval is pending. Pin a release with <code>@vX.Y.Z</code> for fixed installs; updates arrive via <code>bb plugin update stelow</code>.</p></div>
     </div>
   </section>
 
@@ -233,7 +234,7 @@
     <p class="kicker">Try it today</p>
     <h2>One command, then one sentence.</h2>
     <ol class="steps">
-      <li>Install <a href="https://getbb.app" rel="noopener">bb desktop</a>, then run the plugin command at the top of this page.</li>
+      <li>Run the install command at the top of this page. No bb yet? Get it at <a href="https://getbb.app" rel="noopener">getbb.app</a> first, then re-run.</li>
       <li>Open Stelow, pick Appetite and Review mode, describe what you want to build.</li>
       <li>Review the shaped spec, pick an interface, approve the plan, watch scopes run.</li>
     </ol>
@@ -251,17 +252,17 @@
 </main>
 
 <footer>
-  <p>Stelow by Renato Caliari · MIT</p>
+  <p>Stelow by <a href="https://github.com/calionauta" rel="noopener">calionauta</a> · open source</p>
   <p class="social">
     <a class="icon-link" href="https://github.com/calionauta/stelow" rel="noopener" aria-label="Stelow repo on GitHub">
       <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
-      <span>calionauta/stelow</span>
+      <span>stelow</span>
     </a>
     <a class="icon-link" href="https://github.com/calionauta/bb-plugin-stelow" rel="noopener" aria-label="bb plugin repo on GitHub">
       <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
       <span>bb-plugin-stelow</span>
     </a>
-    <a class="icon-link" href="https://www.linkedin.com/in/calionauta" rel="noopener" aria-label="Renato Caliari on LinkedIn">
+    <a class="icon-link" href="https://www.linkedin.com/in/calionauta" rel="noopener" aria-label="calionauta on LinkedIn">
       <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.225 0z"/></svg>
       <span>linkedin/in/calionauta</span>
     </a>
@@ -282,6 +283,17 @@ const io = new IntersectionObserver((entries) => {
   for (const e of entries) if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
 }, { threshold: 0.12 });
 document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+// Scout speech bubble rotation
+const saysEl = document.getElementById('mascotSays');
+const saysLines = ['shape first.', "what's out of scope?", 'measure three times, cut once.', 'argue before building.', 'receipts, please.'];
+let saysIdx = 0;
+if (saysEl && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  setInterval(() => {
+    saysIdx = (saysIdx + 1) % saysLines.length;
+    saysEl.style.opacity = '0';
+    setTimeout(() => { saysEl.textContent = saysLines[saysIdx]; saysEl.style.opacity = '1'; }, 300);
+  }, 5000);
+}
 </script>
 </body>
 </html>
