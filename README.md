@@ -411,7 +411,9 @@ scripts/stelow sync-scopes [--name <workflow>] [--json]
   into `{ id, type, name, blockedBy, targetFiles, maxIterations }` with `status: 'pending'`,
   tracked by `wf.specTechFile` for idempotent re-sync.
 - **Fail-safe:** missing input is an exit-0 no-op; existing state is never replaced
-  with an empty scope list. See `skills/stelow-workflow-scope-executor/references/cli-tools/scope-init-fallback.md`
+  with an empty scope list. A re-sync preserves host/worker overlay —
+  `audit-gap` rework scopes and `discovered` tasks survive spec revisions
+  (rework is rehoused if a revised spec reuses its number). See `skills/stelow-workflow-scope-executor/references/cli-tools/scope-init-fallback.md`
   for the full contract.
 
 Known edge cases (race window, legacy workflows without `dirHash`) are handled idempotently; report new ones as [issues](https://github.com/calionauta/stelow/issues).
@@ -571,8 +573,8 @@ Subcommands: `status`, `advance`, `doctor`, `seed`, `schema`, `ask`,
 (or run `scripts/stelow --help` / `scripts/stelow schema`).
 
 > When running inside bb, you don't call this binary directly — the plugin wraps
-> the same operations as `bb stelow status|ask|seed|advance|doctor|preset`
-> (see [🗂️ Visual Board and Inbox](#️-visual-board-and-inbox)). The semantics
+> the same operations as `bb stelow …` (full command surface in the plugin's
+> `FEATURES.md`; see [🗂️ Visual Board and Inbox](#️-visual-board-and-inbox)). The semantics
 > are identical; only the invocation surface changes.
 
 ---

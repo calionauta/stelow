@@ -54,7 +54,10 @@ on `warn` / `info`; only `error` flips `ok` to false.
 `wf.scopes[]` (`id`, `type`, `name`, `blockedBy`, `targetFiles`,
 `maxIterations`, `status: 'pending'`). Idempotent via `wf.specTechFile`;
 missing input is an exit-0 no-op; existing state is never replaced with an
-empty scope list. This is the single canonical scope parser — hosts shell
+empty scope list. A re-sync re-parses the spec but preserves host/worker
+overlay: `audit-gap` rework scopes carry over by id (rehoused under the
+next free number if a revised spec reuses theirs), and `discovered` tasks
+merge into matching scopes with the count recomputed. This is the single canonical scope parser — hosts shell
 out instead of maintaining a mirror.
 
 `audit-trail build` writes a canonical, deterministic `audit-trail.md` from
