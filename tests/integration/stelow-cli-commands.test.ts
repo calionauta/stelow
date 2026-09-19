@@ -371,6 +371,54 @@ describe("sync-scopes", () => {
     const wd = makeWorkdir();
     expect(run(wd, ["sync-scopes", "--bogus"]).status).toBe(2);
   });
+
+  function seedWithCustomSpec(wdName: string, spec: string): { wd: any; statedir: string } {
+    const wd = makeWorkdir();
+    const seed = run(wd, ["seed", "--name", wdName, "--intent", "feature", "--json"]);
+    expect(seed.status).toBe(0);
+    const statedir = (JSON.parse(seed.stdout) as any).statedir as string;
+    mkdirSync(join(statedir, "plans"), { recursive: true });
+    writeFileSync(join(statedir, "plans", "spec-tech_v1.md"), spec);
+    return { wd, statedir };
+  }
+
+  const scope = (n: number, deps: string) =>
+    `[SCOPE-${n}] Scope ${n}\n[TYPE] feature\nObjective: work\nDependencies: ${deps}\nDoD: done\n`;
+
+  it("refuses a 2-cycle with exit 1 and names the cycle", () => {
+    const { wd, statedir } = seedWithCustomSpec("sync-cycle2", scope(1, "SCOPE-2") + "\n" + scope(2, "SCOPE-1"));
+    const r = run(wd, ["sync-scopes", "--json"], { STELOW_STATEDIR: statedir });
+    expect(r.status).toBe(1);
+    expect(r.stderr).toMatch(/blockedBy cycle detected: scope-1 -> scope-2 -> scope-1/);
+    const tracking = JSON.parse(readFileSync(join(wd.dir, "stelow.json"), "utf8"));
+    expect(tracking.workflows[0].scopes ?? []).toEqual([]);
+  });
+
+  it("refuses a self-block with exit 1", () => {
+    const { wd, statedir } = seedWithCustomSpec("sync-self", scope(1, "SCOPE-1"));
+    const r = run(wd, ["sync-scopes"], { STELOW_STATEDIR: statedir });
+    expect(r.status).toBe(1);
+    expect(r.stderr).toMatch(/scope-1 -> scope-1/);
+  });
+
+  it("refuses a 3-cycle with exit 1", () => {
+    const spec = scope(1, "SCOPE-3") + "\n" + scope(2, "SCOPE-1") + "\n" + scope(3, "SCOPE-2");
+    const { wd, statedir } = seedWithCustomSpec("sync-cycle3", spec);
+    const r = run(wd, ["sync-scopes"], { STELOW_STATEDIR: statedir });
+    expect(r.status).toBe(1);
+    expect(r.stderr).toMatch(/blockedBy cycle detected/);
+  });
+
+  it("accepts a diamond (no false positive) and warns on dangling refs", () => {
+    const spec = scope(1, "None") + "\n" + scope(2, "SCOPE-1") + "\n" + scope(3, "SCOPE-1") + "\n" + scope(4, "SCOPE-2, SCOPE-3, SCOPE-9");
+    const { wd, statedir } = seedWithCustomSpec("sync-diamond", spec);
+    const r = run(wd, ["sync-scopes", "--json"], { STELOW_STATEDIR: statedir });
+    expect(r.status).toBe(0);
+    expect(JSON.parse(r.stdout).synced).toBe(4);
+    expect(r.stderr).toMatch(/unknown scopes.*scope-9/);
+    const tracking = JSON.parse(readFileSync(join(wd.dir, "stelow.json"), "utf8"));
+    expect(tracking.workflows[0].scopes[3].blockedBy).toEqual(["scope-2", "scope-3", "scope-9"]);
+  });
 });
 
 // ---------------------------------------------------------------------------
