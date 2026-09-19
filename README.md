@@ -14,12 +14,12 @@
 > incompatibly before a stable `1.0.0`. Historical `1.x` GitHub releases are
 > retained as internal milestones and do not signal production stability.
 
-> 💡 **New here? Start with the official app.** Run
-> `curl -fsSL https://calionauta.github.io/stelow/install.sh | bash` — it
-> installs <a href="https://getbb.app" rel="nofollow">bb</a> when missing
-> (desktop app on Mac), then the Stelow plugin. Board, inbox, worker CLI, and
-> 25+ skills auto-synced — details in [Quick Start](#-quick-start), or go
-> straight to the [bb-plugin-stelow repo](https://github.com/calionauta/bb-plugin-stelow).
+> 💡 **New here? Start with the official app.** <a href="https://getbb.app" rel="nofollow">bb</a>
+> (free) runs Stelow visually: board, inbox, worker CLI, 25+ skills
+> auto-synced. Install it, open it, then run
+> `curl -fsSL https://calionauta.github.io/stelow/install.sh | bash` to add
+> the Stelow plugin. Details in [Quick Start](#-quick-start), or go straight
+> to the [bb-plugin-stelow repo](https://github.com/calionauta/bb-plugin-stelow).
 > Prefer another agent? The skills-only path is below and works anywhere.
 
 I'm trying to make ai agents behave less like coding assistants and more like cross-functional product team.
@@ -348,7 +348,7 @@ This package is **skills-only and host-agnostic** — its 28 skills run on any A
 
 | Your situation | Recommended command | What you get |
 |----------------|--------------------|-------------|
-| **bb desktop** (recommended) | Run `curl -fsSL https://calionauta.github.io/stelow/install.sh \| bash` (installs <a href="https://getbb.app" rel="nofollow">bb</a> on a Mac when missing) | Visual board + inbox + `bb stelow` worker CLI (25+ skills vendored & auto-synced; see [Path A](#-path-a-bb-desktop-recommended)) |
+| **bb desktop** (recommended) | Get <a href="https://getbb.app" rel="nofollow">bb</a> (free), open it, then run `curl -fsSL https://calionauta.github.io/stelow/install.sh \| bash` | Visual board + inbox + `bb stelow` worker CLI (25+ skills vendored & auto-synced; see [Path A](#-path-a-bb-desktop-recommended)) |
 | **Any other agent** | `npx skills add calionauta/stelow -g` | 25+ skills, copied to `~/.agents/skills/` |
 | **Existing repo / offline** | `git clone ... && ./install.sh` | 25+ skills + prune of retired/orphaned skills |
 
@@ -461,20 +461,20 @@ the coding-agent CLI you already have, or any harness in
 `references/host-levers.md`. Install and log in with the
 provider first; bb connects to it, it does not replace it.
 
-**1. Install bb + the Stelow plugin in one command:**
+**1. Install bb (free) and open it:**
+
+- **macOS:** one-click download at <a href="https://getbb.app" rel="nofollow">getbb.app</a>
+- **Any OS with Node:** `npx bb-app@latest` (npm 12+: add `--allow-scripts=better-sqlite3,node-pty,@parcel/watcher`), then open `http://localhost:38886`
+- Windows via WSL; Linux & remote machines supported — see [get-bb/bb](https://github.com/get-bb/bb)
+
+**2. Add the Stelow plugin** (requires bb ≥ 0.38; awaiting marketplace
+approval, so install via git URL for now):
 
 ```bash
 curl -fsSL https://calionauta.github.io/stelow/install.sh | bash
 ```
 
-(On a Mac it fetches the bb desktop app when missing. Other OSes with Node
-get the CLI; then start bb once and re-run. Manual options: one-click
-download at <a href="https://getbb.app" rel="nofollow">getbb.app</a>;
-`npx bb-app@latest` (npm 12+: add `--allow-scripts=better-sqlite3,node-pty,@parcel/watcher`);
-Windows via WSL; Linux & remote machines supported — see [get-bb/bb](https://github.com/get-bb/bb))
-
-**2. Install the stelow plugin from its repository** (requires bb ≥ 0.38;
-it is awaiting marketplace approval, so install via git URL for now):
+Or directly:
 
 ```bash
 bb plugin install git:https://github.com/calionauta/bb-plugin-stelow.git --yes
@@ -607,10 +607,10 @@ npx skills add calionauta/stelow -g
 ```
 
 - **Zero-to-running** (new machine): install and authenticate any Agent
-  Skills-compatible coding-agent CLI, then run the one-line installer
-  (`curl -fsSL https://calionauta.github.io/stelow/install.sh | bash` —
-  installs <a href="https://getbb.app" rel="nofollow">bb</a> on a Mac when
-  missing, then the plugin)
+  Skills-compatible coding-agent CLI, then install
+  <a href="https://getbb.app" rel="nofollow">bb desktop</a>, open it, and run
+  the one-line installer
+  (`curl -fsSL https://calionauta.github.io/stelow/install.sh | bash`)
   (see [Path A](#-path-a-bb-desktop-recommended))
 - **Activating the workflow:** the entry skill loads when the host sets
   `STELOW_WORKFLOW=1` + `STELOW_STATE=<path>` (see
