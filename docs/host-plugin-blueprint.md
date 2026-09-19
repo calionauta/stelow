@@ -366,6 +366,15 @@ says otherwise in code. Layer the guarantee:
    a git checkout ignores the live runtime dir (`.stelow/`) so a worker
    `git add -A` can never sweep live runs into history — only the
    exported bundle is committed.
+8. **Route delegated work by capability, not by stage.** Subagent tiers:
+   Reliable (the band preset, tools/web/exact shapes/multi-step) needs
+   no configuration; Generation (a cheap preset for disposable
+   text-only bursts the worker judges 100% before using) is one board
+   default with a card → board → band cascade. The tier rides the spawn
+   call site where output is disposable by construction — never user
+   choice per task, never a band × tier matrix. Rule of thumb: when the
+   worker rewrites over 20% of a burst's output, that call site belongs
+   back on Reliable.
 6. **Critique generated UI once, after implementation — never before
    and after.** Visual critique (accessibility, heuristics, design
    quality) runs post-implementation, gated by appetite and whether
