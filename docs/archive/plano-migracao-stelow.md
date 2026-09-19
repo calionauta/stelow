@@ -124,11 +124,10 @@ Usuários podem digitar qualquer um dos dois.
 1. Editar `types.ts`: WORKFLOW_DIR, TRACKING_FILE, SCHEMA_URL, GLOBAL_TRACKING_FILE, hash prefix
 2. `git mv extensions/cali-product-workflow extensions/stelow`
 3. `git mv extensions/cali-product-workflow-pi extensions/stelow-pi`
-4. `git mv extensions/cali-product-workflow-muxy extensions/stelow-muxy`
-5. `git mv skills/cali-product-workflow skills/stelow`
-6. `git mv stelow.schema.json stelow.schema.json`
-7. `git mv stelow-spec.md stelow-spec.md`
-8. Atualizar todos os imports nos TS files para os novos paths
+4. `git mv skills/cali-product-workflow skills/stelow`
+5. `git mv stelow.schema.json stelow.schema.json`
+6. `git mv stelow-spec.md stelow-spec.md`
+7. Atualizar todos os imports nos TS files para os novos paths
 
 #### Passo 2 — Renomear comandos (risco médio, edição manual)
 1. Adicionar aliases ao HANDLER_BY_NAME em `commands.ts`
