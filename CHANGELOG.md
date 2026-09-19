@@ -3,6 +3,33 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.66.0-alpha] - 2026-09-19
+
+### Added
+
+- **Gap frontmatter carries `effort`.** The execution-critique `gaps:`
+  entries accept `effort: trivial|moderate|significant`, so the
+  medium+trivial→fixed vs medium+moderate→documented distinction is
+  machine-checkable instead of prose-only. Findings judged invalid on
+  re-check ride `documented` with the reason — every finding needs a
+  disposition, no fourth resolution.
+- **`sync-scopes` preserves host/worker overlay.** A re-sync re-parses
+  the spec but carries `audit-gap` rework scopes by id and merges
+  `discovered` tasks into matching scopes (count recomputed) — a spec
+  revision no longer silently drops the rework loop or mid-execution
+  findings.
+
+### Fixed
+
+- **`sync-scopes` rehouses colliding rework scopes.** A revised spec
+  that reuses an `audit-gap` scope's number moves the rework to the
+  next free number with status, gap, and tasks intact, instead of
+  dropping it.
+- **Strict audit ignores disposable `drafts/`.** Tier G draft bursts
+  are worker-judged scratch, not deliverables — the strict gate and
+  the unregistered list skip them, so a draft burst never blocks
+  completion. Record stays via comment plus thread output.
+
 ## [0.65.0-alpha] - 2026-09-19
 
 ### Added
