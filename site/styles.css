@@ -171,6 +171,8 @@ body {
 .curious-card p { color: #cfc6b8; margin: 0; max-width: 62ch; }
 .curious-card .btn.light { margin-left: auto; background: #f5efe4; color: #14110e; border-color: #f5efe4; }
 .fine { color: var(--muted); font-size: 14px; }
+.finale { text-align: center; padding-top: 8px; padding-bottom: 8px; }
+.finale img { width: min(560px, 86vw); height: auto; filter: drop-shadow(0 24px 44px rgba(29, 26, 22, 0.16)); }
 footer { border-top: 1px solid var(--line); padding: 22px; text-align: center; color: var(--muted); font-size: 14px; }
 footer a { color: var(--ink); }
 /* reveal */
