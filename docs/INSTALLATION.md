@@ -20,10 +20,9 @@ npx skills add calionauta/stelow -g
 ```
 
 **Zero-to-running on a new machine:** install and authenticate any
-Agent Skills-compatible coding-agent CLI, then
-install [bb desktop](https://getbb.app) and
-`bb plugin install git:https://github.com/calionauta/bb-plugin-stelow.git --yes`
-(see the README's Path A).
+Agent Skills-compatible coding-agent CLI, then run the one-line installer
+(`curl -fsSL https://calionauta.github.io/stelow/install.sh | bash` —
+installs bb on a Mac when missing, then the plugin; see the README's Path A).
 
 ---
 
