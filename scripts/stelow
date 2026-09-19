@@ -1015,6 +1015,39 @@ for i in range(1, len(blocks), 3):
 if not scopes:
     warn(f"{latest} had no [SCOPE-N] blocks; scopes left as-is")
     sys.exit(0)
+ids = {s["id"] for s in scopes}
+# Dangling blockedBy references stall the same way (waiting on a scope that
+# will never complete). Warn only — the plan may span multiple spec-tech files.
+dangling = sorted({d for s in scopes for d in s["blockedBy"]} - ids)
+if dangling:
+    warn(f"blockedBy references unknown scopes (ignored for cycle check): {', '.join(dangling)}")
+# blockedBy must be acyclic: a cycle stalls execution silently (each scope
+# waits for the other forever). Fail loud at ingest, naming the cycle —
+# no state is written.
+adj = {s["id"]: [d for d in s["blockedBy"] if d in ids] for s in scopes}
+WHITE, GRAY, BLACK = 0, 1, 2
+color = {i: WHITE for i in ids}
+stack: list = []
+cycle = None
+def visit(node):
+    global cycle
+    color[node] = GRAY
+    stack.append(node)
+    for dep in adj[node]:
+        if color[dep] == GRAY:
+            cycle = stack[stack.index(dep):] + [dep]
+            return True
+        if color[dep] == WHITE and visit(dep):
+            return True
+    stack.pop()
+    color[node] = BLACK
+    return False
+for sid in sorted(ids):
+    if color[sid] == WHITE and visit(sid):
+        break
+if cycle:
+    print(f"sync-scopes: blockedBy cycle detected: {' -> '.join(cycle)}; fix Dependencies: in {latest} (no state written)", file=sys.stderr)
+    sys.exit(1)
 
 workflow["scopes"] = scopes
 workflow["specTechFile"] = latest

@@ -22,6 +22,8 @@ Shape Up's core insight: **scope boundaries are set before execution, but the wo
 │  │  ├── files touched (git diff --name-only)     │    │
 │  │  ├── commands run (verify/vet commands)       │    │
 │  │  ├── verification checklist (ACs × done)      │    │
+│  │  ├── baseline (pre-change verify exits)       │    │
+│  │  ├── timing + cost (machine-written)          │    │
 │  │  ├── limitations / non-claims (honest scope)  │    │
 │  │  └── suggested_commit                          │    │
 │  └──────────────────────────────────────────────┘    │
