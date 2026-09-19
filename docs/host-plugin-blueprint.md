@@ -229,6 +229,12 @@ X ago" + inventory dialog) — silent syncs become mystery meat otherwise.
   run files, and what explicitly survives (e.g. Git checkouts) before
   anything runs — the dialog text must match what the handler deletes,
   in both directions (no silent leftovers, no silent preservation).
+- **Sync is the refresh signal for file-owned state**: when workers edit
+  tracking files the host cannot watch, an idempotent sync command the
+  worker runs after each edit doubles as the notify — the host publishes
+  its realtime event on the sync, so boards reload live instead of on
+  the next lifecycle event. A re-sync must preserve host/worker overlay
+  (rework scopes, discovered items), never replace it.
 - **Static assets**: if the host bundler has no image loader, serve brand
   marks as data URIs over RPC — never runtime relative URLs (they 404 on
   managed installs).
