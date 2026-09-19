@@ -89,6 +89,20 @@ body {
 }
 .copy:hover { background: #26211b; }
 .proof { color: var(--muted); font-size: 14px; }
+/* below-the-message action band: CTAs + install, centered under copy+mascot */
+.hero-below {
+  grid-column: 1 / -1;
+  max-width: 640px;
+  margin: 12px auto 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.hero-below .cta-row { justify-content: center; margin: 0 0 16px; }
+.hero-below .install-steps { width: 100%; }
+.hero-below .install-note { text-align: center; }
+.hero-below .proof { text-align: center; }
 .hero-mascot { position: relative; display: flex; justify-content: center; align-items: center; min-width: 0; padding-top: 12px; }
 /* grounding blob — ties the mascot to the page instead of floating */
 .hero-mascot::before {
