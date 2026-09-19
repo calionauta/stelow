@@ -321,6 +321,12 @@ says otherwise in code. Layer the guarantee:
    re-critiques, and only then completes. Completion refuses
    while escalations lack scopes or linked scopes stay open — done
    means every gap has a disposition and every escalation is executed.
+   Surface the loop state early (verify-time warnings, not just
+   completion refusals) and name the loop-back: an audit-to-execution
+   advance should state which open rework it picks up. Validate every
+   matched critique, not just the newest — a lingering superseded file
+   still makes claims, and newest-wins would let a clean rewrite silently
+   drop registered escalations; re-critique overwrites the same file.
    Judgment
    stays automatic with full transparency (counts, per-escalation
    scope status, trail record) rather than human-gated: gating
