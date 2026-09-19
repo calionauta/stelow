@@ -307,3 +307,18 @@ says otherwise in code. Layer the guarantee:
    resolved live from revalidation, with progressive disclosure down to
    the failing checks. A seal without backing content reads unverified —
    a first-class state, never an error, never "true".
+5. **Close the rework loop in code, not prose.** When the methodology
+   classifies findings (fixed / documented / escalated), require the
+   classification as structured frontmatter on the report so the host
+   can check it: every row needs a known impact + resolution, and the
+   methodology's escalation rule (e.g. high/critical impact escalates)
+   becomes a deterministic failure when violated — a misclassified row
+   must never pass silently. Escalations become rework scopes through a
+   host-owned idempotent command (never by asking the worker to edit
+   tracking JSON), each scope linked to its gap; completion refuses
+   while escalations lack scopes or linked scopes stay open. Judgment
+   stays automatic with full transparency (counts, per-escalation
+   scope status, trail record) rather than human-gated: gating
+   completion on per-item human confirmation stalls autonomous runs,
+   while over-escalation is cheap and visible and under-escalation is
+   blocked by the rule above.
