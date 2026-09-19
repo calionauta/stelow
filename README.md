@@ -39,7 +39,7 @@ This package brings product methodology to AI coding agents. Instead of open-end
 - **Scopes, Tasks & Records — three-layer execution model**. Scopes are appetite-bounded delivery units committed at planning (Lean ≤2, Core ≤5, Complete ≈10). Tasks are sub-item checklists inside a scope — planned tasks seed from the spec-tech table; discovered tasks emerge during execution (always with a `note:` explaining the trigger). Records capture claim-proof evidence (files touched, commands run, verification checklist) before a scope is closed. Validation is ON by default (set `STELOW_VALIDATE=0` to disable). See [`docs/scopes-tasks-flow.md`](docs/scopes-tasks-flow.md) for the full pipeline.
 - **Bidirectional product ↔ tech flow** — tech constraints and opportunities inform product decisions *before* execution. Tech Preview uses cymbal for appetite-gated codebase recon; Alignment Check catches product-vs-tech misalignment with mode-dependent resolution (auto or user-flagged).
 - **Stack-matched skills + fresh docs** — during execution setup, the workflow discovers skills (via `npx skills`) optimized for the chosen tech stack and fetches current library docs (via `ctx7`). Both skip if already installed or unavailable. Skills install in project scope only, after user confirmation.
-- **Real-time TUI tracking** - see workflow state as it progresses through all stages.
+- **Status tracking** — see workflow state as it progresses through all stages (`/sw-status`); visual overlays are host-owned (this repo ships no TUI).
 - **Host-owned scheduling** — Stelow ships no scheduler of its own. Each host drives `/sw-*` invocations from its native event surface (autopilot, scheduler, background runs). The bb plugin (`bb-plugin-stelow`) is the reference implementation: board + inbox + scheduled skills-sync. See "Host Installation Guide" below.
 
 ---
@@ -110,7 +110,7 @@ A structured workflow that makes AI think like a product manager:
 
 - **28 skills total** in this repo: 14 workflow skills + 14 product skills (grouped by prefix — workflow: 14, product: 14)
 - Part of a broader ecosystem — the orchestrator composes these and can also invoke additional skills from the user's agent environment at runtime
-- Real-time TUI tracking with visual status overlay (`/sw-status`)
+- Workflow status via `/sw-status`
 - Gate approval via Plannotator - review, comment, approve or reject before implementation
 - Typed scopes for autonomous execution (feature, spike, test-*, optimize)
 
