@@ -1049,6 +1049,27 @@ if cycle:
     print(f"sync-scopes: blockedBy cycle detected: {' -> '.join(cycle)}; fix Dependencies: in {latest} (no state written)", file=sys.stderr)
     sys.exit(1)
 
+# A re-sync re-parses the spec, but worker/host-owned overlay survives it:
+# rework scopes (source audit-gap, created by the host from escalated gaps)
+# and mid-execution discovered tasks (source discovered, appended by the
+# executor) are not in the spec file — dropping them would silently lose
+# the rework loop and the executor's findings on every spec revision.
+previous = workflow.get("scopes") if isinstance(workflow.get("scopes"), list) else []
+by_id = {s["id"]: s for s in scopes}
+for old in previous:
+    if not isinstance(old, dict):
+        continue
+    if old.get("source") == "audit-gap" and old.get("id") not in by_id:
+        scopes.append(old)
+        by_id[old["id"]] = old
+        continue
+    current = by_id.get(old.get("id"))
+    if isinstance(current, dict) and isinstance(old.get("tasks"), list):
+        kept = [t for t in old["tasks"] if isinstance(t, dict) and t.get("source") == "discovered"]
+        if kept:
+            have = {t.get("id") for t in current.get("tasks", []) if isinstance(t, dict)}
+            current.setdefault("tasks", []).extend([t for t in kept if t.get("id") not in have])
+            current["discovered_tasks_count"] = sum(1 for t in current["tasks"] if isinstance(t, dict) and t.get("source") == "discovered")
 workflow["scopes"] = scopes
 workflow["specTechFile"] = latest
 workflow["updated"] = datetime.datetime.now(datetime.timezone.utc).isoformat()

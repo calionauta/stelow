@@ -419,6 +419,28 @@ describe("sync-scopes", () => {
     const tracking = JSON.parse(readFileSync(join(wd.dir, "stelow.json"), "utf8"));
     expect(tracking.workflows[0].scopes[3].blockedBy).toEqual(["scope-2", "scope-3", "scope-9"]);
   });
+
+  it("preserves audit-gap scopes and discovered tasks across a spec revision", () => {
+    const { wd, statedir } = seedWithSpec("sync-preserve");
+    const env = { STELOW_STATEDIR: statedir };
+    expect(run(wd, ["sync-scopes", "--json"], env).status).toBe(0);
+    // Host-created rework scope + executor-discovered task (not in the spec).
+    const trackingPath = join(wd.dir, "stelow.json");
+    const tracking = JSON.parse(readFileSync(trackingPath, "utf8"));
+    tracking.workflows[0].scopes.push({ id: "scope-4", name: "Rework", status: "in-progress", source: "audit-gap", gap: "tokens never expire", tasks: [] });
+    tracking.workflows[0].scopes[0].tasks = [{ id: "1.1", name: "Index", source: "discovered", status: "pending", note: "slow query" }];
+    writeFileSync(trackingPath, JSON.stringify(tracking));
+    // Revise the spec (v2 keeps both scopes) and re-sync.
+    writeFileSync(join(statedir, "plans", "spec-tech_v2.md"), SPEC);
+    const r = run(wd, ["sync-scopes", "--json"], env);
+    expect(r.status).toBe(0);
+    expect(JSON.parse(r.stdout).synced).toBe(3);
+    const after = JSON.parse(readFileSync(trackingPath, "utf8")).workflows[0].scopes;
+    expect(after.map((s: any) => s.id)).toEqual(["scope-1", "scope-2", "scope-4"]);
+    expect(after[2]).toMatchObject({ source: "audit-gap", status: "in-progress", gap: "tokens never expire" });
+    expect(after[0].tasks).toEqual([{ id: "1.1", name: "Index", source: "discovered", status: "pending", note: "slow query" }]);
+    expect(after[0].discovered_tasks_count).toBe(1);
+  });
 });
 
 // ---------------------------------------------------------------------------

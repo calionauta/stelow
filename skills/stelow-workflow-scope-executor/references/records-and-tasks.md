@@ -216,6 +216,10 @@ if (wf?.scopes) {
 "
 ```
 
+Then run `scripts/stelow sync-scopes` (no-op when already in sync — the run
+itself is the refresh signal, so the host reloads the card and the new task
+appears on the board without waiting for the next lifecycle event).
+
 **Marking tasks done / skipped (during execution):**
 
 ```bash
@@ -233,6 +237,9 @@ if (wf?.scopes) {
 }
 "
 ```
+
+Then run `scripts/stelow sync-scopes` — same refresh signal as above, so
+done/skipped tasks flip on the board immediately.
 
 **Render tasks checklist into `iteration-state-{SCOPE-ID}.md`:**
 
