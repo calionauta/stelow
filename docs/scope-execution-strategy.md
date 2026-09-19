@@ -24,7 +24,7 @@ others don't. Stelow ships all three; none is mandatory.
 ALL scopes run sequentially by default.
 ```
 
-- **Why default:** CooperBench 2026 shows 2-agent cooperation → 25% success vs 50% solo, with monotonic decline as agents scale (68% → 46% → 30% from 2→3→4). clawRxiv 2604.00736: coordination overhead C(n)=0.023n², 50% of tokens lost at n=7. Sequential is the cheapest known-good strategy.
+- **Why default:** CooperBench 2026 shows peer agents scoring on average 30% lower together than solo (600+ tasks), with monotonic decline as teams scale (68.6% → 46.5% → 30.0% for 2 → 3 → 4 agents). clawRxiv 2604.00736: coordination overhead C(n)=0.023n², 50% of tokens lost at n=7. Sequential is the cheapest known-good strategy.
 - **When violated:** only when the orchestrator explicitly dispatches scopes in parallel via `subagent({ async: true, ... })` or `tasks: [...]` array.
 - **Cost:** zero. Zero additional code, zero additional storage, zero additional coordination.
 
