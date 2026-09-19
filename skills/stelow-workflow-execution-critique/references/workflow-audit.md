@@ -140,15 +140,17 @@ gaps:
   - type: missing-tests          # missing-tests | incomplete | quality | new-scope | debt
     area: "Scope or module affected"
     description: "What's missing or incomplete"
-    impact: medium               # low | medium | high
+    impact: medium               # low | medium | high | critical
+    effort: moderate             # trivial | moderate | significant — drives fixed vs documented
     resolution: escalate         # fixed | documented | escalate
     scope_candidate: false       # true if this gap should become a new scope
   - type: incomplete
     area: "Another area"
     description: "..."
     impact: high
-    resolution: fixed
-    scope_candidate: false
+    effort: moderate
+    resolution: escalate
+    scope_candidate: true
 lessons_learned:
   - "What went well"
   - "What could improve"
@@ -207,6 +209,12 @@ automatically, then re-audits until clean.
 | medium | moderate | 📝 **DOCUMENTED** — note for next cycle |
 | high | any | 🔄 **ESCALATED** — becomes new scope |
 | critical | any | 🔄 **ESCALATED** — becomes new scope |
+
+Findings judged invalid on re-check ride 📝 **DOCUMENTED** with the
+reason in the description (e.g. "not a gap because X") — every finding
+needs a disposition; there is no fourth resolution. Record `effort`
+in the frontmatter whenever it is known: hosts enforce
+medium-plus-moderate-effort as DOCUMENTED-or-ESCALATED, never FIXED.
 
 **What to fix inline (FIXED):**
 - Missing imports, unused imports, typo in identifiers
