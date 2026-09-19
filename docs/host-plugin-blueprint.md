@@ -215,7 +215,17 @@ X ago" + inventory dialog) — silent syncs become mystery meat otherwise.
   each name their state and path forward. Installs the manager cannot
   update additionally surface the newest upstream release (fail-soft
   lookup) with the manual path; one update signal drives every badge
-  (sidebar row, tab, status box).
+  (sidebar row, tab, status box). That signal is one shared store, not
+  a per-surface mount poll: a forced check republishes it, so a check
+  run inside one tab lights every surface at once instead of only the
+  component that asked.
+- **Unavailable controls state why, in place**: a disabled control
+  cannot be focused and `title` is never announced, so the reason an
+  action is unavailable is visible text the control is described by —
+  never a hover tooltip, never a silent no-op. The same rule covers
+  background work: a scheduled rule or setup-dependent job that cannot
+  run names the missing dependency and where to fix it, instead of
+  returning quietly while an empty list reads as "nothing to do".
 - **Creation failures stay open**: a failed submit keeps the dialog and
   draft with a persistent inline warning — never a toast alone.
 - **Automation proposes, never disposes**: scheduled rules may only
@@ -281,6 +291,13 @@ node-test per rule, never inline-only in handlers) rather than the code.
 - Gating composite output on the primary file alone (validate every
   registered substep individually — a 200-char file with the right filename
   is not a playbook result).
+- Background jobs that fail setup silently: a scheduler without its
+  integration loaded returns quietly, and the empty result is
+  indistinguishable from "nothing to do" — the unavailable state is
+  content, not a log line.
+- Hover-only explanations for disabled controls (`title` on a control
+  that cannot be focused is invisible to keyboard and screen-reader
+  users, and the reason for the refusal is the part they need).
 
 ## 10. Contract tests to mirror
 
