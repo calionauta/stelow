@@ -94,7 +94,7 @@ body {
   position: absolute; top: 2%; left: 50%; z-index: 2;
   transform: translateX(-88%) rotate(-3deg);
   background: var(--card); border: 1px solid var(--line);
-  border-radius: 14px 14px 14px 4px;
+  border-radius: 14px 14px 4px 14px;
   padding: 8px 14px; font-size: 14.5px; font-weight: 700; white-space: nowrap;
   box-shadow: var(--shadow); margin: 0;
   transition: opacity 0.3s ease;
@@ -178,6 +178,7 @@ footer a { color: var(--ink); }
   .grid-3 { grid-template-columns: 1fr; }
   .strat-grid { grid-template-columns: 1fr; }
   .links { display: none; }
+  .mascot-says { transform: translateX(-50%) rotate(-3deg); }
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
