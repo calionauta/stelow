@@ -24,7 +24,7 @@ others don't. Stelow ships all three; none is mandatory.
 ALL scopes run sequentially by default.
 ```
 
-- **Why default:** CooperBench 2026 shows 2-agent cooperation → 25% success vs 50% solo, with monotonic decline as agents scale (68% → 46% → 30% from 2→3→4). clawRxiv 2604.00736: coordination overhead C(n)=0.023n², 50% of tokens lost at n=7. Sequential is the cheapest known-good strategy.
+- **Why default:** CooperBench 2026 shows peer agents scoring on average 30% lower together than solo (600+ tasks), with monotonic decline as teams scale (68.6% → 46.5% → 30.0% for 2 → 3 → 4 agents). clawRxiv 2604.00736: coordination overhead C(n)=0.023n²+0.04n, 50% of tokens lost at n=7. Sequential is the cheapest known-good strategy.
 - **When violated:** only when the orchestrator explicitly dispatches scopes in parallel via `subagent({ async: true, ... })` or `tasks: [...]` array.
 - **Cost:** zero. Zero additional code, zero additional storage, zero additional coordination.
 
@@ -162,6 +162,19 @@ After every Execution phase, `execution-report.md` includes:
 ```
 
 Non-empty (a)/(b)/(c) → block advance to Verification until human decides.
+
+---
+
+## Implemented rails (v0.65.0-alpha)
+
+The three layers above are prevention/audit doctrine. Shipped alongside
+them (see `skills/stelow-workflow-scope-executor/` SKILL Parallel
+Execution Rules): `blockedBy` cycle refusal at `sync-scopes` ingest,
+cymbal transitive-disjointness check before parallel dispatch, parent-owned
+test-gated merge, pre-change regression baselines compared at close-out,
+and per-scope timing + host-reported cost in the Record mirror. The
+experimental full mode (Complete-only, measured) stays specified in
+`rfc-parallel-scope-execution.md`.
 
 ---
 
