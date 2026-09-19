@@ -49,42 +49,14 @@
         </div>
         <p class="proof">28 skills · host-agnostic · MIT · pre-1.0 and honest about it</p>
       </div>
-      <div class="hero-mascot" aria-label="Stelow page mascot">
+      <div class="hero-mascot">
         <div class="mascot-stage">
-          <!-- Custom mascot in the spirit of koboyo.com/page-mascot:
-               follows the cursor, blinks, squashes when poked. Original art, inline SVG. -->
-          <svg id="mascot" viewBox="0 0 220 210" role="img" aria-label="Round teammate that watches your cursor. Click to poke it.">
-            <ellipse cx="110" cy="192" rx="52" ry="10" class="shadow"/>
-            <g id="mascotBody">
-              <rect x="48" y="52" width="124" height="128" rx="58" class="body"/>
-              <rect x="66" y="30" width="14" height="34" rx="7" class="antenna" transform="rotate(-12 73 47)"/>
-              <circle cx="68" cy="28" r="7" class="antenna-tip"/>
-              <rect x="140" y="30" width="14" height="34" rx="7" class="antenna" transform="rotate(12 147 47)"/>
-              <circle cx="152" cy="28" r="7" class="antenna-tip"/>
-              <g id="eyes">
-                <g class="eye" id="eyeL">
-                  <ellipse cx="88" cy="112" rx="17" ry="19" class="eye-white"/>
-                  <g id="pupilL"><circle cx="88" cy="114" r="7.5" class="pupil"/><circle cx="90.5" cy="111.5" r="2.4" class="glint"/></g>
-                </g>
-                <g class="eye" id="eyeR">
-                  <ellipse cx="132" cy="112" rx="17" ry="19" class="eye-white"/>
-                  <g id="pupilR"><circle cx="132" cy="114" r="7.5" class="pupil"/><circle cx="134.5" cy="111.5" r="2.4" class="glint"/></g>
-                </g>
-              </g>
-              <g id="lids">
-                <rect class="lid" x="69" y="92" width="38" height="0" rx="8"/>
-                <rect class="lid" x="113" y="92" width="38" height="0" rx="8"/>
-              </g>
-              <path id="mouth" d="M 96 142 Q 110 152 124 142" fill="none" stroke-linecap="round"/>
-              <g class="cheek" id="cheekL"><ellipse cx="70" cy="134" rx="8" ry="5"/></g>
-              <g class="cheek" id="cheekR"><ellipse cx="150" cy="134" rx="8" ry="5"/></g>
-              <g id="arms">
-                <rect class="arm left" x="30" y="110" width="26" height="14" rx="7"/>
-                <rect class="arm right" x="164" y="110" width="26" height="14" rx="7"/>
-              </g>
-            </g>
-          </svg>
-          <p class="mascot-hint" id="mascotHint">It watches your cursor. Poke it.</p>
+          <button id="mascot" type="button" aria-label="Boop the scout" style="--mascot-size: min(280px, 64vw)">
+            <span id="mascotSquash">
+              <span id="mascotDirections" aria-hidden="true"></span>
+              <span id="mascotReactions" aria-hidden="true"></span>
+            </span>
+          </button>
         </div>
       </div>
     </div>
@@ -292,7 +264,7 @@
       <span>linkedin/in/calionauta</span>
     </a>
   </p>
-  <p class="fine">Mascot is original inline SVG, cursor-following in the spirit of koboyo page mascots.</p>
+  <p class="fine">Scout mascot from <a href="https://github.com/nilbuild/page-mascot" rel="noopener">nilbuild/page-mascot</a> (MIT), vendored with its two sprite sheets.</p>
 </footer>
 
 <script src="mascot.js" defer></script>

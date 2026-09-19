@@ -1,83 +1,107 @@
-// Mascot behavior in the spirit of koboyo.com/page-mascot:
-// eyes follow the cursor, random blinks, squash + wave when poked.
-// No dependencies. Respects prefers-reduced-motion.
+// Scout mascot, vanilla-JS port of nilbuild/page-mascot src/mascot.tsx (MIT).
+// Two 3x3 sprite sheets: pointer angle picks a directions cell (with dead
+// zone + hysteresis), a click plays a reactions cell, four fast clicks dizzy.
 (function () {
-  const svg = document.getElementById('mascot');
-  const hint = document.getElementById('mascotHint');
-  if (!svg) return;
-  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const pupilL = document.getElementById('pupilL');
-  const pupilR = document.getElementById('pupilR');
-  const lids = document.querySelectorAll('#lids .lid');
-  const mouth = document.getElementById('mouth');
-  const messages = [
-    'It watches your cursor. Poke it.',
-    'Hey. Back to shaping that spec?',
-    'Measure three times, cut once.',
-    'IN scope. OUT scope. Write both down.',
-    'Fresh eyes catch what you miss.',
-    'That poke is now in the audit trail.'
-  ];
-  let msgIndex = 0;
-  let target = { x: 0, y: 0 };
-  let current = { x: 0, y: 0 };
+  var DIRECTIONS = ['up-left', 'up', 'up-right', 'left', 'center', 'right', 'down-left', 'down', 'down-right'];
+  var REACTIONS = ['blink', 'heart', 'sparkle', 'surprised', 'wink', 'bashful', 'sleepy', 'dizzy', 'delighted'];
+  var CLOCKWISE = ['right', 'down-right', 'down', 'down-left', 'left', 'up-left', 'up', 'up-right'];
+  var SECTOR = (Math.PI * 2) / CLOCKWISE.length;
+  var HYSTERESIS = 0.12;
+  var DEAD_ZONE = 70;
+  var PAYOFFS = ['heart', 'sparkle', 'delighted'];
+  var BOOP_PAYOFF = 120;
+  var BOOP_END = 560;
+  var SQUASH_MS = 420;
+  var DIZZY_AFTER = 4;
+  var DIZZY_WINDOW = 1600;
+  var DIZZY_END = 1100;
 
-  function setTarget(clientX, clientY) {
-    const r = svg.getBoundingClientRect();
-    const cx = r.left + r.width / 2;
-    const cy = r.top + r.height * 0.52;
-    const dx = clientX - cx;
-    const dy = clientY - cy;
-    const dist = Math.max(1, Math.hypot(dx, dy));
-    const max = 7;
-    target.x = (dx / dist) * Math.min(max, dist / 28);
-    target.y = (dy / dist) * Math.min(max, dist / 28);
-  }
-  window.addEventListener('pointermove', (e) => setTarget(e.clientX, e.clientY), { passive: true });
-  document.addEventListener('touchmove', (e) => {
-    const t = e.touches[0];
-    if (t) setTarget(t.clientX, t.clientY);
-  }, { passive: true });
+  var button = document.getElementById('mascot');
+  if (!button) return;
+  var squash = document.getElementById('mascotSquash');
+  var dirLayer = document.getElementById('mascotDirections');
+  var reactLayer = document.getElementById('mascotReactions');
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var timers = [];
+  var boops = { count: 0, at: 0 };
+  var direction = 'center';
+  var reaction = null;
 
-  function tick() {
-    current.x += (target.x - current.x) * 0.16;
-    current.y += (target.y - current.y) * 0.16;
-    const s = `translate(${current.x.toFixed(2)} ${current.y.toFixed(2)})`;
-    pupilL.setAttribute('transform', s);
-    pupilR.setAttribute('transform', s);
-    requestAnimationFrame(tick);
+  function cell(index) {
+    return ((index % 3) * 50) + '% ' + (Math.floor(index / 3) * 50) + '%';
   }
-  if (!reduce) requestAnimationFrame(tick);
+  function wrap(angle) {
+    return Math.atan2(Math.sin(angle), Math.cos(angle));
+  }
+  function render() {
+    dirLayer.style.backgroundPosition = cell(DIRECTIONS.indexOf(direction));
+    dirLayer.style.opacity = reaction ? '0' : '1';
+    reactLayer.style.backgroundPosition = cell(REACTIONS.indexOf(reaction || 'blink'));
+    reactLayer.style.opacity = reaction ? '1' : '0';
+  }
+  function later(ms, next) {
+    timers.push(window.setTimeout(function () {
+      reaction = next;
+      render();
+    }, ms));
+  }
 
-  function blink() {
-    lids.forEach((lid) => {
-      lid.setAttribute('height', '22');
-      lid.setAttribute('y', '92');
-      setTimeout(() => lid.setAttribute('height', '0'), 130);
-    });
+  var finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  if (finePointer) {
+    var sector = -1;
+    var pointer = null;
+    var aim = function () {
+      if (!pointer) return;
+      var box = button.getBoundingClientRect();
+      var dx = pointer.x - (box.left + box.width / 2);
+      var dy = pointer.y - (box.top + box.height / 2);
+      if (Math.hypot(dx, dy) < DEAD_ZONE) {
+        sector = -1;
+        if (direction !== 'center') { direction = 'center'; render(); }
+        return;
+      }
+      var angle = Math.atan2(dy, dx);
+      if (sector !== -1 && Math.abs(wrap(angle - sector * SECTOR)) < SECTOR / 2 + HYSTERESIS) return;
+      sector = (Math.round(angle / SECTOR) + CLOCKWISE.length) % CLOCKWISE.length;
+      var next = CLOCKWISE[sector];
+      if (next !== direction) { direction = next; render(); }
+    };
+    window.addEventListener('pointermove', function (e) {
+      pointer = { x: e.clientX, y: e.clientY };
+      aim();
+    }, { passive: true });
+    window.addEventListener('scroll', aim, { passive: true });
   }
-  (function loop() {
-    if (!reduce && document.visibilityState === 'visible') blink();
-    setTimeout(loop, 2600 + Math.random() * 2800);
-  })();
 
-  let pokes = 0;
-  function poke() {
-    pokes += 1;
-    svg.classList.add('poked', 'wave');
-    blink();
-    if (mouth) mouth.setAttribute('d', 'M 94 141 Q 110 158 126 141');
-    msgIndex = (msgIndex + 1) % messages.length;
-    if (hint) hint.textContent = messages[msgIndex];
-    setTimeout(() => {
-      svg.classList.remove('poked', 'wave');
-      if (mouth) mouth.setAttribute('d', 'M 96 142 Q 110 152 124 142');
-    }, 480);
-    if (pokes === 5 && hint) hint.textContent = 'Five pokes. The reviewers approve.';
-  }
-  svg.addEventListener('pointerdown', poke);
-  svg.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); poke(); }
+  button.addEventListener('click', function () {
+    timers.forEach(window.clearTimeout);
+    timers = [];
+    var now = Date.now();
+    boops.count = now - boops.at < DIZZY_WINDOW ? boops.count + 1 : 1;
+    boops.at = now;
+    if (boops.count >= DIZZY_AFTER) {
+      boops.count = 0;
+      reaction = 'dizzy';
+      render();
+      later(DIZZY_END, null);
+    } else {
+      reaction = 'blink';
+      render();
+      later(BOOP_PAYOFF, PAYOFFS[(boops.count - 1) % PAYOFFS.length]);
+      later(BOOP_END, null);
+    }
+    if (reduceMotion || !squash.animate) return;
+    squash.animate(
+      [
+        { transform: 'scale(1, 1)', easing: 'ease-in' },
+        { transform: 'scale(1.10, 0.86)', offset: 0.18, easing: 'ease-out' },
+        { transform: 'scale(0.95, 1.08)', offset: 0.45, easing: 'ease-in-out' },
+        { transform: 'scale(1.03, 0.97)', offset: 0.72, easing: 'ease-in-out' },
+        { transform: 'scale(1, 1)' }
+      ],
+      { duration: SQUASH_MS, easing: 'linear' }
+    );
   });
-  svg.setAttribute('tabindex', '0');
+
+  render();
 })();

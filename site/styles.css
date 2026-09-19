@@ -85,27 +85,29 @@ body {
   transition: transform 0.2s ease;
 }
 .hero-mascot .mascot-stage:hover { transform: rotate(-0.4deg) scale(1.005); }
-#mascot { width: min(320px, 70vw); height: auto; cursor: pointer; }
-.mascot-hint { color: var(--muted); font-size: 14px; margin: 6px 0 10px; min-height: 22px; }
-/* mascot paint */
-#mascot .body { fill: #fffdf7; stroke: #1d1a16; stroke-width: 5; }
-#mascot .shadow { fill: rgba(29,26,22,0.12); }
-#mascot .antenna { fill: #1d1a16; }
-#mascot .antenna-tip { fill: var(--accent); stroke: #1d1a16; stroke-width: 4; }
-#mascot .eye-white { fill: #fff; stroke: #1d1a16; stroke-width: 4; }
-#mascot .pupil { fill: #1d1a16; }
-#mascot .glint { fill: #fff; }
-#mascot #mouth { stroke: #1d1a16; stroke-width: 5; }
-#mascot .cheek ellipse { fill: #f2b8a0; opacity: 0.9; }
-#mascot .arm { fill: var(--plum); stroke: #1d1a16; stroke-width: 4; }
-#mascot .lid { fill: #1d1a16; }
-#mascotBody { transform-origin: 110px 120px; transition: transform 0.12s ease; }
-#mascot.poked #mascotBody { transform: scale(0.94, 0.88); }
-#mascot .arm.left { transform-origin: 43px 117px; }
-#mascot .arm.right { transform-origin: 177px 117px; }
-#mascot.wave .arm.left { animation: wave 0.5s ease; }
-#mascot.wave .arm.right { animation: wave 0.5s ease 0.06s; }
-@keyframes wave { 0%,100% { transform: rotate(0); } 50% { transform: rotate(-24deg); } }
+#mascot {
+  position: relative;
+  display: block;
+  flex-shrink: 0;
+  width: var(--mascot-size, 220px);
+  height: var(--mascot-size, 220px);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  appearance: none;
+  cursor: pointer;
+  user-select: none;
+  margin: 0 auto;
+}
+#mascotSquash { position: relative; display: block; width: 100%; height: 100%; transform-origin: 50% 78%; }
+#mascotDirections, #mascotReactions {
+  position: absolute;
+  inset: 0;
+  background-size: 300% 300%;
+  background-repeat: no-repeat;
+}
+#mascotDirections { background-image: url("assets/mascots/scout-directions.png"); }
+#mascotReactions { background-image: url("assets/mascots/scout-reactions.png"); opacity: 0; }
 
 .section { max-width: 1100px; margin: 0 auto; padding: 44px 22px; }
 .section h2 { font-size: clamp(26px, 3.4vw, 38px); letter-spacing: -0.02em; margin: 0 0 10px; line-height: 1.15; }
