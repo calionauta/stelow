@@ -165,6 +165,19 @@ Non-empty (a)/(b)/(c) → block advance to Verification until human decides.
 
 ---
 
+## Implemented rails (v0.65.0-alpha)
+
+The three layers above are prevention/audit doctrine. Shipped alongside
+them (see `skills/stelow-workflow-scope-executor/` SKILL Parallel
+Execution Rules): `blockedBy` cycle refusal at `sync-scopes` ingest,
+cymbal transitive-disjointness check before parallel dispatch, parent-owned
+test-gated merge, pre-change regression baselines compared at close-out,
+and per-scope timing + host-reported cost in the Record mirror. The
+experimental full mode (Complete-only, measured) stays specified in
+`rfc-parallel-scope-execution.md`.
+
+---
+
 ## Related docs
 
 - `skills/stelow-workflow-orchestrator/references/cli-tools/file-locking.md` — protocol-level how-to (FS ops, TTL, JSON shape)

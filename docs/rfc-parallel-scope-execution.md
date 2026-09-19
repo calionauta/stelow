@@ -1,6 +1,16 @@
 # RFC: Experimental Structured Parallel Scope Execution
 
-> **Status:** proposal. Not implemented. Complete appetite only.
+> **Status:** proposal, partially implemented in v0.65.0-alpha.
+> Complete appetite only.
+>
+> Shipped in v0.65.0-alpha (PR #16): `blockedBy` cycle refusal at ingest
+> (`sync-scopes`), cymbal transitive-disjointness check before parallel
+> dispatch, parent-owned test-gated merge, pre-change regression baseline,
+> and the measurement mirror (`started_at/finished_at/duration_s/baseline`
+> + host-reported `cost`). Still open (see §5 + issue #15): schema
+> worktree-binding fields, G4 hub-first sequencing, CLI in-flight fields,
+> host mechanics (per-scope workers, G6 attention cap), and measured
+> comparative data from real Complete workflows.
 > **Question it settles:** does the CAID/Co-Coder pattern (manager + isolation +
 > test-gated merge) transfer from greenfield construction benchmarks to
 > brownfield stelow scopes — measured, not asserted.
