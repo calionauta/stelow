@@ -313,7 +313,10 @@ says otherwise in code. Layer the guarantee:
    can check it: every row needs a known impact + resolution, and the
    methodology's escalation rule (e.g. high/critical impact escalates)
    becomes a deterministic failure when violated — a misclassified row
-   must never pass silently. Escalations become rework scopes through a
+   must never pass silently. Stated effort is checked the same way
+   (medium impact with moderate-or-heavier effort must not resolve as
+   an inline fix), fail-open when absent so older reports never
+   retro-fail. Escalations become rework scopes through a
    host-owned idempotent command (never by asking the worker to edit
    tracking JSON), each scope linked to its gap on the same card —
    never new cards: a card with open gaps loops back through the
