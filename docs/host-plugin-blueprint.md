@@ -370,7 +370,8 @@ says otherwise in code. Layer the guarantee:
    Reliable (the band preset, tools/web/exact shapes/multi-step) needs
    no configuration; Generation (a cheap preset for disposable
    text-only bursts the worker judges 100% before using) is one board
-   default with a card → board → band cascade. The tier rides the spawn
+   default with a board → band cascade (a card-level pin is reserved
+   in the resolver, unwired — no per-card UI today). The tier rides the spawn
    call site where output is disposable by construction — never user
    choice per task, never a band × tier matrix. Rule of thumb: when the
    worker rewrites over 20% of a burst's output, that call site belongs
