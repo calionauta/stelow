@@ -144,6 +144,9 @@ body {
 .compare { display: grid; gap: 12px; }
 .dials { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
 .dials ul, .ticks { margin: 10px 0 0; padding-left: 20px; }
+.mini-steps { margin: 12px 0 0; padding-left: 22px; }
+.mini-steps li { margin-bottom: 6px; }
+.mini-steps a { color: var(--ink); font-weight: 700; }
 .strat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 18px; }
 .strat {
   display: flex; gap: 12px; align-items: flex-start;
