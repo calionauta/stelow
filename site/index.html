@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Stelow — your agentic product team</title>
-<meta name="description" content="Stelow brings product methodology to AI coding agents: shaped proposals, adversarial critique, visual gates, and typed scopes. Host-agnostic. 14 product strategies built in.">
+<meta name="description" content="Stelow brings product methodology to AI coding agents: shaped proposals, adversarial critique, visual gates, and typed scopes. Host-agnostic, with a product strategy library built in.">
 <link rel="icon" href="assets/stelow.png">
 <link rel="stylesheet" href="styles.css">
 </head>
@@ -37,27 +37,29 @@
         <h1>Your AI writes code.<br>Stelow gives it the rest of the team.</h1>
         <p class="lede">Most agent pipelines skip straight to code. Stelow slows down first: shape the proposal, argue with it, approve what matters, then hand typed scopes to workers. I built it from years leading product teams and shipping software.</p>
         <div class="cta-row">
-          <a class="btn primary" href="#paths">Start with bb or any agent</a>
+          <a class="btn primary" href="#paths">Install bb + Stelow plugin</a>
           <a class="btn ghost icon-link" href="https://github.com/calionauta/stelow" rel="noopener">
             <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
             <span>Read the code</span>
           </a>
         </div>
-        <div class="install-line" role="region" aria-label="Quick install">
-          <code id="installCmd">npx skills add calionauta/stelow -g</code>
-          <button class="copy" id="copyBtn" type="button">Copy</button>
+        <div class="install-steps">
+          <p class="install-step"><strong>1.</strong> Get <a href="https://getbb.app" rel="noopener">bb desktop</a>, free. macOS one-click download, or <code>npx bb-app@latest</code> anywhere else.</p>
+          <div class="install-line" role="region" aria-label="Plugin install command">
+            <span aria-hidden="true"><strong>2.</strong></span>
+            <code id="installCmd">bb plugin install git:https://github.com/calionauta/bb-plugin-stelow.git --yes</code>
+            <button class="copy" id="copyBtn" type="button">Copy</button>
+          </div>
         </div>
-        <p class="proof">28 skills · host-agnostic · MIT · pre-1.0 and honest about it</p>
+        <p class="proof">Board, inbox, and all 28 skills bundled · MIT · pre-1.0 and honest about it</p>
       </div>
       <div class="hero-mascot">
-        <div class="mascot-stage">
-          <button id="mascot" type="button" aria-label="Boop the scout" style="--mascot-size: min(280px, 64vw)">
-            <span id="mascotSquash">
-              <span id="mascotDirections" aria-hidden="true"></span>
-              <span id="mascotReactions" aria-hidden="true"></span>
-            </span>
-          </button>
-        </div>
+        <button id="mascot" type="button" aria-label="Boop the scout" style="--mascot-size: min(300px, 70vw)">
+          <span id="mascotSquash">
+            <span id="mascotDirections" aria-hidden="true"></span>
+            <span id="mascotReactions" aria-hidden="true"></span>
+          </span>
+        </button>
       </div>
     </div>
   </section>
@@ -79,7 +81,7 @@
         </div>
         <div class="card accent">
           <h3>Stelow team</h3>
-          <p class="mono">shape → critique → approve → scope → build → audit</p>
+          <p class="mono">shape → critique → approve → interface → scope → build → audit</p>
           <p>Slower at the start. Fewer rewrites at the end.</p>
         </div>
       </div>
@@ -163,8 +165,8 @@
 
   <!-- STRATEGIES -->
   <section id="strategies" class="section reveal">
-    <p class="kicker">14 product strategies</p>
-    <h2>Coding is one skill. Product takes fourteen.</h2>
+    <p class="kicker">Strategy library</p>
+    <h2>Coding is one skill. Product takes the rest.</h2>
     <p class="section-lede">Each strategy is a callable playbook the workflow consults during research, shaping, and audit. Pick one for a single study, or let a build card pull in what it needs.</p>
     <div class="strat-grid">
       <div class="strat"><span aria-hidden="true">🎯</span><div><h3>Jobs to be done</h3><p>What people hire the product to do, mapped step by step.</p></div></div>
@@ -188,7 +190,7 @@
   <section id="paths" class="section reveal">
     <p class="kicker">Two ways to run it</p>
     <h2>Host-agnostic at the core. Visual in bb.</h2>
-    <p class="section-lede">The 28 skills and the <code>scripts/stelow</code> helper run on any agent that reads skills. No lock-in. The bb plugin is my official interface for running the full loop without living in a terminal.</p>
+    <p class="section-lede">Stelow runs as a visual plugin inside bb: board, inbox, and workers in one place. Underneath, the same 28 skills and the <code>scripts/stelow</code> helper stay portable to any agent that reads skills. No lock-in either way.</p>
     <div class="two-col">
       <div class="card accent">
         <p class="step">Path A · recommended</p>
@@ -196,7 +198,7 @@
         <p>Board, inbox, blocking questions, presets, and a worker CLI. The plugin vendors all 28 skills and syncs them from this repo on a schedule.</p>
         <ul class="ticks">
           <li>Build cards: Triage → Analyse → Plan → Execute → Review → Done</li>
-          <li>Research cards across the 14 strategies; Explore cards for one-shot techniques</li>
+          <li>Research cards across the strategy library; Explore cards for one-shot techniques</li>
           <li>Approvals write portable receipts; audit binds to the exact commit</li>
           <li>GitHub issues can seed inbox drafts; done cards can comment back</li>
           <li>Skills stay current: vendored copies auto-sync from this repo on a schedule</li>
@@ -205,9 +207,9 @@
         <p class="fine">Needs bb ≥ 0.38 from <a href="https://getbb.app" rel="noopener">getbb.app</a>. Details in the <a href="https://github.com/calionauta/bb-plugin-stelow" rel="noopener">plugin repo</a>.</p>
       </div>
       <div class="card">
-        <p class="step">Path B · any agent</p>
-        <h3>Skills straight into your setup</h3>
-        <p>Same workflow, no app. Install once, then drive it from chat with <code>/sw-start</code>, <code>/sw-status</code>, and <code>/sw-next</code> aliases backed by the helper script.</p>
+        <p class="step">Advanced · without the app</p>
+        <h3>Skills straight into your agent</h3>
+        <p>Same workflow, no board. Install once, then drive it from chat with <code>/sw-start</code>, <code>/sw-status</code>, and <code>/sw-next</code> aliases backed by the helper script.</p>
         <div class="install-line"><code>npx skills add calionauta/stelow -g</code></div>
         <div class="install-line"><code>git clone https://github.com/calionauta/stelow.git &amp;&amp; ./install.sh</code></div>
         <p class="fine">Optional helpers with fallbacks: cymbal for codebase recon, ctx7 for fresh docs, plannotator for visual gates, sem for structural diffs.</p>
@@ -218,11 +220,11 @@
   <!-- HONESTY -->
   <section class="section reveal">
     <p class="kicker">Honest trade-offs</p>
-    <h2>What it is not.</h2>
+    <h2>Worth knowing before you start.</h2>
     <div class="grid-3">
-      <div class="card flat"><h3>Pre-1.0</h3><p>Public line is 0.x. Workflow contracts and skills can change before 1.0. Old 1.x tags are internal milestones, not stability claims.</p></div>
-      <div class="card flat"><h3>Planning costs tokens</h3><p>Full gates and Complete appetite write long specs. For a typo fix, use Lean + Auto and skip the ceremony.</p></div>
-      <div class="card flat"><h3>No scheduler of its own</h3><p>Each host drives invocations. bb is the reference with board + inbox; other hosts use their own background runs.</p></div>
+      <div class="card flat"><h3>Still pre-1.0</h3><p>Public line is 0.x. Workflow contracts and skills can change before 1.0. Old 1.x tags are internal milestones, not stability claims.</p></div>
+      <div class="card flat"><h3>Depth costs tokens</h3><p>Complete appetite with full gates writes long specs. For a typo fix, pick Lean with Auto and skip the ceremony.</p></div>
+      <div class="card flat"><h3>Gates wait for you</h3><p>Spec, interface, and plan approvals pause the worker until you answer. If you want a run with no interruptions, use Auto.</p></div>
     </div>
   </section>
 
@@ -231,8 +233,8 @@
     <p class="kicker">Try it today</p>
     <h2>One command, then one sentence.</h2>
     <ol class="steps">
-      <li><code>npx skills add calionauta/stelow -g</code>. Or install the bb plugin from Path A.</li>
-      <li><code>/sw-start "what you want to build"</code>. Answer two setup questions (appetite, review mode).</li>
+      <li>Install <a href="https://getbb.app" rel="noopener">bb desktop</a>, then run the plugin command at the top of this page.</li>
+      <li>Open Stelow, pick Appetite and Review mode, describe what you want to build.</li>
       <li>Review the shaped spec, pick an interface, approve the plan, watch scopes run.</li>
     </ol>
     <div class="cta-row">
