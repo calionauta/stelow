@@ -83,6 +83,8 @@ surface fast. When `sem` is absent, run the full suite directly.
 
 Code review is **quality protection** and runs at every appetite — appetite only changes the depth. The Quality Floor above defines the minimum: one reviewer always runs. Appetite adds parallelism and rigor.
 
+**Reviewer independence:** prefer a reviewer running a different model family than the worker when the host offers one (provider/model presets, band routing); otherwise fresh context on the same model. Same model + same context never reviews its own output — that is the shallow-review trap, not a review.
+
 ```bash
 APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "Core")
 # Entity-first sizing: what changed (functions/types) decides review depth,

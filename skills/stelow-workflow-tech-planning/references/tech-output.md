@@ -99,7 +99,7 @@ For each scope:
 - **Risk Score:** 1-5 (see Principles 0-6 in scopes-and-sequencing.md)
 - **Overall Scope Goal:** concise description
 - **Scope DoD:** what defines this scope as complete
-- **Dependencies:** which scopes must complete first
+- **Dependencies:** which scopes must complete first (write as `Dependencies: SCOPE-1, SCOPE-3`; must be acyclic — `sync-scopes` refuses `blockedBy` cycles at ingest instead of stalling)
 
 **Task table format:**
 

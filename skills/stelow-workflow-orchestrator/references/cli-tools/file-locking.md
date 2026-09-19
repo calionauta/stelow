@@ -80,6 +80,7 @@ scripts/stelow lock check --scope <scope-id> --file <path>... [--json]
 | Sequential scope execution | NO — no parallel writes possible |
 | Parallel scope dispatch (DAG-independent) | YES if `target_files` intersect or are undeclared |
 | Parallel dispatch where `target_files` are KNOWN disjoint | OPTIONAL — defensive against undeclared touch |
+| Parallel dispatch in host-provisioned isolated worktrees | NO within the batch — filesystem isolation replaces prevention (keep declaring `target_files`; the audit still needs the contract, and the parent merge + test gate still applies) |
 | Single scope, no parallel | NO |
 
 ## Limitations (honest)

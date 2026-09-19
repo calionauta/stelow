@@ -18,6 +18,23 @@ Template (copy into `iteration-state-{SCOPE-ID}.md` on scope start, fill on clos
 - `npm run typecheck` → exit 0
 - `npm run lint` → exit 0 (3 warnings, non-blocking)
 
+### Baseline (pre-change verify results)
+<!-- Captured at scope start (Step 3c) BEFORE any edit: run each verify
+     command once against the unmodified tree. Best-effort; commands that
+     cannot run pre-change go in Limitations instead. Step 8 compares these
+     exits against close-time exits; newly failing checks are gaps. -->
+- `npm test` → exit 0 (412 passed)
+- `npm run typecheck` → exit 0
+
+### Timing (machine-written, never hand-edited)
+<!-- started_at is written by the seed guard; finished_at + duration_s at
+     close. cost is host-reported tokens only — omit when unknown, never
+     estimate (an estimated cost is a hallucinated metric). -->
+- started_at: 2026-09-19T07:00:00.000Z
+- finished_at: 2026-09-19T07:23:11.000Z
+- duration_s: 1391
+- cost: {input: 12000, output: 3400} (omit entirely when the host reports nothing)
+
 ### Verification checklist
 <!-- Filled by executor. unchecked items = blocker. -->
 - [ ] acceptance criteria met (cite AC text from spec-tech.md)
@@ -34,6 +51,8 @@ Template (copy into `iteration-state-{SCOPE-ID}.md` on scope start, fill on clos
 **Field semantics (matches Evidence Ladder, weakest-true-claim discipline):**
 - `Files touched` — ground truth, NOT a re-statement of `target_files`. The diff between `start_sha` and HEAD is authoritative; never hand-edit this list.
 - `Commands run` — agent discipline. Every verify command executed MUST appear with its exit code. Skipped commands go in `Limitations / non-claims`, not here.
+- `Baseline` — pre-change exits for the same commands, captured before the first edit. Empty is honest ONLY when the commands cannot run pre-change (say so in Limitations); otherwise Step 8 cannot distinguish regressions from pre-existing failures.
+- `Timing` — machine-written. `duration_s` is computed (`finished_at - started_at`), never hand-written. `cost` exists ONLY with host-reported numbers; an omitted cost beats an estimated one.
 - `Verification checklist` — minimum proof level. unchecked items block close.
 - `Limitations / non-claims` — anti-overclaim. If the scope "works", but you didn't test the failure mode, say so here. Future agents (and humans) need to know what's NOT proven.
 
@@ -61,6 +80,11 @@ if (wf?.scopes) {
     scope.actual_files = {ACTUAL_FILES.split('\n').filter(Boolean)};
     scope.record = {
       completed_at: new Date().toISOString(),
+      started_at: scope.started_at ?? null,
+      finished_at: new Date().toISOString(),
+      duration_s: scope.started_at ? Math.round((Date.now() - new Date(scope.started_at).getTime()) / 1000) : null,
+      baseline: {BASELINE_JSON_FROM_RECORD},  // {command: exitCode} captured pre-change; {} when legitimately skipped (say so in Limitations)
+      cost: {COST_JSON_OR_NULL},  // host-reported tokens only; null when unknown — never estimate
       files_count: scope.actual_files.length,
       commands_count: {COMMAND_COUNT_FROM_BODY},
       verified: {true_or_false},  // set true ONLY when ALL Verification checklist items are [x]
@@ -112,6 +136,9 @@ if (wf?.scopes) {
   if (scope) {
     scope.status = 'in-progress';
     scope.start_sha = process.env.SCOPE_START_SHA || '';
+    // Machine-written start time for duration_s at close. Set once: a re-seed
+    // must not restart the clock on work already done.
+    if (!scope.started_at) scope.started_at = new Date().toISOString();
     // Seed planned tasks from spec-tech.md — executor parses the body table and emits this list.
     const tasks = {TASKS_JSON_FROM_PARSED_TABLE};   // e.g. [{id:'3.1', name:'SQLite migration', source:'planned', status:'pending', risk:2}, ...]
 

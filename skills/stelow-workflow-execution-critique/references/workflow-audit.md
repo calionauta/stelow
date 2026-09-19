@@ -110,6 +110,8 @@ Flag as gap if any of:
 - `record.verified !== true` → **warning**: Verification checklist incomplete.
 - `record.commands_count === 0` → **warning**: "verified via vibes" pattern.
 - `record.suggested_commit` is empty → **minor**: no commit guidance for next PR.
+- `record.commands_count > 0` but `record.baseline` is empty/missing → **warning**: no pre-change baseline, regressions undetectable (legitimate only when Limitations says the commands cannot run pre-change).
+- `record.duration_s` is null on a `completed` scope → **minor**: no timing, parallel payoff unmeasurable.
 - `iteration-state-{SCOPE-ID}.md` lacks a `## Record` section even when
   `stelow.json` has the mirror fields → **warning**: mirror may be hallucinated.
 
@@ -118,7 +120,8 @@ Severity ladder:
 - **warning**: incomplete verification or zero commands. document in gap registry.
 - **minor**: cosmetic (suggested_commit missing). Note in lessons learned.
 
-Note: `record` field uses snake_case (`completed_at`, `files_count`,
+Note: `record` field uses snake_case (`completed_at`, `started_at`,
+`finished_at`, `duration_s`, `baseline`, `cost`, `files_count`,
 `commands_count`, `suggested_commit`) to match the rest of `stelow.json`
 schema (target_files, actual_files, start_sha, lock_ttl_seconds).
 
