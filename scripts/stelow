@@ -1416,6 +1416,11 @@ for artifact in artifacts:
 if invalid_paths: fail("artifact path must stay inside the project: " + ", ".join(invalid_paths))
 artifacts = registered
 CONTROL_FILES = {"state.md", "audit-trail.md", "invariants.json"}
+# Disposable Tier G drafts: worker-judged scratch, recorded via the draft
+# comment + thread output. Never deliverables, so the strict gate (and the
+# host's unregistered list) must not trip on them — a draft burst blocks
+# no completion.
+DISPOSABLE_DIRS = {"drafts", "lock"}
 def workflow_output(absolute):
     """A durable workflow output, excluding the CLI's own control files."""
     relative = os.path.relpath(os.path.realpath(absolute), os.path.realpath(statedir)).replace(os.sep, "/")
@@ -1423,7 +1428,7 @@ def workflow_output(absolute):
     return (
         os.path.isfile(absolute)
         and relative not in CONTROL_FILES
-        and first != "lock"
+        and first not in DISPOSABLE_DIRS
         and not any(part.startswith(".") for part in relative.split("/"))
     )
 def unregistered_outputs():

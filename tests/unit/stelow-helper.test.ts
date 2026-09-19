@@ -456,6 +456,16 @@ describe("audit-trail", () => {
     expect(run(wd, ["audit-trail", "check", "--strict"], env).status).toBe(0);
   });
 
+  // Disposable Tier G drafts are worker-judged scratch, not deliverables:
+  // the strict gate must not trip on them — a draft burst blocks no done.
+  it("--strict ignores disposable drafts/", () => {
+    const { stateDir, env } = setup();
+    mkdirSync(join(stateDir, "drafts"), { recursive: true });
+    writeFileSync(join(stateDir, "drafts", "draft-1.md"), "# Draft\n");
+    expect(run(wd, ["audit-trail", "build", "--strict"], env).status).toBe(0);
+    expect(run(wd, ["audit-trail", "check", "--strict"], env).status).toBe(0);
+  });
+
   it("--strict refuses unregistered non-Markdown output", () => {
     const { stateDir, env } = setup();
     writeFileSync(join(stateDir, "verification.json"), '{"passed":true}\n');
