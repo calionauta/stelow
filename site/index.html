@@ -10,8 +10,7 @@
 </head>
 <body>
 <header class="nav">
-  <a class="brand" href="#top" aria-label="Stelow home">
-    <img src="assets/stelow.png" alt="Stelow logo" width="40" height="28">
+  <a class="brand" href="#top" id="brandHome" aria-label="Stelow home">
     <span>stelow</span>
   </a>
   <nav class="links" aria-label="Primary">
@@ -55,7 +54,7 @@
       </div>
       <div class="hero-mascot">
         <p class="mascot-says" id="mascotSays" aria-hidden="true">boop me.</p>
-        <button id="mascot" type="button" aria-label="Boop the scout" style="--mascot-size: min(380px, 78vw)">
+        <button id="mascot" type="button" aria-label="Boop the scout" style="--mascot-size: min(320px, 70vw)">
           <span id="mascotSquash">
             <span id="mascotDirections" aria-hidden="true"></span>
             <span id="mascotReactions" aria-hidden="true"></span>
@@ -263,10 +262,6 @@
     </div>
   </section>
 
-  <!-- FINALE -->
-  <section class="section reveal finale">
-    <img src="assets/stelow.png" alt="Stelow — your product team" width="560" height="373" loading="lazy">
-  </section>
 </main>
 
 <footer>
@@ -297,6 +292,12 @@ document.querySelectorAll('.copy').forEach((b) => {
     const orig = b.textContent;
     b.textContent = 'Copied'; setTimeout(() => b.textContent = orig, 1400);
   });
+});
+// Brand click → true top (anchor #top sits under the sticky pill nav)
+document.getElementById('brandHome').addEventListener('click', function (e) {
+  e.preventDefault();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  history.replaceState(null, '', window.location.pathname);
 });
 // Reveal on scroll
 const io = new IntersectionObserver((entries) => {

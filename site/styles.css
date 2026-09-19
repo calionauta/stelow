@@ -12,7 +12,8 @@
   --shadow: 0 12px 40px rgba(29, 26, 22, 0.08);
 }
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; scroll-padding-top: 100px; }
+section[id] { scroll-margin-top: 96px; }
 body {
   margin: 0;
   background: var(--bg);
@@ -38,7 +39,6 @@ body {
   box-shadow: var(--shadow);
 }
 .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); font-weight: 800; font-size: 22px; letter-spacing: -0.02em; margin-right: 8px; }
-.brand img { border-radius: 8px; display: block; }
 .links { display: flex; align-items: center; gap: 2px; margin-left: auto; }
 .links a { color: var(--muted); text-decoration: none; font-weight: 600; padding: 8px 13px; border-radius: 999px; transition: background 0.15s ease, color 0.15s ease; white-space: nowrap; }
 .links a:hover { color: var(--ink); background: #efe5d2; }
@@ -63,7 +63,7 @@ body {
 .hero { padding: 56px 22px 30px; }
 .hero-grid {
   max-width: 1100px; margin: 0 auto;
-  display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 8px; align-items: start;
+  display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 32px; align-items: center;
 }
 .kicker {
   text-transform: uppercase; letter-spacing: 0.12em; font-size: 12.5px;
@@ -89,18 +89,45 @@ body {
 }
 .copy:hover { background: #26211b; }
 .proof { color: var(--muted); font-size: 14px; }
-.hero-mascot { position: relative; display: flex; justify-content: center; align-items: flex-start; min-width: 0; padding-top: 0; margin-left: -120px; transform: rotate(2.5deg); }
+.hero-mascot { position: relative; display: flex; justify-content: center; align-items: center; min-width: 0; padding-top: 12px; }
+/* grounding blob — ties the mascot to the page instead of floating */
+.hero-mascot::before {
+  content: '';
+  position: absolute;
+  bottom: 6%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(280px, 64vw);
+  height: 56px;
+  background: radial-gradient(ellipse at center, rgba(196, 85, 43, 0.14) 0%, rgba(196, 85, 43, 0.05) 55%, transparent 75%);
+  pointer-events: none;
+  z-index: 0;
+}
+.hero-mascot #mascot { position: relative; z-index: 1; }
 .mascot-says {
-  position: absolute; top: 2%; left: 50%; z-index: 2;
-  transform: translateX(-88%) rotate(-3deg);
+  position: absolute; top: -6px; left: 50%; z-index: 2;
+  transform: translateX(-62%) rotate(-3deg);
   background: var(--card); border: 1px solid var(--line);
   border-radius: 14px 14px 4px 14px;
   padding: 8px 14px; font-size: 14.5px; font-weight: 700; white-space: nowrap;
   box-shadow: var(--shadow); margin: 0;
   transition: opacity 0.3s ease;
 }
-.hero-mascot #mascot { filter: drop-shadow(0 22px 28px rgba(29, 26, 22, 0.18)); animation: drift 7s ease-in-out infinite; }
-@keyframes drift { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+/* speech tail — visually connects the bubble to the mascot */
+.mascot-says::after {
+  content: '';
+  position: absolute;
+  bottom: -7px;
+  right: 26px;
+  width: 12px;
+  height: 12px;
+  background: var(--card);
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  transform: rotate(45deg);
+}
+.hero-mascot #mascot { filter: drop-shadow(0 18px 22px rgba(29, 26, 22, 0.16)); animation: drift 7s ease-in-out infinite; }
+@keyframes drift { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 .two-col > *, .dials > *, .grid-3 > *, .hero-copy, .compare { min-width: 0; }
 #mascot {
   position: relative;
@@ -171,8 +198,6 @@ body {
 .curious-card p { color: #cfc6b8; margin: 0; max-width: 62ch; }
 .curious-card .btn.light { margin-left: auto; background: #f5efe4; color: #14110e; border-color: #f5efe4; }
 .fine { color: var(--muted); font-size: 14px; }
-.finale { text-align: center; padding-top: 8px; padding-bottom: 8px; }
-.finale img { width: min(560px, 86vw); height: auto; filter: drop-shadow(0 24px 44px rgba(29, 26, 22, 0.16)); }
 footer { border-top: 1px solid var(--line); padding: 22px; text-align: center; color: var(--muted); font-size: 14px; }
 footer a { color: var(--ink); }
 /* reveal */
@@ -184,7 +209,8 @@ footer a { color: var(--ink); }
   .strat-grid { grid-template-columns: 1fr; }
   .links { display: none; }
   .mascot-says { transform: translateX(-50%) rotate(-3deg); }
-  .hero-mascot { margin-left: 0; padding-top: 0; transform: none; }
+  .hero-mascot { padding-top: 8px; }
+  .hero-mascot::before { width: min(240px, 70vw); }
   .install-line { flex-wrap: wrap; }
   .install-line code { white-space: normal; overflow-wrap: anywhere; word-break: break-word; }
 }
