@@ -3,6 +3,28 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.65.0-alpha] - 2026-09-19
+
+### Added
+
+- **Parallel safety rails and scope measurement.** The actionable core of
+  the structured-parallel RFC, without narrowing existing capability:
+  cymbal transitive-disjointness check before parallel dispatch
+  (`target_files` intersection stays the fallback floor), parent-owned
+  test-gated merge (workers never negotiate merges), regression baseline
+  captured pre-change and compared at close-out as blocking gaps, and a
+  measurement mirror per scope (`started_at`, `finished_at`,
+  `duration_s`, `baseline`, host-reported `cost` — never estimated).
+  Worktree mode documented: isolation replaces locking, merge + test
+  gate stay. Reviewer-independence guidance in Verification.
+
+### Fixed
+
+- **`sync-scopes` refuses `blockedBy` cycles at ingest** (exit 1, names
+  the `a -> b -> a` path, no state written) and warns on dangling
+  references — a cycle used to stall execution silently with each scope
+  waiting on the other forever.
+
 ## [0.64.0-alpha] - 2026-09-18
 
 ### Added
