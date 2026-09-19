@@ -373,3 +373,15 @@ says otherwise in code. Layer the guarantee:
    audit for no new signal — the pre-implementation direction is
    chosen by proposal, the post-implementation reality is what needs
    checking.
+
+## 12. Automation rules (propose, never decide)
+
+Scheduled rules may draft work and notify — never start workers, move
+cards, merge, or import behind the user's back. Reference implementation:
+`bb-plugin-stelow` watches one GitHub label per project on a 5-minute
+schedule; each newly matching open issue becomes one unstarted Inbox draft
+carrying an origin marker ("Drafted from GitHub issue #X", source link),
+idempotent by `repo#number` so re-runs never duplicate. Rules never clear
+labels and never touch workflow state — every rule action is an inbox event
+or a reversible draft. Copy the shape: event + filter + draft/notify
+template, per-project settings, one fire record per source key.
