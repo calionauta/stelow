@@ -315,8 +315,13 @@ says otherwise in code. Layer the guarantee:
    becomes a deterministic failure when violated — a misclassified row
    must never pass silently. Escalations become rework scopes through a
    host-owned idempotent command (never by asking the worker to edit
-   tracking JSON), each scope linked to its gap; completion refuses
-   while escalations lack scopes or linked scopes stay open. Judgment
+   tracking JSON), each scope linked to its gap on the same card —
+   never new cards: a card with open gaps loops back through the
+   methodology's audit-rejects-to-execution transition, reworks,
+   re-critiques, and only then completes. Completion refuses
+   while escalations lack scopes or linked scopes stay open — done
+   means every gap has a disposition and every escalation is executed.
+   Judgment
    stays automatic with full transparency (counts, per-escalation
    scope status, trail record) rather than human-gated: gating
    completion on per-item human confirmation stalls autonomous runs,
