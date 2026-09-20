@@ -251,6 +251,13 @@ criteria:
     kind: semantic
     text: "Each methodology contributes distinct findings, not the same points relabeled"
 
+## When to Use & Test Cases
+
+Use for deep market analysis, competitive intelligence, or weekly intelligence briefs.
+
+Should activate: "PESTLE on the EV market", "Wardley map of our platform".
+Should NOT activate: "our sprint plan" (execution, not analysis).
+
 ## Examples
 
 ### Example: should we enter the AI meeting-notes space?

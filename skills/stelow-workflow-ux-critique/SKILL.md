@@ -250,6 +250,21 @@ criteria:
 
 ---
 
+## Edge Cases
+
+### Live URL unreachable
+- Fall back to codebase or screenshot mode; never invent the interface from the URL.
+
+### Screenshot without flow context
+- Mark unknown flows explicitly in state coverage; score only what is visible.
+
+## When to Use & Test Cases
+
+Use for heuristic and accessibility review of a live URL, codebase UI, or screenshot.
+
+Should activate: "audit this checkout flow", "accessibility pass on the pricing page".
+Should NOT activate: "redesign the page" (execution).
+
 ## Integration with Other Skills
 
 ### stelow-workflow-testing-execution (Phase 3)

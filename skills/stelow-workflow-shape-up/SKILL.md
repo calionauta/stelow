@@ -361,6 +361,25 @@ criteria:
     kind: semantic
     text: "IN/OUT trade-offs state what is sacrificed and why, per scope item"
 
+## When to Use & Test Cases
+
+Use when turning a request into a shaped proposal with IN/OUT scope and appetite.
+
+Should activate: "shape the checkout fix", "is this a Core or Complete build".
+Should NOT activate: "write the code" (execution), "break into sprint tasks" (use stelow-workflow-tech-planning instead).
+
+## Examples
+
+### Example 1: Shaping a Core fix
+
+**Input:** "Checkout fails on expired cards — shape it."
+
+**Steps:**
+1. Run recon on the checkout flow.
+2. Write problem, solution, IN/OUT scope, and risks.
+
+**Output:** An 800+ word proposal with appetite and guest checkout explicitly OUT.
+
 ## Related Skills
 
 - **stelow**: Coordinates this skill with other phases

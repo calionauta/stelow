@@ -127,6 +127,13 @@ criteria:
     kind: semantic
     text: "Moat names what competitors cannot copy, not openness itself"
 
+## When to Use & Test Cases
+
+Use when deciding whether to open-source, or designing moats around an open core.
+
+Should activate: "should we open-source the parser", "moat for an open-core product".
+Should NOT activate: "write the license text" (legal drafting, not strategy).
+
 ## Examples
 
 ### Example: devtool considering open-sourcing the core

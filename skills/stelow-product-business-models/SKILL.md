@@ -86,6 +86,13 @@ criteria:
     kind: semantic
     text: "Tweaks target the cost or revenue lever with the largest stated effect"
 
+## When to Use & Test Cases
+
+Use when brainstorming revenue models or cutting delivery costs.
+
+Should activate: "revenue models beyond subscription", "reduce onboarding cost".
+Should NOT activate: "price this tier" (use stelow-product-pricing instead).
+
 ## Examples
 
 ### Example: SaaS with crushing onboarding costs

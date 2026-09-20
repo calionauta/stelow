@@ -132,6 +132,13 @@ criteria:
     kind: semantic
     text: "Guardrails name observable tripwires, not intentions"
 
+## When to Use & Test Cases
+
+Use when picking a pricing metric, packaging tiers, or framing perceived value.
+
+Should activate: "usage metric with guardrails", "good-better-best packaging".
+Should NOT activate: "launch promo calendar" (use stelow-product-promotions instead).
+
 ## Examples
 
 ### Example: price a new analytics add-on

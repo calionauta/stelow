@@ -361,6 +361,13 @@ criteria:
     kind: semantic
     text: "Revisit trigger names an observable event, not a calendar date alone"
 
+## When to Use & Test Cases
+
+Use when the roadmap feels too rigid or teams optimize fixed outcomes prematurely.
+
+Should activate: "explore adjacent options before committing", "reframe this bet as optionality".
+Should NOT activate: "commit quarterly targets" (fixed planning, not exploration).
+
 ## Examples
 
 ### Example: platform team torn between two architectures

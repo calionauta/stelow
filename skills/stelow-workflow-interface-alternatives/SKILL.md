@@ -214,6 +214,33 @@ criteria:
     kind: semantic
     text: "Trade-Off sections recommend one direction with reasons, not lists of pros and cons"
 
+## When to Use & Test Cases
+
+Use when exploring interface directions before any code, or merging proposals into a hybrid.
+
+Should activate: "3 directions for onboarding UI", "hybrid from these proposals".
+Should NOT activate: "implement the chosen direction" (execution).
+
+## Examples
+
+### Example 1: Three onboarding directions
+
+**Input:** "Propose 3 interface directions for team onboarding."
+
+**Steps:**
+1. Generate 3 proposals with all 8 sections each.
+2. Build the hybrid from their strengths after all 3 complete.
+
+**Output:** 3 proposal files plus a hybrid recommendation.
+
+## Edge Cases
+
+### Appetite allows one proposal only
+- Generate exactly 1 proposal; skip the hybrid (nothing to combine).
+
+### No existing UI to review
+- Derive state coverage from the request alone; mark unmapped states explicitly instead of inventing screens.
+
 ## Related Skills
 
 - **stelow-workflow-shape-up**: Produces the shaped proposal that feeds this phase

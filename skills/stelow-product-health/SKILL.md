@@ -115,6 +115,13 @@ criteria:
     kind: semantic
     text: "Counterbalance signals genuinely oppose the success signals, not strawmen"
 
+## When to Use & Test Cases
+
+Use when defining health metrics with counterbalance signals, or checking a launch for side effects.
+
+Should activate: "success metrics plus what could go wrong", "side effects of this rollout".
+Should NOT activate: "implement the dashboard" (execution).
+
 ## Examples
 
 ### Example: engagement is up, support tickets doubled

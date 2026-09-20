@@ -218,6 +218,13 @@ criteria:
     kind: semantic
     text: "Scores reference the three benchmarks with the product's actual numbers"
 
+## When to Use & Test Cases
+
+Use when diagnosing trial conversion or designing a paywall + onboarding flow.
+
+Should activate: "trial-to-paid leaks here", "paywall screen order".
+Should NOT activate: "general pricing strategy" (use stelow-product-pricing instead).
+
 ## Examples
 
 ### Example 1: Diagnose a dropping paywall rate

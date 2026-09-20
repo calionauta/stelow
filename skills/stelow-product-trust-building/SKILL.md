@@ -85,6 +85,13 @@ criteria:
     kind: semantic
     text: "Guarantees cost the business something real if invoked"
 
+## When to Use & Test Cases
+
+Use when buyers hesitate and a guarantee could unblock the decision.
+
+Should activate: "guarantee for refund requests", "checkout trust signals".
+Should NOT activate: "write the ad copy" (generation, not trust design).
+
 ## Examples
 
 ### Example: users hesitate at the payment step

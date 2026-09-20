@@ -243,6 +243,13 @@ If the user input is too vague, ambiguous, or irrelevant, output:
   - The context in which the problem occurs.
   - The desired outcome or goal to be achieved.
 
+## When to Use & Test Cases
+
+Use when exploring what to build or prioritizing bets across opportunities.
+
+Should activate: "what should we build next quarter", "rank these three bets".
+Should NOT activate: "write the spec" (use stelow-workflow-shape-up instead).
+
 ## Examples
 
 ### Example: where to focus after a flat quarter

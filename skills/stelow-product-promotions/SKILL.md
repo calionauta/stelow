@@ -109,6 +109,13 @@ criteria:
     kind: semantic
     text: "Rollback prices are enforceable mechanics, not decorative urgency"
 
+## When to Use & Test Cases
+
+Use when planning launch offers with caps and rollback mechanics.
+
+Should activate: "gift card sale mechanics", "loss leader for launch week".
+Should NOT activate: "brand awareness ads" (use stelow-product-ads instead).
+
 ## Examples
 
 ### Example: launch week for a course

@@ -103,6 +103,13 @@ criteria:
     kind: semantic
     text: "Each channel maps to the stage its audience actually sits in, with reasons"
 
+## When to Use & Test Cases
+
+Use when planning ad spend by audience awareness stage.
+
+Should activate: "plan ads for contemplation-stage users", "which ad category fits the action stage".
+Should NOT activate: "write the ad copy" (generation, not strategy), "set our prices" (use stelow-product-pricing instead).
+
 ## Examples
 
 ### Example: launch ads for a new B2B scheduling tool

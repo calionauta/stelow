@@ -85,6 +85,13 @@ criteria:
     kind: semantic
     text: "Tactics reference the stated market context, not generic playbook advice"
 
+## When to Use & Test Cases
+
+Use when kickstarting supply/demand or balancing both sides of a marketplace.
+
+Should activate: "get the harder side first", "urgency tactics for listings".
+Should NOT activate: "B2B SaaS tier pricing" (use stelow-product-pricing instead).
+
 ## Examples
 
 ### Example: tutors won't join the tutoring marketplace

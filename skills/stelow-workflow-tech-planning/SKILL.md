@@ -336,6 +336,33 @@ For test-* scopes, the execution includes hard blocks:
 
 See the `stelow-workflow-testing-ai-code` skill
 
+## When to Use & Test Cases
+
+Use when breaking an approved spec into typed, ordered scopes with Done Criteria.
+
+Should activate: "scope this spec with spikes first", "task tables for the plan".
+Should NOT activate: "review this plan for gaps" (use stelow-workflow-plan-critique instead).
+
+## Examples
+
+### Example 1: Plan from an approved spec
+
+**Input:** "spec-product.md approved — plan it."
+
+**Steps:**
+1. Extract scopes with types (feature, spike, test-*).
+2. Order with spikes first; emit task tables with a Done Criterion per task.
+
+**Output:** spec-tech.md with typed, dependency-ordered scopes.
+
+## Edge Cases
+
+### No approved spec
+- Refuse planning without spec-product.md; point at shape-up instead of guessing scope.
+
+### Single-scope change
+- One scope still gets a type and a Done Criterion — small plans skip sequencing prose, never the table.
+
 ## Related Skills
 
 - **stelow-workflow-shape-up**: Produces the shaped proposal

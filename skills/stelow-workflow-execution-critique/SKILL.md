@@ -371,6 +371,13 @@ criteria:
 
 ---
 
+## When to Use & Test Cases
+
+Use to verify scope completion and surface gaps after implementation.
+
+Should activate: "did this build complete its scopes", "gap registry for the audit".
+Should NOT activate: "run the build" (execution).
+
 ## Related Skills
 
 - **stelow**: Coordinates this skill as the `audit` stage

@@ -342,6 +342,21 @@ criteria:
 
 ---
 
+## Edge Cases
+
+### No plan document
+- Refuse without a spec-product.md path; a prompt is not a plan.
+
+### Thin plan under 200 words
+- Critique what exists but flag thinness first — gaps in a stub are noise.
+
+## When to Use & Test Cases
+
+Use when a plan needs gap, risk, and assumption review before approval.
+
+Should activate: "gaps in this tech plan", "risks before we approve".
+Should NOT activate: "write the plan" (use stelow-workflow-shape-up or stelow-workflow-tech-planning instead).
+
 ## Integration with other skills
 
 ### stelow (`critique` stage)

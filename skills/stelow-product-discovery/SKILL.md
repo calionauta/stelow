@@ -142,6 +142,13 @@ criteria:
     kind: semantic
     text: "Thresholds are falsifiable numbers or events, not vague aspirations"
 
+## When to Use & Test Cases
+
+Use when validating an idea or finding early adopters with short learning cycles.
+
+Should activate: "validate this idea fast", "find early adopters for an MVP".
+Should NOT activate: "write the launch post" (generation), "build the MVP" (execution).
+
 ## Examples
 
 ### Example: validate a meal-planning app idea in two weeks

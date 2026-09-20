@@ -206,6 +206,13 @@ These prompts are the result of years of experimentation and refinement, documen
 
 The prompts in this skill represent a curated, production-ready selection of the most effective JTBD analyses developed through extensive real-world application.
 
+## When to Use & Test Cases
+
+Use when segmenting markets by context or mapping jobs to be done — never demographics.
+
+Should activate: "segment this market by situation", "map the jobs for expense approvals".
+Should NOT activate: "personas by age and income" (explicitly out of scope).
+
 ## Examples
 
 ### Example: why users hire a note app

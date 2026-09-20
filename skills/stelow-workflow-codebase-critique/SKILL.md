@@ -190,6 +190,21 @@ criteria:
 
 ---
 
+## Edge Cases
+
+### Non-code directory
+- Refuse with the fix (point at a source root); never review a docs-only tree as code.
+
+### Monorepo with several stacks
+- One report per detected stack; shared findings cross-link instead of duplicating.
+
+## When to Use & Test Cases
+
+Use for structural review of a codebase: coupling, hotspots, maintenance risk.
+
+Should activate: "where is the coupling in this repo", "structural risks before refactor".
+Should NOT activate: "fix the flagged hotspot" (execution).
+
 ## Integration with Other Skills
 
 ### stelow-workflow-scope-executor
