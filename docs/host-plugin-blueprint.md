@@ -294,7 +294,7 @@ encode the rules above as tested pure functions: `worker-action-policy`,
 `preview-session`, `preview-runtime`, `audit-receipt`,
 `audit-trail-contract`, `audit-verification`, `vcs-publication`,
 `workspace-recovery`, `workflow-config`, `remote-url`, `reliable-preset`,
-`preset-staleness`, `decision-api`, `decision-points`. Mirror the pattern (pure `lib/` +
+`preset-staleness`, `decision-api`, `decision-points`, `skill-criteria`. Mirror the pattern (pure `lib/` +
 node-test per rule, never inline-only in handlers) rather than the code.
 
 ## 9. Anti-patterns (each paid for at least once)
@@ -449,6 +449,19 @@ says otherwise in code. Layer the guarantee:
    audit for no new signal — the pre-implementation direction is
    chosen by proposal, the post-implementation reality is what needs
    checking.
+
+9. **Mirror Completeness contracts as structured criteria for the checks
+   code cannot do.** Count/shape minima stay deterministic (layers 1–2
+   above). For semantic minima ("grounded in context", statement rules,
+   trade-off quality), each playbook carries a fenced `criteria:` block
+   beside its prose contract — `{id, kind, text}` with kinds `presence`
+   | `count` | `semantic`. The host parses the blocks (`skill-criteria`
+   pattern), routes deterministic kinds to the existing validators, and
+   translates each semantic criterion into one atomic Score question
+   against the artifact (one call per criterion, never batched; low
+   confidence abstains). Semantic findings start advisory with quoted
+   evidence, promoted to blocking only after a golden set shows measured
+   per-criterion agreement — never on launch day.
 
 ## 12. Automation rules (propose, never decide)
 

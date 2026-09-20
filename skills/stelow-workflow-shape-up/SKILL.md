@@ -341,6 +341,26 @@ YAML frontmatter with `appetite:` and `product_type:`; all four structure
 sections (unanswered questions, alternatives, proposal with problem/solution/
 dangers/out-of-scope, OUT/IN Scope Table); at least 800 words.
 
+criteria:
+  - id: frontmatter
+    kind: presence
+    text: "YAML frontmatter carries appetite and product_type"
+  - id: structure-sections
+    kind: count
+    text: "All four structure sections present (unanswered questions, alternatives, proposal, OUT/IN Scope Table)"
+  - id: scope-table
+    kind: presence
+    text: "OUT/IN Scope Table with IN and OUT columns"
+  - id: word-count
+    kind: count
+    text: "At least 800 words"
+  - id: dangers-quality
+    kind: semantic
+    text: "Dangers name concrete failure modes with triggers, not generic risks"
+  - id: tradeoff-quality
+    kind: semantic
+    text: "IN/OUT trade-offs state what is sacrificed and why, per scope item"
+
 ## Related Skills
 
 - **stelow**: Coordinates this skill with other phases

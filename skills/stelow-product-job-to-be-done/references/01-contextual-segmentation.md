@@ -77,4 +77,21 @@ Template and fields for result:
 Completeness contract (the host validates these counts — never submit fewer):
 - 20 initial candidate segments, then a maximum of 10 final segments.
 - Every final segment has all five fields: Market, Justification, Situational factors, 3 Desired Outcomes, 3 Constraints.
+
+criteria:
+  - id: candidate-count
+    kind: count
+    text: "20 initial candidate segments listed"
+  - id: final-count
+    kind: count
+    text: "At most 10 final segments"
+  - id: segment-fields
+    kind: presence
+    text: "Every final segment carries all five fields (Market, Justification, Situational factors, 3 Desired Outcomes, 3 Constraints)"
+  - id: segment-specificity
+    kind: semantic
+    text: "Segments name concrete situations and actors, not generic demographics"
+  - id: outcome-quality
+    kind: semantic
+    text: "Desired Outcomes state measurable end states, not activities"
 ```
