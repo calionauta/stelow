@@ -63,7 +63,7 @@ This package brings product methodology to AI coding agents. Instead of open-end
 - [External Dependencies](#external-dependencies)
 - [🎮 Commands](#-commands)
 - [🧰 stelow CLI (`scripts/stelow`)](#-stelow-cliscriptsstelow)
-- [🛠️ Host Installation Guide](#️-host-installation-guide)
+- [🛠️ Installation Guide](#-installation-guide)
 - [🗂️ Visual Board and Inbox](#️-visual-board-and-inbox)
 - [🌐 Host Support](#-host-support)
 - [📁 Artifact Directory](#-artifact-directory)

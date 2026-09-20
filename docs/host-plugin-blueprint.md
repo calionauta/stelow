@@ -190,6 +190,12 @@ X ago" + inventory dialog) — silent syncs become mystery meat otherwise.
   fresh-state revalidation; inbox pings only on exhaustion).
   Deterministic failures fail fast — backoff never fixes the same input
   failing twice.
+- **Let models veto, never act, where a heuristic owns the decision.**
+  When deterministic rules already decide (e.g. idle resume on fresh
+  output within budget), a model judgment may only cancel a cleared
+  action on confident contrary evidence — it must never authorize one
+  the rules refused, spend budget, or write state. Every fallback keeps
+  the heuristic standing; vetoes leave a log trail with the verdict.
 - **Workers write conventional commits on repos that release from them**
   (detect release automation from repo markers; freeform elsewhere,
   never empty/`wip`).
@@ -472,6 +478,13 @@ says otherwise in code. Layer the guarantee:
    confidence abstains). Semantic findings start advisory with quoted
    evidence, promoted to blocking only after a golden set shows measured
    per-criterion agreement — never on launch day.
+10. **Calibrate judges with golden sets before enforcing.** Humans label
+    artifacts met/unmet per criterion; the judge scores the same files;
+    Cohen's kappa per criterion decides keep (≥0.6), repair, or drop —
+    under 5 labels always repairs, abstentions never enter kappa.
+    Recalibrate when criteria text, judge model, or thresholds change;
+    a drifted criterion fails kappa and gets quarantined, not argued
+    with.
 
 ## 12. Automation rules (propose, never decide)
 
