@@ -263,6 +263,13 @@ X ago" + inventory dialog) — silent syncs become mystery meat otherwise.
   scheduler, the RPCs (each refusal names the variable), and the panel
   entry — evolving, refactoring, or switching a feature off never touches
   the core.
+- **Route fuzzy judgments through decision routers, not prompts**: one
+  Jev-compatible endpoint (endpoint + key + model) configured once; each
+  judgment is a registry entry with modes (built-in rules vs API) and a
+  confidence floor. Unconfigured means built-in rules; failures degrade,
+  never block; the key never leaves the host (reads report presence only);
+  an explicit probe is the only on-demand spend. Seeds are advisory —
+  whatever the router suggests, the worker re-settles it in its own stage.
 - **Static assets**: if the host bundler has no image loader, serve brand
   marks as data URIs over RPC — never runtime relative URLs (they 404 on
   managed installs).
@@ -282,7 +289,8 @@ encode the rules above as tested pure functions: `worker-action-policy`,
 `promote-card`, `workflow-lineage`, `completion`, `card-claims`, `playbook`,
 `preview-session`, `preview-runtime`, `audit-receipt`,
 `audit-trail-contract`, `audit-verification`, `vcs-publication`,
-`workspace-recovery`, `workflow-config`, `remote-url`. Mirror the pattern (pure `lib/` +
+`workspace-recovery`, `workflow-config`, `remote-url`, `reliable-preset`,
+`preset-staleness`, `decision-api`, `decision-points`. Mirror the pattern (pure `lib/` +
 node-test per rule, never inline-only in handlers) rather than the code.
 
 ## 9. Anti-patterns (each paid for at least once)
@@ -414,8 +422,10 @@ says otherwise in code. Layer the guarantee:
    `git add -A` can never sweep live runs into history — only the
    exported bundle is committed.
 8. **Route delegated work by capability, not by stage.** Subagent tiers:
-   Reliable (the band preset, tools/web/exact shapes/multi-step) needs
-   no configuration; Generation (a cheap preset for disposable
+   Reliable runs on the band preset (tools/web/exact shapes/multi-step)
+   unless a board-level override is set — empty means the band preset, and
+   every live worker re-evaluates restart-pending when it changes;
+   Generation (a cheap preset for disposable
    text-only bursts the worker judges 100% before using) is one board
    default with a board → band cascade (a card-level pin is reserved
    in the resolver, unwired — no per-card UI today). The tier rides the spawn
