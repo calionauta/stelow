@@ -131,6 +131,17 @@ The host validates these minima — never submit fewer:
 - Experiment plan with success/abort thresholds and the next step either way.
 - At least 600 words and 3 headings.
 
+criteria:
+  - id: experiment-plan
+    kind: presence
+    text: "Experiment plan states success/abort thresholds and the next step either way"
+  - id: word-count
+    kind: count
+    text: "At least 600 words and 3 headings"
+  - id: threshold-falsifiability
+    kind: semantic
+    text: "Thresholds are falsifiable numbers or events, not vague aspirations"
+
 ## Examples
 
 ### Example: validate a meal-planning app idea in two weeks

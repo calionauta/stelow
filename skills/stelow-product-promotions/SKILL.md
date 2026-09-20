@@ -98,6 +98,17 @@ The host validates these minima — never submit fewer:
 - Dated promotion calendar; every offer carries its cap and rollback price.
 - At least 600 words and 3 headings.
 
+criteria:
+  - id: calendar-parts
+    kind: presence
+    text: "Dated calendar; every offer carries its cap and rollback price"
+  - id: word-count
+    kind: count
+    text: "At least 600 words and 3 headings"
+  - id: rollback-credibility
+    kind: semantic
+    text: "Rollback prices are enforceable mechanics, not decorative urgency"
+
 ## Examples
 
 ### Example: launch week for a course

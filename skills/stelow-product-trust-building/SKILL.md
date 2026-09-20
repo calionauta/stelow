@@ -74,6 +74,17 @@ The host validates these minima — never submit fewer:
 - Fear → guarantee mapping with placement and wording.
 - At least 500 words and 3 headings.
 
+criteria:
+  - id: mapping-parts
+    kind: presence
+    text: "Fear-to-guarantee mapping with placement and wording"
+  - id: word-count
+    kind: count
+    text: "At least 500 words and 3 headings"
+  - id: guarantee-costliness
+    kind: semantic
+    text: "Guarantees cost the business something real if invoked"
+
 ## Examples
 
 ### Example: users hesitate at the payment step

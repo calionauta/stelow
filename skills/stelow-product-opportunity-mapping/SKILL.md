@@ -215,6 +215,23 @@ The host validates these minima — never submit fewer:
 - Every solution states Time Appetite (2, 4, or 6 weeks), scope with IN/OUT trade-offs, strategy, value areas, and assumptions.
 - At least 1200 words.
 
+criteria:
+  - id: ranked-opportunities
+    kind: count
+    text: "Index plus at least 3 ranked opportunity sections with medals"
+  - id: solution-density
+    kind: count
+    text: "At least 4 solution subsections per opportunity"
+  - id: solution-fields
+    kind: presence
+    text: "Every solution states Time Appetite, IN/OUT scope, strategy, value areas, assumptions"
+  - id: word-count
+    kind: count
+    text: "At least 1200 words"
+  - id: ranking-justification
+    kind: semantic
+    text: "Rank order follows stated evidence, not assertion"
+
 ## Error Handling
 
 If the user input is too vague, ambiguous, or irrelevant, output:

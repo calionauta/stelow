@@ -104,6 +104,17 @@ The host validates these minima — never submit fewer:
 - Tension board with verdict plus the metric to watch next.
 - At least 500 words and 3 headings.
 
+criteria:
+  - id: tension-board
+    kind: presence
+    text: "Tension board with verdict plus the metric to watch next"
+  - id: word-count
+    kind: count
+    text: "At least 500 words and 3 headings"
+  - id: tension-genuineness
+    kind: semantic
+    text: "Counterbalance signals genuinely oppose the success signals, not strawmen"
+
 ## Examples
 
 ### Example: engagement is up, support tickets doubled

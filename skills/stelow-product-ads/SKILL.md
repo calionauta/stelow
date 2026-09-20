@@ -89,6 +89,20 @@ The host validates these minima — never submit fewer:
 - Kill criteria per channel.
 - At least 500 words and 5 headings.
 
+criteria:
+  - id: stages-coverage
+    kind: count
+    text: "Channel plan covers all 5 awareness stages"
+  - id: kill-criteria
+    kind: presence
+    text: "Kill criteria stated per channel"
+  - id: word-count
+    kind: count
+    text: "At least 500 words and 5 headings"
+  - id: stage-fit
+    kind: semantic
+    text: "Each channel maps to the stage its audience actually sits in, with reasons"
+
 ## Examples
 
 ### Example: launch ads for a new B2B scheduling tool

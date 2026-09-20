@@ -203,6 +203,17 @@ all 8 numbered sections per `references/output-format.md` (Work Pattern,
 Philosophy, Breadboarding, ASCII sketch, Interaction Flow, Trade-Off,
 Smell Audit, State Coverage Table); at least 800 words.
 
+criteria:
+  - id: proposal-sections
+    kind: count
+    text: "All 8 numbered sections per proposal per output-format"
+  - id: word-count
+    kind: count
+    text: "At least 800 words"
+  - id: tradeoff-decisiveness
+    kind: semantic
+    text: "Trade-Off sections recommend one direction with reasons, not lists of pros and cons"
+
 ## Related Skills
 
 - **stelow-workflow-shape-up**: Produces the shaped proposal that feeds this phase

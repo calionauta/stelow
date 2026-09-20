@@ -72,6 +72,20 @@ The host validates these minima — never submit fewer:
 - Cost and revenue implications plus the experiment that tests each tweak.
 - At least 600 words and 3 headings.
 
+criteria:
+  - id: tweak-count
+    kind: count
+    text: "2–3 model tweaks (not pricing changes)"
+  - id: cost-math
+    kind: presence
+    text: "Each tweak carries cost math plus the experiment that tests it"
+  - id: word-count
+    kind: count
+    text: "At least 600 words and 3 headings"
+  - id: tweak-leverage
+    kind: semantic
+    text: "Tweaks target the cost or revenue lever with the largest stated effect"
+
 ## Examples
 
 ### Example: SaaS with crushing onboarding costs

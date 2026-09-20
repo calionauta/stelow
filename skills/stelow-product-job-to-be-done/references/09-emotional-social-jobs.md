@@ -58,4 +58,15 @@ Process:
 Completeness contract (the host validates these counts — never submit fewer):
 - Both sections present: Emotional Jobs and Social Jobs.
 - At least 5 Emotional Jobs and at least 5 Social Jobs, each a full statement following the statement rules (no opposing pairs for the same outcome).
+
+criteria:
+  - id: section-presence
+    kind: count
+    text: "Both sections present (Emotional Jobs, Social Jobs)"
+  - id: job-counts
+    kind: count
+    text: "5+ Emotional Jobs and 5+ Social Jobs as full statements"
+  - id: no-opposing-pairs
+    kind: semantic
+    text: "No opposing pairs claim the same outcome; statements follow the statement rules"
 ```

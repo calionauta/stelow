@@ -116,6 +116,17 @@ The host validates these minima — never submit fewer:
 - Openness thesis, moat design, and experiment scope.
 - At least 600 words and 3 headings.
 
+criteria:
+  - id: thesis-parts
+    kind: presence
+    text: "Openness thesis, moat design, and experiment scope all present"
+  - id: word-count
+    kind: count
+    text: "At least 600 words and 3 headings"
+  - id: moat-concreteness
+    kind: semantic
+    text: "Moat names what competitors cannot copy, not openness itself"
+
 ## Examples
 
 ### Example: devtool considering open-sourcing the core

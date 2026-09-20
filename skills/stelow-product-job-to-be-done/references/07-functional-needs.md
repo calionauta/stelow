@@ -136,4 +136,18 @@ Completeness contract (the host validates these counts — never submit fewer):
 - A ## Top 10 section with exactly 10 criteria (#### 1/10 … 10/10 headings).
 - Every criterion carries all five fields: Alternative, Justification, Score, Metrics, Current solutions.
 - A ## Summary of Success Criteria table with 10 data rows (Success Criterion + Alternative).
+
+criteria:
+  - id: top10-count
+    kind: count
+    text: "Top 10 section with exactly 10 criteria headings"
+  - id: criterion-fields
+    kind: presence
+    text: "Every criterion carries Alternative, Justification, Score, Metrics, Current solutions"
+  - id: summary-rows
+    kind: count
+    text: "Summary table holds 10 data rows"
+  - id: metric-measurability
+    kind: semantic
+    text: "Metrics name observable measurements, not aspirations"
 ```

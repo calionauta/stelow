@@ -326,6 +326,20 @@ description/recommendation) and `verdict:`; all five body sections per
 `references/output-format.md` (Executive Summary, Critical, Important,
 Minor, Strengths); at least 600 words.
 
+criteria:
+  - id: frontmatter
+    kind: presence
+    text: "YAML frontmatter carries gaps (severity/tag/title/description/recommendation) and verdict"
+  - id: body-sections
+    kind: count
+    text: "All five body sections present per output-format"
+  - id: word-count
+    kind: count
+    text: "At least 600 words"
+  - id: recommendation-concreteness
+    kind: semantic
+    text: "Recommendations name the change and where, not 'consider improving'"
+
 ---
 
 ## Integration with other skills

@@ -75,5 +75,16 @@ Completeness contract (the host validates these counts — never submit fewer):
 - Every style carries the 3-row Element table (Thought, Emotion, Personal Rule) with Voice example and Source & status, plus: 1-line description, Context, Differentiation/Solution Adaptation, Top 3 Functional Jobs, Top 2 Emotional Jobs, Top 2 Social Jobs.
 - A closing justification of why these five styles were chosen.
 
+criteria:
+  - id: style-count
+    kind: count
+    text: "Exactly 5 thinking styles under their own headings"
+  - id: style-fields
+    kind: presence
+    text: "Every style carries the Element table, Voice example, Source & status, description, Context, adaptations, Top 3/2/2 jobs"
+  - id: style-distinctness
+    kind: semantic
+    text: "Styles describe incompatible ways of thinking, not the same person relabeled"
+
 Respond without introduction.
 ```

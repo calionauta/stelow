@@ -219,6 +219,20 @@ YAML frontmatter (`version:`, `product_type:`); Tech Stack, Coverage and
 Risk Targets table, Test Scopes table, CI/CD Gates, Anti-Patterns; at
 least 600 words.
 
+criteria:
+  - id: frontmatter
+    kind: presence
+    text: "YAML frontmatter carries version and product_type"
+  - id: strategy-tables
+    kind: presence
+    text: "Coverage and Risk Targets table, Test Scopes table, CI/CD Gates, Anti-Patterns"
+  - id: word-count
+    kind: count
+    text: "At least 600 words"
+  - id: gate-enforceability
+    kind: semantic
+    text: "CI/CD gates name blocking conditions, not advisory wishes"
+
 ---
 
 ## Examples

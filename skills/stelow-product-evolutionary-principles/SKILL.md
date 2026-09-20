@@ -350,6 +350,17 @@ The host validates these minima — never submit fewer:
 - Decision framed as optionality preserved, with a revisit trigger.
 - At least 600 words and 3 headings.
 
+criteria:
+  - id: optionality-frame
+    kind: presence
+    text: "Decision framed as optionality preserved, with a revisit trigger"
+  - id: word-count
+    kind: count
+    text: "At least 600 words and 3 headings"
+  - id: reversibility-quality
+    kind: semantic
+    text: "Revisit trigger names an observable event, not a calendar date alone"
+
 ## Examples
 
 ### Example: platform team torn between two architectures

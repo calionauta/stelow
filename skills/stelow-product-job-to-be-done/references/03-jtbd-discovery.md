@@ -86,4 +86,15 @@ PROCESS:
 Completeness contract (the host validates these counts — never submit fewer):
 - All three sections present: Rewritten JTBDs, Contextual JTBDs, Higher functional JTBDs.
 - Contextual JTBDs holds exactly 20 jobs meeting the Specific Rules; Rewritten and Higher hold at least 1 job each.
+
+criteria:
+  - id: section-presence
+    kind: count
+    text: "All three sections present (Rewritten, Contextual, Higher)"
+  - id: contextual-count
+    kind: count
+    text: "Contextual JTBDs holds exactly 20 jobs"
+  - id: rules-compliance
+    kind: semantic
+    text: "Jobs follow the Specific Rules (situational, outcome-measurable, actor-named)"
 ```

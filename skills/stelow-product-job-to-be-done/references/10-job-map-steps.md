@@ -71,4 +71,15 @@ Rules:
 Completeness contract (the host validates these counts — never submit fewer):
 - All 6 stages present, each under its own # heading: Define and Plan, Prepare and Execute, Evaluate and Adjust, Conclude and Organize, Document and Share, Monitor subsequent effects.
 - Every stage holds at least 2 steps (### headings with brief explanations).
+
+criteria:
+  - id: stage-count
+    kind: count
+    text: "All 6 stages present under their own headings"
+  - id: step-density
+    kind: count
+    text: "Every stage holds 2+ steps with brief explanations"
+  - id: step-actionability
+    kind: semantic
+    text: "Steps name who does what, not phase restatements"
 ```

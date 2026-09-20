@@ -104,4 +104,18 @@ Completeness contract (the host validates these counts — never submit fewer):
 - A ## 30 Raw Success Criteria section with 30 bulleted statements.
 - A ## Top 20 section with exactly 20 detailed criteria (#### 1/20 … 20/20 headings).
 - Every Top 20 criterion carries all five fields: Alternative, Justification, Score, Metrics, Current solutions.
+
+criteria:
+  - id: raw-count
+    kind: count
+    text: "30 Raw Success Criteria bulleted statements"
+  - id: top20-count
+    kind: count
+    text: "Top 20 section with exactly 20 detailed criteria"
+  - id: criterion-fields
+    kind: presence
+    text: "Every Top 20 criterion carries the five fields"
+  - id: financial-quantification
+    kind: semantic
+    text: "Criteria quantify money, time, or risk — not comfort words"
 ```

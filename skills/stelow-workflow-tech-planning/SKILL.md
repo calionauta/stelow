@@ -275,6 +275,20 @@ Product Context, Identified Scopes, High-Level Sequence, and Detailed
 Sequence per scope with the task table (`#`, Task, Done Criterion, Order
 Rationale) per `references/tech-output.md`; at least 800 words.
 
+criteria:
+  - id: plan-sections
+    kind: presence
+    text: "Product Context, Identified Scopes, High-Level Sequence, Detailed Sequence per scope"
+  - id: task-table
+    kind: presence
+    text: "Task table with #, Task, Done Criterion, Order Rationale columns"
+  - id: word-count
+    kind: count
+    text: "At least 800 words"
+  - id: done-criterion-testability
+    kind: semantic
+    text: "Done Criteria state observable outcomes, not activity completion"
+
 ## After Tech Planning — EXECUTE AUTOMATICALLY
 
 **DO NOT ask user what to do next. Execution is automatic.**

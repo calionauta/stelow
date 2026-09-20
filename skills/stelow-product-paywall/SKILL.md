@@ -207,6 +207,17 @@ The host validates these minima — never submit fewer (one mode per run):
 - Mode B (design): screen anatomy, paywall options, trial policy, and build order.
 - At least 600 words and 3 headings.
 
+criteria:
+  - id: mode-parts
+    kind: presence
+    text: "Mode A carries funnel data, benchmark scores, verdict + fix plan; Mode B carries anatomy, options, trial policy, build order"
+  - id: word-count
+    kind: count
+    text: "At least 600 words and 3 headings"
+  - id: benchmark-grounding
+    kind: semantic
+    text: "Scores reference the three benchmarks with the product's actual numbers"
+
 ## Examples
 
 ### Example 1: Diagnose a dropping paywall rate

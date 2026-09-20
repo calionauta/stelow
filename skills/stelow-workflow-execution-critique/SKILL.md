@@ -281,6 +281,17 @@ Completeness contract (the host validates these minima — never submit fewer):
 Summary table plus all 8 numbered evaluation criteria, Gap Registry table,
 Lessons Learned, and Decision; at least 800 words.
 
+criteria:
+  - id: report-parts
+    kind: presence
+    text: "Summary table, 8 numbered criteria, Gap Registry table, Lessons Learned, Decision"
+  - id: word-count
+    kind: count
+    text: "At least 800 words"
+  - id: gap-actionability
+    kind: semantic
+    text: "Gap Registry rows name owner and next action, not observations alone"
+
 ```markdown
 # Execution Critique Report
 

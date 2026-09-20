@@ -58,4 +58,15 @@ Use this structured output:
 Completeness contract (the host validates these counts — never submit fewer):
 - All four sections present: Direct, Indirect, Hidden Competitors, Key Insights.
 - Each competitor section names at least 3 examples with brief descriptions; Key Insights holds at least 3 takeaways.
+
+criteria:
+  - id: section-presence
+    kind: count
+    text: "All four sections present (Direct, Indirect, Hidden, Key Insights)"
+  - id: example-density
+    kind: count
+    text: "Each competitor section names 3+ examples; Key Insights holds 3+ takeaways"
+  - id: hidden-genuineness
+    kind: semantic
+    text: "Hidden competitors are non-obvious substitutes, not market leaders restated"
 ```

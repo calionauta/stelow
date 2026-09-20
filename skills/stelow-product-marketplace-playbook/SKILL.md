@@ -71,6 +71,20 @@ The host validates these minima — never submit fewer:
 - 2–3 tactics ordered by effort, each with the side-constraint it removes, grounded in the market context.
 - At least 600 words and 3 headings.
 
+criteria:
+  - id: tactic-count
+    kind: count
+    text: "2–3 tactics ordered by effort"
+  - id: side-constraints
+    kind: presence
+    text: "Each tactic names the side-constraint it removes"
+  - id: word-count
+    kind: count
+    text: "At least 600 words and 3 headings"
+  - id: grounding-quality
+    kind: semantic
+    text: "Tactics reference the stated market context, not generic playbook advice"
+
 ## Examples
 
 ### Example: tutors won't join the tutoring marketplace

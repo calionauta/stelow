@@ -111,4 +111,15 @@ Follow this output format, replacing the placeholders [] and {}, and translating
 Completeness contract (the host validates these counts — never submit fewer):
 - All 12 roles present, each under its own ## heading with at least one named actor plus market definition: Beneficiary, Performer, Provider, Indirect Beneficiary, Threatened, Assistant, Decision Maker, Purchaser, Buyer, Supervisor, Influencer, Expert.
 - Roles that ask for "top 3" list 3 entries; Beneficiary and Performer list 1–3.
+
+criteria:
+  - id: role-count
+    kind: count
+    text: "All 12 roles present under their own headings with a named actor each"
+  - id: entry-counts
+    kind: count
+    text: "Top-3 roles list 3 entries; Beneficiary and Performer list 1–3"
+  - id: actor-concreteness
+    kind: semantic
+    text: "Actors are named roles in real organizations, not abstract personas"
 ```

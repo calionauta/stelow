@@ -121,6 +121,17 @@ The host validates these minima — never submit fewer:
 - Metric recommendation with guardrails and perception framing.
 - At least 600 words and 3 headings.
 
+criteria:
+  - id: metric-parts
+    kind: presence
+    text: "Metric recommendation with guardrails and perception framing"
+  - id: word-count
+    kind: count
+    text: "At least 600 words and 3 headings"
+  - id: guardrail-enforceability
+    kind: semantic
+    text: "Guardrails name observable tripwires, not intentions"
+
 ## Examples
 
 ### Example: price a new analytics add-on

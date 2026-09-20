@@ -237,6 +237,17 @@ Completeness contract (the host validates these minima — never submit fewer):
 all five body sections per `references/output-format.md` (Executive Summary,
 Critical, Important, Minor, Strengths); at least 600 words.
 
+criteria:
+  - id: body-sections
+    kind: count
+    text: "All five body sections present per output-format"
+  - id: word-count
+    kind: count
+    text: "At least 600 words"
+  - id: finding-specificity
+    kind: semantic
+    text: "Critical findings name the screen, element, and violated heuristic"
+
 ---
 
 ## Integration with Other Skills

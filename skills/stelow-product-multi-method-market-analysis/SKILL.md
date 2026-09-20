@@ -240,6 +240,17 @@ The host validates these minima — never submit fewer (one variant per run):
 - Variant 1 (General Deep Analysis): all three time horizons (Recent Past, Current Trends, Future Predictions) each covered through all four methodologies (PESTLE, Foresight, Delphi, Wardley); at least 800 words and 6 headings.
 - Variant 2 (Weekly Intelligence Canvas): all 7 numbered sections plus Sources & Links, one Mermaid flow, one ASCII Wardley map, and at least 3 table rows; at least 500 words.
 
+criteria:
+  - id: variant1-coverage
+    kind: count
+    text: "Variant 1 covers 3 horizons × 4 methodologies with 800 words and 6 headings"
+  - id: variant2-parts
+    kind: presence
+    text: "Variant 2 carries 7 sections, Sources & Links, Mermaid flow, ASCII Wardley map, 3+ table rows"
+  - id: methodology-separation
+    kind: semantic
+    text: "Each methodology contributes distinct findings, not the same points relabeled"
+
 ## Examples
 
 ### Example: should we enter the AI meeting-notes space?
