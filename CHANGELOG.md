@@ -466,7 +466,24 @@ All notable changes to this project are documented in this file, following
 
 ## [Unreleased]
 
+### Changed
+
+- **Testing skills aligned with 2026 evidence.** `stelow-workflow-testing-ai-code`
+  and `stelow-workflow-testing-execution` now ban presence-only tests (except
+  topology/count/refusal pins), require red-proof (a test never observed
+  failing is rejected), and prefer hand-mutation plus extreme mutation over
+  full mutation tooling (not recommended by default; adequacy is not a goal).
+  TDD claims calibrated to independent meta-analyses; TDAD paradox documented
+  (procedure without test context backfires). Scope tables and brownfield
+  procedures live under `references/` (SKILL.md back under 500 lines).
+
 ### Removed
+
+- **Dead Stryker wiring.** `stryker.config.json` mutated nothing (`"mutate": []`),
+  `test:mutation` ran in no CI workflow, and the config pointed at a TODO doc
+  that never existed. Removed config, script, and the three `@stryker-mutator`
+  devDependencies. Mutation guidance now lives in the testing skills
+  (hand-mutation first, extreme second, full tooling only for regulated code).
 
 - **Multica/Fusion residue across live docs.** `host-levers.md` Fusion
   section, per-host tables/rows in `README.md`, `stelow-helper.md` and

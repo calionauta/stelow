@@ -40,7 +40,6 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:ci": "./scripts/test-ci.sh",
-    "test:mutation": "stryker run",
     "test:rigor": "bash scripts/rigor-scan.sh 60",
     "typecheck": "tsc --noEmit",
     "lint": "npm run typecheck && oxlint .",
@@ -52,9 +51,6 @@
     "verify:generated": "npm run gen:transitions:check"
   },
   "devDependencies": {
-    "@stryker-mutator/core": "9.6.1",
-    "@stryker-mutator/typescript-checker": "9.6.1",
-    "@stryker-mutator/vitest-runner": "9.6.1",
     "@types/node": "^24.0.0",
     "@vitest/coverage-v8": "4.1.11",
     "fast-check": "4.9.0",

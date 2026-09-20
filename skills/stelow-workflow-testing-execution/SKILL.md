@@ -20,6 +20,7 @@ This protocol exists because of real patterns observed across projects:
 - **Unit tests pass ≠ user experience works.** E2E testing captures real flow problems that no unit test detects: loading states, double-submit, empty states, network errors, responsiveness. **E2E is the only guarantee that the user experience works.**
 - **Accessibility is invisible until it breaks.** A screen reader user can't navigate your beautiful UI. WCAG audits catch contrast, keyboard navigation, and ARIA issues before users do.
 - **AI-generated code has 1.7x more bugs** (CodeRabbit 2025). Parallel review by fresh-context reviewers catches over-generation, unnecessary complexity, and slop that original author blindspots miss.
+- **Runnable tests are usually shallow.** LLM suites pass execution but lack strong assertions and edge coverage (VibeCheck, Sep 2026); faults that matter escape because oracles don't assert the failure mode (Hamidi et al., Sep 2026). Green suite ≠ tested behavior — every new test must be observed failing without its fix.
 - **Interactive features need real interaction.** Static analysis can't test loading states, error recovery, or edge cases that only appear in browser.
 
 This protocol is the gate between "I finished coding" and "this is ready to ship."
@@ -65,6 +66,10 @@ Feature implemented?
 | Critical path (auth, payments) | ✅* | ✅* | ✅ | ✅ | ✅ |
 
 *If applicable
+
+## When to use
+
+Run this protocol after implementing any feature and before marking complete — it gates "ready to ship", not test authorship. Inside stelow it verifies stage completion against spec-tech scopes; standalone it runs the decision tree above against the current directory. Do not use for writing tests from scratch, framework questions, or flaky-test fixes (see Test Cases below).
 
 ## Contents
 
@@ -153,6 +158,8 @@ pytest
 
 **If no tests exist:** Create unit tests only for critical business logic (auth, payment, data validation). Skip for CRUD/standard paths.
 
+**Wiring check — exercised, not just present:** a green suite proves nothing if the new tests assert text existence instead of behavior. Reject presence-only assertions (source-text grep/regex, string-presence checks) unless they constrain topology, counts, or refusal shapes. New behavior must be *executed* by a test that fails when the behavior is inverted or removed — verify by hand-mutation (see `stelow-workflow-testing-ai-code`, hand-mutation). Runnable-but-shallow is the most common LLM test failure mode (VibeCheck, Sep 2026: weak assertions and missing edge cases outnumber blocking failures).
+
 **Block until tests pass.** Do not proceed with failing tests.
 
 ## Phase 4: Parallel Code Review via Subagents
@@ -160,6 +167,8 @@ pytest
 **Why:** Fresh eyes catch what the original author can't see. Two reviewers with different focus areas (correctness vs simplicity) catch complementary issues.
 
 **Real scenario:** Developer implements auth flow. Subagent reviewer finds: (1) missing rate limiting on login endpoint, (2) JWT token not invalidated on password change, (3) error messages leak user existence. None of these showed in unit tests.
+
+**Test-quality reviewer (third lens on critical paths):** give a fresh subagent the requirement plus the tests — *not* the implementation — and ask: "would these tests catch an inverted behavior?" This breaks same-author circular validation, the dominant LLM-test failure mode (TDFlow, EACL 2026: human-written tests resolve 94.3% vs self-generated 68%; VibeCheck, Sep 2026: cross-agent peer evaluation exposes weak assertions). One red-team pass on the tests is cheaper than debugging a false-green suite later.
 
 **When to use subagents:**
 - Diff touches 3+ files
@@ -188,6 +197,8 @@ Before marking feature complete:
 - [ ] E2E/browser testing done (if interactive UI)
 - [ ] UI accessible (if applicable)
 - [ ] Unit tests pass (if applicable)
+- [ ] New tests red-proofed — observed failing without the fix (if applicable)
+- [ ] Tests co-located correctly — no production code in test files and vice versa
 - [ ] Code review done (subagent or human)
 - [ ] No regressions detected
 - [ ] Documentation updated (if applicable)

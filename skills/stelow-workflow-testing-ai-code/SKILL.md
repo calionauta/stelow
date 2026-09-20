@@ -22,18 +22,23 @@ metadata:
 > - Veracode 2025: 45% of AI code contains vulnerabilities
 > - CodeRabbit 2025: AI code has 1.7x more bugs than human code
 > - CoderEval (2023): 43.1% of AI code is less robust
+> - SWE-Mutation, ACL Findings 2026: LLM suites are superficial; semantic mutants drop detection 71% → 40%
+> - VibeCheck, Sep 2026: execution-adequacy gap — runnable tests lack strong assertions and edge coverage
+> - Hamidi et al., Sep 2026: oracles fail on the faults that matter; assertions need manual reasoning
+> - TDAD 2026: graph test-context beats procedural TDD instructions (−70% regressions); concise skills win
+> - TDFlow, EACL 2026: human-written tests 94.3% vs self-generated 68% — test authorship is the hurdle
 
-**Standalone awareness:** when inside stelow, triggered automatically by `product_type` in spec-product.md frontmatter. When standalone, invoke directly with a spec-product.md path. Appetite defaults to Core if not found — documented in output. All test-breadth tables and quality baselines work identically in both modes.
+**Standalone awareness:** when inside stelow, triggered automatically by `product_type` in spec-product frontmatter. When standalone, invoke directly with a spec-product path (`spec-product*.md`). Appetite defaults to Core if not found — documented in output. All test-breadth tables and quality baselines work identically in both modes.
 
 ## Activation
 
-- **Trigger:** `product_type: software` or `product_type: hybrid` in spec-product.md frontmatter
+- **Trigger:** `product_type: software` or `product_type: hybrid` in spec-product frontmatter
 - **Phase:** Phase 11 (Tech Planning)
-- **Prerequisite:** approved spec-product.md with scope defined
+- **Prerequisite:** approved spec-product with scope defined
 
 ### Step 2: Read Appetite and Product Context
 
-Read `appetite` from `spec-product.md` before generating test scopes. **When running standalone, appetite defaults to `Core`** if not found in frontmatter — the skill documents this assumption in the output.
+Read `appetite` from the spec-product file (`spec-product*.md`) before generating test scopes. **When running standalone, appetite defaults to `Core`** if not found in frontmatter — the skill documents this assumption in the output.
 
 Appetite controls **test breadth**, not quality baseline.
 
@@ -55,14 +60,18 @@ Then determine the product context:
 | **Brownfield** | Existing product with features | TDD for critical paths, test-after for existing code, regression focus |
 | **Hybrid** | Adding features to existing product | Separate new from existing, protect invariants |
 
-**Based on context from setup or spec-product.md:**
+**Based on context from setup or the spec-product file:**
 - `greenfield`: TDD recommendation, appetite-specific coverage targets
 - `brownfield`: TDD for critical paths only, test-after + regression for existing code
 - `hybrid`: Add `test-regression` scopes for existing functionality
 
+## When to use
+
+Use when planning test strategy for a software product: which test types per scope, how deep per risk level, which CI gates block. Inside stelow it runs at tech planning from an approved spec-product; standalone it works from a spec-product path or a plain feature description (defaults: software, Core, brownfield). Do not use for executing tests or QA review — that is `stelow-workflow-testing-execution`.
+
 ## Input Detection (Standalone Mode)
 
-When called **outside the workflow** with no pre-existing spec-product.md:
+When called **outside the workflow** with no pre-existing spec-product file:
 
 ```
 Input:
@@ -79,7 +88,7 @@ Input:
 ## Input
 
 From Tech Planning context (or standalone):
-- `spec-product.md` (frontmatter with product_type, appetite)
+- `spec-product*.md` (frontmatter with product_type, appetite)
 - `spec-tech.md` (scopes to add test-* types, if available)
 - Tech stack detection from project files
 
@@ -205,6 +214,41 @@ Completeness contract (the host validates these minima — never submit fewer):
 YAML frontmatter (`version:`, `product_type:`); Tech Stack, Coverage and
 Risk Targets table, Test Scopes table, CI/CD Gates, Anti-Patterns; at
 least 600 words.
+
+---
+
+## Examples
+
+### Example 1: Strategy for a critical scope
+
+**Input:** "Payment retry scope, appetite Core, Go stack."
+
+**Steps:**
+1. Read appetite (Core) and classify the scope (critical).
+2. Emit `test-unit` (happy path + negative cases, TDD), `test-integration` (payment seam, test-after), `test-security` (SAST gate).
+
+**Output:** testing-strategy.md rows for the scope, plus BLOCK gates on missing critical tests and security findings.
+
+### Example 2: Rejecting a presence test
+
+**Input:** "Add a test that the export command exists."
+
+**Steps:**
+1. Apply the presence-test rule: does it constrain topology, counts, or refusals?
+2. No — rewrite as behavior: hand-mutate the export output and require the test to fail.
+
+**Output:** A behavioral test naming its regression, or no test when none exists.
+
+---
+
+## Edge Cases
+
+### No spec-tech scopes to classify
+- Fall back to the feature description; mark assumed risk levels explicitly in the output.
+- Never invent critical paths — when in doubt, standard depth plus a note.
+
+### Untestable handler code
+- Don't assert on source text — extract a pure helper to a testable module (see Brownfield anti-patterns) and test outputs there.
 
 ---
 

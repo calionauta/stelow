@@ -13,7 +13,7 @@ From research: coverage alone is insufficient. A test suite can execute every li
 
 ### Step 5: Define Test Scope Types
 
-For each IN scope in spec-product.md, add corresponding test scopes. Appetite controls breadth:
+For each IN scope in the spec-product, add corresponding test scopes. Appetite controls breadth:
 
 **Lean:**
 
@@ -63,60 +63,26 @@ Based on MSR 2026 research (agents use mocks 36% vs 26% humans):
 - ❌ Snapshot tests for non-UI components
 - ❌ Single-run validation (agents are non-deterministic)
 - ❌ Same AI for both code AND test generation (circular validation)
+- ❌ Presence tests — assertions that source text exists (grep/regex over code, string-presence checks). They pass on broken logic and break on refactors. Allowed only when they constrain topology, counts, or refusal shapes, with the caught regression named.
+- ❌ Assertion Roulette — many assertions per test with no single behavior under test (AI tests show higher assertion density than human tests, MSR 2026). One behavior per test; a failure must name its cause.
+- ❌ Unreasoned oracles — assertions that execute code without capturing faulty behavior. LLM faults that matter are missed because oracles don't assert the failure mode (Hamidi et al., Sep 2026). Every assertion must answer: "which wrong behavior would make this fail?"
 
 ### Step 6: Evaluate Mutation Testing Fit
 
 Mutation testing evaluates whether a test suite would **notice a regression** — not just whether it executed a line. Research shows LLM-generated tests cluster around the same blind spots as the code they test (Test Homogenization Trap, AgentPatterns 2026). Mutation forces tests to prove they'd catch a defect.
 
-**Evaluate whether mutation testing adds value for this project:**
+**Scope caveat (2026 replication findings):** mutation and coverage signals work in *regression* settings — code-under-test reasonably assumed bug-free, catching future breakage. When the code-under-test may already be buggy (including same-turn AI code+tests), they stop being reliable indicators. Same-turn tests therefore need independent authorship (fresh agent or human oracle review, cf. TDFlow: human-written tests 94.3% vs self-generated 68%, EACL 2026), not higher mutation targets.
 
-```bash
-# Heuristic: mutation testing fit score (0-10)
-SCORE=0
+**Decision flow (cheapest verdict first — adequacy is not the goal):**
 
-# +1 if language is compiled (Go, Rust, Java, TypeScript with strict config)
-+2 if language is Go, Rust, or Java
+1. **Hand-mutation per critical invariant** (free, immediate) — invert or remove the guarded behavior; the test must fail. A test that stays green on broken code is rejected. Stop here when every critical invariant is covered.
+2. **Extreme mutation** (pseudo-tested methods) once the suite is mature and CI budget exists — minutes instead of hours, and findings map directly to weak tests. This is the ceiling for most projects: beyond it, cost exceeds signal.
 
-# +1 if there are critical scopes (auth, payment, data persistence)
-+2 if @critical scopes exist
+Full mutation tooling (Stryker, mutmut, PIT, go-mutate) is **not recommended by default**: it only marginally outperforms coverage on real faults while oracles remain the bottleneck (Hamidi et al., Sep 2026), triage costs ~4.6 min per mutant with ~33% unproductive (Just et al.), and adequacy is neither practical nor desirable. Consider it only for safety-critical or regulated code with an already-mature suite — nightly, scoped to the regulated modules, no score targets.
 
-# +2 if project has >5 scopes or appetite=Complete
-+3 if appetite=Complete or scope count > 5
+Rationale: fix the weak-test signal, then stop — don't chase scores.
 
-# -1 if appetite=Lean (prototype/validation)
--2 if appetite=Lean
-
-# -1 if pure CRUD with no critical paths (no payment, auth, data persistence)
--2 if pure CRUD and no @critical scopes
-
-# Score >= 5: recommend mutation testing
-# Score 2-4: recommend only for specific critical modules
-# Score < 2: skip (document why)
-```
-
-| Context | Mutation Testing Recommendation |
-|---------|-------------------------------|
-| **Production app with critical paths** (auth, payment, data) | ✅ Recommend: `[TYPE] test-mutation` with target 50%, scoped to critical modules, run nightly |
-| **CRUD web app, REST API without sensitive paths** | 🟡 Optional: `[TYPE] test-mutation` with target 40%, only if existing test suite is mature |
-| **Prototype, validation, appetite=Lean** | ❌ Skip — cost (CI minutes, equivalent-mutant triage) > regression risk |
-| **Service/no-code product** | ❌ Skip — no code to test |
-| **Skill/CLI/workflow package (e.g., stelow itself)** | ❌ Skip — integration + smoke tests sufficient for low regression risk |
-
-If recommending, add to testing strategy:
-
-```yaml
-mutation_testing:
-  recommended: true
-  rationale: "Project has {critical_count} critical scopes in {language}; mutation testing
-    validates test suite can detect regressions in business logic."
-  scope: "critical modules only, not full suite"
-  target: "50% starter"
-  tool: "Stryker (JS/TS), mutmut (Python), PIT (Java), go-mutate (Go)"
-  schedule: "nightly, not per-PR — mutation runs are too slow for gate gating without
-    selective mutation (Zenseact 2023, Google 2021)"
-```
-
-**Validated loop** (AgentPatterns 2026, MUTGEN 2025):
+**Validated loop** (AgentPatterns 2026, MUTGEN 2025) — works with any survivor source (hand-mutants, extreme survivors, or tool mutants where tooling is justified):
 ```
 1. Generate tests (AI)
 2. Run mutation tool
@@ -128,8 +94,9 @@ mutation_testing:
 **Anti-patterns for mutation testing with AI code:**
 - ❌ Same model that wrote code generates tests AND judges equivalent mutants (circular bias)
 - ❌ Full-suite mutation as per-PR gate (hours of CI, Zenseact 2023)
-- ❌ High targets on first pass (start at 50%, not 70%)
+- ❌ Any score target as a goal — no minimum is owed (not 50%, not 70%); stop when the weak-test signal is exhausted
 - ❌ No equivalent-mutant filter (>50% survival = noise, Facebook 2020)
+- ❌ Chasing 100% mutation score (adequacy is not the goal — kill the weak-test signal, then stop)
 
 ### Step 7: Create CI/CD Gates
 

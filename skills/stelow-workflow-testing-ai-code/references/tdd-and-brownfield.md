@@ -5,16 +5,19 @@
 | Research | Key Finding |
 |----------|-------------|
 | LLM4TDD (2023) | Including test cases alongside problem statements **enhances code generation** and **increases success rate** on benchmarks like MBPP and HumanEval |
-| TDD-with-AI-Agents (2026) | TDD reduces bugs by **40-80%** compared to test-after for AI workflows |
-| AgentPatterns.ai | Tests as specifications constrain AI behavior — "the test is a contract the agent cannot fake" |
+| TDD-with-AI-Agents (2026) | Reports large gains in AI workflows — treat as optimistic: independent meta-analyses find small quality effects and ~zero productivity effect; gains concentrate where test effort and behavioral assertions are high |
+| AgentPatterns.ai | Tests as specifications constrain AI behavior — but only when red-proofed: suites never observed failing are faked routinely (SWE-Mutation, ACL 2026) |
 | QASkills (2026) | Without TDD, AI agents write tests that validate their own broken logic |
+| TDAD (2026) | Procedural TDD instructions without test context *increased* regressions (6.08% → 9.94%); graph test-context cut them 70% — context beats ritual |
+| James et al. / Fucci family | No consistent TDD advantage over iterative test-last; short steady cycles and small tasks explain most gains — rhythm matters more than test order |
 
 ### When to Use TDD (Based on Research)
 
 | Code Type | TDD Recommended? | Rationale |
 |-----------|-----------------|-----------|
-| **Critical business logic** | ✅ **Yes — recommended** | TDD provides design feedback, validates understanding, and constrains AI output |
+| **Critical business logic** | ✅ **Yes — with red-proof + fresh oracle** | TDD constrains AI output only when the test is observed failing first and assertions capture failure modes; otherwise it is expensive test-last |
 | **Security-sensitive** | ⚠️ **TDD + automated gates** | Write tests first, then run SAST continuously (45% vulnerability rate) |
+| **I/O-, UI-, framework-coupled code** | ⚠️ **Characterization first** | TDD pays most in pure/deterministic domains; at seams prefer characterization + integration over strict test-first |
 | **External APIs** | ❌ No — test-after | Over-mocking is anti-pattern; use real dependencies |
 | **Agent workflows** | ❌ No — behavioral testing | Non-deterministic — needs multi-run validation |
 | **Standard features** | ⚠️ **Optional** | Use TDD for clarity; risk-based tests for standard paths |
@@ -134,6 +137,8 @@ simulation:
 
 **When to use:** Before ANY scope execution in brownfield/hybrid context.
 
+**Warning — the TDAD paradox (2026):** procedural TDD/test instructions *without* naming the tests at risk increased regressions (6.08% → 9.94%) — worse than no intervention. Context beats procedure: name the exact tests and files at risk, keep the instruction under ~20 lines, and measure by fewer regressions, not more process.
+
 
 **Steps:**
 ```bash
@@ -204,18 +209,25 @@ impact:
 - ❌ AI modifying existing code without characterization tests
 - ❌ Over-mocking existing integrations
 - ❌ Ignoring technical debt in scope planning
+- ❌ Asserting on untestable-handler source text instead of extracting — when behavior lives in a closure/handler that unit tests can't reach, extract a pure helper to a testable module and test outputs there
 
 ### TDD Cycle for AI Agents
 
 ```
 1. RED: Write failing test (human or AI with explicit constraints)
-2. GREEN: AI implements only enough to pass test
-3. REFACTOR: Clean up with tests still passing
+2. RED-PROOF: Demonstrate the test failing without the implementation
+   (stash the fix, run pre-fix, or hand-mutate). A test never observed
+   failing is untrusted — reject it.
+3. GREEN: AI implements only enough to pass test
+4. REFACTOR: Clean up with tests still passing
 
 Key difference from human TDD:
 - AI must see failing test BEFORE implementation
 - Tests must be written independently of implementation
 - Human validates test quality via critical-path coverage and negative cases
+- Test-first reasoning improves both code and test effectiveness when the
+  tests are executable before implementation (TDD-Agent, Aug 2026); generated
+  tests that never fail pre-fix are static validators of unknown value
 ```
 
 ---
