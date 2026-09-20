@@ -3,6 +3,28 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.68.0-alpha] - 2026-09-20
+
+### Added
+
+- **Structured `criteria:` blocks on all Completeness contracts.**
+  Every playbook mirrors its prose minima as machine-readable
+  `{id, kind, text}` items (`presence` | `count` | `semantic`) beside
+  the contract — the host routes deterministic kinds to its validators
+  and translates each semantic criterion into one atomic Score question.
+- **Examples, Edge Cases, and When-to-Use sections on 21 skills.**
+  Validator-clean (0 failures): routing triggers, failure handling, and
+  activation test cases where they were missing.
+- **Host patterns: veto-only routers and golden calibration.**
+  The blueprint documents model-veto discipline (cancel cleared actions
+  only, never authorize) and the golden-set loop (Cohen's kappa
+  keep ≥ 0.6 / repair / drop) behind artifact quality.
+
+### Fixed
+
+- **README ToC anchor.** "Host Installation Guide" pointed nowhere;
+  retargeted to the existing Installation Guide section.
+
 ## [0.66.0-alpha] - 2026-09-19
 
 ### Added
