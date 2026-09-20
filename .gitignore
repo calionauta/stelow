@@ -36,6 +36,7 @@ stryker-reports/
 .stelow/
 !.stelow/.gitkeep
 !.stelow/state/
+.stelow-0.3-backup/
 .stelow-global.json
 
 # Per-user runtime artifacts (agent-specific)
