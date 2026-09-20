@@ -466,6 +466,8 @@ All notable changes to this project are documented in this file, following
 
 ## [Unreleased]
 
+## [0.67.0-alpha] - 2026-09-19
+
 ### Changed
 
 - **Testing skills aligned with 2026 evidence.** `stelow-workflow-testing-ai-code`
