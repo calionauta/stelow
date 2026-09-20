@@ -98,6 +98,16 @@ Four kinds, each with its own lifecycle — never blanket-resolve:
   re-acquire — the scope, not the human, does the retrying.
 - **Badge counts unresolved action items only**, plus unseen fresh
   completions (7-day window). Resolved items persist under history.
+- **Tier the queue deterministically, never suppress.** Score every event
+  at write from observable signals (kind, age, stall count, error
+  repetitions) into escalating / action / routine, recompute open rows on
+  the reconcile sweep, and order reads by tier then newest. Each tier
+  carries reason chips (`stalled 3d`, `error ×2`) so the ranking explains
+  itself. The badge still counts every open action; resolved history stays
+  chronological; thresholds live in one file, no migration to retune. A
+  semantic bump (one yes/no per open item, confidence-gated, provenance
+  chip) may promote within a tier later — never assign it, only after a
+  golden set shows measured agreement.
 - Render sections: needs-you, recent updates, resolved (collapsed),
   archived. Never show a resolved event with an actionable label
   ("Needs a decision" on a decided event is a bug, not a copy choice).
@@ -294,7 +304,7 @@ encode the rules above as tested pure functions: `worker-action-policy`,
 `preview-session`, `preview-runtime`, `audit-receipt`,
 `audit-trail-contract`, `audit-verification`, `vcs-publication`,
 `workspace-recovery`, `workflow-config`, `remote-url`, `reliable-preset`,
-`preset-staleness`, `decision-api`, `decision-points`, `skill-criteria`. Mirror the pattern (pure `lib/` +
+`preset-staleness`, `decision-api`, `decision-points`, `skill-criteria`, `inbox-severity`. Mirror the pattern (pure `lib/` +
 node-test per rule, never inline-only in handlers) rather than the code.
 
 ## 9. Anti-patterns (each paid for at least once)
