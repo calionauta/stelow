@@ -264,12 +264,16 @@ X ago" + inventory dialog) — silent syncs become mystery meat otherwise.
   entry — evolving, refactoring, or switching a feature off never touches
   the core.
 - **Route fuzzy judgments through decision routers, not prompts**: one
-  Jev-compatible endpoint (endpoint + key + model) configured once; each
-  judgment is a registry entry with modes (built-in rules vs API) and a
-  confidence floor. Unconfigured means built-in rules; failures degrade,
-  never block; the key never leaves the host (reads report presence only);
-  an explicit probe is the only on-demand spend. Seeds are advisory —
-  whatever the router suggests, the worker re-settles it in its own stage.
+  decision endpoint configured once (endpoint + key + model for
+  Jev-compatible APIs; endpoint only for keyless labels APIs such as
+  classifier.dev); each judgment is a registry entry with modes (built-in
+  rules vs API) and a confidence floor. Providers differ only in a small
+  request/response adapter behind one shared client — questions,
+  thresholds, and fallbacks stay provider-agnostic. Unconfigured means
+  built-in rules; failures degrade, never block; the key never leaves the
+  host (reads report presence only); an explicit probe is the only
+  on-demand spend. Seeds are advisory — whatever the router suggests, the
+  worker re-settles it in its own stage.
 - **Static assets**: if the host bundler has no image loader, serve brand
   marks as data URIs over RPC — never runtime relative URLs (they 404 on
   managed installs).
