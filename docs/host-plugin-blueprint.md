@@ -228,9 +228,15 @@ X ago" + inventory dialog) — silent syncs become mystery meat otherwise.
   returning quietly while an empty list reads as "nothing to do".
 - **Creation failures stay open**: a failed submit keeps the dialog and
   draft with a persistent inline warning — never a toast alone.
-- **Automation proposes, never disposes**: scheduled rules may only
-  create unstarted drafts and notifications — never start workers, move
-  cards, clear labels, merge code, or import work behind the user's back.
+- **Automation proposes by default, disposes only isolated and opted-in**:
+  scheduled rules create unstarted drafts unless the user explicitly opts
+  into auto-start — and then only into an isolated worktree destination
+  verified against the *effective* spawn environment (band routing wins
+  over any passed preset; checking preset existence is not enough).
+  Enabling a rule records the current backlog as seen without drafting;
+  a dry-run preview names what would match now and exactly why the rest
+  would not; every refusal names the fix. Never move cards, merge code,
+  or import behind the user's back.
 - **Progress hero above work detail**: one glanceable readout (scope/task
   bars with percentages, doing-now names, blocked names) over the same
   scopes/tasks contract the detail list renders — presentation only, no
@@ -245,6 +251,18 @@ X ago" + inventory dialog) — silent syncs become mystery meat otherwise.
   its realtime event on the sync, so boards reload live instead of on
   the next lifecycle event. A re-sync must preserve host/worker overlay
   (rework scopes, discovered items), never replace it.
+- **Name the checkout, never guess it**: open cards show where the worker
+  runs in one stored word (isolated worktree, shared checkout,
+  BB-managed, exploratory) plus the live branch — decided once at spawn
+  from the resolved environment, read back afterwards. Path-sniffing
+  rots; a stored label does not.
+- **Decouple features into modules with their own kill switch**: one
+  feature (contract fragment + migrations + scheduler + RPCs) behind one
+  seam of explicit dependencies; the host wires a contract spread, one
+  migration call, one schedule line. An env-gated flag disables the
+  scheduler, the RPCs (each refusal names the variable), and the panel
+  entry — evolving, refactoring, or switching a feature off never touches
+  the core.
 - **Static assets**: if the host bundler has no image loader, serve brand
   marks as data URIs over RPC — never runtime relative URLs (they 404 on
   managed installs).
@@ -259,7 +277,7 @@ encode the rules above as tested pure functions: `worker-action-policy`,
 `gate-ask-evidence`, `context-ask-gate`, `stage-skips`, `split-proposal`,
 `tracks`, `stage-bands`, `workflow-intent-policy`, `worker-ledger`,
 `worker-failure`, `spawn-retry`, `discard-policy`, `github-release`,
-`automation-rules`, `thread-children`,
+`automation-rules`, `github-intent`, `github-automation-gate`, `thread-children`,
 `research-*`, `kanban-layout`, `github-lists`,
 `promote-card`, `workflow-lineage`, `completion`, `card-claims`, `playbook`,
 `preview-session`, `preview-runtime`, `audit-receipt`,
@@ -284,6 +302,18 @@ node-test per rule, never inline-only in handlers) rather than the code.
   pin the source with tests so drift breaks the build instead).
 - Pasted prompt clauses across spawn paths (single-source consts with a
   test pinning definition + references).
+- Checking that *some* isolated preset exists instead of the *effective*
+  spawn environment (band routing silently wins over passed presets —
+  gate on what the spawn resolves, at save time and on every tick).
+- Check-then-insert dedupe across concurrent flows (claim the key with an
+  owner token before working; losers read already-imported/in-flight,
+  never a second card).
+- Treating issue text as trusted prompt input (allowlist authors on
+  auto-dispatch rules; no host permission mode is read-only, so the gate
+  is the protection, not the sandbox).
+- Trusting the send instead of verifying the write (match a hidden
+  marker back on the remote; a run that posted nothing is not success;
+  retries must never double-post).
 - Fire-and-forget RPC writes that update UI before the server confirms
   (await, then write from the response — or revert on failure).
 - Per-card lock directories as cross-card coordination (sibling cards never
