@@ -241,6 +241,34 @@
         <p class="fine">Optional helpers with fallbacks: cymbal for codebase recon, ctx7 for fresh docs, plannotator for visual gates, sem for structural diffs.</p>
       </div>
     </div>
+    <div class="card accent rules-card">
+      <p class="kicker">Only in the bb plugin</p>
+      <h3>Your models, your rules.</h3>
+      <p class="section-lede">Stelow lets you decide which brain does which job — cheap models for drafting, strong ones for review, a second opinion wherever a call is fuzzy. Four dials, all under Agent Presets.</p>
+      <div class="two-col rules-grid">
+        <div class="card flat">
+          <h4>Cheap drafting, strong review</h4>
+          <p>Each workflow phase runs on the preset you pick: draft on something fast and cheap, build and review on the strongest model you trust.</p>
+          <p class="fine">Worker preset per track · phase routing · reliable override — e.g. quick triage on a cheap tier, final review on your best model.</p>
+        </div>
+        <div class="card flat">
+          <h4>Small jobs get small brains</h4>
+          <p>Throwaway drafts and bursts run on a cheap tier with a short leash: text in, text out, judged before anything uses it.</p>
+          <p class="fine">Delegated work · subagent tiers — e.g. a one-paragraph draft for cents, never a full worker turn.</p>
+        </div>
+        <div class="card flat">
+          <h4>A second opinion with a floor</h4>
+          <p>Fuzzy calls — intent, severity, criteria — can go to a decision endpoint with a confidence floor. Below it, built-in rules stand; a weak opinion never decides.</p>
+          <p class="fine">Decision API (Jev-compatible) · confidence thresholds — e.g. inbox items auto-promote only above 0.7 confidence.</p>
+        </div>
+        <div class="card flat">
+          <h4>You pick what decides what</h4>
+          <p>Each judgment chooses its mode: built-in rules, the shared endpoint, a per-router override, or any provider preset — even one no workflow stage uses.</p>
+          <p class="fine">Decision routers · per-judgment modes · preset judge — e.g. criteria judged by your own preset, triage by the shared endpoint.</p>
+        </div>
+      </div>
+      <p class="fine">Configured in the plugin under Agent Presets → Decision routers. Skills-only setups have no presets — this whole panel is a bb-plugin thing.</p>
+    </div>
   </section>
 
   <!-- EARLY -->

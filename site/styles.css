@@ -177,6 +177,12 @@ body {
 }
 .card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
 .card.flat { background: transparent; box-shadow: none; }
+.card.flat:hover { box-shadow: var(--shadow); }
+.rules-card { margin-top: 22px; }
+.rules-grid { margin-top: 14px; }
+.rules-grid h4 { margin: 0 0 6px; font-size: 16px; letter-spacing: -0.01em; }
+.rules-grid p { margin: 0 0 8px; font-size: 15px; }
+.rules-grid p.fine { margin: 0; }
 .card.accent { border-color: #d9b79f; background: #fff6ec; }
 .step { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); margin: 0 0 6px; }
 .card h3 { margin: 0 0 8px; font-size: 20px; letter-spacing: -0.01em; }
