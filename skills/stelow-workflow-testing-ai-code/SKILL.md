@@ -146,11 +146,12 @@ Use this loop when tests miss important behavior or regressions appear after AI 
 4. Feed the invariant back into future test scopes
 ```
 
-**Test quality signals:**
-- Critical-path coverage
-- Negative-case coverage
-- Security gate results
-- Flaky-rate monitoring
+**Test quality signals (VibeCheck 5-dim rubric, Sep 2026):**
+- Runnability — deterministic, isolated, no order dependence
+- Assertion strength — each assertion captures a failure mode (see oracle rule in Anti-patterns)
+- Edge-case coverage — negative cases on critical paths
+- Isolation/determinism — no shared mutable state, no wall-clock dependence
+- Maintainability — one behavior per test; production code never in test files and vice versa
 
 ---
 
@@ -198,6 +199,9 @@ generated_at: {YYYY-MM-DD}
 - ❌ Mocks for simple objects
 - ❌ 100% coverage target
 - ❌ Same AI for code AND tests
+- ❌ Presence tests (source-text existence without behavioral consequence)
+- ❌ Unreasoned oracles (assertions that don't capture a failure mode)
+- ❌ Suite growth without pruning — more tests ≠ better (TENET 2026: small targeted sets outperform large suites); each added test justifies its signal, dead tests are deleted
 ```
 
 ---
