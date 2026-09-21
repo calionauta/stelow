@@ -60,6 +60,7 @@ body {
 .btn.primary { background: var(--ink); color: #fff; border-color: var(--ink); }
 .btn.ghost { background: transparent; }
 .btn.small { padding: 8px 14px; font-size: 14px; }
+.btn.icon-link { display: inline-flex; align-items: center; justify-content: center; gap: 8px; vertical-align: middle; }
 .hero { padding: 56px 22px 30px; }
 .hero-grid {
   max-width: 1100px; margin: 0 auto;
