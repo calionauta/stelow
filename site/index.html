@@ -71,8 +71,9 @@
     <h2>Software factories ship fast. They still skip the product work.</h2>
     <div class="two-col">
       <div>
-        <p>Give an agent a prompt and it codes. That covers one job: typing. A real team does more before anyone opens an editor. Someone defines what is out of scope. Someone checks the plan for holes. Someone picks the interface before the code locks it in.</p>
-        <p>Without those roles you get the usual failure set: scope creep, plans nobody questioned, features that should not exist, and tests added after the fact.</p>
+        <p>Watching tokens stream became the new doomscroll. You stare at every line even when no decision needs you — afraid to miss a detail, burning attention waiting for output you only needed to judge when ready.</p>
+        <p>Continuous chat made sense when models couldn't sustain long runs. Now it's a residual habit: a factory pipeline of prompt → code → done, with you as the babysitter. Give an agent a prompt and it types. A real team does more before anyone opens an editor — defines what is out of scope, checks the plan for holes, picks the interface before code locks it in.</p>
+        <p>Without those roles you get both failures at once: fragmented attention on your side, and the usual product debt on the repo side — scope creep, plans nobody questioned, features that should not exist, tests added after the fact. Stelow puts you back in zoom-out: context, boundaries, choices, quality.</p>
       </div>
       <div class="compare">
         <div class="card flat">
@@ -104,41 +105,48 @@
   <!-- HOW -->
   <section id="how" class="section reveal">
     <p class="kicker">How it works</p>
-    <h2>Measure three times, cut once.</h2>
-    <p class="section-lede">Three phases, 17 stages. You set two dials at the start and the workflow follows them. Type <code>/sw-start "what you want"</code> and it asks, shapes, reviews, then builds.</p>
+    <h2>Shape, argue, then build.</h2>
+    <p class="section-lede">17 stages under the hood, grouped in 4 board phases: Analysis, Planning, Execution, Review. You set Planning depth + review gates once, approve at the gates, and let workers run — no babysitting the stream.</p>
     <div class="grid-3">
       <div class="card">
-        <p class="step">1 · Shape</p>
+        <p class="step">1 · Analysis</p>
         <h3>Write down the bet</h3>
-        <p>IN/OUT boundaries, appetite, risks. Tech preview reads the codebase first so the proposal fits what exists. No code yet.</p>
+        <p>Triage to shape: IN/OUT boundaries, appetite, risks. A codebase preview reads what exists so the proposal fits before anything is planned. No code yet.</p>
       </div>
       <div class="card">
-        <p class="step">2 · Review</p>
+        <p class="step">2 · Planning</p>
         <h3>Argue before building</h3>
-        <p>Fresh-context reviewers pick the plan apart. You approve the product spec and the interface direction in a visual gate, with receipts on disk. Review mode sets how much waits for you: Auto runs untouched, Full gates spec, interface, scopes, and plan.</p>
+        <p>Critique to tech plan: fresh-context reviewers pick the proposal apart, interface directions get explored before code locks them in. You approve spec, interface, and plan in visual gates, with receipts on disk.</p>
       </div>
       <div class="card">
-        <p class="step">3 · Build</p>
+        <p class="step">3 · Execution</p>
         <h3>Hand off typed scopes</h3>
-        <p>Feature, spike, optimize, and test scopes run in dependency order under acceptance contracts. Audit closes the loop or opens new scopes.</p>
+        <p>Feature, spike, optimize, and test scopes run in dependency order under acceptance contracts. Progress lands on the board, questions land in a quiet inbox.</p>
+      </div>
+      <div class="card">
+        <p class="step">4 · Review</p>
+        <h3>Close the loop</h3>
+        <p>Diff review plus audit: gaps sort into fixed, documented, or new scopes instead of fading. The run ends with an audit trail.</p>
       </div>
     </div>
     <div class="dials">
       <div class="card">
-        <h3>Appetite: how deep to prepare</h3>
+        <h3>Planning depth: how deep to prepare</h3>
         <ul>
           <li><strong>Lean:</strong> one idea, 1–2 scopes, one interface suggestion.</li>
           <li><strong>Core:</strong> a normal feature, 3–5 scopes, 3 directions plus a hybrid.</li>
           <li><strong>Complete:</strong> risky work, 8–15 scopes, 5 directions plus a hybrid.</li>
         </ul>
+        <p class="fine">Called Appetite in skills-only setups.</p>
       </div>
       <div class="card">
-        <h3>Review mode: how much you check</h3>
+        <h3>Your review gates: how much you check</h3>
         <ul>
           <li><strong>Auto:</strong> no gates. For throwaway spikes.</li>
           <li><strong>Spec gate:</strong> one approval before tech planning.</li>
           <li><strong>Full:</strong> spec, interface, scopes, and tech plan all gated, plus an optional code-diff review.</li>
         </ul>
+        <p class="fine">In bb you pick both on card creation. Skills-only: <code>/sw-start "what you want"</code> asks the same two things in chat.</p>
       </div>
     </div>
   </section>

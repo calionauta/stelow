@@ -169,7 +169,7 @@ body {
 .section h2 { font-size: clamp(26px, 3.4vw, 38px); letter-spacing: -0.02em; margin: 0 0 10px; line-height: 1.15; }
 .section-lede { color: #3d3831; max-width: 72ch; }
 .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 18px; }
-.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 18px; }
+.grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 18px; }
 .card {
   background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
   padding: 20px; box-shadow: 0 2px 0 rgba(29,26,22,0.04);
