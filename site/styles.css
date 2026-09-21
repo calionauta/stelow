@@ -229,6 +229,13 @@ body {
 .notice h2 { font-size: 20px; margin: 0 0 6px; }
 .notice p { margin: 0; }
 .notice a { color: var(--ink); font-weight: 600; }
+/* long-form rhythm — air between paragraphs, comfortable measure */
+.two-col > div:not(.card) > p { max-width: 62ch; line-height: 1.7; margin: 0 0 16px; }
+.two-col > div:not(.card) > p:last-child { margin-bottom: 0; }
+.section-lede { font-size: 18px; line-height: 1.65; }
+.notice > p { line-height: 1.65; max-width: 74ch; margin: 0 0 12px; }
+.notice > p:last-child { margin-bottom: 0; }
+.notice .strat-grid { margin-top: 14px; }
 .strat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 18px; }
 .strat {
   display: flex; gap: 12px; align-items: flex-start;
