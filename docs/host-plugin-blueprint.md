@@ -216,6 +216,10 @@ X ago" + inventory dialog) — silent syncs become mystery meat otherwise.
 
 - **Quiet inbox**: interrupt only when the agent needs the human; everything
   else is browsable history.
+- **First column reads Bucket, keys stay put**: the captured-but-unstarted
+  pile is labeled Bucket on every track (never Inbox — that word belongs
+  to the notification center); stored keys, statuses, and move targets
+  keep the old identifier, so the rename is labels-only with no migration.
 - **Result-oriented copy**: say "results", never "index"; "result", never
   "artifact". Internal filenames stay out of user-facing text.
 - **No destructive primary actions while a worker is healthy**: recovery
@@ -254,9 +258,9 @@ X ago" + inventory dialog) — silent syncs become mystery meat otherwise.
   would not; every refusal names the fix. Never move cards, merge code,
   or import behind the user's back.
 - **Progress hero above work detail**: one glanceable readout (scope/task
-  bars with percentages, doing-now names, blocked names) over the same
-  scopes/tasks contract the detail list renders — presentation only, no
-  second data source, refreshed by the same realtime channel.
+  bars with counts — never percentages — doing-now names, blocked names)
+  over the same scopes/tasks contract the detail list renders — presentation
+  only, no second data source, refreshed by the same realtime channel.
 - **Destructive confirms state the full blast radius**: name data rows,
   run files, and what explicitly survives (e.g. Git checkouts) before
   anything runs — the dialog text must match what the handler deletes,
@@ -413,8 +417,11 @@ says otherwise in code. Layer the guarantee:
    never new cards: a card with open gaps loops back through the
    methodology's audit-rejects-to-execution transition, reworks,
    re-critiques, and only then completes. Completion refuses
-   while escalations lack scopes or linked scopes stay open — done
-   means every gap has a disposition and every escalation is executed.
+   while escalations lack scopes or linked scopes stay open, and refuses
+   with any non-terminal scope still open (done, completed, or explicitly
+   skipped pass) — done
+   means every gap has a disposition, every escalation is executed,
+   and no promised scope was walked past.
    Surface the loop state early (verify-time warnings, not just
    completion refusals) and name the loop-back: an audit-to-execution
    advance should state which open rework it picks up. Validate every
