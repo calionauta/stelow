@@ -119,6 +119,7 @@ Task: Audit live site for UX quality (Live Site mode)
 Reads: ui-audit-dimensions.md, ux-frameworks.md
 Mode: {URL}
 Output: .stelow-ux-critique/live-audit-report.md (per output-format.md)
+Context: fresh — never audit a page you built in your own context
 ```
 
 The reviewer applies all checklists from the reference files and produces a report
@@ -163,6 +164,7 @@ Task: Audit codebase for UX quality (Codebase mode)
 Reads: ui-audit-dimensions.md, ux-frameworks.md
 Input: {INPUT_PATH}
 Output: .stelow-ux-critique/codebase-audit-report.md (per output-format.md)
+Context: fresh — never audit code you wrote in your own context
 ```
 
 The reviewer applies checklists adapted for source code analysis:

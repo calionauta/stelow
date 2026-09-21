@@ -54,6 +54,19 @@ Each modified entity maps to one or more plan scopes. Entities with no matching
 scope are flagged as **scope creep**. Plan scopes with no matching entities are
 flagged as **missing scope**.
 
+### 2.5 Delegate verdicts to fresh subagents
+
+Scope verdicts must never come from the same context that did the work:
+launch one fresh reviewer per scope (batch small scopes, max ~5 parallel)
+using the subagents tool (see `../../stelow-workflow-orchestrator/references/cli-tools/subagents.md`),
+each running the criteria below against its scope only, with the spec-tech
+excerpt plus verification evidence as input. Reviewers CLASSIFY
+(FIXED / DOCUMENTED / ESCALATED per scope) — they do NOT close scopes,
+edit tracking, or resolve anything. The parent merges classifications
+into the gap registry; a scope no subagent saw reads as unevaluated,
+never as passed. Pasting an artifact into your own context and judging
+it yourself violates this skill.
+
 ### 3. Run all 11 criteria
 
 For each scope, evaluate:

@@ -138,6 +138,7 @@ Agent: reviewer
 Task: Critique codebase (Codebase mode)
 Reads: references/*.md
 Input: {INPUT_PATH}
+Context: fresh — never critique code you wrote in your own context
 ```
 - codebase-audit-dimensions.md: Run ALL dimensions systematically:
   1. Architecture — module structure, dependency direction, coupling, abstraction layers
