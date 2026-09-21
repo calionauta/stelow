@@ -228,9 +228,11 @@ X ago" + inventory dialog) — silent syncs become mystery meat otherwise.
   to the notification center); stored keys, statuses, and move targets
   keep the old identifier, so the rename is labels-only with no migration.
 - **One gallery dialog for piles**: bucket columns and hill clusters open
-  the same expanded modal — the board tiles themselves in a uniform grid
-  (equal widths, equal row heights, vertical scroll), titled by params
-  (count plus context). Never a second modal, never a positioned overlay.
+  the same expanded modal — near-fullscreen (70vw), the board tiles
+  themselves at board width (240px, auto-fill per row, equal heights,
+  vertical scroll), titled by params (count plus context). Creation
+  checkboxes link the same gallery from their "park in Bucket" copy.
+  Never a second modal, never a positioned overlay.
 - **Result-oriented copy**: say "results", never "index"; "result", never
   "artifact". Internal filenames stay out of user-facing text.
 - **No destructive primary actions while a worker is healthy**: recovery
