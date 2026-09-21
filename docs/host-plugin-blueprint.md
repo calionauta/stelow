@@ -278,6 +278,9 @@ X ago" + inventory dialog) — silent syncs become mystery meat otherwise.
   bars with counts — never percentages — doing-now names, blocked names)
   over the same scopes/tasks contract the detail list renders — presentation
   only, no second data source, refreshed by the same realtime channel.
+  Board-level flow keeps tempo (lead/cycle) apart from attention (stuck,
+  review-awaiting) in tabs; signal chips ride the closed header only when
+  nonzero, so a calm board shows no amber.
 - **Destructive confirms state the full blast radius**: name data rows,
   run files, and what explicitly survives (e.g. Git checkouts) before
   anything runs — the dialog text must match what the handler deletes,
