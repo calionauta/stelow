@@ -216,6 +216,13 @@ X ago" + inventory dialog) — silent syncs become mystery meat otherwise.
 
 - **Quiet inbox**: interrupt only when the agent needs the human; everything
   else is browsable history.
+- **Explicit saves, local refresh**: router and settings rows stage edits
+  locally and save through one button; a save refreshes only its own
+  section, never the board — flipping a select must not fire a request
+  by itself.
+- **Project picker with re-anchor**: any cross-project dialog offers every
+  project, defaults to the board's, and re-anchors on every open, so a
+  stale pick never writes to the wrong project.
 - **First column reads Bucket, keys stay put**: the captured-but-unstarted
   pile is labeled Bucket on every track (never Inbox — that word belongs
   to the notification center); stored keys, statuses, and move targets
