@@ -786,8 +786,6 @@ Even with these guardrails, the AI agent still exhibits predictable failure mode
 
 ## About the Author
 
-**[calionauta](https://www.linkedin.com/in/calionauta/)**
-
 This workflow wasn't designed in a vacuum. It comes from years inside real teams — as a developer, product manager, consultant, and leader across different organizations. The skills, patterns, and disciplines here were tested, broken, and rebuilt in live product environments and real codebases, not conference rooms.
 
 ### 📚 Published Work
@@ -803,12 +801,10 @@ This workflow wasn't designed in a vacuum. It comes from years inside real teams
 - Creator of **Triple Track Agile** - adds an opportunity mapping track to product cycles
 - Developed **Contornos** - a social technology for decentralized decisions
 
-### 🌐 Resources
+### 🌐 Profile
 
-| Site | Description |
-|------|-------------|
-| [timeproduto.com.br](https://www.timeproduto.com.br/) | Product process divided into stages, with AI tools and prompts for each stage |
-| [espacocalionauta.substack.com](https://espacocalionauta.substack.com) | Blog exploring AI, organizational culture, daily philosophy, narrative practices, and product thinking - with published prompts and free e-books |
+- [GitHub Profile](https://github.com/calionauta/)
+- [LinkedIn](https://www.linkedin.com/in/calionauta/)
 
 ---
 
