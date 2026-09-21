@@ -179,6 +179,11 @@ body {
 .card.flat { background: transparent; box-shadow: none; }
 .card.flat:hover { box-shadow: var(--shadow); }
 .rules-card { margin-top: 22px; }
+.hill-card { margin-top: 22px; }
+.hill-demo { display: block; width: min(440px, 100%); margin: 14px auto 6px; color: var(--ink); }
+.hill-dot { fill: var(--accent); }
+.hill-dot.hill-attn { fill: #b7791f; }
+.hill-axis { fill: var(--muted); font-size: 11px; }
 .rules-grid { margin-top: 14px; }
 .rules-grid h4 { margin: 0 0 6px; font-size: 16px; letter-spacing: -0.01em; }
 .rules-grid p { margin: 0 0 8px; font-size: 15px; }

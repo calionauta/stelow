@@ -54,6 +54,7 @@
             <span>Read the code</span>
           </a>
         </div>
+        <p class="fine">Prefer to look first? <a href="#inside-bb">See what the board looks like</a>.</p>
         <div class="install-steps">
           <div class="install-line" role="region" aria-label="Quick install command">
             <code id="installCmd">curl -fsSL https://calionauta.github.io/stelow/install.sh | bash</code>
@@ -232,8 +233,50 @@
         <p class="fine">Optional helpers with fallbacks: cymbal for codebase recon, ctx7 for fresh docs, plannotator for visual gates, sem for structural diffs.</p>
       </div>
     </div>
+  </section>
+
+  <!-- INSIDE BB -->
+  <section id="inside-bb" class="section reveal">
+    <p class="kicker">In the bb plugin</p>
+    <h2>The board is the interface.</h2>
+    <p class="section-lede">Configure once per card, watch position instead of status, tune the brains per phase. Same workflow underneath — this is what it looks like with a surface.</p>
+    <div class="dials">
+      <div class="card">
+        <h3>Planning depth: how deep to prepare</h3>
+        <ul>
+          <li><strong>Lean:</strong> one idea, 1–2 scopes, one interface suggestion.</li>
+          <li><strong>Core:</strong> a normal feature, 3–5 scopes, 3 directions plus a hybrid.</li>
+          <li><strong>Complete:</strong> risky work, 8–15 scopes, 5 directions plus a hybrid.</li>
+        </ul>
+        <p class="fine">Called Appetite in skills-only setups. In bb you pick it on card creation or save it as a board default.</p>
+      </div>
+      <div class="card">
+        <h3>Your review gates: how much you check</h3>
+        <ul>
+          <li><strong>Auto:</strong> no gates. For throwaway spikes.</li>
+          <li><strong>Spec gate:</strong> one approval before tech planning.</li>
+          <li><strong>Full:</strong> spec, interface, scopes, and tech plan all gated, plus an optional code-diff review.</li>
+        </ul>
+        <p class="fine">Ticked per card in bb, remembered as board default. Skills-only: <code>/sw-start "what you want"</code> asks the same two things in chat.</p>
+      </div>
+    </div>
+    <div class="card hill-card">
+      <h3>Position, not status.</h3>
+      <p class="section-lede">Columns say "in progress" — which says nothing. The hill shows where each card actually stands: left side still figuring out, right side executing. One glance tells whether the team is discovering or delivering, and amber dots float whatever needs you.</p>
+      <svg class="hill-demo" viewBox="0 0 300 110" role="img" aria-label="Illustration: cards plotted on a hill, two figuring out on the left, three executing on the right, one amber needing attention">
+        <path d="M 8 96 C 70 96, 90 18, 150 18 S 230 96, 292 96" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.35" />
+        <line x1="150" y1="8" x2="150" y2="102" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3" opacity="0.25" />
+        <circle cx="52" cy="72" r="5" class="hill-dot" />
+        <circle cx="86" cy="52" r="5" class="hill-dot" />
+        <circle cx="196" cy="34" r="5" class="hill-dot" />
+        <circle cx="232" cy="52" r="5" class="hill-dot hill-attn" />
+        <circle cx="264" cy="76" r="5" class="hill-dot" />
+        <text x="30" y="108" class="hill-axis">Figuring out</text>
+        <text x="270" y="108" text-anchor="end" class="hill-axis">Executing</text>
+      </svg>
+      <p class="fine">Hill view · position from scopes, stages, and attention — no extra tracking. Cards, List, and Hill share one toggle on the Build board.</p>
+    </div>
     <div class="card accent rules-card">
-      <p class="kicker">Only in the bb plugin</p>
       <h3>Your models, your rules.</h3>
       <p class="section-lede">Stelow lets you decide which brain does which job — cheap models for drafting, strong ones for review, a second opinion wherever a call is fuzzy. Four dials, all under Agent Presets.</p>
       <div class="two-col rules-grid">
@@ -259,23 +302,6 @@
         </div>
       </div>
       <p class="fine">Configured in the plugin under Agent Presets → Decision routers. Skills-only setups have no presets — this whole panel is a bb-plugin thing.</p>
-    </div>
-    <div class="card hill-card">
-      <p class="kicker">Only in the bb plugin</p>
-      <h3>Position, not status.</h3>
-      <p class="section-lede">Columns say "in progress" — which says nothing. The hill shows where each card actually stands: left side still figuring out, right side executing. One glance tells whether the team is discovering or delivering, and amber dots float whatever needs you.</p>
-      <svg class="hill-demo" viewBox="0 0 300 110" role="img" aria-label="Illustration: cards plotted on a hill, two figuring out on the left, three executing on the right, one amber needing attention">
-        <path d="M 8 96 C 70 96, 90 18, 150 18 S 230 96, 292 96" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.35" />
-        <line x1="150" y1="8" x2="150" y2="102" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3" opacity="0.25" />
-        <circle cx="52" cy="72" r="5" class="hill-dot" />
-        <circle cx="86" cy="52" r="5" class="hill-dot" />
-        <circle cx="196" cy="34" r="5" class="hill-dot" />
-        <circle cx="232" cy="52" r="5" class="hill-dot hill-attn" />
-        <circle cx="264" cy="76" r="5" class="hill-dot" />
-        <text x="30" y="108" class="hill-axis">Figuring out</text>
-        <text x="270" y="108" text-anchor="end" class="hill-axis">Executing</text>
-      </svg>
-      <p class="fine">Hill view · position from scopes, stages, and attention — no extra tracking. Cards, List, and Hill share one toggle on the Build board.</p>
     </div>
   </section>
 
