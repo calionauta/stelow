@@ -3,6 +3,14 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.68.1-alpha] - 2026-09-21
+
+### Added
+
+- **Blueprint lists `preset-judge` as a portable module.**
+  The host-plugin reference implementation's strict-JSON verdict
+  contract joins the copy-freely inventory.
+
 ## [0.68.0-alpha] - 2026-09-20
 
 ### Added
