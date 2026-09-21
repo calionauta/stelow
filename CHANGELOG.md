@@ -3,6 +3,17 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.69.0-alpha] - 2026-09-21
+
+### Added
+
+- **Fresh-subagent verdicts required in review skills.**
+  `execution-critique` gains an explicit delegation step (one fresh
+  reviewer per scope, classify-only; the parent consolidates, unseen
+  scopes read as unevaluated), and the ux/codebase critiques name fresh
+  context explicitly. Mirrors the `plan-critique` precedent: verdicts
+  never come from the same context that did the work.
+
 ## [0.68.1-alpha] - 2026-09-21
 
 ### Added
