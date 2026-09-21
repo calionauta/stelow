@@ -406,7 +406,9 @@ says otherwise in code. Layer the guarantee:
    scope fit), against the deterministic report as rubric, with findings
    anchored to verbatim quotes the host re-verifies. Reviews cost budget:
    explicit opt-in, shift-left refusal on thin files, no silent fallback
-   to the worker's own preset. Enforcement waits for a golden set with
+   to the worker's own preset — and the designation UI lives below the
+   subagent tiers, never among them, so capability (reliable/generation)
+   is never mistaken for independence (review). Enforcement waits for a golden set with
    measured agreement — wire the rubric to the gate only then.
 4. **Provenance seals, not truth claims.** Surfaces show checked
    provenance (verified / hypothesis-only / needs-revision / unverified)
