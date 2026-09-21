@@ -465,6 +465,16 @@ describe("scope", () => {
     expect(run(wd, ["scope", "done", "--scope", "scope-1"], env).status).toBe(0);
   });
 
+  it("persists iteration and actual files on done", () => {
+    const { wd, statedir } = seedScope("scope-close-meta");
+    const env = { STELOW_STATEDIR: statedir };
+    expect(run(wd, ["scope", "start", "--scope", "scope-1"], env).status).toBe(0);
+    expect(run(wd, ["scope", "done", "--scope", "scope-1", "--iteration", "3", "--actual-files", "a.ts,b.ts"], env).status).toBe(0);
+    const scope = JSON.parse(readFileSync(join(wd.dir, "stelow.json"), "utf8")).workflows[0].scopes.find((s: any) => s.id === "scope-1");
+    expect(scope).toMatchObject({ status: "done", iteration: 3, actual_files: ["a.ts", "b.ts"] });
+    expect(run(wd, ["scope", "done", "--scope", "scope-1", "--iteration", "x"], env).status).toBe(2);
+  });
+
   it("rejects usage with exit 2", () => {
     const wd = makeWorkdir();
     expect(run(wd, ["scope"]).status).toBe(2);

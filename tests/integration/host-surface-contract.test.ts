@@ -39,6 +39,16 @@ describe("host vendoring surface", () => {
     expect(() => JSON.parse(raw)).not.toThrow();
   });
 
+  it("stelow.schema.json covers scopes and scope contracts", () => {
+    const schema = JSON.parse(readFileSync(join(ROOT, "stelow.schema.json"), "utf8"));
+    for (const def of ["scope", "scope-task", "scope-record", "scope-contract"]) {
+      expect(schema.definitions[def], `definition ${def}`).toBeTruthy();
+    }
+    expect(schema.definitions.workflow.properties.scopes, "workflows[].scopes").toBeTruthy();
+    expect(schema.definitions.scope.properties.status.enum, "scope status vocabulary").toContain("in-progress");
+    expect(schema.definitions["scope-contract"].properties.acceptance_criteria, "contract criteria").toBeTruthy();
+  });
+
   it("hosting contract docs exist", () => {
     for (const doc of ["HOSTING.md", "references/host-levers.md"]) {
       expect(existsSync(join(ROOT, doc)), doc).toBe(true);

@@ -714,8 +714,8 @@ commands = {
     "output": "text summary or {synced, specTechFile, dirHash} with --json",
   },
   "scope": {
-    "usage": "stelow scope start|done --scope <id> [--name <workflow>] [--json]",
-    "flags": ["--scope", "--name", "--json"],
+    "usage": "stelow scope start|done --scope <id> [--name <workflow>] [--iteration <n>] [--actual-files <a,b>] [--json]",
+    "flags": ["--scope", "--name", "--iteration", "--actual-files", "--json"],
     "env": ["STELOW_STATEDIR"],
     "exit_codes": {"0": "transition committed", "1": "refused (terminal, deps, containment) or unreadable state", "2": "usage or ambiguous workflow"},
     "output": "text line or {id, status, started_at} with --json",
@@ -1295,6 +1295,8 @@ def fail(text):
 scope_id = None
 name = None
 want_json = False
+iteration = None
+actual_files = None
 i = 0
 while i < len(argv):
     arg = argv[i]
@@ -1306,6 +1308,15 @@ while i < len(argv):
         i += 1
         if i >= len(argv) or not argv[i].strip(): usage("--name needs a value")
         name = argv[i]
+    elif arg == "--iteration":
+        i += 1
+        try: iteration = int(argv[i])
+        except Exception: usage("--iteration needs an integer")
+        if iteration < 0: usage("--iteration must be >= 0")
+    elif arg == "--actual-files":
+        i += 1
+        if i >= len(argv): usage("--actual-files needs a value")
+        actual_files = [f.strip() for f in argv[i].split(",") if f.strip()]
     elif arg == "--json":
         want_json = True
     elif arg.startswith("--"):
@@ -1386,6 +1397,10 @@ elif op == "done":
     record = scope.get("record")
     if isinstance(record, dict) and record.get("verified") is not True:
         fail(f"'{scope_id}' carries an unverified Record — complete every verification checklist item and re-run the verify commands first")
+    if iteration is not None:
+        scope["iteration"] = iteration
+    if actual_files is not None:
+        scope["actual_files"] = actual_files
     scope["status"] = "done"
 workflow["updated"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
 fd, temporary = tempfile.mkstemp(prefix=".stelow.", dir=root)
