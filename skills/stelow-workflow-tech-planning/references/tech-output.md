@@ -69,6 +69,24 @@ docs/{YYYY-MM-DD}/{slug}/plans/spec-tech_{v}.md
 - technical risks
 - engineering recommendations
 
+**Scope contracts (required, one file per scope):** planning authors the
+machine contract executors read — `scopes/{scope-id}.json` next to the
+state dir (`scope-1` → `scopes/scope-1.json`):
+
+```json
+{
+  "acceptance_criteria": ["Observable outcome 1", "Observable outcome 2"],
+  "verify_commands": ["npm test -- scope-area"],
+  "target_files": ["path/to/area.ts"]
+}
+```
+
+`acceptance_criteria` are observable outcomes (the same sentences the
+Scope DoD states), never process descriptions. `verify_commands` run
+against the tree and exit non-zero on failure. A scope without its
+contract file executes against prose only — hosts surface that as an
+explicit condition instead of guessing.
+
 **After persisting:**
 - explicitly provide the saved path
 - reference it consistently in future execution discussions
@@ -92,6 +110,21 @@ Critical Initial Spikes (if applicable) + Main Functional Scopes.
 Each scope with justification based on sequencing strategy and principles.
 
 ### 3. Detailed Development Sequence per Scope
+
+For each scope, open with a machine block the tracker parses (see
+`scopes-and-sequencing.md` for the full field reference):
+
+```
+[SCOPE-1] Descriptive scope title
+[TYPE] feature
+[MAX_ITERATIONS] 3
+[TARGET_FILES]
+- path/to/area.ts
+Dependencies: none
+```
+
+Human headings (`### SCOPE-1: Title`) are also accepted by `sync-scopes`
+as a fallback, but the bracket form above is canonical — write it first.
 
 For each scope:
 - **Scope:** `[name]`
