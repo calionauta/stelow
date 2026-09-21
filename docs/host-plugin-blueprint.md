@@ -422,6 +422,9 @@ says otherwise in code. Layer the guarantee:
    subagent tiers, never among them, so capability (reliable/generation)
    is never mistaken for independence (review). Enforcement waits for a golden set with
    measured agreement — wire the rubric to the gate only then.
+   Gate entry with a reviewer designated fires one hidden pre-review of
+   the gate artifact as a card comment before approval (advisory,
+   fire-and-forget, silent on every miss).
 4. **Provenance seals, not truth claims.** Surfaces show checked
    provenance (verified / hypothesis-only / needs-revision / unverified)
    resolved live from revalidation, with progressive disclosure down to
