@@ -244,6 +244,9 @@ X ago" + inventory dialog) — silent syncs become mystery meat otherwise.
   confirm.
 - **Debounced realtime**: batch mutation bursts (≈250ms) so panels don't
   stampede; reload on `card-state`/`board-changed`, never on a timer.
+  The reconcile tick additionally watches a scope-progress fingerprint per
+  live card and publishes on movement only — silent worker edits surface
+  within one tick, first sight baselines silently, cosmetics never publish.
 - **Freshness signals over vibes**: show running build version + build
   time and skills verification age so "did the reload take effect?" is
   checkable.
