@@ -183,6 +183,12 @@ body {
 .rules-grid h4 { margin: 0 0 6px; font-size: 16px; letter-spacing: -0.01em; }
 .rules-grid p { margin: 0 0 8px; font-size: 15px; }
 .rules-grid p.fine { margin: 0; }
+.hill-card { margin-top: 22px; }
+.hill-card .section-lede { margin-bottom: 6px; }
+.hill-demo { display: block; width: 100%; height: auto; margin-top: 8px; color: #3d3831; }
+.hill-demo .hill-dot { fill: #6b6459; }
+.hill-demo .hill-attn { fill: #d97706; }
+.hill-demo .hill-axis { font-size: 9px; fill: #8a8478; }
 .card.accent { border-color: #d9b79f; background: #fff6ec; }
 .step { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); margin: 0 0 6px; }
 .card h3 { margin: 0 0 8px; font-size: 20px; letter-spacing: -0.01em; }
