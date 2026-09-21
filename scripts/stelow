@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# scripts/stelow — stelow workflow CLI (status / advance / doctor / seed / schema / ask / sync-scopes / lock / config).
+# scripts/stelow — stelow workflow CLI (status / advance / doctor / seed / schema / ask / sync-scopes / lock / config / scope).
 #
 # Passive: reads/writes one workflow state. Hosts may point at a per-workflow
 # directory with STELOW_STATEDIR/STELOW_STATE; root paths are the standalone
@@ -713,6 +713,13 @@ commands = {
     "exit_codes": {"0": "synced or nothing-to-do (idempotent no-op)", "1": "unreadable state", "2": "usage or ambiguous workflow"},
     "output": "text summary or {synced, specTechFile, dirHash} with --json",
   },
+  "scope": {
+    "usage": "stelow scope start|done --scope <id> [--name <workflow>] [--json]",
+    "flags": ["--scope", "--name", "--json"],
+    "env": ["STELOW_STATEDIR"],
+    "exit_codes": {"0": "transition committed", "1": "refused (terminal, deps, containment) or unreadable state", "2": "usage or ambiguous workflow"},
+    "output": "text line or {id, status, started_at} with --json",
+  },
   "lock": {
     "usage": "stelow lock acquire|release|check --scope <id> [--file <f>...] [--ttl N] [--json]",
     "flags": ["--scope", "--file", "--ttl", "--json"],
@@ -971,6 +978,12 @@ if workflow.get("scopes") and workflow.get("specTechFile") == latest:
     sys.exit(0)
 
 content = open(os.path.join(plans, latest)).read()
+# Human-dialect fallback: planning output may open scopes with markdown
+# headings (`### SCOPE-1: Title`) instead of machine blocks. Normalize to
+# the canonical form before splitting so hosts never sync zero scopes from
+# a spec that clearly names them. The bracket form stays canonical (see
+# tech-output.md); this only refuses to lose work.
+content = re.sub(r"(?m)^#{1,6}\s*SCOPE-(\d+)\s*:?\s*(.*)$", r"[SCOPE-\1] \2", content)
 blocks = re.split(r"(?m)^\[SCOPE-(\d+)\]\s*(.*)$", content)
 # split keeps [full, num, title, body, num, title, body, ...]
 scopes = []
@@ -1254,6 +1267,142 @@ sys.exit(0)
 PY
 }
 
+# --- scope -------------------------------------------------------------------
+
+# Single-writer scope transitions for every host. Replaces the old LLM-run
+# `node -e` snippets: workers propose by running these, the CLI validates
+# and commits. Terminal statuses never exit (done/completed refuse with the
+# rework redirect); containment binds (done needs all tasks done/skipped);
+# start needs finished known dependencies (dangling deps warn only).
+do_scope() {
+  local op="${1:-}"; shift || true
+  case "$op" in
+    start|done) ;;
+    *) usage_error "scope needs start|done (try --help)" ;;
+  esac
+  python3 - "$ROOT" "$STATEDIR" "$op" "$@" <<'PY' || exit $?
+import sys, os, re, json, datetime, tempfile
+root, statedir, op, argv = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4:]
+
+def usage(text):
+    print(f"scope {op}: {text} (try --help)", file=sys.stderr)
+    sys.exit(2)
+
+def fail(text):
+    print(f"scope {op}: {text}", file=sys.stderr)
+    sys.exit(1)
+
+scope_id = None
+name = None
+want_json = False
+i = 0
+while i < len(argv):
+    arg = argv[i]
+    if arg == "--scope":
+        i += 1
+        if i >= len(argv) or not argv[i].strip(): usage("--scope needs a value")
+        scope_id = argv[i]
+    elif arg == "--name":
+        i += 1
+        if i >= len(argv) or not argv[i].strip(): usage("--name needs a value")
+        name = argv[i]
+    elif arg == "--json":
+        want_json = True
+    elif arg.startswith("--"):
+        usage(f"unknown flag '{arg}'")
+    else:
+        usage(f"unexpected argument '{arg}'")
+    i += 1
+if not scope_id:
+    usage("start|done need --scope <scope-id>")
+if not re.fullmatch(r"[A-Za-z0-9_-]{1,80}", scope_id):
+    usage("--scope must match [A-Za-z0-9_-]{1,80}")
+
+tracking_path = os.path.join(root, "stelow.json")
+try:
+    tracking = json.loads(open(tracking_path).read())
+except Exception as error:
+    fail(f"could not read {tracking_path} ({error})")
+workflows = tracking.get("workflows")
+if not isinstance(workflows, list) or not workflows:
+    fail("no workflows in tracking")
+
+workflow = None
+if name:
+    workflow = next((w for w in workflows if w.get("name") == name), None)
+    if workflow is None:
+        fail(f"no workflow named '{name}'")
+else:
+    leaf = os.path.basename(os.path.normpath(statedir))
+    workflow = next((w for w in workflows if w.get("dirHash") == leaf), None)
+    if workflow is None:
+        active = [w for w in workflows if w.get("status") == "in-progress"]
+        if len(active) == 1:
+            workflow = active[0]
+        else:
+            print("scope: ambiguous workflow (pass --name) or set STELOW_STATEDIR", file=sys.stderr)
+            sys.exit(2)
+
+scopes = workflow.get("scopes")
+if not isinstance(scopes, list):
+    fail("workflow has no scopes; run sync-scopes first")
+scope = next((x for x in scopes if isinstance(x, dict) and x.get("id") == scope_id), None)
+if scope is None:
+    fail(f"unknown scope '{scope_id}'; run sync-scopes first")
+status = scope.get("status", "pending")
+
+def out(payload):
+    if want_json:
+        print(json.dumps(payload))
+    else:
+        print(f"scope {scope_id}: {payload['status']}")
+
+def done_status(value):
+    return value in ("done", "completed")
+
+if op == "start":
+    if done_status(status) or status == "skipped":
+        fail(f"'{scope_id}' is {status}: finished scopes never restart — open a rework scope instead")
+    known = {x.get("id") for x in scopes if isinstance(x, dict)}
+    open_deps = sorted({d for d in scope.get("blockedBy", []) if isinstance(d, str) and d in known
+                        and not done_status(next((x for x in scopes if x.get("id") == d), {}).get("status"))})
+    if open_deps:
+        fail(f"'{scope_id}' waits on unfinished scope(s): {', '.join(open_deps)} — start them first")
+    dangling = sorted({d for d in scope.get("blockedBy", []) if isinstance(d, str) and d not in known})
+    for dep in dangling:
+        print(f"scope: warning: '{scope_id}' references unknown scope '{dep}'", file=sys.stderr)
+    if not scope.get("started_at"):
+        scope["started_at"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    scope["status"] = "in-progress"
+elif op == "done":
+    if done_status(status):
+        fail(f"'{scope_id}' is already {status}: finished scopes never regress — open a rework scope instead")
+    if status not in ("in-progress", "blocked", "failed", "pending"):
+        fail(f"'{scope_id}' is {status}: start it first (`stelow scope start --scope {scope_id}`)")
+    open_tasks = [t.get("id") or t.get("name") for t in scope.get("tasks", [])
+                  if isinstance(t, dict) and t.get("status") not in ("done", "completed", "skipped")]
+    if open_tasks:
+        fail(f"'{scope_id}' holds {len(open_tasks)} open task(s) — mark each done or skipped first: {', '.join(open_tasks[:5])}")
+    record = scope.get("record")
+    if isinstance(record, dict) and record.get("verified") is not True:
+        fail(f"'{scope_id}' carries an unverified Record — complete every verification checklist item and re-run the verify commands first")
+    scope["status"] = "done"
+workflow["updated"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+fd, temporary = tempfile.mkstemp(prefix=".stelow.", dir=root)
+try:
+    with os.fdopen(fd, "w") as handle:
+        json.dump(tracking, handle, indent=2)
+        handle.write("\n")
+    os.replace(temporary, tracking_path)
+except Exception as error:
+    try: os.unlink(temporary)
+    except Exception: pass
+    fail(f"could not write {tracking_path} ({error})")
+out({"id": scope_id, "status": scope["status"], "started_at": scope.get("started_at")})
+sys.exit(0)
+PY
+}
+
 # --- config ------------------------------------------------------------------
 
 # Read Workflow.config from stelow.json (in-progress workflow only).
@@ -1527,7 +1676,7 @@ PY
 
 usage() {
   cat <<EOF
-$PROG — stelow workflow helper (status / advance / doctor / seed / schema / ask / sync-scopes / lock / config)
+$PROG — stelow workflow helper (status / advance / doctor / seed / schema / ask / sync-scopes / lock / config / scope)
 
 Usage:
   $PROG status [--json]
@@ -1598,6 +1747,10 @@ case "${1:-}" in
   lock)
     shift
     do_lock "$@"
+    ;;
+  scope)
+    shift
+    do_scope "$@"
     ;;
   doctor)
     shift
