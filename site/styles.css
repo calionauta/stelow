@@ -216,6 +216,12 @@ body {
 .dials { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
 .dials ul, .ticks { margin: 10px 0 0; padding-left: 20px; }
 .mini-steps { margin: 12px 0 0; padding-left: 22px; }
+.mini-steps code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85em; font-weight: 700;
+  background: #efe5d2; border: 1px solid var(--line);
+  padding: 1px 7px; border-radius: 6px; white-space: nowrap;
+}
 .mini-steps li { margin-bottom: 6px; }
 .mini-steps a { color: var(--ink); font-weight: 700; }
 /* quiet notice strip — a caveat, not a feature; whispers instead of shouting */
