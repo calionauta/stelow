@@ -11,26 +11,19 @@
 
 > **Pre-1.0 status:** Stelow is under active product and market validation. Its
 > public release line is `0.x`; APIs, workflow contracts, and skills may change
-> incompatibly before a stable `1.0.0`. Historical `1.x` GitHub releases are
-> retained as internal milestones and do not signal production stability.
+> incompatibly before a stable `1.0.0`. 
 
-> 💡 **New here? Start with the official app.** <a href="https://getbb.app" rel="nofollow">bb</a>
-> (free) runs Stelow visually: board, inbox, worker CLI, 25+ skills
-> auto-synced. Install it, open it, then run
-> `curl -fsSL https://calionauta.github.io/stelow/install.sh | bash` to add
-> the Stelow plugin. Details in [Quick Start](#-quick-start), or go straight
-> to the [bb-plugin-stelow repo](https://github.com/calionauta/bb-plugin-stelow).
-> Prefer another agent? The skills-only path is below and works anywhere.
+> [!TIP]
+> 💡 **New here? Start with the official plugin.**
+>  Install now: [https://getbb.app/marketplace/stelow](https://getbb.app/marketplace/stelow).
+>  Prefer another harness? The skills-only path is below and works anywhere.
 
-I'm trying to make ai agents behave less like coding assistants and more like cross-functional product team.
+I'm trying to make ai agents behave less like coding assistants and more like cross-functional product team. 
+[More about my background.](#about-the-author)
 
 This package brings product methodology to AI coding agents. Instead of open-ended feature lists, you shape proposals with clear scope boundaries, validate them through adversarial critique, and generate typed technical scopes ready for autonomous execution.
 
-> **Built by a former product manager and developer, for AI agents and humans.** I've led product teams, taught product leadership, advised product strategy, and written code across the full stack. stelow is that experience, systematized — no conference-room theory, no abstract architecture. Lessons from live products, shipped features, real teams, and real codebases. [More about my background.](#about-the-author)
-
 ---
-
-> 🎯 *"Measure thrice, cut once"* - applies to product decisions, not just code.
 
 **Key differentiators:**
 
