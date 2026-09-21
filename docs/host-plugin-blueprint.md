@@ -227,6 +227,10 @@ X ago" + inventory dialog) — silent syncs become mystery meat otherwise.
   pile is labeled Bucket on every track (never Inbox — that word belongs
   to the notification center); stored keys, statuses, and move targets
   keep the old identifier, so the rename is labels-only with no migration.
+- **One gallery dialog for piles**: bucket columns and hill clusters open
+  the same expanded modal — the board tiles themselves in a uniform grid
+  (equal widths, equal row heights, vertical scroll), titled by params
+  (count plus context). Never a second modal, never a positioned overlay.
 - **Result-oriented copy**: say "results", never "index"; "result", never
   "artifact". Internal filenames stay out of user-facing text.
 - **No destructive primary actions while a worker is healthy**: recovery
