@@ -310,7 +310,7 @@ encode the rules above as tested pure functions: `worker-action-policy`,
 `preview-session`, `preview-runtime`, `audit-receipt`,
 `audit-trail-contract`, `audit-verification`, `vcs-publication`,
 `workspace-recovery`, `workflow-config`, `remote-url`, `reliable-preset`,
-`preset-staleness`, `decision-api`, `decision-points`, `preset-judge`, `skill-criteria`, `inbox-severity`. Mirror the pattern (pure `lib/` +
+`preset-staleness`, `decision-api`, `decision-points`, `preset-judge`, `hill-position`, `card-metrics`, `skill-criteria`, `inbox-severity`. Mirror the pattern (pure `lib/` +
 node-test per rule, never inline-only in handlers) rather than the code.
 
 ## 9. Anti-patterns (each paid for at least once)
