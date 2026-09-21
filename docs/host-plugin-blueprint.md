@@ -223,10 +223,13 @@ X ago" + inventory dialog) — silent syncs become mystery meat otherwise.
 - **Project picker with re-anchor**: any cross-project dialog offers every
   project, defaults to the board's, and re-anchors on every open, so a
   stale pick never writes to the wrong project.
-- **First column reads Bucket, keys stay put**: the captured-but-unstarted
-  pile is labeled Bucket on every track (never Inbox — that word belongs
-  to the notification center); stored keys, statuses, and move targets
-  keep the old identifier, so the rename is labels-only with no migration.
+- **Bucket lives in the header gallery, never as a column**: the
+  captured-but-unstarted pile is labeled Bucket on every track (never
+  Inbox — that word belongs to the notification center) and opens from
+  a header button into the shared gallery; stored keys, statuses, and
+  move targets keep the old identifier, so the rename is labels-only
+  with no migration. Rendered boards skip the column while grouping,
+  moves, and filters keep the full catalog.
 - **One gallery dialog for piles**: bucket columns and hill clusters open
   the same expanded modal — fixed dimensions (70vw wide, 85dvh tall,
   internal scroll), the board tiles
