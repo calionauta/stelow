@@ -71,12 +71,13 @@
     <h2>Software factories ship fast. They still skip the product work.</h2>
     <div class="two-col">
       <div>
-        <p>Watching tokens stream became the new doomscroll. You stare at every line even when no decision needs you — afraid to miss a detail, burning attention waiting for output you only needed to judge when ready. The press now calls the role "AI babysitter"; surveyed developers describe it as a dozen browser tabs open in the head. Continuous chat made sense when models couldn't sustain long runs. Now it's a residual habit.</p>
+        <p>Watching tokens stream became the new doomscroll. You stare at every line even when no decision needs you — afraid to miss a detail, burning attention waiting for output you only needed to judge when ready. The press now calls the role "AI babysitter"; surveyed developers describe it as a dozen browser tabs open in the head. Continuous chat made sense when models couldn't sustain long runs. Now it's a residual habit — with honest exceptions. Tight chat still earns its place: debugging a hairy failure, pairing through genuine ambiguity, talking something through to learn it. Every card keeps a live thread for exactly those moments. But as the default operating system for continuous product work, it taxes more than it helps.</p>
         <p>At the other extreme, the autonomous factory has the opposite problem: throughput without judgment. Issue-to-PR pipelines ship code nobody shaped, questioned, or scoped. The 2026 evidence is consistent — agent adoption raises complexity and static-analysis warnings while velocity gains fade, and most agent PRs merge unmodified. Speed stays, understanding doesn't.</p>
         <p>Two failures, one missing layer: product discipline between intent and code. Stelow is that layer — shaped bets with IN/OUT boundaries, adversarial critique, interface before code, typed scopes under acceptance contracts, and an audit that closes the loop. You stay in zoom-out — context, boundaries, choices, quality — while agents run an opinionated workflow: board, quiet inbox, structured questions only when a decision actually needs you.</p>
       </div>
       <div class="compare">
         <div class="card flat">
+          <p class="fine" style="margin:0 0 6px">The 2024–2026 default</p>
           <h3>Factory pipeline</h3>
           <ul class="chips" aria-label="Factory stages">
             <li><span>prompt</span></li>
@@ -86,6 +87,7 @@
           <p>Fast. One role. No memory of why a decision was made.</p>
         </div>
         <div class="card accent">
+          <p class="fine" style="margin:0 0 6px">The deliberate alternative</p>
           <h3>Stelow</h3>
           <ul class="chips" aria-label="Stelow stages">
             <li><span>shape</span></li>
@@ -271,11 +273,28 @@
         </div>
         <div class="card flat">
           <h4>You pick what decides what</h4>
-          <p>Each judgment chooses its mode: built-in rules, the shared endpoint, a per-router override, or any provider preset — even one no workflow stage uses.</p>
+          <p>Each judgment chooses its mode: built-in rules, the shared endpoint, or any provider preset — even one no workflow stage uses.</p>
           <p class="fine">Decision routers · per-judgment modes · preset judge — e.g. criteria judged by your own preset, triage by the shared endpoint.</p>
         </div>
       </div>
       <p class="fine">Configured in the plugin under Agent Presets → Decision routers. Skills-only setups have no presets — this whole panel is a bb-plugin thing.</p>
+    </div>
+    <div class="card hill-card">
+      <p class="kicker">Only in the bb plugin</p>
+      <h3>Position, not status.</h3>
+      <p class="section-lede">Columns say "in progress" — which says nothing. The hill shows where each card actually stands: left side still figuring out, right side executing. One glance tells whether the team is discovering or delivering, and amber dots float whatever needs you.</p>
+      <svg class="hill-demo" viewBox="0 0 300 110" role="img" aria-label="Illustration: cards plotted on a hill, two figuring out on the left, three executing on the right, one amber needing attention">
+        <path d="M 8 96 C 70 96, 90 18, 150 18 S 230 96, 292 96" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.35" />
+        <line x1="150" y1="8" x2="150" y2="102" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3" opacity="0.25" />
+        <circle cx="52" cy="72" r="5" class="hill-dot" />
+        <circle cx="86" cy="52" r="5" class="hill-dot" />
+        <circle cx="196" cy="34" r="5" class="hill-dot" />
+        <circle cx="232" cy="52" r="5" class="hill-dot hill-attn" />
+        <circle cx="264" cy="76" r="5" class="hill-dot" />
+        <text x="30" y="108" class="hill-axis">Figuring out</text>
+        <text x="270" y="108" text-anchor="end" class="hill-axis">Executing</text>
+      </svg>
+      <p class="fine">Hill view · position from scopes, stages, and attention — no extra tracking. Cards, List, and Hill share one toggle on the Build board.</p>
     </div>
   </section>
 
