@@ -228,7 +228,8 @@ X ago" + inventory dialog) — silent syncs become mystery meat otherwise.
   to the notification center); stored keys, statuses, and move targets
   keep the old identifier, so the rename is labels-only with no migration.
 - **One gallery dialog for piles**: bucket columns and hill clusters open
-  the same expanded modal — near-fullscreen (70vw), the board tiles
+  the same expanded modal — fixed dimensions (70vw wide, 85dvh tall,
+  internal scroll), the board tiles
   themselves at board width (240px, auto-fill per row, equal heights,
   vertical scroll), titled by params (count plus context). Creation
   checkboxes link the same gallery from their "park in Bucket" copy.
