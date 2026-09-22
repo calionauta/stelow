@@ -338,7 +338,6 @@ encode the rules above as tested pure functions: `worker-action-policy`,
 `promote-card`, `workflow-lineage`, `completion`, `card-claims`, `playbook`,
 `preview-session`, `preview-runtime`, `audit-receipt`,
 `audit-trail-contract`, `audit-verification`, `vcs-publication`,
-<<<<<<< HEAD
 `workspace-recovery`, `workflow-config`, `remote-url`, `trackables`,
 `trackable-contracts`, `trackable-relations`, `trackable-evidence`,
 `trackable-events`, `tracking-paths`, `spec-scope-reader`, `build-gates`,
