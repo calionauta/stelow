@@ -86,22 +86,12 @@ scripts/stelow lock acquire --scope "$SCOPE_ID" "${TARGET_FILES[@]}" "${TTL_ARGS
 
 The lock protocol is **opt-in for the agent**: skip this step entirely if the scope has no `target_files` declared OR sequential dispatch is in use. See `file-locking.md` for TTL semantics and stale-lock stealing.
 
-**Mark scope as in-progress:**
+**Mark scope as in-progress (single writer — never hand-edit tracking):**
 ```bash
-node -e "
-const fs = require('fs');
-const tracking = JSON.parse(fs.readFileSync('stelow.json', 'utf8'));
-const wf = tracking.workflows.find(w => w.status === 'in-progress');
-if (wf?.scopes) {
-  const scope = wf.scopes.find(s => s.id === '{SCOPE-ID}');
-  if (scope) {
-    scope.status = 'in-progress';
-    scope.start_sha = process.env.SCOPE_START_SHA || '';
-  }
-  wf.updated = new Date().toISOString();
-  fs.writeFileSync('stelow.json', JSON.stringify(tracking, null, 2));
-}
-"
+stelow scope start --scope "{SCOPE-ID}"
+# sets status in-progress + started_at (once), refuses unknown ids,
+# finished scopes (never restart — open rework instead), and open
+# dependencies (start them first). STELOW_STATEDIR selects the workflow.
 ```
 
 **Read existing iteration state** (for crash recovery):
@@ -274,23 +264,13 @@ ACTUAL_FILES=$(git diff --name-only "$SCOPE_START_SHA"..HEAD 2>/dev/null \
 
 Why this matters: parallel scope execution is opt-in. If two scopes were dispatched concurrently and they touched the same files, the post-execution diff will reveal the conflict — not a predicted heuristic, but observed file changes. This replaces the LLM-applied "file-overlap guard" with deterministic, ground-truth detection.
 
-**Update scope tracking** (status + iteration + observed footprint):
+**Update scope tracking (single writer — never hand-edit tracking):**
 ```bash
-node -e "
-const fs = require('fs');
-const tracking = JSON.parse(fs.readFileSync('stelow.json', 'utf8'));
-const wf = tracking.workflows.find(w => w.status === 'in-progress');
-if (wf?.scopes) {
-  const scope = wf.scopes.find(s => s.id === '{SCOPE-ID}');
-  if (scope) {
-    scope.status = 'completed';  // or 'escalated' on failure
-    scope.iteration = {M};       // final iteration count
-    scope.actual_files = {ACTUAL_FILES.split('\n').filter(Boolean)};
-  }
-  wf.updated = new Date().toISOString();
-  fs.writeFileSync('stelow.json', JSON.stringify(tracking, null, 2));
-}
-"
+stelow scope done --scope "{SCOPE-ID}" --iteration {M} --actual-files "$(git diff --name-only $start_sha..HEAD | paste -sd, -)"
+# validates containment (all tasks done/skipped), refuses terminal
+# regress and unverified Records, then commits done + iteration +
+# actual_files atomically. Task seeding and the Record wire keep their
+# guards in references/records-and-tasks.md.
 ```
 
 **Release file-reservation locks:**

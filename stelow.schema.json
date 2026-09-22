@@ -4,7 +4,11 @@
   "title": "Stelow Tracking",
   "description": "Schema for tracking product workflow execution and status",
   "type": "object",
-  "required": ["$schema", "version", "workflows"],
+  "required": [
+    "$schema",
+    "version",
+    "workflows"
+  ],
   "properties": {
     "$schema": {
       "type": "string",
@@ -36,17 +40,45 @@
   "definitions": {
     "product-strategy": {
       "type": "object",
-      "required": ["id", "skill", "contract"],
+      "required": [
+        "id",
+        "skill",
+        "contract"
+      ],
       "properties": {
-        "id": {"type": "string", "description": "Stable strategy identifier used by hosts for routing and validation"},
-        "skill": {"type": "string", "description": "stelow-product-* skill directory implementing the playbook"},
-        "contract": {"type": "string", "enum": ["single", "variant", "composite"], "description": "Output cardinality: single integrated result, one selected variant, or named composite suboutputs"},
-        "substeps": {"type": "array", "items": {"type": "string"}, "description": "Expected suboutput slugs (composite only)"}
+        "id": {
+          "type": "string",
+          "description": "Stable strategy identifier used by hosts for routing and validation"
+        },
+        "skill": {
+          "type": "string",
+          "description": "stelow-product-* skill directory implementing the playbook"
+        },
+        "contract": {
+          "type": "string",
+          "enum": [
+            "single",
+            "variant",
+            "composite"
+          ],
+          "description": "Output cardinality: single integrated result, one selected variant, or named composite suboutputs"
+        },
+        "substeps": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Expected suboutput slugs (composite only)"
+        }
       }
     },
     "workflow": {
       "type": "object",
-      "required": ["name", "status", "phases"],
+      "required": [
+        "name",
+        "status",
+        "phases"
+      ],
       "properties": {
         "name": {
           "type": "string",
@@ -62,7 +94,14 @@
         },
         "status": {
           "type": "string",
-          "enum": ["draft", "planning", "approved", "in-progress", "completed", "archived"],
+          "enum": [
+            "draft",
+            "planning",
+            "approved",
+            "in-progress",
+            "completed",
+            "archived"
+          ],
           "description": "Current workflow status"
         },
         "created": {
@@ -84,7 +123,7 @@
         },
         "stage": {
           "$ref": "#/definitions/stage-state",
-          "description": "Unified stage tracking — replaces legacy current-stage.json"
+          "description": "Unified stage tracking \u2014 replaces legacy current-stage.json"
         },
         "config": {
           "type": "object",
@@ -92,7 +131,11 @@
           "properties": {
             "appetite": {
               "type": "string",
-              "enum": ["Lean", "Core", "Complete"],
+              "enum": [
+                "Lean",
+                "Core",
+                "Complete"
+              ],
               "description": "Scope appetite declared by human at setup"
             },
             "review_mode": {
@@ -101,7 +144,9 @@
             },
             "domains_detected": {
               "type": "array",
-              "items": { "type": "string" },
+              "items": {
+                "type": "string"
+              },
               "description": "Domains detected during context:20 (e.g., pricing, marketplace, health)"
             }
           }
@@ -116,19 +161,34 @@
         "metadata": {
           "type": "object",
           "description": "Additional workflow metadata"
+        },
+        "scopes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/scope"
+          },
+          "description": "Desired scope tracking (status commits via stelow scope start|done)"
         }
       }
     },
     "stage-state": {
       "type": "object",
-      "required": ["current_stage", "previous_stage", "transitioned_at", "history"],
+      "required": [
+        "current_stage",
+        "previous_stage",
+        "transitioned_at",
+        "history"
+      ],
       "properties": {
         "current_stage": {
           "type": "string",
           "description": "Current stage slug (e.g., 'shape', 'planning')"
         },
         "previous_stage": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "Previous stage slug, or null for first transition"
         },
         "transitioned_at": {
@@ -141,11 +201,25 @@
           "description": "Ordered history of all stage transitions",
           "items": {
             "type": "object",
-            "required": ["stage", "entered_at"],
+            "required": [
+              "stage",
+              "entered_at"
+            ],
             "properties": {
-              "stage": { "type": "string" },
-              "entered_at": { "type": "string", "format": "date-time" },
-              "exited_at": { "type": ["string", "null"], "format": "date-time" }
+              "stage": {
+                "type": "string"
+              },
+              "entered_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "exited_at": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date-time"
+              }
             }
           }
         },
@@ -157,11 +231,22 @@
     },
     "phase": {
       "type": "object",
-      "required": ["id", "name", "status"],
+      "required": [
+        "id",
+        "name",
+        "status"
+      ],
       "properties": {
         "id": {
           "type": "string",
-          "enum": ["0-clarify", "1-shape", "2-bet", "3-build", "4-critique", "5-gate"],
+          "enum": [
+            "0-clarify",
+            "1-shape",
+            "2-bet",
+            "3-build",
+            "4-critique",
+            "5-gate"
+          ],
           "description": "Phase identifier"
         },
         "name": {
@@ -170,7 +255,12 @@
         },
         "status": {
           "type": "string",
-          "enum": ["pending", "in-progress", "completed", "skipped"],
+          "enum": [
+            "pending",
+            "in-progress",
+            "completed",
+            "skipped"
+          ],
           "description": "Stage status"
         },
         "started": {
@@ -190,6 +280,174 @@
         "notes": {
           "type": "string",
           "description": "Optional notes for the phase"
+        }
+      }
+    },
+    "scope-task": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "status"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Task id (table id like 3.1, stable per spec version)"
+        },
+        "name": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "in-progress",
+            "blocked",
+            "done",
+            "completed",
+            "skipped",
+            "failed",
+            "escalated"
+          ]
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "planned",
+            "discovered"
+          ]
+        },
+        "note": {
+          "type": "string",
+          "description": "Trigger note (required for discovered tasks)"
+        }
+      }
+    },
+    "scope-record": {
+      "type": "object",
+      "properties": {
+        "verified": {
+          "type": "boolean",
+          "description": "True only when every verification-checklist item is checked"
+        },
+        "started_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "completed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "files_count": {
+          "type": "integer"
+        },
+        "commands_count": {
+          "type": "integer"
+        },
+        "baseline": {
+          "type": "object"
+        },
+        "cost": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "suggested_commit": {
+          "type": "string"
+        }
+      }
+    },
+    "scope": {
+      "type": "object",
+      "required": [
+        "id",
+        "status"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "scope-N"
+        },
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "in-progress",
+            "blocked",
+            "done",
+            "completed",
+            "skipped",
+            "failed",
+            "escalated"
+          ]
+        },
+        "blockedBy": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "targetFiles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "maxIterations": {
+          "type": "integer"
+        },
+        "iteration": {
+          "type": "integer"
+        },
+        "started_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "actual_files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "tasks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/scope-task"
+          }
+        },
+        "record": {
+          "$ref": "#/definitions/scope-record"
+        }
+      }
+    },
+    "scope-contract": {
+      "type": "object",
+      "properties": {
+        "acceptance_criteria": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "verify_commands": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "target_files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     }

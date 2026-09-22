@@ -143,7 +143,7 @@ describe("schema", () => {
     const r = run(wd, ["schema"]);
     expect(r.status).toBe(0);
     const j = JSON.parse(r.stdout);
-    for (const cmd of ["status", "advance", "doctor", "seed", "ask", "sync-scopes", "lock", "config"]) {
+    for (const cmd of ["status", "advance", "doctor", "seed", "ask", "sync-scopes", "lock", "config", "scope"]) {
       expect(Object.keys(j), `schema covers ${cmd}`).toContain(cmd);
       expect(j[cmd].usage, `${cmd} usage`).toBeTruthy();
       expect(j[cmd].exit_codes, `${cmd} exit codes`).toBeTruthy();
@@ -336,15 +336,44 @@ describe("sync-scopes", () => {
     const env = { STELOW_STATEDIR: statedir };
     const r = run(wd, ["sync-scopes", "--json"], env);
     expect(r.status).toBe(0);
+    expect(Object.keys(JSON.parse(r.stdout)).sort()).toEqual(["dirHash", "specTechFile", "synced"]);
     expect(JSON.parse(r.stdout).synced).toBe(2);
     const tracking = JSON.parse(readFileSync(join(wd.dir, "stelow.json"), "utf8"));
     const scopes = tracking.workflows[0].scopes;
     expect(scopes.map((s: any) => s.id)).toEqual(["scope-1", "scope-2"]);
     expect(scopes[0]).toMatchObject({ type: "feature", name: "Login", maxIterations: 5, status: "pending" });
+    expect(Object.keys(scopes[0]).sort()).toEqual(
+      ["blockedBy", "id", "maxIterations", "name", "status", "targetFiles", "type"],
+    );
     expect(scopes[0].targetFiles).toEqual(["src/auth/**"]);
     expect(scopes[1]).toMatchObject({ type: "optimization", maxIterations: 3 });
     expect(scopes[1].blockedBy).toEqual(["scope-1"]);
     expect(tracking.workflows[0].specTechFile).toBe("spec-tech_v1.md");
+  });
+
+  it("parses human ### SCOPE-N headings as a fallback", () => {
+    const wd = makeWorkdir();
+    const seed = run(wd, ["seed", "--name", "sync-human", "--intent", "feature", "--json"]);
+    expect(seed.status).toBe(0);
+    const statedir = (JSON.parse(seed.stdout) as any).statedir as string;
+    mkdirSync(join(statedir, "plans"), { recursive: true });
+    writeFileSync(join(statedir, "plans", "spec-tech_v1.md"), [
+      "## 1. Identified Scopes",
+      "",
+      "### SCOPE-1: Overlay split",
+      "[TYPE] feature",
+      "Dependencies: none",
+      "",
+      "### SCOPE-2: Drawer fallback",
+      "Dependencies: SCOPE-1",
+      "",
+    ].join("\n"));
+    const r = run(wd, ["sync-scopes", "--json"], { STELOW_STATEDIR: statedir });
+    expect(r.status).toBe(0);
+    expect(JSON.parse(r.stdout).synced).toBe(2);
+    const tracking = JSON.parse(readFileSync(join(wd.dir, "stelow.json"), "utf8"));
+    expect(tracking.workflows[0].scopes.map((s: any) => s.id)).toEqual(["scope-1", "scope-2"]);
+    expect(tracking.workflows[0].scopes[1].blockedBy).toEqual(["scope-1"]);
   });
 
   it("is idempotent on second run", () => {
@@ -371,6 +400,127 @@ describe("sync-scopes", () => {
     const wd = makeWorkdir();
     expect(run(wd, ["sync-scopes", "--bogus"]).status).toBe(2);
   });
+
+describe("scope", () => {
+  const SPEC = [
+    "[SCOPE-1] Login",
+    "[TYPE] feature",
+    "Dependencies: none",
+    "",
+    "[SCOPE-2] Speed",
+    "Dependencies: SCOPE-1",
+    "",
+  ].join("\n");
+
+  function seedScope(wdName: string): { wd: any; statedir: string } {
+    const wd = makeWorkdir();
+    const seed = run(wd, ["seed", "--name", wdName, "--intent", "feature", "--json"]);
+    expect(seed.status).toBe(0);
+    const statedir = (JSON.parse(seed.stdout) as any).statedir as string;
+    mkdirSync(join(statedir, "plans"), { recursive: true });
+    writeFileSync(join(statedir, "plans", "spec-tech_v1.md"), SPEC);
+    expect(run(wd, ["sync-scopes"], { STELOW_STATEDIR: statedir }).status).toBe(0);
+    return { wd, statedir };
+  }
+
+  function scopesOf(wd: any): any[] {
+    return JSON.parse(readFileSync(join(wd.dir, "stelow.json"), "utf8")).workflows[0].scopes;
+  }
+
+  it("starts a scope with started_at and enforces dependency order", () => {
+    const { wd, statedir } = seedScope("scope-start");
+    const env = { STELOW_STATEDIR: statedir };
+    expect(run(wd, ["scope", "start", "--scope", "scope-2"], env).status).toBe(1);
+    const started = run(wd, ["scope", "start", "--scope", "scope-1", "--json"], env);
+    expect(started.status).toBe(0);
+    expect(JSON.parse(started.stdout)).toMatchObject({ id: "scope-1", status: "in-progress" });
+    expect(typeof JSON.parse(started.stdout).started_at).toBe("string");
+    const first = scopesOf(wd).find((s: any) => s.id === "scope-1");
+    expect(first.status).toBe("in-progress");
+    expect(typeof first.started_at).toBe("string");
+    expect(run(wd, ["scope", "done", "--scope", "scope-1"], env).status).toBe(0);
+    expect(run(wd, ["scope", "start", "--scope", "scope-2"], env).status).toBe(0);
+    expect(run(wd, ["scope", "start", "--scope", "scope-1"], env).status).toBe(1);
+  });
+
+  it("closes only with shut tasks and never regresses", () => {
+    const { wd, statedir } = seedScope("scope-done");
+    const env = { STELOW_STATEDIR: statedir };
+    expect(run(wd, ["scope", "start", "--scope", "scope-1"], env).status).toBe(0);
+    expect(run(wd, ["scope", "done", "--scope", "scope-9"], env).status).toBe(1);
+    expect(run(wd, ["scope", "done", "--scope", "scope-1", "--json"], env).status).toBe(0);
+    expect(scopesOf(wd).find((s: any) => s.id === "scope-1").status).toBe("done");
+    expect(run(wd, ["scope", "done", "--scope", "scope-1"], env).status).toBe(1);
+    expect(run(wd, ["scope", "start", "--scope", "scope-1"], env).status).toBe(1);
+  });
+
+  it("refuses done on open tasks and unverified records", () => {
+    const { wd, statedir } = seedScope("scope-gates");
+    const env = { STELOW_STATEDIR: statedir };
+    expect(run(wd, ["scope", "start", "--scope", "scope-1"], env).status).toBe(0);
+    const tracking = () => JSON.parse(readFileSync(join(wd.dir, "stelow.json"), "utf8"));
+    const setScope = (fn: (s: any) => void) => {
+      const t = tracking();
+      fn(t.workflows[0].scopes.find((s: any) => s.id === "scope-1"));
+      writeFileSync(join(wd.dir, "stelow.json"), JSON.stringify(t, null, 2));
+    };
+    setScope((s) => { s.tasks = [{ id: "1.1", name: "x", status: "pending", source: "planned" }]; });
+    expect(run(wd, ["scope", "done", "--scope", "scope-1"], env).status).toBe(1);
+    setScope((s) => { s.tasks = [{ id: "1.1", name: "x", status: "done", source: "planned" }]; s.record = { verified: false }; });
+    expect(run(wd, ["scope", "done", "--scope", "scope-1"], env).status).toBe(1);
+    setScope((s) => { s.record = { verified: true }; });
+    expect(run(wd, ["scope", "done", "--scope", "scope-1"], env).status).toBe(0);
+  });
+
+  it("persists iteration and actual files on done", () => {
+    const { wd, statedir } = seedScope("scope-close-meta");
+    const env = { STELOW_STATEDIR: statedir };
+    expect(run(wd, ["scope", "start", "--scope", "scope-1"], env).status).toBe(0);
+    expect(run(wd, ["scope", "done", "--scope", "scope-1", "--iteration", "3", "--actual-files", "a.ts,b.ts"], env).status).toBe(0);
+    const scope = JSON.parse(readFileSync(join(wd.dir, "stelow.json"), "utf8")).workflows[0].scopes.find((s: any) => s.id === "scope-1");
+    expect(scope).toMatchObject({ status: "done", iteration: 3, actual_files: ["a.ts", "b.ts"] });
+    expect(run(wd, ["scope", "done", "--scope", "scope-1", "--iteration", "x"], env).status).toBe(2);
+  });
+
+  it("seeds planned tasks with validation, preserving discovered", () => {
+    const { wd, statedir } = seedScope("scope-seed");
+    const env = { STELOW_STATEDIR: statedir };
+    const seed = (tasks: unknown) => run(wd, ["scope", "seed-tasks", "--scope", "scope-1", "--tasks", JSON.stringify(tasks), "--json"], env);
+    expect(seed([]).status).toBe(1);
+    expect(seed([{ name: "x" }]).status).toBe(1);
+    expect(seed([{ id: "1.1", name: "x", source: "nope" }]).status).toBe(1);
+    expect(seed([{ id: "1.1", name: "x", status: "done", source: "discovered" }]).status).toBe(1);
+    expect(seed("nope").status).toBe(2);
+    const ok = seed([{ id: "1.1", name: "Migration" }, { id: "1.2", name: "Endpoint", status: "pending" }]);
+    expect(ok.status).toBe(0);
+    expect(JSON.parse(ok.stdout)).toMatchObject({ id: "scope-1", seeded: 2, kept_discovered: 0 });
+    const started = run(wd, ["scope", "start", "--scope", "scope-2", "--start-sha", "abc123"], env);
+    expect(started.status).toBe(1);
+    expect(seed([{ id: "1.1", name: "Migration", status: "done" }, { id: "1.2", name: "Endpoint", status: "done" }]).status).toBe(0);
+    expect(run(wd, ["scope", "done", "--scope", "scope-1"], env).status).toBe(0);
+    expect(run(wd, ["scope", "start", "--scope", "scope-2", "--start-sha", "abc123"], env).status).toBe(0);
+    expect(JSON.parse(readFileSync(join(wd.dir, "stelow.json"), "utf8")).workflows[0].scopes.find((s: any) => s.id === "scope-2").start_sha).toBe("abc123");
+    const again = seed([{ id: "1.1", name: "Migration v2" }]);
+    expect(again.status).toBe(0);
+    const tasks = JSON.parse(readFileSync(join(wd.dir, "stelow.json"), "utf8")).workflows[0].scopes.find((s: any) => s.id === "scope-1").tasks;
+    expect(tasks.map((t: any) => t.id)).toEqual(["1.1"]);
+    expect(tasks[0]).toMatchObject({ name: "Migration v2", source: "planned", status: "pending" });
+  });
+
+  it("rejects usage with exit 2", () => {
+    const wd = makeWorkdir();
+    expect(run(wd, ["scope"]).status).toBe(2);
+    expect(run(wd, ["scope", "start"]).status).toBe(2);
+  });
+
+  it("refuses op-scoped flags on the wrong op", () => {
+    const { wd, statedir } = seedScope("scope-flags");
+    const env = { STELOW_STATEDIR: statedir };
+    expect(run(wd, ["scope", "start", "--scope", "scope-1", "--iteration", "2"], env).status).toBe(2);
+    expect(run(wd, ["scope", "done", "--scope", "scope-1", "--start-sha", "x"], env).status).toBe(2);
+    expect(run(wd, ["scope", "start", "--scope", "scope-1", "--tasks", "[]"], env).status).toBe(2);
+  });
+});
 
   function seedWithCustomSpec(wdName: string, spec: string): { wd: any; statedir: string } {
     const wd = makeWorkdir();

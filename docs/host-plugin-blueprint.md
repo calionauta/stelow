@@ -338,7 +338,10 @@ encode the rules above as tested pure functions: `worker-action-policy`,
 `promote-card`, `workflow-lineage`, `completion`, `card-claims`, `playbook`,
 `preview-session`, `preview-runtime`, `audit-receipt`,
 `audit-trail-contract`, `audit-verification`, `vcs-publication`,
-`workspace-recovery`, `workflow-config`, `remote-url`, `reliable-preset`,
+`workspace-recovery`, `workflow-config`, `remote-url`, `trackables`,
+`trackable-contracts`, `trackable-relations`, `trackable-evidence`,
+`trackable-events`, `tracking-paths`, `spec-scope-reader`, `build-gates`,
+`scope-command`, `artifact-roles`, `reliable-preset`,
 `preset-staleness`, `decision-api`, `decision-points`, `preset-judge`, `hill-position`, `card-metrics`, `skill-criteria`, `task-evidence`, `delegation-evidence`, `inbox-severity`, `delegation-map`, `draft-burst`. Mirror the pattern (pure `lib/` +
 node-test per rule, never inline-only in handlers) rather than the code.
 
@@ -353,6 +356,19 @@ node-test per rule, never inline-only in handlers) rather than the code.
 - Compat `fr` units stretching kanban columns (bounded minmax instead).
 - Inferring completion from stage + idle instead of an explicit
   worker commit verified in code (§2).
+- Scope/task status as worker-edited JSON without host validation
+  (single-writer transitions: the worker proposes via `stelow scope
+  start|done`, the CLI validates containment/order/terminality and commits;
+  hosts project observed state from claims and records instead of trusting
+  the self-report).
+- Machine-readable plans without a machine dialect (specs that only use
+  human headings sync zero scopes; `sync-scopes` now accepts `### SCOPE-N`
+  as a fallback, but the `[SCOPE-N]` block stays canonical).
+- Evidence scattered per kind (one registry, one condition shape, one
+  event log, one path rule — a new pendency adds a contracts-table row,
+  never a new strategy).
+- Guessing the active scope from open-task counts (no conditions without a
+  named writer and citable evidence; unknown reads unknown).
 - Workers discovering playbooks through skill-list shell pipelines
   instead of reading host-served paths (§1).
 - Fail-closed on unreadable contract/methodology sources (fail open;
