@@ -3,6 +3,25 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.70.0-alpha] - 2026-09-22
+
+### Added
+
+- **Single-writer scope transitions (`stelow scope start|done|seed-tasks`).**
+  Validated transitions replace LLM-run `node -e` snippets: terminal
+  statuses never exit, containment binds tasks, start needs finished
+  dependencies, `done` refuses unverified Records, task seeding validates
+  shape and preserves discovered tasks. Shared workflow selection with
+  identity re-verification; op-scoped flags; JSON envelopes stable.
+- **Tolerant scope sync.** `sync-scopes` accepts human `### SCOPE-N`
+  headings as a fallback (bracket form stays canonical); planning
+  template shows the machine block first and authors required
+  `scopes/{scope-id}.json` contracts.
+- **Schema coverage.** `scope`, `scope-task`, `scope-record`, and
+  `scope-contract` definitions plus `workflows[].scopes`.
+- **Event-log RFC.** Proposal for the append-only per-workflow
+  `events.jsonl` trail with the host SQLite trail as reference.
+
 ## [0.69.0-alpha] - 2026-09-21
 
 ### Added
