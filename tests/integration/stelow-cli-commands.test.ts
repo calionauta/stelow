@@ -482,6 +482,31 @@ describe("scope", () => {
     expect(run(wd, ["scope", "done", "--scope", "scope-1", "--iteration", "x"], env).status).toBe(2);
   });
 
+  it("seeds planned tasks with validation, preserving discovered", () => {
+    const { wd, statedir } = seedScope("scope-seed");
+    const env = { STELOW_STATEDIR: statedir };
+    const seed = (tasks: unknown) => run(wd, ["scope", "seed-tasks", "--scope", "scope-1", "--tasks", JSON.stringify(tasks), "--json"], env);
+    expect(seed([]).status).toBe(1);
+    expect(seed([{ name: "x" }]).status).toBe(1);
+    expect(seed([{ id: "1.1", name: "x", source: "nope" }]).status).toBe(1);
+    expect(seed([{ id: "1.1", name: "x", status: "done", source: "discovered" }]).status).toBe(1);
+    expect(seed("nope").status).toBe(2);
+    const ok = seed([{ id: "1.1", name: "Migration" }, { id: "1.2", name: "Endpoint", status: "pending" }]);
+    expect(ok.status).toBe(0);
+    expect(JSON.parse(ok.stdout)).toMatchObject({ id: "scope-1", seeded: 2, kept_discovered: 0 });
+    const started = run(wd, ["scope", "start", "--scope", "scope-2", "--start-sha", "abc123"], env);
+    expect(started.status).toBe(1);
+    expect(seed([{ id: "1.1", name: "Migration", status: "done" }, { id: "1.2", name: "Endpoint", status: "done" }]).status).toBe(0);
+    expect(run(wd, ["scope", "done", "--scope", "scope-1"], env).status).toBe(0);
+    expect(run(wd, ["scope", "start", "--scope", "scope-2", "--start-sha", "abc123"], env).status).toBe(0);
+    expect(JSON.parse(readFileSync(join(wd.dir, "stelow.json"), "utf8")).workflows[0].scopes.find((s: any) => s.id === "scope-2").start_sha).toBe("abc123");
+    const again = seed([{ id: "1.1", name: "Migration v2" }]);
+    expect(again.status).toBe(0);
+    const tasks = JSON.parse(readFileSync(join(wd.dir, "stelow.json"), "utf8")).workflows[0].scopes.find((s: any) => s.id === "scope-1").tasks;
+    expect(tasks.map((t: any) => t.id)).toEqual(["1.1"]);
+    expect(tasks[0]).toMatchObject({ name: "Migration v2", source: "planned", status: "pending" });
+  });
+
   it("rejects usage with exit 2", () => {
     const wd = makeWorkdir();
     expect(run(wd, ["scope"]).status).toBe(2);

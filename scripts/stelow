@@ -714,10 +714,10 @@ commands = {
     "output": "text summary or {synced, specTechFile, dirHash} with --json",
   },
   "scope": {
-    "usage": "stelow scope start|done --scope <id> [--name <workflow>] [--iteration <n>] [--actual-files <a,b>] [--json]",
-    "flags": ["--scope", "--name", "--iteration", "--actual-files", "--json"],
+    "usage": "stelow scope start|done|seed-tasks --scope <id> [--name <workflow>] [--iteration <n>] [--actual-files <a,b>] [--tasks <json>] [--start-sha <sha>] [--json]",
+    "flags": ["--scope", "--name", "--iteration", "--actual-files", "--tasks", "--start-sha", "--json"],
     "env": ["STELOW_STATEDIR"],
-    "exit_codes": {"0": "transition committed", "1": "refused (terminal, deps, containment) or unreadable state", "2": "usage or ambiguous workflow"},
+    "exit_codes": {"0": "transition committed", "1": "refused (terminal, deps, containment, seed validation) or unreadable state", "2": "usage or ambiguous workflow"},
     "output": "text line or {id, status, started_at} with --json",
   },
   "lock": {
@@ -902,6 +902,49 @@ while True:
 PY
 }
 
+# Shared workflow selection for tracking writers (sync-scopes, scope).
+# Prints `INDEX=<n> KIND=<name|dir|active>` and exits 0, `MISS=<reason>` and
+# exits 1 when nothing is selectable, or a usage message and exit 2 when the
+# selection is ambiguous. Callers re-read stelow.json and re-verify KIND
+# before writing, so a concurrent reseed fails closed instead of clobbering.
+# Fail-open vs fail-closed stays with the caller: sync-scopes turns MISS
+# into a warning + exit 0, mutating commands turn it into exit 1.
+stelow_workflow_index() {
+  local cmd="$1" root="$2" statedir="$3" name="${4:-}"
+  python3 - "$cmd" "$root" "$statedir" "$name" <<'PY'
+import sys, os, json
+cmd, root, statedir, name = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+tracking_path = os.path.join(root, "stelow.json")
+try:
+    tracking = json.loads(open(tracking_path).read())
+except Exception as error:
+    print(f"MISS=could not read {tracking_path} ({error})")
+    sys.exit(1)
+workflows = tracking.get("workflows")
+if not isinstance(workflows, list) or not workflows:
+    print("MISS=no workflows in tracking")
+    sys.exit(1)
+if name:
+    for i, w in enumerate(workflows):
+        if isinstance(w, dict) and w.get("name") == name:
+            print(f"INDEX={i} KIND=name")
+            sys.exit(0)
+    print(f"MISS=no workflow named '{name}'")
+    sys.exit(1)
+leaf = os.path.basename(os.path.normpath(statedir))
+for i, w in enumerate(workflows):
+    if isinstance(w, dict) and w.get("dirHash") == leaf:
+        print(f"INDEX={i} KIND=dir")
+        sys.exit(0)
+active = [i for i, w in enumerate(workflows) if isinstance(w, dict) and w.get("status") == "in-progress"]
+if len(active) == 1:
+    print(f"INDEX={active[0]} KIND=active")
+    sys.exit(0)
+print(f"{cmd}: ambiguous workflow (pass --name) or set STELOW_STATEDIR", file=sys.stderr)
+sys.exit(2)
+PY
+}
+
 # --- sync-scopes -------------------------------------------------------------
 
 # Parse [SCOPE-N] blocks from the latest spec-tech_*.md into wf.scopes[].
@@ -915,9 +958,20 @@ do_sync_scopes() {
       --json) json="1"; shift ;;
       *) usage_error "sync-scopes: unknown arg '$1' (try --help)" ;;    esac
   done
-  python3 - "$ROOT" "$STATEDIR" "$name" "$json" <<'PY' || exit $?
+  selection=$(stelow_workflow_index "sync-scopes" "$ROOT" "$STATEDIR" "$name")
+  sel_code=$?
+  if [ $sel_code -eq 2 ]; then exit 2; fi
+  if [ $sel_code -ne 0 ]; then
+    reason="${selection#MISS=}"
+    printf 'sync-scopes: %s; leaving state unchanged\n' "$reason" >&2
+    exit 0
+  fi
+  wf_index="${selection%% *}"
+  wf_index="${wf_index#INDEX=}"
+  wf_kind="${selection##*KIND=}"
+  python3 - "$ROOT" "$STATEDIR" "$name" "$json" "$wf_index" "$wf_kind" <<'PY' || exit $?
 import sys, os, re, json, glob, datetime, tempfile
-root, statedir, name, want_json = sys.argv[1:5]
+root, statedir, name, want_json, wf_index, wf_kind = sys.argv[1:7]
 
 def warn(text):
     print(f"sync-scopes: {text}", file=sys.stderr)
@@ -932,23 +986,18 @@ workflows = tracking.get("workflows")
 if not isinstance(workflows, list) or not workflows:
     warn("no workflows in tracking; leaving state unchanged")
     sys.exit(0)
-
-workflow = None
-if name:
-    workflow = next((w for w in workflows if w.get("name") == name), None)
-    if workflow is None:
-        warn(f"no workflow named '{name}'; leaving state unchanged")
-        sys.exit(0)
-else:
-    leaf = os.path.basename(os.path.normpath(statedir))
-    workflow = next((w for w in workflows if w.get("dirHash") == leaf), None)
-    if workflow is None:
-        active = [w for w in workflows if w.get("status") == "in-progress"]
-        if len(active) == 1:
-            workflow = active[0]
-        else:
-            print("sync-scopes: ambiguous workflow (pass --name) or set STELOW_STATEDIR", file=sys.stderr)
-            sys.exit(2)
+try:
+    workflow = workflows[int(wf_index)]
+except Exception:
+    warn("selected workflow is gone; leaving state unchanged")
+    sys.exit(0)
+if not isinstance(workflow, dict) or not (
+    (wf_kind == "name" and (not name or workflow.get("name") == name))
+    or (wf_kind == "dir" and workflow.get("dirHash") == os.path.basename(os.path.normpath(statedir)))
+    or (wf_kind == "active" and workflow.get("status") == "in-progress")
+):
+    warn("selected workflow changed underfoot; leaving state unchanged")
+    sys.exit(0)
 
 dirhash = workflow.get("dirHash")
 if not dirhash:
@@ -1277,12 +1326,29 @@ PY
 do_scope() {
   local op="${1:-}"; shift || true
   case "$op" in
-    start|done) ;;
-    *) usage_error "scope needs start|done (try --help)" ;;
+    start|done|seed-tasks) ;;
+    *) usage_error "scope needs start|done|seed-tasks (try --help)" ;;
   esac
-  python3 - "$ROOT" "$STATEDIR" "$op" "$@" <<'PY' || exit $?
+  [[ " $* " == *" --scope "* ]] || usage_error "scope start|done need --scope <scope-id> (try --help)"
+  _scope_name=""
+  _scope_prev=""
+  for _scope_arg in "$@"; do
+    if [ "$_scope_prev" = "--name" ]; then _scope_name="$_scope_arg"; fi
+    _scope_prev="$_scope_arg"
+  done
+  _scope_sel=$(stelow_workflow_index "scope" "$ROOT" "$STATEDIR" "$_scope_name")
+  _scope_code=$?
+  if [ $_scope_code -eq 2 ]; then exit 2; fi
+  if [ $_scope_code -ne 0 ]; then
+    printf 'scope %s: %s\n' "$op" "${_scope_sel#MISS=}" >&2
+    exit 1
+  fi
+  _scope_index="${_scope_sel%% *}"
+  _scope_index="${_scope_index#INDEX=}"
+  _scope_kind="${_scope_sel##*KIND=}"
+  python3 - "$ROOT" "$STATEDIR" "$op" "$_scope_index" "$_scope_kind" "$@" <<'PY' || exit $?
 import sys, os, re, json, datetime, tempfile
-root, statedir, op, argv = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4:]
+root, statedir, op, wf_index, wf_kind, argv = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6:]
 
 def usage(text):
     print(f"scope {op}: {text} (try --help)", file=sys.stderr)
@@ -1297,6 +1363,8 @@ name = None
 want_json = False
 iteration = None
 actual_files = None
+tasks_arg = None
+start_sha = None
 i = 0
 while i < len(argv):
     arg = argv[i]
@@ -1308,6 +1376,10 @@ while i < len(argv):
         i += 1
         if i >= len(argv) or not argv[i].strip(): usage("--name needs a value")
         name = argv[i]
+    elif arg == "--start-sha":
+        i += 1
+        if i >= len(argv) or not argv[i].strip(): usage("--start-sha needs a value")
+        start_sha = argv[i]
     elif arg == "--iteration":
         i += 1
         try: iteration = int(argv[i])
@@ -1317,6 +1389,13 @@ while i < len(argv):
         i += 1
         if i >= len(argv): usage("--actual-files needs a value")
         actual_files = [f.strip() for f in argv[i].split(",") if f.strip()]
+    elif arg == "--tasks":
+        i += 1
+        if i >= len(argv): usage("--tasks needs a JSON array value")
+        try:
+            tasks_arg = json.loads(argv[i])
+        except Exception: usage("--tasks must be a JSON array")
+        if not isinstance(tasks_arg, list): usage("--tasks must be a JSON array")
     elif arg == "--json":
         want_json = True
     elif arg.startswith("--"):
@@ -1337,22 +1416,16 @@ except Exception as error:
 workflows = tracking.get("workflows")
 if not isinstance(workflows, list) or not workflows:
     fail("no workflows in tracking")
-
-workflow = None
-if name:
-    workflow = next((w for w in workflows if w.get("name") == name), None)
-    if workflow is None:
-        fail(f"no workflow named '{name}'")
-else:
-    leaf = os.path.basename(os.path.normpath(statedir))
-    workflow = next((w for w in workflows if w.get("dirHash") == leaf), None)
-    if workflow is None:
-        active = [w for w in workflows if w.get("status") == "in-progress"]
-        if len(active) == 1:
-            workflow = active[0]
-        else:
-            print("scope: ambiguous workflow (pass --name) or set STELOW_STATEDIR", file=sys.stderr)
-            sys.exit(2)
+try:
+    workflow = workflows[int(wf_index)]
+except Exception:
+    fail("selected workflow is gone; retry the command")
+if not isinstance(workflow, dict) or not (
+    (wf_kind == "name" and (not name or workflow.get("name") == name))
+    or (wf_kind == "dir" and workflow.get("dirHash") == os.path.basename(os.path.normpath(statedir)))
+    or (wf_kind == "active" and workflow.get("status") == "in-progress")
+):
+    fail("selected workflow changed underfoot; retry the command")
 
 scopes = workflow.get("scopes")
 if not isinstance(scopes, list):
@@ -1384,7 +1457,45 @@ if op == "start":
         print(f"scope: warning: '{scope_id}' references unknown scope '{dep}'", file=sys.stderr)
     if not scope.get("started_at"):
         scope["started_at"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    if start_sha is not None and not scope.get("start_sha"):
+        scope["start_sha"] = start_sha
     scope["status"] = "in-progress"
+elif op == "seed-tasks":
+    if tasks_arg is None:
+        usage("seed-tasks needs --tasks '<json array>'")
+    if len(tasks_arg) == 0:
+        fail("seed-tasks got an empty task list; the spec-tech table may be malformed")
+    for pos, task in enumerate(tasks_arg):
+        if not isinstance(task, dict) or not task.get("id") or not task.get("name"):
+            fail(f"seed-tasks task[{pos}] needs id and name")
+        if task.get("source", "planned") not in ("planned", "discovered"):
+            fail(f"seed-tasks task[{pos}] source must be planned|discovered")
+        if task.get("status", "pending") not in ("pending", "done", "skipped"):
+            fail(f"seed-tasks task[{pos}] status must be pending|done|skipped")
+        task.setdefault("source", "planned")
+        task.setdefault("status", "pending")
+        if task["source"] == "discovered" and not task.get("note"):
+            fail(f"seed-tasks task[{pos}] discovered tasks need a trigger note")
+    kept = [t for t in scope.get("tasks", []) if isinstance(t, dict) and t.get("source") == "discovered"]
+    have = {t.get("id") for t in tasks_arg}
+    scope["tasks"] = tasks_arg + [t for t in kept if t.get("id") not in have]
+    scope["seeded_at"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    workflow["updated"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    fd, temporary = tempfile.mkstemp(prefix=".stelow.", dir=root)
+    try:
+        with os.fdopen(fd, "w") as handle:
+            json.dump(tracking, handle, indent=2)
+            handle.write("\n")
+        os.replace(temporary, tracking_path)
+    except Exception as error:
+        try: os.unlink(temporary)
+        except Exception: pass
+        fail(f"could not write {tracking_path} ({error})")
+    if want_json:
+        print(json.dumps({"id": scope_id, "status": scope.get("status", "pending"), "seeded": len(tasks_arg), "kept_discovered": len(scope["tasks"]) - len(tasks_arg)}))
+    else:
+        print(f"scope {scope_id}: seeded {len(tasks_arg)} tasks")
+    sys.exit(0)
 elif op == "done":
     if done_status(status):
         fail(f"'{scope_id}' is already {status}: finished scopes never regress — open a rework scope instead")

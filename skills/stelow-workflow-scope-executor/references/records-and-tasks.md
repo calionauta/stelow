@@ -119,63 +119,21 @@ if (wf?.scopes) {
 
 **Seeding planned tasks (scope start, in Step 3c):**
 
-After parsing the scope body for the Tasks table, push each into `scope.tasks` with
-`status: 'pending'`, `source: 'planned'`. **Seed + validate in one pass** — no
-separate guard step needed.
+After parsing the scope body for the Tasks table, seed via the single
+writer — never hand-edit tracking (see `stelow scope seed-tasks` for the
+guard contract: non-empty list, id+name, planned|discovered sources,
+pending|done|skipped statuses, trigger note required for discovered):
 
 ```bash
-node -e "
-const fs = require('fs');
-const VALID_SOURCES = new Set(['planned', 'discovered']);
-const VALID_STATUSES = new Set(['pending', 'done', 'skipped']);
-
-const tracking = JSON.parse(fs.readFileSync('stelow.json', 'utf8'));
-const wf = tracking.workflows.find(w => w.status === 'in-progress');
-if (wf?.scopes) {
-  const scope = wf.scopes.find(s => s.id === '{SCOPE-ID}');
-  if (scope) {
-    scope.status = 'in-progress';
-    scope.start_sha = process.env.SCOPE_START_SHA || '';
-    // Machine-written start time for duration_s at close. Set once: a re-seed
-    // must not restart the clock on work already done.
-    if (!scope.started_at) scope.started_at = new Date().toISOString();
-    // Seed planned tasks from spec-tech.md — executor parses the body table and emits this list.
-    const tasks = {TASKS_JSON_FROM_PARSED_TABLE};   // e.g. [{id:'3.1', name:'SQLite migration', source:'planned', status:'pending', risk:2}, ...]
-
-    // Re-sync guard: validate tasks exist and have correct shape.
-    // FAIL: empty/malformed table (parse failed).
-    // FAIL: invalid source or status (typo, wrong field name).
-    // WARN: discovered task without note.
-    if (!Array.isArray(tasks) || tasks.length === 0) {
-      console.error('[Seed guard] SCOPE-{SCOPE-ID}: tasks empty or not an array. spec-tech.md table may be malformed.');
-      process.exit(1);
-    }
-    for (let i = 0; i < tasks.length; i++) {
-      const t = tasks[i];
-      if (!t.id || !t.name) {
-        console.error('[Seed guard] SCOPE-{SCOPE-ID}: task[' + i + '] missing id or name');
-        process.exit(1);
-      }
-      if (!VALID_SOURCES.has(t.source)) {
-        console.error('[Seed guard] SCOPE-{SCOPE-ID}: task[' + i + '] invalid source: ' + t.source + ' (expected planned|discovered)');
-        process.exit(1);
-      }
-      if (!VALID_STATUSES.has(t.status)) {
-        console.error('[Seed guard] SCOPE-{SCOPE-ID}: task[' + i + '] invalid status: ' + t.status + ' (expected pending|done|skipped)');
-        process.exit(1);
-      }
-      if (t.source === 'discovered' && !t.note) {
-        console.warn('[Seed guard] SCOPE-{SCOPE-ID}: task[' + i + '] discovered but no note. Add note explaining trigger.');
-      }
-    }
-    scope.tasks = tasks;
-  }
-  wf.updated = new Date().toISOString();
-  fs.writeFileSync('stelow.json', JSON.stringify(tracking, null, 2));
-  console.log('[Seed guard] SCOPE-{SCOPE-ID}: ' + (scope?.tasks?.length ?? 0) + ' tasks seeded OK.');
-}
-"
+stelow scope start --scope "{SCOPE-ID}" --start-sha "$SCOPE_START_SHA"
+stelow scope seed-tasks --scope "{SCOPE-ID}" --tasks '{TASKS_JSON_FROM_PARSED_TABLE}'
+# e.g. [{id:'3.1', name:'SQLite migration', source:'planned', status:'pending', risk:2}, ...]
 ```
+
+`start` sets in-progress + `started_at` once (a re-seed never restarts the
+clock) and enforces dependency order; `seed-tasks` validates, replaces
+planned tasks, and preserves already-appended discovered tasks (the old
+inline snippet dropped them on re-seed — the CLI does not).
 
 **Re-sync guard rationale:** Instead of a separate `node -e` that re-reads the file
 (post-seed verification), validation runs inline during the seed write. Same
