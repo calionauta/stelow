@@ -512,6 +512,14 @@ describe("scope", () => {
     expect(run(wd, ["scope"]).status).toBe(2);
     expect(run(wd, ["scope", "start"]).status).toBe(2);
   });
+
+  it("refuses op-scoped flags on the wrong op", () => {
+    const { wd, statedir } = seedScope("scope-flags");
+    const env = { STELOW_STATEDIR: statedir };
+    expect(run(wd, ["scope", "start", "--scope", "scope-1", "--iteration", "2"], env).status).toBe(2);
+    expect(run(wd, ["scope", "done", "--scope", "scope-1", "--start-sha", "x"], env).status).toBe(2);
+    expect(run(wd, ["scope", "start", "--scope", "scope-1", "--tasks", "[]"], env).status).toBe(2);
+  });
 });
 
   function seedWithCustomSpec(wdName: string, spec: string): { wd: any; statedir: string } {
