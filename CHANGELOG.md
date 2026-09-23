@@ -3,6 +3,16 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.71.0-alpha] - 2026-09-23
+
+### Added
+
+- **Feature Slices and SOLID in coding standards.**
+  The product coding skill gains two principles (organize by feature
+  behind one seam; the five SOLID rules) plus a tie-breaker row routing
+  cross-layer work to slices while LoB stays on the frontend and SoC on
+  the backend.
+
 ## [0.70.0-alpha] - 2026-09-22
 
 ### Added
