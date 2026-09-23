@@ -86,6 +86,34 @@ Don't build for future needs. Implement only what's needed now.
 - No "we might need this later" abstractions
 - Refactor when the need actually arrives
 
+### 10. Feature Slices
+Organize by feature, not by layer or screen. A slice owns everything one
+capability needs — contract, logic, migrations, UI, tests — behind one seam.
+
+- One capability, one home: related code lives together even across layers
+- Kill-switchable: a slice disables without touching anything else
+- Removable: deleting a slice plus its seams leaves no residue
+- Never slice by screen alone: shared shape with different content is
+  parallelism, not duplication — splitting it only moves lines
+
+### 11. SOLID
+Five design rules for modules that outlive their first use.
+
+- **Single Responsibility:** one module, one reason to change. A module
+  that migrates data, renders UI, and calls external APIs has three.
+- **Open/Closed:** extend through new code, not edits to working code.
+  New behavior arrives as a new branch, handler, or slice — never a
+  rewritten conditional.
+- **Liskov Substitution:** substitutes must honor the contract. A mock,
+  fallback, or second implementation that weakens guarantees breaks every
+  caller silently — pin the contract with tests.
+- **Interface Segregation:** depend only on what is used. A deps object
+  with ten fields used two at a time is three interfaces pretending
+  to be one.
+- **Dependency Inversion:** depend on abstractions declared by the
+  consumer. High-level policy never imports low-level detail (SDK
+  clients, shell calls); details arrive injected.
+
 ---
 
 ## Tie-Breaker Rule
@@ -98,6 +126,7 @@ When LoB and SoC conflict:
 | Backend layer (handlers, services, repos) | ✅ **SoC** — separation into layers |
 | Multi-layer frameworks (React, Vue, Svelte) | ✅ **SoC** — everything in separate layers |
 | Mix LoB + SoC frameworks | ⚠️ LoB on frontend, SoC on backend |
+| Organizing new work across layers | ✅ **Feature Slice** — one capability, one home, one seam |
 | Unsure | **SoC** is the safe default |
 
 ---
@@ -131,7 +160,7 @@ When applying these principles, produce code that:
 ## Expected Behavior
 
 ### Strong Output
-- Code that follows all 9 principles naturally
+- Code that follows all 11 principles naturally
 - Functions under the size limit
 - Clear separation between frontend (LoB) and backend (SoC)
 - Error handling at boundaries
