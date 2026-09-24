@@ -598,3 +598,38 @@ claims. Hosts that do not support per-call permissions must refuse recipes that
 require them; permission inheritance is not equivalent to per-call permission.
 See `references/execution-contract.md` for the vocabulary and
 `stages.schema.json` for the canonical shape.
+
+## 14. Host runtime composition and lifecycle slices
+
+A host with a large plugin entrypoint should keep the entrypoint as a bounded
+composition root. Each capability owns one seam: contract fragments,
+migrations, handlers, schedules, and disposal for that capability. The root
+constructs the seams, passes explicit dependencies, registers their handlers,
+and publishes lifecycle events; capability modules do not import the root.
+
+The portable seam pattern is:
+
+- **Card lifecycle and RPC dispatch** own card reads, writes, question state,
+  and card-detail composition. Their handlers receive storage and host services
+  through a small dependency object.
+- **CLI command families** own argument parsing, refusals, and command-specific
+  output. A command family may call a capability service, but it does not
+  duplicate lifecycle policy.
+- **Execution composition** owns the native adapter, durable run ledger,
+  reconciliation, and stage advance policy. A missing capability is a named
+  refusal or coordinator-sequential route. The card remains answerable while a
+  native run waits for input.
+- **Preview, publication, and update composition** own read models and
+  user-facing presentation data. They leave durable state changes to their
+  owning capability.
+- **Startup and disposal** are observable seams. Migrations run before
+  registration, schedules are named, event handlers are registered once, and
+  every timer/listener is disposed. Disposal must not stop live worker threads:
+  hot reload is not uninstall.
+
+Every registered contract method must have a handler, and representative
+behavior tests must cover success, refusal, fail-soft, publication, and
+disposal paths at each seam. A topology assertion complements behavior tests;
+it never substitutes for them. Cross-capability changes update this blueprint
+and the host's architecture note in the same change.
+
