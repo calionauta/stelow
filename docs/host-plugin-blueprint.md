@@ -308,6 +308,14 @@ X ago" + inventory dialog) — silent syncs become mystery meat otherwise.
   scheduler, the RPCs (each refusal names the variable), and the panel
   entry — evolving, refactoring, or switching a feature off never touches
   the core.
+- **Keep host entry files as composition roots**: `app.tsx` and the server
+  entry wire slices, shared contracts, and migrations; they do not retain
+  the slice implementations. A server slice depends downward on its
+  contract, host-neutral libraries, and injected host services, never back
+  into the composition root. This applies across layers: a capability may
+  own pure policy in `lib/`, host adapters in the server, presentation in
+  components, and its tests together without creating a new architecture
+  layer.
 - **Route fuzzy judgments through decision routers, not prompts**: one
   decision endpoint configured once (endpoint + key + model for
   Jev-compatible APIs; endpoint only for keyless labels APIs such as
@@ -331,7 +339,7 @@ encode the rules above as tested pure functions: `worker-action-policy`,
 `inbox-events`, `inbox-event-presentation`, `question-batch`,
 `question-contracts`, `advance-contracts`, `ask-gate`, `ask-contracts`,
 `gate-ask-evidence`, `context-ask-gate`, `stage-skips`, `split-proposal`,
-`tracks`, `stage-bands`, `workflow-intent-policy`, `worker-ledger`,
+`tracks`, `workflow-vocabulary`, `workflow-intent-policy`, `worker-ledger`,
 `worker-failure`, `spawn-retry`, `discard-policy`, `github-release`,
 `automation-rules`, `github-intent`, `github-automation-gate`, `thread-children`,
 `research-*`, `kanban-layout`, `github-lists`,
@@ -342,8 +350,21 @@ encode the rules above as tested pure functions: `worker-action-policy`,
 `trackable-contracts`, `trackable-relations`, `trackable-evidence`,
 `trackable-events`, `tracking-paths`, `spec-scope-reader`, `build-gates`,
 `scope-command`, `artifact-roles`, `reliable-preset`,
-`preset-staleness`, `decision-api`, `decision-points`, `preset-judge`, `hill-position`, `card-metrics`, `skill-criteria`, `task-evidence`, `delegation-evidence`, `inbox-severity`, `delegation-map`, `draft-burst`. Mirror the pattern (pure `lib/` +
-node-test per rule, never inline-only in handlers) rather than the code.
+`preset-staleness`, `decision-api`, `decision-points`, `preset-judge`, `hill-position`, `card-metrics`, `skill-criteria`, `task-evidence`, `delegation-evidence`, `inbox-severity`, `delegation-map`, `draft-burst`,
+`app-support-state`, `board-list-presentation`, `board-views`,
+`build-detail-lifecycle`, `build-diff-presentation`, `build-panel-state`,
+`build-progress-presentation`, `build-review-target`, `card-attention`,
+`detail-presentation`, `explore-panel-state`, `host-tools`,
+`inbox-panel-state`, `message-directives`, `panel-state`, `panel-storage`,
+`plugin-update-signal`, `plugin-update`, `preset-assignment`,
+`preset-onboarding-state`, `publication-mutation`, `question-form`,
+`relative-time`, `research-panel-state`, and `scope-order`.
+
+Feature slices use those modules as their pure seam: test each rule directly
+with a node test, then test the host adapter only where the wiring or injected
+service is part of the contract. Keep regex pins for topology, counts, and
+terminal refusals; behavior belongs in executable tests. Mirror the pattern
+rather than copying the code.
 
 ## 9. Anti-patterns (each paid for at least once)
 
