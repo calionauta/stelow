@@ -316,6 +316,10 @@ X ago" + inventory dialog) — silent syncs become mystery meat otherwise.
   own pure policy in `lib/`, host adapters in the server, presentation in
   components, and its tests together without creating a new architecture
   layer.
+  The reference plugin has not finished this extraction: its small
+  `server.ts` delegates to a large `server/plugin-runtime.ts` that still owns
+  most RPC and CLI handlers. Measure the implementation behind an entrypoint,
+  including file and function size, before claiming this rule is satisfied.
 - **Route fuzzy judgments through decision routers, not prompts**: one
   decision endpoint configured once (endpoint + key + model for
   Jev-compatible APIs; endpoint only for keyless labels APIs such as
