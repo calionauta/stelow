@@ -1,0 +1,51 @@
+id: planning-research
+version: 1
+description: Research stack, testing, and alignment evidence before the coordinator
+  writes the final plan.
+skill: stelow-workflow-tech-planning
+mode: hybrid
+write_policy: artifact
+permission_profile: inherit
+tasks:
+- id: planning-stack
+  skill: stelow-workflow-tech-planning
+  depends_on: []
+  output: plans/stack-research.md
+  output_schema: schemas/markdown.json
+  human_boundary: none
+  when: always
+  failure_policy: fail
+  requirements:
+  - pipeline
+  - structured-output
+- id: planning-testing
+  skill: stelow-workflow-testing-ai-code
+  depends_on: []
+  output: plans/testing-strategy.md
+  output_schema: schemas/markdown.json
+  human_boundary: none
+  when: always
+  failure_policy: fail
+  requirements:
+  - pipeline
+  - structured-output
+- id: planning-alignment
+  depends_on:
+  - planning-stack
+  - planning-testing
+  output: plans/planning-alignment.md
+  output_schema: schemas/markdown.json
+  human_boundary: none
+  skill: stelow-workflow-tech-planning
+  when: always
+  failure_policy: fail
+  requirements:
+  - pipeline
+  - structured-output
+partition: none
+fallback:
+  mode: sequential
+  preserves:
+  - artifact
+supporting_recipes:
+- testing-strategy

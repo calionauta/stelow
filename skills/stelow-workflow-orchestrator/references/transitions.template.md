@@ -40,6 +40,7 @@ gate:      (none — triage has no gate)
 {{TRANSITIONS:select:next}}
 {{TRANSITIONS:select:accept}}
 {{TRANSITIONS:select:reject}}
+{{ARTIFACTS:select}}
 rework:    (none)
 gate:      (none)
 ```
@@ -50,6 +51,7 @@ gate:      (none)
 {{TRANSITIONS:setup:next}}
 {{TRANSITIONS:setup:accept}}
 {{TRANSITIONS:setup:reject}}
+{{ARTIFACTS:setup}}
 rework:    (none)
 gate:      (none)
 ```
@@ -60,6 +62,7 @@ gate:      (none)
 {{TRANSITIONS:context:next}}
 {{TRANSITIONS:context:accept}}
 {{TRANSITIONS:context:reject}}
+{{ARTIFACTS:context}}
 rework:    (none)
 gate:      context:5 — Product Spec Gate and Auto skip this stage
            (other review modes use reduced ask; this affects pipeline
@@ -72,6 +75,7 @@ gate:      context:5 — Product Spec Gate and Auto skip this stage
 {{TRANSITIONS:shape:next}}
 {{TRANSITIONS:shape:accept}}
 {{TRANSITIONS:shape:reject}}
+{{ARTIFACTS:shape}}
 rework:    shape    (shape rework — same stage)
 gate:      (none)
 ```
@@ -82,6 +86,7 @@ gate:      (none)
 {{TRANSITIONS:critique:next}}
 {{TRANSITIONS:critique:accept}}
 {{TRANSITIONS:critique:reject}}
+{{ARTIFACTS:critique}}
 rework:    (none)
 gate:      (none — critique feeds the gate, gate handles approval)
 ```
@@ -92,6 +97,7 @@ gate:      (none — critique feeds the gate, gate handles approval)
 {{TRANSITIONS:gate:next}}
 {{TRANSITIONS:gate:accept}}
 {{TRANSITIONS:gate:reject}}
+{{ARTIFACTS:gate}}
 rework:    (none)
 gate:      requires_approval: true
            approval_tool: visual_review
@@ -105,6 +111,7 @@ gate:      requires_approval: true
 {{TRANSITIONS:scope:next}}
 {{TRANSITIONS:scope:accept}}
 {{TRANSITIONS:scope:reject}}
+{{ARTIFACTS:scope}}
 rework:    (none)
 gate:      (none)
 ```
@@ -115,6 +122,7 @@ gate:      (none)
 {{TRANSITIONS:interface:next}}
 {{TRANSITIONS:interface:accept}}
 {{TRANSITIONS:interface:reject}}
+{{ARTIFACTS:interface}}
 rework:    (none)
 gate:      (none)
 ```
@@ -125,6 +133,7 @@ gate:      (none)
 {{TRANSITIONS:int-gate:next}}
 {{TRANSITIONS:int-gate:accept}}
 {{TRANSITIONS:int-gate:reject}}
+{{ARTIFACTS:int-gate}}
 rework:    (none)
 gate:      requires_approval: true
            approval_tool: visual_review
@@ -137,6 +146,7 @@ gate:      requires_approval: true
 {{TRANSITIONS:selection:next}}
 {{TRANSITIONS:selection:accept}}
 {{TRANSITIONS:selection:reject}}
+{{ARTIFACTS:selection}}
 rework:    (none)
 gate:      (none)
 ```
@@ -147,6 +157,7 @@ gate:      (none)
 {{TRANSITIONS:planning:next}}
 {{TRANSITIONS:planning:accept}}
 {{TRANSITIONS:planning:reject}}
+{{ARTIFACTS:planning}}
 rework:    (none)
 gate:      (none)
 ```
@@ -157,12 +168,14 @@ gate:      (none)
 {{TRANSITIONS:plan-gate:next}}
 {{TRANSITIONS:plan-gate:accept}}
 {{TRANSITIONS:plan-gate:reject}}
+{{ARTIFACTS:plan-gate}}
 rework:    (none)
 gate:      requires_approval: true
            approval_tool: visual_review
-           Only in: "Product Spec + Interface + Scopes",
+           Only in: "Product Spec + Interface + Tech Review",
            "Product Spec + Interface + Tech Review + Code Diff"
-           Skipped in: Auto, "Product Spec Gate"
+           Skipped in: Auto, "Product Spec Gate",
+           "Product Spec + Interface Gates", "Product Spec + Interface + Scopes"
 ```
 
 ### execution
@@ -171,6 +184,7 @@ gate:      requires_approval: true
 {{TRANSITIONS:execution:next}}
 {{TRANSITIONS:execution:accept}}
 {{TRANSITIONS:execution:reject}}
+{{ARTIFACTS:execution}}
 rework:    shape    (full rework path — returns to shape)
 gate:      (none)
            supervisor: true (host-native supervision when available)
@@ -182,6 +196,7 @@ gate:      (none)
 {{TRANSITIONS:verification:next}}
 {{TRANSITIONS:verification:accept}}
 {{TRANSITIONS:verification:reject}}
+{{ARTIFACTS:verification}}
 rework:    (none)
 gate:      (none)
 ```
@@ -192,13 +207,14 @@ gate:      (none)
 {{TRANSITIONS:diff-gate:next}}
 {{TRANSITIONS:diff-gate:accept}}
 {{TRANSITIONS:diff-gate:reject}}
+{{ARTIFACTS:diff-gate}}
 rework:    (none)
 {{TRANSITIONS:diff-gate:annotate}}
 gate:      requires_approval: true
            approval_tool: visual_review
            Only in: "Product Spec + Interface + Tech Review + Code Diff"
            Skipped in: Auto, "Product Spec Gate",
-                       "Product Spec + Interface + Scopes"
+                       "Product Spec + Interface Gates", "Product Spec + Interface + Scopes", "Product Spec + Interface + Tech Review"
 ```
 
 ### audit
@@ -207,6 +223,7 @@ gate:      requires_approval: true
 next:      (done — workflow complete)
 accept:    (done)
 {{TRANSITIONS:audit:reject}}
+{{ARTIFACTS:audit}}
 rework:    (none)
 gate:      (none)
 ```
@@ -223,25 +240,33 @@ gate:      (none)
 | plan-gate | Auto | skip | skipped |
 | plan-gate | Product Spec Gate | skip | skipped |
 | plan-gate | Product Spec + Interface + Scopes | skip | skipped |
-| plan-gate | Product Spec + Interface Gates / Product Spec + Interface + Tech Review / Product Spec + Interface + Tech Review + Code Diff | block | `requires_approval: true`, `visual_review` required |
+| plan-gate | Product Spec + Interface Gates | skip | skipped; planning redirects directly to execution |
+| plan-gate | Product Spec + Interface + Tech Review / Product Spec + Interface + Tech Review + Code Diff | block | `requires_approval: true`, `visual_review` required |
 | diff-gate | Auto | skip | skipped |
 | diff-gate | Product Spec Gate | skip | skipped |
+| diff-gate | Product Spec + Interface Gates | skip | skipped; verification redirects directly to audit |
 | diff-gate | Product Spec + Interface + Scopes | skip | skipped |
+| diff-gate | Product Spec + Interface + Tech Review | skip | skipped |
 | diff-gate | Product Spec + Interface + Tech Review + Code Diff | block | `requires_approval: true`, `visual_review` required |
 
 ---
 
 ## Artifact Requirements (advance guard)
 
-`stelow advance` enforces that required artifacts exist before allowing
-a transition. The router skill declares these per stage:
+`stelow advance` enforces that required artifacts exist before allowing a
+transition. The stage catalog declares these per stage:
 
-| Transition | Required artifact |
+| Stage being left | Required artifact |
 |---|---|
-| context → shape | `spec-product` |
-| planning → plan-gate | `spec-tech` |
-| scope → any | `scope-report` |
-| execution → verification | (runtime — scopes must have `status: completed`) |
+| shape | `plans/spec-product*.md` |
+| critique | `critiques/critique-report.md` |
+| interface | `interfaces/*.md` |
+| selection | `interfaces/selected-interface.md` |
+| planning | `plans/spec-tech*.md` |
+
+Execution scopes and verification evidence remain runtime projections; their
+statuses and records are checked by the owning lifecycle rather than guessed
+from a missing file glob.
 
 ---
 

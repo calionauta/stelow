@@ -8,6 +8,12 @@ description: >
 metadata:
   frequency: per-workflow
   category: workflow
+  execution:
+    mode: direct
+    recipe: null
+    capabilities: []
+    write_policy: none
+    permission_profile: inherit
   context-cost: low
   author: calionauta
 ---
@@ -57,7 +63,7 @@ cp "$git_root/assets/state-template.md" "$state_path"
 # then fill the YAML frontmatter:
 #   name: <short project name derived from intent>
 #   intent: <one of the 5 above>
-#   current_stage: setup   (first stage per transitions.md)
+#   current_stage: triage   (first canonical stage for every intent)
 #   status: active
 #   config:
 #     appetite: <Lean | Core | Complete — derived from intent + scope>
@@ -70,11 +76,10 @@ is non-empty and `stelow status` renders.
 
 ## Pick the first stage
 
-Look up `current_stage` from the canonical first stage in
-`../stelow-workflow-orchestrator/references/transitions.md`. Today
-that is `setup` for `feature`/`bugfix`/`refactor`/`investigate` and
-`triage` for `new-product` (the new-product flow always starts with a
-triage assessment).
+Look up `current_stage` from the canonical intent route in
+`../stelow-workflow-orchestrator/stages.yaml`. Every supported intent starts
+at `triage`; the route's next transition is `select`, then the intent-specific
+continuation. Do not maintain an entry-point shortcut here.
 
 Write `current_stage` into the scaffolded `state.md`. When `STELOW_STATE` is
 set, it is the workflow's canonical state file; never substitute a root
@@ -88,8 +93,8 @@ stage skill — the router will.
 ```
 ## Hand-off (entry)
 
-stage          : setup  (or triage for new-product)
+stage          : triage
 artifacts      : state.md  (created)
-next-candidate : <first stage>
+next-candidate : select
 router         : load skills/stelow-workflow-router/SKILL.md next
 ```

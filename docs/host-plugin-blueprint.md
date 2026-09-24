@@ -550,3 +550,30 @@ idempotent by `repo#number` so re-runs never duplicate. Rules never clear
 labels and never touch workflow state — every rule action is an inbox event
 or a reversible draft. Copy the shape: event + filter + draft/notify
 template, per-project settings, one fire record per source key.
+
+## 13. Execution adapters and canonical stage data
+
+A host may provide a native workflow engine, but the methodology must remain
+engine-neutral. `skills/stelow-workflow-orchestrator/stages.yaml` owns stable
+stage identity, phase, routing, owner skill, and execution requirements;
+`recipes/*.yaml` owns task DAGs; `SKILL.md` frontmatter owns skill execution
+profiles. Hosts consume the generated `stage-catalog.json` rather than copying
+stage literals or parsing YAML.
+
+An adapter publishes capabilities and implements `run`, `status`, `resume`,
+`cancel`, and `result`. Required capabilities are negotiated before start.
+Missing capabilities produce a named refusal or a documented coordinator-owned
+sequential route, never a silent downgrade. The existing card coordinator may
+execute that sequential route, but it is not a synthetic native adapter: it has
+no native run ID, status endpoint, resume handle, or cancel operation. A real
+sequential adapter is a separate capability and must implement the full durable
+lifecycle before selection. Native run IDs and provider details stay in the
+adapter. The host control plane owns the card and owns `needs_input`: the worker
+reports the boundary, the card creates and persists the real question, and an
+answer invokes `resume`. A native run must not own the card.
+
+A richer host may map recipes to a native pipeline, worktrees, queues, or file
+claims. Hosts that do not support per-call permissions must refuse recipes that
+require them; permission inheritance is not equivalent to per-call permission.
+See `references/execution-contract.md` for the vocabulary and
+`stages.schema.json` for the canonical shape.

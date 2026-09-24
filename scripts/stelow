@@ -227,14 +227,14 @@ for line in m.group(1).splitlines():
         if token and re.match(r"^[a-z][a-z0-9-]*$", token):
             allowed.append(token)
 
-# Intent routes are canonical shortcuts through the full transition graph.
+# Intent routes are projections of the full graph, never extra edges. A
+# route may omit stages, but it may not invent a transition outside the graph.
 route = re.search(r"^\*\*" + re.escape(intent) + r":\*\*\s*(.+)$", text, re.MULTILINE)
 if route:
     stages = [part.strip() for part in route.group(1).split("→")]
     if stage in stages:
-        index = stages.index(stage)
-        if index + 1 < len(stages):
-            allowed.append(stages[index + 1])
+        route_set = set(stages)
+        allowed = [candidate for candidate in allowed if candidate in route_set]
 
 for candidate in dict.fromkeys(allowed):
     print(candidate)

@@ -1,0 +1,1190 @@
+{
+  "version": 2,
+  "tools": [
+    "ask_user_question",
+    "visual_review",
+    "subagent",
+    "read",
+    "write",
+    "edit",
+    "bash",
+    "grep",
+    "ls",
+    "agent_browser"
+  ],
+  "phases": [
+    {
+      "id": "analysis",
+      "label": "Analysis"
+    },
+    {
+      "id": "planning",
+      "label": "Planning"
+    },
+    {
+      "id": "execution",
+      "label": "Execution"
+    },
+    {
+      "id": "review",
+      "label": "Review"
+    }
+  ],
+  "routes": {
+    "intents": {
+      "new-product": [
+        "triage",
+        "select",
+        "setup",
+        "context",
+        "shape",
+        "critique",
+        "gate",
+        "scope",
+        "interface",
+        "int-gate",
+        "selection",
+        "planning",
+        "plan-gate",
+        "execution",
+        "verification",
+        "diff-gate",
+        "audit"
+      ],
+      "feature": [
+        "triage",
+        "select",
+        "setup",
+        "context",
+        "shape",
+        "critique",
+        "gate",
+        "scope",
+        "interface",
+        "int-gate",
+        "selection",
+        "planning",
+        "plan-gate",
+        "execution",
+        "verification",
+        "diff-gate",
+        "audit"
+      ],
+      "bugfix": [
+        "triage",
+        "select",
+        "setup",
+        "context",
+        "shape",
+        "critique",
+        "gate",
+        "execution",
+        "verification",
+        "audit"
+      ],
+      "refactor": [
+        "triage",
+        "select",
+        "setup",
+        "context",
+        "planning",
+        "plan-gate",
+        "execution",
+        "verification",
+        "audit"
+      ],
+      "investigate": [
+        "triage",
+        "select",
+        "setup",
+        "context",
+        "audit"
+      ]
+    },
+    "review_modes": {
+      "Auto": {
+        "skipped": [
+          "selection",
+          "plan-gate",
+          "diff-gate"
+        ]
+      },
+      "Product Spec Gate": {
+        "skipped": [
+          "selection",
+          "plan-gate",
+          "diff-gate"
+        ]
+      },
+      "Product Spec + Interface Gates": {
+        "skipped": [
+          "plan-gate",
+          "diff-gate"
+        ]
+      },
+      "Product Spec + Interface + Scopes": {
+        "skipped": [
+          "plan-gate",
+          "diff-gate"
+        ]
+      },
+      "Product Spec + Interface + Tech Review": {
+        "skipped": [
+          "diff-gate"
+        ]
+      },
+      "Product Spec + Interface + Tech Review + Code Diff": {
+        "skipped": []
+      }
+    },
+    "entry_stages": {
+      "analysis": "triage",
+      "planning": "critique",
+      "execution": "execution",
+      "review": "diff-gate"
+    }
+  },
+  "entry_stages": {
+    "analysis": "triage",
+    "planning": "critique",
+    "execution": "execution",
+    "review": "diff-gate"
+  },
+  "stages": [
+    {
+      "order": 10,
+      "model_hint": "economy",
+      "description": "Initial assessment. Determine if this is a valid request.",
+      "label": "Triage",
+      "produces": "Reviews the current state and picks what to work on next.",
+      "artifacts": [],
+      "phase": "analysis",
+      "skill": "stelow-workflow-orchestrator",
+      "playbook": "stages/triage.md",
+      "execution": {
+        "mode": "direct",
+        "recipe": null,
+        "required_capabilities": [],
+        "preferred_capabilities": [],
+        "write_policy": "none",
+        "partition": "none",
+        "permission_profile": "inherit"
+      },
+      "blocked_tools": [],
+      "allowed_tools": [
+        "ask_user_question",
+        "read",
+        "grep",
+        "ls"
+      ],
+      "preferred_tools": [
+        "ask_user_question"
+      ],
+      "primary_actions": [
+        "ask_user_question"
+      ],
+      "transitions": {
+        "next": [
+          "select"
+        ],
+        "accept": [
+          "select"
+        ],
+        "reject": []
+      },
+      "id": "triage",
+      "playbook_skill": "stelow-workflow-orchestrator"
+    },
+    {
+      "order": 15,
+      "model_hint": "economy",
+      "description": "Item selection. Rank accepted items, user picks one.",
+      "label": "Choose work",
+      "produces": "Chooses an item or group from the triage inbox to turn into a workflow.",
+      "artifacts": [],
+      "phase": "analysis",
+      "skill": "stelow-workflow-orchestrator",
+      "playbook": null,
+      "execution": {
+        "mode": "direct",
+        "recipe": null,
+        "required_capabilities": [],
+        "preferred_capabilities": [],
+        "write_policy": "none",
+        "partition": "none",
+        "permission_profile": "inherit"
+      },
+      "blocked_tools": [],
+      "allowed_tools": [
+        "ask_user_question",
+        "read",
+        "grep",
+        "ls"
+      ],
+      "preferred_tools": [
+        "ask_user_question",
+        "read"
+      ],
+      "primary_actions": [
+        "ask_user_question"
+      ],
+      "transitions": {
+        "next": [
+          "setup"
+        ],
+        "accept": [
+          "setup"
+        ],
+        "reject": [
+          "triage"
+        ]
+      },
+      "id": "select",
+      "playbook_skill": "stelow-workflow-orchestrator"
+    },
+    {
+      "order": 20,
+      "model_hint": "standard",
+      "description": "Setup context. Explore codebase, gather requirements.",
+      "label": "Setup",
+      "produces": "Prepares the repo and environment the workflow will run in.",
+      "artifacts": [],
+      "phase": "analysis",
+      "skill": "stelow-workflow-orchestrator",
+      "playbook": "stages/setup.md",
+      "execution": {
+        "mode": "hybrid",
+        "recipe": "setup-recon",
+        "required_capabilities": [
+          "pipeline",
+          "structured-output"
+        ],
+        "preferred_capabilities": [],
+        "write_policy": "artifact",
+        "partition": "none",
+        "permission_profile": "inherit"
+      },
+      "blocked_tools": [],
+      "allowed_tools": [
+        "ask_user_question",
+        "read",
+        "grep",
+        "ls",
+        "subagent"
+      ],
+      "preferred_tools": [
+        "read",
+        "grep"
+      ],
+      "primary_actions": [
+        "read",
+        "grep"
+      ],
+      "transitions": {
+        "next": [
+          "context"
+        ],
+        "accept": [
+          "context"
+        ],
+        "reject": [
+          "triage"
+        ]
+      },
+      "id": "setup",
+      "playbook_skill": "stelow-workflow-orchestrator"
+    },
+    {
+      "order": 25,
+      "model_hint": "standard",
+      "description": "Strategic context. Market analysis, JTBD, domain detection. Gated by `context:5` (appetite/review mode): Product Spec Gate+Auto skips; others use reduced ask. See the context stage, section 5.",
+      "label": "Context",
+      "produces": "Gathers project context the shaping step needs.",
+      "artifacts": [],
+      "phase": "analysis",
+      "skill": "stelow-workflow-orchestrator",
+      "playbook": "stages/context.md",
+      "execution": {
+        "mode": "orchestrated",
+        "recipe": "strategic-context",
+        "required_capabilities": [
+          "pipeline",
+          "structured-output"
+        ],
+        "preferred_capabilities": [
+          "fanout",
+          "durable-run",
+          "resume",
+          "per-call-model"
+        ],
+        "write_policy": "artifact",
+        "partition": "none",
+        "permission_profile": "inherit"
+      },
+      "blocked_tools": [],
+      "allowed_tools": [
+        "ask_user_question",
+        "read",
+        "grep",
+        "ls",
+        "write",
+        "subagent"
+      ],
+      "preferred_tools": [
+        "read",
+        "write"
+      ],
+      "primary_actions": [
+        "read",
+        "write"
+      ],
+      "transitions": {
+        "next": [
+          "shape",
+          "planning"
+        ],
+        "accept": [
+          "shape",
+          "planning"
+        ],
+        "reject": [
+          "setup"
+        ]
+      },
+      "id": "context",
+      "playbook_skill": "stelow-workflow-orchestrator"
+    },
+    {
+      "order": 40,
+      "model_hint": "best",
+      "description": "Shape stage. Define appetite, hill chart, rabbit holes.",
+      "label": "Shape proposal",
+      "produces": "Writes a Shape Up proposal (spec-product_vN.md) for the chosen item.",
+      "artifacts": [
+        "plans/spec-product*.md"
+      ],
+      "phase": "analysis",
+      "skill": "stelow-workflow-shape-up",
+      "playbook": "SKILL.md",
+      "execution": {
+        "mode": "hybrid",
+        "recipe": "shape-recon",
+        "required_capabilities": [
+          "pipeline",
+          "structured-output"
+        ],
+        "preferred_capabilities": [],
+        "write_policy": "artifact",
+        "partition": "none",
+        "permission_profile": "inherit"
+      },
+      "blocked_tools": [],
+      "allowed_tools": [
+        "ask_user_question",
+        "read",
+        "grep",
+        "ls",
+        "write",
+        "subagent"
+      ],
+      "preferred_tools": [
+        "read",
+        "write"
+      ],
+      "primary_actions": [
+        "read",
+        "write"
+      ],
+      "questions": [
+        {
+          "id": "assumptions-auto-resolved",
+          "gate": "interface",
+          "kind": "agent-receipt",
+          "modes": [
+            "Auto",
+            "Product Spec Gate"
+          ],
+          "receipt": "plans/spec-product*.md"
+        },
+        {
+          "id": "assumptions-confirmed",
+          "gate": "interface",
+          "kind": "human-ask",
+          "modes": [
+            "Product Spec + Interface Gates",
+            "Product Spec + Interface + Scopes",
+            "Product Spec + Interface + Tech Review",
+            "Product Spec + Interface + Tech Review + Code Diff"
+          ],
+          "receipt": "plans/spec-product*.md"
+        }
+      ],
+      "transitions": {
+        "next": [
+          "critique"
+        ],
+        "rework": [
+          "shape"
+        ],
+        "accept": [
+          "critique"
+        ],
+        "reject": [
+          "context"
+        ]
+      },
+      "id": "shape",
+      "playbook_skill": "stelow-workflow-shape-up"
+    },
+    {
+      "order": 45,
+      "model_hint": "best",
+      "description": "Plan critique. Pre-flight check before gate.",
+      "label": "Critique",
+      "produces": "Challenges the proposal before it is gated.",
+      "artifacts": [
+        "critiques/critique-report.md"
+      ],
+      "phase": "planning",
+      "skill": "stelow-workflow-plan-critique",
+      "playbook": "SKILL.md",
+      "execution": {
+        "mode": "orchestrated",
+        "recipe": "plan-critique",
+        "required_capabilities": [
+          "pipeline",
+          "structured-output"
+        ],
+        "preferred_capabilities": [
+          "fanout",
+          "durable-run",
+          "resume",
+          "per-call-model"
+        ],
+        "write_policy": "artifact",
+        "partition": "none",
+        "permission_profile": "inherit"
+      },
+      "blocked_tools": [],
+      "allowed_tools": [
+        "ask_user_question",
+        "read",
+        "grep",
+        "ls",
+        "write",
+        "subagent"
+      ],
+      "preferred_tools": [
+        "read",
+        "write"
+      ],
+      "primary_actions": [
+        "read",
+        "write"
+      ],
+      "questions": [
+        {
+          "id": "critique-report",
+          "gate": "interface",
+          "kind": "agent-receipt",
+          "modes": [
+            "Auto",
+            "Product Spec Gate"
+          ],
+          "receipt": "critiques/critique-report.md"
+        },
+        {
+          "id": "critique-gap-resolution",
+          "gate": "interface",
+          "kind": "human-ask",
+          "modes": [
+            "Product Spec + Interface Gates",
+            "Product Spec + Interface + Scopes",
+            "Product Spec + Interface + Tech Review",
+            "Product Spec + Interface + Tech Review + Code Diff"
+          ],
+          "receipt": "critiques/critique-report.md"
+        }
+      ],
+      "transitions": {
+        "next": [
+          "gate"
+        ],
+        "accept": [
+          "gate"
+        ],
+        "reject": [
+          "shape"
+        ]
+      },
+      "id": "critique",
+      "playbook_skill": "stelow-workflow-plan-critique"
+    },
+    {
+      "order": 60,
+      "model_hint": "economy",
+      "description": "Gate review. Visual approval via visual review required. Use `visual_review` tool (not bash).",
+      "label": "Product gate",
+      "produces": "Product gate: decides whether the shaped idea is accepted, rejected, or reworked.",
+      "artifacts": [],
+      "phase": "planning",
+      "skill": "stelow-workflow-orchestrator",
+      "playbook": "stages/gate.md",
+      "execution": {
+        "mode": "direct",
+        "recipe": null,
+        "required_capabilities": [],
+        "preferred_capabilities": [],
+        "write_policy": "none",
+        "partition": "none",
+        "permission_profile": "inherit"
+      },
+      "blocked_tools": [
+        "bash"
+      ],
+      "allowed_tools": [
+        "read",
+        "ls",
+        "grep",
+        "ask_user_question",
+        "visual_review",
+        "edit",
+        "write"
+      ],
+      "preferred_tools": [
+        "read"
+      ],
+      "primary_actions": [
+        "read"
+      ],
+      "requires_approval": true,
+      "approval_tool": "visual_review",
+      "transitions": {
+        "next": [
+          "scope",
+          "execution"
+        ],
+        "accept": [
+          "scope",
+          "execution"
+        ],
+        "reject": [
+          "shape"
+        ]
+      },
+      "id": "gate",
+      "playbook_skill": "stelow-workflow-orchestrator"
+    },
+    {
+      "order": 70,
+      "model_hint": "economy",
+      "description": "Scope adjustment. Add/remove from IN/OUT after gate approval.",
+      "label": "Scope",
+      "produces": "Breaks the approved idea into a concrete scope of work.",
+      "artifacts": [],
+      "phase": "planning",
+      "skill": "stelow-workflow-orchestrator",
+      "playbook": null,
+      "execution": {
+        "mode": "direct",
+        "recipe": null,
+        "required_capabilities": [],
+        "preferred_capabilities": [],
+        "write_policy": "artifact",
+        "partition": "none",
+        "permission_profile": "inherit"
+      },
+      "blocked_tools": [],
+      "allowed_tools": [
+        "ask_user_question",
+        "read",
+        "grep",
+        "ls",
+        "write",
+        "subagent"
+      ],
+      "preferred_tools": [
+        "read",
+        "write"
+      ],
+      "primary_actions": [
+        "read",
+        "write"
+      ],
+      "questions": [
+        {
+          "id": "scope-adjustment-auto",
+          "gate": "scope",
+          "kind": "agent-receipt",
+          "modes": [
+            "Auto",
+            "Product Spec Gate",
+            "Product Spec + Interface Gates"
+          ],
+          "receipt": "plans/spec-product*.md"
+        },
+        {
+          "id": "scope-adjustment-confirmed",
+          "gate": "scope",
+          "kind": "human-ask",
+          "modes": [
+            "Product Spec + Interface + Scopes",
+            "Product Spec + Interface + Tech Review",
+            "Product Spec + Interface + Tech Review + Code Diff"
+          ],
+          "receipt": "plans/spec-product*.md"
+        }
+      ],
+      "transitions": {
+        "next": [
+          "interface"
+        ],
+        "accept": [
+          "interface"
+        ],
+        "reject": [
+          "gate"
+        ]
+      },
+      "id": "scope",
+      "playbook_skill": "stelow-workflow-orchestrator"
+    },
+    {
+      "order": 80,
+      "model_hint": "best",
+      "description": "Interface alternatives. Appetite-scaled exploration: 1, 3, or 5 proposals + hybrid.",
+      "label": "Interface",
+      "produces": "Designs the user-facing interface for the scope.",
+      "artifacts": [
+        "interfaces/*.md"
+      ],
+      "phase": "planning",
+      "skill": "stelow-workflow-interface-alternatives",
+      "playbook": "SKILL.md",
+      "execution": {
+        "mode": "orchestrated",
+        "recipe": "interface-alternatives",
+        "required_capabilities": [
+          "pipeline",
+          "structured-output"
+        ],
+        "preferred_capabilities": [
+          "fanout",
+          "durable-run",
+          "resume",
+          "per-call-model"
+        ],
+        "write_policy": "artifact",
+        "partition": "none",
+        "permission_profile": "inherit"
+      },
+      "blocked_tools": [],
+      "allowed_tools": [
+        "ask_user_question",
+        "read",
+        "grep",
+        "ls",
+        "write",
+        "subagent"
+      ],
+      "preferred_tools": [
+        "read",
+        "write"
+      ],
+      "primary_actions": [
+        "read",
+        "write"
+      ],
+      "transitions": {
+        "next": [
+          "int-gate"
+        ],
+        "accept": [
+          "int-gate"
+        ],
+        "reject": [
+          "scope"
+        ]
+      },
+      "id": "interface",
+      "playbook_skill": "stelow-workflow-interface-alternatives"
+    },
+    {
+      "order": 90,
+      "model_hint": "economy",
+      "description": "Interface gate. Visual review of all interface proposals. Use `visual_review` tool (not bash).",
+      "label": "Interface gate",
+      "produces": "Interface gate: accepts, rejects, or reworks the interface design.",
+      "artifacts": [],
+      "phase": "planning",
+      "skill": "stelow-workflow-orchestrator",
+      "playbook": null,
+      "execution": {
+        "mode": "direct",
+        "recipe": null,
+        "required_capabilities": [],
+        "preferred_capabilities": [],
+        "write_policy": "none",
+        "partition": "none",
+        "permission_profile": "inherit"
+      },
+      "blocked_tools": [
+        "bash"
+      ],
+      "allowed_tools": [
+        "read",
+        "ls",
+        "grep",
+        "ask_user_question",
+        "visual_review",
+        "edit",
+        "write"
+      ],
+      "preferred_tools": [
+        "read"
+      ],
+      "primary_actions": [
+        "read"
+      ],
+      "requires_approval": true,
+      "approval_tool": "visual_review",
+      "transitions": {
+        "next": [
+          "selection"
+        ],
+        "accept": [
+          "selection"
+        ],
+        "reject": [
+          "interface"
+        ]
+      },
+      "id": "int-gate",
+      "playbook_skill": "stelow-workflow-orchestrator"
+    },
+    {
+      "order": 100,
+      "model_hint": "standard",
+      "description": "Interface selection. Human pick via structured question in Interface-Gates modes; LLM decides in Auto / Product Spec Gate (see references/human-gates.md).",
+      "label": "Interface selection",
+      "produces": "Selects which interface variant to implement.",
+      "artifacts": [
+        "interfaces/selected-interface.md"
+      ],
+      "phase": "planning",
+      "skill": "stelow-workflow-orchestrator",
+      "playbook": "stages/selection.md",
+      "execution": {
+        "mode": "direct",
+        "recipe": null,
+        "required_capabilities": [],
+        "preferred_capabilities": [],
+        "write_policy": "none",
+        "partition": "none",
+        "permission_profile": "inherit"
+      },
+      "blocked_tools": [
+        "bash",
+        "write"
+      ],
+      "allowed_tools": [
+        "ask_user_question",
+        "read",
+        "grep",
+        "ls",
+        "subagent"
+      ],
+      "preferred_tools": [
+        "ask_user_question",
+        "read"
+      ],
+      "primary_actions": [
+        "ask_user_question"
+      ],
+      "questions": [
+        {
+          "id": "interface-pick",
+          "gate": "interface",
+          "kind": "human-ask",
+          "modes": [
+            "Product Spec + Interface Gates",
+            "Product Spec + Interface + Scopes",
+            "Product Spec + Interface + Tech Review",
+            "Product Spec + Interface + Tech Review + Code Diff"
+          ],
+          "appetite": [
+            "Core",
+            "Complete"
+          ],
+          "evidence": "per-option",
+          "receipt": "interfaces/selected-interface.md"
+        },
+        {
+          "id": "interface-pick-auto",
+          "gate": "interface",
+          "kind": "agent-receipt",
+          "modes": [
+            "Auto",
+            "Product Spec Gate"
+          ],
+          "receipt": "interfaces/selected-interface.md"
+        }
+      ],
+      "transitions": {
+        "next": [
+          "planning"
+        ],
+        "accept": [
+          "planning"
+        ],
+        "reject": [
+          "interface"
+        ]
+      },
+      "id": "selection",
+      "playbook_skill": "stelow-workflow-orchestrator"
+    },
+    {
+      "order": 110,
+      "model_hint": "best",
+      "description": "Tech planning. Typed scopes + sequencing.",
+      "label": "Tech planning",
+      "produces": "Writes the technical plan (PLAN.md) from the interface and scope.",
+      "artifacts": [
+        "plans/spec-tech*.md"
+      ],
+      "phase": "planning",
+      "skill": "stelow-workflow-tech-planning",
+      "playbook": "SKILL.md",
+      "execution": {
+        "mode": "hybrid",
+        "recipe": "planning-research",
+        "required_capabilities": [
+          "pipeline",
+          "structured-output"
+        ],
+        "preferred_capabilities": [],
+        "write_policy": "artifact",
+        "partition": "none",
+        "permission_profile": "inherit"
+      },
+      "blocked_tools": [],
+      "allowed_tools": [
+        "ask_user_question",
+        "read",
+        "grep",
+        "ls",
+        "write",
+        "subagent"
+      ],
+      "preferred_tools": [
+        "read",
+        "write"
+      ],
+      "primary_actions": [
+        "read",
+        "write"
+      ],
+      "transitions": {
+        "next": [
+          "plan-gate"
+        ],
+        "accept": [
+          "plan-gate"
+        ],
+        "reject": [
+          "scope"
+        ]
+      },
+      "id": "planning",
+      "playbook_skill": "stelow-workflow-tech-planning"
+    },
+    {
+      "order": 115,
+      "model_hint": "economy",
+      "description": "Tech plan gate. Visual review of spec-tech.md via visual review. Only in Product Spec + Interface + Tech Review or Code Diff mode.",
+      "label": "Plan gate",
+      "produces": "Plan gate: accepts, rejects, or reworks the tech plan.",
+      "artifacts": [],
+      "phase": "planning",
+      "skill": "stelow-workflow-orchestrator",
+      "playbook": "stages/plan-gate.md",
+      "execution": {
+        "mode": "direct",
+        "recipe": null,
+        "required_capabilities": [],
+        "preferred_capabilities": [],
+        "write_policy": "none",
+        "partition": "none",
+        "permission_profile": "inherit"
+      },
+      "blocked_tools": [
+        "bash"
+      ],
+      "allowed_tools": [
+        "read",
+        "ls",
+        "grep",
+        "ask_user_question",
+        "visual_review",
+        "edit",
+        "write"
+      ],
+      "preferred_tools": [
+        "read"
+      ],
+      "primary_actions": [
+        "read"
+      ],
+      "requires_approval": true,
+      "approval_tool": "visual_review",
+      "transitions": {
+        "next": [
+          "execution"
+        ],
+        "accept": [
+          "execution"
+        ],
+        "reject": [
+          "planning"
+        ]
+      },
+      "id": "plan-gate",
+      "playbook_skill": "stelow-workflow-orchestrator"
+    },
+    {
+      "order": 120,
+      "model_hint": "standard",
+      "description": "Implementation. Execute planned scopes.",
+      "label": "Execution",
+      "produces": "Implements the plan across the defined scope.",
+      "artifacts": [],
+      "phase": "execution",
+      "skill": "stelow-workflow-scope-executor",
+      "playbook": "stages/execution.md",
+      "execution": {
+        "mode": "hybrid",
+        "recipe": "scope-batch",
+        "required_capabilities": [
+          "pipeline",
+          "structured-output",
+          "status",
+          "file-claims"
+        ],
+        "preferred_capabilities": [
+          "fanout",
+          "durable-run",
+          "resume",
+          "per-call-model"
+        ],
+        "write_policy": "workspace",
+        "partition": "transitive-impact",
+        "permission_profile": "inherit"
+      },
+      "blocked_tools": [],
+      "allowed_tools": [
+        "edit",
+        "write",
+        "bash",
+        "read",
+        "grep",
+        "ls",
+        "subagent",
+        "ask_user_question",
+        "agent_browser"
+      ],
+      "preferred_tools": [
+        "edit",
+        "write",
+        "bash"
+      ],
+      "primary_actions": [
+        "edit",
+        "write",
+        "bash"
+      ],
+      "supervisor": true,
+      "transitions": {
+        "next": [
+          "verification"
+        ],
+        "accept": [
+          "verification"
+        ],
+        "rework": [
+          "shape"
+        ]
+      },
+      "id": "execution",
+      "playbook_skill": "stelow-workflow-orchestrator"
+    },
+    {
+      "order": 150,
+      "model_hint": "economy",
+      "description": "Verification. Run full test suite, code review, UI audit, browser testing.",
+      "label": "Verification",
+      "produces": "Verifies the implementation against the plan.",
+      "artifacts": [],
+      "phase": "execution",
+      "skill": "stelow-workflow-testing-execution",
+      "playbook": "stages/verification.md",
+      "execution": {
+        "mode": "orchestrated",
+        "recipe": "verification",
+        "required_capabilities": [
+          "pipeline",
+          "structured-output"
+        ],
+        "preferred_capabilities": [
+          "fanout"
+        ],
+        "write_policy": "artifact",
+        "partition": "none",
+        "permission_profile": "inherit"
+      },
+      "blocked_tools": [],
+      "allowed_tools": [
+        "edit",
+        "write",
+        "bash",
+        "read",
+        "grep",
+        "ls",
+        "subagent",
+        "ask_user_question",
+        "agent_browser"
+      ],
+      "preferred_tools": [
+        "bash",
+        "write"
+      ],
+      "primary_actions": [
+        "bash",
+        "write"
+      ],
+      "transitions": {
+        "next": [
+          "diff-gate",
+          "audit"
+        ],
+        "accept": [
+          "diff-gate",
+          "audit"
+        ],
+        "reject": [
+          "execution"
+        ]
+      },
+      "id": "verification",
+      "playbook_skill": "stelow-workflow-orchestrator"
+    },
+    {
+      "order": 175,
+      "model_hint": "economy",
+      "description": "Code diff review. visual review review of working tree diff. Only in Product Spec + Interface + Tech Review + Code Diff mode.",
+      "label": "Diff gate",
+      "produces": "Diff gate: checks the implementation diff before completion.",
+      "artifacts": [],
+      "phase": "review",
+      "skill": "stelow-workflow-orchestrator",
+      "playbook": "stages/diff-gate.md",
+      "execution": {
+        "mode": "direct",
+        "recipe": null,
+        "required_capabilities": [],
+        "preferred_capabilities": [],
+        "write_policy": "none",
+        "partition": "none",
+        "permission_profile": "inherit"
+      },
+      "blocked_tools": [],
+      "allowed_tools": [
+        "read",
+        "ls",
+        "grep",
+        "ask_user_question",
+        "bash",
+        "visual_review",
+        "edit",
+        "write"
+      ],
+      "preferred_tools": [
+        "read"
+      ],
+      "primary_actions": [
+        "read"
+      ],
+      "requires_approval": true,
+      "approval_tool": "visual_review",
+      "transitions": {
+        "next": [
+          "audit"
+        ],
+        "accept": [
+          "audit"
+        ],
+        "annotate": [
+          "execution"
+        ],
+        "reject": [
+          "execution"
+        ]
+      },
+      "id": "diff-gate",
+      "playbook_skill": "stelow-workflow-orchestrator"
+    },
+    {
+      "order": 200,
+      "model_hint": "standard",
+      "description": "Final audit. Verify all requirements met.",
+      "label": "Audit",
+      "produces": "Final audit of the finished work.",
+      "artifacts": [],
+      "phase": "review",
+      "skill": "stelow-workflow-execution-critique",
+      "playbook": "SKILL.md",
+      "execution": {
+        "mode": "orchestrated",
+        "recipe": "execution-audit",
+        "required_capabilities": [
+          "pipeline",
+          "structured-output"
+        ],
+        "preferred_capabilities": [
+          "fanout",
+          "durable-run",
+          "resume",
+          "per-call-model"
+        ],
+        "write_policy": "artifact",
+        "partition": "none",
+        "permission_profile": "inherit"
+      },
+      "blocked_tools": [],
+      "allowed_tools": [
+        "ask_user_question",
+        "read",
+        "grep",
+        "ls",
+        "write"
+      ],
+      "preferred_tools": [
+        "read",
+        "grep"
+      ],
+      "primary_actions": [
+        "read",
+        "grep"
+      ],
+      "transitions": {
+        "next": [],
+        "accept": [],
+        "reject": [
+          "execution"
+        ]
+      },
+      "id": "audit",
+      "playbook_skill": "stelow-workflow-execution-critique"
+    }
+  ]
+}

@@ -9,6 +9,12 @@ description: >
 metadata:
   frequency: per-stage
   category: workflow
+  execution:
+    mode: direct
+    recipe: null
+    capabilities: []
+    write_policy: none
+    permission_profile: inherit
   context-cost: low
   author: calionauta
 ---

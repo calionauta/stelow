@@ -7,6 +7,12 @@ description: >
 metadata:
   frequency: daily
   category: workflow
+  execution:
+    mode: reference
+    recipe: null
+    capabilities: []
+    write_policy: none
+    permission_profile: inherit
   context-cost: low
   author: calionauta
   author-url: https://github.com/calionauta
@@ -88,7 +94,7 @@ Don't build for future needs. Implement only what's needed now.
 
 ### 10. Feature Slices
 Organize by feature, not by layer or screen. A slice owns everything one
-capability needs — contract, logic, migrations, UI, tests — behind one seam.
+capability needs — contract, logic, migrations, UI, and tests — behind one seam.
 
 - One capability, one home: related code lives together even across layers
 - Kill-switchable: a slice disables without touching anything else

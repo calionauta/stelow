@@ -46,6 +46,12 @@ history: []
   return stateDir;
 }
 
+function seedArtifact(statedir: string, relativePath: string): void {
+  const target = join(statedir, relativePath);
+  mkdirSync(dirname(target), { recursive: true });
+  writeFileSync(target, "# Test artifact\n");
+}
+
 function run(args: string[], cwd: string, env: Record<string, string> = {}): { status: number; stdout: string; stderr: string } {
   const r = spawnSync("bash", [HELPER, ...args], {
     cwd, encoding: "utf8", env: { ...process.env, PATH: process.env.PATH ?? "", ...env },
@@ -97,6 +103,7 @@ describe("mode-skipped passthroughs", () => {
   it("planning -> execution passes in Auto (would deadlock at the skipped gate)", () => {
     const dir = gitRepo();
     const stateDir = makeStateDir(dir, "planning", "Auto");
+    seedArtifact(stateDir, "plans/spec-tech_v1.md");
     const env = { STELOW_STATEDIR: stateDir, STELOW_TRANSITIONS: TRANSITIONS };
     const before = readFileSync(join(stateDir, "state.md"));
     const dry = run(["advance", "execution", "--dry-run"], dir, env);
@@ -166,6 +173,7 @@ describe("mode-skipped gate refusals", () => {
   it("plan-gate passes in full Tech Review mode", () => {
     const dir = gitRepo();
     const stateDir = makeStateDir(dir, "planning", "Product Spec + Interface + Tech Review + Code Diff");
+    seedArtifact(stateDir, "plans/spec-tech_v1.md");
     const r = run(["advance", "plan-gate", "--dry-run"], dir, { STELOW_STATEDIR: stateDir, STELOW_TRANSITIONS: TRANSITIONS });
     expect(r.status).toBe(0);
   });

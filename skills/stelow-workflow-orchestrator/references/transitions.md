@@ -72,8 +72,8 @@ gate:      (none)
 ### context
 
 ```
-next:      shape
-accept:    shape
+next:      shape, planning
+accept:    shape, planning
 reject:    setup
 rework:    (none)
 gate:      context:5 — Product Spec Gate and Auto skip this stage
@@ -87,6 +87,7 @@ gate:      context:5 — Product Spec Gate and Auto skip this stage
 next:      critique
 accept:    critique
 reject:    context
+artifact:   plans/spec-product*.md
 rework:    shape    (shape rework — same stage)
 gate:      (none)
 ```
@@ -97,6 +98,7 @@ gate:      (none)
 next:      gate
 accept:    gate
 reject:    shape
+artifact:   critiques/critique-report.md
 rework:    (none)
 gate:      (none — critique feeds the gate, gate handles approval)
 ```
@@ -104,8 +106,8 @@ gate:      (none — critique feeds the gate, gate handles approval)
 ### gate
 
 ```
-next:      scope
-accept:    scope
+next:      scope, execution
+accept:    scope, execution
 reject:    shape
 rework:    (none)
 gate:      requires_approval: true
@@ -130,6 +132,7 @@ gate:      (none)
 next:      int-gate
 accept:    int-gate
 reject:    scope
+artifact:   interfaces/*.md
 rework:    (none)
 gate:      (none)
 ```
@@ -152,6 +155,7 @@ gate:      requires_approval: true
 next:      planning
 accept:    planning
 reject:    interface
+artifact:   interfaces/selected-interface.md
 rework:    (none)
 gate:      (none)
 ```
@@ -162,6 +166,7 @@ gate:      (none)
 next:      plan-gate
 accept:    plan-gate
 reject:    scope
+artifact:   plans/spec-tech*.md
 rework:    (none)
 gate:      (none)
 ```
@@ -175,9 +180,10 @@ reject:    planning
 rework:    (none)
 gate:      requires_approval: true
            approval_tool: visual_review
-           Only in: "Product Spec + Interface + Scopes",
+           Only in: "Product Spec + Interface + Tech Review",
            "Product Spec + Interface + Tech Review + Code Diff"
-           Skipped in: Auto, "Product Spec Gate"
+           Skipped in: Auto, "Product Spec Gate",
+           "Product Spec + Interface Gates", "Product Spec + Interface + Scopes"
 ```
 
 ### execution
@@ -193,8 +199,8 @@ gate:      (none)
 ### verification
 
 ```
-next:      diff-gate
-accept:    diff-gate
+next:      diff-gate, audit
+accept:    diff-gate, audit
 reject:    execution
 rework:    (none)
 gate:      (none)
@@ -212,7 +218,7 @@ gate:      requires_approval: true
            approval_tool: visual_review
            Only in: "Product Spec + Interface + Tech Review + Code Diff"
            Skipped in: Auto, "Product Spec Gate",
-                       "Product Spec + Interface + Scopes"
+                       "Product Spec + Interface Gates", "Product Spec + Interface + Scopes", "Product Spec + Interface + Tech Review"
 ```
 
 ### audit
@@ -237,25 +243,33 @@ gate:      (none)
 | plan-gate | Auto | skip | skipped |
 | plan-gate | Product Spec Gate | skip | skipped |
 | plan-gate | Product Spec + Interface + Scopes | skip | skipped |
-| plan-gate | Product Spec + Interface Gates / Product Spec + Interface + Tech Review / Product Spec + Interface + Tech Review + Code Diff | block | `requires_approval: true`, `visual_review` required |
+| plan-gate | Product Spec + Interface Gates | skip | skipped; planning redirects directly to execution |
+| plan-gate | Product Spec + Interface + Tech Review / Product Spec + Interface + Tech Review + Code Diff | block | `requires_approval: true`, `visual_review` required |
 | diff-gate | Auto | skip | skipped |
 | diff-gate | Product Spec Gate | skip | skipped |
+| diff-gate | Product Spec + Interface Gates | skip | skipped; verification redirects directly to audit |
 | diff-gate | Product Spec + Interface + Scopes | skip | skipped |
+| diff-gate | Product Spec + Interface + Tech Review | skip | skipped |
 | diff-gate | Product Spec + Interface + Tech Review + Code Diff | block | `requires_approval: true`, `visual_review` required |
 
 ---
 
 ## Artifact Requirements (advance guard)
 
-`stelow advance` enforces that required artifacts exist before allowing
-a transition. The router skill declares these per stage:
+`stelow advance` enforces that required artifacts exist before allowing a
+transition. The stage catalog declares these per stage:
 
-| Transition | Required artifact |
+| Stage being left | Required artifact |
 |---|---|
-| context → shape | `spec-product` |
-| planning → plan-gate | `spec-tech` |
-| scope → any | `scope-report` |
-| execution → verification | (runtime — scopes must have `status: completed`) |
+| shape | `plans/spec-product*.md` |
+| critique | `critiques/critique-report.md` |
+| interface | `interfaces/*.md` |
+| selection | `interfaces/selected-interface.md` |
+| planning | `plans/spec-tech*.md` |
+
+Execution scopes and verification evidence remain runtime projections; their
+statuses and records are checked by the owning lifecycle rather than guessed
+from a missing file glob.
 
 ---
 

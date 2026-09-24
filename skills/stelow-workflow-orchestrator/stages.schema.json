@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://calionauta.stelow/schemas/stages.schema.json",
+  "title": "Stelow canonical stage model",
+  "type": "object",
+  "required": ["version", "phases", "tools", "stages"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "const": 2 },
+    "tools": { "type": "array", "items": { "type": "string", "minLength": 1 }, "minItems": 1, "uniqueItems": true },
+    "phases": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/phase" } },
+    "routes": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "intents": { "$ref": "#/$defs/routes" },
+        "review_modes": { "$ref": "#/$defs/review-routes" },
+        "entry_stages": { "type": "object", "minProperties": 1, "additionalProperties": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" } }
+      }
+    },
+    "stages": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/stage" } }
+  },
+  "$defs": {
+    "phase": { "type": "object", "required": ["id", "label"], "additionalProperties": false, "properties": { "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" }, "label": { "type": "string", "minLength": 1 } } },
+    "routes": { "type": "object", "minProperties": 1, "additionalProperties": { "type": "array", "items": { "type": "string" }, "uniqueItems": true } },
+    "review-routes": { "type": "object", "minProperties": 1, "additionalProperties": { "type": "object", "required": ["skipped"], "additionalProperties": false, "properties": { "skipped": { "type": "array", "items": { "type": "string" }, "uniqueItems": true } } } },
+    "capabilities": { "enum": ["fanout", "pipeline", "structured-output", "durable-run", "resume", "cancel", "status", "hidden-workers", "human-input", "per-call-model", "per-call-permission", "isolated-workspace", "file-claims"] },
+    "execution": {
+      "type": "object",
+      "required": ["mode", "recipe", "required_capabilities", "preferred_capabilities", "write_policy", "partition", "permission_profile"],
+      "additionalProperties": false,
+      "properties": {
+        "mode": { "enum": ["direct", "hybrid", "orchestrated"] },
+        "recipe": { "type": ["string", "null"], "pattern": "^[a-z][a-z0-9-]*$" },
+        "required_capabilities": { "type": "array", "items": { "$ref": "#/$defs/capabilities" }, "uniqueItems": true },
+        "preferred_capabilities": { "type": "array", "items": { "$ref": "#/$defs/capabilities" }, "uniqueItems": true },
+        "write_policy": { "enum": ["none", "artifact", "state", "workspace"] },
+        "partition": { "enum": ["none", "dependencies", "target-files", "transitive-impact", "custom"] },
+        "permission_profile": { "enum": ["inherit", "per-call", "host-preset"] }
+      }
+    },
+    "question": {
+      "type": "object",
+      "required": ["id", "kind", "gate", "modes", "receipt"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+        "kind": { "enum": ["human-ask", "agent-receipt", "skip"] },
+        "gate": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+        "modes": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "appetite": { "type": "array", "items": { "enum": ["Lean", "Core", "Complete"] } },
+        "evidence": { "type": "string" },
+        "receipt": { "type": "string", "minLength": 1, "pattern": "^(?!/)(?!.*\\.\\.)[^ ]+$" }
+      }
+    },
+    "stage": {
+      "type": "object",
+      "required": ["name", "order", "description", "label", "produces", "artifacts", "phase", "skill", "playbook", "execution", "blocked_tools", "allowed_tools", "preferred_tools", "primary_actions", "transitions"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+        "order": { "type": "integer", "minimum": 0 },
+        "model_hint": { "type": "string" },
+        "description": { "type": "string", "minLength": 1 },
+        "label": { "type": "string", "minLength": 1 },
+        "produces": { "type": "string", "minLength": 1 },
+        "artifacts": { "type": "array", "items": { "type": "string", "pattern": "^(?!/)(?!.*\\.\\.)[^ ]+$" }, "uniqueItems": true },
+        "phase": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+        "skill": { "type": "string", "pattern": "^stelow-[a-z0-9-]+$" },
+        "playbook": { "type": ["string", "null"], "pattern": "^(?!/)(?!.*\\.\\.)[^ ]+$" },
+        "execution": { "$ref": "#/$defs/execution" },
+        "routes": { "type": "object", "additionalProperties": false, "properties": { "intents": { "type": "array", "items": { "type": "string" } }, "review_modes": { "type": "array", "items": { "type": "string" } } } },
+        "blocked_tools": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+        "allowed_tools": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+        "preferred_tools": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+        "primary_actions": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+        "questions": { "type": "array", "items": { "$ref": "#/$defs/question" } },
+        "requires_approval": { "type": "boolean" },
+        "approval_tool": { "type": ["string", "null"] },
+        "supervisor": { "type": "boolean" },
+        "transitions": { "type": "object", "minProperties": 1, "additionalProperties": { "type": "array", "items": { "type": "string" } } }
+      }
+    }
+  }
+}

@@ -1,0 +1,48 @@
+id: verification
+version: 1
+description: Verify implementation through tests, UI checks, and an evidence review.
+skill: stelow-workflow-testing-execution
+mode: orchestrated
+write_policy: artifact
+permission_profile: inherit
+tasks:
+- id: tests
+  skill: stelow-workflow-testing-execution
+  depends_on: []
+  output: verification/tests.json
+  output_schema: schemas/verification.json
+  human_boundary: none
+  when: always
+  failure_policy: fail
+  requirements:
+  - pipeline
+  - structured-output
+- id: ui-review
+  skill: stelow-workflow-testing-execution
+  depends_on: []
+  output: verification/ui-review.md
+  output_schema: schemas/markdown.json
+  human_boundary: none
+  when: ui_scope_present
+  failure_policy: skip-with-reason
+  requirements:
+  - pipeline
+  - structured-output
+- id: verification-report
+  depends_on:
+  - tests
+  - ui-review
+  output: verification/report.md
+  output_schema: schemas/markdown.json
+  human_boundary: none
+  skill: stelow-workflow-testing-execution
+  when: always
+  failure_policy: fail
+  requirements:
+  - pipeline
+  - structured-output
+partition: none
+fallback:
+  mode: sequential
+  preserves:
+  - artifact

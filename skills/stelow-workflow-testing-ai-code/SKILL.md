@@ -9,6 +9,12 @@ description: >
 metadata:
   frequency: monthly
   category: workflow
+  execution:
+    mode: reference
+    recipe: null
+    capabilities: []
+    write_policy: none
+    permission_profile: inherit
   context-cost: medium
   author: calionauta
   author-url: https://github.com/calionauta

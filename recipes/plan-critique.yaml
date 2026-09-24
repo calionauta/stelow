@@ -1,0 +1,48 @@
+id: plan-critique
+version: 1
+description: Review a product plan with independent critics and a verified synthesis.
+skill: stelow-workflow-plan-critique
+mode: orchestrated
+write_policy: artifact
+permission_profile: inherit
+tasks:
+- id: critique-review
+  skill: stelow-workflow-plan-critique
+  depends_on: []
+  output: critiques/critique-report.json
+  output_schema: schemas/plan-critique.json
+  human_boundary: none
+  when: always
+  failure_policy: fail
+  requirements:
+  - pipeline
+  - structured-output
+- id: critique-verify
+  depends_on:
+  - critique-review
+  output: critiques/critique-verification.json
+  output_schema: schemas/plan-critique.json
+  human_boundary: none
+  skill: stelow-workflow-plan-critique
+  when: always
+  failure_policy: fail
+  requirements:
+  - pipeline
+  - structured-output
+- id: critique-consolidate
+  depends_on:
+  - critique-verify
+  output: critiques/critique-report.md
+  output_schema: schemas/markdown.json
+  human_boundary: none
+  skill: stelow-workflow-plan-critique
+  when: always
+  failure_policy: fail
+  requirements:
+  - pipeline
+  - structured-output
+partition: none
+fallback:
+  mode: sequential
+  preserves:
+  - artifact

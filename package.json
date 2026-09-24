@@ -32,6 +32,12 @@
     "build": "tsc -p tsconfig.build.json",
     "gen:transitions": "python3 scripts/generate-transitions.py",
     "gen:transitions:check": "python3 scripts/generate-transitions.py --check",
+    "gen:catalog": "python3 scripts/generate-stage-catalog.py",
+    "gen:catalog:check": "python3 scripts/generate-stage-catalog.py --check",
+    "gen:recipes": "python3 scripts/generate-recipe-catalog.py",
+    "gen:recipes:check": "python3 scripts/generate-recipe-catalog.py --check",
+    "validate:stages": "python3 scripts/validate-stages.py",
+    "verify:execution": "npm run validate:stages && npm run gen:transitions:check && npm run gen:catalog:check && npm run gen:recipes:check",
     "test": "vitest run",
     "test:unit": "vitest run tests/unit",
     "test:integration": "vitest run tests/integration",
@@ -46,9 +52,9 @@
     "deadcode": "knip --no-exit-code --include files,dependencies,unlisted,unresolved",
     "duplicates": "jscpd --min-lines 30 --min-tokens 150 --reporters console --silent scripts tests types",
     "quality:report": "npm run lint && npm run deadcode && npm run duplicates",
-    "quality": "npm run typecheck && npm test && npm run quality:report && npm run gen:transitions:check",
+    "quality": "npm run typecheck && npm test && npm run quality:report && npm run verify:execution",
     "security:full": "npm audit --audit-level=high",
-    "verify:generated": "npm run gen:transitions:check"
+    "verify:generated": "npm run verify:execution"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

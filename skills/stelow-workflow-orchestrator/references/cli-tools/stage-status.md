@@ -28,6 +28,7 @@
 | critique | Product Critique |
 | gate | Review Gate (visual review) |
 | scope | Scope Adjustment |
+| interface | Interface Alternatives |
 | int-gate | Interface Gate (visual review) |
 | selection | Interface Selection |
 | planning | Tech Planning |

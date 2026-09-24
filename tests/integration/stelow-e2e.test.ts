@@ -24,7 +24,7 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { execSync, spawnSync } from "node:child_process";
 import { mkdtempSync, writeFileSync, mkdirSync, readFileSync, readdirSync, statSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, dirname } from "node:path";
 import { randomBytes } from "node:crypto";
 
 const REPO_ROOT = join(__dirname, "..", "..");
@@ -69,6 +69,12 @@ function existsSync(p: string): boolean {
   try { statSync(p); return true; } catch { return false; }
 }
 
+function seedArtifact(statedir: string, relativePath: string): void {
+  const target = join(statedir, relativePath);
+  mkdirSync(dirname(target), { recursive: true });
+  writeFileSync(target, "# Test artifact\n");
+}
+
 afterAll(() => {
   for (const w of workdirs) {
     try { rmSync(w.dir, { recursive: true, force: true }); } catch {}
@@ -101,8 +107,11 @@ stages:
     // Step 2 — router: drive 3 advances via the helper, mimicking the
     // router's per-stage transition loop. Each call: read current_stage,
     // compute next (from transitions.md), advance.
+    const stateDir = join(wd.dir, ".stelow");
     const expectedPath = ["context", "shape", "critique", "gate"];
     for (const next of expectedPath) {
+      if (next === "critique") seedArtifact(stateDir, "plans/spec-product_v1.md");
+      if (next === "gate") seedArtifact(stateDir, "critiques/critique-report.md");
       const r = run(wd, ["advance", next]);
       expect(r.status, `advance to ${next} failed: ${r.stderr}`).toBe(0);
     }

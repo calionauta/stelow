@@ -1,0 +1,49 @@
+id: codebase-critique
+version: 1
+description: Review architecture, coupling, hotspots, and maintenance risk without
+  changing the workspace.
+skill: stelow-workflow-codebase-critique
+mode: orchestrated
+write_policy: artifact
+partition: none
+permission_profile: inherit
+fallback:
+  mode: sequential
+  preserves:
+  - artifact
+tasks:
+- id: structure-review
+  skill: stelow-workflow-codebase-critique
+  depends_on: []
+  when: always
+  failure_policy: fail
+  output: audits/codebase-structure.md
+  output_schema: schemas/markdown.json
+  human_boundary: none
+  requirements:
+  - pipeline
+  - structured-output
+- id: risk-review
+  skill: stelow-workflow-codebase-critique
+  depends_on:
+  - structure-review
+  when: always
+  failure_policy: fail
+  output: audits/codebase-risk.md
+  output_schema: schemas/markdown.json
+  human_boundary: none
+  requirements:
+  - pipeline
+  - structured-output
+- id: critique-synthesis
+  skill: stelow-workflow-codebase-critique
+  depends_on:
+  - risk-review
+  when: always
+  failure_policy: fail
+  output: audits/codebase-critique.md
+  output_schema: schemas/markdown.json
+  human_boundary: none
+  requirements:
+  - pipeline
+  - structured-output

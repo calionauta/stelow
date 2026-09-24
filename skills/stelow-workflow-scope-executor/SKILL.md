@@ -9,6 +9,12 @@ description: >
 metadata:
   frequency: weekly
   category: workflow
+  execution:
+    mode: hybrid
+    recipe: scope-batch
+    capabilities: [pipeline, structured-output]
+    write_policy: workspace
+    permission_profile: inherit
   context-cost: low
   author: calionauta
   author-url: https://github.com/calionauta
@@ -322,13 +328,13 @@ In **workflow mode**, skip to `### Workflow slice` and emit a complete
 ## Hand-off (workflow mode)
 
 ```
-stage          : scope
-description    : Scope adjustment. Add/remove from IN/OUT after gate approval.
+stage          : execution
+description    : Execute the approved scopes and leave verified outputs for verification.
 status         : <done|partial|blocked>
 artifacts      : <paths created or modified>
-next-candidate : interface
+next-candidate : verification
 gate           : none
-rework-on      : gate
+rework-on      : shape
 ```
 
 Workflow mode: emit the above Hand-off block verbatim, then stop. The
@@ -337,10 +343,10 @@ router skill consumes the next-candidate field and calls
 
 ### Workflow slice
 
-Workflow mode for the **scope** stage. Standalone behavior lives in
+Workflow mode for the **execution** stage. Standalone behavior lives in
 the rest of this file (unchanged). Summary:
 
-> Scope adjustment. Add/remove from IN/OUT after gate approval.
+> Execute the approved scopes and leave verified outputs for verification.
 
 Primary actions (per stages.yaml): `read, write`. Run only the actions that
 produce the artifacts promised in `## Hand-off`; skip anything that does

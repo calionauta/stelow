@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["scopes", "claims", "status"],
+  "properties": {
+    "scopes": { "type": "array", "items": { "type": "object", "required": ["id", "status", "targetFiles", "dependsOn"], "properties": { "id": { "type": "string", "minLength": 1 }, "status": { "enum": ["pending", "running", "done", "failed", "blocked"] }, "targetFiles": { "type": "array", "items": { "type": "string", "minLength": 1 } }, "dependsOn": { "type": "array", "items": { "type": "string" } } }, "additionalProperties": false } },
+    "claims": { "type": "array", "items": { "type": "object", "required": ["path", "owner", "status"], "properties": { "path": { "type": "string", "minLength": 1 }, "owner": { "type": "string", "minLength": 1 }, "status": { "enum": ["held", "released", "expired"] } }, "additionalProperties": false } },
+    "status": { "enum": ["planned", "running", "verified", "failed"] }
+  },
+  "additionalProperties": false
+}

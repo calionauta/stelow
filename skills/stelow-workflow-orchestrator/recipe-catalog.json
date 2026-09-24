@@ -1,0 +1,1699 @@
+{
+  "version": 1,
+  "recipes": [
+    {
+      "id": "codebase-critique",
+      "version": 1,
+      "description": "Review architecture, coupling, hotspots, and maintenance risk without changing the workspace.",
+      "skill": "stelow-workflow-codebase-critique",
+      "mode": "orchestrated",
+      "write_policy": "artifact",
+      "partition": "none",
+      "permission_profile": "inherit",
+      "fallback": {
+        "mode": "sequential",
+        "preserves": [
+          "artifact"
+        ]
+      },
+      "tasks": [
+        {
+          "id": "structure-review",
+          "skill": "stelow-workflow-codebase-critique",
+          "depends_on": [],
+          "when": "always",
+          "failure_policy": "fail",
+          "output": "audits/codebase-structure.md",
+          "output_schema": "schemas/markdown.json",
+          "human_boundary": "none",
+          "requirements": [
+            "pipeline",
+            "structured-output"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "content"
+            ],
+            "properties": {
+              "content": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "id": "risk-review",
+          "skill": "stelow-workflow-codebase-critique",
+          "depends_on": [
+            "structure-review"
+          ],
+          "when": "always",
+          "failure_policy": "fail",
+          "output": "audits/codebase-risk.md",
+          "output_schema": "schemas/markdown.json",
+          "human_boundary": "none",
+          "requirements": [
+            "pipeline",
+            "structured-output"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "content"
+            ],
+            "properties": {
+              "content": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "id": "critique-synthesis",
+          "skill": "stelow-workflow-codebase-critique",
+          "depends_on": [
+            "risk-review"
+          ],
+          "when": "always",
+          "failure_policy": "fail",
+          "output": "audits/codebase-critique.md",
+          "output_schema": "schemas/markdown.json",
+          "human_boundary": "none",
+          "requirements": [
+            "pipeline",
+            "structured-output"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "content"
+            ],
+            "properties": {
+              "content": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "execution-audit",
+      "version": 1,
+      "description": "Check delivered work against requirements with independent evidence.",
+      "skill": "stelow-workflow-execution-critique",
+      "mode": "orchestrated",
+      "write_policy": "artifact",
+      "permission_profile": "inherit",
+      "tasks": [
+        {
+          "id": "requirement-audit",
+          "skill": "stelow-workflow-execution-critique",
+          "depends_on": [],
+          "output": "audit/requirements.md",
+          "output_schema": "schemas/markdown.json",
+          "human_boundary": "none",
+          "when": "always",
+          "failure_policy": "fail",
+          "requirements": [
+            "pipeline",
+            "structured-output"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "content"
+            ],
+            "properties": {
+              "content": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "id": "evidence-audit",
+          "skill": "stelow-workflow-execution-critique",
+          "depends_on": [],
+          "output": "audit/evidence.md",
+          "output_schema": "schemas/markdown.json",
+          "human_boundary": "none",
+          "when": "always",
+          "failure_policy": "fail",
+          "requirements": [
+            "pipeline",
+            "structured-output"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "content"
+            ],
+            "properties": {
+              "content": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "id": "audit-report",
+          "depends_on": [
+            "requirement-audit",
+            "evidence-audit"
+          ],
+          "output": "audit/report.md",
+          "output_schema": "schemas/markdown.json",
+          "human_boundary": "none",
+          "skill": "stelow-workflow-execution-critique",
+          "when": "always",
+          "failure_policy": "fail",
+          "requirements": [
+            "pipeline",
+            "structured-output"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "content"
+            ],
+            "properties": {
+              "content": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      ],
+      "partition": "none",
+      "fallback": {
+        "mode": "sequential",
+        "preserves": [
+          "artifact"
+        ]
+      }
+    },
+    {
+      "id": "interface-alternatives",
+      "version": 1,
+      "description": "Explore interface alternatives and a synthesized hybrid recommendation.",
+      "skill": "stelow-workflow-interface-alternatives",
+      "mode": "orchestrated",
+      "write_policy": "artifact",
+      "permission_profile": "inherit",
+      "tasks": [
+        {
+          "id": "alternatives",
+          "skill": "stelow-workflow-interface-alternatives",
+          "depends_on": [],
+          "output": "interfaces/alternatives.json",
+          "output_schema": "schemas/interface-alternatives.json",
+          "human_boundary": "none",
+          "when": "appetite_supports_fanout",
+          "failure_policy": "fail",
+          "requirements": [
+            "fanout",
+            "pipeline",
+            "structured-output"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "alternatives",
+              "tradeoffs",
+              "verdict"
+            ],
+            "properties": {
+              "alternatives": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "summary",
+                    "states"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "summary": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "states": {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "tradeoffs": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "alternativeId",
+                    "benefit",
+                    "cost"
+                  ],
+                  "properties": {
+                    "alternativeId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "benefit": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "cost": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "verdict": {
+                "enum": [
+                  "ready",
+                  "needs-revision"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "id": "alternatives-verify",
+          "depends_on": [
+            "alternatives"
+          ],
+          "output": "interfaces/alternatives-verification.json",
+          "output_schema": "schemas/interface-alternatives.json",
+          "human_boundary": "none",
+          "skill": "stelow-workflow-interface-alternatives",
+          "when": "always",
+          "failure_policy": "fail",
+          "requirements": [
+            "pipeline",
+            "structured-output"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "alternatives",
+              "tradeoffs",
+              "verdict"
+            ],
+            "properties": {
+              "alternatives": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "summary",
+                    "states"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "summary": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "states": {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "tradeoffs": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "alternativeId",
+                    "benefit",
+                    "cost"
+                  ],
+                  "properties": {
+                    "alternativeId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "benefit": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "cost": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "verdict": {
+                "enum": [
+                  "ready",
+                  "needs-revision"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "id": "alternatives-hybrid",
+          "depends_on": [
+            "alternatives-verify"
+          ],
+          "output": "interfaces/interfaces.md",
+          "output_schema": "schemas/markdown.json",
+          "human_boundary": "none",
+          "skill": "stelow-workflow-interface-alternatives",
+          "when": "always",
+          "failure_policy": "fail",
+          "requirements": [
+            "pipeline",
+            "structured-output"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "content"
+            ],
+            "properties": {
+              "content": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      ],
+      "partition": "none",
+      "fallback": {
+        "mode": "sequential",
+        "preserves": [
+          "artifact"
+        ]
+      }
+    },
+    {
+      "id": "plan-critique",
+      "version": 1,
+      "description": "Review a product plan with independent critics and a verified synthesis.",
+      "skill": "stelow-workflow-plan-critique",
+      "mode": "orchestrated",
+      "write_policy": "artifact",
+      "permission_profile": "inherit",
+      "tasks": [
+        {
+          "id": "critique-review",
+          "skill": "stelow-workflow-plan-critique",
+          "depends_on": [],
+          "output": "critiques/critique-report.json",
+          "output_schema": "schemas/plan-critique.json",
+          "human_boundary": "none",
+          "when": "always",
+          "failure_policy": "fail",
+          "requirements": [
+            "pipeline",
+            "structured-output"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "findings",
+              "questions",
+              "verdict"
+            ],
+            "properties": {
+              "findings": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "severity",
+                    "evidence"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "severity": {
+                      "enum": [
+                        "critical",
+                        "high",
+                        "medium",
+                        "low"
+                      ]
+                    },
+                    "evidence": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "questions": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "question"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "question": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "verdict": {
+                "enum": [
+                  "pass",
+                  "needs-revision",
+                  "blocked"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "id": "critique-verify",
+          "depends_on": [
+            "critique-review"
+          ],
+          "output": "critiques/critique-verification.json",
+          "output_schema": "schemas/plan-critique.json",
+          "human_boundary": "none",
+          "skill": "stelow-workflow-plan-critique",
+          "when": "always",
+          "failure_policy": "fail",
+          "requirements": [
+            "pipeline",
+            "structured-output"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "findings",
+              "questions",
+              "verdict"
+            ],
+            "properties": {
+              "findings": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "severity",
+                    "evidence"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "severity": {
+                      "enum": [
+                        "critical",
+                        "high",
+                        "medium",
+                        "low"
+                      ]
+                    },
+                    "evidence": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "questions": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "question"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "question": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "verdict": {
+                "enum": [
+                  "pass",
+                  "needs-revision",
+                  "blocked"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "id": "critique-consolidate",
+          "depends_on": [
+            "critique-verify"
+          ],
+          "output": "critiques/critique-report.md",
+          "output_schema": "schemas/markdown.json",
+          "human_boundary": "none",
+          "skill": "stelow-workflow-plan-critique",
+          "when": "always",
+          "failure_policy": "fail",
+          "requirements": [
+            "pipeline",
+            "structured-output"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "content"
+            ],
+            "properties": {
+              "content": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      ],
+      "partition": "none",
+      "fallback": {
+        "mode": "sequential",
+        "preserves": [
+          "artifact"
+        ]
+      }
+    },
+    {
+      "id": "planning-research",
+      "version": 1,
+      "description": "Research stack, testing, and alignment evidence before the coordinator writes the final plan.",
+      "skill": "stelow-workflow-tech-planning",
+      "mode": "hybrid",
+      "write_policy": "artifact",
+      "permission_profile": "inherit",
+      "tasks": [
+        {
+          "id": "planning-stack",
+          "skill": "stelow-workflow-tech-planning",
+          "depends_on": [],
+          "output": "plans/stack-research.md",
+          "output_schema": "schemas/markdown.json",
+          "human_boundary": "none",
+          "when": "always",
+          "failure_policy": "fail",
+          "requirements": [
+            "pipeline",
+            "structured-output"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "content"
+            ],
+            "properties": {
+              "content": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "id": "planning-testing",
+          "skill": "stelow-workflow-testing-ai-code",
+          "depends_on": [],
+          "output": "plans/testing-strategy.md",
+          "output_schema": "schemas/markdown.json",
+          "human_boundary": "none",
+          "when": "always",
+          "failure_policy": "fail",
+          "requirements": [
+            "pipeline",
+            "structured-output"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "content"
+            ],
+            "properties": {
+              "content": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "id": "planning-alignment",
+          "depends_on": [
+            "planning-stack",
+            "planning-testing"
+          ],
+          "output": "plans/planning-alignment.md",
+          "output_schema": "schemas/markdown.json",
+          "human_boundary": "none",
+          "skill": "stelow-workflow-tech-planning",
+          "when": "always",
+          "failure_policy": "fail",
+          "requirements": [
+            "pipeline",
+            "structured-output"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "content"
+            ],
+            "properties": {
+              "content": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      ],
+      "partition": "none",
+      "fallback": {
+        "mode": "sequential",
+        "preserves": [
+          "artifact"
+        ]
+      },
+      "supporting_recipes": [
+        "testing-strategy"
+      ]
+    },
+    {
+      "id": "scope-batch",
+      "version": 1,
+      "description": "Execute dependency-partitioned scopes with claims, parent verification, and gap escalation.",
+      "skill": "stelow-workflow-scope-executor",
+      "mode": "hybrid",
+      "write_policy": "workspace",
+      "partition": "transitive-impact",
+      "permission_profile": "inherit",
+      "fallback": {
+        "mode": "sequential",
+        "preserves": [
+          "artifact",
+          "claims",
+          "parent-verification"
+        ]
+      },
+      "required_capabilities": [
+        "pipeline",
+        "structured-output",
+        "status",
+        "file-claims"
+      ],
+      "tasks": [
+        {
+          "id": "scope-partitioner",
+          "skill": "stelow-workflow-scope-executor",
+          "depends_on": [],
+          "when": "always",
+          "failure_policy": "fail",
+          "output": "execution/scope-partition.json",
+          "output_schema": "schemas/scope-batch.json",
+          "human_boundary": "none",
+          "requirements": [
+            "pipeline",
+            "structured-output"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "scopes",
+              "claims",
+              "status"
+            ],
+            "properties": {
+              "scopes": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "status",
+                    "targetFiles",
+                    "dependsOn"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "status": {
+                      "enum": [
+                        "pending",
+                        "running",
+                        "done",
+                        "failed",
+                        "blocked"
+                      ]
+                    },
+                    "targetFiles": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "dependsOn": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "claims": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "path",
+                    "owner",
+                    "status"
+                  ],
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "owner": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "status": {
+                      "enum": [
+                        "held",
+                        "released",
+                        "expired"
+                      ]
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "status": {
+                "enum": [
+                  "planned",
+                  "running",
+                  "verified",
+                  "failed"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "id": "scope-worker",
+          "skill": "stelow-workflow-scope-executor",
+          "depends_on": [
+            "scope-partitioner"
+          ],
+          "when": "always",
+          "failure_policy": "fail",
+          "output": "execution/scope-results.json",
+          "output_schema": "schemas/scope-batch.json",
+          "human_boundary": "none",
+          "requirements": [
+            "pipeline",
+            "structured-output",
+            "file-claims"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "scopes",
+              "claims",
+              "status"
+            ],
+            "properties": {
+              "scopes": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "status",
+                    "targetFiles",
+                    "dependsOn"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "status": {
+                      "enum": [
+                        "pending",
+                        "running",
+                        "done",
+                        "failed",
+                        "blocked"
+                      ]
+                    },
+                    "targetFiles": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "dependsOn": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "claims": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "path",
+                    "owner",
+                    "status"
+                  ],
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "owner": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "status": {
+                      "enum": [
+                        "held",
+                        "released",
+                        "expired"
+                      ]
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "status": {
+                "enum": [
+                  "planned",
+                  "running",
+                  "verified",
+                  "failed"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "id": "scope-verifier",
+          "skill": "stelow-workflow-testing-execution",
+          "depends_on": [
+            "scope-worker"
+          ],
+          "when": "always",
+          "failure_policy": "fail",
+          "output": "execution/scope-verification.json",
+          "output_schema": "schemas/verification.json",
+          "human_boundary": "none",
+          "requirements": [
+            "pipeline",
+            "structured-output",
+            "file-claims"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "checks",
+              "passed",
+              "evidence"
+            ],
+            "properties": {
+              "checks": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "status",
+                    "evidence"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "status": {
+                      "enum": [
+                        "passed",
+                        "failed",
+                        "skipped"
+                      ]
+                    },
+                    "evidence": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "skipReason": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "passed": {
+                "type": "boolean"
+              },
+              "evidence": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "id": "parent-merge-verify",
+          "skill": "stelow-workflow-testing-execution",
+          "depends_on": [
+            "scope-verifier"
+          ],
+          "when": "always",
+          "failure_policy": "fail",
+          "output": "execution/parent-verification.json",
+          "output_schema": "schemas/verification.json",
+          "human_boundary": "none",
+          "requirements": [
+            "pipeline",
+            "structured-output",
+            "file-claims"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "checks",
+              "passed",
+              "evidence"
+            ],
+            "properties": {
+              "checks": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "status",
+                    "evidence"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "status": {
+                      "enum": [
+                        "passed",
+                        "failed",
+                        "skipped"
+                      ]
+                    },
+                    "evidence": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "skipReason": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "passed": {
+                "type": "boolean"
+              },
+              "evidence": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "id": "gap-escalation",
+          "skill": "stelow-workflow-scope-executor",
+          "depends_on": [
+            "parent-merge-verify"
+          ],
+          "when": "always",
+          "failure_policy": "fail",
+          "output": "execution/gap-escalation.json",
+          "output_schema": "schemas/scope-batch.json",
+          "human_boundary": "coordinator",
+          "requirements": [
+            "pipeline",
+            "structured-output"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "scopes",
+              "claims",
+              "status"
+            ],
+            "properties": {
+              "scopes": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "status",
+                    "targetFiles",
+                    "dependsOn"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "status": {
+                      "enum": [
+                        "pending",
+                        "running",
+                        "done",
+                        "failed",
+                        "blocked"
+                      ]
+                    },
+                    "targetFiles": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "dependsOn": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "claims": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "path",
+                    "owner",
+                    "status"
+                  ],
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "owner": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "status": {
+                      "enum": [
+                        "held",
+                        "released",
+                        "expired"
+                      ]
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "status": {
+                "enum": [
+                  "planned",
+                  "running",
+                  "verified",
+                  "failed"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "setup-recon",
+      "version": 1,
+      "description": "Optionally inspect the repository before the coordinator starts context work.",
+      "skill": "stelow-workflow-orchestrator",
+      "mode": "hybrid",
+      "write_policy": "artifact",
+      "permission_profile": "inherit",
+      "tasks": [
+        {
+          "id": "repository-recon",
+          "skill": "stelow-workflow-orchestrator",
+          "depends_on": [],
+          "output": "recon/setup.md",
+          "output_schema": "schemas/markdown.json",
+          "human_boundary": "none",
+          "when": "always",
+          "failure_policy": "fail",
+          "requirements": [
+            "pipeline",
+            "structured-output"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "content"
+            ],
+            "properties": {
+              "content": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      ],
+      "partition": "none",
+      "fallback": {
+        "mode": "sequential",
+        "preserves": [
+          "artifact"
+        ]
+      }
+    },
+    {
+      "id": "shape-recon",
+      "version": 1,
+      "description": "Gather bounded evidence for shaping while the coordinator retains product decisions.",
+      "skill": "stelow-workflow-shape-up",
+      "mode": "hybrid",
+      "write_policy": "artifact",
+      "permission_profile": "inherit",
+      "tasks": [
+        {
+          "id": "shape-evidence",
+          "skill": "stelow-workflow-shape-up",
+          "depends_on": [],
+          "output": "recon/shape.md",
+          "output_schema": "schemas/markdown.json",
+          "human_boundary": "none",
+          "when": "always",
+          "failure_policy": "fail",
+          "requirements": [
+            "pipeline",
+            "structured-output"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "content"
+            ],
+            "properties": {
+              "content": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      ],
+      "partition": "none",
+      "fallback": {
+        "mode": "sequential",
+        "preserves": [
+          "artifact"
+        ]
+      }
+    },
+    {
+      "id": "strategic-context",
+      "version": 1,
+      "description": "Run selected strategic analyses in parallel and synthesize evidence.",
+      "skill": "stelow-workflow-orchestrator",
+      "mode": "orchestrated",
+      "write_policy": "artifact",
+      "permission_profile": "inherit",
+      "tasks": [
+        {
+          "id": "context-analysis",
+          "skill": "stelow-product-multi-method-market-analysis",
+          "depends_on": [],
+          "output": "strategic/context-analysis.md",
+          "output_schema": "schemas/markdown.json",
+          "human_boundary": "none",
+          "when": "always",
+          "failure_policy": "fail",
+          "requirements": [
+            "pipeline",
+            "structured-output"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "content"
+            ],
+            "properties": {
+              "content": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "id": "context-synthesis",
+          "depends_on": [
+            "context-analysis"
+          ],
+          "output": "strategic/context.md",
+          "output_schema": "schemas/markdown.json",
+          "human_boundary": "none",
+          "skill": "stelow-workflow-orchestrator",
+          "when": "always",
+          "failure_policy": "fail",
+          "requirements": [
+            "pipeline",
+            "structured-output"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "content"
+            ],
+            "properties": {
+              "content": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      ],
+      "partition": "none",
+      "fallback": {
+        "mode": "sequential",
+        "preserves": [
+          "artifact"
+        ]
+      }
+    },
+    {
+      "id": "testing-strategy",
+      "version": 1,
+      "description": "Produce an evidence-based testing strategy as a planning input.",
+      "skill": "stelow-workflow-testing-ai-code",
+      "mode": "orchestrated",
+      "write_policy": "artifact",
+      "permission_profile": "inherit",
+      "tasks": [
+        {
+          "id": "testing-strategy",
+          "skill": "stelow-workflow-testing-ai-code",
+          "depends_on": [],
+          "output": "plans/testing-strategy.md",
+          "output_schema": "schemas/markdown.json",
+          "human_boundary": "none",
+          "when": "always",
+          "failure_policy": "fail",
+          "requirements": [
+            "pipeline",
+            "structured-output"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "content"
+            ],
+            "properties": {
+              "content": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      ],
+      "partition": "none",
+      "fallback": {
+        "mode": "sequential",
+        "preserves": [
+          "artifact"
+        ]
+      }
+    },
+    {
+      "id": "ux-critique",
+      "version": 1,
+      "description": "Review a live or described interface for usability, accessibility, and visual quality without changing code.",
+      "skill": "stelow-workflow-ux-critique",
+      "mode": "orchestrated",
+      "write_policy": "artifact",
+      "partition": "none",
+      "permission_profile": "inherit",
+      "fallback": {
+        "mode": "sequential",
+        "preserves": [
+          "artifact"
+        ]
+      },
+      "tasks": [
+        {
+          "id": "ux-review",
+          "skill": "stelow-workflow-ux-critique",
+          "depends_on": [],
+          "when": "always",
+          "failure_policy": "fail",
+          "output": "audits/ux-critique.md",
+          "output_schema": "schemas/markdown.json",
+          "human_boundary": "none",
+          "requirements": [
+            "pipeline",
+            "structured-output"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "content"
+            ],
+            "properties": {
+              "content": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "id": "ux-verify",
+          "skill": "stelow-workflow-ux-critique",
+          "depends_on": [
+            "ux-review"
+          ],
+          "when": "always",
+          "failure_policy": "fail",
+          "output": "audits/ux-verification.md",
+          "output_schema": "schemas/markdown.json",
+          "human_boundary": "none",
+          "requirements": [
+            "pipeline",
+            "structured-output"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "content"
+            ],
+            "properties": {
+              "content": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "verification",
+      "version": 1,
+      "description": "Verify implementation through tests, UI checks, and an evidence review.",
+      "skill": "stelow-workflow-testing-execution",
+      "mode": "orchestrated",
+      "write_policy": "artifact",
+      "permission_profile": "inherit",
+      "tasks": [
+        {
+          "id": "tests",
+          "skill": "stelow-workflow-testing-execution",
+          "depends_on": [],
+          "output": "verification/tests.json",
+          "output_schema": "schemas/verification.json",
+          "human_boundary": "none",
+          "when": "always",
+          "failure_policy": "fail",
+          "requirements": [
+            "pipeline",
+            "structured-output"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "checks",
+              "passed",
+              "evidence"
+            ],
+            "properties": {
+              "checks": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "status",
+                    "evidence"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "status": {
+                      "enum": [
+                        "passed",
+                        "failed",
+                        "skipped"
+                      ]
+                    },
+                    "evidence": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "skipReason": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "passed": {
+                "type": "boolean"
+              },
+              "evidence": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "id": "ui-review",
+          "skill": "stelow-workflow-testing-execution",
+          "depends_on": [],
+          "output": "verification/ui-review.md",
+          "output_schema": "schemas/markdown.json",
+          "human_boundary": "none",
+          "when": "ui_scope_present",
+          "failure_policy": "skip-with-reason",
+          "requirements": [
+            "pipeline",
+            "structured-output"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "content"
+            ],
+            "properties": {
+              "content": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "id": "verification-report",
+          "depends_on": [
+            "tests",
+            "ui-review"
+          ],
+          "output": "verification/report.md",
+          "output_schema": "schemas/markdown.json",
+          "human_boundary": "none",
+          "skill": "stelow-workflow-testing-execution",
+          "when": "always",
+          "failure_policy": "fail",
+          "requirements": [
+            "pipeline",
+            "structured-output"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "content"
+            ],
+            "properties": {
+              "content": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      ],
+      "partition": "none",
+      "fallback": {
+        "mode": "sequential",
+        "preserves": [
+          "artifact"
+        ]
+      }
+    }
+  ]
+}

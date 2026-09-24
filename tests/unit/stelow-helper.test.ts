@@ -71,6 +71,12 @@ stages:
 `);
 }
 
+function seedArtifact(statedir: string, relativePath: string): void {
+  const target = join(statedir, relativePath);
+  mkdirSync(dirname(target), { recursive: true });
+  writeFileSync(target, "# Test artifact\n");
+}
+
 function run(wd: Workdir, args: string[], env: Record<string, string> = {}, cwd: string = wd.dir): { status: number; stdout: string; stderr: string } {
   const r = spawnSync("bash", [wd.helper, ...args], {
     cwd, encoding: "utf8", env: { ...process.env, PATH: process.env.PATH ?? "", ...env },
@@ -122,7 +128,20 @@ describe("status", () => {
 
 describe("advance", () => {
   let wd: Workdir;
-  beforeEach(() => { wd = makeWorkdir(); makeState(wd, "shape"); });
+  beforeEach(() => {
+    wd = makeWorkdir();
+    makeState(wd, "shape");
+    seedArtifact(join(wd.dir, ".stelow"), "plans/spec-product_v1.md");
+  });
+
+  it("refuses to leave shape when its required artifact is missing", () => {
+    rmSync(join(wd.dir, ".stelow", "plans", "spec-product_v1.md"));
+    const before = readFileSync(join(wd.dir, "state.md"));
+    const r = run(wd, ["advance", "critique"]);
+    expect(r.status).not.toBe(0);
+    expect(r.stderr).toContain("missing required artifact: plans/spec-product*.md");
+    expect(Buffer.compare(before, readFileSync(join(wd.dir, "state.md")))).toBe(0);
+  });
 
   it("rejects unknown candidate without mutating state.md", () => {
     const before = readFileSync(join(wd.dir, "state.md"));
@@ -191,6 +210,7 @@ describe("advance", () => {
     const statePath = join(stateDir, "state.md");
     writeFileSync(statePath, readFileSync(join(wd.dir, "state.md"), "utf8").replace("---\n# t", "artifacts: []\n---\n# t"));
     writeFileSync(join(stateDir, "verification", "report.json"), '{"passed":true}\n');
+    seedArtifact(stateDir, "plans/spec-product_v1.md");
 
     expect(run(wd, ["advance", "critique"], { STELOW_STATEDIR: stateDir }).status).toBe(0);
     expect(readFileSync(statePath, "utf8")).toMatch(/- stage: shape\n    kind: artifact\n    label: report\n    path: \.stelow\/2026-09-02\/artifact-output-test\/verification\/report\.json/);
@@ -226,6 +246,7 @@ describe("advance", () => {
     const rootState = join(wd.dir, "state.md");
     const workflowState = join(stateDir, "state.md");
     writeFileSync(workflowState, readFileSync(rootState));
+    seedArtifact(stateDir, "plans/spec-product_v1.md");
     rmSync(rootState);
     const env = { STELOW_STATEDIR: stateDir };
 

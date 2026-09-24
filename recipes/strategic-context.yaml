@@ -1,0 +1,36 @@
+id: strategic-context
+version: 1
+description: Run selected strategic analyses in parallel and synthesize evidence.
+skill: stelow-workflow-orchestrator
+mode: orchestrated
+write_policy: artifact
+permission_profile: inherit
+tasks:
+- id: context-analysis
+  skill: stelow-product-multi-method-market-analysis
+  depends_on: []
+  output: strategic/context-analysis.md
+  output_schema: schemas/markdown.json
+  human_boundary: none
+  when: always
+  failure_policy: fail
+  requirements:
+  - pipeline
+  - structured-output
+- id: context-synthesis
+  depends_on:
+  - context-analysis
+  output: strategic/context.md
+  output_schema: schemas/markdown.json
+  human_boundary: none
+  skill: stelow-workflow-orchestrator
+  when: always
+  failure_policy: fail
+  requirements:
+  - pipeline
+  - structured-output
+partition: none
+fallback:
+  mode: sequential
+  preserves:
+  - artifact

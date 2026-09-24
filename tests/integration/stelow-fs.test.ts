@@ -15,7 +15,7 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import { execSync, spawnSync, ChildProcess } from "node:child_process";
 import { mkdtempSync, writeFileSync, mkdirSync, readFileSync, rmSync, existsSync, readdirSync, utimesSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, dirname } from "node:path";
 import { randomBytes } from "node:crypto";
 
 const REPO_ROOT = join(__dirname, "..", "..");
@@ -64,6 +64,12 @@ stages:
 `);
 }
 
+function seedArtifact(statedir: string, relativePath: string): void {
+  const target = join(statedir, relativePath);
+  mkdirSync(dirname(target), { recursive: true });
+  writeFileSync(target, "# Test artifact\n");
+}
+
 // Backdate a lock dir's mtime with Node (portable; GNU/BSD `touch -d` differs).
 function backdateLock(wd: Workdir, when: Date): void {
   const lock = join(wd.dir, ".stelow", "lock");
@@ -90,6 +96,7 @@ describe("parallel-lock contention", () => {
   it("two concurrent advances: exactly one wins, the other fails with lock-held", () => {
     const wd = makeWorkdir();
     makeState(wd, "shape");
+    seedArtifact(join(wd.dir, ".stelow"), "plans/spec-product_v1.md");
 
     // Pre-acquire the lock manually so both attempts will race on the
     // stale-lock check. Then both call advance simultaneously; exactly
@@ -122,6 +129,7 @@ describe("crash-resume", () => {
   it("orphan lock from a killed advance is recoverable by next run (TTL)", () => {
     const wd = makeWorkdir();
     makeState(wd, "shape");
+    seedArtifact(join(wd.dir, ".stelow"), "plans/spec-product_v1.md");
 
     // Simulate: a previous advance was killed mid-flight, leaving the lock.
     mkdirSync(join(wd.dir, ".stelow", "lock"), { recursive: true });
@@ -147,6 +155,7 @@ describe("crash-resume", () => {
   it("fresh lock (TTL not exceeded) blocks next advance with lock-held error", () => {
     const wd = makeWorkdir();
     makeState(wd, "shape");
+    seedArtifact(join(wd.dir, ".stelow"), "plans/spec-product_v1.md");
     mkdirSync(join(wd.dir, ".stelow", "lock"), { recursive: true });
     writeFileSync(join(wd.dir, ".stelow", "lock", "pid"), "1");
     // fresh lock — TTL not exceeded
@@ -162,8 +171,10 @@ describe("state.md <-> invariants.json consistency", () => {
   it("current_stage in state.md matches current_stage in invariants.json after N advances", () => {
     const wd = makeWorkdir();
     makeState(wd, "shape");
+    seedArtifact(join(wd.dir, ".stelow"), "plans/spec-product_v1.md");
     const path = ["shape", "critique", "gate", "scope"];
     for (const stage of path.slice(1)) {
+      if (stage === "gate") seedArtifact(join(wd.dir, ".stelow"), "critiques/critique-report.md");
       const r = run(wd, ["advance", stage]);
       expect(r.status).toBe(0);
     }

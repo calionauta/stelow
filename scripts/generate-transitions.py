@@ -67,6 +67,15 @@ def render():
         if stripped == "{{STAGE_ORDER}}":
             out.extend(order_rows(stages))
             continue
+        marker = re.fullmatch(r"\{\{ARTIFACTS:([a-z][a-z0-9-]*)\}\}", stripped)
+        if marker:
+            name = marker.group(1)
+            if name not in by_name:
+                print(f"generate-transitions: template references unknown stage '{name}'", file=sys.stderr)
+                sys.exit(1)
+            for artifact in by_name[name].get("artifacts", []):
+                out.append(f"artifact:   {artifact}")
+            continue
         marker = re.fullmatch(r"\{\{TRANSITIONS:([a-z][a-z0-9-]*):(next|accept|reject|annotate)\}\}", stripped)
         if marker:
             name, verb = marker.group(1), marker.group(2)

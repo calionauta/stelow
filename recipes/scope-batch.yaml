@@ -1,0 +1,83 @@
+id: scope-batch
+version: 1
+description: Execute dependency-partitioned scopes with claims, parent verification,
+  and gap escalation.
+skill: stelow-workflow-scope-executor
+mode: hybrid
+write_policy: workspace
+partition: transitive-impact
+permission_profile: inherit
+fallback:
+  mode: sequential
+  preserves:
+  - artifact
+  - claims
+  - parent-verification
+required_capabilities:
+- pipeline
+- structured-output
+- status
+- file-claims
+tasks:
+- id: scope-partitioner
+  skill: stelow-workflow-scope-executor
+  depends_on: []
+  when: always
+  failure_policy: fail
+  output: execution/scope-partition.json
+  output_schema: schemas/scope-batch.json
+  human_boundary: none
+  requirements:
+  - pipeline
+  - structured-output
+- id: scope-worker
+  skill: stelow-workflow-scope-executor
+  depends_on:
+  - scope-partitioner
+  when: always
+  failure_policy: fail
+  output: execution/scope-results.json
+  output_schema: schemas/scope-batch.json
+  human_boundary: none
+  requirements:
+  - pipeline
+  - structured-output
+  - file-claims
+- id: scope-verifier
+  skill: stelow-workflow-testing-execution
+  depends_on:
+  - scope-worker
+  when: always
+  failure_policy: fail
+  output: execution/scope-verification.json
+  output_schema: schemas/verification.json
+  human_boundary: none
+  requirements:
+  - pipeline
+  - structured-output
+  - file-claims
+- id: parent-merge-verify
+  skill: stelow-workflow-testing-execution
+  depends_on:
+  - scope-verifier
+  when: always
+  failure_policy: fail
+  output: execution/parent-verification.json
+  output_schema: schemas/verification.json
+  human_boundary: none
+  requirements:
+  - pipeline
+  - structured-output
+  - file-claims
+- id: gap-escalation
+  skill: stelow-workflow-scope-executor
+  depends_on:
+  - parent-merge-verify
+  when: always
+  failure_policy: fail
+  output: execution/gap-escalation.json
+  output_schema: schemas/scope-batch.json
+  human_boundary: coordinator
+  requirements:
+  - pipeline
+  - structured-output

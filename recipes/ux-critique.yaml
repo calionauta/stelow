@@ -1,0 +1,37 @@
+id: ux-critique
+version: 1
+description: Review a live or described interface for usability, accessibility, and
+  visual quality without changing code.
+skill: stelow-workflow-ux-critique
+mode: orchestrated
+write_policy: artifact
+partition: none
+permission_profile: inherit
+fallback:
+  mode: sequential
+  preserves:
+  - artifact
+tasks:
+- id: ux-review
+  skill: stelow-workflow-ux-critique
+  depends_on: []
+  when: always
+  failure_policy: fail
+  output: audits/ux-critique.md
+  output_schema: schemas/markdown.json
+  human_boundary: none
+  requirements:
+  - pipeline
+  - structured-output
+- id: ux-verify
+  skill: stelow-workflow-ux-critique
+  depends_on:
+  - ux-review
+  when: always
+  failure_policy: fail
+  output: audits/ux-verification.md
+  output_schema: schemas/markdown.json
+  human_boundary: none
+  requirements:
+  - pipeline
+  - structured-output

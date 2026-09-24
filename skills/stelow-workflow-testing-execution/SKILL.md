@@ -4,6 +4,12 @@ description: "Run post-implementation testing protocol. Triggers when: user says
 metadata:
   frequency: weekly
   category: workflow
+  execution:
+    mode: orchestrated
+    recipe: verification
+    capabilities: [fanout, pipeline, structured-output]
+    write_policy: artifact
+    permission_profile: inherit
   context-cost: medium
   author: calionauta
   author-url: https://github.com/calionauta

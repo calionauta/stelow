@@ -8,6 +8,12 @@ description: >
 metadata:
   frequency: weekly
   category: workflow
+  execution:
+    mode: hybrid
+    recipe: shape-recon
+    capabilities: [pipeline, structured-output]
+    write_policy: artifact
+    permission_profile: inherit
   context-cost: low
   author: calionauta
   author-url: https://github.com/calionauta

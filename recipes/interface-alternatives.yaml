@@ -1,0 +1,49 @@
+id: interface-alternatives
+version: 1
+description: Explore interface alternatives and a synthesized hybrid recommendation.
+skill: stelow-workflow-interface-alternatives
+mode: orchestrated
+write_policy: artifact
+permission_profile: inherit
+tasks:
+- id: alternatives
+  skill: stelow-workflow-interface-alternatives
+  depends_on: []
+  output: interfaces/alternatives.json
+  output_schema: schemas/interface-alternatives.json
+  human_boundary: none
+  when: appetite_supports_fanout
+  failure_policy: fail
+  requirements:
+  - fanout
+  - pipeline
+  - structured-output
+- id: alternatives-verify
+  depends_on:
+  - alternatives
+  output: interfaces/alternatives-verification.json
+  output_schema: schemas/interface-alternatives.json
+  human_boundary: none
+  skill: stelow-workflow-interface-alternatives
+  when: always
+  failure_policy: fail
+  requirements:
+  - pipeline
+  - structured-output
+- id: alternatives-hybrid
+  depends_on:
+  - alternatives-verify
+  output: interfaces/interfaces.md
+  output_schema: schemas/markdown.json
+  human_boundary: none
+  skill: stelow-workflow-interface-alternatives
+  when: always
+  failure_policy: fail
+  requirements:
+  - pipeline
+  - structured-output
+partition: none
+fallback:
+  mode: sequential
+  preserves:
+  - artifact

@@ -9,6 +9,12 @@ description: >
 metadata:
   frequency: weekly
   category: workflow
+  execution:
+    mode: orchestrated
+    recipe: codebase-critique
+    capabilities: [fanout, structured-output]
+    write_policy: artifact
+    permission_profile: inherit
   context-cost: medium
   author: calionauta
   author-url: https://github.com/calionauta

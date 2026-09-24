@@ -15,7 +15,7 @@ import {
   mkdtempSync, writeFileSync, mkdirSync, readFileSync, existsSync, rmSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, dirname } from "node:path";
 
 const REPO_ROOT = join(__dirname, "..", "..");
 const HELPER_SRC = join(REPO_ROOT, "scripts", "stelow");
@@ -88,6 +88,21 @@ function currentStage(): string {
   return blob.match(/^current_stage:\s*(\S+)/m)?.[1] ?? "";
 }
 
+function writeStageArtifacts(stage: string, statedir: string): void {
+  const paths: Record<string, string> = {
+    critique: "plans/spec-product_v1.md",
+    gate: "critiques/critique-report.md",
+    "int-gate": "interfaces/interfaces.md",
+    selection: "interfaces/selected-interface.md",
+    execution: "plans/spec-tech_v1.md",
+  };
+  const relative = paths[stage];
+  if (!relative) return;
+  const target = join(statedir, relative);
+  mkdirSync(dirname(target), { recursive: true });
+  writeFileSync(target, `# ${stage} artifact\n`);
+}
+
 function writeReceipt(name: string): void {
   // Approval receipts live under <root>/.stelow/approvals/{dirHash}/;
   // statedir is <root>/.stelow/<date>/<dirHash>.
@@ -119,6 +134,7 @@ describe("host lifecycle e2e", () => {
       { stage: "audit" },
     ];
     for (const { stage, receipt } of chain) {
+      writeStageArtifacts(stage, ctx.statedir);
       if (receipt) writeReceipt(receipt);
       const r = run(ctx.helper, ["advance", stage], ctx.dir, env());
       expect(r.status, `advance ${stage}: ${r.stderr}`).toBe(0);
@@ -133,6 +149,7 @@ describe("host lifecycle e2e", () => {
     const other = JSON.parse(seed.stdout).statedir as string;
     const e2 = { STELOW_STATEDIR: other };
     for (const s of ["context", "shape", "critique", "gate", "scope", "interface", "int-gate", "selection", "planning"]) {
+      writeStageArtifacts(s, other);
       const r = run(ctx.helper, ["advance", s], ctx.dir, e2);
       expect(r.status, `advance ${s}`).toBe(0);
     }
@@ -197,7 +214,7 @@ describe("host lifecycle e2e", () => {
   });
 
   it("ask without identity is a usage error (exit 2, no hang)", () => {
-    const r = run(ctx.helper, ["ask", "--question", "Q?", "--option", "A", "--option", "B"], ctx.dir, env());
+    const r = run(ctx.helper, ["ask", "--question", "Q?", "--option", "A", "--option", "B"], ctx.dir, env({ STELOW_THREAD_ID: "", BB_THREAD_ID: "" }));
     expect(r.status).toBe(2);
   });
 

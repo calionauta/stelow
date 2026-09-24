@@ -1,19 +1,16 @@
-# Stage Capabilities
+# Execution capabilities
 
-Reference: what each workflow stage can do, and what tools it uses.
+Generated from `stages.yaml`; do not edit this table by hand.
 
-| Stage | Primary Actions | Allowed Tools | Supervisor | Requires Approval |
-|-------|----------------|---------------|------------|-------------------|
-| triage | ask | ask, read, grep, ls | No | No |
-| setup | read, grep | ask, read, grep, ls, subagent | No | No |
-| selection | ask, read | ask, read, grep, ls, subagent | No | No |
-| shape | read, write | ask, read, grep, ls, write, subagent | No | No |
-| gate | read | read, ls, grep, ask | No | Yes (visual_review) |
-| execution | edit, write, bash | all tools | Yes | No |
-| audit | read, grep | ask, read, grep, ls, write | No | No |
+| Capability | Requirement |
+|---|---|
+| `durable-run` | preferred |
+| `fanout` | preferred |
+| `file-claims` | required |
+| `per-call-model` | preferred |
+| `pipeline` | required |
+| `resume` | preferred |
+| `status` | required |
+| `structured-output` | required |
 
-For **blocked tools** per stage, see `stages.yaml` in the skill root.
-
-## Cross-CLI Behavior
-
-- **Any host**: self-enforcement by reading `RULES.md` + `stages.yaml`
+Adapters must negotiate these capabilities before selecting a native engine. See `../../../references/execution-contract.md`.

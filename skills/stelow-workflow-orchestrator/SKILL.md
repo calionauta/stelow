@@ -4,6 +4,12 @@ description: "[stelow] Complete product planning workflow: Shape Up -> Interface
 metadata:
   frequency: daily
   category: workflow
+  execution:
+    mode: direct
+    recipe: null
+    capabilities: []
+    write_policy: none
+    permission_profile: inherit
   context-cost: medium
   author: calionauta
   author-url: https://github.com/calionauta

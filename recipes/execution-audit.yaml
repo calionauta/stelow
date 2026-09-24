@@ -1,0 +1,48 @@
+id: execution-audit
+version: 1
+description: Check delivered work against requirements with independent evidence.
+skill: stelow-workflow-execution-critique
+mode: orchestrated
+write_policy: artifact
+permission_profile: inherit
+tasks:
+- id: requirement-audit
+  skill: stelow-workflow-execution-critique
+  depends_on: []
+  output: audit/requirements.md
+  output_schema: schemas/markdown.json
+  human_boundary: none
+  when: always
+  failure_policy: fail
+  requirements:
+  - pipeline
+  - structured-output
+- id: evidence-audit
+  skill: stelow-workflow-execution-critique
+  depends_on: []
+  output: audit/evidence.md
+  output_schema: schemas/markdown.json
+  human_boundary: none
+  when: always
+  failure_policy: fail
+  requirements:
+  - pipeline
+  - structured-output
+- id: audit-report
+  depends_on:
+  - requirement-audit
+  - evidence-audit
+  output: audit/report.md
+  output_schema: schemas/markdown.json
+  human_boundary: none
+  skill: stelow-workflow-execution-critique
+  when: always
+  failure_policy: fail
+  requirements:
+  - pipeline
+  - structured-output
+partition: none
+fallback:
+  mode: sequential
+  preserves:
+  - artifact

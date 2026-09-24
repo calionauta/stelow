@@ -1,0 +1,25 @@
+id: setup-recon
+version: 1
+description: Optionally inspect the repository before the coordinator starts context
+  work.
+skill: stelow-workflow-orchestrator
+mode: hybrid
+write_policy: artifact
+permission_profile: inherit
+tasks:
+- id: repository-recon
+  skill: stelow-workflow-orchestrator
+  depends_on: []
+  output: recon/setup.md
+  output_schema: schemas/markdown.json
+  human_boundary: none
+  when: always
+  failure_policy: fail
+  requirements:
+  - pipeline
+  - structured-output
+partition: none
+fallback:
+  mode: sequential
+  preserves:
+  - artifact

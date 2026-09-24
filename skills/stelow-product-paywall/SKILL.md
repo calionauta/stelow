@@ -4,6 +4,12 @@ description: Paywall and onboarding monetization funnel for consumer apps, based
 metadata:
   frequency: rare
   category: product
+  execution:
+    mode: reference
+    recipe: null
+    capabilities: []
+    write_policy: none
+    permission_profile: inherit
   context-cost: low
   author: calionauta
   author-url: https://github.com/calionauta

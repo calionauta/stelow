@@ -1,0 +1,25 @@
+id: shape-recon
+version: 1
+description: Gather bounded evidence for shaping while the coordinator retains product
+  decisions.
+skill: stelow-workflow-shape-up
+mode: hybrid
+write_policy: artifact
+permission_profile: inherit
+tasks:
+- id: shape-evidence
+  skill: stelow-workflow-shape-up
+  depends_on: []
+  output: recon/shape.md
+  output_schema: schemas/markdown.json
+  human_boundary: none
+  when: always
+  failure_policy: fail
+  requirements:
+  - pipeline
+  - structured-output
+partition: none
+fallback:
+  mode: sequential
+  preserves:
+  - artifact

@@ -1,0 +1,24 @@
+id: testing-strategy
+version: 1
+description: Produce an evidence-based testing strategy as a planning input.
+skill: stelow-workflow-testing-ai-code
+mode: orchestrated
+write_policy: artifact
+permission_profile: inherit
+tasks:
+- id: testing-strategy
+  skill: stelow-workflow-testing-ai-code
+  depends_on: []
+  output: plans/testing-strategy.md
+  output_schema: schemas/markdown.json
+  human_boundary: none
+  when: always
+  failure_policy: fail
+  requirements:
+  - pipeline
+  - structured-output
+partition: none
+fallback:
+  mode: sequential
+  preserves:
+  - artifact
