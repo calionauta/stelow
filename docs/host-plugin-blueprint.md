@@ -320,6 +320,20 @@ X ago" + inventory dialog) — silent syncs become mystery meat otherwise.
   `server.ts` delegates to a large `server/plugin-runtime.ts` that still owns
   most RPC and CLI handlers. Measure the implementation behind an entrypoint,
   including file and function size, before claiming this rule is satisfied.
+- **Make lifecycle ownership explicit at every slice seam**: a slice that
+  registers migrations, RPC handlers, schedulers, event listeners, or child
+  processes returns one idempotent disposer. The composition root owns the
+  disposer stack and unwinds it in reverse registration order. Dispose means
+  release timers, listeners, and owned resources; it must not stop unrelated
+  threads or delete persisted data. This matters on hot reload as much as on
+  uninstall because disposal is the normal replacement boundary.
+- **Compose startup transactions in the root**: construct capabilities from
+  explicit dependencies, run their migrations before registering handlers,
+  and stop at the first startup failure while disposing everything already
+  constructed. The root then registers contracts, schedules, and event wiring
+  as separate observable steps. This order makes partial startup safe and
+  gives tests one seam for asserting both the successful graph and refusal
+  paths.
 - **Route fuzzy judgments through decision routers, not prompts**: one
   decision endpoint configured once (endpoint + key + model for
   Jev-compatible APIs; endpoint only for keyless labels APIs such as
