@@ -578,7 +578,7 @@
     {
       "order": 70,
       "model_hint": "economy",
-      "description": "Owns the approved Scope Map for feature and broad-refactor routes. Shape may propose candidate slices; this stage finalizes the map without creating a second stage.",
+      "description": "Owns the approved Scope Map for feature routes. Shape may propose candidate slices; this stage finalizes the map without creating a second stage. Narrow mechanical refactors may bypass Scope.",
       "label": "Scope",
       "produces": "Breaks the approved idea into a versioned Scope Map with explicit delivery slices, boundaries, dependencies, and open decisions.",
       "artifacts": [

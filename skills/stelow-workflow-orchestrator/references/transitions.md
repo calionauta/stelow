@@ -24,7 +24,7 @@ after any change to verify.
 | 40 | shape | Shape stage. Define appetite, hill chart, rabbit holes. |
 | 45 | critique | Plan critique. Pre-flight check before gate. |
 | 60 | gate | Gate review. Visual approval via visual review required. Use `visual_review` tool (not bash). |
-| 70 | scope | Owns the approved Scope Map for feature and broad-refactor routes. Shape may propose candidate slices; this stage finalizes the map without creating a second stage. |
+| 70 | scope | Owns the approved Scope Map for feature routes. Shape may propose candidate slices; this stage finalizes the map without creating a second stage. Narrow mechanical refactors may bypass Scope. |
 | 80 | interface | Reaction-first Interface Contrast. Preserves the first reaction, compares bounded alternatives, and emits a named disposition. |
 | 90 | int-gate | Interface gate. Visual review of all interface proposals. Use `visual_review` tool (not bash). |
 | 100 | selection | Interface selection. Human pick via structured question in Interface-Gates modes; LLM decides in Auto / Product Spec Gate (see references/human-gates.md). |
