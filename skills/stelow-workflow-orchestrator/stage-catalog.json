@@ -665,8 +665,7 @@
       "produces": "Designs the user-facing interface for the approved scope with explicit alternatives, evidence, and selection receipt.",
       "artifacts": [
         "interfaces/*.md",
-        "interfaces/contrast.json",
-        "interfaces/selection-receipt.json"
+        "interfaces/contrast.json"
       ],
       "phase": "planning",
       "skill": "stelow-workflow-interface-contrast",

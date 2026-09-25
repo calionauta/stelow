@@ -135,7 +135,6 @@ accept:    int-gate
 reject:    scope
 artifact:   interfaces/*.md
 artifact:   interfaces/contrast.json
-artifact:   interfaces/selection-receipt.json
 rework:    (none)
 gate:      (none)
 ```

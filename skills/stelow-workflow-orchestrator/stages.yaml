@@ -334,7 +334,7 @@ stages:
     description: "Reaction-first Interface Contrast. Preserves the first reaction, compares bounded alternatives, and emits a named disposition."
     label: Interface
     produces: "Designs the user-facing interface for the approved scope with explicit alternatives, evidence, and selection receipt."
-    artifacts: [interfaces/*.md, interfaces/contrast.json, interfaces/selection-receipt.json]
+    artifacts: [interfaces/*.md, interfaces/contrast.json]
     phase: planning
     skill: stelow-workflow-interface-contrast
     playbook: SKILL.md

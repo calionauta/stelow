@@ -37,8 +37,11 @@ Use this skill during the existing Interface stage. It does not create a new roo
 The recipe writes:
 
 - `interfaces/contrast.json` — brief, alternatives, provenance, and disposition;
-- `interfaces/selection-receipt.json` — current selection or named stop;
 - `interfaces/interfaces.md` — readable rendering of the validated records.
+
+The existing canonical `selection` stage remains the owner of the actual
+interface pick. Interface Contrast does not create a second selection stage or
+selection receipt.
 
 The JSON records are the source of truth. Markdown is a view, not a second decision state.
 

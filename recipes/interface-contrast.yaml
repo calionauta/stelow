@@ -17,22 +17,10 @@ tasks:
   requirements:
   - pipeline
   - structured-output
-- id: selection
-  skill: stelow-workflow-interface-contrast
-  depends_on:
-  - contrast
-  output: interfaces/selection-receipt.json
-  output_schema: schemas/interface-contrast.json
-  human_boundary: coordinator
-  when: always
-  failure_policy: fail
-  requirements:
-  - pipeline
-  - structured-output
 - id: readable
   skill: stelow-workflow-interface-contrast
   depends_on:
-  - selection
+  - contrast
   output: interfaces/interfaces.md
   output_schema: schemas/markdown.json
   human_boundary: none
