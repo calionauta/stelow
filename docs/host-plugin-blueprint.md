@@ -612,8 +612,9 @@ is a named artifact with a destination: a product-commitment change returns to
 Shape, while a scope-boundary or dependency change returns to Scope.
 
 Interface Contrast uses the same execution substrate. A decision recipe may
-produce a decision brief, alternatives, contrast, reaction, and selection
-receipt, but the card control plane remains the only owner of human questions.
+produce a decision brief, alternatives, contrast, and reaction evidence, but
+the canonical selection stage remains the owner of the actual pick. The card
+control plane remains the only owner of human questions.
 A native `needs_input` result carries a durable boundary ID, artifact versions,
 and an answer schema; the card persists the question and resumes the same run
 only when the answer matches the current boundary and versions. Scope X-ray is a
