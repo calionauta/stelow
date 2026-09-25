@@ -350,7 +350,9 @@ encode the rules above as tested pure functions: `worker-action-policy`,
 `trackable-contracts`, `trackable-relations`, `trackable-evidence`,
 `trackable-events`, `tracking-paths`, `spec-scope-reader`, `build-gates`,
 `scope-command`, `artifact-roles`, `reliable-preset`,
-`preset-staleness`, `decision-api`, `decision-points`, `preset-judge`, `hill-position`, `card-metrics`, `skill-criteria`, `task-evidence`, `delegation-evidence`, `inbox-severity`, `delegation-map`, `draft-burst`,
+`preset-staleness`, `decision-api`, `decision-points`, `preset-judge`,
+`hill-position`, `card-metrics`, `skill-criteria`, `task-evidence`,
+`delegation-evidence`, `inbox-severity`, `delegation-map`, `draft-burst`,
 `app-support-state`, `board-list-presentation`, `board-views`,
 `build-detail-lifecycle`, `build-diff-presentation`, `build-panel-state`,
 `build-progress-presentation`, `build-review-target`, `card-attention`,
@@ -601,11 +603,16 @@ See `references/execution-contract.md` for the vocabulary and
 
 ## 14. Host runtime composition and lifecycle slices
 
-A host with a large plugin entrypoint should keep the entrypoint as a bounded
-composition root. Each capability owns one seam: contract fragments,
-migrations, handlers, schedules, and disposal for that capability. The root
-constructs the seams, passes explicit dependencies, registers their handlers,
-and publishes lifecycle events; capability modules do not import the root.
+A host with a large plugin entrypoint should keep the package entry as a
+bounded composition root and keep only wiring in the runtime module. Each
+capability owns one seam: contract fragments, migrations, handlers, schedules,
+and disposal for that capability. The runtime constructs the seams, passes
+explicit dependencies, registers their handlers, and publishes lifecycle
+events; capability modules do not import the entry or runtime module.
+
+Extraction is a migration, not a relabeling. Until the runtime module is
+actually decomposed, architecture notes must name it as transitional debt and
+must not claim that creating directories or factories completed the split.
 
 The portable seam pattern is:
 
@@ -623,9 +630,20 @@ The portable seam pattern is:
   user-facing presentation data. They leave durable state changes to their
   owning capability.
 - **Startup and disposal** are observable seams. Migrations run before
-  registration, schedules are named, event handlers are registered once, and
-  every timer/listener is disposed. Disposal must not stop live worker threads:
-  hot reload is not uninstall.
+  registration, schedules are named, and event handlers are registered once.
+  Every owned timer, child process, and retry is disposed idempotently; host
+  event subscriptions remain scoped to the plugin instance. Disposal must not
+  stop live worker threads: hot reload is not uninstall.
+
+Reference evidence in `bb-plugin-stelow`: `server.ts` is the package entry;
+`server/rpc-contract.ts` composes capability fragments;
+`server/core-migrations.ts` orders persisted-state migration;
+`server/runtime/lifecycle-startup.ts`, `thread-lifecycle.ts`, and
+`reconciler.ts` expose startup, event, and timer seams; and capability
+factories return the handlers and disposal handles consumed by
+`server/plugin-runtime.ts`. `tests/plugin-startup.test.mjs` runs every disposer
+twice and fails if a live thread is stopped, while
+`tests/runtime-reconciler.test.mjs` pins timer cleanup.
 
 Every registered contract method must have a handler, and representative
 behavior tests must cover success, refusal, fail-soft, publication, and
