@@ -1,0 +1,24 @@
+id: scope-map
+version: 1
+description: Create a bounded Scope Map for the existing Scope stage.
+skill: stelow-product-scope-mapping
+mode: orchestrated
+write_policy: artifact
+permission_profile: inherit
+tasks:
+- id: scope-map
+  skill: stelow-product-scope-mapping
+  depends_on: []
+  output: scope-map.json
+  output_schema: schemas/scope-map.json
+  human_boundary: none
+  when: always
+  failure_policy: fail
+  requirements:
+  - pipeline
+  - structured-output
+partition: none
+fallback:
+  mode: sequential
+  preserves:
+  - artifact

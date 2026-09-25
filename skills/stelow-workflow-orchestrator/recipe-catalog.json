@@ -1259,6 +1259,173 @@
       ]
     },
     {
+      "id": "scope-map",
+      "version": 1,
+      "description": "Create a bounded Scope Map for the existing Scope stage.",
+      "skill": "stelow-product-scope-mapping",
+      "mode": "orchestrated",
+      "write_policy": "artifact",
+      "permission_profile": "inherit",
+      "tasks": [
+        {
+          "id": "scope-map",
+          "skill": "stelow-product-scope-mapping",
+          "depends_on": [],
+          "output": "scope-map.json",
+          "output_schema": "schemas/scope-map.json",
+          "human_boundary": "none",
+          "when": "always",
+          "failure_policy": "fail",
+          "requirements": [
+            "pipeline",
+            "structured-output"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "title": "Stelow Scope Map",
+            "type": "object",
+            "required": [
+              "schemaVersion",
+              "mapId",
+              "status",
+              "shapeVersion",
+              "provenance",
+              "scopes"
+            ],
+            "properties": {
+              "schemaVersion": {
+                "const": 1
+              },
+              "mapId": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_.-]{1,80}$"
+              },
+              "status": {
+                "enum": [
+                  "draft",
+                  "approved"
+                ]
+              },
+              "shapeVersion": {
+                "type": "string",
+                "minLength": 1
+              },
+              "provenance": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "approval": {
+                "type": "object",
+                "required": [
+                  "receiptId",
+                  "approvedBy"
+                ],
+                "properties": {
+                  "receiptId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "approvedBy": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "additionalProperties": false
+              },
+              "openDecisions": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "scopes": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "title",
+                    "outcome",
+                    "capabilities",
+                    "inScope",
+                    "outOfScope",
+                    "dependsOn",
+                    "status"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9_.-]{1,80}$"
+                    },
+                    "title": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "outcome": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "capabilities": {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "inScope": {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "outOfScope": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "dependsOn": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_.-]{1,80}$"
+                      }
+                    },
+                    "status": {
+                      "enum": [
+                        "current",
+                        "stale",
+                        "blocked",
+                        "unknown"
+                      ]
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      ],
+      "partition": "none",
+      "fallback": {
+        "mode": "sequential",
+        "preserves": [
+          "artifact"
+        ]
+      }
+    },
+    {
       "id": "setup-recon",
       "version": 1,
       "description": "Optionally inspect the repository before the coordinator starts context work.",

@@ -291,19 +291,19 @@ stages:
   - name: scope
     order: 70
     model_hint: economy
-    description: Scope adjustment. Add/remove from IN/OUT after gate approval.
+    description: "Owns the approved Scope Map for feature and broad-refactor routes. Shape may propose candidate slices; this stage finalizes the map without creating a second stage."
     label: Scope
-    produces: "Breaks the approved idea into a concrete scope of work."
-    artifacts: []
+    produces: "Breaks the approved idea into a versioned Scope Map with explicit delivery slices, boundaries, dependencies, and open decisions."
+    artifacts: [scope-map.json]
     phase: planning
-    skill: stelow-workflow-orchestrator
-    playbook: null
+    skill: stelow-product-scope-mapping
+    playbook: SKILL.md
 
     execution:
-      mode: direct
-      recipe: null
-      required_capabilities: []
-      preferred_capabilities: []
+      mode: orchestrated
+      recipe: scope-map
+      required_capabilities: [pipeline, structured-output]
+      preferred_capabilities: [durable-run, resume]
       write_policy: artifact
       partition: none
       permission_profile: inherit
@@ -317,12 +317,12 @@ stages:
         gate: scope
         kind: agent-receipt
         modes: [Auto, "Product Spec Gate", "Product Spec + Interface Gates"]
-        receipt: plans/spec-product*.md
+        receipt: scope-map.json
       - id: scope-adjustment-confirmed
         gate: scope
         kind: human-ask
         modes: ["Product Spec + Interface + Scopes", "Product Spec + Interface + Tech Review", "Product Spec + Interface + Tech Review + Code Diff"]
-        receipt: plans/spec-product*.md
+        receipt: scope-map.json
     transitions:
       next: [interface]
       accept: [interface]
