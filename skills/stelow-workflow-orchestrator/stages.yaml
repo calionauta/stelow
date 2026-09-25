@@ -342,8 +342,8 @@ stages:
     execution:
       mode: orchestrated
       recipe: interface-contrast
-      required_capabilities: [pipeline, structured-output]
-      preferred_capabilities: [durable-run, resume, human-input]
+      required_capabilities: [pipeline, structured-output, human-input]
+      preferred_capabilities: [durable-run, resume]
       write_policy: artifact
       partition: none
       permission_profile: inherit

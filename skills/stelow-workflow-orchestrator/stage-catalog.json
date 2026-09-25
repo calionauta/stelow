@@ -675,12 +675,12 @@
         "recipe": "interface-contrast",
         "required_capabilities": [
           "pipeline",
-          "structured-output"
+          "structured-output",
+          "human-input"
         ],
         "preferred_capabilities": [
           "durable-run",
-          "resume",
-          "human-input"
+          "resume"
         ],
         "write_policy": "artifact",
         "partition": "none",
