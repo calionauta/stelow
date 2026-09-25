@@ -7,6 +7,7 @@ Generated from `stages.yaml`; do not edit this table by hand.
 | `durable-run` | preferred |
 | `fanout` | preferred |
 | `file-claims` | required |
+| `human-input` | preferred |
 | `per-call-model` | preferred |
 | `pipeline` | required |
 | `resume` | preferred |
