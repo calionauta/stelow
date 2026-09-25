@@ -1294,6 +1294,7 @@
             ],
             "properties": {
               "schemaVersion": {
+                "type": "number",
                 "const": 1
               },
               "mapId": {
