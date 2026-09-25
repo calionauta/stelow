@@ -25,7 +25,7 @@ after any change to verify.
 | 45 | critique | Plan critique. Pre-flight check before gate. |
 | 60 | gate | Gate review. Visual approval via visual review required. Use `visual_review` tool (not bash). |
 | 70 | scope | Owns the approved Scope Map for feature and broad-refactor routes. Shape may propose candidate slices; this stage finalizes the map without creating a second stage. |
-| 80 | interface | Interface alternatives. Appetite-scaled exploration: 1, 3, or 5 proposals + hybrid. |
+| 80 | interface | Reaction-first Interface Contrast. Preserves the first reaction, compares bounded alternatives, and emits a named disposition. |
 | 90 | int-gate | Interface gate. Visual review of all interface proposals. Use `visual_review` tool (not bash). |
 | 100 | selection | Interface selection. Human pick via structured question in Interface-Gates modes; LLM decides in Auto / Product Spec Gate (see references/human-gates.md). |
 | 110 | planning | Tech planning. Typed scopes + sequencing. |
@@ -134,6 +134,8 @@ next:      int-gate
 accept:    int-gate
 reject:    scope
 artifact:   interfaces/*.md
+artifact:   interfaces/contrast.json
+artifact:   interfaces/selection-receipt.json
 rework:    (none)
 gate:      (none)
 ```

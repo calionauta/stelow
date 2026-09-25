@@ -1,0 +1,48 @@
+id: interface-contrast
+version: 1
+description: Run the reaction-first Interface Contrast decision loop with structured receipts.
+skill: stelow-workflow-interface-contrast
+mode: orchestrated
+write_policy: artifact
+permission_profile: inherit
+tasks:
+- id: contrast
+  skill: stelow-workflow-interface-contrast
+  depends_on: []
+  output: interfaces/contrast.json
+  output_schema: schemas/interface-contrast.json
+  human_boundary: coordinator
+  when: always
+  failure_policy: fail
+  requirements:
+  - pipeline
+  - structured-output
+- id: selection
+  skill: stelow-workflow-interface-contrast
+  depends_on:
+  - contrast
+  output: interfaces/selection-receipt.json
+  output_schema: schemas/interface-contrast.json
+  human_boundary: coordinator
+  when: always
+  failure_policy: fail
+  requirements:
+  - pipeline
+  - structured-output
+- id: readable
+  skill: stelow-workflow-interface-contrast
+  depends_on:
+  - selection
+  output: interfaces/interfaces.md
+  output_schema: schemas/markdown.json
+  human_boundary: none
+  when: always
+  failure_policy: fail
+  requirements:
+  - pipeline
+  - structured-output
+partition: none
+fallback:
+  mode: sequential
+  preserves:
+  - artifact

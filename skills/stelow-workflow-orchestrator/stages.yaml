@@ -331,19 +331,19 @@ stages:
   - name: interface
     order: 80
     model_hint: best
-    description: "Interface alternatives. Appetite-scaled exploration: 1, 3, or 5 proposals + hybrid."
+    description: "Reaction-first Interface Contrast. Preserves the first reaction, compares bounded alternatives, and emits a named disposition."
     label: Interface
-    produces: "Designs the user-facing interface for the scope."
-    artifacts: [interfaces/*.md]
+    produces: "Designs the user-facing interface for the approved scope with explicit alternatives, evidence, and selection receipt."
+    artifacts: [interfaces/*.md, interfaces/contrast.json, interfaces/selection-receipt.json]
     phase: planning
-    skill: stelow-workflow-interface-alternatives
+    skill: stelow-workflow-interface-contrast
     playbook: SKILL.md
 
     execution:
       mode: orchestrated
-      recipe: interface-alternatives
+      recipe: interface-contrast
       required_capabilities: [pipeline, structured-output]
-      preferred_capabilities: [fanout, durable-run, resume, per-call-model]
+      preferred_capabilities: [durable-run, resume, human-input]
       write_policy: artifact
       partition: none
       permission_profile: inherit
