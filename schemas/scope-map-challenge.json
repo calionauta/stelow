@@ -4,7 +4,7 @@
   "type": "object",
   "required": ["schemaVersion", "challengeId", "mapId", "mapShapeVersion", "kind", "affectedScopeIds", "reason", "disposition", "authority", "evidence", "requestedBy"],
   "properties": {
-    "schemaVersion": { "const": 1 },
+    "schemaVersion": { "type": "number", "const": 1 },
     "challengeId": { "type": "string", "pattern": "^[A-Za-z0-9_.-]{1,80}$" },
     "mapId": { "type": "string", "pattern": "^[A-Za-z0-9_.-]{1,80}$" },
     "mapShapeVersion": { "type": "string", "minLength": 1 },

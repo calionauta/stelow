@@ -4,7 +4,7 @@
   "type": "object",
   "required": ["schemaVersion", "mapId", "status", "shapeVersion", "provenance", "scopes"],
   "properties": {
-    "schemaVersion": { "const": 1 },
+    "schemaVersion": { "type": "number", "const": 1 },
     "mapId": { "type": "string", "pattern": "^[A-Za-z0-9_.-]{1,80}$" },
     "status": { "enum": ["draft", "approved"] },
     "shapeVersion": { "type": "string", "minLength": 1 },
