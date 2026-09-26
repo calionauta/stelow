@@ -439,6 +439,17 @@ rather than copying the code.
 - Hover-only explanations for disabled controls (`title` on a control
   that cannot be focused is invisible to keyboard and screen-reader
   users, and the reason for the refusal is the part they need).
+- A narrowing guard kept alive by an un-narrowed parser (`!("choice" in
+  parsed)` against a total parser). The guard cannot fail, its error
+  string names a shape the parser cannot produce, and no test can
+  observe it — so it reads as a refusal path that never fires. Retire
+  it with a type, not with more code: one overload per mode in the
+  declaration file, the guards and the strings go together, and a
+  restored guard type-checks silently — which is why the deleted
+  strings also need a `doesNotMatch` pin. Prove the runtime claim where
+  it is decided (a generated sweep over the parser's inputs, asserting
+  every result either refuses with a named error or carries its mode's
+  key), not at the call sites that stopped checking.
 
 ## 10. Contract tests to mirror
 
