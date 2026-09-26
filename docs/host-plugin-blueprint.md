@@ -460,6 +460,28 @@ rather than copying the code.
   a documented kind the interpreter never ran — the doc comment is a
   contract with no executor, so a kind listed there and absent from the
   map is a floor nobody enforces.
+- An intent route naming an edge the stage graph never declared. The
+  helper intersects a stage's `next`/`accept`/`reject`/`rework` set with
+  the intent's projected route, under the rule that a route "may omit
+  stages, but it may not invent a transition outside the graph". The
+  intersection is all that is left where the two disagree, and for
+  `investigate` at `context` it was the single backward `reject: setup`
+  edge — so every investigate card that reached `context` had no
+  forward move at all: a refusal with no exit, which is the one
+  outcome a transition table must never produce. It reached production
+  on three live cards at once, and neither the per-stage blocks nor the
+  per-intent routes look wrong read alone; only the intersection is
+  dead. The format also blocks the obvious repair: `audit` terminates
+  *every* route, so adding it to `### context`'s `next` to free
+  `investigate` hands `feature` a `context → audit` skip past shape,
+  critique, both review gates, planning, execution, verification, and
+  the diff gate. An intent-specific edge needs a format change or a
+  helper that scopes a route edge to its intent — never a shared `next:`
+  list. Pin the invariant instead: for every `(stage, intent)` pair a
+  route visits, the effective set must contain a forward edge, exempting
+  only the terminal stage, whose `next: (done)` legitimately has none.
+  Assert it against the same intersection the helper computes, so the
+  test fails on the disagreement rather than restating the tables.
 
 ## 10. Contract tests to mirror
 
