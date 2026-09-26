@@ -89,18 +89,28 @@ function currentStage(): string {
 }
 
 function writeStageArtifacts(stage: string, statedir: string): void {
-  const paths: Record<string, string> = {
-    critique: "plans/spec-product_v1.md",
-    gate: "critiques/critique-report.md",
-    "int-gate": "interfaces/interfaces.md",
-    selection: "interfaces/selected-interface.md",
-    execution: "plans/spec-tech_v1.md",
+  // A stage can require MORE THAN ONE artifact (transitions.md carries one
+  // `artifact:` line per required path), so this maps a stage to a list. The
+  // interface stage needs both its markdown and the contrast receipt; writing
+  // only the first left the walk unable to advance.
+  const paths: Record<string, string[]> = {
+    critique: ["plans/spec-product_v1.md"],
+    gate: ["critiques/critique-report.md"],
+    scope: ["scope-map.json"],
+    interface: ["interfaces/interfaces.md", "interfaces/contrast.json"],
+    "int-gate": ["interfaces/int-gate.md"],
+    selection: ["interfaces/selected-interface.md"],
+    execution: ["plans/spec-tech_v1.md"],
   };
-  const relative = paths[stage];
-  if (!relative) return;
-  const target = join(statedir, relative);
-  mkdirSync(dirname(target), { recursive: true });
-  writeFileSync(target, `# ${stage} artifact\n`);
+  const relatives = paths[stage];
+  if (!relatives) return;
+  for (const relative of relatives) {
+    const target = join(statedir, relative);
+    mkdirSync(dirname(target), { recursive: true });
+    // The .json receipts are read by a schema-aware host; the advance guard
+    // only globs for the path, but valid JSON keeps the fixture honest.
+    writeFileSync(target, relative.endsWith(".json") ? "{}\n" : `# ${stage} artifact\n`);
+  }
 }
 
 function writeReceipt(name: string): void {

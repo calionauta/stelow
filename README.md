@@ -109,7 +109,7 @@ A structured workflow that makes AI think like a product manager:
 
 ### Key Features
 
-- **28 skills total** in this repo: 14 workflow skills + 14 product skills (grouped by prefix — workflow: 14, product: 14)
+- **30 skills total** in this repo: 15 workflow skills + 15 product skills (grouped by prefix — workflow: 15, product: 15)
 - Part of a broader ecosystem — the orchestrator composes these and can also invoke additional skills from the user's agent environment at runtime
 - Workflow status via `/sw-status`
 - Gate approval via Plannotator - review, comment, approve or reject before implementation
@@ -272,13 +272,13 @@ These loops are **appetite- and mode-respecting by design** — they inherit the
 
 ## 📋 Skills
 
-All 28 skills live flat in `skills/` and install into `~/.agents/skills/`: **14 workflow skills + 14 product skills**. `stelow-workflow-entry` and `stelow-workflow-router` are workflow control-plane skills (bootstrap + navigation).
+All 30 skills live flat in `skills/` and install into `~/.agents/skills/`: **15 workflow skills + 15 product skills**. `stelow-workflow-entry` and `stelow-workflow-router` are workflow control-plane skills (bootstrap + navigation).
 
 | Prefix | Count | Meaning | Distribution |
 |---|---|---|---|
-| `stelow-workflow-*` | 14 | Skills that run the 17-stage workflow: the orchestrator, the stage skills, and the execution/verification support they invoke | **Core** — auto-vendored into `bb-plugin-stelow` and auto-refreshed from this repo (no manual step) |
-| `stelow-product-*` | 14 | Product strategy & domain libraries consulted during stages (reference only, none execute stages) | **Vendored too** — `bb-plugin-stelow` ships all 28 and auto-refreshes them; standalone install via `npx skills`/`install.sh` unchanged |
-| Total | **14 workflow skills + 14 product skills = 28** | Entry and router are part of the workflow family | — |
+| `stelow-workflow-*` | 15 | Skills that run the 17-stage workflow: the orchestrator, the stage skills, and the execution/verification support they invoke | **Core** — auto-vendored into `bb-plugin-stelow` and auto-refreshed from this repo (no manual step) |
+| `stelow-product-*` | 15 | Product strategy & domain libraries consulted during stages (reference only, none execute stages) | **Vendored too** — `bb-plugin-stelow` ships all 30 and auto-refreshes them; standalone install via `npx skills`/`install.sh` unchanged |
+| Total | **15 workflow skills + 15 product skills = 30** | Entry and router are part of the workflow family | — |
 
 The prefix is the grouping: `stelow-workflow-*` is the machinery that executes the process, `stelow-product-*` is the knowledge consulted while doing it. Distribution differs by design:
 
@@ -291,7 +291,7 @@ Every skill is fully self-contained - the installer copies the complete director
 - ✅ **References resolve locally** - every `references/cli-tools/*.md` path is relative to the skill's own directory
 - ❌ **Not in `~/.agents/skills/`?** Use `./install.sh` or `npx skills add calionauta/stelow -g`
 
-### 🏗️ Workflow (14)
+### 🏗️ Workflow (15)
 
 `stelow-workflow-*` — skills that execute the 17-stage workflow. `stelow-workflow-orchestrator` composes the others; the stage skills and execution/verification support run the steps.
 
@@ -311,8 +311,9 @@ Every skill is fully self-contained - the installer copies the complete director
 | `stelow-workflow-testing-ai-code` | AI-aware testing strategy with contextual mutation testing evaluation |
 | `stelow-workflow-testing-execution` | Post-implementation testing protocol |
 | `stelow-workflow-execution-critique` | Post-execution audit - classifies gaps as FIXED/DOCUMENTED/ESCALATED; ESCALATED gaps become new scopes |
+| `stelow-workflow-interface-contrast` | Reaction-first Interface Contrast - preserves the first reaction, compares bounded alternatives, emits a named disposition |
 
-### 📚 Product (14)
+### 📚 Product (15)
 
 `stelow-product-*` — product strategy & domain libraries consulted during Context, Shape, Scope, and Audit. All are `disable-model-invocation` reference skills — none execute a stage.
 
@@ -321,6 +322,7 @@ Every skill is fully self-contained - the installer copies the complete director
 | `stelow-product-discovery` | Product discovery and validation (the short-cycle learning method) |
 | `stelow-product-job-to-be-done` | Job To Be Done - understand what job users hire the product to do |
 | `stelow-product-opportunity-mapping` | Map opportunities to see where to focus |
+| `stelow-product-scope-mapping` | Break a proposal into coherent vertical delivery scopes with explicit boundaries, dependencies, and open decisions |
 | `stelow-product-multi-method-market-analysis` | Multi-method market analysis |
 | `stelow-product-evolutionary-principles` | Evolutionary principles for sustainable development |
 | `stelow-product-ads` | Advertising and growth channels |
@@ -337,7 +339,7 @@ Every skill is fully self-contained - the installer copies the complete director
 
 ## 🚀 Quick Start
 
-This package is **skills-only and host-agnostic** — its 28 skills run on any Agent Skills-compatible host (see `references/host-levers.md` for activation recipes). There is no compiled plugin or per-host adapter; the runtime is the portable `scripts/stelow` CLI plus the skills themselves.
+This package is **skills-only and host-agnostic** — its 30 skills run on any Agent Skills-compatible host (see `references/host-levers.md` for activation recipes). There is no compiled plugin or per-host adapter; the runtime is the portable `scripts/stelow` CLI plus the skills themselves.
 
 | Your situation | Recommended command | What you get |
 |----------------|--------------------|-------------|
@@ -389,14 +391,14 @@ worker CLI) lives in a separate repo,
 
 | Feature | Any agentskills-compatible agent |
 |---|---|
-| **28 skills (14 workflow + 14 product)** | ✅ |
+| **30 skills (15 workflow + 15 product)** | ✅ |
 | **`scripts/stelow` CLI (status / advance / doctor / seed / schema / ask / sync-scopes / lock / config)** | ✅ (bash + python3) |
 | **`/sw-*` workflow commands** | ✅ Routed by the entry + router skills |
 | **`visual_review` gate** | ✅ Portable approval receipts under `.stelow/approvals/` |
 | **Scope sync from spec-tech.md** | ✅ Skill-instructed parse into `stelow.json` |
 | **TUI overlay / lifecycle hooks** | ❌ Not shipped — host-side niceties only (no host code in this repo) |
 
-> **Bottom line:** The **28 skills + `scripts/stelow` run identically in any agent** that can read agentskills.io skill directories, and keep portable state in `stelow.json` / `.stelow/` / `state.md`. There is no extension code to install and no plugin to compile.
+> **Bottom line:** The **30 skills + `scripts/stelow` run identically in any agent** that can read agentskills.io skill directories, and keep portable state in `stelow.json` / `.stelow/` / `state.md`. There is no extension code to install and no plugin to compile.
 
 ### Auto-sync scopes from spec-tech.md
 
@@ -423,7 +425,7 @@ Known edge cases (race window, legacy workflows without `dirHash`) are handled i
 
 ## External Dependencies
 
-stelow is designed to be **self-contained** — the 28 skills + installer cover the full workflow. Some features optionally integrate with external tools for enhanced capability. Every external dependency has a documented fallback.
+stelow is designed to be **self-contained** — the 30 skills + installer cover the full workflow. Some features optionally integrate with external tools for enhanced capability. Every external dependency has a documented fallback.
 
 | Dependency | Required? | Used by | Install method | Fallback if absent |
 |---|---|---|---|---|
@@ -438,7 +440,7 @@ stelow is designed to be **self-contained** — the 28 skills + installer cover 
 
 > **Note:** stelow's cli-tools (`skills/stelow-workflow-orchestrator/references/cli-tools/subagents.md`) document the invocation syntax. Host variability is handled by the skills themselves (`stages.yaml#tools` vocabulary + `skills/stelow-workflow-orchestrator/references/cli-tools/*.md`), not by host-specific code — no skill changes needed when switching agents.
 
-**Design principle:** stelow is **host-agnostic, skills-agnostic**. The 28 skills run identically in any agent that reads `~/.agents/skills/` — the full Shape Up workflow (plans, critique, scopes) works everywhere, driven by the `scripts/stelow` CLI for state mechanics. There is no extension layer and no compiled plugin in the repo; optional baseline tools install on top of any agent. No external tool is *required* to run the workflow — each optional integration enhances a phase but never blocks progress. `./install.sh` is the canonical skills installer: it flattens the skills into `~/.agents/skills/` (and prunes retired ones), then offers the optional cymbal/sem/ctx7 tooling. The cymbal/ast-grep **CLIs** and `sem`/`ctx7` remain user-managed (offered interactively during setup, or see the tools table above).
+**Design principle:** stelow is **host-agnostic, skills-agnostic**. The 30 skills run identically in any agent that reads `~/.agents/skills/` — the full Shape Up workflow (plans, critique, scopes) works everywhere, driven by the `scripts/stelow` CLI for state mechanics. There is no extension layer and no compiled plugin in the repo; optional baseline tools install on top of any agent. No external tool is *required* to run the workflow — each optional integration enhances a phase but never blocks progress. `./install.sh` is the canonical skills installer: it flattens the skills into `~/.agents/skills/` (and prunes retired ones), then offers the optional cymbal/sem/ctx7 tooling. The cymbal/ast-grep **CLIs** and `sem`/`ctx7` remain user-managed (offered interactively during setup, or see the tools table above).
 
 For every external tool above, the workflow teaches the agent the **specific fallback strategy** in `skills/stelow-workflow-orchestrator/references/cli-tools/<tool>.md`. When a tool is unavailable, the orchestrator instructs the agent to use harness-native capabilities (built-in `subagent()`, `git grep`, terminal-based review with approval receipts) rather than skipping the workflow step entirely. Degraded capability is the trade-off — see the Fallback column above for what you lose without each tool.
 
@@ -481,7 +483,7 @@ To track a fixed release instead of the default branch, append `@vX.Y.Z`
 
 **3. Skills (already bundled):**
 
-The plugin ships all 28 skills (14 `stelow-workflow-*` + 14 `stelow-product-*`)
+The plugin ships all 30 skills (15 `stelow-workflow-*` + 15 `stelow-product-*`)
 in its own `skills/` and auto-syncs them from this repo — no manual installation
 step. `npx skills add calionauta/stelow -g` is only needed for non-bb agents.
 (`bb skill list` to confirm the bundled copies.)
@@ -518,7 +520,7 @@ enforced freshness check; the security command fails on high/critical npm
 advisories. A deeper Socket scan remains optional because it requires a
 repository-owned API token.
 
-The installer copies the **skills + command reference files**. No extensions, no TUI - just the 28 skills that run the workflow.
+The installer copies the **skills + command reference files**. No extensions, no TUI - just the 30 skills that run the workflow.
 
 **Or, with npx (no clone needed):**
 
@@ -526,7 +528,7 @@ The installer copies the **skills + command reference files**. No extensions, no
 npx skills add calionauta/stelow -g
 ```
 
-This installs all 28 skills to `~/.agents/skills/` - works on any CLI.
+This installs all 30 skills to `~/.agents/skills/` - works on any CLI.
 
 > For per-agent configuration (if your agent needs more than the universal skill path), see [docs/INSTALLATION.md](docs/INSTALLATION.md).
 
@@ -631,7 +633,7 @@ URL — or Extensions → Plugins → Add plugin in the UI and paste the same UR
 - **Blocking questions** — single/multi-choice forms via `bb stelow ask` (batch several `--question` groups in one call). Unanswered questions stay answerable on the card; late answers are delivered to the worker thread.
 - **Worker CLI** — the same state machine as [`scripts/stelow`](#-stelow-cliscriptsstelow), wrapped for bb:
   `bb stelow status [--json]`, `ask`, `seed`, `advance <stage>`, `doctor [--json]`, `preset list|add|remove|assign`.
-- **Skills distribution** — all 28 skills (14 `stelow-workflow-*` + 14 `stelow-product-*`) are vendored in the plugin's `skills/` and auto-synced from this repo on a schedule (default `33 */6 * * *`), plus the helper script (synced copy of `scripts/stelow`). Never hand-edit the vendored copies; fix methodology upstream and let the sync propagate.
+- **Skills distribution** — all 30 skills (15 `stelow-workflow-*` + 15 `stelow-product-*`) are vendored in the plugin's `skills/` and auto-synced from this repo on a schedule (default `33 */6 * * *`), plus the helper script (synced copy of `scripts/stelow`). Never hand-edit the vendored copies; fix methodology upstream and let the sync propagate.
 - **Gates, presets, mentions** — artifact review with contextual comments, approval receipts in the canonical filenames (`.stelow/approvals/{dirHash}/{gate,int-gate,plan-gate,diff-gate}-approved.md`), agent presets (provider/model/reasoning/permission per card), `@workflow-name` mentions resolving fresh state, and a sidebar badge counting unresolved inbox items + unseen completions.
 
 Open **Stelow** in bb's navigation, select a project, choose Appetite and Review mode, then create a card. The plugin seeds the workflow, starts the worker, and reflects its stages and generated artifacts in the board. Requires a normal bb project with a local workspace source. See the [plugin README](https://github.com/calionauta/bb-plugin-stelow#readme) for details.
@@ -649,11 +651,11 @@ this repo ships no host-specific code. The hosting contract lives in
 | Host | How it runs stelow |
 |---|---|
 | **Any agentskills-compatible agent** | Reads the skills directly from `~/.agents/skills/`; no plugin import needed. Set `STELOW_WORKFLOW=1` + `STELOW_STATE=<path>` to auto-load the workflow. Stage state can additionally be projected onto the host's native surface (e.g. issue labels) via the skill instructions. `visual_review` writes portable receipts under `.stelow/approvals/`. State mechanics go through the [`scripts/stelow` CLI](#-stelow-cliscriptsstelow). |
-| **bb (via [bb-plugin-stelow](https://github.com/calionauta/bb-plugin-stelow))** | Reference app in a separate repo: visual board, inbox, blocking questions, presets, and the `bb stelow ...` worker CLI wrapping the same state machine. All 28 skills auto-sync from this repo. |
+| **bb (via [bb-plugin-stelow](https://github.com/calionauta/bb-plugin-stelow))** | Reference app in a separate repo: visual board, inbox, blocking questions, presets, and the `bb stelow ...` worker CLI wrapping the same state machine. All 30 skills auto-sync from this repo. |
 
 Owner paths in this repo:
 
-- `skills/` (28 portable skills: 14 `stelow-product-*` and 14 `stelow-workflow-*`) — the only runtime content; loaded by any agentskills-compatible agent.
+- `skills/` (30 portable skills: 15 `stelow-product-*` and 15 `stelow-workflow-*`) — the only runtime content; loaded by any agentskills-compatible agent.
 - `scripts/stelow` — portable CLI (`status`, `advance`, `doctor`, `seed`, `schema`, `ask`, `sync-scopes`, `lock`, `config`); every host shells out to it.
 - `types/stages.ts` + `skills/stelow-workflow-orchestrator/stages.yaml` — the stage model and transitions.
 

@@ -25,6 +25,7 @@
     { "id": "marketplace", "skill": "stelow-product-marketplace-playbook", "contract": "single" },
     { "id": "open-source", "skill": "stelow-product-open-source", "contract": "single" },
     { "id": "opportunity-mapping", "skill": "stelow-product-opportunity-mapping", "contract": "single" },
+    { "id": "scope-mapping", "skill": "stelow-product-scope-mapping", "contract": "single" },
     { "id": "paywall", "skill": "stelow-product-paywall", "contract": "single" },
     { "id": "pricing", "skill": "stelow-product-pricing", "contract": "single" },
     { "id": "ads", "skill": "stelow-product-ads", "contract": "single" },

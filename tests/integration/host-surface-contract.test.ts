@@ -55,11 +55,11 @@ describe("host vendoring surface", () => {
     }
   });
 
-  it("exactly 14 workflow + 14 product skills with SKILL.md", () => {
+  it("exactly 15 workflow + 15 product skills with SKILL.md", () => {
     const workflow = skillDirs("stelow-workflow-");
     const product = skillDirs("stelow-product-");
-    expect(workflow.length).toBe(14);
-    expect(product.length).toBe(14);
+    expect(workflow.length).toBe(15);
+    expect(product.length).toBe(15);
     for (const dir of [...workflow, ...product]) {
       expect(existsSync(join(ROOT, "skills", dir, "SKILL.md")), dir).toBe(true);
     }
