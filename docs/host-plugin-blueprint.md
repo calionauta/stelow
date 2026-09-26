@@ -450,6 +450,16 @@ rather than copying the code.
   it is decided (a generated sweep over the parser's inputs, asserting
   every result either refuses with a named error or carries its mode's
   key), not at the call sites that stopped checking.
+- An undispatched key in a kind-dispatch table read as a passing
+  document. A chain of `if (kind === ...)` returned nothing for a key it
+  did not name, so a typo in a contract was a check that could not fail
+  and the artifact it guarded shipped. Dispatch through a map keyed by
+  kind, export the key list as the surface a contract-integrity test
+  pins every entry against, and throw on an unknown kind: a new DSL
+  version is a contract bug, never a lenient pass. The same shape covers
+  a documented kind the interpreter never ran — the doc comment is a
+  contract with no executor, so a kind listed there and absent from the
+  map is a floor nobody enforces.
 
 ## 10. Contract tests to mirror
 
@@ -700,4 +710,89 @@ behavior tests must cover success, refusal, fail-soft, publication, and
 disposal paths at each seam. A topology assertion complements behavior tests;
 it never substitutes for them. Cross-capability changes update this blueprint
 and the host's architecture note in the same change.
+
+### Splitting one oversized module into feature slices
+
+The size rule in §7 covers the rule, the hook, and the entry point. A data
+module has its own recipe, and it is the one that pays best:
+
+- **Slice by area, not by size.** A module holding three datasets that happen
+  to share a lookup helper becomes one file per dataset, named for the area
+  (`jtbd-`, `strategy-`, `explore-`), not for the number of lines it had to
+  shed. Size is what forced the split; the area is what keeps the slices
+  apart when the next entry arrives.
+- **Extract the shared helper before the data.** The one thing the datasets
+  had in common moves to its own module first, so each slice is a plain data
+  export and the old file is left with nothing but re-exports.
+- **Leave a re-export facade at the old path.** Every consumer keeps its
+  import; no consumer learns which slice an entry came from. Deleting the
+  facade is a later, separate decision — a split that also rewires the tree
+  cannot be reviewed for shape.
+- **Budget each slice against the real limit, not the average.** A
+  mechanically even split is a smell: one slice at 165 and one at 137 can
+  still be the wrong seam if the 165 holds two areas.
+- **Expect the split to find contract bugs, and fix them there.** Moving the
+  data apart is the first time each entry is read next to its interpreter.
+  This split exposed both holes in §9's dispatch entry: a documented check
+  kind the interpreter never dispatched, and an unknown kind that was
+  silently ignored. Neither was a shape problem; both were live. The commit
+  that moves the code is the commit that repairs what the move revealed —
+  carrying a found bug forward into the new slices is how a refactor ships a
+  regression wearing a clean diff.
+
+### Secure subprocess and delegated execution
+
+A host that runs a vendored state machine, or spawns threads on the user's
+behalf, has two subprocess seams with the same shape: an untrusted-ish input
+crosses a process boundary, so the contract is about what crosses, never
+about what the child does with it.
+
+**Running a vendored orchestrator.** Run the pinned script as an argv array —
+`spawn(interpreter, [scriptPath, ...args], { cwd, env, stdio })` — never a
+concatenated command string, so a stage name or a path with a space in it
+cannot become a second command. `cwd` is the workspace that owns the state,
+and the script path is absolute and resolved at import time, not assembled
+from a request. Pass state through the environment rather than as arguments,
+because the child reads it the way a worker does and one spelling then serves
+both callers. Report the child's exit code and both streams verbatim, and
+treat a non-zero code as the child's refusal to relay, not as a host error to
+reinterpret. Wrap only a fixed verb vocabulary — `advance`, `audit`, `schema`,
+`seed` — plus fixed flags, and let the interpreter remain the single owner of
+the stage vocabulary: it refuses an invalid transition with a named redirect,
+which the host relays. A host-side copy of the legal stage list is a second
+source of truth that drifts the moment the transitions file moves.
+
+**One seam, both entry points.** The card action and the CLI must call the
+same wrapper and the same preflight, so a fix to either is a fix to both. A
+verb a host can reach from a shell is a verb whose state directory it may not
+be able to derive: give the wrapper the card's own state dir, and have the
+host-side wrappers resolve the card from the thread context, refuse when the
+workflow state is not that card's to own, and never silently adopt
+project-root state. Then publish the reachability rule next to the command:
+a command whose only card-scoped inputs arrive through the thread context is
+runnable from the card's worker thread, and its shell form is either fleet-wide
+read-only or a named refusal. A schema that advertises an env var the host
+never reads is an operator's dead end — if the variable is write-only, say so
+or drop it from the schema.
+
+**Spawning disposable threads.** Validate through a site registry *before* the
+SDK call: unknown site, a visible spawn, or a full-permission mode throws
+there, so a misrouted spawn fails before it exists rather than mid-flight. The
+registry is the single list of spawn sites, and a topology pin requires every
+call site to carry its site marker, so a new spawn cannot bypass the check by
+simply not being listed. Keep the lifetime field the host understands and add
+one compat retry that drops exactly that key when the host rejects it as
+unrecognized — a spawn that dies with its worker must not break on a daemon
+that has not learned the field yet, and the retry is bounded to that one
+error string.
+
+Reference evidence in `bb-plugin-stelow`: `server/runtime/helper-script.ts`
+is the vendored-orchestrator seam, and its host-side wrappers are
+`server/runtime/cli/cli-helper-passthrough.ts` for the shared preamble plus
+`server/execution-advance-cli.ts` for `advance`, whose argument list is the
+verb, the stage, and two fixed flags. `server/runtime/disposable-spawn.ts`
+is the spawn seam and `lib/delegation-map.mjs` its registry, with
+`tests/delegation-map.test.mjs` pinning one marker per call site and
+`tests/server-drafting.test.mjs` exercising both the lifetime field and the
+retry that drops it.
 
