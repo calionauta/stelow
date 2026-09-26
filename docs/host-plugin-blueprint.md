@@ -422,6 +422,51 @@ encode the rules above as tested pure functions: `worker-action-policy`,
 `preset-onboarding-state`, `publication-mutation`, `question-form`,
 `relative-time`, `research-panel-state`, and `scope-order`.
 
+Also portable, and the trio every host needs the moment a card can produce
+files: `artifact-manifest` (manifest parse, project-relative path
+resolution, the deliverable bar, the unregistered-document set),
+`artifact-validation` (the deterministic check DSL over markdown depth
+contracts), `artifact-contracts` with `artifact-contract-lookup` and
+`explore-contracts` (the contract data by area, plus one id lookup that
+returns null for an unmigrated artifact instead of throwing).
+
+### One walk, one bar: reading a workflow state dir
+
+A workflow's state dir holds its bookkeeping and its documents in one tree,
+and the layout puts documents one level down — `plans/spec-product_<v>.md`,
+`reviews/review-*.md`, `critiques/`, `context/recon-receipt.json`, plus
+per-run dirs. Every surface that lists a card therefore makes the same two
+decisions, and both are shared, never re-derived per caller:
+
+1. **What counts as a document.** One exported bar
+   (`isDeliverableArtifactPath`), judged on the path *relative to the state
+   dir* so a workspace that happens to sit under a `drafts/` parent is not
+   emptied by the rule. `state.md` and its backups are bookkeeping, `drafts/`
+   is disposable scratch, and the bar is `.md` — a sibling `.json` report is
+   not a document.
+2. **How to enumerate the tree.** One walk (`listNestedFiles`), depth-bounded
+   as the cycle guard, dropping any entry that does not resolve below the
+   directory it started from.
+
+The cost of getting this wrong is not a cosmetic difference. A top-level-only
+listing published `state.md` as a deliverable while hiding every real
+document, and the gate handler that approves against that list refused with
+*"the gate artifact does not exist yet"* for a spec that was on disk. The
+board read the same directory a second way, so the board and the card
+disagreed about what a card contained — and the card's "produced but not
+registered" half, the audit safety net that exists precisely because an agent
+may forget to declare its own output, was blind in the one place it mattered.
+
+Two host-shape facts to carry into any port:
+
+- **A directory listing is relative to the directory that was asked about.**
+  Resolve entries against the listed dir, and honour an entry that already
+  names the file in full. A walk that assumes absolute paths silently returns
+  nothing on the real host while passing a fixture that modelled absolutes.
+- **The walk is shared, not re-implemented.** If a second surface needs the
+  tree, export the walk; two walks of one directory is how the disagreement
+  starts.
+
 Feature slices use those modules as their pure seam: test each rule directly
 with a node test, then test the host adapter only where the wiring or injected
 service is part of the contract. Keep regex pins for topology, counts, and
