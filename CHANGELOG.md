@@ -3,6 +3,38 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.71.1-alpha] - 2026-09-26
+
+### Fixed
+
+- **CI is green again after the Scope Map and Interface Contrast contracts landed.**
+  Two independent breaks, both the same shape: a contract gained a requirement
+  and the test exercising it was not updated. The stage walk refused at `scope`
+  (which now requires `scope-map.json`) and again at `interface` (which
+  requires both `interfaces/*.md` and `interfaces/contrast.json`), because the
+  e2e fixture wrote at most one artifact per stage — every later assertion
+  cascaded from there. The skill-count contracts also still said 28 skills
+  (14 + 14) after `stelow-workflow-interface-contrast` and
+  `stelow-product-scope-mapping` landed, leaving the README, the
+  product-strategies registry, and three suites out of step. The fixture's
+  stage→artifact map is now a list, because a stage can require more than one
+  artifact, and the counts stay pinned so the contract keeps its teeth.
+
+### Added
+
+- **The `0.71.0-alpha` release is now published.**
+  The tag and the changelog entry existed, but the GitHub Release never did:
+  the documented procedure stops being run after the tag push, and the landing
+  page shows Releases only. A consumer pinning `0.71.0-alpha` had nothing to
+  install. Tag and Release are linked — never one without the other.
+
+### Documentation
+
+- Record the slice-split and secure-subprocess patterns in the host blueprint,
+  the rule-slice and per-tab state seams, the intent-route edge that leaves a
+  stage with no exit, and where the host breaks its own rule about wrapped
+  verbs.
+
 ## [0.71.0-alpha] - 2026-09-23
 
 ### Added
