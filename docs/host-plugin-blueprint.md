@@ -308,6 +308,21 @@ X ago" + inventory dialog) — silent syncs become mystery meat otherwise.
   scheduler, the RPCs (each refusal names the variable), and the panel
   entry — evolving, refactoring, or switching a feature off never touches
   the core.
+- **A rule is a module-level function over a narrow slice; the factory
+  only binds it**: when a factory or a hook outgrows the file budget, the
+  fix is not to move the closure body to a neighbour — that leaves one
+  oversized function with a new name. Each rule becomes a module-level
+  function whose first parameter is the slice of dependencies it actually
+  reads, and the factory returns it bound. The slice is the test seam: a
+  behavior test passes a double host and the real ledger, with no factory
+  and no composition root standing up. Relocating without narrowing the
+  parameter keeps the debt and moves the file that reports it.
+- **A hook's concerns are its components' concerns**: split a dialog's
+  state per tab, and each tab owns the state it renders while the shared
+  choreography — tab switch, re-anchor on open, close reset — lives in one
+  hook of its own. A tab that imports the other tab's state is a
+  component that cannot be deleted with its tab; the seam is the
+  choreography, not a second copy of the state.
 - **Keep host entry files as composition roots**: `app.tsx` and the server
   entry wire slices, shared contracts, and migrations; they do not retain
   the slice implementations. A server slice depends downward on its
@@ -645,7 +660,11 @@ The portable seam pattern is:
 - **Execution composition** owns the native adapter, durable run ledger,
   reconciliation, and stage advance policy. A missing capability is a named
   refusal or coordinator-sequential route. The card remains answerable while a
-  native run waits for input.
+  native run waits for input. The four factories stay composition roots: the
+  boundary, artifact, one-run, and sweep rules are separate modules taking
+  their own dependency slice, and the root owns only the in-flight guard and
+  the wiring. Both entry points (the card action and the CLI) call the one
+  preflight and the one dispatch, so a fix to either is a fix to both.
 - **Preview, publication, and update composition** own read models and
   user-facing presentation data. They leave durable state changes to their
   owning capability.
