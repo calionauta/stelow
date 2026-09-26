@@ -3,6 +3,52 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.71.2-alpha] - 2026-09-26
+
+### Fixed
+
+- **`main` builds again, and the fix is in the source of truth.**
+  `generate-transitions: transitions.md is stale` was red because
+  `references/transitions.md` had been hand-edited to let `context` reach
+  `audit`. The content was right and the method was wrong, and the method is
+  where the bug was hiding. The `investigate` track is
+  `triage -> select -> setup -> context -> audit`, so with no `context -> audit`
+  edge in the graph the per-stage block and the route intersect to **zero**
+  candidates and an investigate card dies at context with `no transition
+  defined` — a deadlock with no redirect, on the one track whose whole point
+  is to stop at the audit. The edge now lives in `stages.yaml` and the mirror
+  is regenerated, so the generated output is byte-identical to what was
+  hand-written.
+- **One graph edge can no longer rewrite every track.** Scoping that edge
+  needed a real fix, because route membership cannot express it: every route
+  ends at `audit`, so "is `audit` in my route" is true for all of them, and
+  the membership test handed `context -> audit` to feature, new-product,
+  bugfix and refactor — letting a card jump from analysis straight to the
+  final review, skipping shape, planning, execution and verification. That is
+  worse than the deadlock it fixes. Candidates are scoped by **position** now:
+  a forward move survives only as the route's immediate next stage, which is
+  exactly what distinguishes investigate, and anything further ahead is still
+  reached by the review-mode skip passthrough. A backward move survives when
+  the target is already behind, so `context -> setup` and every other reject
+  and rework keeps working.
+- **Blueprint rules for option document provenance and section.** A document
+  that reaches an option it was never attached to must be marked, on *both*
+  routes — inheritance and manifest recovery; marking one fixed nothing on a
+  real card. When several options open the same document, opening it shows
+  that option's section, matched on words rather than substring containment
+  (`Hybrid A+C` is a substring of a title that merely ends in "hybrid"). And
+  the option's label travels under one shared exported handler type, because a
+  handler taking fewer parameters is assignable and would silently reinstate
+  the old behaviour.
+
+### Added
+
+- **`stelow-product-scope-mapping` and `stelow-workflow-interface-contrast`**
+  remain the two decision skills: Scope Map owns the approved feature map
+  (slices, boundaries, dependencies) and Interface Contrast explores bounded
+  interface alternatives under one reaction, preserving the first reaction and
+  emitting a named disposition.
+
 ## [0.71.1-alpha] - 2026-09-26
 
 ### Fixed
