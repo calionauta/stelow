@@ -341,11 +341,13 @@
       "transitions": {
         "next": [
           "shape",
-          "planning"
+          "planning",
+          "audit"
         ],
         "accept": [
           "shape",
-          "planning"
+          "planning",
+          "audit"
         ],
         "reject": [
           "setup"
