@@ -42,7 +42,7 @@ describe("canonical stage catalog", () => {
   });
 
   it("makes execution metadata explicit for every skill and every recipe", () => {
-    expect(skillFiles).toHaveLength(28);
+    expect(skillFiles).toHaveLength(30);
     for (const file of skillFiles) {
       const frontmatter = readFileSync(file, "utf8").split("---")[1];
       expect(frontmatter, file).toMatch(/^\s*metadata:/m);

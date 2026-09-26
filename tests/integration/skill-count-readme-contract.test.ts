@@ -208,7 +208,7 @@ function extractLevel3Blocks(skillsSection: string): Level3Block[] {
 }
 
 function extractSkillNameCountFromHeading(heading: string): { label: string; count: number } | null {
-  // Heading like "🏗️ Workflow (14)" → label "Workflow", count 14.
+  // Heading like "🏗️ Workflow (15)" → label "Workflow", count 15.
   const m = heading.match(/^(.+?)\s*\((\d+)\)\s*$/);
   if (!m) return null;
   const rawLabel = m[1].trim();
@@ -253,19 +253,19 @@ describe('SW-015 — README skill-count contract', () => {
       const fromFind = runCanonicalFind();
       const fromFs = enumerateImmediateSkillDirs();
       expect(fromFind).toEqual(fromFs);
-      // Both must converge on exactly 28 source paths.
-      expect(fromFind.length).toBe(28);
+      // Both must converge on exactly 30 source paths.
+      expect(fromFind.length).toBe(30);
       // Every entry must be an immediate child directory of skills/.
       for (const p of fromFind) {
         expect(p).toMatch(/^skills\/(stelow-product-|stelow-workflow-)[^/]+\/SKILL\.md$/);
       }
     });
 
-    it('contains exactly 28 paths, exactly one orchestrator, exactly 27 other skills', () => {
-      expect(sources).toHaveLength(28);
+    it('contains exactly 30 paths, exactly one orchestrator, exactly 29 other skills', () => {
+      expect(sources).toHaveLength(30);
       const orchestrators = sources.filter((s) => s.dirName === ORCHESTRATOR_DIR);
       expect(orchestrators).toHaveLength(1);
-      expect(subSkills).toHaveLength(27);
+      expect(subSkills).toHaveLength(29);
       expect(orchestrator).toBeDefined();
     });
 
@@ -280,14 +280,14 @@ describe('SW-015 — README skill-count contract', () => {
   });
 
   describe('frontmatter group counts (derived from source)', () => {
-    it('inclusive counts are workflow 14 / product 14', () => {
+    it('inclusive counts are workflow 15 / product 15', () => {
       // Inclusive: entry/router, orchestrator, and every stage skill.
-      expect(skillsByGroup.workflow).toHaveLength(14);
-      expect(skillsByGroup.product).toHaveLength(14);
-      // Sanity: 14 + 14 = 28.
+      expect(skillsByGroup.workflow).toHaveLength(15);
+      expect(skillsByGroup.product).toHaveLength(15);
+      // Sanity: 15 + 15 = 30.
       expect(
         skillsByGroup.workflow.length + skillsByGroup.product.length,
-      ).toBe(28);
+      ).toBe(30);
     });
 
     it('frontmatter category matches the directory prefix for every skill', () => {
@@ -349,9 +349,9 @@ describe('SW-015 — README skill-count contract', () => {
       expect(summaryRows.length).toBeGreaterThanOrEqual(3);
     });
 
-    it('reports the total "14 workflow skills + 14 product skills = 28"', () => {
+    it('reports the total "15 workflow skills + 15 product skills = 30"', () => {
       const totals = summaryRows.filter((r) =>
-        r.count.includes('14 workflow skills + 14 product skills = 28'),
+        r.count.includes('15 workflow skills + 15 product skills = 30'),
       );
       expect(totals.length).toBeGreaterThanOrEqual(1);
       // The row is the totals row; its category label can be `Total` or
@@ -362,7 +362,7 @@ describe('SW-015 — README skill-count contract', () => {
       }
     });
 
-    it('reports inclusive numeric counts: workflow 14 / product 14', () => {
+    it('reports inclusive numeric counts: workflow 15 / product 15', () => {
       function expectRowWith(categoryToken: string, expectedCount: number) {
         const matching = summaryRows.filter((r) =>
           r.category.toLowerCase().includes(categoryToken.toLowerCase()),
@@ -374,8 +374,8 @@ describe('SW-015 — README skill-count contract', () => {
           );
         }
       }
-      expectRowWith('workflow', 14);
-      expectRowWith('product', 14);
+      expectRowWith('workflow', 15);
+      expectRowWith('product', 15);
     });
   });
 
@@ -386,9 +386,9 @@ describe('SW-015 — README skill-count contract', () => {
     const blocksByHeading = new Map<string, Level3Block>();
     for (const b of blocks) blocksByHeading.set(b.title, b);
 
-    it('contains exactly 2 level-3 blocks: Workflow (14) / Product (14)', () => {
+    it('contains exactly 2 level-3 blocks: Workflow (15) / Product (15)', () => {
       expect(blocks).toHaveLength(2);
-      const expectedHeadings = ['Workflow (14)', 'Product (14)'];
+      const expectedHeadings = ['Workflow (15)', 'Product (15)'];
       const actualLabels = blocks.map((b) => {
         const parsed = extractSkillNameCountFromHeading(b.title);
         return parsed ? `${parsed.label} (${parsed.count})` : b.title;
@@ -412,20 +412,20 @@ describe('SW-015 — README skill-count contract', () => {
       return parseSkillRowsFromBlock(block!.body);
     }
 
-    it('Workflow block lists exactly the 14 workflow skills, including the orchestrator', () => {
+    it('Workflow block lists exactly the 15 workflow skills, including the orchestrator', () => {
       const rows = rowsFor('Workflow').sort();
       const expected = [...skillsByGroup.workflow].sort();
       expect(rows).toEqual(expected);
       expect(rows).toContain(ORCHESTRATOR_DIR);
     });
 
-    it('Product block lists exactly the 14 product skills', () => {
+    it('Product block lists exactly the 15 product skills', () => {
       const rows = rowsFor('Product').sort();
       const expected = [...skillsByGroup.product].sort();
       expect(rows).toEqual(expected);
     });
 
-    it('blocks are disjoint and union with orchestrator equals all 28 source names', () => {
+    it('blocks are disjoint and union with orchestrator equals all 30 source names', () => {
       const workflowRows = rowsFor('Workflow');
       const productRows = rowsFor('Product');
       const allRows = [...workflowRows, ...productRows];
@@ -439,7 +439,7 @@ describe('SW-015 — README skill-count contract', () => {
       // Set equality with the canonical source set.
       const expected = new Set(sources.map((s) => s.dirName));
       expect(new Set(allRows)).toEqual(expected);
-      expect(allRows).toHaveLength(28);
+      expect(allRows).toHaveLength(30);
     });
   });
 });
