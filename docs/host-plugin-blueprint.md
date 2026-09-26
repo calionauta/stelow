@@ -756,11 +756,18 @@ from a request. Pass state through the environment rather than as arguments,
 because the child reads it the way a worker does and one spelling then serves
 both callers. Report the child's exit code and both streams verbatim, and
 treat a non-zero code as the child's refusal to relay, not as a host error to
-reinterpret. Wrap only a fixed verb vocabulary — `advance`, `audit`, `schema`,
-`seed` — plus fixed flags, and let the interpreter remain the single owner of
-the stage vocabulary: it refuses an invalid transition with a named redirect,
-which the host relays. A host-side copy of the legal stage list is a second
-source of truth that drifts the moment the transitions file moves.
+reinterpret. Wrap only a fixed verb vocabulary plus fixed flags, and let the
+interpreter remain the single owner of the stage vocabulary: it refuses an
+invalid transition with a named redirect, which the host relays. A host-side
+copy of the legal stage list is a second source of truth that drifts the moment
+the transitions file moves.
+
+The verb list is worth deriving rather than remembering, because it is the one
+place a host invents surface the interpreter never had. Enumerate it from the
+call sites — every literal verb that reaches the spawn — and pin it, so a verb
+added to the CLI without a spawn contract, or a spawn contract without a verb,
+fails a check. A verb the host implements itself never belongs on the list: it
+is not a subprocess seam, and listing it claims a seam that does not exist.
 
 **One seam, both entry points.** The card action and the CLI must call the
 same wrapper and the same preflight, so a fix to either is a fix to both. A
@@ -771,9 +778,7 @@ workflow state is not that card's to own, and never silently adopt
 project-root state. Then publish the reachability rule next to the command:
 a command whose only card-scoped inputs arrive through the thread context is
 runnable from the card's worker thread, and its shell form is either fleet-wide
-read-only or a named refusal. A schema that advertises an env var the host
-never reads is an operator's dead end — if the variable is write-only, say so
-or drop it from the schema.
+read-only or a named refusal.
 
 **Spawning disposable threads.** Validate through a site registry *before* the
 SDK call: unknown site, a visible spawn, or a full-permission mode throws
@@ -787,12 +792,37 @@ that has not learned the field yet, and the retry is bounded to that one
 error string.
 
 Reference evidence in `bb-plugin-stelow`: `server/runtime/helper-script.ts`
-is the vendored-orchestrator seam, and its host-side wrappers are
-`server/runtime/cli/cli-helper-passthrough.ts` for the shared preamble plus
-`server/execution-advance-cli.ts` for `advance`, whose argument list is the
-verb, the stage, and two fixed flags. `server/runtime/disposable-spawn.ts`
-is the spawn seam and `lib/delegation-map.mjs` its registry, with
-`tests/delegation-map.test.mjs` pinning one marker per call site and
-`tests/server-drafting.test.mjs` exercising both the lifetime field and the
-retry that drops it.
+is the vendored-orchestrator seam, wrapped over a fixed verb vocabulary of
+`advance`, `audit-trail`, `config`, `doctor`, `lock`, `schema`, `scope`, and
+`sync-scopes` — the `seed` command is deliberately absent, because the host
+implements it without spawning. The card action and the CLI both reach
+`advance` through the same `runHelper(["advance", stage], …)` call, and the CLI's
+argument list is the verb, the stage, and two fixed flags.
+
+`server/runtime/cli/cli-helper-passthrough.ts` holds the shared preamble for
+`sync-scopes`, `scope`, and `config get`, which is what the rule above asks
+for. `server/execution-advance-cli.ts` does **not** use it: it re-implements the
+same five beats — resolve the card from the thread context, take its workspace,
+derive the state dir, run the artifact guard, refuse without one — under
+renamed deps (`workflowStateDir` as `stateDir`, `ensureProjectArtifacts` as
+`ensureArtifacts`). That is a real instance of the cost this rule exists to
+prevent, and it is recorded here rather than smoothed over: the reference host
+satisfies the rule for the passthrough family and violates it for `advance`. A
+second copy of the preamble is also where the dead-end env var below hides, since
+the two copies drifted apart independently.
+
+A schema that advertises an env var the host never reads is the clearest
+operator-facing instance. In the reference host, `STELOW_STATE` and
+`STELOW_STATEDIR` are listed under `advance`'s env, and the host only ever
+*writes* them into the child's environment — nothing in the host reads them, so
+an operator who sets one sees no effect and concludes the flag is broken. Note
+that the schema itself may be owned by the vendored interpreter, in which case
+the host cannot fix this alone: the correction is upstream, and the host's part
+is to publish the reachability rule beside the command so the shell form's real
+limit is stated rather than implied.
+
+`server/runtime/disposable-spawn.ts` is the spawn seam and
+`lib/delegation-map.mjs` its registry, with `tests/delegation-map.test.mjs`
+pinning one marker per call site and `tests/server-drafting.test.mjs`
+exercising both the lifetime field and the retry that drops it.
 
