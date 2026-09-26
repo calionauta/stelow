@@ -155,9 +155,28 @@ deep link — a single text rule for active/resolved/archived).
     first: the heading carries the label, the label carries the heading (a
     brief that only wrote `## Proposal A`), or both name the same option
     letter. No matching section renders nothing — never another option's
-    words under this option's name. Lifting the section is preferred over
-    scrolling, because rendered headings carry no ids to scroll to and
-    injecting them means rewriting the renderer's output.
+    words under this option's name.
+
+    **Scroll to the heading; do not quote the section above the document.**
+    A lifted section duplicates the reader's own text and makes one brief read
+    as two documents, which is worse than either alone. An earlier version of
+    this rule said the opposite, on the reasoning that rendered headings carry
+    no ids and injecting them means rewriting the renderer's output. That
+    reasoning was wrong in a way worth recording: an id is only needed to
+    address a node you cannot otherwise find, and these nodes are found by
+    reading the document text. The renderer already emitted them as heading
+    elements inside the document's own scroll container, which the host
+    component owns. One `scrollIntoView` lands on the option and the document
+    stays one document. Lifting the section is the FALLBACK, for the cases
+    where the heading is genuinely absent from the rendered DOM — a
+    non-markdown file, a renderer that flattens headings, a partial load.
+
+    Comparing a rendered heading against the one the text scan resolved is the
+    same question, so it is the same function (`sectionHeadingsMatch`), not a
+    second rule in the component. A local copy is how a scroll starts
+    disagreeing with the anchor it follows, and no test can catch it because it
+    needs a DOM — so the shared predicate carries the weight and the wiring is
+    pinned at the call.
 11. The option's label travels with the open request through every hop to the
     viewer, under one shared exported handler type. A handler taking fewer
     parameters is assignable, so a dropped label typechecks and silently
