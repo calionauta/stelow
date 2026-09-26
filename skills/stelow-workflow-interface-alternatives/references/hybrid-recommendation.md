@@ -13,6 +13,28 @@ After generating all proposals:
 
 The hybrid recommendation must remain coherent.
 
+## The hybrid carries its own wireframe
+
+A hybrid is a *layout*, and the interface gate reviews wireframes. A hybrid
+written only as prose cannot be reviewed at that gate, cannot be compared
+against the proposals it merges, and leaves the reader — who arrived from the
+hybrid option — with no mockup at all while the proposals it borrows from sit
+elsewhere in the file.
+
+So the hybrid section must contain:
+
+1. **Its own composed wireframe**, in a fenced block, drawn as the combination
+   actually looks — not "combine A and C" and not a copy of either. If the
+   composition is a real layout, it has a shape worth drawing.
+2. **The proposals it composes, named**, each with the heading a reader can jump
+   to, so the full proposal remains one step away. A reader who lands on the
+   hybrid option and finds no mockup should be able to reach the two mockups it
+   merges without scrolling the whole file to guess.
+
+State the borrow explicitly — what comes from which proposal, and what is
+sacrificed to make the combination coherent. That is the part a reviewer cannot
+infer from the wireframe.
+
 Avoid:
 - feature soup
 - contradictory interaction models
