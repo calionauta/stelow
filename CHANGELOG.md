@@ -3,6 +3,36 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.71.5-alpha] - 2026-09-26
+
+### Fixed
+
+- **The hybrid option must carry its own wireframe, and name what it
+  composes.** A reader clicked "Hybrid A+C" on a real card, landed on the
+  hybrid section, and reported the brief had no mockup. It does have three —
+  one per proposal, further up the file. What the hybrid section lacked was a
+  wireframe of its own, and it never said which proposals it composes.
+
+  This is a contract rather than a formatting preference because the interface
+  gate is a **visual** review: `visual_review` reads the wireframes in the
+  proposals file, so a hybrid written only as prose cannot be reviewed at that
+  gate at all, cannot be compared against the proposals it merges, and asks the
+  reader to accept a layout on trust while the evidence sits elsewhere in the
+  same document.
+
+  The hybrid section now requires its own composed wireframe in a fenced block
+  — the combination as it actually looks, explicitly not a copy of either input,
+  since a copy is one of its inputs wearing a new heading — and requires it to
+  name the proposals it composes by heading. The requirement is in `SKILL.md`
+  as well as the reference, because `SKILL.md` is what the agent reads first
+  and a rule that lives only in a reference it may never open is not a rule.
+
+### Added
+
+- **Blueprint §8 rule 12** carries the same requirement, so a host that renders
+  an option's section rather than scrolling to it inherits it — for such a host
+  the composed wireframe is the first thing the reader sees.
+
 ## [0.71.3-alpha] - 2026-09-26
 
 ### Fixed
