@@ -817,9 +817,17 @@ Reference evidence in `bb-plugin-stelow`: `server/runtime/helper-script.ts`
 is the vendored-orchestrator seam, wrapped over a fixed verb vocabulary of
 `advance`, `audit-trail`, `config`, `doctor`, `lock`, `schema`, `scope`, and
 `sync-scopes` — the `seed` command is deliberately absent, because the host
-implements it without spawning. The card action and the CLI both reach
-`advance` through the same `runHelper(["advance", stage], …)` call, and the CLI's
-argument list is the verb, the stage, and two fixed flags.
+implements it without spawning. `advance` is the verb that shows what the rule
+above costs when it is not met: the host has four spawn sites for it — the card
+action's two (`server/runtime/card-gates.ts`,
+`server/execution-advance-card.ts`), the RPC surface's
+(`server/runtime/wiring/rpc-surfaces.ts`), and the CLI's
+(`server/execution-advance-cli.ts`) — and the two entry points do *not* share
+one, which is the next paragraph rather than a footnote to it. Read the
+argument lists off the call sites too: the card action spawns exactly
+`["advance", stage]`, while the CLI spawns the verb, the stage, and at most two
+fixed flags (`--dry-run`, `--json`), appended only when set — so "the same
+wrapper" has to mean the same *shape* of argument list, not the same literal.
 
 `server/runtime/cli/cli-helper-passthrough.ts` holds the shared preamble for
 `sync-scopes`, `scope`, and `config get`, which is what the rule above asks
