@@ -3,6 +3,33 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.71.3-alpha] - 2026-09-26
+
+### Fixed
+
+- **The contrast schema now states what the host validator enforces.**
+  `schemas/interface-contrast.json` declared `items: {type: "object"}` for
+  `fixedConstraints`, `evidence` and `options` — any object passed. The host
+  validator rejects a receipt whose `fixedConstraints[]` lacks `source`, whose
+  `evidence[]` lacks `claim`, or whose evidence source is outside the closed
+  set, as `artifact-malformed`. A worker following the published schema
+  therefore produced receipts the host refused, burning a whole run on a
+  contract that had never been contradicted: the card showed "Working" forever
+  and the decision question was lost.
+
+  This was fixed once before in the host's vendored copy of the schema, which
+  is the wrong place — `data/stelow-assets/schemas` is synced, not owned, and
+  the next asset sync overwrote the fix and brought the loose shape straight
+  back. The schema is the only place a fix survives, so it is fixed here: the
+  required trios, the closed evidence-source enum, and the pinned
+  `compatibility` const, with four unit tests on the schema as published.
+- **Shape rework works again.** The route-position scoping added in 0.71.2
+  removed it by accident: `shape` declares `rework: shape` — the same stage,
+  re-run — and re-running the current stage is never a route violation, so
+  filtering it out refused `shape -> shape` and took shape rework with it. It
+  now survives alongside backward and immediate-forward moves. Caught by the
+  existing lock test in `stelow-fs.test.ts`, not by the change that caused it.
+
 ## [0.71.2-alpha] - 2026-09-26
 
 ### Fixed
