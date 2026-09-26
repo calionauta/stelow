@@ -72,8 +72,8 @@ gate:      (none)
 ### context
 
 ```
-next:      shape, planning
-accept:    shape, planning
+next:      shape, planning, audit
+accept:    shape, planning, audit
 reject:    setup
 rework:    (none)
 gate:      context:5 — Product Spec Gate and Auto skip this stage

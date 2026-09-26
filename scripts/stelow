@@ -233,8 +233,26 @@ route = re.search(r"^\*\*" + re.escape(intent) + r":\*\*\s*(.+)$", text, re.MULT
 if route:
     stages = [part.strip() for part in route.group(1).split("→")]
     if stage in stages:
-        route_set = set(stages)
-        allowed = [candidate for candidate in allowed if candidate in route_set]
+        # Scoped by route POSITION, not membership. Every route ends at
+        # `audit`, so "is this stage in my route" admits audit for all
+        # of them and cannot express the investigate shortcut at all.
+        # What distinguishes investigate is that audit is the stage that
+        # FOLLOWS context there.
+        #
+        # Two kinds of move survive, and the asymmetry is the point:
+        #   - forward: only the route's IMMEDIATE next stage. Anything
+        #     further ahead is reached by the review-mode skip
+        #     passthrough, which names the successor of a skipped
+        #     stage; that is what carries verification -> audit when
+        #     diff-gate is skipped. Admitting every later stage here
+        #     would let one graph edge rewrite every other track.
+        #   - backward: any stage already behind, which is what a
+        #     reject/rework needs. Filtering those out would strand a
+        #     card that must go back to setup.
+        idx = stages.index(stage)
+        behind = set(stages[:idx])
+        forward = set(stages[idx + 1:idx + 2])
+        allowed = [c for c in allowed if c in behind or c in forward]
 
 for candidate in dict.fromkeys(allowed):
     print(candidate)
