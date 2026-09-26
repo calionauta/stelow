@@ -162,6 +162,18 @@ describe("mode-skipped passthroughs", () => {
     expect(r.status).toBe(0);
   });
 
+  it("a stage may rework itself on a route-scoped stage", () => {
+    // shape declares `rework: shape` — the same stage, re-run. Re-running the
+    // current stage is never a route violation, so scoping by position must
+    // not filter it out: doing so refuses `shape -> shape` and takes shape
+    // rework with it.
+    const dir = gitRepo();
+    const stateDir = makeStateDir(dir, "shape", "Auto");
+    seedArtifact(stateDir, "plans/spec-product_v1.md");
+    const r = run(["advance", "shape", "--dry-run"], dir, { STELOW_STATEDIR: stateDir, STELOW_TRANSITIONS: TRANSITIONS });
+    expect(r.status).toBe(0);
+  });
+
   it("verification -> audit passes in Auto", () => {
     const dir = gitRepo();
     const stateDir = makeStateDir(dir, "verification", "Auto");

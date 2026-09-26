@@ -239,7 +239,7 @@ if route:
         # What distinguishes investigate is that audit is the stage that
         # FOLLOWS context there.
         #
-        # Two kinds of move survive, and the asymmetry is the point:
+        # Three kinds of move survive, and the asymmetry is the point:
         #   - forward: only the route's IMMEDIATE next stage. Anything
         #     further ahead is reached by the review-mode skip
         #     passthrough, which names the successor of a skipped
@@ -249,10 +249,13 @@ if route:
         #   - backward: any stage already behind, which is what a
         #     reject/rework needs. Filtering those out would strand a
         #     card that must go back to setup.
+        #   - itself: re-running the current stage is declared rework
+        #     (`rework: shape` at shape) and is never a route
+        #     violation. Filtering it out refuses `shape -> shape` and
+        #     takes shape rework with it.
         idx = stages.index(stage)
-        behind = set(stages[:idx])
-        forward = set(stages[idx + 1:idx + 2])
-        allowed = [c for c in allowed if c in behind or c in forward]
+        reachable = set(stages[:idx]) | set(stages[idx + 1:idx + 2]) | {stage}
+        allowed = [c for c in allowed if c in reachable]
 
 for candidate in dict.fromkeys(allowed):
     print(candidate)
