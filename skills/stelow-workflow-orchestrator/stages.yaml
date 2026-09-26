@@ -171,9 +171,19 @@ stages:
     allowed_tools: [ask_user_question, read, grep, ls, write, subagent]
     preferred_tools: [read, write]
     primary_actions: [read, write]
+    # audit is here for ONE route. The investigate graph projection is
+    # `triage -> select -> setup -> context -> audit`, so audit follows
+    # context there. `stelow advance` scopes a route edge by position, so
+    # this grants it to investigate and withholds it from every other
+    # intent, whose route reaches audit only after execution.
+    #
+    # Omitting it from this block is not neutral: the per-stage block and the
+    # route are intersected, so an investigate card at context would get zero
+    # legal candidates and die with "no transition defined" -- a deadlock
+    # with no redirect.
     transitions:
-      next: [shape, planning]
-      accept: [shape, planning]
+      next: [shape, planning, audit]
+      accept: [shape, planning, audit]
       reject: [setup]
 
   - name: shape

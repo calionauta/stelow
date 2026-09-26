@@ -138,10 +138,36 @@ deep link — a single text rule for active/resolved/archived).
    anywhere in the ask suffices there.
 8. Failed submits keep the draft and stay open with a persistent inline
    warning naming the cause — a transient toast alone loses the retry.
+9. A document that reaches an option it was never attached to is **marked as
+   such**, by whatever route delivered it: inheritance from a sibling, or
+   recovery from the stage manifest when the ask carried nothing at all.
+   Marking only one route fixes nothing — the other is how a real card ended
+   up with all four options rendering `Open: interfaces.md` as if each were
+   its own evidence.
+10. When several options open the **same** document, opening it from an
+    option shows **that option's section**, above the document. A combined
+    brief holds every proposal in one file, so opening it at the top shows
+    exactly the options the reader did not pick — the hybrid is last, and the
+    reader clicked the hybrid. Match the section on **words**, never on
+    substring containment: `Hybrid A+C` is a substring of the title
+    `Scope Map interface proposals (v1, Core: 3 + hybrid)`, so containment
+    anchors on the file's H1 and reproduces the bug. Three routes, strongest
+    first: the heading carries the label, the label carries the heading (a
+    brief that only wrote `## Proposal A`), or both name the same option
+    letter. No matching section renders nothing — never another option's
+    words under this option's name. Lifting the section is preferred over
+    scrolling, because rendered headings carry no ids to scroll to and
+    injecting them means rewriting the renderer's output.
+11. The option's label travels with the open request through every hop to the
+    viewer, under one shared exported handler type. A handler taking fewer
+    parameters is assignable, so a dropped label typechecks and silently
+    reinstates the top-of-document behaviour.
 
 Reference: `question-batch.mjs` (pure parsing/grouping; the only
 host-shaped corner is reading the payload top-level vs nested) +
-`card-question-state.mjs` (pure wait-state transitions).
+`card-question-state.mjs` (pure wait-state transitions) +
+`option-anchor.mjs` (pure section lookup over document text; no I/O, no DOM,
+so any host can reuse it and test it).
 
 ## 5. Skills sync recipe
 

@@ -122,6 +122,58 @@ describe("mode-skipped passthroughs", () => {
     expect(r.stderr).toContain("invalid transition");
   });
 
+  it("investigate context -> audit is reachable: the route ends there, so nothing may refuse it", () => {
+    // The investigate graph projection is
+    //   triage -> select -> setup -> context -> audit
+    // so audit is the stage that FOLLOWS context on this track. Without a
+    // graph edge the per-stage block and the route intersect to ZERO
+    // candidates and the card dies at context with "no transition defined"
+    // -- a deadlock with no redirect, on a track whose whole point is to
+    // stop at the audit.
+    const dir = gitRepo();
+    const stateDir = makeStateDir(dir, "context", "Auto", "Core", "investigate");
+    const r = run(["advance", "audit", "--dry-run"], dir, { STELOW_STATEDIR: stateDir, STELOW_TRANSITIONS: TRANSITIONS });
+    expect(r.status).toBe(0);
+  });
+
+  it("the same graph edge does NOT hand context -> audit to the other tracks", () => {
+    // Every route ends at audit, so scoping a route edge by MEMBERSHIP admits
+    // audit for all of them and one graph edge silently rewrites every track:
+    // a feature card could jump from analysis straight to the final review,
+    // skipping shape, planning, execution and verification. Only investigate
+    // has audit immediately after context.
+    for (const intent of ["feature", "new-product", "bugfix", "refactor"]) {
+      const dir = gitRepo();
+      const stateDir = makeStateDir(dir, "context", "Auto", "Core", intent);
+      const r = run(["advance", "audit", "--dry-run"], dir, { STELOW_STATEDIR: stateDir, STELOW_TRANSITIONS: TRANSITIONS });
+      expect(r.status, `${intent} must not reach audit from context`).not.toBe(0);
+      expect(r.stderr).toContain("invalid transition");
+    }
+  });
+
+  it("a reject still goes backward on a route-scoped stage", () => {
+    // Route scoping must not strand a card that needs to go back. context
+    // rejects to setup, and setup is BEHIND context on every route, so
+    // filtering forward moves only is the rule -- filtering to "ahead" would
+    // delete this and leave no way out of a bad context.
+    const dir = gitRepo();
+    const stateDir = makeStateDir(dir, "context", "Auto", "Core", "investigate");
+    const r = run(["advance", "setup", "--dry-run"], dir, { STELOW_STATEDIR: stateDir, STELOW_TRANSITIONS: TRANSITIONS });
+    expect(r.status).toBe(0);
+  });
+
+  it("a stage may rework itself on a route-scoped stage", () => {
+    // shape declares `rework: shape` — the same stage, re-run. Re-running the
+    // current stage is never a route violation, so scoping by position must
+    // not filter it out: doing so refuses `shape -> shape` and takes shape
+    // rework with it.
+    const dir = gitRepo();
+    const stateDir = makeStateDir(dir, "shape", "Auto");
+    seedArtifact(stateDir, "plans/spec-product_v1.md");
+    const r = run(["advance", "shape", "--dry-run"], dir, { STELOW_STATEDIR: stateDir, STELOW_TRANSITIONS: TRANSITIONS });
+    expect(r.status).toBe(0);
+  });
+
   it("verification -> audit passes in Auto", () => {
     const dir = gitRepo();
     const stateDir = makeStateDir(dir, "verification", "Auto");

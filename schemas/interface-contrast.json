@@ -2,65 +2,212 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Stelow Interface Contrast Receipt",
   "type": "object",
-  "required": ["schemaVersion", "receiptId", "route", "briefStatus", "authority", "disposition", "shapeVersion", "fixedConstraints", "criteria", "evidence", "options", "nextAction"],
+  "required": [
+    "schemaVersion",
+    "receiptId",
+    "route",
+    "briefStatus",
+    "authority",
+    "disposition",
+    "shapeVersion",
+    "fixedConstraints",
+    "criteria",
+    "evidence",
+    "options",
+    "nextAction"
+  ],
   "properties": {
-    "schemaVersion": { "type": "number", "const": 1 },
-    "receiptId": { "type": "string", "minLength": 1 },
-    "route": { "enum": ["interface-refinement", "shape-contrast", "research-needed", "lean-single-proposal", "stop-and-name-decision", "human-or-shape-stop", "repair-focal-brief", "existing-interface-no-comparison", "repair-brief"] },
-    "briefStatus": { "enum": ["generation-ready", "stop", "repair-brief", "no-comparison"] },
-    "authority": { "enum": ["agent", "human"] },
-    "disposition": { "enum": ["continue", "human-decision-required", "shape-required", "research-required", "repair-brief"] },
-    "shapeVersion": { "type": "string", "minLength": 1 },
-    "scopeMapVersion": { "type": ["string", "null"] },
-    "decisionQuestion": { "type": ["string", "null"] },
-    "primaryDimension": { "type": ["string", "null"] },
-    "jobImportance": { "type": ["string", "null"] },
+    "schemaVersion": {
+      "type": "number",
+      "const": 1
+    },
+    "receiptId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "route": {
+      "enum": [
+        "interface-refinement",
+        "shape-contrast",
+        "research-needed",
+        "lean-single-proposal",
+        "stop-and-name-decision",
+        "human-or-shape-stop",
+        "repair-focal-brief",
+        "existing-interface-no-comparison",
+        "repair-brief"
+      ]
+    },
+    "briefStatus": {
+      "enum": [
+        "generation-ready",
+        "stop",
+        "repair-brief",
+        "no-comparison"
+      ]
+    },
+    "authority": {
+      "enum": [
+        "agent",
+        "human"
+      ]
+    },
+    "disposition": {
+      "enum": [
+        "continue",
+        "human-decision-required",
+        "shape-required",
+        "research-required",
+        "repair-brief"
+      ]
+    },
+    "shapeVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "scopeMapVersion": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "decisionQuestion": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "primaryDimension": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "jobImportance": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "fixedConstraints": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["name", "value", "source"],
+        "required": [
+          "name",
+          "value",
+          "source"
+        ],
         "properties": {
-          "name": { "type": "string", "minLength": 1 },
-          "value": { "type": "string", "minLength": 1 },
-          "source": { "type": "string", "minLength": 1 }
-        },
-        "additionalProperties": true
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          }
+        }
       }
     },
-    "criteria": { "type": "array", "items": { "type": "string" } },
-    "relatedDimensions": { "type": "array", "items": { "type": "string" } },
+    "criteria": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "relatedDimensions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
     "evidence": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["source", "reference", "claim"],
+        "required": [
+          "source",
+          "reference",
+          "claim"
+        ],
         "properties": {
-          "source": { "enum": ["fixture", "scenario", "simulation", "measured", "human"] },
-          "reference": { "type": "string", "minLength": 1 },
-          "claim": { "type": "string", "minLength": 1 }
-        },
-        "additionalProperties": true
+          "source": {
+            "type": "string",
+            "enum": [
+              "fixture",
+              "scenario",
+              "simulation",
+              "measured",
+              "human"
+            ]
+          },
+          "reference": {
+            "type": "string"
+          },
+          "claim": {
+            "type": "string"
+          }
+        }
       }
     },
     "options": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "primaryValue", "compatibility"],
+        "required": [
+          "id",
+          "primaryValue",
+          "compatibility"
+        ],
         "properties": {
-          "id": { "type": "string", "minLength": 1 },
-          "primaryValue": { "type": "string", "minLength": 1 },
-          "compatibility": { "const": "valid" }
-        },
-        "additionalProperties": true
+          "id": {
+            "type": "string"
+          },
+          "primaryValue": {
+            "type": "string"
+          },
+          "relatedValues": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "compatibility": {
+            "const": "valid"
+          }
+        }
       }
     },
-    "invalidOptions": { "type": "array", "items": { "type": "object" } },
-    "missingInputs": { "type": "array", "items": { "type": "string" } },
-    "acceptedSacrifice": { "type": ["string", "null"] },
-    "reshapeProof": { "type": ["object", "null"] },
-    "nextAction": { "type": "string", "minLength": 1 }
+    "invalidOptions": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "missingInputs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "acceptedSacrifice": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reshapeProof": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "nextAction": {
+      "type": "string",
+      "minLength": 1
+    }
   },
   "additionalProperties": false
 }

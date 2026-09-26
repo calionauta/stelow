@@ -559,7 +559,23 @@
               "fixedConstraints": {
                 "type": "array",
                 "items": {
-                  "type": "object"
+                  "type": "object",
+                  "required": [
+                    "name",
+                    "value",
+                    "source"
+                  ],
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    },
+                    "source": {
+                      "type": "string"
+                    }
+                  }
                 }
               },
               "criteria": {
@@ -577,13 +593,58 @@
               "evidence": {
                 "type": "array",
                 "items": {
-                  "type": "object"
+                  "type": "object",
+                  "required": [
+                    "source",
+                    "reference",
+                    "claim"
+                  ],
+                  "properties": {
+                    "source": {
+                      "type": "string",
+                      "enum": [
+                        "fixture",
+                        "scenario",
+                        "simulation",
+                        "measured",
+                        "human"
+                      ]
+                    },
+                    "reference": {
+                      "type": "string"
+                    },
+                    "claim": {
+                      "type": "string"
+                    }
+                  }
                 }
               },
               "options": {
                 "type": "array",
                 "items": {
-                  "type": "object"
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "primaryValue",
+                    "compatibility"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "primaryValue": {
+                      "type": "string"
+                    },
+                    "relatedValues": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "compatibility": {
+                      "const": "valid"
+                    }
+                  }
                 }
               },
               "invalidOptions": {
