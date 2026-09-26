@@ -15,11 +15,47 @@
     "decisionQuestion": { "type": ["string", "null"] },
     "primaryDimension": { "type": ["string", "null"] },
     "jobImportance": { "type": ["string", "null"] },
-    "fixedConstraints": { "type": "array", "items": { "type": "object" } },
+    "fixedConstraints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "value", "source"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "value": { "type": "string", "minLength": 1 },
+          "source": { "type": "string", "minLength": 1 }
+        },
+        "additionalProperties": true
+      }
+    },
     "criteria": { "type": "array", "items": { "type": "string" } },
     "relatedDimensions": { "type": "array", "items": { "type": "string" } },
-    "evidence": { "type": "array", "items": { "type": "object" } },
-    "options": { "type": "array", "items": { "type": "object" } },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["source", "reference", "claim"],
+        "properties": {
+          "source": { "enum": ["fixture", "scenario", "simulation", "measured", "human"] },
+          "reference": { "type": "string", "minLength": 1 },
+          "claim": { "type": "string", "minLength": 1 }
+        },
+        "additionalProperties": true
+      }
+    },
+    "options": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "primaryValue", "compatibility"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "primaryValue": { "type": "string", "minLength": 1 },
+          "compatibility": { "const": "valid" }
+        },
+        "additionalProperties": true
+      }
+    },
     "invalidOptions": { "type": "array", "items": { "type": "object" } },
     "missingInputs": { "type": "array", "items": { "type": "string" } },
     "acceptedSacrifice": { "type": ["string", "null"] },
