@@ -137,6 +137,12 @@ Reads: selected proposal files
 Output: Append to interfaces.md per hybrid-recommendation.md
 ```
 
+The hybrid section must carry **its own composed wireframe** in a fenced block
+and name the proposals it composes with their headings. The interface gate below
+reviews wireframes: a hybrid written only as prose cannot be reviewed there, and
+a reader who clicks the hybrid option would land on text while the mockups it
+merges sit elsewhere in the file.
+
 
 ## Visual Review (Interface Gate — Automatic)
 

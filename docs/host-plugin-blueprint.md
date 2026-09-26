@@ -181,6 +181,19 @@ deep link — a single text rule for active/resolved/archived).
     viewer, under one shared exported handler type. A handler taking fewer
     parameters is assignable, so a dropped label typechecks and silently
     reinstates the top-of-document behaviour.
+12. **A composed option carries its own wireframe, and names what it composes.**
+    When options are merged into a hybrid, the hybrid is itself a layout, so it
+    is drawn: a fenced wireframe of the combination as it actually looks, not
+    "combine A and C" and not a copy of either. It also names the proposals it
+    composes by heading, so the full proposal stays one step away.
+
+    The reason is the gate. A visual-review gate reviews *wireframes*, so a
+    hybrid written only as prose cannot be reviewed at that gate at all — and a
+    reader who clicks the hybrid option lands on text while the two mockups it
+    merges sit elsewhere in the file. This is the difference between an option
+    that can be judged and one that must be taken on trust. Where a host renders
+    the option's section rather than scrolling to it, that composed wireframe is
+    what the reader sees first.
 
 Reference: `question-batch.mjs` (pure parsing/grouping; the only
 host-shaped corner is reading the payload top-level vs nested) +
