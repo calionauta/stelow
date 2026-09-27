@@ -85,9 +85,9 @@ If `sem` is absent, fall back to git:
 - `sem diff HEAD~1` → `git log --name-only HEAD~1..HEAD` + `git diff --stat HEAD~1`
 - `sem diff` (working tree) → `git diff --stat -- .`
 - `sem stats` → `git diff --stat HEAD~1`
-- `sem entities` → `find ./ -name '*.go' -o -name '*.ts' -o -name '*.py' | head -50`
+- `sem entities` → `cymbal outline -s --names --no-federate --json` (typed fallback; `find` only when cymbal is also absent)
 - `sem impact <entity> --tests --json` (per changed entity; add `--file` when sem reports ambiguity) → fallback: manual check of changed function signatures vs callers
-- `sem graph --json` → fallback: `find ./ -name '*.go' | head -20` (no graph data)
+- `sem graph --json` → fallback: `ripwire --seams --json` (preserves orphan detection; a file list has zero edges)
 
 **Never block** an audit on `sem` being absent. The audit quality drops
 (structural analysis lost) but the remaining criteria (implementation
@@ -263,7 +263,9 @@ fi
 # Cymbal structural overview (entry points, most-referenced symbols)
 command -v cymbal &>/dev/null && cymbal structure 2>/dev/null || true
 
-git log --oneline -10
+# Hotspots + co-changes first (recency alone does not show risk); file history per file
+sem log --json 2>/dev/null || git log --oneline -10
+# sem blame --json <file> for per-file history when needed
 ```
 
 Each modified entity becomes an **inferred scope** in the gap registry.

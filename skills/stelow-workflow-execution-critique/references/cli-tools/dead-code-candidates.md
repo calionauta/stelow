@@ -69,6 +69,7 @@ go tool cover -func=cover.out | grep TARGET_FUNC
 ```
 
 ```bash
-# grep for any reference (including string-based)
-grep -r "TARGET_FUNC" --include='*.go' .
+# sem grep plus cymbal refs confirms true callers (text grep hits comments)
+sem grep --json "TARGET_FUNC" .
+cymbal refs TARGET_FUNC --no-federate --json
 ```
