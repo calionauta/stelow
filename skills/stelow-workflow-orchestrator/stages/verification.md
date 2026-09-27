@@ -170,7 +170,11 @@ Check appetite and UI scope before running:
 
 ```bash
 APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "Core")
-UI_FILES=$(git diff --name-only HEAD~1 2>/dev/null | grep -cE '\.(templ|html|tsx|jsx|css)$' || echo "0")
+if command -v sem &>/dev/null; then
+  UI_FILES=$(sem diff HEAD~1 --format json 2>/dev/null | python3 -c "import json,sys; print(sum(1 for c in json.load(sys.stdin).get('changes',[]) if str(c.get('filePath','')).endswith(('.templ','.html','.tsx','.jsx','.css'))))" 2>/dev/null || echo "0")
+else
+  UI_FILES=$(git diff --name-only HEAD~1 2>/dev/null | grep -cE '\.(templ|html|tsx|jsx|css)$' || echo "0")
+fi
 ```
 
 | Appetite | UI files | Action |
