@@ -4,15 +4,16 @@
 
 ### HTML in Go (fmt.Sprintf with HTML tags)
 ```bash
-# BLOCKED by CI (AST match — no regex false positives)
-ast-grep run -p 'fmt.Sprintf' -l go --json .
+# BLOCKED by CI (AST match — no regex false positives; $A, $$$B because
+# bare fmt.Sprintf(...) parses as a Go type conversion, not a call)
+ast-grep run -p 'fmt.Sprintf($A, $$$B)' -l go --json .
 # Must return empty (filter matches whose rendered call contains '<' in a string arg)
 ```
 
 # Why: Go's html/template handles XSS escaping automatically.
 # fmt.Sprintf bypasses this safety, creating XSS vulnerabilities.
 # With Templ, this is less relevant (Templ handles escaping),
-# but the grep serves as a safety net for legacy code.
+# but the ast-grep gate above stays as the enforced check for legacy code.
 ```
 
 ### God Functions (>100 lines)
@@ -104,18 +105,16 @@ for file in $(git diff --cached --name-only --diff-filter=ACM | grep '\.go$'); d
   fi
 done
 
-# 3. fmt.Sprintf with HTML check (Go)
+# 3. fmt.Sprintf with HTML check (Go) — AST match, no regex false positives
 echo "Checking fmt.Sprintf with HTML..."
-for file in $(git diff --cached --name-only --diff-filter=ACM | grep '\.go$'); do
-  if [ -f "$file" ]; then
-    matches=$(grep -n 'fmt\.Sprintf.*<' "$file" || true)
-    if [ -n "$matches" ]; then
-      echo "❌ fmt.Sprintf with HTML tags found in $file:"
-      echo "$matches"
-      exit 1
-    fi
+GO_STAGED=$(git diff --cached --name-only --diff-filter=ACM | grep '\.go$' || true)
+if [ -n "$GO_STAGED" ]; then
+  # shellcheck disable=SC2086
+  if ! ast-grep run -p 'fmt.Sprintf($A, $$$B)' -l go --json $GO_STAGED 2>/dev/null | python3 -c "import json,sys; sys.exit(0 if not [m for m in json.load(sys.stdin) if '<' in m.get('text','')] else 1)"; then
+    echo "❌ fmt.Sprintf with HTML tags found in staged Go files"
+    exit 1
   fi
-done
+fi
 
 # 4. Indentation depth check
 echo "Checking indentation depth..."
@@ -163,7 +162,8 @@ jobs:
       
       - name: Check fmt.Sprintf with HTML (Go)
         run: |
-          if grep -r 'fmt\.Sprintf.*<' --include="*.go" .; then
+          npm i -g @ast-grep/cli
+          if ! ast-grep run -p 'fmt.Sprintf($A, $$$B)' -l go --json . 2>/dev/null | python3 -c "import json,sys; sys.exit(0 if not [m for m in json.load(sys.stdin) if '<' in m.get('text','')] else 1)"; then
             echo "❌ fmt.Sprintf with HTML tags found"
             exit 1
           fi
