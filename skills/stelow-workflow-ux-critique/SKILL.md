@@ -55,8 +55,8 @@ WF_DIR="$(ls -td .stelow/*/*/ 2>/dev/null | head -1)"
 # shellcheck disable=SC1091
 source "$(dirname "${BASH_SOURCE[0]:-$0}")/../../stelow-workflow-orchestrator/references/cli-tools/read-config.sh"
 APPETITE="${APPETITE:-$(stelow_read_appetite)}"
-# Check if any visual files changed
-UI_FILES=$(git diff --name-only HEAD~1 2>/dev/null | grep -cE '\.(templ|html|tsx|jsx|css)$' || echo "0")
+# Check if any visual files changed (entity evidence first, churn count fallback)
+UI_FILES=$(sem diff --format json HEAD~1 2>/dev/null | python3 -c "import sys,json; print(sum(1 for e in json.load(sys.stdin).get('entities', []) if str(e.get('file','')).endswith(('.templ','.html','.tsx','.jsx','.css'))))" 2>/dev/null || git diff --name-only HEAD~1 2>/dev/null | grep -cE '\.(templ|html|tsx|jsx|css)$' || echo "0")
 ```
 
 | Appetite | UI files changed | Action |
@@ -157,7 +157,9 @@ Cobre ~80% dos issues (AccessGuru arXiv 2025).
 ### 2. Discover structure
 
 ```bash
-find {INPUT_PATH} -maxdepth 3 -type f \( -name "*.templ" -o -name "*.html" -o -name "*.tsx" -o -name "*.jsx" -o -name "*.css" -o -name "*.py" \) | head -50
+# Typed symbol inventory as JSON (unranked find misses hierarchy)
+cymbal outline -s --names --no-federate --json {INPUT_PATH} 2>/dev/null || \
+  find {INPUT_PATH} -maxdepth 3 -type f \( -name "*.templ" -o -name "*.html" -o -name "*.tsx" -o -name "*.jsx" -o -name "*.css" -o -name "*.py" \) | head -50
 ```
 
 ### 3. Run audit via subagent
