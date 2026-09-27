@@ -295,7 +295,18 @@ The ≥6 baseline applies to **active, interactive surfaces**. The following are
 Before submitting, verify:
 1. Every Interactive N/A cell has a valid justification — if >1 N/A per component, include an `N/A Notes` section
 2. Every ⬆️ source is named and traceable (e.g. ^DS, ^Base)
-3. The Coverage column matches the formula `(✅ + ⬆️) / (✅ + ❌ + ⬆️)` — verify 2-3 rows manually
+3. The Coverage column matches the formula `(✅ + ⬆️) / (✅ + ❌ + ⬆️)` — verify ALL rows mechanically, not 2-3 by eye:
+
+```bash
+python3 -c "
+import re, sys
+# paste each State Coverage Table row as: ok,up,bad,shown
+rows = []
+for (ok, up, bad, shown) in rows:
+    expect = (ok + up) / (ok + bad + up)
+    assert abs(expect - shown) < 0.01, f'mismatch: computed {expect:.2f} != shown {shown}'
+print('coverage OK')
+"
 4. Display-classified components truly have no interaction — if a heading receives focus, it is Interactive
 
 ---
