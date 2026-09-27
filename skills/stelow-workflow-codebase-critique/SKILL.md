@@ -66,6 +66,8 @@ WF_DIR="$(ls -td .stelow/*/*/ 2>/dev/null | head -1)"
 source "$(dirname "${BASH_SOURCE[0]:-$0}")/../../stelow-workflow-orchestrator/references/cli-tools/read-config.sh"
 APPETITE="${APPETITE:-$(stelow_read_appetite)}"
 DIFF_FILES=$(git diff --name-only HEAD~1 2>/dev/null | wc -l | tr -d ' ')
+# Entity-level gate when sem is available (files undercount refactors that touch few files broadly)
+DIFF_ENTITIES=$(sem diff --format json HEAD~1 2>/dev/null | python3 -c "import sys,json; print(len(json.load(sys.stdin).get('entities', [])))" 2>/dev/null || echo "$DIFF_FILES")
 ```
 
 | Appetite | Files changed | Action |
@@ -120,10 +122,14 @@ Input received:
 Tool ladder first (`../stelow-workflow-orchestrator/references/cli-tools/code-map.md`): orient unfamiliar
 code with ripwire, navigate symbols with cymbal, fall back to find/grep.
 For structural questions (nesting shapes, API misuse patterns, god-function
-candidates), query with ast-grep (`sg -p '<pattern>' -l <lang>); install via
+candidates), query with ast-grep (`ast-grep run -p '<pattern>' -l <lang> --json`); install via
 `brew install ast-grep` if absent.
 
 ```bash
+# Ranked orientation first, typed inventory second (blind find|head truncates by filesystem order)
+ripwire orient {INPUT_PATH} 2>/dev/null
+sem entities --json 2>/dev/null | head -50
+# Fallback only when both tools are absent:
 find {INPUT_PATH} -maxdepth 3 -type f \( -name "*.templ" -o -name "*.go" -o -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.css" -o -name "*.html" \) | head -50
 ```
 
