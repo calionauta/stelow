@@ -4,9 +4,10 @@
 
 ### HTML in Go (fmt.Sprintf with HTML tags)
 ```bash
-# BLOCKED by CI
-grep -r 'fmt\.Sprintf.*<' .
-# Must return empty
+# BLOCKED by CI (AST match — no regex false positives)
+ast-grep run -p 'fmt.Sprintf' -l go --json .
+# Must return empty (filter matches whose rendered call contains '<' in a string arg)
+```
 
 # Why: Go's html/template handles XSS escaping automatically.
 # fmt.Sprintf bypasses this safety, creating XSS vulnerabilities.
@@ -93,8 +94,13 @@ done
 echo "Checking function lengths..."
 for file in $(git diff --cached --name-only --diff-filter=ACM | grep '\.go$'); do
   if [ -f "$file" ]; then
-    # Simple grep for func declarations followed by opening brace
-    awk '/^func / { start=NR } /^\{/ { if(start) {brace_start=NR} } /^\}/ { if(start) { lines=NR-brace_start+1; if(lines > 100) print FILENAME ":" start ": function has " lines " lines (max 100)" } start=0 }' "$file"
+    # AST-aware metrics (awk brace-counting breaks on closures)
+    if command -v ripwire &>/dev/null; then
+      ripwire --metrics --json "$file" 2>/dev/null | python3 -c "import sys,json; [print(f\"{f.get('name')}: {f.get('lines')} lines (max 100)\") for f in json.load(sys.stdin).get('functions', []) if f.get('lines', 0) > 100]"
+    else
+      # Fallback: simple grep for func declarations followed by opening brace
+      awk '/^func / { start=NR } /^\{/ { if(start) {brace_start=NR} } /^\}/ { if(start) { lines=NR-brace_start+1; if(lines > 100) print FILENAME ":" start ": function has " lines " lines (max 100)" } start=0 }' "$file"
+    fi
   fi
 done
 
@@ -115,11 +121,16 @@ done
 echo "Checking indentation depth..."
 for file in $(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(js|ts)$'); do
   if [ -f "$file" ]; then
-    # Check for 4+ levels of indentation (tabs or spaces)
-    matches=$(grep -n '^\t\t\t\t\|^    \s*    \s*    \s*    ' "$file" || true)
-    if [ -n "$matches" ]; then
-      echo "⚠️ Deep indentation found in $file (4+ levels):"
-      echo "$matches" | head -5
+    # AST depth, not indentation regex (regex confuses alignment with nesting)
+    if command -v ripwire &>/dev/null; then
+      ripwire --lint-rules --json "$file" 2>/dev/null | python3 -c "import sys,json; [print(f\"{r.get('name')}: nesting depth {r.get('depth')}\") for r in json.load(sys.stdin).get('violations', []) if 'depth' in str(r).lower()]"
+    else
+      # Fallback: check for 4+ levels of indentation (tabs or spaces)
+      matches=$(grep -n '^\t\t\t\t\|^    \s*    \s*    \s*    ' "$file" || true)
+      if [ -n "$matches" ]; then
+        echo "⚠️ Deep indentation found in $file (4+ levels):"
+        echo "$matches" | head -5
+      fi
     fi
   fi
 done
