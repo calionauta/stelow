@@ -138,8 +138,10 @@ for SCOPE_LINE in $(grep -n "^### " "$SPEC_TECH" | sed 's/:.*//'); do
   fi
 done
 
-# Check sequencing with real lane computation (cycles + landing order)
-ripwire --plan-lanes --brief="$SPEC_TECH" 2>/dev/null || \
+# Check sequencing with real lane computation (cycles + landing order).
+# --brief takes ONE LINE PER LANE: build it from the scope headings.
+grep "^### " "$SPEC_TECH" | sed 's/^### //' > /tmp/stelow-lanes.txt
+ripwire --plan-lanes --brief=/tmp/stelow-lanes.txt 2>/dev/null || \
   echo "VALIDATION_WARN: ripwire absent — falling back to manual dependency review"
 
 if [ "$VALID" = false ]; then

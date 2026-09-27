@@ -70,7 +70,7 @@ Ground the draft in prior knowledge instead of inventing scopes:
 
 - `ripwire --recall "<domain>"` — prior docs and patterns for this domain;
 - `sem grep --json` on the proposal markdown — candidate concepts from the text;
-- `ripwire --lint` (or `--plan-lint`) on the draft map — boundary and dependency hygiene before returning.
+- `ripwire --plan-lint` on the draft markdown companion — plan-structure hygiene before returning.
 
 ## Quality checks
 
