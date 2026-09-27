@@ -86,7 +86,7 @@ If `sem` is absent, fall back to git:
 - `sem diff` (working tree) → `git diff --stat -- .`
 - `sem stats` → `git diff --stat HEAD~1`
 - `sem entities` → `find ./ -name '*.go' -o -name '*.ts' -o -name '*.py' | head -50`
-- `sem verify --diff` → fallback: manual check of changed function signatures vs callers
+- `sem impact <entity> --tests --json` (per changed entity; add `--file` when sem reports ambiguity) → fallback: manual check of changed function signatures vs callers
 - `sem graph --json` → fallback: `find ./ -name '*.go' | head -20` (no graph data)
 
 **Never block** an audit on `sem` being absent. The audit quality drops
@@ -175,7 +175,7 @@ if command -v sem &>/dev/null; then
   sem diff HEAD~1
   sem diff
   sem entities
-  sem verify --diff
+  sem impact <entity> --tests --json # per changed entity (add --file <file> when sem reports ambiguity)
 else
   echo "⚠️  sem not installed — using git fallback"
   git diff --stat HEAD~1
@@ -210,7 +210,7 @@ if command -v sem &>/dev/null; then
   sem diff HEAD~1
   sem diff
   sem entities
-  sem verify --diff
+  sem impact <entity> --tests --json # per changed entity (add --file <file> when sem reports ambiguity)
 else
   echo "⚠️  sem not installed — using git fallback"
   git diff --stat HEAD~1
@@ -254,7 +254,7 @@ auto-discovers what changed.
 # Entities changed since last commit
 if command -v sem &>/dev/null; then
   sem diff HEAD~1 && sem diff && sem stats
-  sem verify --diff
+  sem impact <entity> --tests --json # per changed entity (add --file <file> when sem reports ambiguity)
 else
   echo "⚠️  sem not installed — git fallback"
   git diff --stat HEAD~1 && git diff --stat -- .
