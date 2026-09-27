@@ -27,9 +27,14 @@ Delegate to a planner subagent (see `cli-tools/subagents.md`):
 #### planning:10.5 — Codebase Feature Recon (brownfield only)
 
 **Before generating scopes**, investigate existing features the new
-scope must integrate with or might duplicate. Tool ladder first
-(`cli-tools/code-map.md` — orient with ripwire on unfamiliar
-code, then navigate). Appetite controls depth,
+scope must integrate with or might duplicate. Reuse-first: run
+`ripwire --for "<scope outcome>" --json` and
+`ripwire --exemplar "<domain concept>"` (or `--lego <Interface>` for a
+known interface) to find the block to imitate before searching.
+Cap planner context with `sem context --budget 8000 --headers --json`
+and surface hotspots plus co-changes with `sem log --json`.
+Tool ladder next (`cli-tools/code-map.md` — orient with ripwire on
+unfamiliar code, then navigate). Appetite controls depth,
 not whether recon runs — the floor is `cymbal search --text` (does it
 exist?) at every appetite to prevent scope duplication.
 - Lean: `cymbal search --text` — "does it exist?" (Quality Floor)
@@ -66,9 +71,11 @@ if [ -n "$SPEC_PRODUCT" ]; then
   IN_SCOPES=$(grep -A30 '## IN scope' "$SPEC_PRODUCT" 2>/dev/null | head -30)
   
   # 1. Search each concept (RUNS ON ANY APPETITE)
+  # Extract 1-3 word noun-phrase concepts first: whole spec lines dilute the query
   echo "$IN_SCOPES" | while read -r line; do
-    [ -n "$line" ] && cymbal search --text "$line" 2>/dev/null | head -10 >> context/feature-locations.md
+    [ -n "$line" ] && cymbal search --text "$line" --json 2>/dev/null | head -20 >> context/feature-locations.md
   done
+  # For known symbols prefer exact search: cymbal search "<SymbolName>" --json
   
   # 2. Search by workflow name (RUNS ON ANY APPETITE)
   cymbal search --text "$(grep -oP '"name":\s*"([^"]+)"' .stelow/*/*/index.json 2>/dev/null | head -1 | grep -oP '"[^"]+"$' | tr -d '"')" 2>/dev/null | head -20 >> context/feature-locations.md
@@ -80,11 +87,12 @@ if [ -n "$SPEC_PRODUCT" ]; then
     done
   fi
   
-  # 4. impact — COMPLETE only
+  # 4. impact — COMPLETE only (files -> importers; symbols only -> impact)
   if [ "$APPETITE" = "Complete" ]; then
-    for module in $(cat context/feature-locations.md | grep -oP '^[^:]+?\.(go|ts|rs|py|js)' | sort -u | head -10); do
-      cymbal impact "$module" 2>/dev/null >> context/feature-impact.md
+    for f in $(cat context/feature-locations.md | grep -oP '^[^:]+?\.(go|ts|rs|py|js)' | sort -u | head -10); do
+      cymbal importers "$f" --json 2>/dev/null >> context/feature-impact.md
     done
+    # for known symbols: cymbal impact "<SymbolName>" --json
   fi
 fi
 ```
@@ -130,10 +138,9 @@ for SCOPE_LINE in $(grep -n "^### " "$SPEC_TECH" | sed 's/:.*//'); do
   fi
 done
 
-# Check for circular dependencies (>5 levels of nesting = probable error)
-if grep -q "depends_on.*depends_on.*depends_on.*depends_on.*depends_on" "$SPEC_TECH" 2>/dev/null; then
-  echo "VALIDATION_WARN: possible circular or deeply nested dependencies"
-fi
+# Check sequencing with real lane computation (cycles + landing order)
+ripwire --plan-lanes --brief="$SPEC_TECH" 2>/dev/null || \
+  echo "VALIDATION_WARN: ripwire absent — falling back to manual dependency review"
 
 if [ "$VALID" = false ]; then
   echo "Required scope fields missing. Regenerating with validation errors flagged..."
