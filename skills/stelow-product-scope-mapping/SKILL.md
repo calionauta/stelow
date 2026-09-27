@@ -32,6 +32,16 @@ Use the available proposal, spec, codebase context, and constraints. If the requ
 
 Record the input sources before generating scopes. Do not invent product authority, evidence, or approval.
 
+### Brownfield input (codebase exists)
+
+Ground scopes in the code before drawing boundaries:
+
+- `cymbal structure --json` — entry points and packages the map must respect;
+- `sem entities --json` — domain symbols that anchor IN/OUT items;
+- `ripwire --exemplar "<outcome>"` (or `--lego <Iface>` for a known interface) — reuse-first: imitate the existing block instead of inventing a parallel one.
+
+Record these sources alongside the proposal before generating scopes.
+
 ## Method
 
 1. Restate the decision the map must support.
@@ -53,6 +63,14 @@ If later work changes a product commitment, scope boundary, or dependency meanin
 ## Standalone use
 
 An Explore caller may invoke this skill without a Build card. The result is a draft map with a readable Markdown companion (`explore-scope-map.md`). JSON evidence is optional and must not replace the primary readable artifact.
+
+### Greenfield input (no codebase yet)
+
+Ground the draft in prior knowledge instead of inventing scopes:
+
+- `ripwire --recall "<domain>"` — prior docs and patterns for this domain;
+- `sem grep --json` on the proposal markdown — candidate concepts from the text;
+- `ripwire --lint` (or `--plan-lint`) on the draft map — boundary and dependency hygiene before returning.
 
 ## Quality checks
 
