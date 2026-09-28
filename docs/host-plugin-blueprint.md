@@ -220,6 +220,35 @@ deep link — a single text rule for active/resolved/archived).
     that can be judged and one that must be taken on trust. Where a host renders
     the option's section rather than scrolling to it, that composed wireframe is
     what the reader sees first.
+13. **A machine receipt is not a deliverable, and is never counted as one.**
+     Workflow hosts that write their own receipts into the run bundle (a
+     portable audit trail, a codebase-context snapshot) must keep them out of
+     the artifacts a card *produced*, and out of the count it states. They are
+     real audit value — they belong in the bundle, the manifest, and the commit
+     trailer — but a reader who counts them as output is being told the card
+     did work it did not do.
+
+     Two rules make that hold, and both exist because the classification was
+     computed and then lost:
+
+     - **The role travels with the artifact and is applied where it becomes
+       visible.** A receipt classified at write time, carried on the artifact
+       payload, and then dropped by the view is the common shape: one track
+       re-implemented the filter inline (twice, in a single file) and drew a
+       hand-made section around the result, while another track passed every
+       artifact through untouched and reported "3 files" over two
+       deliverables. The rule lives in one shared predicate, the inventory
+       applies it once for every track, and the number a section states is
+       read from that same predicate, so the count and the list cannot
+       disagree.
+     - **Receipts get their own named home, closed by default.** A disclosure
+       that says what it is — the host's own audit record, not output — rather
+       than a heading invented per surface. Closed, because a receipt is
+       reference material and not a decision awaiting the reader, so it is
+       neither live nor blocking and never earns open-on-load. A receipt must
+       also not appear twice for the same fact, and the row that renders it is
+       the row every other artifact uses, so a file cannot look like two
+       different things depending on which section it landed in.
 
 Reference: `question-batch.mjs` (pure parsing/grouping; the only
 host-shaped corner is reading the payload top-level vs nested) +
