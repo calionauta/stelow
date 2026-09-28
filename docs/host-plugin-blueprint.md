@@ -41,6 +41,31 @@ Invariants (encode every one; each has bitten us):
   a card out of `archived`. Enforce at the single write choke point, checked
   against a fresh read (a poll that read before Archive lands must not write
   after it).
+- **Terminal is terminal; park is reversible — archive through a confirmed
+  separate action.** Archive parks work intact, so an accidental archive is one
+  of the cheapest mistakes a user can make and one of the most expensive to
+  leave parked. The undo is a distinct user-initiated action in Manage, never a
+  poll side effect and never bundled into Archive itself, and it states which
+  stage the card returns to before anything runs.
+
+  Restore reactivates events **per kind, never blanket**, and only those the
+  archive actually took away — the discriminator is the resolution reason the
+  archive itself wrote, so a question the user answered before archiving stays
+  answered:
+
+  | kind | on restore |
+  |------|------------|
+  | `question` | reopens, clearing the stale reason (a reopened row that keeps its resolution reason reads as resolved to every consumer) |
+  | `error` | reopens, carrying the card's stored last error **verbatim** as the summary — never a paraphrase, never a generic "something went wrong" |
+  | `paused` | re-derived from live state by a fresh worker, not resurrected |
+  | `completed` | never returns; it was a delivery dismissed by reading, not work taken away |
+
+  A restored card is a card at its previous stage with a **new worker** (the old
+  thread is gone; the stage is what persists), and it is drag-refused again
+  immediately — restore is not a hole in terminality, so terminality is
+  re-asserted on the very next write rather than trusted from the restore call.
+  If spawning the restored worker fails, the action rolls back rather than
+  leaving a half-restored card.
 - **One primary action per state.** Destructive actions (archive, delete,
   reseed) live behind confirm dialogs; never as the prominent choice.
 - **Completed reopens only through defined paths** (user comment on
@@ -74,7 +99,8 @@ Reference (copyable, zero host imports): `worker-action-policy.mjs`
 `workflow-intent-policy.mjs` (type edits), `card-detail-presentation.mjs`
 (archived hero copy), `tracks.mjs` (build vs lightweight routing),
 `card-claims.mjs` (workspace claim registry, terminal release, waiter
-resume).
+resume), `card-restore-pending.mjs` (per-kind event reactivation, driven by
+the archive's own resolution reason).
 
 ## 3. Inbox event model
 
