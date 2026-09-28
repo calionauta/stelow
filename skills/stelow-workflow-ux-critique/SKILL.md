@@ -29,7 +29,7 @@ metadata:
 > **Inputs:** URL (live site), directory (source code), or screenshot (image).
 > **Output:** Classified report with gaps (🚨/🤔/🔎) + actionable recommendations.
 
-> **Tools:** See `../stelow-workflow-orchestrator/references/cli-tools/agent_browser.md` and `../stelow-workflow-orchestrator/references/cli-tools/subagents.md` for tool patterns.
+> **Tools:** See `../stelow-workflow-orchestrator/references/cli-tools/agent_browser.md` and `../stelow-workflow-orchestrator/references/cli-tools/subagents.md` for tool patterns, and `../stelow-workflow-orchestrator/references/cli-tools/ui-design-research.md` for optional rendered-layout and motion evidence.
 
 ## Overview
 
@@ -114,6 +114,8 @@ Audita um site ao vivo abrindo no browser e avaliando a UX completa.
 ### 2. Open and explore
 
 Use the browser tool (see `../stelow-workflow-orchestrator/references/cli-tools/agent_browser.md`) to open the URL and explore main flows (login, primary action, empty state, error state, destructive confirmation, forms).
+
+When the browser tier is unavailable, a design-reference MCP can still supply the rendered evidence source code cannot — actual layout, section structure, and motion behaviour. See `../stelow-workflow-orchestrator/references/cli-tools/ui-design-research.md`. It is optional and never a gate: without it, mark those dimensions unverified rather than inferring them.
 
 ### 3. Run audit via subagent
 
