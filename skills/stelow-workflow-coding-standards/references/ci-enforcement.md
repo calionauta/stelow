@@ -14,7 +14,6 @@ ast-grep run -p 'fmt.Sprintf($A, $$$B)' -l go --json .
 # fmt.Sprintf bypasses this safety, creating XSS vulnerabilities.
 # With Templ, this is less relevant (Templ handles escaping),
 # but the ast-grep gate above stays as the enforced check for legacy code.
-```
 
 ### God Functions (>100 lines)
 ```yaml

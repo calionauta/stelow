@@ -305,6 +305,8 @@ for (ok, up, bad, shown) in rows:
     assert abs(expect - shown) < 0.01, f'mismatch: computed {expect:.2f} != shown {shown}'
 print('coverage OK:', len(rows), 'rows')
 "
+```
+
 4. Display-classified components truly have no interaction — if a heading receives focus, it is Interactive
 
 ---
