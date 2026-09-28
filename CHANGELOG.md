@@ -3,6 +3,36 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.71.6-alpha] - 2026-09-28
+
+### Added
+
+- **A real design reference before an interface is written.** The archetype
+  library is interaction philosophy — it says what a flow should feel like and
+  nothing about how a real page for it is laid out — so a worker without a
+  reference reconstructs one from memory, which is where generic-looking UI
+  comes from.
+
+  `references/cli-tools/ui-design-research.md` is the single shared contract
+  for every step that needs visual evidence, and it says what each layer is
+  for: own judgement first, then a shipped exemplar, then rendered evidence
+  from a live page, then plain web search, then a coverage record of what was
+  actually verified. Interface Alternatives is the primary consumer; UX
+  Critique gets the browser instead, because the reference catalogue holds no
+  live-page tool and a critique that cannot render the page marks those
+  dimensions unverified rather than inferring them.
+
+  **Interface Contrast takes references as provenance, never as options.** That
+  skill exists to preserve the decision-maker's recorded first reaction;
+  generating options from a gallery at that step replaces it with the agent's
+  browsing. A reference is cited for an option already named.
+
+  The reference is optional and never a gate: Stelow never installs it, Lean
+  spends no calls on it, and every step has a documented path when it is
+  unreachable. It also states that registration is per agent CLI and not
+  global, since a vendor installer writes only the configs that exist when it
+  runs — a gap that is invisible from inside a worker turn.
+
 ## [0.71.5-alpha] - 2026-09-26
 
 ### Fixed
