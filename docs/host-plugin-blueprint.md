@@ -37,10 +37,45 @@ Research/Explore (lightweight):
 `awaiting-answer`) is an ephemeral signal and must never move a card.
 Invariants (encode every one; each has bitten us):
 
-- **Archived is terminal.** No poll, event, error path, or user move may take
-  a card out of `archived`. Enforce at the single write choke point, checked
-  against a fresh read (a poll that read before Archive lands must not write
-  after it).
+- **Archived is terminal to every automated path.** No poll, event, error path,
+  or drag may take a card out of `archived`. Enforce at the single write choke
+  point, checked against a fresh read (a poll that read before Archive lands must
+  not write after it), and put the guard in front of the move resolver rather than
+  inside it, so every track is covered without each track remembering. A card
+  already there dropped back onto the archived column is a no-op, not a
+  violation — the most common drag in this UI is nudging a card a few pixels and
+  letting go where it already sat.
+- **Terminal is not the same as irreversible — a guard with no door is a trap.**
+  When the only way out of a mis-click is a delete, the exit destroys the rows,
+  the comments, the history and the run files, and that has cost real work. So
+  archiving is terminal to automation and reversible by **exactly one
+  human-initiated, named, confirmed action**, never a transition target: widening
+  it into the general move path is the regression to fear, because it hands the
+  blast radius back to a gesture instead of a decision. It is not undo — delete
+  stays irreversible, because restoring an archive does not restore run files.
+  It is a rescue, not an undo, and the UI should not imply otherwise.
+- **Never a partial restore.** An archive is the single event that closed every
+  pending item on a card, so a restore that returns only some teaches the reader
+  the badge lies. Everything the archive closed returns; what it did not close — a
+  question answered before the archive, an error already resumed — stays closed.
+  Reactivate by *reason*, not by card, so this is a property of the write and
+  not of whoever remembered to filter.
+- **Restore returns to the card's stage, not the phase's entry stage.**
+  Re-entering a phase would overwrite a card's real position with a guess about
+  where the phase begins. Derive the status the same way the phase-entry path
+  derives it, and never touch the stage.
+- **A refused spawn is a rollback, not a partial success.** The status must flip
+  before the worker spawns, because the spawn refuses archived cards; if it
+  fails, put the card back. A card left claiming live work with no worker behind
+  it is a phantom wait.
+- **A restored card starts a fresh worker, and that has a consequence worth
+  deciding on purpose.** The old thread is stopped, because its history is not a
+  valid continuation. A pending question belongs to the thread that asked it, so
+  the new worker's question sync resolves it `superseded` — truthfully, since
+  nobody is waiting on it any more. "Fresh worker" and "the question is still
+  answerable" cannot both hold for a question addressed to the dead one. Decide
+  whether a pending question should outlive its worker; do not leave it to
+  whichever sync runs first.
 - **One primary action per state.** Destructive actions (archive, delete,
   reseed) live behind confirm dialogs; never as the prominent choice.
 - **Completed reopens only through defined paths** (user comment on
@@ -584,6 +619,33 @@ skill-count vectors. The reference `bb-plugin-stelow` suite pins every
 contract above plus a suite-wiring test that fails when any test file is
 unwired from CI (unwired tests once shipped green-but-never-run); steal
 its shape, not just its assertions.
+
+The archive/restore rules need their own pins, and a refusal is the easiest
+thing in a lifecycle to get wrong in the direction that looks correct:
+
+- **Refusal, per column, per track.** Drag an archived build card to a phase
+  *and* an archived research card to a status column, and assert both refuse.
+  One is not a proof of the other — they take different branches of the move
+  resolver, so a guard inside the resolver would pass one and miss the other.
+- **The no-op.** The same card dropped back on `archived` succeeds.
+- **Restore is not a move target.** `resolveCardMove` must have no branch that
+  produces it, asserted on the resolver, so widening the move path fails a unit
+  test instead of shipping a drag that resurrects.
+- **Stage survives.** Restore returns to the card's own stage; assert the stage
+  is byte-identical across the round trip, and separately that the derived status
+  matches what the phase-entry path derives for that stage.
+- **By reason, not by card.** A question closed `answered` before the archive
+  stays resolved after a restore; a question closed `archived` reopens. Two
+  fixtures on one card, because a blanket restore passes the first and fails the
+  second.
+- **Refusals name an exit.** Assert the archived refusal mentions restore. A
+  correct guard with a doorless message is still a deadlock, and a message
+  assertion is the only thing that catches it — the status code is already right.
+
+And the last one is the meta-rule this section is really about: a test that
+asserts an *error occurred* is worth little when a schema rejection and a policy
+refusal both produce one. Assert the **message**, so the test fails when the
+error stops meaning what it says.
 
 ## 11. Artifact quality strategy
 
