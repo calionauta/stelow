@@ -29,7 +29,7 @@ metadata:
 > **Inputs:** URL (live site), directory (source code), or screenshot (image).
 > **Output:** Classified report with gaps (🚨/🤔/🔎) + actionable recommendations.
 
-> **Tools:** See `../stelow-workflow-orchestrator/references/cli-tools/agent_browser.md` and `../stelow-workflow-orchestrator/references/cli-tools/subagents.md` for tool patterns, and `../stelow-workflow-orchestrator/references/cli-tools/ui-design-research.md` for optional rendered-layout and motion evidence.
+> **Tools:** See `../stelow-workflow-orchestrator/references/cli-tools/agent_browser.md` and `../stelow-workflow-orchestrator/references/cli-tools/subagents.md` for tool patterns, and `../stelow-workflow-orchestrator/references/cli-tools/ui-design-research.md` for reference exemplars. The browser is the only source of rendered evidence about the build under review; a design-reference MCP is an archive of other sites and cannot supply it.
 
 ## Overview
 
@@ -115,7 +115,7 @@ Audita um site ao vivo abrindo no browser e avaliando a UX completa.
 
 Use the browser tool (see `../stelow-workflow-orchestrator/references/cli-tools/agent_browser.md`) to open the URL and explore main flows (login, primary action, empty state, error state, destructive confirmation, forms).
 
-When the browser tier is unavailable, a design-reference MCP can still supply the rendered evidence source code cannot — actual layout, section structure, and motion behaviour. See `../stelow-workflow-orchestrator/references/cli-tools/ui-design-research.md`. It is optional and never a gate: without it, mark those dimensions unverified rather than inferring them.
+When the browser tier is unavailable, nothing replaces it. The design-reference MCP is an **archive of other people's shipped sites**, not a page inspector: it cannot render, capture, or measure the interface under review. It is still worth reading for exemplars when judging Design Quality or Aesthetics, but it is not evidence about this build. So with no browser, mark the rendered dimensions — actual contrast, hover/focus states, interaction and animation behaviour — **unverified** rather than inferring them from the source or from a reference site. See `../stelow-workflow-orchestrator/references/cli-tools/ui-design-research.md`.
 
 ### 3. Run audit via subagent
 

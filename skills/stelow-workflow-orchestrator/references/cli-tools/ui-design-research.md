@@ -84,8 +84,9 @@ structure query over a broad moodboard.
 
 ## Optional install
 
-Stelow never installs it. The host's dependency panel lists it, shows exactly
-which agent CLIs on this host can reach it, and registers on request only.
+Stelow never installs it. Settings → **UI design reference (optional)** lists it,
+shows exactly which agent CLIs on this host can reach it, and registers on
+request only. The same card appears in the Build and Explore onboarding.
 
 ```bash
 # Source: https://github.com/Nutlope/inspo
@@ -98,10 +99,11 @@ The installer writes the agent-CLI configs that exist **at the moment it
 runs**. Installing a new agent CLI later leaves it working but without the
 reference — a gap that is invisible from inside a worker turn.
 
-So: if a reference lookup unexpectedly finds nothing, check the host's
-dependency panel before concluding the catalogue is empty. It re-reads every
-open and names the exact CLIs the host can run but that do not name the server.
-Re-running the installer registers it for all of them; then restart those CLIs.
+So: if a reference lookup unexpectedly finds nothing, check the **UI design
+reference** panel in Settings before concluding the catalogue is empty. It
+re-reads every open and names the exact CLIs bb can run that do not name the
+server. Re-running the installer registers it for all of them; then restart
+those CLIs.
 
 `pi` reaches MCP servers through the `pi-mcp-adapter` extension, reading
 `~/.pi/agent/mcp.json`. Without that extension its config entries are inert.
