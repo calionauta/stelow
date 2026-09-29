@@ -22,7 +22,8 @@ irm https://raw.githubusercontent.com/1broseidon/cymbal/main/install.ps1 | iex
 | `cymbal structure` | `shape:12` — entry points, hotspots, central packages |
 | `cymbal search <name>` | `shape:12` — find where a concept lives in codebase |
 | `cymbal search --text <pattern>` | `shape:12` — full-text grep across indexed code |
-| `cymbal impact <file>` | `shape:12` (Complete) — blast radius, who breaks if X changes |
+| `cymbal impact <symbol>` | `shape:12` (Complete) — blast radius, who breaks if X changes (symbols only, never filenames) |
+| `cymbal importers <file>` | `shape:12` (Complete) — file-level dependents: who imports this file |
 | `cymbal refs <symbol>` | `shape:12` — who references this symbol |
 | `cymbal ls --stats` | Quick file tree + repo stats |
 
@@ -36,9 +37,10 @@ fi
 
 ## Fallback (no cymbal)
 
-- `find . -maxdepth 3 -type f | head -30` — basic file tree
-- `wc -l $(find . -name "*.go" -o -name "*.ts" -o -name "*.py" 2>/dev/null)` — basic size
-- `git log --oneline -20` — recent activity
-- Standard `grep` / `ffgrep` — text search
+- `sem grep --json "<pattern>"` — rg-compatible indexed text search
+- `sem log --json` — recent activity + hotspots
+- `sem diff --format json` — change shape
+- `ripwire --grep "<literal>" --json` — literal search when sem is unavailable
 
-These cover ~50% of what cymbal provides (no cross-references, no impact analysis).
+These preserve JSON-native, cross-referenced recon without cymbal
+(the old find/wc/git-log/grep ladder covered ~50%: no refs, no impact).

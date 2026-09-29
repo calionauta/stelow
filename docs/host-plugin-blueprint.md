@@ -51,7 +51,9 @@ Invariants (encode every one; each has bitten us):
   of the cheapest mistakes a user can make and one of the most expensive to
   leave parked. The undo is a distinct user-initiated action in Manage, never a
   poll side effect and never bundled into Archive itself, and it states which
-  stage the card returns to before anything runs.
+  stage the card returns to before anything runs. Delete stays irreversible
+  either way: restoring an archive is not restoring the run files it removed,
+  so this is a rescue and not an undo, and the UI should not imply otherwise.
 
   Restore reactivates events **per kind, never blanket**, and only those the
   archive actually took away — the discriminator is the resolution reason the
@@ -80,6 +82,11 @@ Invariants (encode every one; each has bitten us):
   answerable" cannot both hold for a question addressed to the dead thread.
   Decide whether a pending question should outlive its worker; do not leave it to
   whichever sync runs first. This was measured on live data, not inferred.
+  The stage it returns to is the card's own stage, never the entry stage of the
+  phase it belongs to: re-entering a phase would overwrite the card's real
+  position with a guess about where the phase begins, so derive the status the
+  way the phase-entry path derives it and never touch the stage.
+
 - **One primary action per state.** Destructive actions (archive, delete,
   reseed) live behind confirm dialogs; never as the prominent choice.
 - **Completed reopens only through defined paths** (user comment on
@@ -666,6 +673,33 @@ skill-count vectors. The reference `bb-plugin-stelow` suite pins every
 contract above plus a suite-wiring test that fails when any test file is
 unwired from CI (unwired tests once shipped green-but-never-run); steal
 its shape, not just its assertions.
+
+The archive/restore rules need their own pins, and a refusal is the easiest
+thing in a lifecycle to get wrong in the direction that looks correct:
+
+- **Refusal, per column, per track.** Drag an archived build card to a phase
+  *and* an archived research card to a status column, and assert both refuse.
+  One is not a proof of the other — they take different branches of the move
+  resolver, so a guard inside the resolver would pass one and miss the other.
+- **The no-op.** The same card dropped back on `archived` succeeds.
+- **Restore is not a move target.** `resolveCardMove` must have no branch that
+  produces it, asserted on the resolver, so widening the move path fails a unit
+  test instead of shipping a drag that resurrects.
+- **Stage survives.** Restore returns to the card's own stage; assert the stage
+  is byte-identical across the round trip, and separately that the derived status
+  matches what the phase-entry path derives for that stage.
+- **By reason, not by card.** A question closed `answered` before the archive
+  stays resolved after a restore; a question closed `archived` reopens. Two
+  fixtures on one card, because a blanket restore passes the first and fails the
+  second.
+- **Refusals name an exit.** Assert the archived refusal mentions restore. A
+  correct guard with a doorless message is still a deadlock, and a message
+  assertion is the only thing that catches it — the status code is already right.
+
+And the last one is the meta-rule this section is really about: a test that
+asserts an *error occurred* is worth little when a schema rejection and a policy
+refusal both produce one. Assert the **message**, so the test fails when the
+error stops meaning what it says.
 
 ## 11. Artifact quality strategy
 

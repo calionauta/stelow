@@ -40,7 +40,7 @@ Tech preview informs shape-up; appetite adds depth but never removes the floor. 
 | **Lean** | new | **Skip cymbal.** No codebase to analyze; product spec goes direct. |
 | **Core** | existing | **Standard tech preview.** `cymbal structure` — entry points, hotspots, central packages. Quick overview. |
 | **Core** | new | **Skip cymbal.** No codebase to analyze. |
-| **Complete** | existing | **Deep tech preview.** `cymbal structure` + `cymbal impact` on key domain files — blast radius, coupling, risks. |
+| **Complete** | existing | **Deep tech preview.** `cymbal structure` + `cymbal importers` on key domain files and `cymbal impact` on key domain symbols — blast radius, coupling, risks. |
 | **Complete** | new | **Skip cymbal.** No codebase to analyze. |
 
 **Rationale:** Skipping tech preview entirely on Lean brownfield creates the same Estimation Bias trap as cutting quality — the LLM then shapes a product spec without knowing what already exists, leading to redundant scope or missed constraints. Appetite cuts scope (lines per spec, number of alternatives explored), not tech context.
@@ -72,14 +72,15 @@ cymbal index 2>/dev/null
 # The preflight already verified this is the target Git workspace.
 cymbal structure --json 2>/dev/null > context/cymbal-structure.json
 
-# If Complete, also run impact on key files
+# If Complete, also run blast-radius analysis on key files
 if [ "$APPETITE" = "Complete" ]; then
-  # Find key entry points
-  EP=$(cymbal structure 2>/dev/null | grep "Entry points:" -A5 | grep "function main\|func main" | head -3)
-  echo "$EP" | while read -r line; do
-    FILE=$(echo "$line" | grep -oP '[^\s]+\/[^\s]+\.[a-z]+' | head -1)
-    [ -n "$FILE" ] && cymbal impact "$FILE" 2>/dev/null >> context/cymbal-impact.md
+  # Entry points from machine-readable structure output
+  jq -r '.entry_points[]?' context/cymbal-structure.json 2>/dev/null | head -3 | while read -r file; do
+    [ -n "$file" ] && cymbal outline -s --names "$file" --json 2>/dev/null >> context/cymbal-outline.md
+    # files -> importers, symbols -> impact (impact takes SYMBOL names, never filenames)
+    [ -n "$file" ] && cymbal importers "$file" --json --no-federate 2>/dev/null >> context/cymbal-impact.md
   done
+  # for known symbols: cymbal impact "<Symbol>" --json --no-federate >> context/cymbal-impact.md
 fi
 
 # Search existing features by workflow name/topic
@@ -125,7 +126,7 @@ knowing what the codebase already does, what it enables, and what it constrains.
 ### Cymbal not available? Fallback
 
 If cymbal is not installed:
-- Brownfield: use `find` + `wc -l` for basic size analysis, `git log --oneline` for activity.
+- Brownfield: `sem entities --json > context/sem-entities.json` for a typed inventory; `sem log --json` for hotspots + co-changes; `sem context --budget 8000 --headers --json` to bound the preview; `ripwire --metrics --json` for size/complexity.
 - Greenfield: skip tech preview entirely.
 - In `context/tech-preview.md`, cite `context/recon-receipt.json` and state
   `TOOL_MISSING:cymbal`; consider installing it only after this workflow.

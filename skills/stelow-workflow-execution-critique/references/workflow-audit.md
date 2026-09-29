@@ -33,7 +33,7 @@ if command -v sem &>/dev/null; then
   sem diff HEAD~1   # entities modified in last commit
   sem diff          # working tree changes
   sem stats
-  sem verify --diff # catch broken callers from signature changes
+  sem impact <entity> --tests --json # per changed entity: catch broken callers from signature changes (add --file when ambiguous)
   echo "--- dead code candidates (entities with no callers) ---"
   sem graph --json 2>/dev/null | python3 -c "
 import sys, json

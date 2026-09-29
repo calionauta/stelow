@@ -65,7 +65,9 @@ cymbal trace <symbol>         # downstream dependencies
 cymbal changed                # diff → changed symbols + impact
 ```
 
-All commands support `--json`. See `cymbal.md` (shape-up skill) for install
+All commands support `--json`. Pass `--no-federate` for deterministic
+single-worktree results (otherwise cymbal merges hits from sibling
+worktrees). See `cymbal.md` (shape-up skill) for install
 and depth tables.
 
 ### 2nd — fffind / ffgrep: fallback (harness-provided only)
@@ -77,8 +79,8 @@ missed. Never install for stelow — it is harness business.
 ### Structural — ast-grep: code patterns, not text
 
 ```bash
-sg -p 'func $F($$$) error'                  # find a code shape, any language with grammar
-sg -p 'OLD' -r 'NEW' --rewrite              # cross-file signature refactors (AST-safe, skips strings/comments)
+ast-grep run -p 'func $F($$$) error' -l go --json  # find a code shape, any language with grammar (-l go|ts|py|rs|...)
+ast-grep run -p 'OLD' -r 'NEW' -l <lang>           # cross-file signature refactors (AST-safe, skips strings/comments)
 ```
 
 Use for structural queries cymbal can't express (nesting shapes, API misuse
