@@ -37,10 +37,15 @@ Research/Explore (lightweight):
 `awaiting-answer`) is an ephemeral signal and must never move a card.
 Invariants (encode every one; each has bitten us):
 
-- **Archived is terminal.** No poll, event, error path, or user move may take
-  a card out of `archived`. Enforce at the single write choke point, checked
-  against a fresh read (a poll that read before Archive lands must not write
-  after it).
+- **Archived is terminal to every automated path.** No poll, event, error path,
+  or drag may take a card out of `archived`. Enforce at the single write choke
+  point, checked against a fresh read (a poll that read before Archive lands must
+  not write after it), and put the guard in front of the move resolver rather
+  than inside it, so no track has to remember it. A card already there dropped
+  back onto the archived column is a no-op, not a violation — the most common
+  drag in this UI is nudging a card a few pixels and letting go where it
+  already sat. The one exit is the confirmed action below, and nothing carries
+  its key.
 - **Terminal is terminal; park is reversible — archive through a confirmed
   separate action.** Archive parks work intact, so an accidental archive is one
   of the cheapest mistakes a user can make and one of the most expensive to
@@ -66,6 +71,15 @@ Invariants (encode every one; each has bitten us):
   re-asserted on the very next write rather than trusted from the restore call.
   If spawning the restored worker fails, the action rolls back rather than
   leaving a half-restored card.
+
+  The new worker has a consequence worth deciding on purpose: a pending question
+  belongs to the thread that asked it, so the fresh worker's question sync
+  resolves the reopened row `superseded` within seconds — truthfully, since
+  nobody is waiting on it any more, but it means the per-kind table above is not
+  the whole story for `question`. "Fresh worker" and "the question is still
+  answerable" cannot both hold for a question addressed to the dead thread.
+  Decide whether a pending question should outlive its worker; do not leave it to
+  whichever sync runs first. This was measured on live data, not inferred.
 - **One primary action per state.** Destructive actions (archive, delete,
   reseed) live behind confirm dialogs; never as the prominent choice.
 - **Completed reopens only through defined paths** (user comment on
