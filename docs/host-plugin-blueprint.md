@@ -40,21 +40,20 @@ Invariants (encode every one; each has bitten us):
 - **Archived is terminal to every automated path.** No poll, event, error path,
   or drag may take a card out of `archived`. Enforce at the single write choke
   point, checked against a fresh read (a poll that read before Archive lands must
-  not write after it), and put the guard in front of the move resolver rather than
-  inside it, so every track is covered without each track remembering. A card
-  already there dropped back onto the archived column is a no-op, not a
-  violation — the most common drag in this UI is nudging a card a few pixels and
-  letting go where it already sat.
-- **Terminal is not the same as irreversible — a guard with no door is a trap.**
-  When the only way out of a mis-click is a delete, the exit destroys the rows,
-  the comments, the history and the run files, and that has cost real work. So
-  archiving is terminal to automation and reversible by **exactly one
-  human-initiated, named, confirmed action** in Manage, never a transition
-  target: widening it into the general move path is the regression to fear,
-  because it hands the blast radius back to a gesture instead of a decision. It
-  is a rescue, not an undo, and the UI should not imply otherwise — delete stays
-  irreversible, because restoring an archive does not restore run files. It
-  states which stage the card returns to before anything runs.
+  not write after it), and put the guard in front of the move resolver rather
+  than inside it, so no track has to remember it. A card already there dropped
+  back onto the archived column is a no-op, not a violation — the most common
+  drag in this UI is nudging a card a few pixels and letting go where it
+  already sat. The one exit is the confirmed action below, and nothing carries
+  its key.
+- **Terminal is terminal; park is reversible — archive through a confirmed
+  separate action.** Archive parks work intact, so an accidental archive is one
+  of the cheapest mistakes a user can make and one of the most expensive to
+  leave parked. The undo is a distinct user-initiated action in Manage, never a
+  poll side effect and never bundled into Archive itself, and it states which
+  stage the card returns to before anything runs. Delete stays irreversible
+  either way: restoring an archive is not restoring the run files it removed,
+  so this is a rescue and not an undo, and the UI should not imply otherwise.
 
   Restore reactivates events **per kind, never blanket**, and only those the
   archive actually took away — the discriminator is the resolution reason the
@@ -68,29 +67,26 @@ Invariants (encode every one; each has bitten us):
   | `paused` | re-derived from live state by a fresh worker, not resurrected |
   | `completed` | never returns; it was a delivery dismissed by reading, not work taken away |
 
-  That per-kind rule and the no-partial-restore rule are the same rule: an
-  archive is the single event that closed every pending item on a card, so a
-  restore that returns only some teaches the reader the badge lies. Everything
-  the archive closed returns; what it did not close stays closed. Reactivate by
-  *reason*, not by card, so this is a property of the write and not of whoever
-  remembered to filter.
-- **Restore returns to the card's stage, not the phase's entry stage.**
-  Re-entering a phase would overwrite a card's real position with a guess about
-  where the phase begins. Derive the status the same way the phase-entry path
-  derives it, and never touch the stage.
-- **A refused spawn is a rollback, not a partial success.** The status must flip
-  before the worker spawns, because the spawn refuses archived cards; if it
-  fails, put the card back. A card left claiming live work with no worker behind
-  it is a phantom wait. Terminality is re-asserted on the very next write rather
-  than trusted from the restore call, so restore is not a hole in it.
-- **A restored card starts a fresh worker, and that has a consequence worth
-  deciding on purpose.** The old thread is stopped, because its history is not a
-  valid continuation. A pending question belongs to the thread that asked it, so
-  the new worker's question sync resolves it `superseded` — truthfully, since
-  nobody is waiting on it any more. "Fresh worker" and "the question is still
-  answerable" cannot both hold for a question addressed to the dead one. Decide
-  whether a pending question should outlive its worker; do not leave it to
-  whichever sync runs first.
+  A restored card is a card at its previous stage with a **new worker** (the old
+  thread is gone; the stage is what persists), and it is drag-refused again
+  immediately — restore is not a hole in terminality, so terminality is
+  re-asserted on the very next write rather than trusted from the restore call.
+  If spawning the restored worker fails, the action rolls back rather than
+  leaving a half-restored card.
+
+  The new worker has a consequence worth deciding on purpose: a pending question
+  belongs to the thread that asked it, so the fresh worker's question sync
+  resolves the reopened row `superseded` within seconds — truthfully, since
+  nobody is waiting on it any more, but it means the per-kind table above is not
+  the whole story for `question`. "Fresh worker" and "the question is still
+  answerable" cannot both hold for a question addressed to the dead thread.
+  Decide whether a pending question should outlive its worker; do not leave it to
+  whichever sync runs first. This was measured on live data, not inferred.
+  The stage it returns to is the card's own stage, never the entry stage of the
+  phase it belongs to: re-entering a phase would overwrite the card's real
+  position with a guess about where the phase begins, so derive the status the
+  way the phase-entry path derives it and never touch the stage.
+
 - **One primary action per state.** Destructive actions (archive, delete,
   reseed) live behind confirm dialogs; never as the prominent choice.
 - **Completed reopens only through defined paths** (user comment on
