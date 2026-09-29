@@ -49,17 +49,31 @@ Invariants (encode every one; each has bitten us):
   When the only way out of a mis-click is a delete, the exit destroys the rows,
   the comments, the history and the run files, and that has cost real work. So
   archiving is terminal to automation and reversible by **exactly one
-  human-initiated, named, confirmed action**, never a transition target: widening
-  it into the general move path is the regression to fear, because it hands the
-  blast radius back to a gesture instead of a decision. It is not undo — delete
-  stays irreversible, because restoring an archive does not restore run files.
-  It is a rescue, not an undo, and the UI should not imply otherwise.
-- **Never a partial restore.** An archive is the single event that closed every
-  pending item on a card, so a restore that returns only some teaches the reader
-  the badge lies. Everything the archive closed returns; what it did not close — a
-  question answered before the archive, an error already resumed — stays closed.
-  Reactivate by *reason*, not by card, so this is a property of the write and
-  not of whoever remembered to filter.
+  human-initiated, named, confirmed action** in Manage, never a transition
+  target: widening it into the general move path is the regression to fear,
+  because it hands the blast radius back to a gesture instead of a decision. It
+  is a rescue, not an undo, and the UI should not imply otherwise — delete stays
+  irreversible, because restoring an archive does not restore run files. It
+  states which stage the card returns to before anything runs.
+
+  Restore reactivates events **per kind, never blanket**, and only those the
+  archive actually took away — the discriminator is the resolution reason the
+  archive itself wrote, so a question the user answered before archiving stays
+  answered:
+
+  | kind | on restore |
+  |------|------------|
+  | `question` | reopens, clearing the stale reason (a reopened row that keeps its resolution reason reads as resolved to every consumer) |
+  | `error` | reopens, carrying the card's stored last error **verbatim** as the summary — never a paraphrase, never a generic "something went wrong" |
+  | `paused` | re-derived from live state by a fresh worker, not resurrected |
+  | `completed` | never returns; it was a delivery dismissed by reading, not work taken away |
+
+  That per-kind rule and the no-partial-restore rule are the same rule: an
+  archive is the single event that closed every pending item on a card, so a
+  restore that returns only some teaches the reader the badge lies. Everything
+  the archive closed returns; what it did not close stays closed. Reactivate by
+  *reason*, not by card, so this is a property of the write and not of whoever
+  remembered to filter.
 - **Restore returns to the card's stage, not the phase's entry stage.**
   Re-entering a phase would overwrite a card's real position with a guess about
   where the phase begins. Derive the status the same way the phase-entry path
@@ -67,7 +81,8 @@ Invariants (encode every one; each has bitten us):
 - **A refused spawn is a rollback, not a partial success.** The status must flip
   before the worker spawns, because the spawn refuses archived cards; if it
   fails, put the card back. A card left claiming live work with no worker behind
-  it is a phantom wait.
+  it is a phantom wait. Terminality is re-asserted on the very next write rather
+  than trusted from the restore call, so restore is not a hole in it.
 - **A restored card starts a fresh worker, and that has a consequence worth
   deciding on purpose.** The old thread is stopped, because its history is not a
   valid continuation. A pending question belongs to the thread that asked it, so
@@ -109,7 +124,8 @@ Reference (copyable, zero host imports): `worker-action-policy.mjs`
 `workflow-intent-policy.mjs` (type edits), `card-detail-presentation.mjs`
 (archived hero copy), `tracks.mjs` (build vs lightweight routing),
 `card-claims.mjs` (workspace claim registry, terminal release, waiter
-resume).
+resume), `card-restore-pending.mjs` (per-kind event reactivation, driven by
+the archive's own resolution reason).
 
 ## 3. Inbox event model
 
@@ -216,6 +232,48 @@ deep link — a single text rule for active/resolved/archived).
     viewer, under one shared exported handler type. A handler taking fewer
     parameters is assignable, so a dropped label typechecks and silently
     reinstates the top-of-document behaviour.
+12. **A composed option carries its own wireframe, and names what it composes.**
+    When options are merged into a hybrid, the hybrid is itself a layout, so it
+    is drawn: a fenced wireframe of the combination as it actually looks, not
+    "combine A and C" and not a copy of either. It also names the proposals it
+    composes by heading, so the full proposal stays one step away.
+
+    The reason is the gate. A visual-review gate reviews *wireframes*, so a
+    hybrid written only as prose cannot be reviewed at that gate at all — and a
+    reader who clicks the hybrid option lands on text while the two mockups it
+    merges sit elsewhere in the file. This is the difference between an option
+    that can be judged and one that must be taken on trust. Where a host renders
+    the option's section rather than scrolling to it, that composed wireframe is
+    what the reader sees first.
+13. **A machine receipt is not a deliverable, and is never counted as one.**
+     Workflow hosts that write their own receipts into the run bundle (a
+     portable audit trail, a codebase-context snapshot) must keep them out of
+     the artifacts a card *produced*, and out of the count it states. They are
+     real audit value — they belong in the bundle, the manifest, and the commit
+     trailer — but a reader who counts them as output is being told the card
+     did work it did not do.
+
+     Two rules make that hold, and both exist because the classification was
+     computed and then lost:
+
+     - **The role travels with the artifact and is applied where it becomes
+       visible.** A receipt classified at write time, carried on the artifact
+       payload, and then dropped by the view is the common shape: one track
+       re-implemented the filter inline (twice, in a single file) and drew a
+       hand-made section around the result, while another track passed every
+       artifact through untouched and reported "3 files" over two
+       deliverables. The rule lives in one shared predicate, the inventory
+       applies it once for every track, and the number a section states is
+       read from that same predicate, so the count and the list cannot
+       disagree.
+     - **Receipts get their own named home, closed by default.** A disclosure
+       that says what it is — the host's own audit record, not output — rather
+       than a heading invented per surface. Closed, because a receipt is
+       reference material and not a decision awaiting the reader, so it is
+       neither live nor blocking and never earns open-on-load. A receipt must
+       also not appear twice for the same fact, and the row that renders it is
+       the row every other artifact uses, so a file cannot look like two
+       different things depending on which section it landed in.
 
 Reference: `question-batch.mjs` (pure parsing/grouping; the only
 host-shaped corner is reading the payload top-level vs nested) +

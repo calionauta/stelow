@@ -21,7 +21,7 @@ metadata:
 
 # Interface Alternatives
 
-> **Tools:** See `../stelow-workflow-orchestrator/references/cli-tools/subagents.md` for subagent patterns.
+> **Tools:** See `../stelow-workflow-orchestrator/references/cli-tools/subagents.md` for subagent patterns, and `../stelow-workflow-orchestrator/references/cli-tools/ui-design-research.md` for real reference exemplars before proposing layouts.
 
 ## Overview
 
@@ -110,6 +110,12 @@ $INTERFACE_COUNT parallel workers (fresh context, explicit reads):
   5. spec-product.md — body + frontmatter (`appetite`, `review_mode`, `domains_detected`)
   6. tech-recon.md — tech constraints (if it exists)
 
+  For `Core` and `Complete`: also read
+  `../stelow-workflow-orchestrator/references/cli-tools/ui-design-research.md`
+  and ground each proposal's layout in at least one real reference exemplar.
+  `Lean` spends no reference calls. If no reference is reachable, say the
+  proposal rests on the archetype library alone — never invent one.
+
 Each worker MUST receive `reads: [spec-product.md, tech-recon.md]` (or `references/interface-*.md` when running standalone).
 Each worker runs `context: "fresh"` — proposals must be independent of orchestrator deliberation history.
 Each outputs to .stelow/{date}/{dir}/interfaces/proposal-{letter}.md
@@ -136,6 +142,12 @@ Task: Generate Hybrid Proposal
 Reads: selected proposal files
 Output: Append to interfaces.md per hybrid-recommendation.md
 ```
+
+The hybrid section must carry **its own composed wireframe** in a fenced block
+and name the proposals it composes with their headings. The interface gate below
+reviews wireframes: a hybrid written only as prose cannot be reviewed there, and
+a reader who clicks the hybrid option would land on text while the mockups it
+merges sit elsewhere in the file.
 
 
 ## Visual Review (Interface Gate — Automatic)

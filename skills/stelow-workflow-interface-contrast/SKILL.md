@@ -24,6 +24,7 @@ Use this skill during the existing Interface stage. It does not create a new roo
 
 ## Method
 
+0. Read `../stelow-workflow-orchestrator/references/cli-tools/ui-design-research.md` if any real design reference is cited. At this stage a reference is **provenance for an option already named** — never a source of new options, because generating fresh alternatives from a gallery would replace the decision-maker's recorded first reaction with the agent's browsing.
 1. Read the approved Scope Map when one exists and record its version.
 2. Write the decision question, fixed constraints, criteria, and missing evidence.
 3. Preserve the decision-maker's first reaction before showing agent synthesis.
