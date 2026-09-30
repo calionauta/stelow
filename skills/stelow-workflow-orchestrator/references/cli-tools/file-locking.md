@@ -78,10 +78,21 @@ scripts/stelow lock check --scope <scope-id> --file <path>... [--json]
 | Scenario | Use lock? |
 |---|---|
 | Sequential scope execution | NO — no parallel writes possible |
-| Parallel scope dispatch (DAG-independent) | YES if `target_files` intersect or are undeclared |
+| Parallel scope dispatch (DAG-independent) | YES — and a scope that declares NO `target_files` refuses the batch outright |
 | Parallel dispatch where `target_files` are KNOWN disjoint | OPTIONAL — defensive against undeclared touch |
 | Parallel dispatch in host-provisioned isolated worktrees | NO within the batch — filesystem isolation replaces prevention (keep declaring `target_files`; the audit still needs the contract, and the parent merge + test gate still applies) |
 | Single scope, no parallel | NO |
+
+**An undeclared scope is a refusal, not a free pass.** It used to read as
+"YES if `target_files` intersect **or are undeclared**" — which is exactly
+backwards. An undeclared scope has no file set, so disjointness cannot be
+established, and the host now refuses the batch with `PARTITION_UNDECLARED`
+naming the scopes. A scope with no `target_files` is an *unknown* footprint,
+not an empty one: two unknown footprints are not known to be disjoint, and
+admitting them is the silent overwrite this protocol exists to prevent. The
+pilot keeps such a batch sequential (no code that could lose a write) while the
+scope contract is completed. Single-scope batches are exempt — there is nothing
+to be disjoint *from*.
 
 ## Limitations (honest)
 
