@@ -114,6 +114,30 @@ Invariants (encode every one; each has bitten us):
   source), not by card state dir — so a parked card can never hold files
   hostage, and cards isolated in their own worktrees do not falsely
   serialize.
+- **A claim ledger only sees cards — say so, and cover the rest.** A
+  thread outside the host plugin never acquires a claim, so on a card
+  whose environment resolves to the *shared* checkout the ledger answers
+  "nobody" while another agent edits the same file. This is the default
+  arrangement wherever the fallback environment preset is the project
+  checkout rather than a per-card worktree, which makes it a mainstream
+  case and not an edge. Two rules make covering it cheap and honest:
+  - **Isolate, then stop.** A card in a managed worktree answers
+    `isolated` before any subprocess. A scan that could never find
+    anything is theatre, and it costs.
+  - **Ask, don't poll.** The host-wide thread list is a fact about the
+    host, not about a card: read it once, cache it for seconds, and spend
+    it only when a reader asks — never on the open-card path. Cache per
+    host, never per card, or the cost multiplies by the number of cards
+    being read.
+  - **A shared working tree has no per-agent ownership.** Report *who is
+    here* and *which of my files are dirty*, as two separate facts, and
+    never attribute a file to an agent. The first is a fact about the
+    host; the second is a fact about this card. Fusing them, or naming
+    the author, invents provenance the host cannot supply.
+  - **A failed read is not a clean read.** "Could not read the host's
+    threads" and "nobody is there" are different answers and a reader
+    must be able to tell them apart. Every read on this surface fails
+    soft, and says which of the two it was.
 
 Reference (copyable, zero host imports): `worker-action-policy.mjs`
 (action visibility), `card-move.mjs` (board-move decisions),
@@ -121,7 +145,9 @@ Reference (copyable, zero host imports): `worker-action-policy.mjs`
 (archived hero copy), `tracks.mjs` (build vs lightweight routing),
 `card-claims.mjs` (workspace claim registry, terminal release, waiter
 resume), `card-restore-pending.mjs` (per-kind event reactivation, driven by
-the archive's own resolution reason).
+the archive's own resolution reason), `shared-checkout-exposure.mjs`
+(cross-thread overlap: who shares this checkout, which held files are
+dirty, and the honesty bounds on both).
 
 ## 3. Inbox event model
 
