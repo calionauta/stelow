@@ -97,6 +97,38 @@ Invariants (encode every one; each has bitten us):
   done-ness from `audit` + idle made narrate-and-stop indistinguishable
   from stuck — the same confusion that produced the stop-per-turn
   incidents.
+- **One refusal sentence per cause, with the predicate beside it.** A
+  refusal with a single correct answer is one constant, read by every
+  surface that refuses and by every surface that has to recognise it.
+  The drift this prevents is invisible by construction: the sentence can
+  name one action while the menu entry it points at is worded
+  differently, so the reader is told to use a door they cannot find —
+  and the confirm dialog for that very entry can advise the cheaper
+  alternative that cannot help, because on that card every command is
+  refused until the records agree. Five server sites and two components
+  each held their own copy of the words, which is how the mismatch gets
+  there. The sentence earns its length because every clause
+  is one the reader would otherwise have to infer: what failed, what the
+  workflow will not do instead, which action clears it, **where that
+  action lives**, and that the obvious alternative does not work.
+  Recognition is a prefix match — not equality, and not a substring test:
+  sites append their own tails, so equality misses real refusals, while a
+  message that merely mentions the phrase mid-sentence is not the
+  refusal. It is a function, never a string comparison at each call site:
+  a site that misspells the constant compiles, runs, and silently stops
+  recognising its own refusal. Keep it a plain module both sides can
+  import — server and client need the same words, and threading one
+  sentence through a dependency bag costs three wiring files and two dep
+  types to move a string.
+  **Repair advice varies by cause even though the action does not.**
+  Restart-fresh is the right answer for most failures, so most of them
+  earn "try the cheaper retry first"; on a card whose state ownership
+  cannot be verified, a retry resumes a worker whose every command is
+  refused, which teaches the reader that retry is the cheap thing to try
+  twice. Only the sentence changes — the action, its confirmation, and
+  its blast radius stay identical — and it is chosen by a function rather
+  than by a conditional inside markup, which is testable only by matching
+  its own source.
 - **Discard ≠ archive.** Archive parks with work intact; discard destroys
   unpushed work (worktree drop, branch reset to the pre-card base, or
   folder delete — refused on pushed history, shared lines, detached
@@ -120,7 +152,7 @@ Invariants (encode every one; each has bitten us):
   "nobody" while another agent edits the same file. This is the default
   arrangement wherever the fallback environment preset is the project
   checkout rather than a per-card worktree, which makes it a mainstream
-  case and not an edge. Two rules make covering it cheap and honest:
+  case and not an edge. These rules make covering it cheap and honest:
   - **Isolate, then stop.** A card in a managed worktree answers
     `isolated` before any subprocess. A scan that could never find
     anything is theatre, and it costs.
@@ -138,6 +170,65 @@ Invariants (encode every one; each has bitten us):
     threads" and "nobody is there" are different answers and a reader
     must be able to tell them apart. Every read on this surface fails
     soft, and says which of the two it was.
+  - **One empty set is not an empty relation.** Order the questions by
+    what each one licenses asking next: *who else is in this checkout* is
+    a fact about the host, so it is answered first, and it decides whether
+    this card's own files may be compared at all. A card holding no
+    files therefore does not get "no overlap, zero threads" — it gets
+    unknown footprint: the population is real and measured, and the
+    intersection was never computed because one side is empty. Export the
+    verdict set as one list, because the transport schema, the server's
+    own type, and the reader's copy all have to agree — a reason invented
+    in one and forgotten in another is a reason the UI has no sentence
+    for:
+
+     | verdict | what it asserts |
+     |---|---|
+     | `isolated` | the card works in a managed worktree, so isolation already answered it |
+     | `no-checkout` | there is no checkout on this surface to read |
+     | `no-threads` | the host's thread list was read and nobody else is in this directory |
+     | `no-overlap` | others are here, and none of the files this card holds are dirty there |
+     | `shared` | others are here and a held file is dirty; the per-file lines say it |
+     | `unknown-footprint` | others are here, but this card holds nothing, so no overlap could be measured |
+     | `unreadable-tree` | others are here, but the working tree could not be read |
+     | `unavailable` | the host's threads could not be read at all |
+
+     A verdict that could not be measured never renders as a clean one:
+     the unmeasurable ones report the population they did measure **and**
+     what could not be compared, and both halves are load-bearing —
+     dropping the count turns "we could not compare" into "nothing to
+     compare". A verdict the sentence function does not know says nothing
+     at all, because a wrong sentence is worse than none: a reader cannot
+     tell a confident lie from a fact. And the whole report is a report,
+     never enforcement — it blocks nothing and resolves nothing, and the
+     moment it is allowed to gate a write it has become a policy decision
+     nobody made on purpose.
+- **An unanswerable read is neither a card verdict nor silence.** When
+  the host cannot read a card's state, both card-visible channels are
+  wrong and the operator's log is the only one left. Writing the failure
+  onto the card files a host fault where the card's own health belongs,
+  and it lands in the same stored error that decides whether the reader
+  is offered a resume action — so a fault no resume can fix renders as a
+  button that cannot work. Refusing that write is the same fail-soft rule
+  the cross-thread read above obeys, applied to the card's own state;
+  silence is the other failure, because the next occurrence is then
+  explained by theory instead of by a line in a log. Three live cards
+  lost their reads to a stalled host event loop, recovered on their own
+  about a minute later, and left no trace at all.
+  So: count consecutive misses per card **in memory**, and warn **once
+  per outage** on a threshold long enough that one slow read, one
+  restarting worker, or one dropped connection is not a report — a
+  warning on every reconcile tick is not a trace, it is noise an operator
+  learns to skip. Three properties are load-bearing, and each reads like
+  a simplification somebody makes later: the counter is never persisted
+  (persisted, it outlives its meaning — a restarted host inherits a streak
+  and immediately warns about failures it never saw); the warn fires on
+  equality, not on greater-than (an hour-long outage must not produce
+  forty copies of one sentence); and the counter holds no database and no
+  card beyond an id, which is what makes the whole rule checkable from a
+  unit test with no wiring harness. A read that succeeds clears the
+  streak, and a card that leaves the scope drops it: a counter kept for a
+  card nobody is watching eventually warns about the wrong thing.
 
 Reference (copyable, zero host imports): `worker-action-policy.mjs`
 (action visibility), `card-move.mjs` (board-move decisions),
@@ -147,7 +238,10 @@ Reference (copyable, zero host imports): `worker-action-policy.mjs`
 resume), `card-restore-pending.mjs` (per-kind event reactivation, driven by
 the archive's own resolution reason), `shared-checkout-exposure.mjs`
 (cross-thread overlap: who shares this checkout, which held files are
-dirty, and the honesty bounds on both).
+dirty, and the honesty bounds on both), `host-read-streak.mjs` (the
+per-card unreadable-read streak: in memory, log-only, once per outage),
+`ownership-refusal.mjs` (one refusal sentence, its prefix predicate, and
+the repair advice that varies by cause).
 
 ## 3. Inbox event model
 
