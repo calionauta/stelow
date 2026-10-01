@@ -33,8 +33,8 @@ Research/Explore (lightweight):
                               ↘ archived (terminal, from any state)
 ```
 
-`status` is durable board position. `activity` (`running`/`idle`/`error`/
-`awaiting-answer`) is an ephemeral signal and must never move a card.
+`status` is durable board position. `activity` (`running`/`held`/`idle`/
+`error`/`awaiting-answer`) is an ephemeral signal and must never move a card.
 Invariants (encode every one; each has bitten us):
 
 - **Archived is terminal to every automated path.** No poll, event, error path,
@@ -229,6 +229,73 @@ Invariants (encode every one; each has bitten us):
   unit test with no wiring harness. A read that succeeds clears the
   streak, and a card that leaves the scope drops it: a counter kept for a
   card nobody is watching eventually warns about the wrong thing.
+- **Work the system is already doing is not a card that stopped.** Two
+  records say a card is in flight while its own thread says nothing is
+  running: a message the **host** queued and has not dispatched (capacity
+  full, host offline, a permission interaction open, the host's clock
+  holding it), and a **native run** that outlives the turn which started
+  it. Neither is the plugin's to push, and both were projected as `idle`
+  behind a Resume button — so a reader was told a card needed recovery
+  moments before the host released it on its own, and pressing Resume
+  queued a *second* copy of a message already in the queue. Ten ticks of
+  that turned one held card into ten nudges and spent the whole
+  auto-continue budget on turns that never ran.
+  So the record is the truth and the sentence is **derived** from it,
+  every time, in one place per record — a writer cannot hold a card and
+  render a different reason, because it only has one value to pass. Keep
+  the host's own words **verbatim** where they count: the capacity
+  message counts live slots ("4 of 4 running on host X") that nothing in
+  the plugin can recompute, so a paraphrase is a second source of truth
+  that rots the moment a slot frees.
+  Three rules make this portable rather than a re-implementation:
+  **a queued row IS a hold** — the kinds say *which* hold, never *whether*
+  it counts, because a rule that excludes the short-lived kinds has two
+  authors (the send path needs them or a card claims `running` for a turn
+  that has not started; the poll path does not), and an **unknown kind
+  degrades to the generic hold rather than to no hold** — the row exists,
+  so the host has not dispatched it, and that much is true whatever the
+  kind turns out to be, which is also how a host that adds a kind
+  tomorrow stays on the card. A run's `needs_input` counts as live only
+  while nothing else is asking the user something: a card with an open
+  question is a card the reader is already in, and the question is the
+  thing to show. And every derivation ends in "no action needed" — a
+  sentence implying resume, retry, or check-the-run puts a human between
+  work that is already progressing, which is what teaches people to
+  distrust the badge. Both update **activity and text only**: never
+  `status`, for the reason above, and the idle timestamp is cleared
+  because a card that is not idle has no "idle since" to show. Give the
+  queue depth its own clause when it exceeds one, since that is the
+  pile-up this rule exists to make visible rather than hide behind "no
+  action needed".
+- **A failed run holds the stage, and the hold has a door.** A card may
+  not advance out of a stage whose **newest** run at that stage failed:
+  the run is the work the stage was supposed to do, and a failure nobody
+  looks at is how a card walks past a stage that produced nothing.
+  Newest, not *any* failed run — that distinction is the whole design,
+  because a retry creates a newer run and so releases the hold the moment
+  it starts. A rule keyed on "a failed run exists" would need a way to
+  clear the failed row, and nothing clears one, so that version is a
+  wedge. Scope the gate to the **stage**, not the card: a card
+  accumulates runs for every stage it has passed, and gating on the
+  card's newest run blocks a card that failed three stages ago and has
+  moved on cleanly since.
+  Key it on the run, deliberately **not** on the deliverable being
+  missing. Those are two facts and they come apart — a coordinator can
+  do a stage's work itself, outside the run, so the staging directory is
+  empty while the stage's real output sits at its canonical path — and a
+  deliverable-keyed gate lets that card through while stopping a genuinely
+  empty stage. Choose the stricter rule knowing both facts; the door is
+  what makes the stricter rule safe to choose. The refusal names the exit
+  (**retry the run**), the run's own id, and the reason — a refusal that
+  names no exit is a deadlock with a good error message.
+  One implementation detail is load-bearing and was a bug the test
+  caught: "newest" needs an explicit tie-break. Ordering by timestamp
+  alone ties for two runs created in the same millisecond, and a tie the
+  store does not promise to break means "newest" is whatever the scan
+  happened to yield — so a retry launched in the same tick as the run it
+  retries can read as the older one, and the hold reports a run the card
+  has already moved past. Break the tie on insertion order, which is what
+  "newest" actually means.
 
 Reference (copyable, zero host imports): `worker-action-policy.mjs`
 (action visibility), `card-move.mjs` (board-move decisions),
@@ -241,7 +308,11 @@ the archive's own resolution reason), `shared-checkout-exposure.mjs`
 dirty, and the honesty bounds on both), `host-read-streak.mjs` (the
 per-card unreadable-read streak: in memory, log-only, once per outage),
 `ownership-refusal.mjs` (one refusal sentence, its prefix predicate, and
-the repair advice that varies by cause).
+the repair advice that varies by cause), `host-hold.mjs` (a host-held
+dispatch read as a fact, with the sentence derived from the record),
+`native-run.mjs` (the run that keeps a card alive while its thread reads
+idle), and `failed-run-gate.mjs` (the newest failed run holding a stage,
+its tie-break, and the refusal that names the door).
 
 ## 3. Inbox event model
 
@@ -629,7 +700,9 @@ encode the rules above as tested pure functions: `worker-action-policy`,
 `inbox-panel-state`, `message-directives`, `panel-state`, `panel-storage`,
 `plugin-update-signal`, `plugin-update`, `preset-assignment`,
 `preset-onboarding-state`, `publication-mutation`, `question-form`,
-`relative-time`, `research-panel-state`, and `scope-order`.
+`relative-time`, `research-panel-state`, `scope-order`, and
+`scope-xray-presentation` (the approved map drawn once: freshness in the
+header, deviations per row, and an empty state keyed on the map).
 
 Also portable, and the trio every host needs the moment a card can produce
 files: `artifact-manifest` (manifest parse, project-relative path
@@ -1005,6 +1078,32 @@ only when the answer matches the current boundary and versions. Scope X-ray is a
 server-derived read projection with provenance and freshness for every edge; it
 must not mutate the map or create a second question or execution lifecycle.
 
+**A projection names its freshness once, and each row only when it deviates.**
+The X-ray projects the **approved** map. It is a different thing from the
+execution tracker, and a host that prints both under one word makes two true
+statements contradict each other: the X-ray listed seven approved scopes and
+four lines below it said the agent was still shaping the card. Both were true —
+one read the map, the other read state plus the latest spec — and neither was
+the condition for the other's empty state. So state plainly that the X-ray is
+the map and the tracker is execution, and key the empty state on **whether the
+map exists**, not on whether the tracker is populated: a card can hold an
+approved map with nothing tracked yet, and calling that "nothing broken down
+yet" tells a reader the shaping never happened when it did.
+
+The raw freshness enum is the second half of the same mistake. `current` is a
+**staleness** value from the map contract, not a progress state, and printing it
+verbatim beside a scope id made "env-seed-mapper · current" read as "this is
+the scope being worked on" — then printed it nine times, once in the header and
+once per node, from the same variable. One fact in two registers, and the
+most-repeated fact on the card was the one nobody asked for. So: the header
+carries freshness once, as a sentence; a row carries a label **only when it
+deviates from the map's own baseline**, because "in sync" on all seven lines is
+the header's job done seven more times. One override matters and lives in one
+place: a **stale map makes every row stale**, whatever the row claims, so the
+staleness stays the header's fact and the rows stay quiet about it. Unknown is a
+first-class answer here — a freshness value that could not be read says so
+rather than falling back to the reassuring one.
+
 ## 14. Host runtime composition and lifecycle slices
 
 A host with a large plugin entrypoint should keep the package entry as a
@@ -1042,6 +1141,20 @@ The portable seam pattern is:
   Every owned timer, child process, and retry is disposed idempotently; host
   event subscriptions remain scoped to the plugin instance. Disposal must not
   stop live worker threads: hot reload is not uninstall.
+
+A **vocabulary the server must validate** cannot live in the component the
+server cannot import. When a layer rule forbids the server reaching into a
+component, a settings vocabulary defined there leaves the server with **no
+validator at all** — which is not a missing convenience, because a value outside
+the set cannot be honoured at spawn: the host either refuses it or silently
+drops to a default while the settings screen keeps showing what the human chose.
+So the list moves to one plain module both sides import, the write boundary
+refuses, and read paths *narrow* to the fallback so a stored row stays
+readable. Narrowing on read and refusing on write are different jobs: a read
+must not throw on a row written before the vocabulary existed, and a write must
+never be quietly rewritten. The default must equal the host's own default, so
+repairing an out-of-enum row lands on the effort the host would have chosen —
+which is what makes the repair invisible rather than a surprise.
 
 Reference evidence in `bb-plugin-stelow`: `server.ts` is the package entry;
 `server/rpc-contract.ts` composes capability fragments;
