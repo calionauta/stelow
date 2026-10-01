@@ -37,6 +37,35 @@ Research/Explore (lightweight):
 `error`/`awaiting-answer`) is an ephemeral signal and must never move a card.
 Invariants (encode every one; each has bitten us):
 
+- **Idle is a statement about the thread, not about the card.** Three things can
+  own a card while its thread sits idle, and each needs a different projection —
+  none of them is "a person should nudge this":
+  - **The host is holding the message** (`held`). The dispatch was accepted and
+    not sent. Project the hold, spend no budget, never nudge — the pending
+    message IS the pending work, and a nudge would queue a duplicate of something
+    already on its way. See §8 `host-hold`.
+  - **A host Workflows run owns the stage.** The run outlives the turn that
+    started it, so thread-idle says nothing. Hold the card as running and offer
+    nothing. See §8 `native-run`.
+  - **A run failed.** That is not idleness, it is a hold, and it gets a door:
+    see the failed-run invariant below.
+
+  Order matters and is not arbitrary: host hold first (the host already said so),
+  then live run (the run IS the pending work), and only then the auto-continue
+  decision.
+- **A stage whose newest run failed holds the card there, and the refusal names
+  the door.** Continuing past a failed run is how a card advances on work that
+  never happened — and the symptom is not an error, it is a card that cheerfully
+  reports a stage it never reached. A refusal that names no exit is a deadlock
+  with a good error message, so the refusal names the retry, the retry is a real
+  action, and it appears on the run that is actually blocking. Scoped to the
+  card's CURRENT stage: a card carries failed runs for every stage it has passed,
+  and offering a retry on one of those produces a button whose only outcome is an
+  error explaining that the card moved on. Take the hold on the dry run too — a
+  dry run is how a worker asks "may I advance?" before committing, so a gate below
+  that short-circuit means the one probe built to prevent the mistake is the one
+  place it does not fire.
+
 - **Archived is terminal to every automated path.** No poll, event, error path,
   or drag may take a card out of `archived`. Enforce at the single write choke
   point, checked against a fresh read (a poll that read before Archive lands must
@@ -712,6 +741,38 @@ contracts), `artifact-contracts` with `artifact-contract-lookup` and
 `explore-contracts` (the contract data by area, plus one id lookup that
 returns null for an unmigrated artifact instead of throwing).
 
+And the vocabulary half, which any host that prints a stage or a status needs:
+`trackables` already above, plus `card-status` (`CARD_STATUSES`, its labels, and
+an `assertCardStatus` that refuses an unknown value BY NAME — a bare CHECK failure
+says `CHECK constraint failed` and leaves the writer guessing), and
+`execution-run-ledger` (`RUN_STATUSES` beside the `execution_runs` CHECK, its
+labels, `RUN_STATUS_PHRASES` for sentences, `BLOCKING_RUN_STATUS`, and the gate in
+§2). See §13 for the rules.
+
+Two more, both about the same failure — a card that looks idle while something is
+still working on it:
+
+- **`host-hold`** — the host can take a card's next message and decline to
+  dispatch it, so the dispatch verdict travels as a discriminated union
+  (`{delivery:"sent"}` / `{delivery:"queued", hold}` / refused) instead of a
+  boolean. A queued delivery projects the hold and **spends no budget**; a held
+  card is never nudged at all, because the pending message IS the pending work and
+  a nudge would queue a duplicate of something already on its way. That duplication
+  is what turned one held card into ten.
+- **`native-run`** — a host Workflows run outlives the turn that started it, so an
+  idle thread is not an idle card. `keepsCardRunning` and the sentence it derives.
+  Pairs with the reconciler that writes the ledger it reads: a liveness rule that
+  trusts a signal needs that signal to have a writer, and a function that reports
+  a failure is not one (see §9).
+- **`failed-run-gate`** — a stage whose newest run failed holds the card there,
+  and the refusal names the door that opens it. The card is TOLD which run blocks
+  rather than re-deriving the rule in the UI, so the button and the gate cannot
+  disagree about which run is the one.
+- **`scope-xray-presentation`** and **`execution-run-presentation`** — read-only
+  projections whose whole job is to keep two surfaces from contradicting each
+  other: an approved map shown as "no scopes yet", and a run list whose titles are
+  the host's recipe slugs while every other surface says "Tech Planning".
+
 ### One walk, one bar: reading a workflow state dir
 
 A workflow's state dir holds its bookkeeping and its documents in one tree,
@@ -757,12 +818,40 @@ rather than copying the code.
 
 ## 9. Anti-patterns (each paid for at least once)
 
+- **A rule that trusts a signal nobody refreshes.** The sharpest one here,
+  because it wore the costume of a fix. A liveness rule read the run ledger and
+  correctly concluded "a run is live"; the ledger was written in exactly one
+  place; that place caught an unanswerable host and *returned the error without
+  changing anything*. So the row stayed `running` forever and the rule held the
+  card as working indefinitely — no button, no inbox row, no park. Every part
+  was individually correct. The defect is structural: a decaying signal needs a
+  writer, and a function that reports a failure is not a writer. Bound the
+  unanswerable case (generously — it is a recovery path, not a latency budget),
+  stamp it on the FIRST failed poll rather than at run start so a plugin restart
+  cannot condemn a healthy long run, and close the window on any answered poll.
+- **A vocabulary listed by which word it contains rather than who writes it.**
+  The sharpest one here too, and it hides behind tidiness. A status list that
+  classifies `pending` as "a trackable" because that is where the word also
+  appears produces a validator that refuses the creation of every lightweight card
+  and every drag back to Bucket — while the suite stays green, because the test
+  guarding the list is a restatement of the list. Ask **who writes the value**.
+  Where a value is genuinely written on two machines it belongs to both, and
+  sharing one entry between them is the collision you were trying to end.
+- **A second status or stage vocabulary beside the first.** Not a lint: the
+  symptom is a reader concluding that "Interface gate" and `int-gate` are two
+  different stages, or that a card is Done on the board and `in-progress` in a
+  search result. See §13 for the rule and its test.
 - Second workflow database beside `stelow.json`/`.stelow/` (they stay the
   source of truth).
 - Hand-editing `current_stage` (only `advance` writes it).
 - Blanket inbox resolution (per-kind, §3).
 - Compat shims for dead RPCs (delete, don't shim).
 - Status changes from activity signals (§2).
+- Compat `fr` units stretching kanban columns (bounded minmax instead).- Second workflow database beside `stelow.json`/`.stelow/` (they stay the
+  source of truth).
+- Hand-editing `current_stage` (only `advance` writes it).
+- Blanket inbox resolution (per-kind, §3).
+- Compat shims for dead RPCs (delete, don't shim).
 - Compat `fr` units stretching kanban columns (bounded minmax instead).
 - Inferring completion from stage + idle instead of an explicit
   worker commit verified in code (§2).
@@ -1031,7 +1120,54 @@ labels and never touch workflow state — every rule action is an inbox event
 or a reversible draft. Copy the shape: event + filter + draft/notify
 template, per-project settings, one fire record per source key.
 
-## 13. Execution adapters and canonical stage data
+## 13. One vocabulary per axis, and the reader's words in it
+
+A stage name and a status value are both identifiers first and words second, and
+the pull is always toward printing the identifier. `int-gate`, `plan-gate` and
+`in-progress` are correct database keys, CLI arguments and prompt tokens. They
+are not words to put in front of a person who has to decide something.
+
+**Every axis gets one owner, and the names sit beside the values they name.**
+In `bb-plugin-stelow` this took four modules and the pattern is the portable
+part: `stageLabel()` over the stage catalog; `TRACKABLE_STATUS_LABELS` beside
+`TRACKABLE_STATUSES`; `RUN_STATUS_LABELS` beside the `execution_runs` CHECK
+constraint; `CARD_STATUS_LABELS` beside `CARD_STATUSES`. Half-centralising is
+worse than either extreme — when `isDoneStatus` came from the machine but the
+words came from a component, a rename could pass the whole suite and still ship.
+
+Three rules make it an authority rather than a list, and each has a test:
+
+- **Nothing declares a map outside its owner.** Checked per-file, so a second
+  owner fails naming the file AND the map.
+- **Every owner still declares its map.** Otherwise deleting a vocabulary passes
+  by leaving the permission behind.
+- **No label may be its own stored id.** Shipping a stage and forgetting its name
+  is an ordinary accident, and a variable name on screen is what it looks like.
+
+**Labels are the reader's words; descriptions are the agent's words.** They do
+not have to agree, and forcing them to is a mistake: `produces` is rendered
+beside the label on the workflow map, so it must agree — but `description` is
+agent instruction prose, and its Shape Up vocabulary ("appetite", "hill chart")
+is legitimate there. Renaming a label must not drag the agent's instructions
+with it.
+
+**Names are axis-specific; appearance is not.** Tone and glyph are the one thing
+that does not need an axis: a finished card and a finished scope are both green,
+a blocked task and a blocked card are both red. A reader learns colour once. So
+tone and glyph are shared across axes, while names stay with their own — `failed`
+on a run (retriable) and `failed` on a scope (needs rework) are different facts
+and get two entries, not one shared one.
+
+**Renaming is labels-only.** Stored ids are keys: renaming one is a migration for
+zero reader-visible gain. Label changes with the key left alone are free, and are
+how you keep the vocabulary honest.
+
+**Whether a name is GOOD is a product call and no test can make it.** "Plan gate"
+satisfied every machine rule above for months. A test can insist there is one
+place to change a word; it cannot insist the word is right, and a test that tried
+would just encode one person's taste as a gate.
+
+## 14. Execution adapters and canonical stage data
 
 A host may provide a native workflow engine, but the methodology must remain
 engine-neutral. `skills/stelow-workflow-orchestrator/stages.yaml` owns stable
@@ -1104,7 +1240,7 @@ staleness stays the header's fact and the rows stay quiet about it. Unknown is a
 first-class answer here — a freshness value that could not be read says so
 rather than falling back to the reassuring one.
 
-## 14. Host runtime composition and lifecycle slices
+## 15. Host runtime composition and lifecycle slices
 
 A host with a large plugin entrypoint should keep the package entry as a
 bounded composition root and keep only wiring in the runtime module. Each
