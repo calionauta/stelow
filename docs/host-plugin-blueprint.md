@@ -134,9 +134,13 @@ Invariants (encode every one; each has bitten us):
   differently, so the reader is told to use a door they cannot find —
   and the confirm dialog for that very entry can advise the cheaper
   alternative that cannot help, because on that card every command is
-  refused until the records agree. Five server sites and two components
+  refused until the records agree. Eight server sites and two components
   each held their own copy of the words, which is how the mismatch gets
-  there. The sentence earns its length because every clause
+  there — and three of them still did when an earlier version of this
+  paragraph claimed five, which is why the count is measured against the
+  sources rather than remembered, and why a test enumerates the sites and
+  fails when one re-spells the verdict inline. The sentence earns its
+  length because every clause
   is one the reader would otherwise have to infer: what failed, what the
   workflow will not do instead, which action clears it, **where that
   action lives**, and that the obvious alternative does not work.
@@ -233,31 +237,59 @@ Invariants (encode every one; each has bitten us):
      moment it is allowed to gate a write it has become a policy decision
      nobody made on purpose.
 - **An unanswerable read is neither a card verdict nor silence.** When
-  the host cannot read a card's state, both card-visible channels are
-  wrong and the operator's log is the only one left. Writing the failure
-  onto the card files a host fault where the card's own health belongs,
-  and it lands in the same stored error that decides whether the reader
-  is offered a resume action — so a fault no resume can fix renders as a
-  button that cannot work. Refusing that write is the same fail-soft rule
-  the cross-thread read above obeys, applied to the card's own state;
-  silence is the other failure, because the next occurrence is then
-  explained by theory instead of by a line in a log. Three live cards
-  lost their reads to a stalled host event loop, recovered on their own
-  about a minute later, and left no trace at all.
-  So: count consecutive misses per card **in memory**, and warn **once
-  per outage** on a threshold long enough that one slow read, one
-  restarting worker, or one dropped connection is not a report — a
-  warning on every reconcile tick is not a trace, it is noise an operator
-  learns to skip. Three properties are load-bearing, and each reads like
-  a simplification somebody makes later: the counter is never persisted
-  (persisted, it outlives its meaning — a restarted host inherits a streak
-  and immediately warns about failures it never saw); the warn fires on
-  equality, not on greater-than (an hour-long outage must not produce
-  forty copies of one sentence); and the counter holds no database and no
-  card beyond an id, which is what makes the whole rule checkable from a
-  unit test with no wiring harness. A read that succeeds clears the
-  streak, and a card that leaves the scope drops it: a counter kept for a
-  card nobody is watching eventually warns about the wrong thing.
+  the host cannot read a card's state, both card-verdict channels are
+  wrong: writing the failure onto the card files a host fault where the
+  card's own health belongs, and it lands in the same stored error that
+  decides whether the reader is offered a resume action — so a fault no
+  resume can fix renders as a button that cannot work. Refusing that write
+  is the same fail-soft rule the cross-thread read above obeys, applied to
+  the card's own state. Silence is the other failure, because the next
+  occurrence is then explained by theory instead of by evidence. Three live
+  cards lost their reads to a stalled host event loop, recovered on their
+  own about a minute later, and left no trace at all.
+  So the shipped answer is a **third** channel that is neither a verdict
+  nor silence: count consecutive misses per card **in memory**, and on a
+  threshold long enough that one slow read, one restarting worker, or one
+  dropped connection is not a report, write **one** persisted timestamp
+  and warn **once per outage** — the same number, crossing the same
+  threshold, on the same tick, so the board and the log cannot disagree
+  about when an outage became worth reporting. A second counter for the
+  card would be the drift this repository refuses: two things counting one
+  outage, one of them quietly wrong.
+  The persisted fact is a nullable per-card `since` column and nothing
+  more, and each of the channels it could have used instead is refused for
+  a reason a host author will hit: it is **not** `activity`, because that
+  is the last **verified** projection and overwriting it destroys the only
+  true thing the card knows while the host is silent — a card that is
+  probably working would stop saying so; it is **not** `last_error`, for
+  the resume-button reason above; and it is **not** an inbox row, because
+  every kind there is an action or a review request, and a row would hold
+  the badge above zero asking for something that changes nothing. The card
+  learns **that** its reads are failing and **since when**, never **why**:
+  a symptom was measured and a cause was not, so a cause would be a guess
+  wearing a fact's clothes. The write is latched, so a card unreadable for
+  an hour keeps saying "since 14:32" instead of a moving number, and every
+  door out of the state writes the column back to null rather than waiting
+  for a tick that may not come — a warning that outlives the fault is a
+  second lie, and an archived card would otherwise sit there naming a host
+  that came back an hour ago.
+  The properties below the count are load-bearing and each reads like a
+  simplification somebody makes later: the **streak itself** is never
+  persisted (persisted, it outlives its meaning — a restarted host
+  inherits a streak and immediately warns about failures it never saw),
+  which is why what is persisted is the timestamp the crossing latch and
+  not the running count; the warn fires on equality, not on greater-than
+  (an hour-long outage must not produce forty copies of one sentence); and
+  the counter holds no database and no card beyond an id, which is what
+  makes the whole rule checkable from a unit test with no wiring harness.
+  A read that succeeds clears the streak and un-latches the column, and a
+  card that leaves the scope drops both: a counter kept for a card nobody
+  is watching eventually warns about the wrong thing. The card-facing
+  sentence is derived from the measurement every time it is shown, exactly
+  as `host-hold.mjs` derives its hold — the record is the truth and the
+  module owns the only wording — and it ends in the promise that makes the
+  state bearable: the card recovers by itself, so the reader is told there
+  is nothing to do rather than left wondering what a stale card wants.
 - **Work the system is already doing is not a card that stopped.** Two
   records say a card is in flight while its own thread says nothing is
   running: a message the **host** queued and has not dispatched (capacity
@@ -335,7 +367,8 @@ resume), `card-restore-pending.mjs` (per-kind event reactivation, driven by
 the archive's own resolution reason), `shared-checkout-exposure.mjs`
 (cross-thread overlap: who shares this checkout, which held files are
 dirty, and the honesty bounds on both), `host-read-streak.mjs` (the
-per-card unreadable-read streak: in memory, log-only, once per outage),
+per-card unreadable-read streak: in memory, latched to a persisted
+`since` column, log-only per outage),
 `ownership-refusal.mjs` (one refusal sentence, its prefix predicate, and
 the repair advice that varies by cause), `host-hold.mjs` (a host-held
 dispatch read as a fact, with the sentence derived from the record),
@@ -943,6 +976,33 @@ rather than copying the code.
   only the terminal stage, whose `next: (done)` legitimately has none.
   Assert it against the same intersection the helper computes, so the
   test fails on the disagreement rather than restating the tables.
+- **An integrity check that gates execution on a record the system also
+  declares immutable.** A host that records a hash of each applied
+  migration and verifies every recorded position **before** it executes
+  anything is right about the check — and has built a record that cannot
+  be repaired forward. Append a corrective migration and it never runs:
+  the append happens behind the refusal, and the refusal is what stops
+  the boot. So a bad record bricks the install permanently through the
+  very mechanism that was supposed to protect it. This was paid for
+  across two releases: one shipped a statement whose recorded text was a
+  transcription of a generated template literal rather than the released
+  form, so the position no longer hashed; the affected population was
+  exactly the installs that had recorded it, which is why the symptom
+  read as a corrupt database when the database was fine, and why a fresh
+  install never saw it — the check only fires on a recorded position.
+  The only door is the record itself, before the host looks at it, and it
+  must be narrow, because a repair that touches a record the migrator
+  calls immutable is otherwise indistinguishable from tampering. Match
+  the seeded bad value on the **full** digest: a prefix match rewrites a
+  position you have not actually identified, which is the case the host
+  refuses on purpose. Repeat the recorded value in the `WHERE` clause so a
+  concurrent writer that already fixed the row is not reverted. And
+  decline when the statement the host is about to run no longer hashes to
+  the released value — the repair is for a record of a statement that is
+  still the released one, so a second drift must leave the host's own
+  refusal standing rather than be papered over. Worth asking of any
+  pre-flight gate before shipping it: what repairs the record it checks,
+  and does the answer survive the gate being closed?
 
 ## 10. Contract tests to mirror
 
@@ -1291,6 +1351,30 @@ must not throw on a row written before the vocabulary existed, and a write must
 never be quietly rewritten. The default must equal the host's own default, so
 repairing an out-of-enum row lands on the effort the host would have chosen —
 which is what makes the repair invisible rather than a surprise.
+
+The second half of that rule is the one a host author will get wrong:
+**the set is the host's global enum, which is a superset of what any one
+provider accepts.** Passing the enum check is necessary and not
+sufficient, because each provider declares its own ladder (ids only) and
+every provider is missing at least one global value — so a level that is
+perfectly legal at the write boundary can still be unhonourable for the
+card's own provider. The provider's declared levels are therefore the
+second half of the check, and they live **in the same module**: read the
+host roster as plain data (so the portable module keeps no dependency on
+the host SDK), ask which levels that provider declares, and refuse on the
+write path with a sentence naming **the ladder the provider declared** —
+"invalid level" would send the reader back to a picker that is not where
+the mismatch lives. A provider absent from the roster, or declaring no
+ladder at all, is a third state — "the host did not say" — which must
+never collapse into "supported" or "unsupported": report it as unverified
+rather than guessing. And do not fold the verdict into the narrowing
+function, because narrowing is display/read normalisation whose whole job
+is to make an old row renderable; the unsupported-but-legal level has to be
+reported *next to* the level, not silently normalised away. Reference:
+`preset-reasoning-level.mjs` — `isPresetReasoningLevel` /
+`asPresetReasoningLevel` (the global half, refused on write and narrowed
+on read) alongside `declaredProviderLevels` / `isLevelDeclaredForProvider`
+/ `ladderIncludes` / `unsupportedLevelMessage` (the provider half).
 
 Reference evidence in `bb-plugin-stelow`: `server.ts` is the package entry;
 `server/rpc-contract.ts` composes capability fragments;
