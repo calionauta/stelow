@@ -367,8 +367,8 @@ resume), `card-restore-pending.mjs` (per-kind event reactivation, driven by
 the archive's own resolution reason), `shared-checkout-exposure.mjs`
 (cross-thread overlap: who shares this checkout, which held files are
 dirty, and the honesty bounds on both), `host-read-streak.mjs` (the
-per-card unreadable-read streak: in memory, latched to a persisted
-`since` column, log-only per outage),
+per-card unreadable-read streak: in memory, latching a persisted
+`since` column, logging once per outage),
 `ownership-refusal.mjs` (one refusal sentence, its prefix predicate, and
 the repair advice that varies by cause), `host-hold.mjs` (a host-held
 dispatch read as a fact, with the sentence derived from the record),
