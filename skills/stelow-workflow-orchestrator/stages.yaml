@@ -93,7 +93,7 @@ stages:
     order: 15
     model_hint: economy
     description: Item selection. Rank accepted items, user picks one.
-    label: Choose work
+    label: Prioritization
     produces: "Chooses an item or group from the triage inbox to turn into a workflow."
     artifacts: []
     phase: analysis
@@ -151,8 +151,8 @@ stages:
     order: 25
     model_hint: standard
     description: "Strategic context. Market analysis, JTBD, domain detection. Gated by `context:5` (appetite/review mode): Product Spec Gate+Auto skips; others use reduced ask. See the context stage, section 5."
-    label: Context
-    produces: "Gathers project context the shaping step needs."
+    label: Project Context
+    produces: "Gathers the project context the proposal needs."
     artifacts: []
     phase: analysis
     skill: stelow-workflow-orchestrator
@@ -190,8 +190,8 @@ stages:
     order: 40
     model_hint: best
     description: Shape stage. Define appetite, hill chart, rabbit holes.
-    label: Shape proposal
-    produces: "Writes a Shape Up proposal (spec-product_vN.md) for the chosen item."
+    label: Product Proposal
+    produces: "Writes the product proposal (spec-product_vN.md) for the chosen item."
     artifacts: [plans/spec-product*.md]
     phase: analysis
     skill: stelow-workflow-shape-up
@@ -232,7 +232,7 @@ stages:
     model_hint: best
     description: Plan critique. Pre-flight check before gate.
     label: Critique
-    produces: "Challenges the proposal before it is gated."
+    produces: "Challenges the proposal before it is reviewed."
     artifacts: [critiques/critique-report.md]
     phase: planning
     skill: stelow-workflow-plan-critique
@@ -271,8 +271,8 @@ stages:
     order: 60
     model_hint: economy
     description: Gate review. Visual approval via visual review required. Use `visual_review` tool (not bash).
-    label: Product gate
-    produces: "Product gate: decides whether the shaped idea is accepted, rejected, or reworked."
+    label: Product Review
+    produces: "Product review: decides whether the proposal is accepted, rejected, or reworked."
     artifacts: []
     phase: planning
     skill: stelow-workflow-orchestrator
@@ -371,8 +371,8 @@ stages:
     order: 90
     model_hint: economy
     description: Interface gate. Visual review of all interface proposals. Use `visual_review` tool (not bash).
-    label: Interface gate
-    produces: "Interface gate: accepts, rejects, or reworks the interface design."
+    label: Design Review
+    produces: "Design review: accepts, rejects, or reworks the interface design."
     artifacts: []
     phase: planning
     skill: stelow-workflow-orchestrator
@@ -402,7 +402,7 @@ stages:
     order: 100
     model_hint: standard
     description: Interface selection. Human pick via structured question in Interface-Gates modes; LLM decides in Auto / Product Spec Gate (see references/human-gates.md).
-    label: Interface selection
+    label: Interface Choice
     produces: "Selects which interface variant to implement."
     artifacts: [interfaces/selected-interface.md]
     phase: planning
@@ -447,7 +447,7 @@ stages:
     order: 110
     model_hint: best
     description: Tech planning. Typed scopes + sequencing.
-    label: Tech planning
+    label: Tech Planning
     produces: "Writes the technical plan (PLAN.md) from the interface and scope."
     artifacts: [plans/spec-tech*.md]
     phase: planning
@@ -476,8 +476,8 @@ stages:
     order: 115
     model_hint: economy
     description: "Tech plan gate. Visual review of spec-tech.md via visual review. Only in Product Spec + Interface + Tech Review or Code Diff mode."
-    label: Plan gate
-    produces: "Plan gate: accepts, rejects, or reworks the tech plan."
+    label: Technical Review
+    produces: "Technical review: accepts, rejects, or reworks the tech plan."
     artifacts: []
     phase: planning
     skill: stelow-workflow-orchestrator
@@ -507,7 +507,7 @@ stages:
     order: 120
     model_hint: standard
     description: Implementation. Execute planned scopes.
-    label: Execution
+    label: Implementation
     produces: "Implements the plan across the defined scope."
     artifacts: []
     phase: execution
@@ -566,8 +566,8 @@ stages:
     order: 175
     model_hint: economy
     description: "Code diff review. visual review review of working tree diff. Only in Product Spec + Interface + Tech Review + Code Diff mode."
-    label: Diff gate
-    produces: "Diff gate: checks the implementation diff before completion."
+    label: Code Review
+    produces: "Code review: checks the changes before the work is marked done."
     artifacts: []
     phase: review
     skill: stelow-workflow-orchestrator
