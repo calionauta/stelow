@@ -108,10 +108,17 @@ Check all changed files for:
 
 **Record Evidence (criteria 6):**
 
-For every scope with `status: 'completed'` in `stelow.json`, verify the
-Record evidence block exists and is non-vacuous. Per
-`stelow-workflow-scope-executor` SKILL Step 3e-bis, the Record is the
-**claim-proof artifact** — without it, the ✅ is unearned.
+For every scope that is CLOSED in `stelow.json` — `status: 'done'` OR
+`status: 'completed'`; the host writes `done` and `isDoneStatus`
+(`lib/trackables.mjs`) treats both as terminal — verify the Record evidence
+block exists and is non-vacuous. Per `stelow-workflow-scope-executor` SKILL Step
+3e-bis, the Record is the **claim-proof artifact** — without it, the ✅ is
+unearned.
+
+Matching only one of the two literals selects zero scopes on a card where the
+host wrote the other, and the criterion then passes vacuously: it reports
+"every completed scope has evidence" having examined nothing. Read the STATUS
+the tracking file actually holds, not one spelling of it.
 
 Check each completed scope:
 
@@ -318,10 +325,10 @@ Check each completed scope:
 |-------|----------------|---------------|------------------------|------------------------------|
 
 Flag as gap if any of:
-- `status: 'completed'` AND `tasks` is missing entirely → **warning**:
-  scope-vs-task confusion likely. Some scopes legitimately ship with
-  no tasks table (small DoD-only scopes); cite `iteration-state-{SCOPE-ID}.md`
-  to explain.
+- scope is CLOSED (`status: 'done'` or `'completed'`) AND `tasks` is missing
+  entirely → **warning**: scope-vs-task confusion likely. Some scopes
+  legitimately ship with no tasks table (small DoD-only scopes); cite
+  `iteration-state-{SCOPE-ID}.md` to explain.
 - `tasks` present AND zero `status: 'done'` AND zero `status: 'skipped'`
   → **warning**: scope closed with all tasks pending. Either the
   executor skipped marking them done (discipline lapse) or the table
