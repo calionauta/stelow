@@ -79,6 +79,51 @@ surface fast. When `sem` is absent, run the full suite directly.
 
 **Block until tests pass.** Do not proceed with failing tests.
 
+### Guard red-proof (a passing test proves nothing until it can fail)
+
+A green suite is a claim, not evidence. For every test or guard this
+verification adds or changes, prove it can fail **before** counting it:
+
+```bash
+# Mutate the behavior the test claims to guard, run it, expect failure.
+# Then restore and re-run, expect green. Both directions, every guard.
+cp lib/foo.mjs /tmp/foo.bak
+sed -i 's/<guarded-behavior>/<inverted>/' lib/foo.mjs
+node --test tests/foo.test.mjs   # MUST FAIL
+cp /tmp/foo.bak lib/foo.mjs
+node --test tests/foo.test.mjs   # MUST PASS
+```
+
+Record the mutation and its result in `verification/tests.json`. A guard you
+did not see fail is a guard you know nothing about — that is how a card ships
+five consecutive cycles where verification finds something every earlier gate
+passed.
+
+**Independence:** the agent that wrote the behavior may not be the only author
+of the test that guards it. Hand a fresh subagent the requirement plus the
+test — *not* the implementation — and ask "would this catch an inverted
+behavior?". Self-authored tests resolve far fewer real defects than an
+independent pass (TDFlow, EACL 2026). See
+`../../stelow-workflow-testing-ai-code/references/test-targets-and-gates.md`.
+
+Tests you cannot make fail are not verification. Say so in the report rather
+than counting them green.
+
+### Convergence (stop re-verifying the same thing)
+
+Verification → audit → execution → verification is a loop, and a loop with no
+bound reads as diligence forever while the same gaps stay open.
+
+- Each new cycle must name **what changed** since the last one. "Found more
+  issues" is not a change.
+- After **two consecutive cycles that find a real defect in the same place**,
+  stop, record it as a known-open item with an owner, and escalate to the user
+  with the specific decision needed. Do not open cycle three.
+- A guard that keeps passing while a real defect sits behind it is a finding
+  about the guard, not about the code: fix or replace the guard.
+- The same rule applies to items deferred as "inherited debt" — a deferral
+  names its file and stays open; it does not become a reason to re-verify.
+
 ### code-review (appetite-aware depth)
 
 Code review is **quality protection** and runs at every appetite — appetite only changes the depth. The Quality Floor above defines the minimum: one reviewer always runs. Appetite adds parallelism and rigor.
@@ -313,6 +358,8 @@ verification notes.
 
 ### final-checklist
 - [ ] Unit tests pass
+- [ ] Every new/changed guard proved it can fail (mutation + red result recorded)
+- [ ] Tests for behavior you wrote have an independent red-team pass
 - [ ] Code review done (subagent or human)
 - [ ] Code quality gate completed
 - [ ] Code quality review completed (lightweight always; Thermo-Nuclear when appetite/risk warrant)
