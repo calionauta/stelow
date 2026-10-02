@@ -1222,6 +1222,24 @@ and get two entries, not one shared one.
 zero reader-visible gain. Label changes with the key left alone are free, and are
 how you keep the vocabulary honest.
 
+**A rename only moves the UI if every copy of the name moves with it.** The
+reference host learned this the hard way: the phase label lives in a generated
+catalog that the host copies into its own `data/` at sync time, and the sync
+that refreshed the *source* copy did not refresh the *derived* one. The label
+changed upstream, the automated sync opened a green pull request whose whole
+diff was four lines, and the board kept rendering the old word — because the
+board reads the derived copy, not the source. Two paths had come to mean
+different things by "sync", and the evidence that it ran was a green check on a
+tree no user ever sees.
+
+So: **a derived copy is part of the rename.** Whenever a host materialises
+vocabulary into a second location, that location is in scope of every change to
+the name — same commit, same review, same test. A vocabulary test that reads the
+*derived* copy and a rendered string that reads it too will catch the case where
+someone hand-copies a label into a component, which is the other way the rename
+stops landing: the catalog says one thing, a paragraph beside it says another,
+and the paragraph is what the reader reads.
+
 **Whether a name is GOOD is a product call and no test can make it.** "Plan gate"
 satisfied every machine rule above for months. A test can insist there is one
 place to change a word; it cannot insist the word is right, and a test that tried
@@ -1515,3 +1533,38 @@ limit is stated rather than implied.
 pinning one marker per call site and `tests/server-drafting.test.mjs`
 exercising both the lifetime field and the retry that drops it.
 
+
+### Two portable presentation decisions
+
+**How a document is shown is decided by its path, in one pure function.** The
+reference host reads artifacts through a viewer that had to answer three
+different questions: is this prose the reader must read, a page they must look
+at, or code they must read? The rule was an inline extension test in the
+component, which meant the one place deciding how evidence appeared was the one
+place with no test — and a generated interface mockup rendered as HTML source,
+which is the one thing that cannot answer the question an option under decision
+asks.
+
+`lib/artifact-render.mjs` owns the decision as a pure function of the path
+(`markdown` | `html` | `source`), the viewer is a switch over its answer, and
+the frame is `srcdoc` under `allow-scripts` **without** `allow-same-origin`. That
+sandbox is the portable half: untrusted generated HTML needs to run, and
+`srcdoc` otherwise inherits the embedding origin, so the pairing of those two
+flags hands a worker's page the reader's session. A partial file must not be
+framed either — a truncated page is a broken layout presented as evidence — so
+it degrades to source and says why.
+
+**A cost cap that drops required content is counted, not just noted.** The same
+host reviews artifacts through a character budget, and a note in the prompt that
+truncation happened makes an accident look considered. Choosing the excerpt by
+the artifact's contract rather than by offset fixes the judgement; the count is
+what keeps it fixed. A cut to the contract's sections and a cut to the document's
+opening are *different failures* — only the second can have hidden a section the
+contract named — so they are counted separately, and a fleet that has never had
+the problem prints nothing at all.
+
+The durable form is the portable part: the choice is a field on the review
+record beside the fields the gate already reads, so the count comes from the same
+scan that decides whether a review exists, with no new table and no second reader.
+Records written before the field existed are uncounted rather than reported as
+records that read everything.
