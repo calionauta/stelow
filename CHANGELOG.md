@@ -3,6 +3,20 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.71.11-alpha] - 2026-10-02
+
+### Changed
+
+- **The `review` phase is now called Evaluation.** The phase label and the
+  human act of reviewing a finished card were the same word: the hero reads
+  "Done — ready to review", the inbox row says the evidence "is ready to review",
+  and the board's column header read "Review" — so a reader could not tell which
+  one a sentence meant. The phase is the machine's last stage (`diff-gate` plus
+  `audit`), not a queue waiting on a person. `Critique`, `Audit` and
+  `Verification` were all already stage labels, and "Acceptance" would have
+  claimed a human gate that Auto mode does not have. The id stays `review`, so
+  state files, CLI arguments and prompt tokens are unaffected.
+
 ## [0.71.6-alpha] - 2026-09-28
 
 ### Added
