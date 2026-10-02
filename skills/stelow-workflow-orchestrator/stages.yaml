@@ -15,7 +15,7 @@ phases:
   - id: execution
     label: Execution
   - id: review
-    label: Review
+    label: Evaluation
 
 # Canonical tool vocabulary. Hosts map these names to their native
 # implementations in their own config — never here.

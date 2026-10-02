@@ -27,7 +27,7 @@
     },
     {
       "id": "review",
-      "label": "Review"
+      "label": "Evaluation"
     }
   ],
   "routes": {
