@@ -1,6 +1,6 @@
 # stelow — Architecture
 
-**Skills-only, host-agnostic.** The product is 28 portable agentskills-compatible
+**Skills-only, host-agnostic.** The product is 30 portable agentskills-compatible
 skills plus one zero-dependency shell helper. There is **no extension host code,
 no compiled plugin, and no per-host adapter** in the repo — every agent that can
 read `~/.agents/skills/<name>/SKILL.md` (the agentskills.io standard) runs the
@@ -15,7 +15,7 @@ same workflow. Hosts only add an optional marker protocol
 | `skills/stelow-workflow-entry/` | Entry point. Classifies intent, scaffolds `state.md`, picks the first stage. Loaded when `STELOW_WORKFLOW=1`. Never runs stage logic. |
 | `skills/stelow-workflow-router/` | Router. Validates the next candidate against `transitions.md`, calls `scripts/stelow advance`, loads the next stage skill, appends the hand-off audit record. |
 | `skills/stelow-workflow-orchestrator/` | Orchestrator. Coordinates the 17-stage pipeline (Setup → Shape → Critique → Gate → Scope → Interface → Planning → Execution → Verification → Audit). |
-| `skills/stelow-product-<area>/` | Product strategy playbooks + domain tactics (14 total, reference-only). |
+| `skills/stelow-product-<area>/` | Product strategy playbooks + domain tactics (15 total, reference-only). |
 | `scripts/stelow` | Portable helper (bash + python3): `status`, `advance`, `doctor`, `seed`, `schema`, `ask`. Single source of runtime mechanics. |
 | `skills/stelow-workflow-orchestrator/references/cli-tools/` | Single source for shared tool references. Sub-skills link it via sibling-relative paths (`../stelow-workflow-orchestrator/...`) — no copies, no sync step. |
 | `install.sh` | Installer. Flattens `skills/*` into `~/.agents/skills/`, prunes retired/orphaned skills, offers optional tooling (cymbal, sem, ctx7). |
@@ -84,7 +84,7 @@ same workflow. Hosts only add an optional marker protocol
   skills) or `skills/stelow-product-<name>/SKILL.md` (product strategy /
   domain libraries) with `metadata.category` matching the prefix
   (`workflow` / `product`); keep counts consistent (README contract test
-  pins 28 / 14 workflow + 14 product skills).
+  pins 30 / 15 workflow + 15 product skills).
 - New host → no code required. Ensure the host can read agentskills.io skill
   directories and set the marker env vars. Host levers are documented in
   `references/host-levers.md`.

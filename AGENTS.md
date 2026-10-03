@@ -5,7 +5,7 @@
 ## Project Overview
 
 **Type:** Skills-only, host-agnostic product workflow library. The product is
-28 portable agentskills-compatible skills (`skills/stelow-product-*` + `skills/stelow-workflow-*`) plus a
+30 portable agentskills-compatible skills (`skills/stelow-product-*` + `skills/stelow-workflow-*`) plus a
 zero-dependency shell helper (`scripts/stelow`). There is **no extension code,
 no compiled plugin, and no per-host adapter** in the repo.
 **Stack:** bash + python3 (runtime), Node 20+, TypeScript strict (tooling/tests).
@@ -36,7 +36,7 @@ extracted lifecycle, inbox, ask/answer, sync, and UI rules with the
 | `skills/stelow-workflow-entry/` | Entry point: intent classification, `state.md` scaffold, first-stage selection (loaded when `STELOW_WORKFLOW=1`). |
 | `skills/stelow-workflow-router/` | Router: validate next candidate, `advance` via helper, load next stage, append hand-off audit. |
 | `skills/stelow-workflow-orchestrator/` | Orchestrator + `stages.yaml` + `stages/*.md` + `references/transitions.md`. |
-| `skills/stelow-product-*/` + `skills/stelow-workflow-*/` | The other 25 self-contained skills (11 stage/execution workflow + 14 product). |
+| `skills/stelow-product-*/` + `skills/stelow-workflow-*/` | The other 27 self-contained skills (12 stage/execution workflow + 15 product). |
 | `scripts/stelow` | Portable CLI: `status`, `advance`, `doctor`, `seed`, `schema`, `ask` (lock + TTL, invariants). |
 | `types/stages.ts` | Stage-model TS interfaces mirroring `stages.yaml`. |
 | `stelow.schema.json` / `stelow.json` | Workflow tracking schema + per-project runtime state. |
@@ -58,7 +58,7 @@ extracted lifecycle, inbox, ask/answer, sync, and UI rules with the
 Stage/skill/command counts are pinned to the canonical sources by regression
 tests — not from this file:
 
-- **Skills (28)**: `find skills -maxdepth 2 -name SKILL.md \( -path '*/stelow-product-*' -o -path '*/stelow-workflow-*' \) | wc -l` (14 workflow + 14 product). Pinned against the README `## 📋 Skills` section by `tests/integration/skill-count-readme-contract.test.ts`.
+- **Skills (30)**: `find skills -maxdepth 2 -name SKILL.md \( -path '*/stelow-product-*' -o -path '*/stelow-workflow-*' \) | wc -l` (15 workflow + 15 product). Pinned against the README `## 📋 Skills` section by `tests/integration/skill-count-readme-contract.test.ts`.
 - **Stages (17)**: `skills/stelow-workflow-orchestrator/stages.yaml` + its mirror `references/transitions.md` (the `triage`..`audit` chain).
 - **Stage transitions and conditional gates**: `skills/stelow-workflow-orchestrator/stages.yaml`.
 - **Helper mechanics**: `scripts/stelow` (status/advance/doctor), pinned by `tests/unit/stelow-helper.test.ts`, `tests/integration/stelow-fs.test.ts`, `tests/integration/stelow-e2e.test.ts`.
@@ -155,7 +155,7 @@ Run before releases. A test file moving from OK to REVIEW over time signals rot.
 - **Skill validator scope:** `SKILL.md` stays under 500 lines (move bodies to `references/`, never delete instructions). `Examples`/`Edge Cases` sections are required on `stelow-product-*` (standalone-invoked); pipeline stage skills (`entry`/`router`/stage executors) are exempt — they are only invoked via entry/router with full context, and stage behavior is covered by e2e, not by per-skill activation examples.
 - **Docs stay truthful:** `README.md` feature bullets and `architecture.md` behavior sections describe the current product only — no shipped-removed surfaces (Pi extensions, TUI, pre-rename skill names live in `docs/archive/`). Any behavioral commit updates them alongside the code; counts are test-pinned (skill-count contract), prose is reviewer-pinned (say what changed in the release notes).
 - **Single working clone:** on the deploy host, `~/repos/stelow` is the **only** clone where methodology/skill work happens. Never edit skills in a throwaway `/tmp` clone — if you did, re-do or rebase the work onto `~/repos/stelow`. **Run `git pull --ff-only` here FIRST** before starting any edit, so work advances from `origin/main` and the auto-sync below propagates it. Push is the trigger: a local-only commit is invisible to consumers.
-- **Propagation is automatic but on a schedule:** pushing to `calionauta/stelow@main` propagates automatically — all 28 skills reach `bb-plugin-stelow` via its 6h cron auto-sync (plus a fail-soft pass at boot), and the product playbooks (`stelow-product-*`) additionally reach the agent skills hub on the daily 03:00 `npx skills update -g`. Neither needs a manual copy step.
+- **Propagation is automatic but on a schedule:** pushing to `calionauta/stelow@main` propagates automatically — all 30 skills reach `bb-plugin-stelow` via its 6h cron auto-sync (plus a fail-soft pass at boot), and the product playbooks (`stelow-product-*`) additionally reach the agent skills hub on the daily 03:00 `npx skills update -g`. Neither needs a manual copy step.
 
 ## Versioning
 

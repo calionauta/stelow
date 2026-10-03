@@ -1,0 +1,58 @@
+# What the bb plugin adds
+
+The core (`skills/` + `scripts/stelow`) is the whole methodology and runs
+anywhere. The bb plugin (`bb-plugin-stelow`, separate repo) is a visual and
+operational layer on top of the same state machine. The hosting contract it
+implements is defined in [HOSTING.md](../../HOSTING.md) and
+[host-plugin-blueprint.md](../host-plugin-blueprint.md).
+
+## Core vs plugin
+
+| Core (this repo) | Plugin only |
+|---|---|
+| 30 skills, `scripts/stelow` CLI, 17-stage state machine | Board (Inbox / Build / Research / Explore / About), card detail, hill/list views |
+| `stelow.json`, `state.md`, `.stelow/` artifacts and receipts | Quiet inbox with per-kind resolution and a sidebar badge counting only unresolved items |
+| `ask_user_question` / `visual_review` portable vocabulary | Blocking question forms, artifact comments, "answer in thread" |
+| Approval receipts (evidence, never transitions) | Gate approval buttons that write the canonical receipts |
+| No scheduler | Automation rules (per-project GitHub label watchers on the host scheduler) + GitHub issue import with shared dedupe |
+| No execution surface | Worker thread spawning, agent presets (provider/model/reasoning/permission), `bb stelow` worker CLI (status, advance, verify, review, metrics, …) |
+| `audit-trail.md` portable receipt | Auditable completion gating on the exact tree, publication panel (commit/push/PR) |
+| Methodology only | Research tab (product strategy playbooks) and Explore tab (one-shot techniques) as guided UI |
+
+## What the plugin never does
+
+These are load-bearing guarantees, not implementation details:
+
+- The board **reads** `stelow.json` and `.stelow/` — it never replaces them.
+- An approval creates a **receipt only**; validating and advancing the state
+  machine stays with the agent/router.
+- Automation rules never move cards, merge code, or import behind your back.
+  Both import flows default to parked drafts; auto-start requires an
+  isolated worktree and fails closed without one.
+- Completion write-back to GitHub is explicit and human-gated. Done in
+  Stelow is not merged/deployed.
+- External issue text rendered on a card is context, never instructions.
+
+## Operator guides (live here)
+
+The first two pages below exist; the rest migrate from the plugin repo in
+the follow-up commit (stelow-2) and are listed here so the structure is
+stable from day one.
+
+- [what-plugin-adds.md](what-plugin-adds.md) — this page (core vs plugin).
+- [install-bb.md](install-bb.md) — install and update on bb.
+- **github-issues.md** (pending) — import now, watch automatically, trust model.
+- **automation-rules.md** (pending) — rule semantics, backlog guard, kill switch.
+- **agent-presets.md** (pending) — presets and spawn pass-through.
+- **board-and-inbox.md** (pending) — tracks, bucket, badge honesty rules.
+- **native-workflows.md** (pending) — the host Workflows execution
+  backend and what stays sequential. (Placement decision: this is bb-only
+  runtime — the core has no Workflows substrate — so it lives here, not in
+  Core.)
+- **decision-routing.md** (pending) — deterministic-first policy and
+  the Decision API. (Placement decision: the Decision API, decision points,
+  and providers are plugin implementation; the portable principle —
+  never delegate a checkable decision to a model — stays in Core workflow
+  pages.)
+- **team-playbook.md** (pending) — experimental: one bb per teammate,
+  GitHub as the team room.
