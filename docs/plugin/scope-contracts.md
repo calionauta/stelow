@@ -19,7 +19,10 @@ valid `scope-map.json` exists.
 Interface Contrast receipts distinguish agent-authored evidence from human
 authority, the decision route and disposition, fixed constraints, criteria,
 options, accepted sacrifice, Shape and Scope Map versions, provenance and
-missing evidence, and the next required action. An agent may stop for a
+missing evidence, and the next required action. Each option also records
+its scope coverage — which approved scopes it serves and where it creates
+friction — so a direction is judged against the delivery slices, not in a
+vacuum. An agent may stop for a
 human decision, but it cannot fabricate human evidence or silently change
 product policy.
 
