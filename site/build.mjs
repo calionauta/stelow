@@ -56,6 +56,8 @@ const MANIFEST = [
     desc: "Durable Workflows backend and what stays sequential." },
   { group: "In bb (plugin)", slug: "plugin/decision-routing", file: "plugin/decision-routing.md",
     desc: "Deterministic-first policy and the Decision API." },
+  { group: "In bb (plugin)", slug: "plugin/scope-contracts", file: "plugin/scope-contracts.md",
+    desc: "Scope ownership, decision records, challenges, human boundaries." },
   { group: "In bb (plugin)", slug: "plugin/team-playbook", file: "plugin/team-playbook.md",
     desc: "Experimental one-bb-per-teammate playbook over GitHub." },
   { group: "Operate", slug: "faq", file: "faq.md",
