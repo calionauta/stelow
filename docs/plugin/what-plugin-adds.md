@@ -11,7 +11,7 @@ implements is defined in [HOSTING.md](../../HOSTING.md) and
 | Core (this repo) | Plugin only |
 |---|---|
 | 30 skills, `scripts/stelow` CLI, 17-stage state machine | Board (Inbox / Build / Research / Explore / About), card detail, hill/list views |
-| `stelow.json`, `state.md`, `.stelow/` artifacts and receipts | Quiet inbox with per-kind resolution and a sidebar badge counting only unresolved items |
+| `stelow.json`, `state.md`, `.stelow/` artifacts and receipts | Quiet inbox with per-kind resolution and a sidebar badge counting unresolved items and unopened completions |
 | `ask_user_question` / `visual_review` portable vocabulary | Blocking question forms, artifact comments, "answer in thread" |
 | Approval receipts (evidence, never transitions) | Gate approval buttons that write the canonical receipts |
 | No scheduler | Automation rules (per-project GitHub label watchers on the host scheduler) + GitHub issue import with shared dedupe |
@@ -35,24 +35,20 @@ These are load-bearing guarantees, not implementation details:
 
 ## Operator guides (live here)
 
-The first two pages below exist; the rest migrate from the plugin repo in
-the follow-up commit (stelow-2) and are listed here so the structure is
-stable from day one.
-
 - [what-plugin-adds.md](what-plugin-adds.md) — this page (core vs plugin).
 - [install-bb.md](install-bb.md) — install and update on bb.
-- **github-issues.md** (pending) — import now, watch automatically, trust model.
-- **automation-rules.md** (pending) — rule semantics, backlog guard, kill switch.
-- **agent-presets.md** (pending) — presets and spawn pass-through.
-- **board-and-inbox.md** (pending) — tracks, bucket, badge honesty rules.
-- **native-workflows.md** (pending) — the host Workflows execution
+- [github-issues.md](github-issues.md) — import now, watch automatically, trust model.
+- [automation-rules.md](automation-rules.md) — rule semantics, backlog guard, kill switch.
+- [agent-presets.md](agent-presets.md) — presets and spawn pass-through.
+- [board-and-inbox.md](board-and-inbox.md) — tracks, bucket, badge honesty rules.
+- [native-workflows.md](native-workflows.md) — the host Workflows execution
   backend and what stays sequential. (Placement decision: this is bb-only
   runtime — the core has no Workflows substrate — so it lives here, not in
   Core.)
-- **decision-routing.md** (pending) — deterministic-first policy and
+- [decision-routing.md](decision-routing.md) — deterministic-first policy and
   the Decision API. (Placement decision: the Decision API, decision points,
   and providers are plugin implementation; the portable principle —
   never delegate a checkable decision to a model — stays in Core workflow
   pages.)
-- **team-playbook.md** (pending) — experimental: one bb per teammate,
+- [team-playbook.md](team-playbook.md) — experimental: one bb per teammate,
   GitHub as the team room.
