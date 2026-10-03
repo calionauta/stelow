@@ -28,7 +28,7 @@ independent of the orchestrator.
 
 ## Product (15)
 
-Nine are **domain libraries**, detected from your language at the context stage (eight carry explicit signal rows; paywall is consulted without one); six are **method playbooks** used across the context, triage, and scope stages.
+Nine are **domain libraries**, detected from your language at the context stage (eight carry explicit signal rows; paywall is consulted without one); six are **method playbooks** used across the context, triage, and scope stages. The split is derived, not hand-maintained — `node site/build.mjs --check` pins it against the context-stage signal table (paywall is the one documented exception).
 
 | Skill | Kind | Strategy |
 |---|---|---|

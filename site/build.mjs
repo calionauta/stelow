@@ -12,7 +12,7 @@
 //   --check verifies every manifest file exists and every internal .md link
 //   resolves, without writing output. CI runs the build; reviewers run --check.
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from "node:fs";
 import { join, dirname, resolve, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -245,10 +245,43 @@ function check() {
     }
   }
   if (failed) { console.error(`${failed} check failure(s)`); process.exit(1); }
+  checkSkillTaxonomy();
   console.log(`check ok: ${MANIFEST.length} pages, all links resolve`);
 }
 
+// The docs/skills.md domain-vs-method split is derived, never hand-maintained:
+// domain skills = context-stage language-signal rows + one documented exception
+// (paywall is consulted with no signal row). Any drift fails the build.
+function checkSkillTaxonomy() {
+  const PAYWALL_EXCEPTION = "stelow-product-paywall";
+  const contextMd = readFileSync(join(ROOT, "skills/stelow-workflow-orchestrator/stages/context.md"), "utf8");
+  const signaled = new Set([...contextMd.matchAll(/^\|.*`(stelow-product-[a-z-]+)`.*\|$/gm)].map((m) => m[1]));
+  const skillsMd = readFileSync(join(DOCS, "skills.md"), "utf8");
+  const rows = [...skillsMd.matchAll(/^\| `(stelow-product-[a-z-]+)` \| (domain|method) \|.*\|$/gm)];
+  if (!rows.length) { console.error("skills.md product table not found"); process.exit(1); }
+  const documented = new Map(rows.map((m) => [m[1], m[2]]));
+  const expectedDomain = new Set([...signaled, PAYWALL_EXCEPTION]);
+  const productDirs = new Set(
+    readdirSync(join(ROOT, "skills")).filter((d) => d.startsWith("stelow-product-")),
+  );
+  const problems = [];
+  for (const s of expectedDomain) {
+    if (documented.get(s) !== "domain") problems.push(`${s} should be documented as domain`);
+  }
+  for (const [s, kind] of documented) {
+    if (kind === "domain" && !expectedDomain.has(s)) problems.push(`${s} documented as domain but has no signal row or exception`);
+    if (kind === "method" && expectedDomain.has(s)) problems.push(`${s} documented as method but is in the domain set`);
+    if (!productDirs.has(s)) problems.push(`${s} documented but directory is missing`);
+  }
+  for (const d of productDirs) {
+    if (!documented.has(d)) problems.push(`${d} exists but is not documented`);
+  }
+  if (problems.length) { console.error("skill taxonomy drift:\n- " + problems.join("\n- ")); process.exit(1); }
+  console.log(`taxonomy ok: ${expectedDomain.size} domain + ${documented.size - expectedDomain.size} method = ${documented.size} product skills`);
+}
+
 function build() {
+  check();
   for (const p of MANIFEST) {
     CUR_SLUG = p.slug;
     p.md = readFileSync(join(DOCS, p.file), "utf8");
