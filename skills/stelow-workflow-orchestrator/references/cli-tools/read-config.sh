@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # read-config.sh — canonical helper for reading Workflow.config from stelow.json
 #
-# Source this in any skill that needs appetite/review_mode/domains_detected:
+# Source this in any skill that needs appetite/review_gates/domains_detected:
 #   source "$(dirname "${BASH_SOURCE[0]}")/../../stelow-workflow-orchestrator/references/cli-tools/read-config.sh"
 #   APPETITE=$(stelow_read_appetite)
 #
@@ -40,9 +40,45 @@ stelow_read_appetite() {
   stelow_config appetite "Core"
 }
 
-# Public: read review_mode from active workflow (default: Product Spec + Interface + Scopes)
-stelow_read_review_mode() {
-  stelow_config review_mode "Product Spec + Interface + Scopes"
+# Public: read the review gate set from active workflow.
+#
+# Usage: stelow_read_review_gates [default]
+#
+# Emits a space-separated atom list ("spec tech"), which is what every caller
+# branches on. It deliberately does NOT emit a ladder rung: a set like
+# `interface` alone has no rung, so a reader that expected one either got Auto
+# (which reads as "no gates" and refuses the tech plan) or an empty string.
+# `stelow_has_review_gate <atom> [default]` is the question callers actually ask.
+#
+# The default is the empty set, not a rung, and that default is deliberate: a
+# skill run outside stelow has declared nothing, and an assumed default that
+# invents three gates would park a standalone run waiting for a human nobody
+# asked. Callers that genuinely want more depth pass it as their own default.
+stelow_read_review_gates() {
+  local raw
+  raw=$(stelow_config review_gates "")
+  if [ -z "$raw" ]; then
+    printf '%s' "$1"
+    return
+  fi
+  # stelow.json stores an array; JSON.stringify's bracket form is stripped so
+  # the output is a plain space-separated list either way.
+  printf '%s' "$raw" | node -e "
+    const raw = require('fs').readFileSync(0, 'utf8').trim();
+    const list = raw.startsWith('[')
+      ? JSON.parse(raw)
+      : raw.replace(/^\[|\]$/g, '').split(',');
+    process.stdout.write(list.map(s => String(s).trim()).filter(Boolean).join(' '));
+  " 2>/dev/null || printf '%s' "$raw"
+}
+
+# Whether one atom is selected. Callers branch on this, never on the string:
+# a substring test reads "tech" as present inside "tech-plan" and inside the
+# word "matching", which is a gate nobody configured.
+# Usage: stelow_has_review_gate <atom> [default-when-undeclared]
+stelow_has_review_gate() {
+  local atom="$1"
+  stelow_read_review_gates "${2:-}" | tr ' ' '\n' | grep -qx "$atom"
 }
 
 # Public: read domains_detected as JSON array (default: [])

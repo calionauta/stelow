@@ -11,7 +11,7 @@
  */
 import { describe, it, expect, afterAll } from "vitest";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, writeFileSync, mkdirSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, writeFileSync, mkdirSync, readFileSync, rmSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -238,5 +238,131 @@ describe("mode-skipped gate refusals", () => {
     const gate = run(["advance", "diff-gate", "--dry-run"], dir, { STELOW_STATEDIR: stateDir, STELOW_TRANSITIONS: TRANSITIONS });
     expect(gate.status).not.toBe(0);
     expect(gate.stderr).toContain("advance directly to audit instead");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Gate SETS (`review_gates`), which the ladder could not express.
+// ---------------------------------------------------------------------------
+
+function makeGateStateDir(base: string, stage: string, gates: string, appetite = "Core", intent = "feature"): string {
+  const stateDir = join(base, ".stelow", "2026-09-06", `sw-${randomBytes(3).toString("hex")}`);
+  mkdirSync(stateDir, { recursive: true });
+  writeFileSync(join(stateDir, "state.md"), `---
+name: t
+intent: ${intent}
+current_stage: ${stage}
+status: active
+config:
+  appetite: ${appetite}
+  review_gates: ${gates}
+  product_type: software
+stages:
+  ${stage}: in-progress
+artifacts: []
+history: []
+---
+# t
+`);
+  return stateDir;
+}
+
+// seed prints the state dir as its last stdout line, absolute.
+function seededStateDir(stdout: string): string {
+  const line = stdout.trim().split("\n").pop() ?? "";
+  return line.endsWith("state.md") ? join(line, "..") : line;
+}
+
+describe("review gate sets", () => {
+  // The defect this replaces: a set with no ladder rung was written as
+  // `review_mode: Auto`, and the helper read the LADDER — so a card that asked
+  // for `tech` had its plan-gate refused as if it had asked for nothing. Both
+  // of these presets ship in the host's picker, so this is a card a user could
+  // create and could not run.
+  it("a set with no ladder rung runs the gate it selected", () => {
+    const dir = gitRepo();
+    const stateDir = makeGateStateDir(dir, "planning", "[spec, tech]");
+    seedArtifact(stateDir, "plans/spec-tech_v1.md");
+    const env = { STELOW_STATEDIR: stateDir, STELOW_TRANSITIONS: TRANSITIONS };
+    const gate = run(["advance", "plan-gate", "--dry-run"], dir, env);
+    expect(gate.status).toBe(0);
+  });
+
+  it("the same set still refuses the gate it left unselected", () => {
+    const dir = gitRepo();
+    // From verification: diff-gate is on the route, so the refusal is the
+    // gate's own and names the set. From planning it would be refused earlier
+    // as an off-route target, which says nothing about the set.
+    const stateDir = makeGateStateDir(dir, "verification", "[spec, tech]");
+    const gate = run(["advance", "diff-gate", "--dry-run"], dir, { STELOW_STATEDIR: stateDir, STELOW_TRANSITIONS: TRANSITIONS });
+    expect(gate.status).not.toBe(0);
+    // The refusal names the set the workflow actually runs. "not selected"
+    // alone told a reader nothing when they were told something else at
+    // creation time.
+    expect(gate.stderr).toContain("[spec,tech]");
+    expect(gate.stderr).toContain("advance directly to audit instead");
+  });
+
+  it("an empty set is Auto: every gated stage refuses", () => {
+    const dir = gitRepo();
+    const env = { STELOW_TRANSITIONS: TRANSITIONS };
+    const plan = makeGateStateDir(dir, "planning", "[]");
+    expect(run(["advance", "plan-gate", "--dry-run"], dir, { ...env, STELOW_STATEDIR: plan }).status).not.toBe(0);
+    const diff = makeGateStateDir(dir, "verification", "[]");
+    expect(run(["advance", "diff-gate", "--dry-run"], dir, { ...env, STELOW_STATEDIR: diff }).status).not.toBe(0);
+  });
+
+  it("interface-only runs the interface gate and nothing else", () => {
+    const dir = gitRepo();
+    const stateDir = makeGateStateDir(dir, "planning", "[interface]");
+    const r = run(["advance", "plan-gate", "--dry-run"], dir, { STELOW_STATEDIR: stateDir, STELOW_TRANSITIONS: TRANSITIONS });
+    expect(r.status).not.toBe(0);
+    expect(r.stderr).toContain("advance directly to execution instead");
+  });
+
+  it("a state that declared neither field is not enforced at all", () => {
+    // No review_gates and no review_mode: there is nothing to enforce against,
+    // so inventing a skip would strand the worker at a gate nobody configured.
+    const dir = gitRepo();
+    const stateDir = makeStateDir(dir, "planning", "");
+    // makeStateDir writes `review_mode: `, which IS a declaration; strip it.
+    const path = join(stateDir, "state.md");
+    writeFileSync(path, readFileSync(path, "utf8").replace(/^  review_mode:.*$/m, ""));
+    seedArtifact(stateDir, "plans/spec-tech_v1.md");
+    const r = run(["advance", "plan-gate", "--dry-run"], dir, { STELOW_STATEDIR: stateDir, STELOW_TRANSITIONS: TRANSITIONS });
+    expect(r.status).toBe(0);
+  });
+
+  it("status names the set as atoms, not a rung", () => {
+    const dir = gitRepo();
+    const stateDir = makeGateStateDir(dir, "planning", "[spec, interface]");
+    const r = run(["status"], dir, { STELOW_STATEDIR: stateDir, STELOW_TRANSITIONS: TRANSITIONS });
+    expect(r.status).toBe(0);
+    expect(r.stdout).toContain("spec,interface");
+  });
+
+  it("seed writes review_gates and refuses an unknown atom", () => {
+    const dir = gitRepo();
+    const ok = run(["seed", "--name", "s1", "--intent", "feature", "--review-gates", "spec,tech"], dir, { STELOW_TRANSITIONS: TRANSITIONS });
+    expect(ok.status).toBe(0);
+    const found = readFileSync(join(seededStateDir(ok.stdout), "state.md"), "utf8");
+    expect(found).toMatch(/review_gates: \[spec, tech\]/);
+    // The ladder must not be written at all: every reader resolves atoms, and
+    // a second field is a second answer that can disagree with the first.
+    expect(found).not.toMatch(/review_mode:/);
+
+    // A typo that vanished would leave a workflow whose gates do not match
+    // what the caller believes it asked for.
+    const bad = run(["seed", "--name", "s2", "--intent", "feature", "--review-gates", "spec,teh"], dir, { STELOW_TRANSITIONS: TRANSITIONS });
+    expect(bad.status).not.toBe(0);
+    expect(bad.stderr).toContain("teh");
+  });
+
+  it("seed with no gate flag means Auto, written as an empty set", () => {
+    const dir = gitRepo();
+    const r = run(["seed", "--name", "s3", "--intent", "feature"], dir, { STELOW_TRANSITIONS: TRANSITIONS });
+    expect(r.status).toBe(0);
+    const found = readFileSync(join(seededStateDir(r.stdout), "state.md"), "utf8");
+    expect(found).toMatch(/review_gates: \[\]/);
   });
 });
