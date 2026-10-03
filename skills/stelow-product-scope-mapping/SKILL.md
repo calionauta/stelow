@@ -52,6 +52,35 @@ Record these sources alongside the proposal before generating scopes.
 6. Check that the graph is acyclic and that no scope silently owns another scope's boundary.
 7. If a narrow bugfix or mechanical refactor needs no full map, emit a one-scope plan and record why the full map is unnecessary.
 
+## Preview mode (draft for the product gate)
+
+Run with `mode: preview` when the decision-maker needs to SEE the division
+before approving anything — typically ahead of the product gate review:
+
+- Single pass, no parallel scouts, no approval. Read the shaped proposal
+  (approved or not) and emit tentative names, outcomes, and dependencies only.
+  Capabilities and evidence stay explicitly marked as unharvested.
+- Write `scope-map-draft.json` (same contract as the map, `status: "draft"`)
+  plus a readable draft companion (scope names + one-line outcomes + counts,
+  never the full evidence tables).
+- A draft from an unapproved spec is explicitly allowed here and ONLY here:
+  it illustrates the division, it commits to nothing, and it must never be
+  promoted without re-validation once the spec is approved.
+- The gate review renders the draft read-only in a draft tone. Nobody edits
+  the draft at the gate; feedback lands as review annotations, which the
+  scope stage reconciles.
+
+## Promote mode (scope stage)
+
+When a draft exists from preview mode, do not start blank-slate:
+
+1. Re-run the full method against the approved spec, the gate's approval
+   receipt, and the IN/OUT adjustments recorded since.
+2. Record what changed relative to the draft (added/removed/merged scopes,
+   moved boundaries) in the run notes.
+3. Write the approved `scope-map.json` only when the approval receipt for
+   this stage exists. Then the draft is superseded, never edited.
+
 ## Output contract
 
 Write `scope-map.json` using the contract in `schemas/scope-map.json`.

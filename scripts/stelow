@@ -813,7 +813,7 @@ commands = {
     "output": "state path or {state, statedir, dirHash, created} with --json",
   },
   "ask": {
-    "usage": "stelow ask --question <t> [--contract <id>] [--multiple] --option <label>... (repeat --question groups)",
+    "usage": "stelow ask --question <t> [--contract <id>] [--multiple] --option <label>... [--selected] (repeat --question groups)",
     "flags": ["--question", "--option", "--multiple", "--contract"],
     "env": ["STELOW_THREAD_ID", "STELOW_ASK_TIMEOUT_MS"],
     "exit_codes": {"0": "submitted (answer JSON)", "1": "waiting (persisted) or explicit cancel", "2": "usage or unknown identity"},
@@ -884,7 +884,7 @@ argv = sys.argv[4:]
 
 def fail_usage(msg):
     print(f"ask: {msg}", file=sys.stderr)
-    print("Usage: stelow ask --question <text> [--contract <id>] [--multiple] --option <label>... (repeat --question groups)", file=sys.stderr)
+    print("Usage: stelow ask --question <text> [--contract <id>] [--multiple] --option <label>... [--selected] (repeat --question groups)", file=sys.stderr)
     sys.exit(2)
 
 # --- parse groups (same grammar as every host adapter) ---
@@ -907,7 +907,11 @@ while i < len(argv):
             fail_usage("Options must follow a --question: --question <text> --option <label>...")
         if i >= len(argv) or not argv[i].strip():
             fail_usage("Each --option needs a non-empty label.")
-        current["options"].append({"label": argv[i], "description": ""})
+        current["options"].append({"label": argv[i], "description": "", "selected": False})
+    elif arg == "--selected":
+        if current is None or not current["options"]:
+            fail_usage("--selected must follow a --option: --question <text> --option <label> --selected...")
+        current["options"][-1]["selected"] = True
     elif arg == "--contract":
         if current is None:
             fail_usage("Contract ids follow a --question: --question <text> --contract <id>...")
@@ -929,6 +933,8 @@ if not groups:
 for index, group in enumerate(groups):
     if len(group["options"]) < 2:
         fail_usage(f"Question {index + 1} needs at least 2 --option labels.")
+    if not group["multiple"] and any(opt.get("selected") for opt in group["options"]):
+        fail_usage(f"Question {index + 1}: --selected needs --multiple (preselection is an opt-out confirm).")
 
 def pending_path():
     return os.path.join(ask_dir, "pending.json")
@@ -1942,7 +1948,7 @@ Usage:
   $PROG seed --name <n> --intent <i> [--quality production|experimental] [--supervisor low|med|high] [--exploration-count 1-5] [--exploration-hybrid true|false | --no-hybrid] [--review-mode M] [--json]
   (--appetite Lean|Core|Complete still accepted as a deprecated alias)
   $PROG schema [command]
-  $PROG ask --question <t> [--multiple] --option <label>... (repeat --question groups)
+  $PROG ask --question <t> [--multiple] --option <label>... [--selected] (repeat --question groups)
   $PROG sync-scopes [--name <workflow>] [--json]
   $PROG config get <field> [default]
   $PROG audit-trail build|check|path [--strict] [--json]
