@@ -161,9 +161,18 @@ gaps:
     area: "Scope or module affected"
     description: "What's missing or incomplete"
     impact: medium               # low | medium | high | critical
-    effort: moderate             # trivial | moderate | significant — drives fixed vs documented
+    effort: moderate             # optional — trivial | moderate | significant. Time guesses are the
+                                 # least reliable axis an LLM can fill; cite evidence below instead.
     resolution: escalate         # fixed | documented | escalate
     scope_candidate: false       # true if this gap should become a new scope
+    evidence:                    # optional — measurements behind the verdict, never prose claims.
+                                 # Absent reads as "unmeasured", never as a failure.
+      symbols: []                # changed symbols this gap touches
+      files: []                  # files it touches
+      callers: 0                 # cymbal `changed` impact.total_callers for the top symbol
+      tests: []                  # sem `impact --tests` covering tests, or [] when none cover it
+      reversible: unknown        # yes | no | unknown — can the fix be reverted safely?
+      check: null                # command that would prove this gap closed, or null when none exists
   - type: incomplete
     area: "Another area"
     description: "..."
@@ -232,9 +241,24 @@ automatically, then re-audits until clean.
 
 Findings judged invalid on re-check ride 📝 **DOCUMENTED** with the
 reason in the description (e.g. "not a gap because X") — every finding
-needs a disposition; there is no fourth resolution. Record `effort`
-in the frontmatter whenever it is known: hosts enforce
-medium-plus-moderate-effort as DOCUMENTED-or-ESCALATED, never FIXED.
+needs a disposition; there is no fourth resolution. `effort` stays
+accepted when present but is advisory only: hosts enforce
+medium-plus-moderate-effort as DOCUMENTED-or-ESCALATED, never FIXED,
+and prefer cited evidence over the guess.
+
+**Evidence behind an escalation (advisory, never a gate):**
+`impact` stays the escalation trigger — severity classification is the
+axis LLMs fill most reliably, and high/critical must escalate with or
+without measurements. An ESCALATED gap SHOULD cite its `evidence`
+from host measurements the card diff already computes: cymbal
+`changed` caller counts for blast radius, sem `impact --tests`
+dependents and covering tests, ripwire `--test-gate` for the
+untested slice. Absent evidence never fails; present-but-malformed
+evidence does, so the format is taught rather than guessed.
+Order the rework by what the evidence says, not by registry order:
+irreversible + wide blast radius + no proving check goes first —
+and goes to a human (`split` to a new card) before it goes to
+another unsupervised round.
 
 **What to fix inline (FIXED):**
 - Missing imports, unused imports, typo in identifiers
