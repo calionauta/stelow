@@ -113,7 +113,12 @@ function rewrite(href, pageDir) {
   const relToDocs = relative(DOCS, abs).split(sep).join("/");
   const hit = MANIFEST.find((p) => p.file === relToDocs);
   if (hit) return rel(CUR_SLUG, hit.slug) + hash;
-  return `https://github.com/calionauta/stelow/blob/main/docs/${relToDocs}${hash}`;
+  // A path that escapes docs/ points at a repo file outside the docs tree.
+  // Resolve it against the repo ROOT, never docs/ — otherwise the URL keeps a
+  // literal `..` segment (blob/main/docs/../HOSTING.md), which GitHub only
+  // tolerates by accident and which 404s whenever the prefix is absent.
+  const relToRoot = relative(ROOT, abs).split(sep).join("/");
+  return `https://github.com/calionauta/stelow/blob/main/${relToRoot}${hash}`;
 }
 
 function renderBody(md, pageDir) {
