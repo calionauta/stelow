@@ -55,7 +55,7 @@ not.
 | Concept | State fields (canonical) | Meaning (do not reframe) | bb label (reference mapping) |
 |---|---|---|---|
 | **Appetite** | `appetite: Lean\|Core\|Complete` (state frontmatter, `stelow.json`, `seed --appetite`) | Scope budget the scope is cut to fit — **never a time/effort estimate** | Planning depth |
-| **Review Mode** | `review_mode:` ladder rung + `review_gates:` atom list (state frontmatter) | Breadth of human oversight: which gates park for a decision | Pause for my review (+ rung presets) |
+| **Review Mode** | `review_mode:` ladder rung (enforced); `review_gates:` atom list (written by hosts, core promotion tracked — see rule 3) | Breadth of human oversight: which gates park for a decision | Pause for my review (+ rung presets) |
 
 Rules for hosts:
 

@@ -15,8 +15,7 @@ the plugin operator guides arrived in the second pass; anything still absent is 
 ## Known limitations (honest scope)
 
 The workflow amplifies judgment; it does not substitute for it. The full
-register with evidence and mitigations lives in the README's
-[Evidence & Limitations](../README.md#-evidence--limitations) section;
+register with evidence and mitigations lives in [evidence.md](evidence.md);
 the short version:
 
 - Long sessions rot: rule compliance decays with context length.

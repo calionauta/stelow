@@ -4,9 +4,10 @@
 
 # stelow · your agentic product team
 
+[<img src="https://devin.ai/assets/askdeepwiki.png" alt="Ask DeepWiki" height="20"/>](https://deepwiki.com/calionauta/stelow)
 [![Ask zRead](https://img.shields.io/badge/Ask%20zRead-10B981)](https://zread.ai/calionauta/stelow)
 [![Version](https://img.shields.io/github/v/release/calionauta/stelow?logo=github&label=release)](https://github.com/calionauta/stelow/releases)
-[![CLI](https://img.shields.io/badge/Skills%20run%20on-Any%20agent-3B82F6)](https://github.com/calionauta/stelow#-host-support)
+[![CLI](https://img.shields.io/badge/Skills%20run%20on-Any%20agent-3B82F6)](https://calionauta.github.io/stelow/docs/getting-started/)
 
 > **Pre-1.0 status:** Stelow is under active product and market validation. Its
 > public release line is `0.x`; APIs, workflow contracts, and skills may change
