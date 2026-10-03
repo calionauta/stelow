@@ -29,6 +29,7 @@ Use this skill during the existing Interface stage. It does not create a new roo
 2. Write the decision question, fixed constraints, criteria, and missing evidence.
 3. Preserve the decision-maker's first reaction before showing agent synthesis.
 4. Generate bounded alternatives with explicit related dimensions and compatibility.
+5. Ground every alternative in the delivery slices: record per-option scope coverage (served scope IDs, friction scope IDs with notes) against the recorded map version. When no map exists, say so and why — never invent coverage.
 5. Show trade-offs, evidence, missing evidence, and accepted sacrifice.
 6. Stop for a live question when the choice changes product authority or cannot be made from current evidence.
 7. Emit a selection receipt only after a current answer or an explicit agent disposition.
@@ -38,7 +39,8 @@ Use this skill during the existing Interface stage. It does not create a new roo
 The recipe writes:
 
 - `interfaces/contrast.json` — brief, alternatives, provenance, and disposition;
-- `interfaces/interfaces.md` — readable rendering of the validated records.
+- `interfaces/interfaces.md` — readable rendering of the validated records,
+  including each option's scope coverage in plain words.
 
 The existing canonical `selection` stage remains the owner of the actual
 interface pick. Interface Contrast does not create a second selection stage or
@@ -62,6 +64,7 @@ The agent may classify and recommend. It may not fabricate human evidence or tur
 Before returning:
 
 - every option has an ID, primary value, related values, and compatibility;
+- every option names its scope coverage (served/friction scope IDs with notes) against the recorded map version, or states explicitly that no map exists and why;
 - every evidence item has provenance;
 - fixed constraints and accepted sacrifice are explicit;
 - the current Shape and Scope Map versions are recorded;

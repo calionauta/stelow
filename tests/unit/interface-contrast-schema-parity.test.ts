@@ -56,4 +56,12 @@ describe("interface-contrast schema", () => {
       expect(schema.properties[name].type, `${name} is an array`).toBe("array");
     }
   });
+
+  it("carries optional per-scope coverage on options without widening required", () => {
+    const coverage = schema.properties.options.items.properties.scopeCoverage;
+    expect(coverage.type, "scopeCoverage is an array").toBe("array");
+    expect(coverage.items.required).toEqual(["scopeId", "effect"]);
+    expect(coverage.items.properties.effect.enum).toEqual(["served", "friction"]);
+    expect(coverage.items.properties.scopeId.type).toBe("string");
+  });
 });
