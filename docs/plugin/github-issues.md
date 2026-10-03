@@ -23,7 +23,7 @@ semantics live in [automation-rules.md](automation-rules.md).
   double-post. Posting is explicit and confirmed, never automatic. Done in
   Stelow is not merged/deployed.
 - **Bounded blast radius.** 10 drafts per rule per tick; rules never move
-  cards, merge code, or clear labels behind your back.
+  cards, merge code, or clear labels behind your back (the import clears its own trigger labels so the loop is pull-once).
 
 ## Trust model
 

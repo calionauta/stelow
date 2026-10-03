@@ -10,15 +10,17 @@ close. Without a record, the ✅ is unearned.
 | **Task** | Scope executor; planned tasks seed from the spec table, discovered tasks append with a `note:` trigger | Mutable (`pending` → `done` / `skipped`) | `wf.scopes[i].tasks[]` |
 | **Record** | Scope executor at scope close | Frozen after close | `wf.scopes[i].record` + `iteration-state-{SCOPE-ID}.md` |
 
-Appetite ceilings: Lean ≤2 scopes, Core ≤5, Complete ~10. `scope.record`
-is required for `status: 'completed'` (validation ON by default,
-`STELOW_VALIDATE=0` disables); `scope.tasks` is a checklist audited by
-execution-critique, not proof.
+Appetite ceilings: Lean ≤2 scopes, Core ≤5, Complete ~10. Records are an
+advisory convention by default — execution-critique flags completed scopes
+without a verified record, but nothing blocks. `STELOW_VALIDATE=1` enables
+runtime validation (record and task validators run before the tracking
+file persists, and the pre-commit hook blocks record-less commits).
+`scope.tasks` is a checklist audited by execution-critique, not proof.
 
 Rules of thumb: a discovered task big enough to be a delivery unit becomes
 a new scope next cycle instead of bloating the current one; more than ~5
 discovered tasks means the scope was under-planned; discovered tasks
-without `note:` are rejected at write time.
+without `note:` are rejected when validation is on.
 
 ## Running scopes: sequential default, opt-in parallel
 
@@ -27,8 +29,10 @@ Scopes run **sequentially by default** — the cheapest known-good strategy
 solo; coordination overhead grows quadratically). Parallel dispatch is
 opt-in and guarded by three layers:
 
-1. **Prevent** — file-reservation locks (`scripts/stelow lock`, atomic,
-   TTL + stale-steal) before editing declared `target_files`.
+1. **Prevent** — file-reservation locks (`scripts/stelow lock`: atomic,
+   default TTL 1800s with stale-steal) before editing declared
+   `target_files`. This is a different lock from the workflow advance
+   lock (`.stelow/lock`, 120s TTL) — don't mix their timeouts.
 2. **Detect** — post-hoc `git diff --name-only $start_sha..HEAD` per scope,
    classified into undeclared writes / real overlaps / stale locks / clean.
 3. **Respond** — non-clean classes surface to the human (merge, sequential

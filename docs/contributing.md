@@ -38,8 +38,8 @@ repo root — it is normative for them. This page is the human summary.
 ## Checks
 
 ```bash
-npm run build            # TypeScript + skill-sync sanity
+npm run build            # TypeScript compile
 npm test                 # full suite (unit + integration + skills)
-npm run verify:generated # transitions freshness
+npm run verify:generated # generated-files freshness (stages, transitions, catalogs, recipes)
 npm run security:full    # fails on high/critical advisories
 ```

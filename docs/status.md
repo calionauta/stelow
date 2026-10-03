@@ -10,7 +10,7 @@
 `CHANGELOG.md` and the
 [releases page](https://github.com/calionauta/stelow/releases) are the
 record. The unified docs (this site) are new and still filling in —
-pages marked *(pending)* in the plugin index arrive in the next pass.
+the plugin operator guides arrived in the second pass; anything still absent is intentionally unlisted (proposals and history stay out of site nav).
 
 ## Known limitations (honest scope)
 

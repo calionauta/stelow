@@ -28,8 +28,7 @@ independent of the orchestrator.
 
 ## Product (15)
 
-Nine are **domain libraries**, auto-detected from your language during
-stages; six are **method playbooks** used during discovery and shaping.
+Nine are **domain libraries**, detected from your language at the context stage (eight carry explicit signal rows; paywall is consulted without one); six are **method playbooks** used across the context, triage, and scope stages.
 
 | Skill | Kind | Strategy |
 |---|---|---|

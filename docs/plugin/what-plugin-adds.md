@@ -11,7 +11,7 @@ implements is defined in [HOSTING.md](../../HOSTING.md) and
 | Core (this repo) | Plugin only |
 |---|---|
 | 30 skills, `scripts/stelow` CLI, 17-stage state machine | Board (Inbox / Build / Research / Explore / About), card detail, hill/list views |
-| `stelow.json`, `state.md`, `.stelow/` artifacts and receipts | Quiet inbox with per-kind resolution and a sidebar badge counting only unresolved items |
+| `stelow.json`, `state.md`, `.stelow/` artifacts and receipts | Quiet inbox with per-kind resolution and a sidebar badge counting unresolved items and unopened completions |
 | `ask_user_question` / `visual_review` portable vocabulary | Blocking question forms, artifact comments, "answer in thread" |
 | Approval receipts (evidence, never transitions) | Gate approval buttons that write the canonical receipts |
 | No scheduler | Automation rules (per-project GitHub label watchers on the host scheduler) + GitHub issue import with shared dedupe |

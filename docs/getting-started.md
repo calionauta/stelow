@@ -16,7 +16,7 @@ curl -fsSL https://calionauta.github.io/stelow/install.sh | bash
 Or from a shell:
 
 ```bash
-bb plugin install stelow
+bb plugin install stelow   # once the marketplace listing is live; otherwise the git URL in install-bb.md
 ```
 
 Or in bb: Extensions → Plugins → marketplace, install Stelow. Full

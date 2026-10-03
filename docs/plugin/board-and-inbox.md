@@ -11,7 +11,7 @@ Research and Explore move To-Do → Doing → Done. New cards start in Triage
   Bucket — a per-track gallery behind a header button, never a rendered
   column. Leaving it starts the card. Parking a card that already has a
   worker is refused (it would orphan the worker); archive it instead.
-- **Honest badge.** The sidebar counts unresolved action items only, and
+- **Honest badge.** The sidebar counts unresolved action items and unopened completions, and
   always agrees with the Inbox's Needs-attention list. A finished card is
   review work (emerald marker until opened), never blocked work. Tab
   counts exclude terminal outcomes and the Bucket.
@@ -24,7 +24,7 @@ Research and Explore move To-Do → Doing → Done. New cards start in Triage
   names the explicit restart affordance. Stage progress moves by doing
   the work. Nothing automated takes a card out of Archived; a mistaken
   archive is restored by one human-initiated action behind a confirm,
-  back to its exact stage.
+  back to its exact stage — pending questions stay withheld for the fresh worker to re-ask, with the count trailed on the card.
 
 ## Views and setup
 
