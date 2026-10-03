@@ -52,7 +52,7 @@ print_agents_setup() {
 When working on software projects, trigger the product workflow:
 
 1. **Trigger:** Use `/skill:stelow-workflow-orchestrator`
-2. **Process:** Follow the 17-stage workflow (see Stage Index in `skills/stelow-workflow-orchestrator/SKILL.md`)
+2. **Process:** Follow the 18-stage workflow (see Stage Index in `skills/stelow-workflow-orchestrator/SKILL.md`)
 3. **Execute:** Only after visual review gate approval
 \`\`\`
 EOF

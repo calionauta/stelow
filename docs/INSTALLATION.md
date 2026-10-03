@@ -44,7 +44,7 @@ stelow/          ← Source
 └── ... (all skills)
 ```
 
-The 17-stage model, data flow, and state layout are documented in
+The 18-stage model, data flow, and state layout are documented in
 [architecture.md](architecture.md) and the README [📋 Skills](../README.md#-skills) section.
 
 ---

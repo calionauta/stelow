@@ -12,7 +12,7 @@ a passive doctor that detects four classes of drift.
 scripts/stelow status [--json]
 scripts/stelow advance <candidate> [--dry-run] [--json]
 scripts/stelow doctor [--json]
-scripts/stelow seed --name <n> --intent <i> [--appetite Lean|Core|Complete] [--review-mode M] [--json]
+scripts/stelow seed --name <n> --intent <i> [--quality production|experimental] [--supervisor low|med|high] [--exploration-count 1-5] [--review-mode M] [--json]
 scripts/stelow ask --question <t> [--multiple] --option <label>... (repeat --question groups)
 scripts/stelow sync-scopes [--name <workflow>] [--json]
 scripts/stelow lock acquire --scope <id> --file <f>... [--ttl N] [--json]
