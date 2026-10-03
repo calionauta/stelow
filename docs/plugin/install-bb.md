@@ -5,9 +5,9 @@ workspace source (the singleton bb personal project has none, so the board
 asks you to select or create a normal project). The plugin vendors all 30
 Stelow skills — no separate skills step is needed.
 
-## From the marketplace (normal path)
+## From the marketplace
 
-In bb: Extensions → Plugins → install **Stelow**. Or from a shell:
+In bb: Extensions → Plugins → install **Stelow** (listing live at `https://getbb.app/marketplace/stelow`). Or from a shell:
 
 ```bash
 bb plugin install stelow

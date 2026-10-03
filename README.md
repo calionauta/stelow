@@ -462,8 +462,7 @@ provider first; bb connects to it, it does not replace it.
 - **Any OS with Node:** `npx bb-app@latest` (npm 12+: add `--allow-scripts=better-sqlite3,node-pty,@parcel/watcher`), then open `http://localhost:38886`
 - Windows via WSL; Linux & remote machines supported — see [get-bb/bb](https://github.com/get-bb/bb)
 
-**2. Add the Stelow plugin** (requires bb ≥ 0.43; awaiting marketplace
-approval, so install via git URL for now):
+**2. Add the Stelow plugin** (requires bb ≥ 0.43; via the marketplace listing or git URL):
 
 ```bash
 curl -fsSL https://calionauta.github.io/stelow/install.sh | bash
@@ -623,7 +622,7 @@ npx skills add calionauta/stelow -g
 bb plugin install git:https://github.com/calionauta/bb-plugin-stelow.git --yes
 ```
 
-(requires bb ≥ 0.43; pending marketplace approval, so install via the repository
+(also on the marketplace; otherwise install via the repository
 URL — or Extensions → Plugins → Add plugin in the UI and paste the same URL.
  Pin a release with `@vX.Y.Z`; update with `bb plugin update stelow`.)
 
