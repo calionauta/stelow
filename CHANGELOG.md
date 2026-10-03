@@ -3,6 +3,31 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.72.0-alpha] - 2026-10-03
+
+### Added
+
+- **Explicit run knobs replace the appetite ladder.** Board defaults and card
+  creation move from Lean/Core/Complete to `quality` (production/experimental),
+  `supervisor` (low/med/high) and `exploration` breadth (1–5 directions +
+  hybrid). Legacy `appetite:` lines map once to knobs — rigor always resolves
+  to the strongest level — then are rewritten.
+- **Architecture stage and skills.** A new `architecture` stage between
+  selection and planning, with `architecture-alternatives` (2–5 construction
+  directions + hybrid) and `architecture-contrast` (invariants-first decision
+  loop). The pipeline is now 18 stages; the skill inventory is 32
+  (17 workflow + 15 product).
+- **Scope ceiling of 9.** Mapping discovers the count (1–9, never a target);
+  a narrow bugfix may record a one-scope plan with its reason.
+- **Preselected opt-out asks.** `ask_user_question` options accept `selected`
+  (multi-select only); scope and IN/OUT confirms render every option checked
+  with previews, unchecking removes. `stelow ask` learns `--selected`.
+- **Draft scope preview at the product gate.** Mapping runs once in preview
+  mode ahead of the gate and renders read-only in draft tone; the scope stage
+  promotes by reconciling, never blank-slate.
+- **Per-scope coverage on interface contrast options.** Each direction records
+  served/friction scope IDs, mirroring the architecture contrast table.
+
 ## [0.71.11-alpha] - 2026-10-02
 
 ### Changed
