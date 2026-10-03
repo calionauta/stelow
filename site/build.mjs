@@ -64,6 +64,8 @@ const MANIFEST = [
     desc: "Which path, who decides, safety, state, stability." },
   { group: "Operate", slug: "status", file: "status.md",
     desc: "Pre-1.0 status, honest limitations, experimental surfaces." },
+  { group: "Operate", slug: "evidence", file: "evidence.md",
+    desc: "Evidence base and known limitations register." },
   { group: "Operate", slug: "contributing", file: "contributing.md",
     desc: "Human summary of the repo conventions for contributors." },
 ];
