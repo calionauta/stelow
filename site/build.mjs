@@ -76,6 +76,18 @@ function esc(s) {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
+// GitHub-compatible heading slug: lowercase, strip markdown links/backticks,
+// drop anything that is not a word char/space/hyphen, spaces -> hyphens.
+function slugify(text) {
+  return text
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1") // keep link text, drop the URL
+    .replace(/`/g, "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/\s+/g, "-");
+}
+
 function inline(s, pageDir) {
   // images first (none in use, but supported)
   s = s.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, src) => `<img alt="${esc(alt)}" src="${esc(rewrite(src, pageDir))}">`);
@@ -127,7 +139,11 @@ function renderBody(md, pageDir) {
     const h = line.match(/^(#{1,4})\s+(.*)/);
     if (h) {
       flushPara(para);
-      out.push(`<h${h[1].length}>${inline(h[2], pageDir)}</h${h[1].length}>`);
+      const id = slugify(h[2]);
+      // Generator does not dedupe: duplicate heading text on one page would emit duplicate ids.
+      out.push(
+        `<h${h[1].length}${id ? ` id="${esc(id)}"` : ""}>${inline(h[2], pageDir)}</h${h[1].length}>`,
+      );
       i++;
       continue;
     }
