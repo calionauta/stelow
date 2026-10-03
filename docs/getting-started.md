@@ -7,7 +7,7 @@ Pick one path. Both run the same workflow; they differ only in surface.
 Requirements: bb desktop ≥ 0.43, a coding-agent CLI installed and
 authenticated (bb drives the CLI you already have — it does not replace it),
 and a normal bb project backed by a local workspace source. The plugin
-vendors all 30 skills, so there is no separate skills install step.
+vendors all 32 skills, so there is no separate skills install step.
 
 ```bash
 curl -fsSL https://calionauta.github.io/stelow/install.sh | bash
@@ -26,8 +26,8 @@ Then:
 
 1. Open **Stelow** in bb's left navigation and select a project with Stelow
    state.
-2. Choose **Appetite** (default Lean) and **Review mode** (default Auto) —
-   labeled *Planning depth* and *Pause for my review* on the board —
+2. Choose **run knobs** (quality, supervision, exploration) and **Review mode** (default Auto) —
+   labeled *Quality*, *Supervision*, *Exploration* and *Pause for my review* on the board —
    enter a product request in the composer, and submit. The card is created
    in Triage and the agent begins there.
 3. When the agent needs a decision, a structured question appears — answer
@@ -67,7 +67,7 @@ non-interactive CI, third-party skill registry, why Git-based
 distribution): [INSTALLATION.md](INSTALLATION.md).
 
 `/sw-*` commands are skill-provided and work on every compatible host —
-there is no host command registry. Setup asks for Appetite and Review mode
+there is no host command registry. Setup asks for run knobs and Review mode
 explicitly; gates without a native review UI fall back to portable approval
 receipts under `.stelow/approvals/`.
 

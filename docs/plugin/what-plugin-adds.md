@@ -10,7 +10,7 @@ implements is defined in [HOSTING.md](../../HOSTING.md) and
 
 | Core (this repo) | Plugin only |
 |---|---|
-| 30 skills, `scripts/stelow` CLI, 17-stage state machine | Board (Inbox / Build / Research / Explore / About), card detail, hill/list views |
+| 32 skills, `scripts/stelow` CLI, 18-stage state machine | Board (Inbox / Build / Research / Explore / About), card detail, hill/list views |
 | `stelow.json`, `state.md`, `.stelow/` artifacts and receipts | Quiet inbox with per-kind resolution and a sidebar badge counting unresolved items and unopened completions |
 | `ask_user_question` / `visual_review` portable vocabulary | Blocking question forms, artifact comments, "answer in thread" |
 | Approval receipts (evidence, never transitions) | Gate approval buttons that write the canonical receipts |

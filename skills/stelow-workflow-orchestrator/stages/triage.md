@@ -90,10 +90,10 @@ Triggered when the user's initial request contains multiple items (bullets, numb
    Update `.stelow/inbox/items.md` after each decision.
    After all items decided, advance to Selection.
 
-5. **Group size bound:** When creating groups, appetite limits apply:
-   - Lean: ≤2 items per group
-   - Core: ≤4 items per group
-   - Complete: ≤6 items per group
+5. **Group size bound:** When creating groups, keep groups small enough to shape in one cycle:
+   - Default: ≤4 items per group
+   - Narrow exploration (count 1–2): ≤2 items per group
+   - Wide exploration (count 4–5): ≤6 items per group
    
    If LLM's suggested group exceeds the limit, flag it and suggest a split.
    If user manually creates an oversized group, warn and confirm.

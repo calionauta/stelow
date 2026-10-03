@@ -4,7 +4,7 @@
 > use as **candidate acceptance criteria** during product shaping, and (optionally)
 > re-validate the shipped UI against the retained criteria during verification.
 > The LLM decides which items are worth keeping for the project's scope, product
-> type, appetite, and review mode. Name is by purpose — the source is checklist.design.
+> type, quality, and review mode. Name is by purpose — the source is checklist.design.
 
 ## How to invoke
 
@@ -83,10 +83,9 @@ present in the catalog.
 1. Select **1-3 checklists** most relevant to the shaped context (product_type,
    platform, core flow, IN scope).
 2. Keep only items that map to a flow/screen/component in scope.
-3. Depth by **appetite**:
-   - `Lean` → ≤5 items (critical path only)
-   - `Core` → ~8-12 items
-   - `Complete` → all applicable items
+3. Depth by **quality**:
+   - `experimental` → ≤5 items (critical path only). Probes only.
+   - `production` → all applicable items
 4. Rewrite each kept item as a **verifiable AC** (Given/When/Then or checkable);
    merge description + suggestion; dedup against already-generated ACs.
 5. Record the source in the spec appendix:

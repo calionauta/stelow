@@ -9,7 +9,7 @@ Shape Up's core insight: **scope boundaries are set before execution, but the wo
 ```
 ┌──────────────────────────────────────────────────────┐
 │  Scope (committed at planning)                       │
-│  ├── Appetite ceiling: Lean ≤2, Core ≤5, Complete ~10│
+│  ├── Scope ceiling: 9 maximum, discovered by mapping (never a target)│
 │  ├── target_files, DoD, ACs                          │
 │  ├──────────────────────────────────────────────┐    │
 │  │  Task (checklist, emerges during execution)   │    │

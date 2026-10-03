@@ -44,17 +44,16 @@ metadata:
 
 ### Step 2: Read Appetite and Product Context
 
-Read `appetite` from the spec-product file (`spec-product*.md`) before generating test scopes. **When running standalone, appetite defaults to `Core`** if not found in frontmatter — the skill documents this assumption in the output.
+Read `quality` from the spec-product file (`spec-product*.md`) before generating test scopes. **When running standalone, quality defaults to `production`** if not found in frontmatter — the skill documents this assumption in the output. A legacy `appetite:` line is accepted and mapped once (any legacy value resolves to `production`; breadth 2/3/5 from Lean/Core/Complete).
 
-Appetite controls **test breadth**, not quality baseline.
+Quality controls **test breadth**. Production verifies everything the same way every time; experimental runs lighter and only for probes.
 
-| Appetite | Test breadth |
+| Quality | Test breadth |
 |----------|-------------|
-| `Lean` | Behavior/E2E (1 happy path) + smoke tests + critical-path unit tests. Add integration only when an external seam is in scope. |
-| `Core` | Behavior/E2E (happy path + variations) + unit tests for main logic + integration tests for DB/API/external seams. |
-| `Complete` | Behavior/E2E (full coverage + edge cases) + unit + integration + security tests/scans. |
+| `production` | Behavior/E2E (full coverage + edge cases) + unit + integration + security tests/scans. |
+| `experimental` | Behavior/E2E (1 happy path) + smoke tests + critical-path unit tests. Add integration only when an external seam is in scope. Never ship as-is. |
 
-**Quality baseline applies to every appetite:** build/test/lint/typecheck always run when available, and a11y checks run whenever UI files exist. Appetite changes exploration breadth, not whether quality gates exist.
+**Baseline applies at every setting:** build/test/lint/typecheck always run when available, and a11y checks run whenever UI files exist. Quality changes breadth, not whether gates exist.
 
 Then determine the product context:
 
@@ -62,12 +61,12 @@ Then determine the product context:
 
 | Context | Description | Testing Approach |
 |---------|-------------|-----------------|
-| **Greenfield** | New product, no existing code | TDD-first, appetite-specific coverage targets, clean slate |
+| **Greenfield** | New product, no existing code | TDD-first, quality-specific coverage targets, clean slate |
 | **Brownfield** | Existing product with features | TDD for critical paths, test-after for existing code, regression focus |
 | **Hybrid** | Adding features to existing product | Separate new from existing, protect invariants |
 
 **Based on context from setup or the spec-product file:**
-- `greenfield`: TDD recommendation, appetite-specific coverage targets
+- `greenfield`: TDD recommendation, quality-specific coverage targets
 - `brownfield`: TDD for critical paths only, test-after + regression for existing code
 - `hybrid`: Add `test-regression` scopes for existing functionality
 
@@ -86,15 +85,15 @@ Input:
   ├── User provided a description of the project?
   │   └→ Extract: language, product type, risk level
   └── No structured input?
-      └→ Default: product_type=software, appetite=Core, context=brownfield
+      └→ Default: product_type=software, quality=production, context=brownfield
 ```
 
-**Graceful degradation:** The skill works standalone. If `product_type` or `appetite` cannot be determined from frontmatter, sensible defaults are used (`product_type=software`, `appetite=Core`, `context=brownfield`). Every step documents its assumptions and flags them in the output.
+**Graceful degradation:** The skill works standalone. If `product_type` or `quality` cannot be determined from frontmatter, sensible defaults are used (`product_type=software`, `quality=production`, `context=brownfield`). Every step documents its assumptions and flags them in the output.
 
 ## Input
 
 From Tech Planning context (or standalone):
-- `spec-product*.md` (frontmatter with product_type, appetite)
+- `spec-product*.md` (frontmatter with product_type, quality)
 - `spec-tech.md` (scopes to add test-* types, if available)
 - Tech stack detection from project files
 
@@ -245,10 +244,10 @@ criteria:
 
 ### Example 1: Strategy for a critical scope
 
-**Input:** "Payment retry scope, appetite Core, Go stack."
+**Input:** "Payment retry scope, quality production, Go stack."
 
 **Steps:**
-1. Read appetite (Core) and classify the scope (critical).
+1. Read quality (production) and classify the scope (critical).
 2. Emit `test-unit` (happy path + negative cases, TDD), `test-integration` (payment seam, test-after), `test-security` (SAST gate).
 
 **Output:** testing-strategy.md rows for the scope, plus BLOCK gates on missing critical tests and security findings.

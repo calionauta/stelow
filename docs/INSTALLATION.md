@@ -8,7 +8,7 @@ cd stelow
 ./install.sh
 ```
 
-`./install.sh` flattens all 30 skills into `~/.agents/skills/` and prunes
+`./install.sh` flattens all 32 skills into `~/.agents/skills/` and prunes
 retired or orphaned skills. That is everything — there is no extension, plugin,
 or host registration step; any agent that reads `~/.agents/skills/<name>/SKILL.md`
 (agentskills.io standard) picks the skills up automatically.
@@ -31,7 +31,7 @@ see the README's Path A).
 
 ```
 stelow/          ← Source
-└── skills/                     ← 30 portable skills (15 product + 15 workflow)
+└── skills/                     ← 32 portable skills (15 product + 17 workflow)
     ├── stelow-workflow-entry/                   ← entry point (STELOW_WORKFLOW=1)
     ├── stelow-workflow-router/                  ← advance / load next stage
     ├── stelow-workflow-orchestrator/    ← orchestrator + stages.yaml
@@ -44,7 +44,7 @@ stelow/          ← Source
 └── ... (all skills)
 ```
 
-The 17-stage model, data flow, and state layout are documented in
+The 18-stage model, data flow, and state layout are documented in
 [architecture.md](architecture.md) and the README [📋 Skills](../README.md#-skills) section.
 
 ---

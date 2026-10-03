@@ -12,7 +12,7 @@ tasks:
   output: interfaces/alternatives.json
   output_schema: schemas/interface-alternatives.json
   human_boundary: none
-  when: appetite_supports_fanout
+  when: exploration_supports_fanout
   failure_policy: fail
   requirements:
   - fanout

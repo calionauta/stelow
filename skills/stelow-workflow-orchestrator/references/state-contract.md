@@ -37,7 +37,11 @@ intent: feature          # new-product | feature | bugfix | refactor | investiga
 current_stage: shape     # single string, always one of the stage names below
 status: active           # active | paused | archived | completed
 config:
-  appetite: Core          # Lean | Core | Complete
+  quality: production   # production | experimental
+  supervisor: high      # low | med | high
+  exploration_count: 3  # 1-5
+  exploration_hybrid: true
+  appetite: Core          # DEPRECATED alias, mapped once, then rewritten
   review_mode: "Auto"     # Auto | "Product Spec Gate" | "Product Spec + Interface + Scopes" | "Product Spec + Interface + Tech Review + Code Diff"
   product_type: software  # software | docs | infra | data | research
 stages:

@@ -61,13 +61,12 @@ If skipped, log: `context/alignment-skipped.md` with reason.
 | **Product Spec + Interface + Tech Review** | Segue | **Ask user** with detailed tech impact. | **Ask user** with detailed tech impact. |
 | **Product Spec + Interface + Tech Review + Code Diff** | Segue | **Ask user** with detailed tech impact. | **Ask user** with detailed tech impact. |
 
-**Appetite affects check depth:**
+**Quality affects check depth:**
 
-| Appetite | Check depth |
+| Quality | Check depth |
 |----------|------------|
-| **Lean** | Quick: only check if any IN scope is technically impossible. |
-| **Core** | Standard: compare IN/OUT scopes vs feasibility. Check NFR constraints. |
-| **Complete** | Deep: check each scope's ACs vs codebase reality. Include performance, security, dependencies. |
+| **experimental** | Quick: only check if any IN scope is technically impossible. Probes only. |
+| **production** | Deep: check each scope's ACs vs codebase reality. Include performance, security, dependencies. |
 
 **If `product_needs_update` or `blocking` and Review Mode >= Product Spec + Interface Gates:**
 

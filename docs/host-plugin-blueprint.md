@@ -533,7 +533,7 @@ so any host can reuse it and test it).
 ## 5. Skills sync recipe
 
 This is the HOWTO that [HOSTING.md](../HOSTING.md) ("vendor them, sync
-them") omits. All 28 `skills/stelow-*` directories (workflow AND product)
+them") omits. All 30 `skills/stelow-*` directories (workflow AND product)
 plus `scripts/stelow`, `data/stelow`, `data/product-strategies.json`:
 
 1. `GET` the repo git tree (`.../git/trees/main?recursive=1`); **refuse

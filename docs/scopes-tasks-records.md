@@ -10,7 +10,7 @@ close. Without a record, the ✅ is unearned.
 | **Task** | Scope executor; planned tasks seed from the spec table, discovered tasks append with a `note:` trigger | Mutable (`pending` → `done` / `skipped`) | `wf.scopes[i].tasks[]` |
 | **Record** | Scope executor at scope close | Frozen after close | `wf.scopes[i].record` + `iteration-state-{SCOPE-ID}.md` |
 
-Appetite ceilings: Lean ≤2 scopes, Core ≤5, Complete ~10. Records are an
+Scope ceiling: 9 scopes maximum, discovered by mapping, never a target. Records are an
 advisory convention by default — execution-critique flags completed scopes
 without a verified record, but nothing blocks. `STELOW_VALIDATE=1` enables
 runtime validation (record and task validators run before the tracking

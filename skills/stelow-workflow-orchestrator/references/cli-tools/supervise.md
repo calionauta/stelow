@@ -82,34 +82,35 @@ out).
 
 ---
 
-## Appetite-Based Activation
+## Supervisor-Knob Activation
 
-The supervisor is not always necessary. Appetite (declared by human in setup)
-determines whether and how aggressively to supervise:
+The supervisor is not always necessary. The supervisor knob (declared by human
+in setup: `low` / `med` / `high`) determines how aggressively to supervise.
+A legacy `appetite:` line maps to `high` for every legacy value.
 
-| Appetite | Supervisor | Sensitivity | Rationale |
-|----------|-----------|-------------|-----------|
-| `Lean` | **Activate** | `low` | Even small scopes can drift over multiple turns. Low sensitivity catches clear deviations without false-positive noise. |
-| `Core` | **Activate** | `medium` | Standard feature scope. Medium sensitivity balances steering vs autonomy. |
-| `Complete` | **Activate** | `high` | High-risk, multi-scope work. High sensitivity ensures drift is caught early. |
+| Supervisor | Sensitivity | Rationale |
+|----------|-------------|-----------|
+| `low` | `low` | Trivial, easily reversible work. Low sensitivity catches clear deviations without false-positive noise. |
+| `med` | `medium` | Standard balance of steering vs autonomy. |
+| `high` | `high` | Default. Drift is caught early. |
 
-### Approach by appetite
+### Approach by supervisor setting
 
-| Appetite | Recommended approach | Frequency |
+| Supervisor | Recommended approach | Frequency |
 |----------|---------------------|-----------|
-| `Lean` | Headless CLI checkpoint | Every 10 tool calls |
-| `Core` | Headless checkpoint or harness-native supervision | Every 5-7 tool calls |
-| `Complete` | Harness-native supervision or checkpoint | Every 3 tool calls |
+| `low` | Headless CLI checkpoint | Every 10 tool calls |
+| `med` | Headless checkpoint or harness-native supervision | Every 5-7 tool calls |
+| `high` | Harness-native supervision or checkpoint | Every 3 tool calls |
 
 ### Skip conditions
 
-| Appetite | Review Mode | Supervisor decision |
+| Supervisor | Review Mode | Supervisor decision |
 |----------|-------------|-------------------|
-| `Lean` | any | **Skip** unless explicitly requested |
-| `Core` | `Auto` / `Product Spec Gate` | **Skip** unless risk is high |
-| `Core` | `Product Spec + Interface Gates` / above | Run when risk is high |
-| `Complete` | `Auto` / `Product Spec Gate` | **Run** if code changed |
-| `Complete` | `Product Spec + Interface Gates` / above | **Mandatory** |
+| `low` | any | **Skip** unless explicitly requested |
+| `med` | `Auto` / `Product Spec Gate` | **Skip** unless risk is high |
+| `med` | `Product Spec + Interface Gates` / above | Run when risk is high |
+| `high` | `Auto` / `Product Spec Gate` | **Run** if code changed |
+| `high` | `Product Spec + Interface Gates` / above | **Mandatory** |
 
 ---
 
@@ -120,7 +121,7 @@ Supervision re-submits visual review, causing loops.
 
 Activate ONLY when STARTING each scope in Execution.
 
-Respect the Appetite-Based Activation table above for sensitivity and skip decisions.
+Respect the Supervisor-Knob Activation table above for sensitivity and skip decisions.
 
 ---
 

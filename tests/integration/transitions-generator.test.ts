@@ -45,7 +45,7 @@ describe("transitions generator gate", () => {
 
   it("every stages.yaml stage has a ### section in transitions.md and the template", () => {
     const stages = yamlStageNames();
-    expect(stages.length).toBe(17);
+    expect(stages.length).toBe(18);
     const outputSections = mdSectionHeaders(OUTPUT);
     const templateSections = mdSectionHeaders(TEMPLATE);
     for (const stage of stages) {

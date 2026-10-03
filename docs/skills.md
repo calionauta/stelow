@@ -1,22 +1,24 @@
 # Skills
 
-30 skills, flat in `skills/`, installed into `~/.agents/skills/`: 15 that
+32 skills, flat in `skills/`, installed into `~/.agents/skills/`: 17 that
 run the workflow (`stelow-workflow-*`, the machinery) + 15 consulted as
 knowledge while doing it (`stelow-product-*`, reference only — none
 executes a stage). Every skill is self-contained and invokable standalone,
 independent of the orchestrator.
 
-## Workflow (15)
+## Workflow (17)
 
 | Skill | Purpose |
 |---|---|
-| `stelow-workflow-orchestrator` | Coordinates the 17-stage pipeline |
+| `stelow-workflow-orchestrator` | Coordinates the 18-stage pipeline |
 | `stelow-workflow-entry` | Entry point: classifies intent, scaffolds state, picks the first stage |
 | `stelow-workflow-router` | Reads state, validates hand-offs, advances stages |
-| `stelow-workflow-shape-up` | Shape Up planning + appetite-gated codebase recon (Tech Preview) |
+| `stelow-workflow-shape-up` | Shape Up planning + breadth-gated codebase recon (Tech Preview) |
 | `stelow-workflow-plan-critique` | Adversarial plan review (gaps, risks, assumptions, feasibility) |
-| `stelow-workflow-interface-alternatives` | 1/3/5 interface archetypes by appetite + hybrid |
+| `stelow-workflow-interface-alternatives` | 1–5 interaction directions by exploration breadth + hybrid |
 | `stelow-workflow-interface-contrast` | Reaction-first contrast with a recorded disposition |
+| `stelow-workflow-architecture-alternatives` | 2–5 construction directions by exploration breadth + hybrid |
+| `stelow-workflow-architecture-contrast` | Invariants-first contrast with a recorded disposition |
 | `stelow-workflow-tech-planning` | Typed scope generation + Alignment Check |
 | `stelow-workflow-scope-executor` | Acceptance-contract scope execution with self-correction |
 | `stelow-workflow-execution-critique` | Post-execution audit (FIXED / DOCUMENTED / ESCALATED gaps) |

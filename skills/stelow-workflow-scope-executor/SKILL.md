@@ -47,7 +47,7 @@ The plan must contain scopes with type annotations:
 
 If the plan has the optional **"Execution routing"** section (from stelow), use it directly. Otherwise, infer routing from `[TYPE]` tags.
 
-**Standalone awareness:** when inside stelow, reads appetite from `.stelow/*/plans/spec-product*.md` and checks review_mode from `stelow.json#workflows[].config.review_mode`. When standalone, defaults to Core appetite + Product Spec + Interface + Scopes review mode. Scans current directory for `spec-tech*.md` files. The `[TYPE]` routing works identically in both modes — no stelow dependency for scope execution logic.
+**Standalone awareness:** when inside stelow, reads run knobs from `.stelow/*/plans/spec-product*.md` and checks review_mode from `stelow.json#workflows[].config.review_mode`. When standalone, defaults to production quality + Product Spec + Interface + Scopes review mode. Scans current directory for `spec-tech*.md` files. The `[TYPE]` routing works identically in both modes — no stelow dependency for scope execution logic.
 
 ---
 
@@ -124,8 +124,8 @@ Before executing, present a clear execution plan to the user with the resolved e
 ```
 📋 Execution Plan for: {plan-name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Appetite: {Lean|Core|Complete} (human-set)
-Appetite Fit: {fits|cuts_needed|reshape} (LLM-set)
+Quality: {production|experimental} (human-set)
+Scope Fit: {fits|cuts_needed|reshape} (LLM-set)
 Phase 1 (parallel):
   ⏩ [SCOPE-1] Login — feature → worker
   ⏩ [SCOPE-3] Vector DB eval — spike → scout + researcher
@@ -136,18 +136,18 @@ Phase 2 (after SCOPE-1):
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-**Human-in-loop check for Complete appetite:**
+**Human-in-loop check for production quality at tech-review modes:**
 
 ```bash
-# Try precise path first, then fallback to glob. Cross-check with Workflow.config.appetite
+# Try precise path first, then fallback to glob. Cross-check with Workflow.config.quality
 # (canonical source via helper) so the warning matches the active workflow, not stale specs.
-APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/*/*/plans/spec-product_*.md 2>/dev/null || echo "Core")
+QUALITY=$(grep -oP '^quality:\s*\K\S+' .stelow/*/*/plans/spec-product_*.md 2>/dev/null || echo "production")
 # shellcheck disable=SC1091
 source "$(dirname "${BASH_SOURCE[0]:-$0}")/../../stelow-workflow-orchestrator/references/cli-tools/read-config.sh" 2>/dev/null || true
-WF_APPETITE=$(stelow_read_appetite 2>/dev/null || true)
-[ -n "$WF_APPETITE" ] && APPETITE="$WF_APPETITE"
-if [ "$APPETITE" = "Complete" ]; then
-  echo "⚠️ COMPREHENSIVE APPETITE: Human-in-loop mode may be needed for architectural changes."
+WF_QUALITY=$(stelow_read_quality 2>/dev/null || true)
+[ -n "$WF_QUALITY" ] && QUALITY="$WF_QUALITY"
+if [ "$QUALITY" = "production" ]; then
+  echo "⚠️ PRODUCTION QUALITY: Human-in-loop mode may be needed for architectural changes."
   echo "Check the workflow's review_mode setting in stelow.json#workflows[].config.review_mode."
   echo "In Product Spec + Interface + Tech Review mode, each PR/fork-point requires human approval before merge."
 ```
@@ -227,9 +227,9 @@ Parse the integer value into `wf.scopes[i].lock_ttl_seconds: number` (optional).
 
 Convention is **advisory** — no enforcement at the tracking layer. The file-reservation lock protocol (see `../stelow-workflow-orchestrator/references/cli-tools/file-locking.md` in `stelow-workflow-orchestrator`) uses these declared paths at scope-execution time. If undeclared, the post-execution `actual_files ∩ declared` diff in Step 8 still flags undeclared writes.
 
-### Step 2d: Complete Human-in-loop execution mode
+### Step 2d: Production human-in-loop execution mode
 
-If appetite is `Complete`, **modify execution flow** for each scope:
+When quality is `production` at tech-review modes, **modify execution flow** for each scope:
 
 1. LLM implements changes in a working branch
 2. LLM **pauses** and presents the diff to the human

@@ -87,19 +87,47 @@ PY
 }
 
 status_text() {
-  local name intent stage status appetite review_mode
+  local name intent stage status quality supervisor exploration_count exploration_hybrid review_mode
   name=$(yaml_get name "$STATE" 2>/dev/null || echo "?")
   intent=$(yaml_get intent "$STATE" 2>/dev/null || echo "?")
   stage=$(yaml_get current_stage "$STATE" 2>/dev/null || echo "?")
   status=$(yaml_get status "$STATE" 2>/dev/null || echo "?")
-  appetite=$(yaml_get appetite "$STATE" 2>/dev/null || echo "?")
+  quality=$(yaml_get quality "$STATE" 2>/dev/null || true)
+  supervisor=$(yaml_get supervisor "$STATE" 2>/dev/null || true)
+  exploration_count=$(yaml_get exploration_count "$STATE" 2>/dev/null || true)
+  exploration_hybrid=$(yaml_get exploration_hybrid "$STATE" 2>/dev/null || true)
+  if [ -z "$quality$supervisor$exploration_count" ]; then
+    if [ ! -f "$STATE" ]; then
+      quality="?"
+      supervisor="?"
+      exploration_count="?"
+      exploration_hybrid="?"
+    else
+      # Deprecated alias: any legacy appetite resolves to production/high, breadth 2/3/5.
+      legacy_appetite=$(yaml_get appetite "$STATE" 2>/dev/null || true)
+      legacy_note=""
+      [ -n "$legacy_appetite" ] && legacy_note=" (legacy appetite $legacy_appetite)"
+      [ -z "$quality" ] && quality="production$legacy_note"
+      [ -z "$supervisor" ] && supervisor="high"
+    fi
+    if [ -z "$exploration_count" ]; then
+      case "$legacy_appetite" in
+        Lean) exploration_count="2" ;;
+        Complete) exploration_count="5" ;;
+        *) exploration_count="3" ;;
+      esac
+    fi
+    [ -z "$exploration_hybrid" ] && exploration_hybrid="true"
+  fi
   review_mode=$(yaml_get review_mode "$STATE" 2>/dev/null || echo "?")
   cat <<EOF
 workflow : $name
 intent   : $intent
 stage    : $stage
 status   : $status
-appetite : $appetite
+quality  : $quality
+supervisor : $supervisor
+explore  : count=$exploration_count hybrid=$exploration_hybrid
 review   : $review_mode
 lock     : $(lock_state)
 EOF
@@ -136,7 +164,7 @@ if os.path.exists(state):
     for k in ("name", "intent", "current_stage", "status"):
         out[k.replace("name", "workflow") if k == "name" else k] = get_top(blob, k)
     cfg = {}
-    for k in ("appetite", "review_mode", "product_type"):
+    for k in ("quality", "supervisor", "exploration_count", "exploration_hybrid", "appetite", "review_mode", "product_type"):
         v = get_nested(blob, "config", k)
         if v is not None: cfg[k] = v
     out["config"] = cfg
@@ -284,9 +312,18 @@ do_advance() {
   # Mode-skipped passthroughs: when a gate/stage does not exist in the active
   # review mode, its successor becomes a legal target directly — otherwise the
   # worker deadlocks (refused AT the gate by the block below, rejected PAST it
-  # here). Unknown/missing review_mode (or appetite) skips enforcement.
+  # here). Unknown/missing review_mode (or knobs) skips enforcement.
   review_mode=$(yaml_get review_mode "$STATE" 2>/dev/null || true)
-  appetite=$(yaml_get appetite "$STATE" 2>/dev/null || true)
+  exploration_count=$(yaml_get exploration_count "$STATE" 2>/dev/null || true)
+  legacy_appetite=$(yaml_get appetite "$STATE" 2>/dev/null || true)
+  if [ -z "$exploration_count" ]; then
+    case "$legacy_appetite" in
+      Lean) exploration_count="2" ;;
+      Complete) exploration_count="5" ;;
+      Core|"") exploration_count="3" ;;
+      *) exploration_count="3" ;;
+    esac
+  fi
   if [ -n "$review_mode" ]; then
     case "$current" in
       planning)
@@ -302,7 +339,11 @@ do_advance() {
         esac
         ;;
       setup)
-        if [ "$appetite" = "Lean" ] && [ "$review_mode" = "Auto" ]; then allowed=$(printf "%s\nshape" "$allowed"); fi
+        has_knobs=$(yaml_get quality "$STATE" 2>/dev/null || true)
+        trivial=0
+        [ "$exploration_count" = "1" ] && trivial=1
+        { [ -z "$has_knobs" ] && [ "$legacy_appetite" = "Lean" ]; } && trivial=1
+        if [ "$trivial" = "1" ] && [ "$review_mode" = "Auto" ]; then allowed=$(printf "%s\nshape" "$allowed"); fi
         ;;
     esac
   fi
@@ -601,12 +642,17 @@ PY
 # scaffolded state.md plus a stelow.json tracking entry. Prints the state
 # dir so callers export STELOW_STATEDIR for follow-up commands.
 do_seed() {
-  local name="" intent="" appetite="Core" review_mode="Auto" json=""
+  local name="" intent="" quality="" supervisor="" exploration_count="" exploration_hybrid="" legacy_appetite="" review_mode="Auto" json=""
   while [ $# -gt 0 ]; do
     case "$1" in
       --name) name="${2:-}"; shift 2 ;;
       --intent) intent="${2:-}"; shift 2 ;;
-      --appetite) appetite="${2:-}"; shift 2 ;;
+      --quality) quality="${2:-}"; shift 2 ;;
+      --supervisor) supervisor="${2:-}"; shift 2 ;;
+      --exploration-count) exploration_count="${2:-}"; shift 2 ;;
+      --exploration-hybrid) exploration_hybrid="${2:-}"; shift 2 ;;
+      --no-hybrid) exploration_hybrid="false"; shift ;;
+      --appetite) legacy_appetite="${2:-}"; shift 2 ;;
       --review-mode) review_mode="${2:-}"; shift 2 ;;
       --json) json="1"; shift ;;
       *) usage_error "seed: unknown arg '$1' (try --help)" ;;    esac
@@ -616,14 +662,50 @@ do_seed() {
     new-product|feature|bugfix|refactor|investigate) ;;
     *) usage_error "seed requires --intent <new-product|feature|bugfix|refactor|investigate>" ;;
   esac
-  case "$appetite" in
-    Lean|Core|Complete) ;;
-    *) usage_error "seed: --appetite must be Lean|Core|Complete" ;;
+  # Deprecated alias: --appetite maps once (any value → production/high; breadth 2/3/5).
+  if [ -n "$legacy_appetite" ]; then
+    case "$legacy_appetite" in
+      Lean|Core|Complete) ;;
+      *) usage_error "seed: --appetite must be Lean|Core|Complete" ;;
+    esac
+    [ -z "$quality" ] && quality="production"
+    [ -z "$supervisor" ] && supervisor="high"
+    if [ -z "$exploration_count" ]; then
+      case "$legacy_appetite" in
+        Lean) exploration_count="2" ;;
+        Complete) exploration_count="5" ;;
+        *) exploration_count="3" ;;
+      esac
+    fi
+    echo "seed: --appetite is deprecated; mapped $legacy_appetite to quality/supervisor/exploration knobs." >&2
+  fi
+  [ -z "$quality" ] && quality="production"
+  [ -z "$supervisor" ] && supervisor="high"
+  [ -z "$exploration_count" ] && exploration_count="3"
+  [ -z "$exploration_hybrid" ] && exploration_hybrid="true"
+  case "$quality" in
+    production|experimental) ;;
+    *) usage_error "seed: --quality must be production|experimental" ;;
   esac
+  case "$supervisor" in
+    low|med|high) ;;
+    *) usage_error "seed: --supervisor must be low|med|high" ;;
+  esac
+  case "$exploration_count" in
+    1|2|3|4|5) ;;
+    *) usage_error "seed: --exploration-count must be 1|2|3|4|5" ;;
+  esac
+  case "$exploration_hybrid" in
+    true|false) ;;
+    *) usage_error "seed: --exploration-hybrid must be true|false" ;;
+  esac
+  if [ "$exploration_count" = "1" ] && [ "$exploration_hybrid" = "true" ]; then
+    exploration_hybrid="false"
+  fi
   [ -n "$review_mode" ] || usage_error "seed: --review-mode must be non-empty"
-  python3 - "$ROOT" "$STATEDIR" "$TRANSITIONS" "$name" "$intent" "$appetite" "$review_mode" "$json" <<'PY' || die "seed failed"
+  python3 - "$ROOT" "$STATEDIR" "$TRANSITIONS" "$name" "$intent" "$quality" "$supervisor" "$exploration_count" "$exploration_hybrid" "$review_mode" "$json" <<'PY' || die "seed failed"
 import sys, os, re, json, secrets, datetime
-root, statedir, trans_path, name, intent, appetite, review_mode, want_json = sys.argv[1:9]
+root, statedir, trans_path, name, intent, quality, supervisor, exploration_count, exploration_hybrid, review_mode, want_json = sys.argv[1:12]
 if not os.path.exists(trans_path):
     print(f"seed: transitions reference not found at {trans_path}", file=sys.stderr); sys.exit(1)
 text = open(trans_path).read()
@@ -639,7 +721,11 @@ dirhash = "sw-%s-%s" % (secrets.token_hex(3), secrets.token_hex(3))
 statedir = os.path.join(statedir, date, dirhash)
 os.makedirs(statedir, exist_ok=True)
 fm = ["---", f"name: {name}", f"intent: {intent}", f"current_stage: {first}",
-      "status: active", "config:", f"  appetite: {appetite}",
+      "status: active", "config:", f"  quality: {quality}",
+      f"  supervisor: {supervisor}", f"  exploration_count: {exploration_count}",
+      f"  exploration_hybrid: {exploration_hybrid}"]
+alias_for = {"1": "Lean", "2": "Lean", "3": "Core", "4": "Complete", "5": "Complete"}.get(exploration_count, "Core")
+fm += ["  appetite: " + alias_for + "  # DEPRECATED alias, knobs above are canonical",
       f"  review_mode: {review_mode}", "  product_type: software", "stages:"]
 fm += [f"  {s}: pending" for s in stages]
 fm += ["artifacts: []", "history: []", "---", "", f"# {name}", ""]
@@ -652,9 +738,15 @@ if os.path.exists(tracking_path):
     except Exception: tracking = {}
 if not isinstance(tracking.get("workflows"), list):
     tracking["workflows"] = []
+alias_for_entry = {"1": "Lean", "2": "Lean", "3": "Core", "4": "Complete", "5": "Complete"}.get(exploration_count, "Core")
 entry = {"name": name, "description": "", "status": "in-progress", "cwd": root,
          "dirHash": dirhash, "created": now, "updated": now,
-         "config": {"appetite": appetite, "review_mode": review_mode},
+         "config": {"quality": quality, "supervisor": supervisor,
+                    "exploration_count": exploration_count,
+                    "exploration_hybrid": exploration_hybrid,
+                    # DEPRECATED alias for old hosts; knobs above are canonical.
+                    "appetite": alias_for_entry,
+                    "review_mode": review_mode},
          "stage": {"current_stage": first, "previous_stage": None,
                    "transitioned_at": now,
                    "history": [{"stage": first, "entered_at": now}]},
@@ -714,8 +806,8 @@ commands = {
     "output": "text lines or {findings: [{severity, class, message}], ok}",
   },
   "seed": {
-    "usage": "stelow seed --name <n> --intent <i> [--appetite Lean|Core|Complete] [--review-mode M] [--json]",
-    "flags": ["--name", "--intent", "--appetite", "--review-mode", "--json"],
+    "usage": "stelow seed --name <n> --intent <i> [--quality production|experimental] [--supervisor low|med|high] [--exploration-count 1-5] [--exploration-hybrid true|false | --no-hybrid] [--review-mode M] [--json]",
+    "flags": ["--name", "--intent", "--quality", "--supervisor", "--exploration-count", "--exploration-hybrid", "--no-hybrid", "--appetite", "--review-mode", "--json"],
     "env": ["STELOW_STATEDIR"],
     "exit_codes": {"0": "seeded (prints state path)", "1": "seed failed", "2": "usage"},
     "output": "state path or {state, statedir, dirHash, created} with --json",
@@ -1601,7 +1693,7 @@ except Exception:
 # THIS workflow's entry first: by immutable owner id, then by the state dir the
 # host pointed at. "First in-progress" is the standalone fallback only — with
 # several workflows in flight in one project it hands back whichever entry
-# happens to come first, i.e. another workflow's appetite and review gates.
+# happens to come first, i.e. another workflow's knobs and review gates.
 owner_id = state_owner_id(state_path)
 dir_hash = os.path.basename(statedir.rstrip("/"))
 workflow = next((w for w in workflows if owner_id and w.get("workflowId") == owner_id), None)
@@ -1802,7 +1894,7 @@ out = [
     "## Workflow", "",
     "| Field | Value |", "| --- | --- |",
     f"| Intent | {intent} |", f"| Current stage | {stage} |", f"| Status | {status} |",
-    f"| Appetite | {config.get('appetite', 'unknown')} |", f"| Review mode | {config.get('review_mode', 'unknown')} |",
+    f"| Quality | {config.get('quality', config.get('appetite', 'unknown'))} |", f"| Review mode | {config.get('review_mode', 'unknown')} |",
     "", "## Repository snapshot", "",
     "| Field | Value |", "| --- | --- |",
     f"| Git repository | `{snapshot['root']}` |",
@@ -1847,7 +1939,8 @@ Usage:
   $PROG status [--json]
   $PROG advance <candidate> [--dry-run] [--json]
   $PROG doctor [--json]
-  $PROG seed --name <n> --intent <i> [--appetite Lean|Core|Complete] [--review-mode M] [--json]
+  $PROG seed --name <n> --intent <i> [--quality production|experimental] [--supervisor low|med|high] [--exploration-count 1-5] [--exploration-hybrid true|false | --no-hybrid] [--review-mode M] [--json]
+  (--appetite Lean|Core|Complete still accepted as a deprecated alias)
   $PROG schema [command]
   $PROG ask --question <t> [--multiple] --option <label>... (repeat --question groups)
   $PROG sync-scopes [--name <workflow>] [--json]
