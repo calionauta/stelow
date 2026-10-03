@@ -11,6 +11,9 @@ advisory: `scripts/stelow advance` validates every move against
 
 Two human-declared dimensions control the whole pipeline: **Appetite** (how
 deep to prepare) and **Review Mode** (which gates and human waits run).
+These are the canonical names. Hosts may show friendlier labels — the bb
+board calls them *Planning depth* and *Pause for my review* — but state
+and docs always use the canonical terms (see HOSTING.md vocabulary).
 
 ## Appetite — a constraint, not an estimate
 
