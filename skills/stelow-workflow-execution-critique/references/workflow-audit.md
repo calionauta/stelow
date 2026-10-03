@@ -165,6 +165,9 @@ gaps:
                                  # least reliable axis an LLM can fill; cite evidence below instead.
     resolution: escalate         # fixed | documented | escalate
     scope_candidate: false       # true if this gap should become a new scope
+    expires: null                # documented debt only: YYYY-MM-DD + owner below.
+                                 # Settled until the date, open after it.
+    owner: null                  # who re-dates or re-scopes when it expires
     evidence:                    # optional — measurements behind the verdict, never prose claims.
                                  # Absent reads as "unmeasured", never as a failure.
       symbols: []                # changed symbols this gap touches
@@ -272,6 +275,14 @@ another unsupervised round.
 - Medium-impact items that need architectural consideration
 - Nice-to-haves that don't block delivery
 - Tech debt acknowledged for next iteration
+
+Every DOCUMENTED gap rides `expires: YYYY-MM-DD` with an `owner:`.
+Settled until the date, open after it: past-date debt rejoins the loop
+at `verify` (warning) and `done` (refusal) with three exits — fix it
+inline, re-scope it as escalated, or re-date it with an owner. Debt
+without a date is debt without an owner, which is how a registry
+becomes a rug. `expires` on any other resolution is ignored; only
+documented rows age.
 
 **What becomes a new scope (ESCALATED):**
 - Missing tests for critical logic
