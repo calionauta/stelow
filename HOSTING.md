@@ -8,7 +8,7 @@ layer on top (like [bb-plugin-stelow](https://github.com/calionauta/bb-plugin-st
 
 | Capability | Required? | Notes |
 |---|---|---|
-| Skill directories (`~/.agents/skills/<name>/SKILL.md`, agentskills.io) | ✅ | How workers load the 28 skills |
+| Skill directories (`~/.agents/skills/<name>/SKILL.md`, agentskills.io) | ✅ | How workers load the 30 skills |
 | Delegate/subagent capability (any tier: acceptance-native, isolated, headless, generic — see `skills/stelow-workflow-orchestrator/references/cli-tools/subagents.md`) | ✅ | At minimum the generic tier (same-session + files) |
 | Workflow activation (`STELOW_WORKFLOW=1` + `STELOW_STATE=<path>`) | ✅ | Recipes per harness: `references/host-levers.md` |
 | Scheduler / inbox surface | ❌ optional | Host-owned (background tasks, cron, autopilot). The bb plugin is the reference implementation |
@@ -59,7 +59,7 @@ the first one.
 
 ## Reference implementation
 
-`bb-plugin-stelow` vendors all 28 skills + `scripts/stelow` and auto-syncs
+`bb-plugin-stelow` vendors all 30 skills + `scripts/stelow` and auto-syncs
 them from this repo (see [host-plugin-blueprint](docs/host-plugin-blueprint.md),
 the build guide extracted from it: lifecycle, explicit completion, inbox,
 ask/answer protocol, host-served playbook, sync recipe, UI patterns). Its `workflow-contracts` test pins the shared

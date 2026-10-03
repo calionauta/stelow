@@ -8,7 +8,7 @@ cd stelow
 ./install.sh
 ```
 
-`./install.sh` flattens all 28 skills into `~/.agents/skills/` and prunes
+`./install.sh` flattens all 30 skills into `~/.agents/skills/` and prunes
 retired or orphaned skills. That is everything — there is no extension, plugin,
 or host registration step; any agent that reads `~/.agents/skills/<name>/SKILL.md`
 (agentskills.io standard) picks the skills up automatically.
@@ -31,7 +31,7 @@ see the README's Path A).
 
 ```
 stelow/          ← Source
-└── skills/                     ← 28 portable skills (14 product + 14 workflow)
+└── skills/                     ← 30 portable skills (15 product + 15 workflow)
     ├── stelow-workflow-entry/                   ← entry point (STELOW_WORKFLOW=1)
     ├── stelow-workflow-router/                  ← advance / load next stage
     ├── stelow-workflow-orchestrator/    ← orchestrator + stages.yaml
