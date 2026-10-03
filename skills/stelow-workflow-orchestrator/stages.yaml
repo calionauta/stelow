@@ -473,14 +473,14 @@ stages:
     # cites the selected architecture. No dedicated architecture gate stage.
     questions:
       - id: architecture-pick
-        gate: plan-gate
+        gate: tech
         kind: human-ask
         modes: ["Product Spec + Interface + Tech Review", "Product Spec + Interface + Tech Review + Code Diff"]
         exploration_min_count: 2
         evidence: per-option
         receipt: architecture/selected-architecture.md
       - id: architecture-pick-auto
-        gate: plan-gate
+        gate: tech
         kind: agent-receipt
         modes: [Auto, "Product Spec Gate", "Product Spec + Interface Gates", "Product Spec + Interface + Scopes"]
         receipt: architecture/selected-architecture.md

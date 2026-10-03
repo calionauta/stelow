@@ -895,7 +895,7 @@
       "questions": [
         {
           "id": "architecture-pick",
-          "gate": "plan-gate",
+          "gate": "tech",
           "kind": "human-ask",
           "modes": [
             "Product Spec + Interface + Tech Review",
@@ -907,7 +907,7 @@
         },
         {
           "id": "architecture-pick-auto",
-          "gate": "plan-gate",
+          "gate": "tech",
           "kind": "agent-receipt",
           "modes": [
             "Auto",
