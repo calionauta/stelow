@@ -1,7 +1,7 @@
 # RFC: Experimental Structured Parallel Scope Execution
 
 > **Status:** proposal, partially implemented in v0.65.0-alpha.
-> Complete appetite only.
+> Production quality + wide exploration only.
 >
 > Shipped in v0.65.0-alpha (PR #16): `blockedBy` cycle refusal at ingest
 > (`sync-scopes`), cymbal transitive-disjointness check before parallel
@@ -10,7 +10,7 @@
 > + host-reported `cost`). Still open (see §5 + issue #15): schema
 > worktree-binding fields, G4 hub-first sequencing, CLI in-flight fields,
 > host mechanics (per-scope workers, G6 attention cap), and measured
-> comparative data from real Complete workflows.
+> comparative data from real production-wide workflows.
 > **Question it settles:** does the CAID/Co-Coder pattern (manager + isolation +
 > test-gated merge) transfer from greenfield construction benchmarks to
 > brownfield stelow scopes — measured, not asserted.
@@ -31,17 +31,17 @@ It is a posture with three legs: (a) 1–5 scopes have a short critical path
 where worktree/merge overhead eats the gain; (b) legacy coupling makes
 cohesion partitioning unreliable in brownfield; (c) parallel completions
 multiply the human-review bottleneck stelow exists to protect. Legs (a) and
-partly (b) dissolve at Complete appetite (8–15 scopes). This RFC specifies the
+partly (b) dissolve at wide exploration (6–9 scopes). This RFC specifies the
 experiment that tests whether the posture should change there — and the
 measurement that decides it.
 
-Non-goals: replacing the sequential default; parallelizing Lean/Core;
+Non-goals: replacing the sequential default; parallelizing narrow exploration;
 self-organizing scopes (banned — manager-owned plan always); line-level
 merging (out of scope, per `scope-execution-strategy.md`).
 
 ## 2. Gates (all must pass; failure falls back to sequential)
 
-- **G1 — Appetite.** Complete only. Lean/Core keep the sequential default:
+- **G1 — Exploration breadth.** Wide exploration (count 4–5) + production quality only. Narrower runs keep the sequential default:
   overhead dominates short critical paths.
 - **G2 — Batch size.** ≥3 DAG-independent scopes in the batch. With 1–2
   independent scopes the sequential path wins on overhead alone.

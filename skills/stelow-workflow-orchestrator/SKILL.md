@@ -1,6 +1,6 @@
 ---
 name: stelow-workflow-orchestrator
-description: "[stelow] Complete product planning workflow: Shape Up -> Interface -> Tech Planning -> Product Critique -> visual review Gate. Includes 8 domain playbooks (Pricing, Trust, Ads, Health, etc)"
+description: "[stelow] Complete product planning workflow: Shape Up -> Interface -> Architecture -> Tech Planning -> Product Critique -> visual review Gate. Includes 8 domain playbooks (Pricing, Trust, Ads, Health, etc)"
 metadata:
   frequency: daily
   category: workflow
@@ -215,16 +215,17 @@ Do NOT use `/skill:` for internal subskills.
 |------|-------|-------------|---------|
 | `triage` | **Inbox Triage** | Extract items from the host's inbox surface (Stelow no longer mirrors `.stelow/inbox/`), suggest groups, user confirms/adjusts. | Auto (list detected) |
 | `select` | **Item Selection** | Show all candidates (individuals + groups), user picks one and routes remainders | After triage |
-| `setup` | **Project Setup** | Group context injection, appetite/review mode declaration, stages selection, safe-change | — |
-| `context` | **Strategic Context** (optional) | Strategic exploration + domain detection. See `context:5` (appetite/review mode gate), `context:10` (Strategic Approaches — 5 options), `context:20` (Domain Libraries — 8 libraries) | — |
-| `shape` | **Shape Up** | Create spec with problem/solution/scope. Includes `shape:12` — **Tech Preview** (appetite-gated cymbal recon for brownfield codebase understanding) | — |
+| `setup` | **Project Setup** | Group context injection, run-knob/quality/supervisor/exploration + review mode declaration, stages selection, safe-change | — |
+| `context` | **Strategic Context** (optional) | Strategic exploration + domain detection. See `context:5` (quality/review mode gate), `context:10` (Strategic Approaches — 5 options), `context:20` (Domain Libraries — 8 libraries) | — |
+| `shape` | **Shape Up** | Create spec with problem/solution/scope. Includes `shape:12` — **Tech Preview** (breadth-gated cymbal recon for brownfield codebase understanding) | — |
 | `critique` | **Product Critique** | Multi-dimensional critique (plan/codebase/site) | — |
 | `gate` | **Review Gate (visual review)** | Visual approval — **never skip** | — |
 | `scope` | **Scope Adjustment** | Add/remove from IN/OUT (ask) | — |
-| `interface` | **Interface Alternatives** | Appetite-scaled interface exploration: 1, 3, or 5 proposals + hybrid | — |
+| `interface` | **Interaction Alternatives** | Breadth-scaled interaction exploration: 1 to 5 proposals + hybrid (single by explicit choice only) | — |
 | `int-gate` | **Interface Gate (visual review)** | Visual review of all interfaces | — |
 | `selection` | **Interface Selection** | Human pick via ask with preview in Interface-Gates modes; LLM decides in `Auto` / `Product Spec Gate` (`references/human-gates.md`). Chosen interface saved to `selected-interface.md` | — |
-| `planning` | **Tech Planning** | Typed scopes + sequencing. Includes `planning:15` — **Alignment Check** (review mode-gated bidirectional feedback: spec-tech vs spec-product) | — |
+| `architecture` | **Architecture Alternatives + Choice** | Breadth-scaled construction exploration: 2 to 5 directions + hybrid, then human pick at tech-review modes (worker adopts below). Chosen architecture saved to `selected-architecture.md` | — |
+| `planning` | **Tech Planning** | Typed scopes + sequencing from the selected interface and architecture. Includes `planning:15` — **Alignment Check** (review mode-gated bidirectional feedback: spec-tech vs spec-product) | — |
 | `plan-gate` | **Tech Plan Gate (visual review)** | Visual review of spec-tech.md. Only in Tech Review / Code Diff modes | After planning |
 | `execution` | **Execution** | Goal/scope executor | — |
 | `verification` | **Verification** | Run full test suite, code review, UI audit, browser testing | After execution |
@@ -259,7 +260,7 @@ setup — Project Setup (reads group-context/manifest.json if a group was select
 context — Strategic Context (optional)
   ↓
 shape — Shape Up*
-  │  * shape:12 = Tech Preview (appetite-gated cymbal recon)
+  │  * shape:12 = Tech Preview (breadth-gated cymbal recon)
   ↓
 critique — Product Critique (pre-flight)
   ↓
@@ -272,6 +273,8 @@ interface — Interface Alternatives
 int-gate — visual review Gate (interfaces) ← visual pause
   ↓
 selection — Interface Selection (ask with preview)
+  ↓
+architecture — Architecture Alternatives + Choice (ask at tech-review modes, worker adopts below)
   ↓
 planning — Tech Planning*
   │  * planning:15 = Alignment Check (review mode-gated bidirectional feedback)

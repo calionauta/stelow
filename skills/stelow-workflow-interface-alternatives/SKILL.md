@@ -1,10 +1,10 @@
 ---
 name: stelow-workflow-interface-alternatives
 description: >
-  [stelow] Interface alternatives exploration skill. Use when generating interface
-  proposals using the 5-archetype library. Produces 1, 3, or 5 proposals depending
-  on appetite, plus hybrid recommendation for Core/Complete. Part of stelow but can
-  be used standalone.
+  [stelow] Interface alternatives exploration skill. Use when generating interaction
+  proposals using the 5-archetype library. Produces 1 to 5 proposals depending on
+  exploration breadth, plus hybrid recommendation whenever more than one proposal
+  exists. Part of stelow but can be used standalone.
 metadata:
   frequency: monthly
   category: workflow
@@ -35,53 +35,74 @@ The orchestrator reads this file directly when needed.
 ### Standalone
 This skill works standalone. Use the Input Detection section below to tell the skill what interface you want to brainstorm. Follow the instructions inline.
 
-**Standalone awareness:** when inside stelow, reads appetite from `.stelow/*/spec-product.md`. When standalone, defaults to Core appetite (3 interfaces + hybrid). If the spec-product.md is not in the expected path, pass it explicitly or let the LLM scan for `spec-product*.md` in the current directory.
+**Standalone awareness:** when inside stelow, reads exploration breadth from the workflow config (`exploration_count`, `exploration_hybrid`). When standalone, defaults to 3 interfaces + hybrid. If the spec-product.md is not in the expected path, pass it explicitly or let the LLM scan for `spec-product*.md` in the current directory.
 
 ## Process
 
-**Step 0: Read appetite from `spec-product.md` and choose interface exploration depth.**
+**Step 0: Read exploration breadth and choose interface exploration depth.**
 
-Appetite controls how many interface alternatives are explored. Quality is not cut; the number of explored alternatives is.
+Exploration breadth controls how many interface alternatives are explored. Quality is not cut; the number of explored alternatives is.
 
-| Appetite | Interface exploration |
-|----------|----------------------|
-| `Lean` | 1 suggested interface only. No alternative exploration. |
-| `Core` | 3 archetypes explored + 1 hybrid recommendation. |
-| `Complete` | 5 archetypes explored + 1 hybrid recommendation. |
+| Count | Interface exploration |
+|-------|----------------------|
+| `1` | 1 suggested interface only. No alternative exploration. Trivial changes by explicit choice only. |
+| `2` | 2 archetypes explored + 1 hybrid recommendation. |
+| `3` | 3 archetypes explored + 1 hybrid recommendation. |
+| `4` | 4 archetypes explored + 1 hybrid recommendation. |
+| `5` | 5 archetypes explored + 1 hybrid recommendation. |
 
 ```bash
 WF_DIR="$(ls -td .stelow/*/*/ 2>/dev/null | head -1)"
 # shellcheck disable=SC1091
 source "$(dirname "${BASH_SOURCE[0]:-$0}")/../../stelow-workflow-orchestrator/references/cli-tools/read-config.sh"
-APPETITE=$(stelow_read_appetite)
+INTERFACE_COUNT=$(stelow_read_exploration_count)
+HYBRID_SETTING=$(stelow_read_exploration_hybrid)
 # Fallback to spec-product.md frontmatter if no stelow/index
-if [ -z "$APPETITE" ]; then
-  APPETITE=$(grep -oP '^appetite:\s*\K\S+' $(ls -t .stelow/*/*/plans/spec-product*.md 2>/dev/null | head -1) 2>/dev/null || echo "Core")
+if [ -z "$INTERFACE_COUNT" ]; then
+  INTERFACE_COUNT=$(grep -oP '^exploration_count:\s*\K\S+' $(ls -t .stelow/*/*/plans/spec-product*.md 2>/dev/null | head -1) 2>/dev/null || echo "3")
+fi
+# Legacy appetite fallback (mapped once, then rewritten to knobs)
+LEGACY_APPETITE=$(grep -oP '^appetite:\s*\K\S+' $(ls -t .stelow/*/*/plans/spec-product*.md 2>/dev/null | head -1) 2>/dev/null || echo "")
+if [ -z "$INTERFACE_COUNT" ] && [ -n "$LEGACY_APPETITE" ]; then
+  case "$LEGACY_APPETITE" in
+    Lean) INTERFACE_COUNT=1 ;;
+    Complete) INTERFACE_COUNT=5 ;;
+    *) INTERFACE_COUNT=3 ;;
+  esac
 fi
 
-case "$APPETITE" in
-  Lean)
-    INTERFACE_COUNT=1
+case "$INTERFACE_COUNT" in
+  1)
     ARCHETYPES="A" # Choose the archetype that best fits the work pattern.
     HYBRID="skip"
     ;;
-  Core)
-    INTERFACE_COUNT=3
+  2)
+    ARCHETYPES="A,D" # Safe baseline + simplicity; replace one with B/C/E if better justified.
+    HYBRID="yes"
+    ;;
+  3)
     ARCHETYPES="A,D,E" # Safe baseline + simplicity + expert flow; replace one with B/C if better justified.
     HYBRID="yes"
     ;;
-  Complete)
-    INTERFACE_COUNT=5
+  4)
+    ARCHETYPES="A,B,D,E" # Add the paradigm shift; replace one with C if better justified.
+    HYBRID="yes"
+    ;;
+  5)
     ARCHETYPES="A,B,C,D,E"
     HYBRID="yes"
     ;;
   *)
-    echo "APPETITE_UNKNOWN: '$APPETITE'. Defaulting to Core interface exploration."
+    echo "EXPLORATION_UNKNOWN: '$INTERFACE_COUNT'. Defaulting to 3 interfaces + hybrid."
     INTERFACE_COUNT=3
     ARCHETYPES="A,D,E"
     HYBRID="yes"
     ;;
 esac
+# Explicit hybrid-off override (advanced): a host may set exploration.hybrid=false.
+if [ "$HYBRID_SETTING" = "false" ]; then
+  HYBRID="skip"
+fi
 ```
 
 **Step 1:** Read the `references/` files to guide the process:
@@ -96,7 +117,7 @@ esac
 
 ## Generate Proposals (Step 1-2)
 
-Use the subagents tool (see `../stelow-workflow-orchestrator/references/cli-tools/subagents.md`) to generate the appetite-selected proposals in parallel. For `Lean`, run one worker only. For `Core`, run 3 workers. For `Complete`, run 5 workers.
+Use the subagents tool (see `../stelow-workflow-orchestrator/references/cli-tools/subagents.md`) to generate the breadth-selected proposals in parallel. Run one worker per selected archetype (`$INTERFACE_COUNT` workers).
 
 ```
 $INTERFACE_COUNT parallel workers (fresh context, explicit reads):
@@ -107,13 +128,13 @@ $INTERFACE_COUNT parallel workers (fresh context, explicit reads):
   2. references/interface-rules.md — Smell Self-Audit (mandatory Section 6)
   3. references/interface-rules.md — State Coverage Baseline (mandatory Section 7)
   4. references/output-format.md — full output format with all 8 sections
-  5. spec-product.md — body + frontmatter (`appetite`, `review_mode`, `domains_detected`)
+  5. spec-product.md — body + frontmatter (`quality`, `supervisor`, `exploration_count`, `exploration_hybrid`, `review_mode`, `domains_detected`)
   6. tech-recon.md — tech constraints (if it exists)
 
-  For `Core` and `Complete`: also read
+  For counts 2-5: also read
   `../stelow-workflow-orchestrator/references/cli-tools/ui-design-research.md`
   and ground each proposal's layout in at least one real reference exemplar.
-  `Lean` spends no reference calls. If no reference is reachable, say the
+  Count `1` spends no reference calls. If no reference is reachable, say the
   proposal rests on the archetype library alone — never invent one.
 
 Each worker MUST receive `reads: [spec-product.md, tech-recon.md]` (or `references/interface-*.md` when running standalone).
@@ -132,7 +153,7 @@ Each outputs to .stelow/{date}/{dir}/interfaces/proposal-{letter}.md
 ## Generate Hybrid (Step 3 — AFTER proposals complete)
 
 
-**CRITICAL:** Hybrid is generated only when `$HYBRID = yes` (Core or Complete appetite) and **AFTER** all selected proposals are complete to avoid bias.
+**CRITICAL:** Hybrid is generated only when `$HYBRID = yes` (count 2 or more) and **AFTER** all selected proposals are complete to avoid bias.
 
 Use the subagents tool (see `../stelow-workflow-orchestrator/references/cli-tools/subagents.md`) to merge:
 
@@ -168,7 +189,7 @@ Wait for the decision. If `approved`, the tool auto-creates the receipt. Then ad
 
 Then use **Pattern 2** from `../stelow-workflow-orchestrator/stages/ask-patterns.md` (mechanism: `../stelow-workflow-orchestrator/references/cli-tools/ask.md`) to let the user pick one proposal — **but only when the review mode requires a human pick**. Check `review_mode` first (see `../stelow-workflow-orchestrator/references/human-gates.md`):
 
-- `Auto` / `Product Spec Gate` → **LLM decides.** Adopt the hybrid recommendation (or the single proposal for Lean appetite) as the choice: extract it to `selected-interface.md` per the section below with `selected_by: llm (review_mode=<mode>)` noted, and advance. Do NOT park waiting for a human pick — a wait with no mode mandate is a stuck workflow.
+- `Auto` / `Product Spec Gate` → **LLM decides.** Adopt the hybrid recommendation (or the single proposal for count 1) as the choice: extract it to `selected-interface.md` per the section below with `selected_by: llm (review_mode=<mode>)` noted, and advance. Do NOT park waiting for a human pick — a wait with no mode mandate is a stuck workflow.
 - `Product Spec + Interface Gates` and above → **user chooses.** Execute the Pattern 2 ask (`../stelow-workflow-orchestrator/stages/ask-patterns.md`).
 
 Do NOT just describe what comes next — execute the mandated path.
@@ -216,7 +237,7 @@ The chosen interface (after user selection) is saved to:
 ```
 
 Completeness contract (the host validates these minima — never submit fewer,
-per proposal; proposal count follows appetite):
+per proposal; proposal count follows exploration breadth):
 all 8 numbered sections per `references/output-format.md` (Work Pattern,
 Philosophy, Breadboarding, ASCII sketch, Interaction Flow, Trade-Off,
 Smell Audit, State Coverage Table); at least 800 words.
@@ -253,7 +274,7 @@ Should NOT activate: "implement the chosen direction" (execution).
 
 ## Edge Cases
 
-### Appetite allows one proposal only
+### Breadth allows one proposal only
 - Generate exactly 1 proposal; skip the hybrid (nothing to combine).
 
 ### No existing UI to review
@@ -280,7 +301,7 @@ Input:
          existing UI patterns, brand guidelines)."
 ```
 
-Then follow the appetite-selected archetype generation process above.
+Then follow the breadth-selected archetype generation process above.
 
 ## Environment Adaptation
 
@@ -308,7 +329,7 @@ In **workflow mode**, skip to `### Workflow slice` and emit a complete
 
 ```
 stage          : interface
-description    : Interface alternatives. Appetite-scaled exploration: 1, 3, or 5 proposals + hybrid.
+description    : Interaction alternatives. Breadth-scaled exploration: 1 to 5 proposals + hybrid (single by explicit choice only).
 status         : <done|partial|blocked>
 artifacts      : <paths created or modified>
 next-candidate : int-gate
@@ -325,7 +346,7 @@ router skill consumes the next-candidate field and calls
 Workflow mode for the **interface** stage. Standalone behavior lives in
 the rest of this file (unchanged). Summary:
 
-> Interface alternatives. Appetite-scaled exploration: 1, 3, or 5 proposals + hybrid.
+> Interaction alternatives. Breadth-scaled exploration: 1 to 5 proposals + hybrid.
 
 Primary actions (per stages.yaml): `read, write`. Run only the actions that
 produce the artifacts promised in `## Hand-off`; skip anything that does

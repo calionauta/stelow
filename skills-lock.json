@@ -2,7 +2,7 @@
   "version": 2,
   "scopes": {
     "workflow": {
-      "description": "Core skills that execute the 17-stage stelow workflow. Auto-vendored and auto-refreshed into the bb-plugin-stelow plugin (bb.background.schedule fetch of this repo). Standalone-installable on non-bb hosts.",
+      "description": "Core skills that execute the 18-stage stelow workflow. Auto-vendored and auto-refreshed into the bb-plugin-stelow plugin (bb.background.schedule fetch of this repo). Standalone-installable on non-bb hosts.",
       "install": "npx skills add calionauta/stelow -g",
       "skills": [
         "stelow-workflow-entry",

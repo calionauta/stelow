@@ -16,7 +16,7 @@ Goose, and other Agent Skills-compatible hosts.
 ## Architecture
 
 See [architecture.md](architecture.md) for module layout, data flow, and how to
-extend. The 17-stage state machine is defined in
+extend. The 18-stage state machine is defined in
 `skills/stelow-workflow-orchestrator/stages.yaml` (single source of truth);
 `skills/stelow-workflow-orchestrator/references/transitions.md` is the
 data-only mirror that `scripts/stelow advance` and the router validate against

@@ -4,8 +4,10 @@
  * Regression guard for the spec-product.md frontmatter contract.
  *
  * spec-product.md is the SINGLE SOURCE OF TRUTH for product-level config
- * (`appetite`, `review_mode`, `domains_detected`, `product_type`,
- * `appetite_fit`, `interface`). Every downstream subagent reads these
+ * (`quality`, `supervisor`, `exploration_count`, `exploration_hybrid`,
+ * `review_mode`, `domains_detected`, `product_type`,
+ * `appetite_fit`, `interface`). A legacy `appetite` line is accepted once
+ * and mapped to knobs. Every downstream subagent reads these
  * via `reads: [spec-product.md]` instead of inheriting from parent history.
  *
  * This test enforces:
@@ -45,8 +47,8 @@ function read(path: string): string {
 describe('shape-up validation guard', () => {
   const shapeUp = read(SHAPE_UP_SKILL);
 
-  it('checks for `appetite:` field', () => {
-    expect(shapeUp).toMatch(/grep -q "appetite:" "\$SPEC"/);
+  it('checks for `quality:` field (legacy `appetite:` accepted)', () => {
+    expect(shapeUp).toMatch(/\(quality\|appetite\)/);
   });
 
   it('checks for `review_mode:` field', () => {
@@ -73,16 +75,16 @@ describe('proposal-structure.md frontmatter template', () => {
     expect(template).toMatch(/product_type:\s*\{/);
   });
 
-  it('includes `appetite` in the frontmatter template', () => {
-    expect(template).toMatch(/appetite:\s*\{/);
+  it('includes `quality` in the frontmatter template', () => {
+    expect(template).toMatch(/quality:\s*\{/);
   });
 
   it('includes `appetite_fit` in the frontmatter template', () => {
     expect(template).toMatch(/appetite_fit:\s*\{/);
   });
 
-  it('includes `appetite_source` in the frontmatter template', () => {
-    expect(template).toMatch(/appetite_source:/);
+  it('keeps a deprecated `appetite` alias in the frontmatter template', () => {
+    expect(template).toMatch(/appetite:.*DEPRECATED/);
   });
 });
 
@@ -94,8 +96,10 @@ describe('proposal-structure.md frontmatter template', () => {
 describe('setup.md frontmatter injection', () => {
   const setup = read(SETUP_MD);
 
-  it('writes appetite to stelow.json#workflows[].config.appetite (canonical)', () => {
-    expect(setup).toMatch(/appetite:\s*'\{chosen_appetite\}'/);
+  it('writes quality/supervisor/exploration to stelow.json#workflows[].config (canonical)', () => {
+    expect(setup).toMatch(/quality:\s*'\{chosen_quality\}'/);
+    expect(setup).toMatch(/supervisor:\s*'\{chosen_supervisor\}'/);
+    expect(setup).toMatch(/exploration_count:\s*'\{chosen_count\}'/);
   });
 
   it('writes review_mode to stelow.json#workflows[].config.review_mode (canonical)', () => {
@@ -106,8 +110,8 @@ describe('setup.md frontmatter injection', () => {
     expect(setup).toMatch(/domains_detected:\s*\[\]/);
   });
 
-  it('instructs spec-product.md frontmatter to include appetite', () => {
-    expect(setup).toMatch(/appetite:\s*\{chosen_appetite\}/);
+  it('instructs spec-product.md frontmatter to include quality', () => {
+    expect(setup).toMatch(/quality:\s*\{chosen_quality\}/);
   });
 
   it('instructs spec-product.md frontmatter to include review_mode', () => {
@@ -122,12 +126,12 @@ describe('setup.md frontmatter injection', () => {
 describe('ask-patterns.md storage contract', () => {
   const patterns = read(ASK_PATTERNS);
 
-  it('documents storage of appetite in stelow.json (canonical) AND spec frontmatter', () => {
-    expect(patterns).toMatch(/workflows\[\]\.config\.appetite|stelow\.json.*config\.appetite/);
+  it('documents storage of knobs in stelow.json (canonical) AND spec frontmatter', () => {
+    expect(patterns).toMatch(/workflows\[\]\.config\.(quality|supervisor|exploration)/);
     expect(patterns).toMatch(/spec-product\.md.*frontmatter/);
   });
 
-  it('documents storage of review_mode alongside appetite (same pattern)', () => {
+  it('documents storage of review_mode alongside knobs (same pattern)', () => {
     expect(patterns).toMatch(/workflows\[\]\.config\.review_mode|stelow\.json.*config\.review_mode/);
   });
 });

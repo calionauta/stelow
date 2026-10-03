@@ -1,16 +1,16 @@
-id: interface-alternatives
+id: architecture-alternatives
 version: 1
-description: Explore interface alternatives and a synthesized hybrid recommendation.
-skill: stelow-workflow-interface-alternatives
+description: Compare construction directions and a synthesized hybrid recommendation.
+skill: stelow-workflow-architecture-alternatives
 mode: orchestrated
 write_policy: artifact
 permission_profile: inherit
 tasks:
 - id: alternatives
-  skill: stelow-workflow-interface-alternatives
+  skill: stelow-workflow-architecture-alternatives
   depends_on: []
-  output: interfaces/alternatives.json
-  output_schema: schemas/interface-alternatives.json
+  output: architecture/alternatives.json
+  output_schema: schemas/architecture-alternatives.json
   human_boundary: none
   when: exploration_supports_fanout
   failure_policy: fail
@@ -21,10 +21,10 @@ tasks:
 - id: alternatives-verify
   depends_on:
   - alternatives
-  output: interfaces/alternatives-verification.json
-  output_schema: schemas/interface-alternatives.json
+  output: architecture/alternatives-verification.json
+  output_schema: schemas/architecture-alternatives.json
   human_boundary: none
-  skill: stelow-workflow-interface-alternatives
+  skill: stelow-workflow-architecture-alternatives
   when: always
   failure_policy: fail
   requirements:
@@ -33,10 +33,10 @@ tasks:
 - id: alternatives-hybrid
   depends_on:
   - alternatives-verify
-  output: interfaces/interfaces.md
+  output: architecture/architecture.md
   output_schema: schemas/markdown.json
   human_boundary: none
-  skill: stelow-workflow-interface-alternatives
+  skill: stelow-workflow-architecture-alternatives
   when: always
   failure_policy: fail
   requirements:

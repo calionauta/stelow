@@ -100,6 +100,7 @@ function writeStageArtifacts(stage: string, statedir: string): void {
     interface: ["interfaces/interfaces.md", "interfaces/contrast.json"],
     "int-gate": ["interfaces/int-gate.md"],
     selection: ["interfaces/selected-interface.md"],
+    architecture: ["architecture/selected-architecture.md"],
     execution: ["plans/spec-tech_v1.md"],
   };
   const relatives = paths[stage];
@@ -136,6 +137,7 @@ describe("host lifecycle e2e", () => {
       { stage: "interface" },
       { stage: "int-gate", receipt: "int-gate-approved.md" },
       { stage: "selection" },
+      { stage: "architecture" },
       { stage: "planning" },
       // plan-gate is skipped in Auto review mode: refused, advance direct.
       { stage: "execution" },
@@ -158,7 +160,7 @@ describe("host lifecycle e2e", () => {
     expect(seed.status).toBe(0);
     const other = JSON.parse(seed.stdout).statedir as string;
     const e2 = { STELOW_STATEDIR: other };
-    for (const s of ["context", "shape", "critique", "gate", "scope", "interface", "int-gate", "selection", "planning"]) {
+    for (const s of ["context", "shape", "critique", "gate", "scope", "interface", "int-gate", "selection", "architecture", "planning"]) {
       writeStageArtifacts(s, other);
       const r = run(ctx.helper, ["advance", s], ctx.dir, e2);
       expect(r.status, `advance ${s}`).toBe(0);

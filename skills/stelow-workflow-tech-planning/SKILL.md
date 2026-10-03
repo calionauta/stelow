@@ -70,7 +70,7 @@ Read the `references/` files to guide the process:
 
 | Layer | Owned by | Lifetime | Purpose |
 |---|---|---|---|
-| **Scope** | `stelow-workflow-tech-planning` (this skill) | Workflow lifetime (stelow.json) | Atomic delivery unit. Appetite ceiling: Lean ≤2, Core ≤5, Complete ~10. Cannot be created during execution — must be planned. |
+| **Scope** | `stelow-workflow-tech-planning` (this skill) | Workflow lifetime (stelow.json) | Atomic delivery unit. Scope ceiling: 9 maximum, discovered by mapping (never a target). Cannot be created during execution — must be planned. |
 | **Task** | `stelow-workflow-scope-executor` Step 3e-ter (runtime) | Scope lifetime (`wf.scopes[i].tasks`) | Sub-item checklist inside a scope. Seeds from spec-tech.md table; can be added during execution as `source: 'discovered'`. |
 
 **At planning time (this skill):**
@@ -196,13 +196,12 @@ Compare tech plan against product spec; resolve misalignment per `review_mode`
    and produce the testing-strategy.md artifact directly in the current context.
    Do NOT skip — the testing strategy gates are required for execution.
 
-2. **Add test-* scopes to spec-tech.md based on appetite:**
+2. **Add test-* scopes to spec-tech.md based on quality:**
 
-| Appetite | Add test scopes |
+| Quality | Add test scopes |
 |----------|----------------|
-| `Lean` | `test-behavior` (1 E2E test for happy path); `test-unit` for critical business logic; optional `test-integration` only when an external seam is in IN scope; `test-security` only for auth/payment/data in IN scope. |
-| `Core` | `test-behavior` (E2E for happy path + key variations); `test-unit` for main logic; `test-integration` for DB/API/external services; `test-security` for sensitive paths. |
-| `Complete` | `test-behavior` (full E2E coverage + edge cases); `test-unit`, `test-integration`, `test-security`. |
+| `production` | `test-behavior` (full E2E coverage + edge cases); `test-unit`, `test-integration`, `test-security`. |
+| `experimental` | `test-behavior` (1 E2E test for happy path); `test-unit` for critical business logic; optional `test-integration` only when an external seam is in IN scope; `test-security` only for auth/payment/data in IN scope. Never ship as-is. |
 
 **Note on TDD:** Research shows TDD alone is insufficient for AI-generated code.
 - Use TDD for critical business logic (isolated, deterministic)

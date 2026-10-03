@@ -61,6 +61,26 @@ intent: feature
 current_stage: ${current_stage}
 status: active
 config:
+  quality: production
+  supervisor: high
+  exploration_count: 3
+  exploration_hybrid: true
+  review_mode: Auto
+  product_type: software
+stages:
+  ${current_stage}: in-progress
+---
+# t
+`);
+}
+
+function makeLegacyState(wd: Workdir, current_stage: string): void {
+  writeFileSync(join(wd.dir, "state.md"), `---
+name: t
+intent: feature
+current_stage: ${current_stage}
+status: active
+config:
   appetite: Core
   review_mode: Auto
   product_type: software
@@ -109,8 +129,19 @@ describe("status", () => {
     expect(r.status).toBe(0);
     expect(r.stdout).toContain("workflow : t");
     expect(r.stdout).toContain("stage    : shape");
-    expect(r.stdout).toContain("appetite : Core");
+    expect(r.stdout).toContain("quality  : production");
+    expect(r.stdout).toContain("supervisor : high");
+    expect(r.stdout).toContain("explore  : count=3 hybrid=true");
     expect(r.stdout).toContain("review   : Auto");
+  });
+
+  it("maps a legacy appetite-only state to knobs with an announced mapping", () => {
+    makeLegacyState(wd, "shape");
+    const r = run(wd, ["status"]);
+    expect(r.status).toBe(0);
+    expect(r.stdout).toContain("quality  : production (legacy appetite Core)");
+    expect(r.stdout).toContain("supervisor : high");
+    expect(r.stdout).toContain("explore  : count=3 hybrid=true");
   });
 
   it("status --json is parseable JSON with current_stage + config", () => {
@@ -119,7 +150,7 @@ describe("status", () => {
     expect(r.status).toBe(0);
     const j = JSON.parse(r.stdout);
     expect(j.current_stage).toBe("shape");
-    expect(j.config.appetite).toBe("Core");
+    expect(j.config.quality).toBe("production");
     expect(j.config.review_mode).toBe("Auto");
   });
 });

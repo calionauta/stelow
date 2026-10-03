@@ -151,6 +151,20 @@ rework:    (none)
 gate:      (none)
 ```
 
+### architecture
+
+```
+{{TRANSITIONS:architecture:next}}
+{{TRANSITIONS:architecture:accept}}
+{{TRANSITIONS:architecture:reject}}
+{{ARTIFACTS:architecture}}
+rework:    (none)
+gate:      (none)
+```
+
+The architecture pick is reviewed again at plan-gate through the tech plan
+that cites the selected architecture. No dedicated architecture gate stage.
+
 ### planning
 
 ```
@@ -234,7 +248,7 @@ gate:      (none)
 
 | Stage | review_mode | Blocked? | Gate rule |
 |---|---|---|---|
-| context | all | see `context:5` | `context:5` is canonical: it decides skip, reduced ask, or full ask from appetite and intent. |
+| context | all | see `context:5` | `context:5` is canonical: it decides skip, reduced ask, or full ask from quality and intent. |
 | gate | all | block | `requires_approval: true`, `visual_review` required |
 | int-gate | all | block | `requires_approval: true`, `visual_review` required |
 | plan-gate | Auto | skip | skipped |
@@ -262,6 +276,7 @@ transition. The stage catalog declares these per stage:
 | critique | `critiques/critique-report.md` |
 | interface | `interfaces/*.md` |
 | selection | `interfaces/selected-interface.md` |
+| architecture | `architecture/selected-architecture.md` |
 | planning | `plans/spec-tech*.md` |
 
 Execution scopes and verification evidence remain runtime projections; their
@@ -274,12 +289,12 @@ from a missing file glob.
 
 Minimal pipelines (no stage skipped without a gate rule):
 
-**new-product:** triage → select → setup → context → shape → critique → gate → scope → interface → int-gate → selection → planning → plan-gate → execution → verification → diff-gate → audit
+**new-product:** triage → select → setup → context → shape → critique → gate → scope → interface → int-gate → selection → architecture → planning → plan-gate → execution → verification → diff-gate → audit
 
-**feature:** triage → select → setup → context → shape → critique → gate → scope → interface → int-gate → selection → planning → plan-gate → execution → verification → diff-gate → audit
+**feature:** triage → select → setup → context → shape → critique → gate → scope → interface → int-gate → selection → architecture → planning → plan-gate → execution → verification → diff-gate → audit
 
 **bugfix:** triage → select → setup → context → shape → critique → gate → execution → verification → audit
-*(interface/int-gate/selection/planning/plan-gate/diff-gate skipped unless review_mode adds them)*
+*(interface/int-gate/selection/architecture/planning/plan-gate/diff-gate skipped unless review_mode adds them)*
 
 **refactor:** triage → select → setup → context → planning → plan-gate → execution → verification → audit
 

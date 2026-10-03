@@ -2,6 +2,512 @@
   "version": 1,
   "recipes": [
     {
+      "id": "architecture-alternatives",
+      "version": 1,
+      "description": "Compare construction directions and a synthesized hybrid recommendation.",
+      "skill": "stelow-workflow-architecture-alternatives",
+      "mode": "orchestrated",
+      "write_policy": "artifact",
+      "permission_profile": "inherit",
+      "tasks": [
+        {
+          "id": "alternatives",
+          "skill": "stelow-workflow-architecture-alternatives",
+          "depends_on": [],
+          "output": "architecture/alternatives.json",
+          "output_schema": "schemas/architecture-alternatives.json",
+          "human_boundary": "none",
+          "when": "exploration_supports_fanout",
+          "failure_policy": "fail",
+          "requirements": [
+            "fanout",
+            "pipeline",
+            "structured-output"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "alternatives",
+              "tradeoffs",
+              "verdict"
+            ],
+            "properties": {
+              "alternatives": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "summary",
+                    "states"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "summary": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "states": {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "tradeoffs": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "alternativeId",
+                    "benefit",
+                    "cost"
+                  ],
+                  "properties": {
+                    "alternativeId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "benefit": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "cost": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "verdict": {
+                "enum": [
+                  "ready",
+                  "needs-revision"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "id": "alternatives-verify",
+          "depends_on": [
+            "alternatives"
+          ],
+          "output": "architecture/alternatives-verification.json",
+          "output_schema": "schemas/architecture-alternatives.json",
+          "human_boundary": "none",
+          "skill": "stelow-workflow-architecture-alternatives",
+          "when": "always",
+          "failure_policy": "fail",
+          "requirements": [
+            "pipeline",
+            "structured-output"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "alternatives",
+              "tradeoffs",
+              "verdict"
+            ],
+            "properties": {
+              "alternatives": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "summary",
+                    "states"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "summary": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "states": {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "tradeoffs": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "alternativeId",
+                    "benefit",
+                    "cost"
+                  ],
+                  "properties": {
+                    "alternativeId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "benefit": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "cost": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "verdict": {
+                "enum": [
+                  "ready",
+                  "needs-revision"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "id": "alternatives-hybrid",
+          "depends_on": [
+            "alternatives-verify"
+          ],
+          "output": "architecture/architecture.md",
+          "output_schema": "schemas/markdown.json",
+          "human_boundary": "none",
+          "skill": "stelow-workflow-architecture-alternatives",
+          "when": "always",
+          "failure_policy": "fail",
+          "requirements": [
+            "pipeline",
+            "structured-output"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "content"
+            ],
+            "properties": {
+              "content": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      ],
+      "partition": "none",
+      "fallback": {
+        "mode": "sequential",
+        "preserves": [
+          "artifact"
+        ]
+      }
+    },
+    {
+      "id": "architecture-contrast",
+      "version": 1,
+      "description": "Run the invariants-first Architecture Contrast decision loop with structured receipts.",
+      "skill": "stelow-workflow-architecture-contrast",
+      "mode": "orchestrated",
+      "write_policy": "artifact",
+      "permission_profile": "inherit",
+      "tasks": [
+        {
+          "id": "contrast",
+          "skill": "stelow-workflow-architecture-contrast",
+          "depends_on": [],
+          "output": "architecture/contrast.json",
+          "output_schema": "schemas/architecture-contrast.json",
+          "human_boundary": "coordinator",
+          "when": "always",
+          "failure_policy": "fail",
+          "requirements": [
+            "pipeline",
+            "structured-output"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "title": "Stelow Architecture Contrast Receipt",
+            "type": "object",
+            "required": [
+              "schemaVersion",
+              "receiptId",
+              "route",
+              "briefStatus",
+              "authority",
+              "disposition",
+              "shapeVersion",
+              "fixedConstraints",
+              "criteria",
+              "evidence",
+              "options",
+              "nextAction"
+            ],
+            "properties": {
+              "schemaVersion": {
+                "type": "number",
+                "const": 1
+              },
+              "receiptId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "route": {
+                "enum": [
+                  "architecture-refinement",
+                  "shape-contrast",
+                  "research-needed",
+                  "single-direction",
+                  "stop-and-name-decision",
+                  "human-or-shape-stop",
+                  "repair-focal-brief",
+                  "existing-architecture-no-comparison",
+                  "repair-brief"
+                ]
+              },
+              "briefStatus": {
+                "enum": [
+                  "generation-ready",
+                  "stop",
+                  "repair-brief",
+                  "no-comparison"
+                ]
+              },
+              "authority": {
+                "enum": [
+                  "agent",
+                  "human"
+                ]
+              },
+              "disposition": {
+                "enum": [
+                  "continue",
+                  "human-decision-required",
+                  "shape-required",
+                  "research-required",
+                  "repair-brief"
+                ]
+              },
+              "shapeVersion": {
+                "type": "string",
+                "minLength": 1
+              },
+              "scopeMapVersion": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "decisionQuestion": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "primaryDimension": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "jobImportance": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "fixedConstraints": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "name",
+                    "value",
+                    "source"
+                  ],
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    },
+                    "source": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "criteria": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "relatedDimensions": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "evidence": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "source",
+                    "reference",
+                    "claim"
+                  ],
+                  "properties": {
+                    "source": {
+                      "type": "string",
+                      "enum": [
+                        "fixture",
+                        "scenario",
+                        "simulation",
+                        "measured",
+                        "human"
+                      ]
+                    },
+                    "reference": {
+                      "type": "string"
+                    },
+                    "claim": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "options": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "primaryValue",
+                    "compatibility"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "primaryValue": {
+                      "type": "string"
+                    },
+                    "relatedValues": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "compatibility": {
+                      "const": "valid"
+                    }
+                  }
+                }
+              },
+              "invalidOptions": {
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              },
+              "missingInputs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "acceptedSacrifice": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "reshapeProof": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "nextAction": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "id": "readable",
+          "skill": "stelow-workflow-architecture-contrast",
+          "depends_on": [
+            "contrast"
+          ],
+          "output": "architecture/architecture.md",
+          "output_schema": "schemas/markdown.json",
+          "human_boundary": "none",
+          "when": "always",
+          "failure_policy": "fail",
+          "requirements": [
+            "pipeline",
+            "structured-output"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "content"
+            ],
+            "properties": {
+              "content": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      ],
+      "partition": "none",
+      "fallback": {
+        "mode": "sequential",
+        "preserves": [
+          "artifact"
+        ]
+      }
+    },
+    {
       "id": "codebase-critique",
       "version": 1,
       "description": "Review architecture, coupling, hotspots, and maintenance risk without changing the workspace.",
@@ -228,7 +734,7 @@
           "output": "interfaces/alternatives.json",
           "output_schema": "schemas/interface-alternatives.json",
           "human_boundary": "none",
-          "when": "appetite_supports_fanout",
+          "when": "exploration_supports_fanout",
           "failure_policy": "fail",
           "requirements": [
             "fanout",

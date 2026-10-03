@@ -11,7 +11,7 @@ decision** under each `review_mode` (frontmatter in `spec-product.md`,
 
 | Review Mode | Structured Questions to Human | Interface Selection Pick |
 |---|---|---|
-| `Auto` | None | **LLM decides** — adopt the hybrid recommendation (or the single proposal for Lean appetite) as `selected-interface.md`. Never park waiting for a human pick. |
+| `Auto` | None | **LLM decides** — adopt the hybrid recommendation (or the single proposal for count 1) as `selected-interface.md`. Never park waiting for a human pick. |
 | `Product Spec Gate` | None | **LLM decides** — same as Auto. |
 | `Product Spec + Interface Gates` | Interface selection | **User chooses** via structured ask with preview. |
 | `Product Spec + Interface + Scopes` | Interface selection + scope | **User chooses** via structured ask with preview. |

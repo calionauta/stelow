@@ -74,40 +74,49 @@ function corpus(): string {
 }
 
 // ═════════════════════════════════════════════════════════════════════
-// 1. APPETITE — PRODUCED + CONSUMED + CANONICAL SOURCE
+// 1. RUN KNOBS — PRODUCED + CONSUMED + CANONICAL SOURCE
+// (quality / supervisor / exploration; legacy appetite accepted once and mapped)
 // ═════════════════════════════════════════════════════════════════════
 
-describe('appetite field flow', () => {
+describe('run knobs field flow', () => {
   const body = corpus();
 
   it('is WRITTEN to stelow.json by setup.md (canonical source as of v0.50.0)', () => {
     const setupMd = read(join(SKILLS_DIR, 'stelow-workflow-orchestrator/stages/setup.md'));
-    expect(setupMd).toMatch(/appetite:\s*'\{chosen_appetite\}'/);
+    expect(setupMd).toMatch(/quality:\s*'\{chosen_quality\}'/);
+    expect(setupMd).toMatch(/supervisor:\s*'\{chosen_supervisor\}'/);
+    expect(setupMd).toMatch(/exploration_count:\s*'\{chosen_count\}'/);
   });
 
   it('is WRITTEN to spec-product.md frontmatter by setup.md', () => {
     const setupMd = read(join(SKILLS_DIR, 'stelow-workflow-orchestrator/stages/setup.md'));
-    expect(setupMd).toMatch(/^appetite:\s*\{chosen_appetite\}/m);
+    expect(setupMd).toMatch(/^quality:\s*\{chosen_quality\}/m);
   });
 
   it('is READ by shape-up validation guard', () => {
     const shapeUp = read(join(SKILLS_DIR, 'stelow-workflow-shape-up/SKILL.md'));
-    expect(shapeUp).toMatch(/grep -q "appetite:" "\$SPEC"/);
+    expect(shapeUp).toMatch(/quality/);
+    expect(shapeUp).toMatch(/LEGACY|legacy appetite/i);
   });
 
   it('is READ by interface-alternatives step 0', () => {
     const ia = read(join(SKILLS_DIR, 'stelow-workflow-interface-alternatives/SKILL.md'));
-    expect(ia).toMatch(/grep -oP.*\^appetite/);
+    expect(ia).toMatch(/stelow_read_exploration_count/);
   });
 
   it('is READ by verification stage', () => {
     const v = read(join(SKILLS_DIR, 'stelow-workflow-orchestrator/stages/verification.md'));
-    expect(v).toMatch(/grep -oP.*\^appetite/);
+    expect(v).toMatch(/grep -oP.*\^quality/);
   });
 
   it('is READ by execution stage', () => {
     const e = read(join(SKILLS_DIR, 'stelow-workflow-orchestrator/stages/execution.md'));
-    expect(e).toMatch(/grep -oP.*\^appetite/);
+    expect(e).toMatch(/grep -oP.*\^supervisor/);
+  });
+
+  it('keeps a deprecated appetite alias with a documented mapping', () => {
+    expect(body).toMatch(/DEPRECATED alias/);
+    expect(body).toMatch(/Lean.*production|production.*Lean/);
   });
 });
 
@@ -216,7 +225,9 @@ describe('No orphaned producer-only fields', () => {
     const fields = (configBlock![0].match(/(\w+):\s*['"[{]/g) ?? [])
       .map((s) => s.replace(/:\s*['"[{]/, '').trim());
 
-    expect(fields).toContain('appetite');
+    expect(fields).toContain('quality');
+    expect(fields).toContain('supervisor');
+    expect(fields).toContain('exploration_count');
     expect(fields).toContain('review_mode');
     expect(fields).toContain('domains_detected');
 

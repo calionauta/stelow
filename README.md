@@ -29,7 +29,7 @@ technical scopes ready for autonomous execution.
 The manual lives on the site, not in this file:
 **[https://calionauta.github.io/stelow/docs/](https://calionauta.github.io/stelow/docs/)**
 — overview, getting started (bb and skills-only paths), architecture,
-workflow (appetite × review mode, gates), scopes/tasks/records, CLI,
+workflow (run knobs × review mode, gates), scopes/tasks/records, CLI,
 skill inventory, plugin guides, FAQ, and status.
 
 ---
@@ -42,8 +42,8 @@ skill inventory, plugin guides, FAQ, and status.
    [bb](https://getbb.app) (free) and open it.
 2. Run `curl -fsSL https://calionauta.github.io/stelow/install.sh | bash`
    (or `bb plugin install stelow`, or the marketplace listing).
-3. Open **Stelow** in bb's navigation, pick a project, choose Appetite
-   (default Lean) and Review mode (default Auto), and describe the request.
+3. Open **Stelow** in bb's navigation, pick a project, choose run knobs
+   (quality, supervision, exploration) and Review mode (default Auto), and describe the request.
    Details: [docs/install-bb.md](docs/plugin/install-bb.md).
 
 **Path B — skills-only (any Agent Skills-compatible host):**
@@ -70,26 +70,28 @@ Full onboarding for both paths:
 
 ## 📋 Skills
 
-All 30 skills live flat in `skills/` and install into `~/.agents/skills/`: **15 workflow skills + 15 product skills**. `stelow-workflow-entry` and `stelow-workflow-router` are workflow control-plane skills (bootstrap + navigation).
+All 32 skills live flat in `skills/` and install into `~/.agents/skills/`: **17 workflow skills + 15 product skills**. `stelow-workflow-entry` and `stelow-workflow-router` are workflow control-plane skills (bootstrap + navigation).
 
 | Prefix | Count | Meaning | Distribution |
 |---|---|---|---|
-| `stelow-workflow-*` | 15 | Skills that run the 17-stage workflow: the orchestrator, the stage skills, and the execution/verification support they invoke | **Core** — auto-vendored into `bb-plugin-stelow` and auto-refreshed from this repo (no manual step) |
-| `stelow-product-*` | 15 | Product strategy and domain libraries consulted during stages (reference only, none execute stages) | **Vendored too** — `bb-plugin-stelow` ships all 30 and auto-refreshes them; standalone install via `npx skills`/`install.sh` unchanged |
-| Total | **15 workflow skills + 15 product skills = 30** | Entry and router are part of the workflow family | — |
+| `stelow-workflow-*` | 17 | Skills that run the 18-stage workflow: the orchestrator, the stage skills, and the execution/verification support they invoke | **Core** — auto-vendored into `bb-plugin-stelow` and auto-refreshed from this repo (no manual step) |
+| `stelow-product-*` | 15 | Product strategy and domain libraries consulted during stages (reference only, none execute stages) | **Vendored too** — `bb-plugin-stelow` ships all 32 and auto-refreshes them; standalone install via `npx skills`/`install.sh` unchanged |
+| Total | **17 workflow skills + 15 product skills = 32** | Entry and router are part of the workflow family | — |
 
-### 🏗️ Workflow (15)
+### 🏗️ Workflow (17)
 
 <details>
-<summary>15 workflow skills (machine-readable list — human inventory at <a href="https://calionauta.github.io/stelow/docs/skills/">docs/skills</a>)</summary>
+<summary>17 workflow skills (machine-readable list — human inventory at <a href="https://calionauta.github.io/stelow/docs/skills/">docs/skills</a>)</summary>
 
 | Skill | Purpose |
 |-------|---------|
-| `stelow-workflow-orchestrator` | Coordinates the multi-stage workflow (Setup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Plan.Gate → Execution → Verification → Diff.Gate → Audit) |
+| `stelow-workflow-orchestrator` | Coordinates the multi-stage workflow (Setup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Architecture → Planning → Plan.Gate → Execution → Verification → Diff.Gate → Audit) |
 | `stelow-workflow-entry` | Workflow entry point - classifies intent, scaffolds state, picks the first stage |
 | `stelow-workflow-router` | Workflow router - reads state, validates hand-offs, advances stages |
-| `stelow-workflow-shape-up` | Shape Up planning + **Tech Preview** (appetite-gated codebase recon via cymbal) — surfaces codebase reality before product decisions |
-| `stelow-workflow-interface-alternatives` | Interface alternatives exploration (1/3/5 archetypes by appetite) |
+| `stelow-workflow-shape-up` | Shape Up planning + **Tech Preview** (breadth-gated codebase recon via cymbal) — surfaces codebase reality before product decisions |
+| `stelow-workflow-interface-alternatives` | Interaction alternatives exploration (1–5 directions by exploration breadth + hybrid) |
+| `stelow-workflow-architecture-alternatives` | Architecture alternatives exploration (2–5 directions by exploration breadth + hybrid) |
+| `stelow-workflow-architecture-contrast` | Invariants-first architecture decision loop with selection receipt |
 | `stelow-workflow-plan-critique` | Product plan gap analysis (flows, states, affordances, data, system, compositional quality, feasibility); mode-dependent resolution |
 | `stelow-workflow-tech-planning` | Technical scope generation + **Alignment Check** (mode-gated bidirectional product↔tech feedback loop) |
 | `stelow-workflow-scope-executor` | Autonomous scope execution via acceptance contracts - child self-corrects (harness-dependent), parent evaluates final result |

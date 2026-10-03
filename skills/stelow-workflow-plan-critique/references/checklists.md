@@ -247,11 +247,11 @@ Verify the proposal is technically achievable.
 - [ ] Justification: "Scope A is more complex than Scope B because..."
 
 ### Scope Fit (appetite_fit):
-- [ ] Scope count matches declared appetite: Lean ≤ 2, Core ≤ 5, Complete ≤ 15
-- [ ] Spec depth matches appetite (spec size, edge case coverage)
-- [ ] Interface exploration depth matches appetite (1/3/5 proposals)
-- [ ] If appetite ≠ fits, specific cuts identified or reshape recommended
-- [ ] Appetite boundary is not extended — cuts are proposed instead
+- [ ] Scope count within the ceiling of 9 (discovered, never a target)
+- [ ] Exploration depth matches declared breadth (direction counts + hybrid)
+- [ ] Verification rigor matches declared quality (production full, experimental reduced and marked as probe)
+- [ ] If fit ≠ fits, specific cuts identified or reshape recommended
+- [ ] Knobs are not widened — cuts are proposed instead
 
 ---
 

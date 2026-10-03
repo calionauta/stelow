@@ -28,7 +28,7 @@ layer on top (like [bb-plugin-stelow](https://github.com/calionauta/bb-plugin-st
    dependencies (bash + python3). Scope parsing (`sync-scopes`) and file locks
    (`lock`) live here too — hosts must not maintain mirrors.
    Full CLI reference: `references/cli-tools/stelow-helper.md`.
-3. **Stage slugs + transitions** — the 17 stages in
+3. **Stage slugs + transitions** — the 18 stages in
    `skills/stelow-workflow-orchestrator/references/transitions.md`
    (generated from `stages.yaml` via `scripts/generate-transitions.py`).
    `scripts/stelow advance` enforces them; hosts must not hand-edit
@@ -89,5 +89,5 @@ the first one.
 them from this repo (see [host-plugin-blueprint](docs/host-plugin-blueprint.md),
 the build guide extracted from it: lifecycle, explicit completion, inbox,
 ask/answer protocol, host-served playbook, sync recipe, UI patterns). Its `workflow-contracts` test pins the shared
-surface (17 stages, board order, transitions) — the executable version of
+surface (18 stages, board order, transitions) — the executable version of
 this contract.
