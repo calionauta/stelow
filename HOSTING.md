@@ -16,7 +16,7 @@ layer on top (like [bb-plugin-stelow](https://github.com/calionauta/bb-plugin-st
 
 ## What a host consumes (the contract)
 
-1. **Skills content** — 14 `stelow-workflow-*` (delivery machinery) + 14
+1. **Skills content** — 15 `stelow-workflow-*` (delivery machinery) + 15
    `stelow-product-*` (reference playbooks). Vendor them, sync them from this
    repo's `main`, or install via `npx skills add calionauta/stelow -g`.
    Per-strategy output contracts live in `product-strategies.json`
@@ -42,6 +42,32 @@ layer on top (like [bb-plugin-stelow](https://github.com/calionauta/bb-plugin-st
    `edit`, `bash`, `grep`, `ls`, `agent_browser`). Skills never name
    host-native tools directly in prose; new harness vocabulary goes in the
    tool's `skills/stelow-workflow-orchestrator/references/cli-tools/<tool>.md`.
+
+## Vocabulary: core terms are normative, presentation is mapped
+
+Concept names and state spellings belong to the core and are **normative**.
+Visible strings belong to the host and **may differ per surface** (board,
+CLI, chat prompts) — but every host publishes the 1:1 mapping, and what
+gets written to state always uses the canonical spelling. Unifying visible
+strings across unknown future hosts is unenforceable; unifying state is
+not.
+
+| Concept | State fields (canonical) | Meaning (do not reframe) | bb label (reference mapping) |
+|---|---|---|---|
+| **Appetite** | `appetite: Lean\|Core\|Complete` (state frontmatter, `stelow.json`, `seed --appetite`) | Scope budget the scope is cut to fit — **never a time/effort estimate** | Planning depth |
+| **Review Mode** | `review_mode:` ladder rung + `review_gates:` atom list (state frontmatter) | Breadth of human oversight: which gates park for a decision | Pause for my review (+ rung presets) |
+
+Rules for hosts:
+
+1. State values use canonical spellings (`Lean`, rung names, gate atoms).
+   A surface that shows anything else maps back on write.
+2. Never present appetite as an estimate of time or effort — in any
+   language, on any surface. It is a budget declared before shaping.
+3. The six ladder rungs are the portable encoding of gate sets. Gate
+   combinations with no rung (e.g. interface-only) are expressible in
+   `review_gates:` but currently have **no core reader** — the core
+   enforces the ladder only. See the tracking issue for `review_gates`
+   promotion before relying on novel combinations portably.
 
 ## Adding a new host
 
