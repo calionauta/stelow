@@ -61,6 +61,10 @@ Then, in any compatible agent:
 /sw-status
 ```
 
+Advanced installer options (`--minimal`, `update`, `remove`,
+non-interactive CI, third-party skill registry, why Git-based
+distribution): [INSTALLATION.md](INSTALLATION.md).
+
 `/sw-*` commands are skill-provided and work on every compatible host —
 there is no host command registry. Setup asks for Appetite and Review mode
 explicitly; gates without a native review UI fall back to portable approval
