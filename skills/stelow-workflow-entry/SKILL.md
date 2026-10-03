@@ -67,7 +67,7 @@ cp "$git_root/assets/state-template.md" "$state_path"
 #   status: active
 #   config:
 #     appetite: <Lean | Core | Complete — derived from intent + scope>
-#     review_mode: <Auto | Product Spec Gate | Product Spec + Interface + Scopes | Product Spec + Interface + Tech Review + Code Diff>
+#     review_gates: [<comma-separated atoms: spec, interface, scope, tech, diff — empty means Auto>]
 #     product_type: <software | docs | infra | data | research>
 ```
 
