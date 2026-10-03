@@ -14,7 +14,7 @@ same workflow. Hosts only add an optional marker protocol
 | `skills/` | All workflow skills (LLM-facing content). One directory per skill, each self-contained: `SKILL.md` + `references/` + `references/cli-tools/` + optional `stages/` files. |
 | `skills/stelow-workflow-entry/` | Entry point. Classifies intent, scaffolds `state.md`, picks the first stage. Loaded when `STELOW_WORKFLOW=1`. Never runs stage logic. |
 | `skills/stelow-workflow-router/` | Router. Validates the next candidate against `transitions.md`, calls `scripts/stelow advance`, loads the next stage skill, appends the hand-off audit record. |
-| `skills/stelow-workflow-orchestrator/` | Orchestrator. Coordinates the 17-stage pipeline (Setup → Shape → Critique → Gate → Scope → Interface → Planning → Execution → Verification → Audit). |
+| `skills/stelow-workflow-orchestrator/` | Orchestrator. Coordinates the 18-stage pipeline (Setup → Shape → Critique → Gate → Scope → Interface → Selection → Architecture → Planning → Execution → Verification → Audit). |
 | `skills/stelow-product-<area>/` | Product strategy playbooks + domain tactics (15 total, reference-only). |
 | `scripts/stelow` | Portable helper (bash + python3): `status`, `advance`, `doctor`, `seed`, `schema`, `ask`. Single source of runtime mechanics. |
 | `skills/stelow-workflow-orchestrator/references/cli-tools/` | Single source for shared tool references. Sub-skills link it via sibling-relative paths (`../stelow-workflow-orchestrator/...`) — no copies, no sync step. |
@@ -25,7 +25,7 @@ same workflow. Hosts only add an optional marker protocol
 | `docs/design/`, `docs/agents-md-refs/` | Historical design docs / agent reference notes (EN artifacts, PT-BR discussion). |
 | `references/` | Canonical shared docs: `host-levers.md` (per-harness recipes) + `cli-tools/stelow-helper.md` (helper contract). Host integration contract: `HOSTING.md` (root). |
 
-## Stage model (the 17-stage state machine)
+## Stage model (the 18-stage state machine)
 
 - **Single source of truth:** `skills/stelow-workflow-orchestrator/stages.yaml`
   (tools per stage, transitions, gates, supervisor activation).
@@ -34,10 +34,10 @@ same workflow. Hosts only add an optional marker protocol
 - **Data-only mirror:** `skills/stelow-workflow-orchestrator/references/transitions.md`
   — generated from `stages.yaml`; this is the file `scripts/stelow advance` and
   the router validate against. Do not edit by hand; edit `stages.yaml` and regen.
-- The 17 stages: `triage` → `select` → `setup` → `context` → `shape` →
+- The 18 stages: `triage` → `select` → `setup` → `context` → `shape` →
   `critique` → `gate` → `scope` → `interface` → `int-gate` → `selection` →
-  `planning` → `plan-gate` → `execution` → `verification` → `diff-gate` →
-  `audit`.
+  `architecture` → `planning` → `plan-gate` → `execution` → `verification` →
+  `diff-gate` → `audit`.
 - Visual review gates (`gate`, `int-gate`, `plan-gate`, `diff-gate`) are
   conditional on `review_mode` — see `stages.yaml`.
 

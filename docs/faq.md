@@ -11,13 +11,13 @@ pings, and GitHub issue automation. Pick skills-only if you already live
 in another agent and are comfortable with slash commands and receipts on
 disk.
 
-**Who decides Appetite and Review Mode?**
-You do, once, at setup. The LLM never raises appetite and never skips a
-gate you asked for. `Lean + Auto` is the fastest path (~6 stages, no
-questions); `Complete + full review` runs all 17.
+**Who decides run knobs and Review Mode?**
+You do, once, at setup. The LLM never widens knobs and never skips a
+gate you asked for. `Experimental + Auto` is the fastest path (~6 stages, no
+questions); production quality with `full review` runs all 18.
 
 **Does the AI estimate the work?**
-No. Appetite is a constraint you declare ("how much is this worth?"); the
+No. Knobs are constraints you declare ("how much may this consider?"); the
 workflow only checks fit (`fits` / `cuts_needed` / `reshape`) and proposes
 cuts. There is no estimation step to be overconfident about.
 

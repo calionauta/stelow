@@ -14,7 +14,7 @@ autonomous execution.
 | Path | What you get | Start here |
 |---|---|---|
 | **A — bb + plugin** (recommended) | Visual board, quiet inbox, blocking questions, agent presets, `bb stelow` worker CLI | [getting-started.md](getting-started.md) (Path A), [plugin/install-bb.md](plugin/install-bb.md) |
-| **B — skills-only** | The same 30 skills + `scripts/stelow` CLI on any Agent Skills-compatible host | [getting-started.md](getting-started.md) (Path B) |
+| **B — skills-only** | The same 32 skills + `scripts/stelow` CLI on any Agent Skills-compatible host | [getting-started.md](getting-started.md) (Path B) |
 
 Both paths run the identical workflow. The plugin is a visual layer; it never
 replaces the workflow state (`stelow.json`, `.stelow/`, `state.md` remain the
@@ -24,7 +24,7 @@ source of truth). What the plugin adds is listed in
 ## How it works, in five lines
 
 1. **Shape** the idea into a proposal with IN/OUT scope boundaries and an
-   appetite (Lean / Core / Complete).
+   run knobs (quality, supervision, exploration).
 2. **Critique** it adversarially and pass the review gates you asked for
    (product spec, interface, tech plan, code diff).
 3. **Scope** it into typed delivery units (feature, spike, optimize, test-*)

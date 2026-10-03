@@ -1,38 +1,44 @@
 # Workflow
 
-Three conceptual phases, 17 stages total for a full feature (`triage` →
+Three conceptual phases, 18 stages total for a full feature (`triage` →
 `select` → `setup` → `context` → `shape` → `critique` → `gate` → `scope`
-→ `interface` → `int-gate` → `selection` → `planning` → `plan-gate` →
-`execution` → `verification` → `diff-gate` → `audit`). Shorter intents run
-shorter routes (bugfix skips scope/interface/planning; refactor skips
-shaping; investigate is triage-to-audit). The stage graph is enforced, not
+→ `interface` → `int-gate` → `selection` → `architecture` → `planning` →
+`plan-gate` → `execution` → `verification` → `diff-gate` → `audit`).
+Shorter intents run shorter routes (bugfix skips scope/interface/architecture/planning;
+refactor skips shaping; investigate is triage-to-audit). The stage graph is enforced, not
 advisory: `scripts/stelow advance` validates every move against
 `transitions.md` (generated from `stages.yaml` — never edited by hand).
 
-Two human-declared dimensions control the whole pipeline: **Appetite** (how
-deep to prepare) and **Review Mode** (which gates and human waits run).
+Explicit run knobs plus **Review Mode** control the whole pipeline.
+Knobs bound consideration breadth and verification rigor — never calendar
+duration. **Review Mode** controls which gates and human waits run.
 These are the canonical names. Hosts may show friendlier labels — the bb
-board calls them *Planning depth* and *Pause for my review* — but state
-and docs always use the canonical terms (see HOSTING.md vocabulary).
+board calls them *Quality*, *Supervision*, *Exploration* and *Pause for my
+review* — but state and docs always use the canonical terms (see HOSTING.md
+vocabulary).
 
-## Appetite — a constraint, not an estimate
+## Run knobs — constraints, not estimates
 
-Appetite asks "how much is this worth?" before the work is defined. The
-budget never expands; the scope gets cut to fit. (This departs from Shape
-Up's calendar appetite: under LLM execution, wall-clock time is not a
-predictable governor, so appetite caps preparation depth instead.)
+Knobs bound breadth and rigor before the work is defined. The bounds never
+widen; the scope gets cut to fit. (This departs from Shape Up's calendar
+appetite: under LLM execution, wall-clock time is not a predictable
+governor, so knobs cap consideration breadth and verification rigor
+instead. A legacy `appetite:` line — Lean/Core/Complete — is still
+accepted and mapped once to knobs, rigor always strongest, then rewritten.)
 
-| Appetite | Scopes | Interface | Tests | Best for |
-|---|---|---|---|---|
-| **Lean** | 1–2 | 1 suggestion, no alternatives | Smoke + critical-path unit | Idea validation, spike, throwaway |
-| **Core** (default) | 3–5 | 3 archetypes + 1 hybrid | Unit + integration at seams | Most features, bug fixes |
-| **Complete** | ~10 (shaped range 8–15) | 5 archetypes + 1 hybrid | Unit + integration + e2e + security | Critical, high-risk, production |
+| Knob | Values | What it changes | Best for |
+|---|---|---|---|
+| **Quality** | `production` (default) / `experimental` | Full paths, edge cases, parallel reviewers, full test layers; experimental runs lighter, probes only | Production for anything shippable; experimental for idea evolution |
+| **Supervisor** | `low` / `med` / `high` (default) | Checkpoint cadence during execution | High for anything that matters; low for trivial, reversible work |
+| **Exploration** | count 1–5 (default 3) + hybrid whenever count ≥ 2 | Directions compared per divergence, interaction and architecture | 2–3 for most work; 4–5 for high-stakes decisions |
 
-Cut first: Lean drops edge cases and secondary flows; Core drops low-value
-variants; Complete cuts nothing unless impossible. The Shape Up stage writes
-a mechanical `appetite_fit` (`fits` / `cuts_needed` / `reshape`); Plan
-Critique validates it with a fresh-context feasibility reviewer. The human
-decides.
+Scope ceiling: 9 scopes maximum, discovered by mapping, never a target.
+Cut first: breadth 1 keeps only the direct path; 2–3 drop low-value
+variants; 4–5 cut nothing unless impossible. Verification stays at full
+strength at production quality regardless of breadth. The Shape Up stage
+writes a mechanical `appetite_fit` (`fits` / `cuts_needed` / `reshape`);
+Plan Critique validates it with a fresh-context feasibility reviewer. The
+human decides.
 
 ## Review Mode — tool gates always run, human waits vary
 
@@ -50,8 +56,8 @@ park the workflow until a person answers.
 | **+ Tech Review** | + plan gate + tech questions | User chooses | Gate |
 | **+ Code Diff** | + diff review on the working tree | User chooses | Gate + diff |
 
-`Lean + Auto` is the shortest path (no questions, no picks); `Complete +
-full review` on a feature intent runs the full 17 stages. (Note: one stage
+`Experimental + Auto` is the shortest path (no questions, no picks); production
+quality with `full review` on a feature intent runs the full 18 stages. (Note: one stage
 file's table claims Auto skips all gates — the machine-enforced sources,
 `stages.yaml` and `transitions.md`, say `gate`/`int-gate` block in every
 mode as tool gates. The docs follow the enforced files.)
@@ -70,7 +76,7 @@ execution:
   generates scopes.
 - **Alignment Check** — after planning, the tech plan is checked against
   the product spec. Auto modes resolve automatically; higher modes ask the
-  user. Depth of all three is appetite-gated.
+  user. Depth of all three is breadth-gated.
 
 **2. Execution.** Each scope runs against an acceptance contract
 (criteria, verify commands, stop rules). See

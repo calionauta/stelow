@@ -16,7 +16,7 @@ three — `--help` alone under-reports (it omits `scope` and the `ask`
 scripts/stelow status [--json]
 scripts/stelow advance <candidate> [--dry-run] [--json]
 scripts/stelow doctor [--json]
-scripts/stelow seed --name <n> --intent <i> [--appetite Lean|Core|Complete] [--review-mode M] [--json]
+scripts/stelow seed --name <n> --intent <i> [--quality production|experimental] [--supervisor low|med|high] [--exploration-count 1-5] [--review-mode M] [--json]
 scripts/stelow ask --question <t> [--contract <id>] [--multiple] --option <label>... (repeat --question groups)
 scripts/stelow sync-scopes [--name <workflow>] [--json]
 scripts/stelow scope start|done|seed-tasks --scope <id> [--name <workflow>] [--iteration <n>] [--actual-files <a,b>] [--tasks <json>] [--start-sha <sha>] [--json]
@@ -31,7 +31,7 @@ scripts/stelow schema [command]
 | `status` | One-screen project summary (`--json` for machines). Passive — never mutates. |
 | `advance <stage>` | Moves `current_stage` after validating the stage exists, required artifacts exist, and the `.stelow/lock` can be acquired. Fails before touching anything: a bad candidate leaves state byte-identical. `--dry-run` validates without mutating. |
 | `doctor` | Four drift classes: `stale-lock` (warn), `missing-dir` (warn), `parallel-lock` (info), `state-transitions-drift` (error). `--json` never exits non-zero on warn/info. |
-| `seed` | Scaffolds a workflow (`--appetite`, `--review-mode` set the two control dimensions once). |
+| `seed` | Scaffolds a workflow (run knobs + `--review-mode` set the control dimensions once; `--appetite` still accepted as a deprecated alias). |
 | `ask` | Records a structured question (single- or multi-choice, batchable groups, optional `--contract` binding it to a decision contract). |
 | `sync-scopes` | Parses `[SCOPE-N]` blocks from the latest `spec-tech_*.md` into `wf.scopes[]`. Idempotent; preserves host/worker overlays and re-houses rework scopes. The single canonical scope parser — hosts shell out instead of mirroring it. |
 | `scope` | Per-scope transitions (`start`, `done`, `seed-tasks`) against the validated scope id. |
