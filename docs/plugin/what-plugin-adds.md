@@ -50,5 +50,7 @@ These are load-bearing guarantees, not implementation details:
   and providers are plugin implementation; the portable principle —
   never delegate a checkable decision to a model — stays in Core workflow
   pages.)
+- [scope-contracts.md](scope-contracts.md) — scope ownership, Interface
+  Contrast receipts, challenges, and native human boundaries.
 - [team-playbook.md](team-playbook.md) — experimental: one bb per teammate,
   GitHub as the team room.
