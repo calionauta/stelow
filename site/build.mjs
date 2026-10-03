@@ -248,6 +248,25 @@ ${body}
 </html>`;
 }
 
+// Valid heading anchors per markdown file, slugified with the same slugify()
+// used for rendering so the two can never disagree. Built lazily and cached;
+// missing or unreadable files yield an empty set.
+const anchorCache = new Map();
+function anchorsFor(abs) {
+  if (!anchorCache.has(abs)) {
+    const ids = new Set();
+    try {
+      const src = readFileSync(abs, "utf8");
+      for (const line of src.split("\n")) {
+        const h = /^(#{1,4})\s+(.*)$/.exec(line);
+        if (h) ids.add(slugify(h[2]));
+      }
+    } catch { /* missing/unreadable: leave empty */ }
+    anchorCache.set(abs, ids);
+  }
+  return anchorCache.get(abs);
+}
+
 function check() {
   let failed = 0;
   for (const p of MANIFEST) {
@@ -257,11 +276,18 @@ function check() {
   for (const p of MANIFEST) {
     const md = readFileSync(join(DOCS, p.file), "utf8");
     const pageDir = dirname(p.file) === "." ? "" : dirname(p.file);
-    for (const m of md.matchAll(/\]\(([^)#]+)(#[^)]*)?\)/g)) {
+    const curAbs = join(DOCS, p.file);
+    for (const m of md.matchAll(/\]\(([^)#]*)(#[^)]*)?\)/g)) {
       const target = m[1];
+      const frag = m[2] ? m[2].slice(1) : "";
       if (/^(https?:|mailto:)/.test(target)) continue;
-      const abs = resolve(DOCS, pageDir, target);
-      if (!existsSync(abs)) { console.error(`broken link in ${p.file}: ${target}`); failed++; }
+      if (!target && !frag) continue;
+      const abs = target === "" ? curAbs : resolve(DOCS, pageDir, target);
+      if (!existsSync(abs)) { console.error(`broken link in ${p.file}: ${target}`); failed++; continue; }
+      if (!frag) continue;
+      if (!abs.endsWith(".md")) continue;
+      const ids = anchorsFor(abs);
+      if (!ids.has(frag)) { console.error(`missing anchor in ${p.file}: ${target}#${frag}`); failed++; }
     }
   }
   if (failed) { console.error(`${failed} check failure(s)`); process.exit(1); }
