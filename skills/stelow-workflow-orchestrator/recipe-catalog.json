@@ -1149,6 +1149,31 @@
                     },
                     "compatibility": {
                       "const": "valid"
+                    },
+                    "scopeCoverage": {
+                      "type": "array",
+                      "description": "Per-scope impact of this option against the recorded Scope Map version. Omitted only when the contrast runs with no map; then the brief says why.",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "scopeId",
+                          "effect"
+                        ],
+                        "properties": {
+                          "scopeId": {
+                            "type": "string"
+                          },
+                          "effect": {
+                            "enum": [
+                              "served",
+                              "friction"
+                            ]
+                          },
+                          "note": {
+                            "type": "string"
+                          }
+                        }
+                      }
                     }
                   }
                 }
