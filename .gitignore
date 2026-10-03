@@ -64,6 +64,11 @@ Thumbs.db
 # Build outputs
 dist/
 build/
+# Generated docs site (built in CI via `npm run gen:site`, served from site/)
+site/docs/
+site/llms.txt
+site/llms-full.txt
+site/sitemap.xml
 
 # Rust build artifacts
 target/
