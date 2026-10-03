@@ -86,21 +86,155 @@ sys.exit(1)
 PY
 }
 
+# --- review gates ------------------------------------------------------------
+#
+# Canonical storage is a gate SET: `review_gates: [spec, interface]`, empty
+# meaning Auto. A cumulative ladder (`review_mode: Product Spec + Interface +
+# Tech Review`) could not express "interface only" or "spec + tech plan" —
+# every rung implied all previous gates — so the ladder is a compatibility
+# input for states written before the set existed, and nothing else.
+#
+# Reading both here, in one place, is what lets every caller below speak in
+# atoms. A caller that compared a mode string directly would re-introduce the
+# ladder's central defect: a set with no rung reads as Auto, so a card that
+# asked for `tech` alone would have its plan-gate refused as if it had asked
+# for nothing. That is not hypothetical — both of those presets ship in the
+# host picker.
+
+# Which gated stage each gate atom brings back. A stage outside this table is
+# always available, so a gated stage added upstream is enforced (refused while
+# unselected) instead of silently passing.
+gate_atom_for_stage() {
+  case "$1" in
+    selection) printf 'interface\n' ;;
+    plan-gate) printf 'tech\n' ;;
+    diff-gate) printf 'diff\n' ;;
+    *) printf '\n' ;;
+  esac
+}
+
+# The gate set this workflow runs, one atom per line. Explicit `review_gates`
+# wins; a legacy `review_mode` ladder maps to its rung's atoms; nothing
+# declared means Auto (empty). Unknown atoms are dropped rather than guessed.
+selected_gates() {
+  python3 - "$STATE" <<'PY'
+import sys, re
+path = sys.argv[1]
+try:
+    text = open(path).read()
+except OSError:
+    sys.exit(0)
+m = re.match(r"^---\n(.*?)\n---", text, re.DOTALL)
+if not m:
+    sys.exit(0)
+block = m.group(1)
+
+# The atom vocabulary. A value outside it is dropped: an invented gate would
+# bring back a stage nobody asked for, which is the failure direction that
+# parks a worker waiting for a review that does not exist.
+ATOMS = ("spec", "interface", "scope", "tech", "diff")
+
+def scalar(key):
+    for line in block.splitlines():
+        mm = re.match(r"^" + re.escape(key) + r":\s*(.*)$", line)
+        if mm:
+            return mm.group(1).strip()
+        mm = re.match(r"^  " + re.escape(key) + r":\s*(.*)$", line)
+        if mm:
+            return mm.group(1).strip()
+    return None
+
+gates = scalar("review_gates")
+if gates:
+    for atom in gates.strip().strip("[]").split(","):
+        atom = atom.strip().strip("'\"")
+        if atom in ATOMS:
+            print(atom)
+    sys.exit(0)
+
+# Legacy ladder, mapped to its rung's atoms. Not a reverse map of every
+# possible set — only of the six rungs that were ever writable.
+LADDER = {
+    "Auto": set(),
+    "Product Spec Gate": {"spec"},
+    "Product Spec + Interface Gates": {"spec", "interface"},
+    "Product Spec + Interface + Scopes": {"spec", "interface", "scope"},
+    "Product Spec + Interface + Tech Review": {"spec", "interface", "scope", "tech"},
+    "Product Spec + Interface + Tech Review + Code Diff": {"spec", "interface", "scope", "tech", "diff"},
+}
+mode = scalar("review_mode")
+if mode is not None and mode in LADDER:
+    for atom in ATOMS:
+        if atom in LADDER[mode]:
+            print(atom)
+PY
+}
+
+# Whether this workflow declares its gates at all — either field present. This
+# is NOT the same question as "is any gate selected": an empty set IS a
+# declaration, and it means Auto, which still needs the passthroughs below. Only
+# a state that never declared either field is exempt from enforcement, because
+# there is nothing to enforce against.
+gates_configured() {
+  python3 - "$STATE" <<'PY'
+import sys, re
+try:
+    text = open(sys.argv[1]).read()
+except OSError:
+    sys.exit(1)
+m = re.match(r"^---\n(.*?)\n---", text, re.DOTALL)
+if not m:
+    sys.exit(1)
+for line in m.group(1).splitlines():
+    if re.match(r"^  review_(gates|mode):", line):
+        sys.exit(0)
+sys.exit(1)
+PY
+}
+
+# Whether this workflow selected one gate atom. Two questions, two names: a
+# caller asking about a stage and a caller asking about an atom get different
+# answers, and conflating them is how "I selected tech" became "plan-gate is
+# unselected".
+gate_atom_selected() {
+  selected_gates | grep -qx "$1"
+}
+
+# Whether this workflow runs this gated stage. True when no gate governs it, so
+# a stage nobody declared a gate for is never invented into a skip.
+gate_selected() {
+  local atom
+  atom=$(gate_atom_for_stage "$1")
+  [ -n "$atom" ] || return 0
+  gate_atom_selected "$atom"
+}
+
+# The set as one bracketed word, for a refusal that has to name what the
+# workflow actually runs. A bare "not selected" tells a reader nothing when
+# they were told something else at creation time.
+gates_inline() {
+  local gates
+  gates=$(selected_gates | paste -sd, -)
+  [ -n "$gates" ] || gates="none"
+  printf '[%s]' "$gates"
+}
+
 status_text() {
-  local name intent stage status appetite review_mode
+  local name intent stage status appetite gates
   name=$(yaml_get name "$STATE" 2>/dev/null || echo "?")
   intent=$(yaml_get intent "$STATE" 2>/dev/null || echo "?")
   stage=$(yaml_get current_stage "$STATE" 2>/dev/null || echo "?")
   status=$(yaml_get status "$STATE" 2>/dev/null || echo "?")
   appetite=$(yaml_get appetite "$STATE" 2>/dev/null || echo "?")
-  review_mode=$(yaml_get review_mode "$STATE" 2>/dev/null || echo "?")
+  gates=$(selected_gates | paste -sd, -)
+  [ -n "$gates" ] || gates="none (Auto)"
   cat <<EOF
 workflow : $name
 intent   : $intent
 stage    : $stage
 status   : $status
 appetite : $appetite
-review   : $review_mode
+review   : $gates
 lock     : $(lock_state)
 EOF
 }
@@ -136,7 +270,7 @@ if os.path.exists(state):
     for k in ("name", "intent", "current_stage", "status"):
         out[k.replace("name", "workflow") if k == "name" else k] = get_top(blob, k)
     cfg = {}
-    for k in ("appetite", "review_mode", "product_type"):
+    for k in ("appetite", "review_gates", "review_mode", "product_type"):
         v = get_nested(blob, "config", k)
         if v is not None: cfg[k] = v
     out["config"] = cfg
@@ -282,52 +416,40 @@ do_advance() {
   allowed=$(allowed_candidates_for_stage "$current" "$intent") || die "no transition defined from stage '$current'"
 
   # Mode-skipped passthroughs: when a gate/stage does not exist in the active
-  # review mode, its successor becomes a legal target directly — otherwise the
+  # gate set, its successor becomes a legal target directly — otherwise the
   # worker deadlocks (refused AT the gate by the block below, rejected PAST it
-  # here). Unknown/missing review_mode (or appetite) skips enforcement.
-  review_mode=$(yaml_get review_mode "$STATE" 2>/dev/null || true)
+  # here). A workflow that declares no gates skips enforcement entirely.
   appetite=$(yaml_get appetite "$STATE" 2>/dev/null || true)
-  if [ -n "$review_mode" ]; then
+  if gates_configured; then
     case "$current" in
       planning)
-        case "$review_mode" in
-          "Product Spec + Interface + Tech Review"|"Product Spec + Interface + Tech Review + Code Diff") ;;
-          *) allowed=$(printf "%s\nexecution" "$allowed") ;;
-        esac
+        gate_atom_selected tech || allowed=$(printf "%s\nexecution" "$allowed")
         ;;
       verification)
-        case "$review_mode" in
-          "Product Spec + Interface + Tech Review + Code Diff") ;;
-          *) allowed=$(printf "%s\naudit" "$allowed") ;;
-        esac
+        gate_atom_selected diff || allowed=$(printf "%s\naudit" "$allowed")
         ;;
       setup)
-        if [ "$appetite" = "Lean" ] && [ "$review_mode" = "Auto" ]; then allowed=$(printf "%s\nshape" "$allowed"); fi
+        if [ "$appetite" = "Lean" ] && ! gate_atom_selected spec; then allowed=$(printf "%s\nshape" "$allowed"); fi
         ;;
     esac
   fi
   echo "$allowed" | grep -qx "$candidate" ||
     die "invalid transition '$current' -> '$candidate' (allowed: $(echo "$allowed" | paste -sd, -))"
 
-  # Mode-skipped gates: plan-gate and diff-gate do not exist in modes that
-  # skip them (see Gate Conditions in transitions.md). Entering one parks the
-  # worker waiting for a review nobody configured, so refuse with the
-  # redirect instead of mutating. Unknown/missing review_mode skips enforcement.
-  if [ -n "$review_mode" ]; then
-    case "$candidate" in
-      plan-gate)
-        case "$review_mode" in
-          "Product Spec + Interface + Tech Review"|"Product Spec + Interface + Tech Review + Code Diff") ;;
-          *) die "plan-gate is skipped in '$review_mode' review mode — advance directly to execution instead" ;;
-        esac
-        ;;
-      diff-gate)
-        case "$review_mode" in
-          "Product Spec + Interface + Tech Review + Code Diff") ;;
-          *) die "diff-gate is skipped in '$review_mode' review mode — advance directly to audit instead" ;;
-        esac
-        ;;
-    esac
+  # Mode-skipped gates: plan-gate and diff-gate do not exist in a set that
+  # leaves them unselected (see Gate Conditions in transitions.md). Entering
+  # one parks the worker waiting for a review nobody configured, so refuse with
+  # the redirect instead of mutating. Enforced per gate atom, so a set that
+  # asks for `tech` and not `diff` runs one gate and not the other.
+  # Only the stage being ENTERED is checked. Refusing an unselected gate the
+  # worker is not entering would block the passthrough it just enabled.
+  if gates_configured; then
+    if [ "$candidate" = "plan-gate" ] && ! gate_selected plan-gate; then
+      die "plan-gate is skipped by this workflow's review gates ($(gates_inline)) — advance directly to execution instead"
+    fi
+    if [ "$candidate" = "diff-gate" ] && ! gate_selected diff-gate; then
+      die "diff-gate is skipped by this workflow's review gates ($(gates_inline)) — advance directly to audit instead"
+    fi
   fi
 
   # pre-condition: required artifacts, resolved against the workflow's own
@@ -601,13 +723,17 @@ PY
 # scaffolded state.md plus a stelow.json tracking entry. Prints the state
 # dir so callers export STELOW_STATEDIR for follow-up commands.
 do_seed() {
-  local name="" intent="" appetite="Core" review_mode="Auto" json=""
+  local name="" intent="" appetite="Core" review_gates="" review_mode="" gates_given=0 json=""
   while [ $# -gt 0 ]; do
     case "$1" in
       --name) name="${2:-}"; shift 2 ;;
       --intent) intent="${2:-}"; shift 2 ;;
       --appetite) appetite="${2:-}"; shift 2 ;;
-      --review-mode) review_mode="${2:-}"; shift 2 ;;
+      # --review-gates takes the canonical set (`spec,interface`). --review-mode
+      # stays accepted because states written before the set existed carry it;
+      # it is normalized to atoms here, so nothing downstream reads a ladder.
+      --review-gates) review_gates="${2:-}"; gates_given=1; shift 2 ;;
+      --review-mode) review_mode="${2:-}"; gates_given=1; shift 2 ;;
       --json) json="1"; shift ;;
       *) usage_error "seed: unknown arg '$1' (try --help)" ;;    esac
   done
@@ -620,10 +746,13 @@ do_seed() {
     Lean|Core|Complete) ;;
     *) usage_error "seed: --appetite must be Lean|Core|Complete" ;;
   esac
-  [ -n "$review_mode" ] || usage_error "seed: --review-mode must be non-empty"
-  python3 - "$ROOT" "$STATEDIR" "$TRANSITIONS" "$name" "$intent" "$appetite" "$review_mode" "$json" <<'PY' || die "seed failed"
+  # Omitting both means Auto, which is a real declaration: it writes
+  # `review_gates: []` so do_advance enforces the passthroughs instead of
+  # treating the workflow as one that never declared gates.
+  [ "$gates_given" = "1" ] || review_gates=""
+  python3 - "$ROOT" "$STATEDIR" "$TRANSITIONS" "$name" "$intent" "$appetite" "$review_gates" "$review_mode" "$json" <<'PY' || die "seed failed"
 import sys, os, re, json, secrets, datetime
-root, statedir, trans_path, name, intent, appetite, review_mode, want_json = sys.argv[1:9]
+root, statedir, trans_path, name, intent, appetite, review_gates, review_mode, want_json = sys.argv[1:10]
 if not os.path.exists(trans_path):
     print(f"seed: transitions reference not found at {trans_path}", file=sys.stderr); sys.exit(1)
 text = open(trans_path).read()
@@ -633,6 +762,30 @@ if not stages:
 first = "triage" if intent == "new-product" else "setup"
 if first not in stages:
     print(f"seed: first stage '{first}' not in transitions reference", file=sys.stderr); sys.exit(1)
+ATOMS = ("spec", "interface", "scope", "tech", "diff")
+LADDER = {
+    "Auto": set(),
+    "Product Spec Gate": {"spec"},
+    "Product Spec + Interface Gates": {"spec", "interface"},
+    "Product Spec + Interface + Scopes": {"spec", "interface", "scope"},
+    "Product Spec + Interface + Tech Review": {"spec", "interface", "scope", "tech"},
+    "Product Spec + Interface + Tech Review + Code Diff": {"spec", "interface", "scope", "tech", "diff"},
+}
+# An unrecognised atom is a usage error here, not a silent drop: seed is the
+# moment the set is declared, and a typo that vanished would leave a workflow
+# whose gates do not match what the caller believes it asked for.
+chosen = set()
+if review_gates:
+    raw = [a.strip().strip("'\"") for a in review_gates.strip().strip("[]").split(",")]
+    unknown = [a for a in raw if a and a not in ATOMS]
+    if unknown:
+        print(f"seed: unknown review gate(s): {', '.join(unknown)} (valid: {', '.join(ATOMS)})", file=sys.stderr); sys.exit(1)
+    chosen = {a for a in raw if a}
+elif review_mode:
+    if review_mode not in LADDER:
+        print(f"seed: unknown review mode '{review_mode}'", file=sys.stderr); sys.exit(1)
+    chosen = LADDER[review_mode]
+gates = [a for a in ATOMS if a in chosen]
 date = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
 now = datetime.datetime.now(datetime.timezone.utc).isoformat()
 dirhash = "sw-%s-%s" % (secrets.token_hex(3), secrets.token_hex(3))
@@ -640,7 +793,7 @@ statedir = os.path.join(statedir, date, dirhash)
 os.makedirs(statedir, exist_ok=True)
 fm = ["---", f"name: {name}", f"intent: {intent}", f"current_stage: {first}",
       "status: active", "config:", f"  appetite: {appetite}",
-      f"  review_mode: {review_mode}", "  product_type: software", "stages:"]
+      f"  review_gates: [{', '.join(gates)}]", "  product_type: software", "stages:"]
 fm += [f"  {s}: pending" for s in stages]
 fm += ["artifacts: []", "history: []", "---", "", f"# {name}", ""]
 with open(os.path.join(statedir, "state.md"), "w") as handle:
@@ -654,7 +807,7 @@ if not isinstance(tracking.get("workflows"), list):
     tracking["workflows"] = []
 entry = {"name": name, "description": "", "status": "in-progress", "cwd": root,
          "dirHash": dirhash, "created": now, "updated": now,
-         "config": {"appetite": appetite, "review_mode": review_mode},
+         "config": {"appetite": appetite, "review_gates": gates},
          "stage": {"current_stage": first, "previous_stage": None,
                    "transitioned_at": now,
                    "history": [{"stage": first, "entered_at": now}]},
@@ -714,8 +867,8 @@ commands = {
     "output": "text lines or {findings: [{severity, class, message}], ok}",
   },
   "seed": {
-    "usage": "stelow seed --name <n> --intent <i> [--appetite Lean|Core|Complete] [--review-mode M] [--json]",
-    "flags": ["--name", "--intent", "--appetite", "--review-mode", "--json"],
+    "usage": "stelow seed --name <n> --intent <i> [--appetite Lean|Core|Complete] [--review-gates spec,interface] [--json]",
+    "flags": ["--name", "--intent", "--appetite", "--review-gates", "--json"],
     "env": ["STELOW_STATEDIR"],
     "exit_codes": {"0": "seeded (prints state path)", "1": "seed failed", "2": "usage"},
     "output": "state path or {state, statedir, dirHash, created} with --json",
@@ -1792,7 +1945,7 @@ out = [
     "## Workflow", "",
     "| Field | Value |", "| --- | --- |",
     f"| Intent | {intent} |", f"| Current stage | {stage} |", f"| Status | {status} |",
-    f"| Appetite | {config.get('appetite', 'unknown')} |", f"| Review mode | {config.get('review_mode', 'unknown')} |",
+    f"| Appetite | {config.get('appetite', 'unknown')} |", f"| Review gates | {config.get('review_gates') or config.get('review_mode') or 'none'} |",
     "", "## Repository snapshot", "",
     "| Field | Value |", "| --- | --- |",
     f"| Git repository | `{snapshot['root']}` |",
@@ -1837,7 +1990,7 @@ Usage:
   $PROG status [--json]
   $PROG advance <candidate> [--dry-run] [--json]
   $PROG doctor [--json]
-  $PROG seed --name <n> --intent <i> [--appetite Lean|Core|Complete] [--review-mode M] [--json]
+  $PROG seed --name <n> --intent <i> [--appetite Lean|Core|Complete] [--review-gates spec,interface] [--json]
   $PROG schema [command]
   $PROG ask --question <t> [--multiple] --option <label>... (repeat --question groups)
   $PROG sync-scopes [--name <workflow>] [--json]

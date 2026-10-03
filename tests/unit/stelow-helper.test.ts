@@ -110,7 +110,11 @@ describe("status", () => {
     expect(r.stdout).toContain("workflow : t");
     expect(r.stdout).toContain("stage    : shape");
     expect(r.stdout).toContain("appetite : Core");
-    expect(r.stdout).toContain("review   : Auto");
+    // Auto is now named as what it is: no gate selected. The row reads the
+    // atom set, so "Auto" could only survive as a hardcoded literal — and a
+    // hardcoded literal cannot tell a reader that this workflow declared an
+    // empty set rather than one that never said anything.
+    expect(r.stdout).toContain("review   : none (Auto)");
   });
 
   it("status --json is parseable JSON with current_stage + config", () => {
