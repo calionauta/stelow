@@ -47,8 +47,8 @@ extracted lifecycle, inbox, ask/answer, sync, and UI rules with the
 
 | Command | Description |
 |---------|-------------|
-| `/sw-start` | Begin planning (entry skill) |
-| `/sw-status` | Show workflow status (`scripts/stelow status`) |
+| `/sw-start` | Begin planning (entry skill; legacy name — primary trigger is `STELOW_WORKFLOW=1` + `state.md`) |
+| `/sw-status` | Show workflow status (`scripts/stelow status`; legacy name) |
 
 `/sw-*` are skill-provided commands routed by `stelow-workflow-entry`/`stelow-workflow-router` on
 **every** agentskills-compatible host — there is no host command registry.
@@ -155,7 +155,7 @@ Run before releases. A test file moving from OK to REVIEW over time signals rot.
 - **Skill validator scope:** `SKILL.md` stays under 500 lines (move bodies to `references/`, never delete instructions). `Examples`/`Edge Cases` sections are required on `stelow-product-*` (standalone-invoked); pipeline stage skills (`entry`/`router`/stage executors) are exempt — they are only invoked via entry/router with full context, and stage behavior is covered by e2e, not by per-skill activation examples.
 - **Docs stay truthful:** `README.md` feature bullets and `architecture.md` behavior sections describe the current product only — no shipped-removed surfaces (Pi extensions, TUI, pre-rename skill names live in `docs/archive/`). Any behavioral commit updates them alongside the code; counts are test-pinned (skill-count contract), prose is reviewer-pinned (say what changed in the release notes).
 - **Single working clone:** on the deploy host, `~/repos/stelow` is the **only** clone where methodology/skill work happens. Never edit skills in a throwaway `/tmp` clone — if you did, re-do or rebase the work onto `~/repos/stelow`. **Run `git pull --ff-only` here FIRST** before starting any edit, so work advances from `origin/main` and the auto-sync below propagates it. Push is the trigger: a local-only commit is invisible to consumers.
-- **Propagation is automatic but on a schedule:** pushing to `calionauta/stelow@main` propagates automatically — all 30 skills reach `bb-plugin-stelow` via its 6h cron auto-sync (plus a fail-soft pass at boot), and the product playbooks (`stelow-product-*`) additionally reach the agent skills hub on the daily 03:00 `npx skills update -g`. Neither needs a manual copy step.
+- **Propagation is scheduled polling, not push:** `bb-plugin-stelow` pulls from this repo on its daily 05:41 UTC cron (`repository_dispatch` or manual `workflow_dispatch` otherwise) — there is no per-push notification from this repo and no skill rescan at plugin boot, so allow ~24h lag before diagnosing sync drift as breakage. The product playbooks (`stelow-product-*`) additionally reach the agent skills hub on the daily 03:00 `npx skills update -g`. A local-only commit is invisible to consumers either way.
 
 ## Versioning
 
@@ -233,7 +233,6 @@ Enforcement:
 - Do NOT use `require()` — this is ESM (`"type": "module"`)
 - Do NOT add dependencies without asking
 - Do NOT put secrets in AGENTS.md
-- Do NOT guess version numbers — always read `package.json` first
 
 ## External Tools (Optional)
 
