@@ -1753,6 +1753,15 @@ def git_snapshot():
         return {"root": "not a Git repository", "head": "not a Git repository", "tracked": "not available", "untracked": "not available", "untracked_count": 0}
     toplevel = run(["rev-parse", "--show-toplevel"]).stdout.decode().strip() or root_real
     toplevel_real = os.path.realpath(toplevel)
+    # Repository identity, shared by a checkout and its linked worktrees: git
+    # answers `--git-common-dir` relative to the directory it ran in (`.git`
+    # in the project checkout), so resolve it there and normalize. Hosts use
+    # this to tell "same repository, two directories" from two repositories.
+    common = run(["rev-parse", "--git-common-dir"])
+    common_dir = common.stdout.decode().strip() if common.returncode == 0 else ""
+    if common_dir and not os.path.isabs(common_dir):
+        common_dir = os.path.join(root, common_dir)
+    common_dir = os.path.realpath(common_dir) if common_dir else ""
     # The projection cannot hash its own tracked diff: rebuilding a stale,
     # committed receipt changes that diff after it was sampled. Exclude only
     # this exact file; every other tracked change remains attested.
@@ -1779,6 +1788,7 @@ def git_snapshot():
     return {
         "root": toplevel,
         "head": head.stdout.decode().strip(),
+        "commonDir": common_dir,
         "tracked": hashlib.sha256(diff.stdout).hexdigest() if diff.returncode == 0 else "not available",
         "untracked": hashlib.sha256(b"".join(sorted(entries))).hexdigest(),
         "untracked_count": len(entries),

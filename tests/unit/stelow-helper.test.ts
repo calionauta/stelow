@@ -390,6 +390,25 @@ describe("audit-trail", () => {
     expect(rebuilt.snapshot.untracked_count).toBeGreaterThan(result.snapshot.untracked_count);
   });
 
+  // A linked worktree is the same repository in a different directory. The
+  // snapshot names the repository both directories share, so a host can tell
+  // that case from two repositories that merely look alike.
+  it("names the repository identity shared by a project and its worktree", () => {
+    const { env } = setup();
+    const build = run(wd, ["audit-trail", "build", "--json"], env);
+    expect(build.status).toBe(0);
+    const projectCommon = JSON.parse(build.stdout).snapshot.commonDir;
+    expect(projectCommon).toMatch(/\.git$/);
+
+    const wt = join(wd.dir, "wt");
+    execSync(`git worktree add -q --detach ${wt}`, { cwd: wd.dir });
+    const wbuild = run(wd, ["audit-trail", "build", "--json"], env, wt);
+    expect(wbuild.status).toBe(0);
+    const worktreeCommon = JSON.parse(wbuild.stdout).snapshot.commonDir;
+    expect(worktreeCommon).toBe(projectCommon);
+    expect(existsSync(worktreeCommon)).toBe(true);
+  });
+
   it("rebuilds a stale audit trail after that receipt was committed", () => {
     const { stateDir, env } = setup();
     expect(run(wd, ["audit-trail", "build"], env).status).toBe(0);
