@@ -19,6 +19,17 @@ When using `multiSelect: true`:
 - The user can select **all** to mean "all"
 - Selections are explicit — no need for a "select all" button
 
+### Opt-Out Confirms (preselected options)
+
+For confirmations — scope maps, IN tables — prefer opt-out over opt-in:
+every option starts checked (`selected: true`) and the human unchecks to
+remove. Keeping all checked confirms; unchecking everything means "remove
+all" (reshape territory), which is distinct from skipping (leaves unchanged).
+Preselection composes only with `multiSelect: true`; single-select groups
+refuse it. Option sources differ by moment (proposal IN/OUT items at shaping
+time, mapped scopes with stable IDs at scope time) but the interaction is one
+pattern. Chunk at 6 options per question (MAX_OPTIONS); never drop items to fit.
+
 ### Tool Capabilities
 
 `ask_user_question` supports:
@@ -177,41 +188,60 @@ Keep previews concise. If content exceeds limits, prioritize:
 
 ## Pattern 3: Scope Adjustment (Scope Adjustment stage)
 
-Used after Gate approval to let user add/remove from IN/OUT — **only when
+Used after Gate approval to confirm the mapped scopes — **only when
 review mode requires IN/OUT confirmation** (`Product Spec + Interface +
 Scopes` and above). In `Auto` and lower modes the LLM adjusts scope itself
 (see `../references/human-gates.md`) and never parks waiting.
 
 > **Note:** No visual review re-run after this — the ask tool already confirms selections.
 
+Opt-out form: every mapped scope is one preselected option. Keeping all
+checked confirms the map; unchecking removes. Unchecking everything means
+"remove all" (reshape territory) — distinct from skipping, which leaves the
+map unchanged.
+
 ```typescript
 ask_user_question({
   questions: [
     {
-      question: "What should be REMOVED from IN scope?",
-      header: "Remove IN",
+      question: "Which of these scopes stay IN?",
+      header: "Keep IN",
       multiSelect: true,
       options: [
-        { label: "{scope-1}", description: "{scope description}" },
-        { label: "{scope-2}", description: "{scope description}" }
+        {
+          label: "{scope-id — outcome}",
+          description: "{IN items + key dependencies}",
+          selected: true,
+          preview: "{outcome, IN/OUT, dependencies — ≤15 rows}",
+          artifact: { path: ".stelow/{YYYY-MM-DD}/{dir}/scope-map.json", display: "scope-map.json" },
+        },
+        // ... one option per mapped scope, ALL preselected
       ]
     },
+    // Only when OUT items exist:
     {
-      question: "What should be ADDED to IN scope?",
-      header: "Add to IN",
+      question: "Add any of these back to IN?",
+      header: "Add IN",
       multiSelect: true,
       options: [
-        { label: "{out-scope-1}", description: "{description}" },
-        { label: "{out-scope-2}", description: "{description}" }
+        { label: "{out-item}", description: "{why it was left out}" }
+        // ... OUT items, NONE preselected (opt-in)
       ]
     }
   ]
 })
 ```
 
-**If user removes items:** update spec
+Chunking rule: at most 6 options per question. With 7–9 mapped scopes,
+split into batched groups of ≤6 in ONE call (e.g. "Which of these scopes
+stay IN? (1/2)"), all preselected. Never silently drop scopes to fit.
+
+**If user removes items:** update spec + emit a scope-map challenge when a
+boundary or dependency meaning changes (never rewrite the approved map in
+place).
 **If user adds items:** create new spec version (requires awareness but no extra Gate)
-**If user selects nothing:** proceed unchanged
+**If user selects nothing on the keep question:** reshape — an empty map is not a map.
+**If user skips:** proceed unchanged.
 
 ---
 
@@ -551,6 +581,7 @@ interface Option {
     path: string;      // e.g. ".stelow/2026-09-09/abc123/interfaces/proposal-a.md"
     display: string;   // short name shown on the open affordance
   };
+  selected?: boolean;  // preselected (opt-out confirms only, requires multiSelect)
 }
 
 interface Question {

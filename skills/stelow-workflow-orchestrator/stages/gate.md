@@ -71,6 +71,24 @@ grep pattern='\`[^\`]+:[0-9]+\`' path=.stelow/{YYYY-MM-DD}/{_dir}/plans/spec-pro
 
 **Effort:** Medium — **Value:** High (catches false positives before approval)
 
+### Scope draft preview (gate:05 — human gates only)
+
+Before submitting the spec to visual review, when the active review mode
+includes any human gate, run scope mapping once in preview mode (single
+pass, no parallel scouts — this stage has no subagent tool):
+
+- Read the shaped proposal and emit tentative scope names, outcomes, and
+  dependencies into `scope-map-draft.json` (`status: "draft"`) plus a
+  readable draft companion (names + one-line outcomes + counts).
+- A draft from the not-yet-approved spec is explicitly allowed here: it
+  illustrates the division for the reviewer, commits to nothing, and is
+  never promoted without re-validation at the scope stage.
+- Present the draft alongside the spec review (path + counts in the review
+  request). The reviewer reads it; nobody edits it here. Feedback lands as
+  review annotations, which the scope stage reconciles into the approved map.
+- Skip entirely in Auto mode (no reviewer to show it to) and when the
+  proposal is a narrow bugfix with a one-scope plan.
+
 ### Submission to visual review (gate:10)
 
 **Use the `visual_review` tool** (not bash — bash is blocked in this stage):
