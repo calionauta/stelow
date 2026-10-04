@@ -84,7 +84,7 @@ same workflow. Hosts only add an optional marker protocol
   skills) or `skills/stelow-product-<name>/SKILL.md` (product strategy /
   domain libraries) with `metadata.category` matching the prefix
   (`workflow` / `product`); keep counts consistent (README contract test
-  pins 30 / 15 workflow + 15 product skills).
+  pins 32 / 17 workflow + 15 product skills).
 - New host → no code required. Ensure the host can read agentskills.io skill
   directories and set the marker env vars. Host levers are documented in
   `references/host-levers.md`.
