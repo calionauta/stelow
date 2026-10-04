@@ -6,41 +6,40 @@
 **After Setup**, the flow enters Strategic Context to enrich planning with optional context.
 The LLM checks if the user should be offered strategic analysis and/or domain libraries.
 
-**Prerequisites:** Appetite (Lean / Core / Complete) and Review Mode (Auto / Product Spec Gate / Product Spec + Interface Gates / Product Spec + Interface + Scopes / Product Spec + Interface + Tech Review / Product Spec + Interface + Tech Review + Code Diff) must already be declared in `setup:15` (Appetite) and `setup:16` (Review Mode), then stored in `stelow.json#workflows[].config` (canonical as of v0.50.0).
+**Prerequisites:** Run knobs (quality, supervisor, exploration) and Review Mode (Auto / Product Spec Gate / Product Spec + Interface Gates / Product Spec + Interface + Scopes / Product Spec + Interface + Tech Review / Product Spec + Interface + Tech Review + Code Diff) must already be declared in `setup:15` (knobs) and `setup:16` (Review Mode), then stored in `stelow.json#workflows[].config`.
 
-### context:5 — Appetite & Review Mode Gate (auto-skip / reduced)
+### context:5 — Quality & Review Mode Gate (auto-skip / reduced)
 
-Before executing `context:10` or `context:20`, check the declared appetite and review mode.
+Before executing `context:10` or `context:20`, check the declared quality and review mode.
 
 **Canonical values:**
-- Appetite: `Lean` | `Core` (Recommended) | `Complete`
+- Quality: `production` (Recommended) | `experimental`
 - Review Mode: `Auto` | `Product Spec Gate` | `Product Spec + Interface Gates` | `Product Spec + Interface + Scopes` | `Product Spec + Interface + Tech Review` | `Product Spec + Interface + Tech Review + Code Diff`
 
 **Intent pre-check (runs before the matrix below):** read `state.md` intent first.
-- If intent is `refactor` or `bugfix` AND the request carries no product/domain signals (none of the `context:20` signal phrases, no pricing/growth/trust/marketplace/discovery language) AND the baseline is verifiable (typecheck, lint, and tests runnable in the workspace): **Reduced ask** regardless of appetite — present the 5 strategic approaches as opt-in with the one-line rationale "refactor/bugfix with a verifiable baseline — strategic analyses are usually overhead here", no automatic parallel subagents. Log the rationale to `session.log`.
-- Otherwise: fall through to the appetite/mode matrix below.
+- If intent is `refactor` or `bugfix` AND the request carries no product/domain signals (none of the `context:20` signal phrases, no pricing/growth/trust/marketplace/discovery language) AND the baseline is verifiable (typecheck, lint, and tests runnable in the workspace): **Reduced ask** regardless of quality — present the 5 strategic approaches as opt-in with the one-line rationale "refactor/bugfix with a verifiable baseline — strategic analyses are usually overhead here", no automatic parallel subagents. Log the rationale to `session.log`.
+- Otherwise: fall through to the quality/mode matrix below.
 
 **Gate matrix:**
 
-| Appetite | Review Mode | `context:10` (Strategic Approaches — 5 options) | `context:20` (Domain Libraries — 8 options) |
+| Quality | Review Mode | `context:10` (Strategic Approaches — 5 options) | `context:20` (Domain Libraries — 8 options) |
 |---|---|---|---|
-| `Lean` | `Auto` | **Skip** entire Context stage → go directly to `shape:10` | **Skip** (not reached) |
-| `Lean` | `Product Spec Gate` / `Product Spec + Interface Gates` / `Product Spec + Interface + Scopes` / `Product Spec + Interface + Tech Review` / `Product Spec + Interface + Tech Review + Code Diff` | **Reduced ask**: present all 5 strategic approaches, but mark execution as opt-in per approach (no automatic parallel subagents) | **Reference-only**: detect domain signals and load the 8 libraries as passive context for Shape/Scope; do not execute subagents per library |
-| `Core` | any | **Full ask** (current behavior): present all 5, execute selected in parallel, consolidate into `strategic-insights.md` | **Full detect + execute**: 1..N of the 8 libraries via parallel subagents, inject into Shape/Scope/Interface |
-| `Complete` | any | **Full ask** + advisory note: "Complete detected — running all 5 strategic approaches is recommended" | **Full detect + execute** of all 8 libraries detected |
+| `experimental` | `Auto` | **Skip** entire Context stage → go directly to `shape:10` | **Skip** (not reached) |
+| `experimental` | `Product Spec Gate` / `Product Spec + Interface Gates` / `Product Spec + Interface + Scopes` / `Product Spec + Interface + Tech Review` / `Product Spec + Interface + Tech Review + Code Diff` | **Reduced ask**: present all 5 strategic approaches, but mark execution as opt-in per approach (no automatic parallel subagents) | **Reference-only**: detect domain signals and load the 8 libraries as passive context for Shape/Scope; do not execute subagents per library |
+| `production` | any | **Full ask** (current behavior): present all 5, execute selected in parallel, consolidate into `strategic-insights.md` | **Full detect + execute**: 1..N of the 8 libraries via parallel subagents, inject into Shape/Scope/Interface |
 
-**Skip log (when `Lean` + `Auto`):**
+**Skip log (when `experimental` + `Auto`):**
 
 The LLM surfaces this message in the chat output (visible to the user) AND in the per-session log file under `.stelow/{date}/{dir}/session.log`:
 
 ```
-echo "Lean appetite + Auto review mode detected — skipping Context per context:5 policy"
+echo "Experimental quality + Auto review mode detected — skipping Context per context:5 policy"
 echo "Proceeding directly to shape:10"
 ```
 
-**Reference-only library handling (when `Lean` + non-Auto):** Detected domain libraries are recorded in `spec-product.md` frontmatter as `domains_detected: [pricing, marketplace]` (single source of truth — canonical for subagent `reads`). They are NOT executed as subagents and no `strategic-insights.md` is produced. The downstream Shape/Scope/Interface/Planning stages load the listed libraries as passive context (their `SKILL.md` files are referenced on demand). A `## Domain Signals` body section is allowed for human-readable rationale but is not the canonical input for subagents.
+**Reference-only library handling (when `experimental` + non-Auto):** Detected domain libraries are recorded in `spec-product.md` frontmatter as `domains_detected: [pricing, marketplace]` (single source of truth — canonical for subagent `reads`). They are NOT executed as subagents and no `strategic-insights.md` is produced. The downstream Shape/Scope/Interface/Planning stages load the listed libraries as passive context (their `SKILL.md` files are referenced on demand). A `## Domain Signals` body section is allowed for human-readable rationale but is not the canonical input for subagents.
 
-**Why this gate exists:** Appetite controls depth, Mode controls breadth (see `README.md` "Appetite & Mode"). For Lean-appetite work under Auto mode, strategic analysis and domain library execution are overhead that defeats the purpose of the appetite declaration. The five Strategic Approaches and eight Domain Libraries remain available — only the *execution* is gated, not the *availability*.
+**Why this gate exists:** Quality controls rigor, Mode controls oversight. For experimental work under Auto mode, strategic analysis and domain library execution are overhead that defeats the purpose of the probe. The five Strategic Approaches and eight Domain Libraries remain available — only the *execution* is gated, not the *availability*.
 
 ### context:10 — Strategic Exploration (always ask unless gated by `context:5`)
 

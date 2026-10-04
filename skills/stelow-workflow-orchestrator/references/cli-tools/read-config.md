@@ -2,7 +2,7 @@
 
 > **CLI-agnostic** — any agent with bash + node can use this. Requires `node` (built-in on most systems) and a project with `stelow.json` at the root.
 
-**Canonical source:** `Workflow.config.{appetite,review_mode,domains_detected}` lives in `stelow.json#workflows[]`. This is the single source of truth for the active workflow's config.
+**Canonical source:** `Workflow.config.{quality,supervisor,exploration_count,exploration_hybrid,review_mode,domains_detected}` lives in `stelow.json#workflows[]`. This is the single source of truth for the active workflow's config. A legacy `config.appetite` is accepted and mapped once (any value → quality production, supervisor high; breadth 2/3/5 from Lean/Core/Complete).
 
 **Preferred form (helper available):** `scripts/stelow config get <field> [default]` — single tested parser. The sourced functions below delegate to it automatically and fall back to the inline reader on standalone installs without a helper checkout.
 
@@ -25,7 +25,10 @@ Source this in any skill that needs to read workflow config:
 # Source the helper (adjust path relative to skill)
 source "$(dirname "${BASH_SOURCE[0]}")/../../stelow-workflow-orchestrator/references/cli-tools/read-config.sh"
 
-APPETITE=$(stelow_read_appetite)
+QUALITY=$(stelow_read_quality)
+SUPERVISOR=$(stelow_read_supervisor)
+EXPLORATION_COUNT=$(stelow_read_exploration_count)
+EXPLORATION_HYBRID=$(stelow_read_exploration_hybrid)
 REVIEW_MODE=$(stelow_read_review_mode)
 DOMAINS_DETECTED=$(stelow_read_domains)
 ```
@@ -53,7 +56,11 @@ stelow_config() {
 }
 
 # Convenience wrappers
-stelow_read_appetite() { stelow_config appetite Core; }
+stelow_read_quality() { stelow_config quality production; }
+stelow_read_supervisor() { stelow_config supervisor high; }
+stelow_read_exploration_count() { stelow_config exploration_count 3; }
+stelow_read_exploration_hybrid() { stelow_config exploration_hybrid true; }
+# Deprecated alias (one release line): stelow_read_appetite() { stelow_config appetite Core; }
 stelow_read_review_mode() { stelow_config review_mode "Product Spec + Interface + Scopes"; }
 stelow_read_domains() {
   if [ -f "stelow.json" ]; then
@@ -98,7 +105,8 @@ APPETITE=$(stelow_read_appetite)
 
 | Scenario | Returns |
 |---|---|
-| `stelow.json` exists, in-progress workflow, `config.appetite` set | The value |
-| `stelow.json` exists, in-progress workflow, `config.appetite` undefined | empty string → caller decides |
+| `stelow.json` exists, in-progress workflow, knob set | The value |
+| `stelow.json` exists, in-progress workflow, knob undefined, legacy `config.appetite` set | Mapped value (production/high/2-3-5) |
+| `stelow.json` exists, in-progress workflow, knob undefined, no legacy | empty string → caller decides |
 | `stelow.json` exists, no in-progress workflow | empty string (no false positives from archived) |
 | `stelow.json` missing | Default passed as 2nd arg |

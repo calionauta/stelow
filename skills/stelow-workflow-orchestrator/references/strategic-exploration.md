@@ -49,7 +49,7 @@ If user selects one or more:
 
    **Task string must include the user's verbatim request** — strategic-context subagents do NOT inherit orchestrator deliberation. Pass:
    - `USER REQUEST (verbatim): ${userOriginalRequest}` — the literal text the user typed at workflow start
-   - `Appetite: ${configAppetite}`
+   - `Quality: ${configQuality}, Supervisor: ${configSupervisor}, Exploration: ${configExplorationCount}+hybrid`
    - `Review Mode: ${configReviewMode}`
    - `Detected domains: ${configDomainsDetected}`
    - `Workflow dir: ${WF_DIR}`
@@ -67,7 +67,7 @@ If user selects one or more:
    - Top opportunities consolidated
    - Recommended focus areas
 
-   **Task string inputs:** consolidated inputs include the original user request, appetite, review_mode, and the N individual skill analyses (paths in `reads`).
+   **Task string inputs:** consolidated inputs include the original user request, run knobs, review_mode, and the N individual skill analyses (paths in `reads`).
 
 4. Show summary in chat with file links
 

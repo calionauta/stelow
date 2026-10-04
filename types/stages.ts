@@ -36,7 +36,9 @@ export interface StageQuestion {
   kind: "human-ask" | "agent-receipt" | "skip";
   gate: string;
   modes: string[];
+  /** @deprecated Use exploration_min_count. Kept for old states. */
   appetite?: string[];
+  exploration_min_count?: number;
   evidence?: string;
   receipt: string;
 }

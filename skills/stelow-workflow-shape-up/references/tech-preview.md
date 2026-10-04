@@ -1,25 +1,25 @@
-## shape:12 — Tech Preview (appetite-gated)
+## shape:12 — Tech Preview (breadth-gated)
 
 After recon, run a lightweight tech preview to surface constraints and
 opportunities BEFORE shaping the product spec. This feeds codebase reality
 into the product decision, not after.
 
-**Standalone awareness:** when running inside stelow, this step reads appetite
-from `stelow.json#workflows[].config.appetite`. When standalone, defaults to Core appetite.
+**Standalone awareness:** when running inside stelow, this step reads exploration breadth
+from `stelow.json#workflows[].config.exploration`. When standalone, defaults to standard breadth (3).
 Cymbal runs if available + brownfield regardless of mode — it doesn't need
 stelow context. Both paths produce valid output.
 
-**Read appetite + stack source:**
+**Read exploration breadth + stack source:**
 ```bash
 WF_DIR="$(ls -td .stelow/*/*/ 2>/dev/null | head -1)"
-APPETITE="Core"
+EXPLORATION_COUNT="3"
 if [ -n "$WF_DIR" ]; then
   STELOW_MODE=true
   # Canonical: source helper from orchestrator references (single source of truth).
   # See skills/stelow-workflow-orchestrator/references/cli-tools/read-config.md.
   # shellcheck disable=SC1091
   source "$(dirname "${BASH_SOURCE[0]:-$0}")/../../stelow-workflow-orchestrator/references/cli-tools/read-config.sh"
-  APPETITE=$(stelow_read_appetite)
+  EXPLORATION_COUNT=$(stelow_read_exploration_count)
 else
   STELOW_MODE=false
 fi
@@ -30,20 +30,20 @@ if [ -f "go.mod" ] || [ -f "package.json" ] || [ -f "Cargo.toml" ] || [ -f "Gemf
 fi
 ```
 
-### Tech preview depth by appetite
+### Tech preview depth by exploration breadth
 
-Tech preview informs shape-up; appetite adds depth but never removes the floor. Even Lean gets a minimum tech context — appetite controls how much recon runs, not whether constraints are surfaced.
+Tech preview informs shape-up; breadth adds depth but never removes the floor. Even narrow exploration gets a minimum tech context — breadth controls how much recon runs, not whether constraints are surfaced.
 
-| Appetite | Brownfield? | Tech preview |
+| Breadth | Brownfield? | Tech preview |
 |----------|-------------|-------------|
-| **Lean** | existing | **Minimum tech preview.** `cymbal structure` — entry points, central packages. Just enough to know what exists. |
-| **Lean** | new | **Skip cymbal.** No codebase to analyze; product spec goes direct. |
-| **Core** | existing | **Standard tech preview.** `cymbal structure` — entry points, hotspots, central packages. Quick overview. |
-| **Core** | new | **Skip cymbal.** No codebase to analyze. |
-| **Complete** | existing | **Deep tech preview.** `cymbal structure` + `cymbal importers` on key domain files and `cymbal impact` on key domain symbols — blast radius, coupling, risks. |
-| **Complete** | new | **Skip cymbal.** No codebase to analyze. |
+| **1–2** | existing | **Minimum tech preview.** `cymbal structure` — entry points, central packages. Just enough to know what exists. |
+| **1–2** | new | **Skip cymbal.** No codebase to analyze; product spec goes direct. |
+| **3** | existing | **Standard tech preview.** `cymbal structure` — entry points, hotspots, central packages. Quick overview. |
+| **3** | new | **Skip cymbal.** No codebase to analyze. |
+| **4–5** | existing | **Deep tech preview.** `cymbal structure` + `cymbal importers` on key domain files and `cymbal impact` on key domain symbols — blast radius, coupling, risks. |
+| **4–5** | new | **Skip cymbal.** No codebase to analyze. |
 
-**Rationale:** Skipping tech preview entirely on Lean brownfield creates the same Estimation Bias trap as cutting quality — the LLM then shapes a product spec without knowing what already exists, leading to redundant scope or missed constraints. Appetite cuts scope (lines per spec, number of alternatives explored), not tech context.
+**Rationale:** Skipping tech preview entirely on narrow brownfield creates the same Estimation Bias trap as cutting quality — the LLM then shapes a product spec without knowing what already exists, leading to redundant scope or missed constraints. Breadth cuts scope (number of directions explored), not tech context.
 
 ### Run the portable preflight, then cymbal when available
 
@@ -63,7 +63,7 @@ if command -v cymbal &>/dev/null; then
 fi
 ```
 
-If cymbal is available AND appetite ≥ Core AND brownfield:
+If cymbal is available AND exploration count ≥ 3 AND brownfield:
 
 ```bash
 # Ensure index is fresh (safe to run multiple times — incremental)
@@ -72,8 +72,8 @@ cymbal index 2>/dev/null
 # The preflight already verified this is the target Git workspace.
 cymbal structure --json 2>/dev/null > context/cymbal-structure.json
 
-# If Complete, also run blast-radius analysis on key files
-if [ "$APPETITE" = "Complete" ]; then
+# At breadth 4-5, also run blast-radius analysis on key files
+if [ "$EXPLORATION_COUNT" -ge 4 ]; then
   # Entry points from machine-readable structure output
   jq -r '.entry_points[]?' context/cymbal-structure.json 2>/dev/null | head -3 | while read -r file; do
     [ -n "$file" ] && cymbal outline -s --names "$file" --json 2>/dev/null >> context/cymbal-outline.md
@@ -84,7 +84,7 @@ if [ "$APPETITE" = "Complete" ]; then
 fi
 
 # Search existing features by workflow name/topic
-# Runs on any appetite (depth = search only, no refs/impact)
+# Runs at any breadth (depth = search only, no refs/impact)
 # Finds existing features that could conflict or be reused
 WF_NAME=$(node -e "
   const t = JSON.parse(require('fs').readFileSync('stelow.json','utf8'));

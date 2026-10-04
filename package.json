@@ -1,6 +1,6 @@
 {
   "name": "@calionauta/stelow",
-  "version": "0.71.12-alpha",
+  "version": "0.72.0-alpha",
   "description": "stelow \u2014 opinionated product workflow. stellar clarity. low friction.",
   "keywords": [
     "ai-coding-agent",
@@ -36,6 +36,8 @@
     "gen:catalog:check": "python3 scripts/generate-stage-catalog.py --check",
     "gen:recipes": "python3 scripts/generate-recipe-catalog.py",
     "gen:recipes:check": "python3 scripts/generate-recipe-catalog.py --check",
+    "gen:site": "node site/build.mjs",
+    "gen:site:check": "node site/build.mjs --check",
     "validate:stages": "python3 scripts/validate-stages.py",
     "verify:execution": "npm run validate:stages && npm run gen:transitions:check && npm run gen:catalog:check && npm run gen:recipes:check",
     "test": "vitest run",

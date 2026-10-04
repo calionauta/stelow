@@ -46,6 +46,7 @@ STAGE_HINTS = {
     "ux-critique": "int-gate",
     "tech-planning": "planning",
     "interface-alternatives": "interface",
+    "architecture-alternatives": "architecture",
     "scope-executor": "scope",
     "testing-ai-code": "verification",
     "testing-execution": "verification",

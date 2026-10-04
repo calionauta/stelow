@@ -72,8 +72,8 @@ the agent must still justify against the fixed constraints, the criteria, and
 the accepted sacrifice. Prefer a reference that fits the stated direction over a
 more impressive one.
 
-**Appetite still gates depth.** Lean explores one suggested interface and spends
-no reference calls. Core and Complete may spend them.
+**Exploration breadth still gates depth.** Count 1 explores one suggested interface and spends
+no reference calls. Counts 2–5 may spend them.
 
 **Never the only source, never a gate.** A stage never blocks on a catalogue.
 Every step below the MCP layers has a documented built-in path.

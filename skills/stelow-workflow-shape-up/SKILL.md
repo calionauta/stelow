@@ -33,7 +33,7 @@ When loaded standalone (via `/skill:stelow-workflow-shape-up`), follow these ste
 
 ```
 1. shape:10 — Optional parallel recon (codebase context, brownfield only)
-2. shape:12 — Tech preview (appetite-gated, codebase analysis)
+2. shape:12 — Tech preview (breadth-gated, codebase analysis)
 3. shape:15 — Assumption Check (surface assumptions BEFORE shaping) ← DO NOT SKIP
 4. shape:20 — Shaping
 5. Proposal output with validation
@@ -78,9 +78,9 @@ If blocking constraints exist from a previous tech planning cycle, read them BEF
 
 Read the outputs before proceeding.
 
-## shape:12 — Tech Preview (appetite-gated)
+## shape:12 — Tech Preview (breadth-gated)
 
-Run appetite-gated codebase recon before shaping (Lean: existence search;
+Run breadth-gated codebase recon before shaping (narrow: existence search;
 Core: structure + refs; Complete: + blast radius), then search existing
 features by workflow name/topic. Tool ladder (orient → navigate → fallback):
 `../stelow-workflow-orchestrator/references/cli-tools/code-map.md`. Full depth table, cymbal
@@ -171,7 +171,7 @@ means from the user's perspective. These are distinct from technical DoD/ACs (ad
 Tech Planning) — they describe the **outcome**, not the implementation. For UI-bearing
 products, ground candidate ACs in curated checklists (see
 `../stelow-workflow-orchestrator/references/cli-tools/acceptance-checklist.md`) —
-appetite-scaled, sourced, and skipped gracefully when irrelevant or unreachable.
+breadth-scaled, sourced, and skipped gracefully when irrelevant or unreachable.
 
 Include in `spec-product.md`:
 
@@ -200,9 +200,9 @@ VALID=true
 
 grep -q "IN scope" "$SPEC" || { echo "VALIDATION_FAILED: missing IN scope"; VALID=false; }
 grep -q "OUT scope" "$SPEC" || { echo "VALIDATION_FAILED: missing OUT scope"; VALID=false; }
-grep -q "appetite:" "$SPEC" || { echo "VALIDATION_FAILED: missing appetite field (human-set)"; VALID=false; }
+grep -q -E "^(quality|appetite):" "$SPEC" || { echo "VALIDATION_FAILED: missing quality field (human-set: production / experimental; legacy appetite: accepted and mapped once)"; VALID=false; }
 grep -q "review_mode:" "$SPEC" || { echo "VALIDATION_FAILED: missing review_mode field (human-set: Auto / Product Spec Gate / Product Spec + Interface Gates / Product Spec + Interface + Scopes / Product Spec + Interface + Tech Review / Product Spec + Interface + Tech Review + Code Diff)"; VALID=false; }
-grep -q "appetite_fit:" "$SPEC" || { echo "VALIDATION_FAILED: missing appetite_fit field (LLM-set: does shaped proposal fit appetite?)"; VALID=false; }
+grep -q "appetite_fit:" "$SPEC" || { echo "VALIDATION_FAILED: missing appetite_fit field (LLM-set: does shaped proposal fit the knobs?)"; VALID=false; }
 grep -q -E "## (Risks|Rabbit ?holes)" "$SPEC" || { echo "VALIDATION_FAILED: missing Risks section"; VALID=false; }
 grep -q "Definition of Done" "$SPEC" || { echo "VALIDATION_FAILED: missing Definition of Done section"; VALID=false; }
 grep -q "Acceptance Criteria" "$SPEC" || { echo "VALIDATION_FAILED: missing Acceptance Criteria section"; VALID=false; }
@@ -217,40 +217,30 @@ fi
 
 ### appetite_fit — Preliminary Mechanical Check
 
-After the validation guard above, run a quick mechanical check on scope size:
+After the validation guard above, run a quick mechanical check on scope size
+against the single ceiling of 9:
 
 ```bash
 SCOPE_COUNT=$(grep -c '^### ' "$SPEC")
-SPEC_LINES=$(wc -l < "$SPEC")
 
-case "$APPETITE" in
-  Lean)
-    [ "$SCOPE_COUNT" -gt 2 ] && echo "APPETITE_WARN: Lean appetite but $SCOPE_COUNT scopes (>2). Consider consolidating."
-    [ "$SPEC_LINES" -gt 150 ] && echo "APPETITE_WARN: Lean spec >150 lines. Consider trimming."
-    ;;
-  Core)
-    [ "$SCOPE_COUNT" -gt 5 ] && echo "APPETITE_WARN: Core appetite but $SCOPE_COUNT scopes (>5). Consider reducing."
-    [ "$SPEC_LINES" -gt 350 ] && echo "APPETITE_WARN: Core spec >350 lines. Consider tightening."
-    ;;
-  Complete)
-    # No mechanical limits for Complete — appetite_fit evaluated by Plan Critique
-    ;;
-esac
+if [ "$SCOPE_COUNT" -gt 9 ]; then
+  echo "APPETITE_WARN: $SCOPE_COUNT scopes exceed the ceiling of 9. Split the proposal or record why the ceiling does not apply."
+fi
 ```
 
 If warnings fire, flag them in the output but do NOT block — the **Plan Critique** stage validates `appetite_fit` via its fresh-context feasibility reviewer (see `stelow-workflow-plan-critique` checklists). The critique's gap resolution (mode-dependent) handles `cuts_needed` and `reshape`. This aligns `appetite_fit` with the existing evaluation infrastructure instead of adding a dedicated subagent.
 
 The `appetite_fit` field in the spec frontmatter is the **human-readable summary**; the Plan Critique validates it.
 >
-> **Appetite is constraint, not estimate:**
-> - `appetite` — set by the **human** during setup. How much investment does this problem deserve? (budget, not estimate)
-> - `appetite_fit` — initial mechanical check in Shape Up, validated by Plan Critique (feasibility reviewer fresh-context) post-shaping. Does the proposal fit within the declared appetite?
+> **Knobs are constraints, not estimates:**
+> - `quality`, `supervisor`, `exploration_count`, `exploration_hybrid` — set by the **human** during setup. How much the run may consider and how rigorously it is checked.
+> - `appetite_fit` — initial mechanical check in Shape Up, validated by Plan Critique (feasibility reviewer fresh-context) post-shaping. Does the proposal fit within the declared knobs?
 >
 > **If `appetite_fit = cuts_needed`:** the LLM suggests specific cuts. The human decides which to accept.
-> **If `appetite_fit = reshape`:** the proposal fundamentally exceeds appetite — must be reshaped before continuing.
-> The LLM **never** extends appetite. Appetite is fixed for the cycle.
+> **If `appetite_fit = reshape`:** the proposal fundamentally exceeds the knobs — must be reshaped before continuing.
+> The LLM **never** widens the knobs. Knobs are fixed for the cycle.
 >
-> **How to define appetite:** see `references/proposal-structure.md` — Lean / Core / Complete with depth of scope. Mode controls gates/questions independently (stored in `stelow.json#config`).
+> **How to define the knobs:** see `references/proposal-structure.md` — quality (rigor), supervisor (cadence), exploration (breadth). Mode controls gates/questions independently (stored in `stelow.json#config`).
 
 ---
 
@@ -267,8 +257,8 @@ Language models are trained on human data, and humans systematically
 **Correction rules:**
 1. Scope count warnings are **informational** — do not cut scope based on them.
    The model's bias overestimates complexity, producing false positives.
-2. The question is not "does this plan fit the appetite?" but rather
-   "is the plan well-defined?" — a well-defined plan with 4 Lean scopes
+2. The question is not "does this plan fit the knobs?" but rather
+   "is the plan well-defined?" — a well-defined plan with 6 scopes
    is not a violation.
 3. `cuts_needed` must be based on **value overlap**, not on
    "too many scopes for the available time".
@@ -304,23 +294,27 @@ Interface Alternatives (if selected)
 
 **This section executes after visual review Gate approval** (not immediately after shaping).
 
-When triggered by the orchestrator:
+When triggered by the orchestrator, confirm the proposal's IN/OUT table as
+an opt-out question (Pattern 3 form in `../stelow-workflow-orchestrator/stages/ask-patterns.md`,
+proposal items as the option source —
+mapped scopes do not exist yet; they get their own confirm at the scope
+stage):
 
-Show the IN/OUT scope table. Ask:
-
-1. **Remove from IN?** — use the ask tool with multiSelect (see `../stelow-workflow-orchestrator/references/cli-tools/ask.md`) with current IN scopes
-2. **Add to IN?** — use the ask tool with multiSelect (see `../stelow-workflow-orchestrator/references/cli-tools/ask.md`) with OUT scope items
+1. **Keep IN?** — ask with multiSelect over the current IN items, ALL preselected (`selected: true`); unchecking removes. Include each item's one-line outcome as its description.
+2. **Add to IN?** — ask with multiSelect over OUT items, NONE preselected; checking adds.
 
 [Use the ask tool — see `../stelow-workflow-orchestrator/references/cli-tools/ask.md`]
 
-> **⚡ Estimation Bias:** When asking "Remove from IN?", the model tends to suggest
+> **⚡ Estimation Bias:** When presenting IN items, the model tends to suggest
 > removing items that **seem** complex, but could be simple to implement.
 > If the model recommends removing something due to "complexity", it must state that
 > this is an estimate and may be inflated. The final decision is human.
 
-**If user removes items:** update spec
+**If user unchecks items:** update spec (and record a scope-map challenge later if a boundary meaning changes at mapping time)
 **If user adds items:** create `spec-product_{v+1}.md` (user is aware)
-**If user selects nothing:** proceed without changes
+**If user keeps everything checked:** proceed without changes
+**If user unchecks everything:** reshape — an empty IN is not a proposal
+**If user skips:** proceed without changes (skip leaves the table untouched)
 
 Always write the scope-adjustment receipt to the resulting product-spec
 frontmatter, including the no-change case:
@@ -343,14 +337,14 @@ The shaped proposal is saved to:
 See `references/proposal-structure.md` for the expected output format.
 
 Completeness contract (the host validates these minima — never submit fewer):
-YAML frontmatter with `appetite:` and `product_type:`; all four structure
+YAML frontmatter with `quality:` (or legacy `appetite:`) and `product_type:`; all four structure
 sections (unanswered questions, alternatives, proposal with problem/solution/
 dangers/out-of-scope, OUT/IN Scope Table); at least 800 words.
 
 criteria:
   - id: frontmatter
     kind: presence
-    text: "YAML frontmatter carries appetite and product_type"
+    text: "YAML frontmatter carries quality (or legacy appetite) and product_type"
   - id: structure-sections
     kind: count
     text: "All four structure sections present (unanswered questions, alternatives, proposal, OUT/IN Scope Table)"
@@ -369,7 +363,7 @@ criteria:
 
 ## When to Use & Test Cases
 
-Use when turning a request into a shaped proposal with IN/OUT scope and appetite.
+Use when turning a request into a shaped proposal with IN/OUT scope and run knobs.
 
 Should activate: "shape the checkout fix", "is this a Core or Complete build".
 Should NOT activate: "write the code" (execution), "break into sprint tasks" (use stelow-workflow-tech-planning instead).
@@ -384,7 +378,7 @@ Should NOT activate: "write the code" (execution), "break into sprint tasks" (us
 1. Run recon on the checkout flow.
 2. Write problem, solution, IN/OUT scope, and risks.
 
-**Output:** An 800+ word proposal with appetite and guest checkout explicitly OUT.
+**Output:** An 800+ word proposal with run knobs and guest checkout explicitly OUT.
 
 ## Related Skills
 
@@ -410,7 +404,7 @@ Input:
 
 The skill will guide you through:
 1. shape:10 — Optional parallel recon (codebase context, brownfield only)
-2. shape:12 — Tech preview (appetite-gated)
+2. shape:12 — Tech preview (breadth-gated)
 3. shape:15 — Assumption Check (surface assumptions BEFORE shaping)
 4. shape:20 — Shaping
 5. Proposal output with validation
@@ -441,7 +435,7 @@ In **workflow mode**, skip to `### Workflow slice` and emit a complete
 
 ```
 stage          : shape
-description    : Shape stage. Define appetite, hill chart, rabbit holes.
+description    : Shape stage. Define run knobs, hill chart, rabbit holes.
 status         : <done|partial|blocked>
 artifacts      : <paths created or modified>
 next-candidate : critique
@@ -458,7 +452,7 @@ router skill consumes the next-candidate field and calls
 Workflow mode for the **shape** stage. Standalone behavior lives in
 the rest of this file (unchanged). Summary:
 
-> Shape stage. Define appetite, hill chart, rabbit holes.
+> Shape stage. Define run knobs, hill chart, rabbit holes.
 
 Primary actions (per stages.yaml): `read, write`. Run only the actions that
 produce the artifacts promised in `## Hand-off`; skip anything that does

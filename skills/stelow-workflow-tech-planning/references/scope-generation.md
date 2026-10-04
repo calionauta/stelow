@@ -9,7 +9,8 @@ Delegate to a planner subagent (see `cli-tools/subagents.md`):
 - Output: `.stelow/{YYYY-MM-DD}/{_dir}/plans/spec-tech_{v}.md`
 - Inputs (all via `reads:`):
   - `.stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md` (canonical product spec)
-  - `.stelow/{YYYY-MM-DD}/{_dir}/interfaces/selected-interface.md` (user's chosen interface direction from int-gate — exists by this stage; absent only if interface stage was skipped via Review Mode)
+  - `.stelow/{YYYY-MM-DD}/{_dir}/interfaces/selected-interface.md` (user's chosen interaction direction from int-gate — exists by this stage; absent only if interface stage was skipped via Review Mode)
+  - `.stelow/{YYYY-MM-DD}/{_dir}/architecture/selected-architecture.md` (chosen construction direction from the architecture stage — exists by this stage; absent only for legacy states predating the stage)
   - context/tech-recon.md (tech constraints from shape:12)
 - `context: "fresh"` — planner must NOT inherit orchestrator's deliberation
 
@@ -19,8 +20,8 @@ Delegate to a planner subagent (see `cli-tools/subagents.md`):
 > 1. Do not cut scope out of fear of complexity — distrust your own bias.
 > 2. If a feature seems "too complex", justify why and present an
 >    alternative without assuming the estimate is correct.
-> 3. Scope count vs appetite is an **indicator**, not a gate. 4 well-defined
->    Lean scopes is not a violation.
+> 3. Scope count vs the ceiling of 9 is an **indicator**, not a gate. 6 well-defined
+>    scopes is not a violation.
 > 4. Prefer quality solutions over "cheap" ones. The model should not
 >    avoid complexity — it should manage it.
 
@@ -34,12 +35,12 @@ known interface) to find the block to imitate before searching.
 Cap planner context with `sem context --budget 8000 --headers --json`
 and surface hotspots plus co-changes with `sem log --json`.
 Tool ladder next (`cli-tools/code-map.md` — orient with ripwire on
-unfamiliar code, then navigate). Appetite controls depth,
+unfamiliar code, then navigate). Exploration breadth controls depth,
 not whether recon runs — the floor is `cymbal search --text` (does it
-exist?) at every appetite to prevent scope duplication.
-- Lean: `cymbal search --text` — "does it exist?" (Quality Floor)
-- Core: `search` + `cymbal refs` — where is it, who connects
-- Complete: `search` + `refs` + `cymbal impact` — blast radius
+exist?) at every breadth to prevent scope duplication.
+- Breadth 1–2: `cymbal search --text` — "does it exist?" (Quality Floor)
+- Breadth 3: `search` + `cymbal refs` — where is it, who connects
+- Breadth 4–5: `search` + `refs` + `cymbal impact` — blast radius
 
 Start from the target repository root and run the canonical preflight. It
 creates a receipt that must be cited by `spec-tech.md`; optional tools are
@@ -58,10 +59,10 @@ if [ ! -f "go.mod" ] && [ ! -f "package.json" ] && \
   exit 0
 fi
 
-# Read appetite from workflow config (canonical source via helper)
+# Read exploration breadth from workflow config (canonical source via helper)
 # shellcheck disable=SC1091
 source "$(dirname "${BASH_SOURCE[0]:-$0}")/../../stelow-workflow-orchestrator/references/cli-tools/read-config.sh"
-APPETITE=$(stelow_read_appetite)
+EXPLORATION_COUNT=$(stelow_read_exploration_count)
 
 # Read spec-product for IN scope concepts
 SPEC_PRODUCT=$(ls .stelow/*/*/plans/spec-product*.md 2>/dev/null | head -1)
@@ -70,25 +71,25 @@ if [ -n "$SPEC_PRODUCT" ]; then
   # Extract key concepts from IN scope
   IN_SCOPES=$(grep -A30 '## IN scope' "$SPEC_PRODUCT" 2>/dev/null | head -30)
   
-  # 1. Search each concept (RUNS ON ANY APPETITE)
+  # 1. Search each concept (RUNS AT ANY BREADTH)
   # Extract 1-3 word noun-phrase concepts first: whole spec lines dilute the query
   echo "$IN_SCOPES" | while read -r line; do
     [ -n "$line" ] && cymbal search --text "$line" --json 2>/dev/null | head -20 >> context/feature-locations.md
   done
   # For known symbols prefer exact search: cymbal search "<SymbolName>" --json
   
-  # 2. Search by workflow name (RUNS ON ANY APPETITE)
+  # 2. Search by workflow name (RUNS AT ANY BREADTH)
   cymbal search --text "$(grep -oP '"name":\s*"([^"]+)"' .stelow/*/*/index.json 2>/dev/null | head -1 | grep -oP '"[^"]+"$' | tr -d '"')" 2>/dev/null | head -20 >> context/feature-locations.md
   
-  # 3. refs — CORE and COMPLETE only
-  if [ "$APPETITE" = "Core" ] || [ "$APPETITE" = "Complete" ]; then
+  # 3. refs — breadth 3 and above only
+  if [ "$EXPLORATION_COUNT" -ge 3 ] 2>/dev/null; then
     for symbol in $(head -20 context/feature-locations.md | grep -oP '\b[A-Z][a-zA-Z]+\b' | sort -u | head -10); do
       cymbal refs "$symbol" 2>/dev/null >> context/feature-refs.md
     done
   fi
   
-  # 4. impact — COMPLETE only (files -> importers; symbols only -> impact)
-  if [ "$APPETITE" = "Complete" ]; then
+  # 4. impact — breadth 4-5 only (files -> importers; symbols only -> impact)
+  if [ "$EXPLORATION_COUNT" -ge 4 ] 2>/dev/null; then
     for f in $(cat context/feature-locations.md | grep -oP '^[^:]+?\.(go|ts|rs|py|js)' | sort -u | head -10); do
       cymbal importers "$f" --json 2>/dev/null >> context/feature-impact.md
     done
@@ -149,17 +150,13 @@ if [ "$VALID" = false ]; then
   # Feed validation errors back to planner and regenerate once
 fi
 
-# Check appetite violation: scope count vs appetite
-APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "Core")
+# Check ceiling violation: scope count vs the single ceiling of 9
 SCOPE_COUNT=$(grep -c "^### " "$SPEC_TECH")
 
-# Appetite boundary check: scope count should stay within appetite
-# Lean ≤ 2, Core ≤ 5, Complete > 5
-case "$APPETITE" in
-  Lean) [ "$SCOPE_COUNT" -gt 2 ] && echo "APPETITE_VIOLATION: Lean appetite but $SCOPE_COUNT scopes. Consolidate or split into multiple cycles." ;;
-  Core)  [ "$SCOPE_COUNT" -gt 5 ] && echo "APPETITE_VIOLATION: Core appetite but $SCOPE_COUNT scopes. Consider reducing scope." ;;
-  Complete)  ;;  # Complete has no upper limit by scope count alone
-esac
+# Ceiling check: scope count stays at or under 9 (discovered, never a target)
+if [ "$SCOPE_COUNT" -gt 9 ]; then
+  echo "CEILING_VIOLATION: $SCOPE_COUNT scopes exceed the ceiling of 9. Consolidate or split into multiple cycles."
+fi
 ```
 
 > **Rationale:** Scopes missing TYPE, DoD, or ACs will fail at Execution time.

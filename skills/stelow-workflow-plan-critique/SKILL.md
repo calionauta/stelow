@@ -69,7 +69,7 @@ The workflow loads this skill automatically after Tech Planning, before visual r
 Before generating technical scopes, tech-planning calls this skill to ensure
 the plan is solid.
 
-**Standalone awareness:** when inside stelow, reads review_mode from `stelow.json#workflows[].config.review_mode` and spec from `.stelow/*/plans/spec-product*.md`. When standalone, defaults to Product Spec + Interface + Scopes review mode (maximum product gates) and scans current directory for `spec-product*.md`. File not found → prompt user for path. Appetite defaults to Core, appetite_fit defaults to fits.
+**Standalone awareness:** when inside stelow, reads review_mode from `stelow.json#workflows[].config.review_mode` and spec from `.stelow/*/plans/spec-product*.md`. When standalone, defaults to Product Spec + Interface + Scopes review mode (maximum product gates) and scans current directory for `spec-product*.md`. File not found → prompt user for path. Quality defaults to production, appetite_fit defaults to fits.
 
 ---
 
@@ -97,7 +97,7 @@ Input received:
 
 ### 1. Read the plan
 
-Read the full `spec-product.md` to understand the proposal scope, appetite, IN/OUT boundaries,
+Read the full `spec-product.md` to understand the proposal scope, run knobs, IN/OUT boundaries,
 and implementation constraints.
 
 ### 2. Read reference files
@@ -137,7 +137,7 @@ SPEC_FILE=$(ls $SPEC 2>/dev/null | head -1) || SPEC_FILE=""
 # shellcheck disable=SC1091
 source "$(dirname "${BASH_SOURCE[0]:-$0}")/../../stelow-workflow-orchestrator/references/cli-tools/read-config.sh" 2>/dev/null || true
 REVIEW_MODE=$(stelow_read_review_mode 2>/dev/null || echo "Product Spec + Interface + Scopes")
-APPETITE=$(grep -oP '^appetite:\s*\K\S+' "$SPEC_FILE" 2>/dev/null || echo "Core")
+QUALITY=$(stelow_read_quality 2>/dev/null || echo "production")
 FIT=$(grep -oP '^appetite_fit:\s*\K\S+' "$SPEC_FILE" 2>/dev/null || echo "fits")
 ```
 
@@ -146,28 +146,28 @@ FIT=$(grep -oP '^appetite_fit:\s*\K\S+' "$SPEC_FILE" 2>/dev/null || echo "fits")
 The parent applies mode-based behavior after consolidation.
 This keeps subagents pure detectors, regardless of mode.
 
-**Check appetite fit (constraint check, not estimation):**
+**Check scope fit (constraint check, not estimation):**
 
 ```bash
 # appetite_fit is the LLM's assessment of whether the shaped proposal
-# fits within the human-declared appetite (constraint).
-# Appetite is NOT a target — it's a budget. The LLM does not estimate effort.
-# It checks: does this shaped design fit the declared investment?
+# fits within the human-declared knobs (constraint).
+# Knobs are NOT targets — they are bounds. The LLM does not estimate effort.
+# It checks: does this shaped design fit the declared bounds?
 case "$FIT" in
   fits)
-    echo "APPETITE_FITS: Shaped proposal fits within $APPETITE appetite. Proceed."
+    echo "SCOPE_FITS: Shaped proposal fits within the declared knobs (quality $QUALITY). Proceed."
     ;;
   cuts_needed)
-    echo "APPETITE_CUTS_NEEDED: $APPETITE appetite but proposal needs cuts."
+    echo "SCOPE_CUTS_NEEDED: proposal needs cuts to fit the knobs."
     echo "Critique will highlight which parts should be cut. Human decides final scope."
     ;;
   reshape)
-    echo "APPETITE_RESHAPE_NEEDED: Proposal fundamentally exceeds $APPETITE appetite."
+    echo "SCOPE_RESHAPE_NEEDED: Proposal fundamentally exceeds the knobs."
     echo "Critique cannot proceed — must reshape before continuing."
     exit 1
     ;;
   *)
-    echo "APPETITE_FIT_UNKNOWN: '$FIT' invalid. Defaulting to 'fits'."
+    echo "SCOPE_FIT_UNKNOWN: '$FIT' invalid. Defaulting to 'fits'."
     ;;
 esac
 ```

@@ -10,9 +10,9 @@ const skillFiles = readdirSync(join(root, "skills"), { withFileTypes: true }).fi
 describe("canonical stage catalog", () => {
   it("contains the ordered execution contract for every stage", () => {
     expect(catalog.version).toBe(2);
-    expect(catalog.stages).toHaveLength(17);
+    expect(catalog.stages).toHaveLength(18);
     expect(catalog.stages.map((stage: { id: string }) => stage.id)).toEqual([
-      "triage", "select", "setup", "context", "shape", "critique", "gate", "scope", "interface", "int-gate", "selection", "planning", "plan-gate", "execution", "verification", "diff-gate", "audit",
+      "triage", "select", "setup", "context", "shape", "critique", "gate", "scope", "interface", "int-gate", "selection", "architecture", "planning", "plan-gate", "execution", "verification", "diff-gate", "audit",
     ]);
     for (const stage of catalog.stages) {
       expect(stage.execution).toMatchObject({ mode: expect.any(String), required_capabilities: expect.any(Array), write_policy: expect.any(String), partition: expect.any(String) });
@@ -32,7 +32,7 @@ describe("canonical stage catalog", () => {
         expect(block, `${intent}: ${stages[index]} -> ${stages[index + 1]}`).toMatch(new RegExp(`\\[${stages[index + 1]}(?:,|\\])`));
       }
     }
-    expect(stageNames).toHaveLength(17);
+    expect(stageNames).toHaveLength(18);
   });
 
   it("publishes routes instead of host-local stage lists", () => {
@@ -42,7 +42,7 @@ describe("canonical stage catalog", () => {
   });
 
   it("makes execution metadata explicit for every skill and every recipe", () => {
-    expect(skillFiles).toHaveLength(30);
+    expect(skillFiles).toHaveLength(32);
     for (const file of skillFiles) {
       const frontmatter = readFileSync(file, "utf8").split("---")[1];
       expect(frontmatter, file).toMatch(/^\s*metadata:/m);

@@ -35,7 +35,7 @@ Note: underlying principles that originally came from narrative-practice thinkin
 
 #### Functionality / Technical
 
-- **"Appetite × Review Mode: two axes, one matrix"** — appetite = business constraint negotiated like a PM would; review mode = trust calibration like an EM/lead would decide. Together they simulate two conversations a real product team has before starting work.
+- **"Knobs × Review Mode: bounds, then oversight"** — run knobs (quality/supervisor/exploration) = bounds negotiated like a PM would; review mode = trust calibration like an EM/lead would decide. Together they simulate two conversations a real product team has before starting work.
 - **The bidirectional product↔tech loop** — Tech Preview → Codebase Feature Recon → Alignment Check formalizes the PM↔Eng Lead negotiation. A coding assistant never negotiates feasibility; it just implements.
 - **Anatomy of a self-contained skill** — skills as portable "job functions," not code snippets. Each skill represents a role-competency, so it survives being dropped into different harnesses.
 - **Fallbacks as first-class citizens** — a resilient team routes around a blocked dependency instead of stopping. Documented fallbacks mirror that behavior.
@@ -46,7 +46,7 @@ Note: underlying principles that originally came from narrative-practice thinkin
 - **"Measure three times, cut once" applied to AI** — the real failure of "vibe coding" isn't code quality, it's the *absence of roles*: no one doing discovery, no one doing critique, no one doing QA.
 - **From PM to tooling-for-PMs-with-AI** — your own trajectory leading product teams becoming the org chart the agents follow. You didn't teach the AI to code better — you taught it to organize like the teams you led.
 - **The "80% problem"** — Osmani's point (AI nails the happy path, skips edge cases/observability/security) is what happens when there's no QA function, no security reviewer, no one asking "what about edge cases." Stelow's adversarial reviewers fill those missing roles.
-- **Against "estimation theater"** — appetite-as-constraint only makes sense if you assume a *team* being managed, not a tool being prompted.
+- **Against "estimation theater"** — bounds-as-constraint only makes sense if you assume a *team* being managed, not a tool being prompted.
 
 #### Design Philosophy
 
@@ -71,7 +71,7 @@ Note: underlying principles that originally came from narrative-practice thinkin
 ### Potential Audiences
 
 - **agent builders** — care about: architecture decisions, harness-agnostic design, context management, fallback design, evidence-grounded feature choices.
-- **Product managers and UX designers exploring AI tooling** — care about: appetite/scoping, JTBD & opportunity mapping as skills, why "no roles" is why AI output feels shallow.
+- **Product managers and UX designers exploring AI tooling** — care about: run knobs/scoping, JTBD & opportunity mapping as skills, why "no roles" is why AI output feels shallow.
 - **Engineering managers / tech leads** — care about: tech alignment loop, review-mode/trust calibration, adversarial review design, gates as risk management.
 - **Indie hackers / solo founders using AI to build products** — care about: getting team-like rigor without a team, avoiding the "80% problem," practical setup and ROI.
 - **AI skeptics / critics of "vibe coding"** — care about: the manifesto angle, transparency about limitations, evidence-over-hype framing.

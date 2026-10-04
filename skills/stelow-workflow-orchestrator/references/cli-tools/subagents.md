@@ -185,13 +185,13 @@ Subagents should receive inputs as explicit artifacts, not inherited conversatio
 
 | Artifact | Path | Frontmatter fields | Used by |
 |---|---|---|---|
-| `spec-product.md` | `.stelow/{date}/{dir}/plans/spec-product_{v}.md` | `appetite`, `review_mode`, `domains_detected`, `appetite_fit` | All proposal/review/strategic-context subagents |
+| `spec-product.md` | `.stelow/{date}/{dir}/plans/spec-product_{v}.md` | `quality`, `supervisor`, `exploration_count`, `exploration_hybrid`, `review_mode`, `domains_detected`, `appetite_fit` | All proposal/review/strategic-context subagents |
 | `tech-recon.md` | `.stelow/{date}/{dir}/tech/tech-recon.md` | — | Interface proposals, alignment checks |
 | `spec-tech.md` | `.stelow/{date}/{dir}/plans/spec-tech_{v}.md` | — | Scope executors |
 | `scope-contract.json` | `.stelow/{date}/{dir}/scopes/{scope-id}.json` | `acceptance_criteria`, `verify_commands` | Scope executors |
-| `stelow.json` | `stelow.json` (project root) | `workflows[].config.{appetite,review_mode,domains_detected}`, `workflows[].detected_cli`, `workflows[].draftContent`, `workflows[].scopes[]` | Strategic context subagents (canonical source of truth) |
+| `stelow.json` | `stelow.json` (project root) | `workflows[].config.{quality,supervisor,exploration_count,exploration_hybrid,review_mode,domains_detected}`, `workflows[].detected_cli`, `workflows[].draftContent`, `workflows[].scopes[]` | Strategic context subagents (canonical source of truth) |
 
-**Why this matters:** `spec-product.md` frontmatter is the **single source of truth** for `appetite`, `review_mode`, and `domains_detected`. Subagents should read it explicitly rather than relying on the orchestrator passing these values in the task string. This makes input auditable, reproducible, and CLI-agnostic.
+**Why this matters:** `spec-product.md` frontmatter is the **single source of truth** for `quality`, `supervisor`, `exploration_count`, `exploration_hybrid`, `review_mode`, and `domains_detected`. Subagents should read it explicitly rather than relying on the orchestrator passing these values in the task string. This makes input auditable, reproducible, and CLI-agnostic.
 
 > **v0.53.0:** `stelow.json` is the single source of truth for all workflow state. `.stelow/{date}/{hash}/index.json` no longer exists. The host adapter reads from `stelow.json` directly.
 

@@ -127,8 +127,33 @@
         },
         "config": {
           "type": "object",
-          "description": "Workflow-level config (appetite, review_mode, domains_detected). Canonical source of truth as of v0.50.0; mirrored to index.json via TS extension write-through.",
+          "description": "Workflow-level config (quality, supervisor, exploration, review_mode, domains_detected). Canonical source of truth; mirrored to index.json via TS extension write-through. appetite is a deprecated alias.",
           "properties": {
+            "quality": {
+              "type": "string",
+              "enum": [
+                "production",
+                "experimental"
+              ],
+              "description": "Verification rigor declared by human at setup"
+            },
+            "supervisor": {
+              "type": "string",
+              "enum": [
+                "low",
+                "med",
+                "high"
+              ],
+              "description": "Execution checkpoint cadence declared by human at setup"
+            },
+            "exploration_count": {
+              "type": ["string", "integer"],
+              "description": "Directions compared per divergence (1-5)"
+            },
+            "exploration_hybrid": {
+              "type": ["string", "boolean"],
+              "description": "Hybrid synthesis whenever count >= 2"
+            },
             "appetite": {
               "type": "string",
               "enum": [
@@ -136,7 +161,8 @@
                 "Core",
                 "Complete"
               ],
-              "description": "Scope appetite declared by human at setup"
+              "description": "DEPRECATED alias, accepted and mapped once to knobs, then rewritten",
+              "deprecated": true
             },
             "review_mode": {
               "type": "string",

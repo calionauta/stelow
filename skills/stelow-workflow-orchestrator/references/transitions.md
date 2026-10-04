@@ -20,14 +20,15 @@ after any change to verify.
 | 10 | triage | Initial assessment. Determine if this is a valid request. |
 | 15 | select | Item selection. Rank accepted items, user picks one. |
 | 20 | setup | Setup context. Explore codebase, gather requirements. |
-| 25 | context | Strategic context. Market analysis, JTBD, domain detection. Gated by `context:5` (appetite/review mode): Product Spec Gate+Auto skips; others use reduced ask. See the context stage, section 5. |
-| 40 | shape | Shape stage. Define appetite, hill chart, rabbit holes. |
+| 25 | context | Strategic context. Market analysis, JTBD, domain detection. Gated by `context:5` (quality/review mode): experimental+Auto skips; experimental otherwise reduced ask. See the context stage, section 5. |
+| 40 | shape | Shape stage. Define run knobs, hill chart, rabbit holes. |
 | 45 | critique | Plan critique. Pre-flight check before gate. |
 | 60 | gate | Gate review. Visual approval via visual review required. Use `visual_review` tool (not bash). |
 | 70 | scope | Owns the approved Scope Map for feature routes. Shape may propose candidate slices; this stage finalizes the map without creating a second stage. Narrow mechanical refactors may bypass Scope. |
 | 80 | interface | Reaction-first Interface Contrast. Preserves the first reaction, compares bounded alternatives, and emits a named disposition. |
 | 90 | int-gate | Interface gate. Visual review of all interface proposals. Use `visual_review` tool (not bash). |
 | 100 | selection | Interface selection. Human pick via structured question in Interface-Gates modes; LLM decides in Auto / Product Spec Gate (see references/human-gates.md). |
+| 105 | architecture | Architecture selection. Diverges construction directions, then a human pick via structured question in Tech-Review modes; worker adopts below that threshold (see references/human-gates.md). |
 | 110 | planning | Tech planning. Typed scopes + sequencing. |
 | 115 | plan-gate | Tech plan gate. Visual review of spec-tech.md via visual review. Only in Product Spec + Interface + Tech Review or Code Diff mode. |
 | 120 | execution | Implementation. Execute planned scopes. |
@@ -154,20 +155,34 @@ gate:      requires_approval: true
 ### selection
 
 ```
-next:      planning
-accept:    planning
+next:      architecture
+accept:    architecture
 reject:    interface
 artifact:   interfaces/selected-interface.md
 rework:    (none)
 gate:      (none)
 ```
 
+### architecture
+
+```
+next:      planning
+accept:    planning
+reject:    scope
+artifact:   architecture/selected-architecture.md
+rework:    (none)
+gate:      (none)
+```
+
+The architecture pick is reviewed again at plan-gate through the tech plan
+that cites the selected architecture. No dedicated architecture gate stage.
+
 ### planning
 
 ```
 next:      plan-gate
 accept:    plan-gate
-reject:    scope
+reject:    architecture
 artifact:   plans/spec-tech*.md
 rework:    (none)
 gate:      (none)
@@ -235,27 +250,24 @@ gate:      (none)
 
 ---
 
-## Gate Conditions by review gate
+## Gate Conditions by review_mode
 
-`state.md` stores the gate set as `config.review_gates: [spec, interface, ...]`.
-Each atom independently brings back one gate; an empty set is Auto and runs
-none of them. `config.review_mode` is still READ as a compatibility input for
-states written before the set existed, but nothing new writes it. A ladder rung
-could not express "interface only" or "spec + tech plan", and a set with no
-rung used to be read as Auto, which then refused the tech plan as unselected.
-
-| Stage | Gate atom | Selected? | Gate rule |
+| Stage | review_mode | Blocked? | Gate rule |
 |---|---|---|---|
-| context | - | n/a | `context:5` is canonical: it decides skip, reduced ask, or full ask from appetite and intent. |
-| gate | - | always | `requires_approval: true`, `visual_review` required |
-| int-gate | - | always | `requires_approval: true`, `visual_review` required |
-| selection | `interface` | unselected -> skip | decided by the agent; interface review not selected |
-| plan-gate | `tech` | unselected -> skip | skipped; planning redirects directly to execution |
-| diff-gate | `diff` | unselected -> skip | skipped; verification redirects directly to audit |
-
-`spec` and `scope` gate no stage: they select which asks wait at `shape` and
-`scope` (see `human-gates.md`). Only the three rows carrying an atom
-can be skipped by a set; every other gated stage always blocks.
+| context | all | see `context:5` | `context:5` is canonical: it decides skip, reduced ask, or full ask from quality and intent. |
+| gate | all | block | `requires_approval: true`, `visual_review` required |
+| int-gate | all | block | `requires_approval: true`, `visual_review` required |
+| plan-gate | Auto | skip | skipped |
+| plan-gate | Product Spec Gate | skip | skipped |
+| plan-gate | Product Spec + Interface + Scopes | skip | skipped |
+| plan-gate | Product Spec + Interface Gates | skip | skipped; planning redirects directly to execution |
+| plan-gate | Product Spec + Interface + Tech Review / Product Spec + Interface + Tech Review + Code Diff | block | `requires_approval: true`, `visual_review` required |
+| diff-gate | Auto | skip | skipped |
+| diff-gate | Product Spec Gate | skip | skipped |
+| diff-gate | Product Spec + Interface Gates | skip | skipped; verification redirects directly to audit |
+| diff-gate | Product Spec + Interface + Scopes | skip | skipped |
+| diff-gate | Product Spec + Interface + Tech Review | skip | skipped |
+| diff-gate | Product Spec + Interface + Tech Review + Code Diff | block | `requires_approval: true`, `visual_review` required |
 
 ---
 
@@ -270,6 +282,7 @@ transition. The stage catalog declares these per stage:
 | critique | `critiques/critique-report.md` |
 | interface | `interfaces/*.md` |
 | selection | `interfaces/selected-interface.md` |
+| architecture | `architecture/selected-architecture.md` |
 | planning | `plans/spec-tech*.md` |
 
 Execution scopes and verification evidence remain runtime projections; their
@@ -282,12 +295,12 @@ from a missing file glob.
 
 Minimal pipelines (no stage skipped without a gate rule):
 
-**new-product:** triage → select → setup → context → shape → critique → gate → scope → interface → int-gate → selection → planning → plan-gate → execution → verification → diff-gate → audit
+**new-product:** triage → select → setup → context → shape → critique → gate → scope → interface → int-gate → selection → architecture → planning → plan-gate → execution → verification → diff-gate → audit
 
-**feature:** triage → select → setup → context → shape → critique → gate → scope → interface → int-gate → selection → planning → plan-gate → execution → verification → diff-gate → audit
+**feature:** triage → select → setup → context → shape → critique → gate → scope → interface → int-gate → selection → architecture → planning → plan-gate → execution → verification → diff-gate → audit
 
 **bugfix:** triage → select → setup → context → shape → critique → gate → execution → verification → audit
-*(interface/int-gate/selection/planning/plan-gate/diff-gate skipped unless the review gates add them)*
+*(interface/int-gate/selection/architecture/planning/plan-gate/diff-gate skipped unless review_mode adds them)*
 
 **refactor:** triage → select → setup → context → planning → plan-gate → execution → verification → audit
 

@@ -34,6 +34,20 @@ fi
 
 The selected interface contains the work pattern, breadboarding, ASCII sketches, interaction flow, and trade-off analysis. Follow its direction — do NOT regenerate or reinterpret the interface during execution.
 
+### Read Selected Architecture Artifact
+
+If an architecture was chosen and saved as `selected-architecture.md`, read it for construction direction:
+
+```bash
+ARCHITECTURE=".stelow/{YYYY-MM-DD}/{_dir}/architecture/selected-architecture.md"
+if [ -f "$ARCHITECTURE" ]; then
+  echo "SELECTED_ARCHITECTURE_FOUND"
+  cat "$ARCHITECTURE"
+fi
+```
+
+The selected architecture contains the construction pattern, component sketch, construction flow, and trade-off analysis. Follow its direction — do NOT regenerate or reinterpret the architecture during execution.
+
 ### ⚠️ Plan Staleness Detection (before scope execution)
 
 **Check if target files changed since the plan was created.** The plan was
@@ -124,20 +138,20 @@ of truth — harness-native todos are display-only.
 > **Goal system:** See `../references/cli-tools/goals.md` for all scope types —
 > optimization scopes use the acceptance contract with benchmark verify commands.
 
-**Before routing, read appetite from spec-product.md.**
+**Before routing, read the supervisor knob from spec-product.md (legacy appetite maps to `high`).**
 ```bash
-APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "Core")
+SUPERVISOR=$(grep -oP '^supervisor:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "high")
 ```
 
-**Supervisor decision by appetite** (see `../references/cli-tools/supervise.md` for full reference):
+**Supervisor decision by knob** (see `../references/cli-tools/supervise.md` for full reference):
 
-| Appetite | Supervisor | Sensitivity | Human-in-loop | Rationale |
+| Supervisor | Sensitivity | Human-in-loop | Rationale |
 |----------|-----------|-------------|---------------|----------|
-| `Lean` | **Activate** | `low` | No | Even small scopes can drift over multiple turns. Low sensitivity catches clear deviations without false-positive noise. |
-| `Core` | **Activate** | `medium` | No | Standard feature scope. Medium sensitivity balances steering vs autonomy. |
-| `Complete` | **Activate** | `high` | No | High-risk, multi-scope work. High sensitivity ensures drift is caught early. |
+| `low` | `low` | No | Trivial, easily reversible work. Low sensitivity catches clear deviations without false-positive noise. |
+| `med` | `medium` | No | Standard balance of steering vs autonomy. |
+| `high` | `high` | No | Default. Drift is caught early. |
 
-> **Human-in-loop is controlled by Review Mode** (from `stelow.json#workflows[].config.review_mode`), not by appetite.
+> **Human-in-loop is controlled by Review Mode** (from `stelow.json#workflows[].config.review_mode`), not by the knobs.
 > Review Mode = "Product Spec + Interface + Scopes", "Product Spec + Interface + Tech Review", or "Product Spec + Interface + Tech Review + Code Diff" may add human approval checkpoints per PR.
 
 | Scope Type | Executor | Supervision |
@@ -156,14 +170,14 @@ APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-
 
 ### When starting execution of each scope:
 
-1. **Read appetite** from spec-product.md:
+1. **Read supervisor knob** from spec-product.md (legacy appetite maps to `high`):
    ```bash
-   APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "Core")
+   SUPERVISOR=$(grep -oP '^supervisor:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "high")
    ```
 
 2. **Feature/refactor/spike without metric → acceptance contract** (see `../references/cli-tools/goals.md`)
    - Without native acceptance: **parent-controlled loop** (delegate → verify → fix → repeat, no discussion, starts immediately)
-   - **Supervisor:** See the canonical appetite-based decision table in `execution:20` above. Activate a supervision checkpoint with outcome="Execute scope '{scope_name}' per spec-tech.md. DoD: {DoD}. AC: {acceptance criteria}. Do not deviate from approved scope." Add `sensitivity: "medium"` if appetite = Core.
+   - **Supervisor:** See the canonical knob-based decision table in `execution:20` above. Activate a supervision checkpoint with outcome="Execute scope '{scope_name}' per spec-tech.md. DoD: {DoD}. AC: {acceptance criteria}. Do not deviate from approved scope." Add `sensitivity:` from the supervisor knob (`low`/`med`/`high`).
    - The supervisor detects deviation and re-centers if the LLM leaves scope
 
 3. **Optimization/spike with metric → acceptance contract** (see `../references/cli-tools/goals.md`, Optimization Goals)
@@ -271,21 +285,18 @@ Run `thermo-nuclear-code-quality-review` when all of these are true:
 
 1. `product_type` is `software` or `hybrid`
 2. the diff includes code changes
-3. at least one appetite/review mode condition below is true
+3. at least one quality/review mode condition below is true
 
-#### Appetite + review mode matrix
+#### Quality + review mode matrix
 
-| Appetite | Review Mode | Decision |
+| Quality | Review Mode | Decision |
 |----------|-------------|----------|
-| `Lean` | any | **Skip** unless the user explicitly requests it. |
-| `Core` | `Auto` / `Product Spec Gate` | **Skip** unless risk is high. |
-| `Core` | `Product Spec + Interface Gates` / `Product Spec + Interface + Scopes` | Run when risk is high. |
-| `Core` | `Product Spec + Interface + Tech Review` | Run when risk is high or the diff is meaningful. |
-| `Complete` | `Auto` / `Product Spec Gate` | **Run** if code changed. Resolve/document findings without asking. |
-| `Complete` | `Product Spec + Interface Gates` | **Run** if code changed. Escalate P0/P1 gaps to the user. |
-| `Complete` | `Product Spec + Interface + Scopes` | **Run** if code changed. P0/P1 gaps need fix or explicit human acceptance. |
-| `Complete` | `Product Spec + Interface + Tech Review` | **Mandatory** for software/hybrid code changes. |
-| `Complete` | `Product Spec + Interface + Tech Review + Code Diff` | **Mandatory** for software/hybrid code changes. Code diff gate runs after fix. |
+| `experimental` | any | **Skip** unless the user explicitly requests it. |
+| `production` | `Auto` / `Product Spec Gate` | **Run** if code changed. Resolve/document findings without asking. |
+| `production` | `Product Spec + Interface Gates` | **Run** if code changed. Escalate P0/P1 gaps to the user. |
+| `production` | `Product Spec + Interface + Scopes` | **Run** if code changed. P0/P1 gaps need fix or explicit human acceptance. |
+| `production` | `Product Spec + Interface + Tech Review` | **Mandatory** for software/hybrid code changes. |
+| `production` | `Product Spec + Interface + Tech Review + Code Diff` | **Mandatory** for software/hybrid code changes. Code diff gate runs after fix. |
 
 #### High-risk trigger
 

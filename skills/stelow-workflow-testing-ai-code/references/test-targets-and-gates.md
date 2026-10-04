@@ -1,40 +1,20 @@
-### Step 4: Generate Appetite-Specific Test Targets
+### Step 4: Generate Quality-Specific Test Targets
 
-From research: coverage alone is insufficient. A test suite can execute every line but still miss behavioral bugs, security gaps, and non-deterministic agent failures. Appetite selects breadth; risk selects which paths inside that breadth are mandatory.
+From research: coverage alone is insufficient. A test suite can execute every line but still miss behavioral bugs, security gaps, and non-deterministic agent failures. Quality selects breadth; risk selects which paths inside that breadth are mandatory. A legacy `appetite:` line maps to `production` for every legacy value.
 
-| Appetite | Path Type | Testing Depth |
+| Quality | Path Type | Testing Depth |
 |-----------|-----------|-------------|
-| `Lean` | Critical path | E2E/behavior (1 happy path) + smoke + unit for the one negative case |
-| `Lean` | Standard/experimental | E2E/behavior (1 happy path); no broad integration suite |
-| `Core` | Critical path | E2E/behavior + unit tests + negative cases + integration seams |
-| `Core` | Standard features | E2E/behavior (key variations) + unit tests + integration for external seams |
-| `Complete` | Critical path | E2E/behavior (full) + unit + integration + security gates |
-| `Complete` | Complex flows | E2E/behavior for multi-step UI or agent workflows |
+| `production` | Critical path | E2E/behavior (full) + unit + integration + security gates |
+| `production` | Standard features | E2E/behavior (key variations) + unit tests + integration for external seams |
+| `production` | Complex flows | E2E/behavior for multi-step UI or agent workflows |
+| `experimental` | Critical path | E2E/behavior (1 happy path) + smoke + unit for the one negative case |
+| `experimental` | Standard/experimental | E2E/behavior (1 happy path); no broad integration suite. Never ship as-is. |
 
 ### Step 5: Define Test Scope Types
 
-For each IN scope in the spec-product, add corresponding test scopes. Appetite controls breadth:
+For each IN scope in the spec-product, add corresponding test scopes. Quality controls breadth:
 
-**Lean:**
-
-| Code Type | Test Type | When to Use | TDD? |
-|----------|-----------|-------------|------|
-| User-facing flows | `test-behavior` | 1 E2E test for happy path | No — browser/e2e |
-| Critical business logic | `test-unit` | Happy path + one negative case | Yes for deterministic logic |
-| External APIs | `test-integration` | Only if external seam is in Lean IN scope | No — test-after |
-| Security-sensitive | `test-security` | Only if auth/payment/data is in Lean IN scope | Automated SAST |
-
-**Core:**
-
-| Code Type | Test Type | When to Use | TDD? |
-|----------|-----------|-------------|------|
-| User-facing flows | `test-behavior` | E2E for happy path + key variations | No — browser/e2e |
-| Agent workflows | `test-behavior` | Multi-step agents | Multi-run validation |
-| Business logic | `test-unit` | Main flows + obvious edge cases | Yes — critical paths |
-| External APIs | `test-integration` | DB, APIs, queues | No — test-after |
-| Security-sensitive | `test-security` | Auth, payment, data | Automated SAST |
-
-**Complete:**
+**Production:**
 
 | Code Type | Test Type | When to Use | TDD? |
 |----------|-----------|-------------|------|
@@ -44,6 +24,15 @@ For each IN scope in the spec-product, add corresponding test scopes. Appetite c
 | Business logic | `test-unit` | Full edge mapping | Yes — critical paths |
 | External APIs | `test-integration` | All external seams | No — test-after with contract checks |
 | Security-sensitive | `test-security` | Auth, payment, data, permissions | Automated SAST + targeted tests |
+
+**Experimental (probes only, never ship as-is):**
+
+| Code Type | Test Type | When to Use | TDD? |
+|----------|-----------|-------------|------|
+| User-facing flows | `test-behavior` | 1 E2E test for happy path | No — browser/e2e |
+| Critical business logic | `test-unit` | Happy path + one negative case | Yes for deterministic logic |
+| External APIs | `test-integration` | Only if external seam is in scope | No — test-after |
+| Security-sensitive | `test-security` | Only if auth/payment/data is in scope | Automated SAST |
 
 **Brownfield/Hybrid (existing code):**
 

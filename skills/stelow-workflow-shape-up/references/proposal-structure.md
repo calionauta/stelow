@@ -112,9 +112,9 @@ Use OUT/IN order (convention from Shape Up):
 
 **Rules:**
 - If unclear, mark as OUT (conservative scoping)
-- IN items should be scoped to fit the declared appetite
+- IN items should be scoped to fit the declared knobs
 - OUT items can be revisited in future cycles
-- If the scope doesn't fit the appetite: cut or split, never extend the appetite
+- If the scope doesn't fit the knobs: cut or split, never widen the knobs
 
 ---
 
@@ -126,9 +126,12 @@ The proposal MUST include this YAML frontmatter at the top:
 ---
 name: {product-name}
 product_type: {software|service|hybrid}
-appetite: {Lean|Core|Complete}  # human-set: depth of scope to prepare
-appetite_source: {setup|resume}         # where it was defined
-appetite_fit: {fits|cuts_needed|reshape}  # LLM-set: does the shaped proposal fit within the declared appetite?
+quality: {production|experimental}  # human-set: verification rigor
+supervisor: {low|med|high}          # human-set: execution checkpoint cadence
+exploration_count: {1-5}            # human-set: directions compared per divergence
+exploration_hybrid: {true|false}    # hybrid synthesis whenever count >= 2
+appetite: {Lean|Core|Complete}      # DEPRECATED alias, accepted and mapped once, then rewritten to knobs
+appetite_fit: {fits|cuts_needed|reshape}  # LLM-set: does the shaped proposal fit within the declared knobs?
 interface: {standard|full}
 created_at: {YYYY-MM-DD}
 approved: false
@@ -136,41 +139,44 @@ generated_by: "{model_name}"
 ---
 ```
 
-### appetite options:
+### Run knob reference:
 
-| Level | Spec size | Scopes | Implementation strategies | Edge cases | Interface exploration | Test scope |
-|-------|-----------|--------|--------------------------|------------|----------------------|------------|
-| `Lean` | ~1 page | 1-2 | 1 direct — no divergence | Not documented | 1 suggested interface; no alternatives | Smoke tests + critical-path unit tests |
-| `Core` | ~3 pages | 3-5 | 1-2 considered with brief rationale | Only obvious ones | 3 archetypes explored + 1 hybrid | Unit tests + integration tests for external seams |
-| `Complete` | ~8+ pages | 8-15 | 3-5 compared with trade-off analysis | Fully mapped | 5 archetypes explored + 1 hybrid | Unit + integration + behavior/e2e + security tests |
+| Knob | Values | What it changes |
+|------|--------|-----------------|
+| `quality` | `production` (default), `experimental` | Production: full paths, edge cases, parallel reviewers, full test layers including security where applicable, full critique depth. Experimental: reduced paths and checks for probes; never ships as-is. |
+| `supervisor` | `low`, `med`, `high` (default) | Checkpoint cadence during execution. |
+| `exploration_count` | 1–5 (default 3) | Directions compared per divergence (interaction + architecture). |
+| `exploration_hybrid` | true (default whenever count ≥ 2) | Hybrid synthesis after all directions complete. Count 1 has no hybrid. |
 
-**Cut policy implied by appetite:**
+Scope ceiling: **9 scopes maximum in every cycle.** Mapping discovers the count (1–9); a narrow bugfix may record a one-scope plan with its reason. No tiers, no count targets.
 
-| Appetite | What to cut first |
+**Cut policy implied by exploration breadth:**
+
+| Breadth | What to cut first |
 |----------|-------------------|
-| `Lean` | Edge cases, secondary flows, alternative strategies, non-critical integrations. Keep only the happy path. |
-| `Core` | Low-value variants. Keep the main JTBD, obvious edge cases, and one alternative only if it changes the core flow. |
-| `Complete` | Cut nothing unless impossible. Keep full edge case mapping, multiple implementation strategies, and domain context. |
+| `1` | Everything but the direct path. Trivial changes only, by explicit choice. |
+| `2–3` | Low-value variants. Keep the main JTBD and obvious edge cases. |
+| `4–5` | Cut nothing unless impossible. Keep full edge case mapping and domain context. |
 
-> **Appetite measures preparation depth, not human review time or quality baseline.** The LLM changes how it produces output based on appetite: Lean generates a minimal spec with a single approach and one interface suggestion; Core explores three interface archetypes plus a hybrid; Complete generates a full multi-feature specification comparing multiple implementation strategies, all five interface archetypes, and a hybrid. Quality gates such as build/test/lint/typecheck and a11y checks when UI exists are not appetite cuts.
+> **Knobs measure consideration breadth and verification rigor, not human review time, and never calendar duration.** The worker changes how much it compares based on exploration breadth; verification rigor follows quality. Quality gates such as build/test/lint/typecheck and a11y checks when UI exists are never cuts.
 >
-> **Implementation strategies** refers to how the solution could be built (workflow strategy, rollout philosophy, integration approach, responsibility models — see §2 🧭 strategic shaping alternatives). This is **not** the same as interface alternatives, which are visual UI archetypes generated by the `stelow-workflow-interface-alternatives` skill; the number explored is controlled by appetite.
+> **Implementation strategies** are explored by the architecture alternatives skill (workflow strategy, rollout philosophy, integration approach, responsibility models — see §2 🧭 strategic shaping alternatives). **Interaction directions** are explored by the interaction alternatives skill; the number explored in both follows exploration breadth.
 
-> **Who sets appetite:** The human in the setup stage, using two independent choices: Appetite (depth) + Mode (interaction level). Mode is stored in `stelow.json#workflows[].config.review_mode` (canonical as of v0.50.0; mirrored to `index.json`) and controls gates/questions/approvals.
+> **Who sets the knobs:** The human in the setup stage, using independent choices: quality + supervisor + exploration, then Mode (review level) separately. Mode is stored in `stelow.json#workflows[].config.review_mode` and controls gates/questions/approvals.
 
-> **`appetite_fit`** is validated by the Plan Critique's fresh-context feasibility reviewer (see `stelow-workflow-plan-critique` checklists — Scope Fit dimension). The Shape Up stage writes a preliminary value based on a mechanical check (scope count, spec size). The Plan Critique evaluates it properly using the existing 5-reviewer infrastructure.
+> **`appetite_fit`** is validated by the Plan Critique's fresh-context feasibility reviewer (see `stelow-workflow-plan-critique` checklists — Scope Fit dimension). The Shape Up stage writes a preliminary value based on a mechanical check (scope count against the ceiling of 9). The Plan Critique evaluates it properly using the existing 5-reviewer infrastructure.
 >
 > | Value | Meaning |
 > |-------|---------|
-> | `fits` | Proposal fits within appetite — proceed as shaped |
+> | `fits` | Proposal fits within the knobs — proceed as shaped |
 > | `cuts_needed` | Proposal almost fits but needs targeted cuts (LLM suggests what to cut; human decides) |
-> | `reshape` | Proposal fundamentally exceeds appetite — must be reshaped before continuing |
+> | `reshape` | Proposal fundamentally exceeds the knobs — must be reshaped before continuing |
 >
-> **This is NOT an estimate.** Appetite is a constraint, not a target. The LLM does not estimate effort — it checks whether the shaped design fits the human's declared budget. If it doesn't fit, the LLM proposes cuts or reshaping, never an appetite extension. The final decision is always human.
+> **This is NOT an estimate.** Knobs are constraints, not targets. The LLM does not estimate effort — it checks whether the shaped design fits the human's declared bounds. If it doesn't fit, the LLM proposes cuts or reshaping, never wider knobs. The final decision is always human.
 
-### Mode (separate from appetite)
+### Mode (separate from knobs)
 
-Mode is defined independently and stored in `index.json`. It affects gates and questions but NOT depth of scope:
+Mode is defined independently and stored in `index.json`. It affects gates and questions but NOT breadth or rigor:
 
 | Review Mode | visual review Gates | User Questions | Interface | IN/OUT Confirmation | Tech Approval |
 |-------------|------------------|---------------|-----------|---------------------|---------------|
@@ -180,15 +186,16 @@ Mode is defined independently and stored in `index.json`. It affects gates and q
 | Product Spec + Interface + Scopes | Gate + Int-Gate | Interface selection + scope | User chooses | User confirms | Auto |
 | Product Spec + Interface + Tech Review | Gate + Int-Gate + Tech Gate | All including technical | User chooses | User confirms | Gate + tech Qs |
 
-### Appetite-specific execution budget
+### Knob-specific execution budget
 
-| Level | Spec + scopes | Cut policy | Interface Brain | Supervisor | Testing |
-|-------|---------------|------------|-----------------|------------|---------|
-| `Lean` | ~1 page; 1-2 scopes | Cut edge cases, secondary flows, non-critical integrations | 1 suggested interface | Low sensitivity | Smoke + critical-path unit |
-| `Core` | ~3 pages; 3-5 scopes | Cut low-value variants; keep obvious edge cases | 3 interfaces + hybrid | Medium sensitivity | Unit + integration |
-| `Complete` | ~8+ pages; 8-15 scopes | Cut nothing unless impossible | 5 interfaces + hybrid | High sensitivity | Unit + integration + behavior/e2e + security |
+| Knob | Setting | Effect |
+|------|---------|--------|
+| Quality `production` | Always unless Experimental chosen | Full paths, edge cases, parallel reviewers, full test layers including security where applicable, full critique depth |
+| Quality `experimental` | Probes only | Reduced paths and checks; output must be upgraded before shipping |
+| Supervisor | low / med / high | Checkpoint cadence during execution |
+| Exploration | 1–5 + hybrid (≥2) | Direction counts for interaction and architecture divergence |
 
-**Note:** Mode blocks gates/questions independently of this budget. E.g., even with Complete appetite, if mode=Auto, visual review is skipped and no questions are asked.
+**Note:** Mode blocks gates/questions independently of these knobs. E.g., even with exploration 5, if mode=Auto, visual review is skipped and no questions are asked.
 
 ### product_type options:
 

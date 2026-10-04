@@ -19,6 +19,17 @@ When using `multiSelect: true`:
 - The user can select **all** to mean "all"
 - Selections are explicit — no need for a "select all" button
 
+### Opt-Out Confirms (preselected options)
+
+For confirmations — scope maps, IN tables — prefer opt-out over opt-in:
+every option starts checked (`selected: true`) and the human unchecks to
+remove. Keeping all checked confirms; unchecking everything means "remove
+all" (reshape territory), which is distinct from skipping (leaves unchanged).
+Preselection composes only with `multiSelect: true`; single-select groups
+refuse it. Option sources differ by moment (proposal IN/OUT items at shaping
+time, mapped scopes with stable IDs at scope time) but the interaction is one
+pattern. Chunk at 6 options per question (MAX_OPTIONS); never drop items to fit.
+
 ### Tool Capabilities
 
 `ask_user_question` supports:
@@ -177,41 +188,60 @@ Keep previews concise. If content exceeds limits, prioritize:
 
 ## Pattern 3: Scope Adjustment (Scope Adjustment stage)
 
-Used after Gate approval to let user add/remove from IN/OUT — **only when
+Used after Gate approval to confirm the mapped scopes — **only when
 review mode requires IN/OUT confirmation** (`Product Spec + Interface +
 Scopes` and above). In `Auto` and lower modes the LLM adjusts scope itself
 (see `../references/human-gates.md`) and never parks waiting.
 
 > **Note:** No visual review re-run after this — the ask tool already confirms selections.
 
+Opt-out form: every mapped scope is one preselected option. Keeping all
+checked confirms the map; unchecking removes. Unchecking everything means
+"remove all" (reshape territory) — distinct from skipping, which leaves the
+map unchanged.
+
 ```typescript
 ask_user_question({
   questions: [
     {
-      question: "What should be REMOVED from IN scope?",
-      header: "Remove IN",
+      question: "Which of these scopes stay IN?",
+      header: "Keep IN",
       multiSelect: true,
       options: [
-        { label: "{scope-1}", description: "{scope description}" },
-        { label: "{scope-2}", description: "{scope description}" }
+        {
+          label: "{scope-id — outcome}",
+          description: "{IN items + key dependencies}",
+          selected: true,
+          preview: "{outcome, IN/OUT, dependencies — ≤15 rows}",
+          artifact: { path: ".stelow/{YYYY-MM-DD}/{dir}/scope-map.json", display: "scope-map.json" },
+        },
+        // ... one option per mapped scope, ALL preselected
       ]
     },
+    // Only when OUT items exist:
     {
-      question: "What should be ADDED to IN scope?",
-      header: "Add to IN",
+      question: "Add any of these back to IN?",
+      header: "Add IN",
       multiSelect: true,
       options: [
-        { label: "{out-scope-1}", description: "{description}" },
-        { label: "{out-scope-2}", description: "{description}" }
+        { label: "{out-item}", description: "{why it was left out}" }
+        // ... OUT items, NONE preselected (opt-in)
       ]
     }
   ]
 })
 ```
 
-**If user removes items:** update spec
+Chunking rule: at most 6 options per question. With 7–9 mapped scopes,
+split into batched groups of ≤6 in ONE call (e.g. "Which of these scopes
+stay IN? (1/2)"), all preselected. Never silently drop scopes to fit.
+
+**If user removes items:** update spec + emit a scope-map challenge when a
+boundary or dependency meaning changes (never rewrite the approved map in
+place).
 **If user adds items:** create new spec version (requires awareness but no extra Gate)
-**If user selects nothing:** proceed unchanged
+**If user selects nothing on the keep question:** reshape — an empty map is not a map.
+**If user skips:** proceed unchanged.
 
 ---
 
@@ -342,63 +372,103 @@ What would you like to do?`,
 /// END PATTERN 6
 
 ---
-## Pattern 7: Appetite Declaration
+## Pattern 7: Run Knobs Declaration
 
-Used by `setup:15` when the human declares the depth of scope to prepare.
+Used by `setup:15` when the human declares quality, supervisor, and exploration breadth.
 
 > **Trigger:** Before stage selection, after inbox/lessons/session knowledge injection.
 > **⚠️ This is a SEPARATE question from Pattern 8 (Review Mode).** Never combine them into one `ask_user_question` call.
 
 ```typescript
 ask_user_question({
-  questions: [{
-    question: `How deep should the plan be?
-This sets the appetite — how much scope the LLM should prepare.
-Appetite defines scope depth, NOT time or calendar duration.
-Review Mode will be asked separately in the next step.
-`,
-    header: "Appetite",
-    options: [
-      {
-        label: "Lean",
-        description: "Quick validation — 1 minimal feature, ~1 page spec, 1-2 scopes. No edge cases."
-      },
-      {
-        label: "Core (Recommended)",
-        description: "One feature product, main Job To Be Done — ~3 page spec, 3-5 scopes, obvious edge cases."
-      },
-      {
-        label: "Complete",
-        description: "Multi-feature product — ~8+ page spec, 8-15 scopes, full edge case mapping, 3-5 implementation strategies compared with trade-offs."
-      }
-    ]
-  }]
+  questions: [
+    {
+      question: `Which rigor for verification?
+Production checks everything the same way every time. Experimental runs lighter, and only for probes that will not ship as-is.`,
+      header: "Quality",
+      options: [
+        {
+          label: "Production (Recommended)",
+          description: "Full paths, edge cases, parallel reviewers, full test layers including security where applicable, full critique depth."
+        },
+        {
+          label: "Experimental",
+          description: "Reduced paths and checks for probes and idea evolution. Never ship as-is without upgrading to Production."
+        }
+      ]
+    },
+    {
+      question: `How closely should the supervisor watch execution?`,
+      header: "Supervisor",
+      options: [
+        {
+          label: "High (Recommended)",
+          description: "Tight checkpoints, frequent progress checks during execution."
+        },
+        {
+          label: "Medium",
+          description: "Standard checkpoints during execution."
+        },
+        {
+          label: "Low",
+          description: "Minimal checkpoints. Only for trivial, easily reversible work."
+        }
+      ]
+    },
+    {
+      question: `How many directions should divergence compare?
+A hybrid synthesis is produced whenever more than one direction exists.
+Review Mode will be asked separately in the next step.`,
+      header: "Explore",
+      options: [
+        {
+          label: "2 + hybrid",
+          description: "Two most-differentiated directions plus a hybrid synthesis."
+        },
+        {
+          label: "3 + hybrid (Recommended)",
+          description: "Three directions plus a hybrid synthesis."
+        },
+        {
+          label: "4 + hybrid",
+          description: "Four directions plus a hybrid synthesis."
+        },
+        {
+          label: "5 + hybrid",
+          description: "Five directions plus a hybrid synthesis. Heaviest preparation."
+        },
+        {
+          label: "1 single",
+          description: "One direct direction, no hybrid. Trivial changes only, by explicit choice."
+        }
+      ]
+    }
+  ]
 })
-
 ```
 
-**How appetite shapes the output:**
+**How the knobs shape the output:**
 
-| Level | Spec size | Scopes | Implementation strategies | Interface exploration | Test scope |
-|-------|-----------|--------|--------------------------|----------------------|------------|
-| Lean | ~1 page | 1-2 | 1 direct — no divergence | 1 suggested interface; no alternatives | Smoke tests + critical-path unit tests |
-| Core | ~3 pages | 3-5 | 1-2 considered with brief rationale | 3 archetypes explored + 1 hybrid | Unit tests + integration tests for external seams |
-| Complete | ~8+ pages | 8-15 | 3-5 compared with trade-off analysis | 5 archetypes explored + 1 hybrid | Unit + integration + behavior/e2e + security tests |
+| Knob | What it changes | What it never changes |
+|------|----------------|----------------------|
+| Quality | Paths, edge cases, reviewer parallelism, test layers, critique depth | Whether verification runs — it always runs |
+| Supervisor | Checkpoint cadence during execution | Whether supervision exists |
+| Exploration | Direction count (interaction + architecture), hybrid synthesis | Decision ownership — a pick is always recorded |
 
-**Cut policy:** Lean cuts edge cases, secondary flows, alternative strategies, and non-critical integrations. Core cuts only low-value variants. Complete cuts nothing unless impossible. Quality gates are not cut: build/test/lint/typecheck run for every appetite, and a11y checks run whenever UI files exist; Appetite only changes interface/test exploration depth.
+**Cut policy:** breadth 1 keeps only the direct path. Breadth 2–3 keeps the main JTBD and obvious edge cases, cutting low-value variants. Breadth 4–5 cuts nothing unless impossible. Quality gates are not cut: build/test/lint/typecheck run at every setting, and a11y checks run whenever UI files exist. Production verifies every scope the same way regardless of breadth.
 
-**Storage:** Save to `stelow.json` as `workflows[].config.appetite` (single source of truth), and inject into `spec-product.md` frontmatter as `appetite: {chosen_appetite}`. Review Mode follows the same pattern (`workflows[].config.review_mode` + `review_mode:` in frontmatter). Both are canonical subagent inputs — see `../references/cli-tools/subagents.md` (Input Files table).
+**Storage:** Save to `stelow.json` as `workflows[].config.quality`, `workflows[].config.supervisor`, `workflows[].config.exploration` (single source of truth), and inject into `spec-product.md` frontmatter as `quality:`, `supervisor:`, `exploration_count:`, `exploration_hybrid:`. Review Mode follows the same pattern (`workflows[].config.review_mode` + `review_mode:` in frontmatter). All are canonical subagent inputs — see `../references/cli-tools/subagents.md` (Input Files table). A legacy `appetite:` line is accepted and mapped once (Lean → production/high/2, Core → production/high/3, Complete → production/high/5), then rewritten to knobs.
 
-> **Key rule:** Appetite is FIXED for the cycle. The LLM cannot extend it. If scope doesn't fit, the LLM splits — the human decides whether to accept the split or extend appetite in a NEW cycle.
+> **Key rule:** Knobs are FIXED for the cycle. The LLM cannot widen them. If scope doesn't fit, the LLM splits — the human decides whether to accept the split or start a NEW cycle with different knobs.
 
-### Guardrails for LLMs generating appetite questions
+### Guardrails for LLMs generating knob questions
 
-When presenting appetite options to the user:
+When presenting knob options to the user:
 
-1. **NEVER reference time or calendar duration** (days, weeks, months, sprints, etc.) in the question text, option labels, or descriptions. Appetite defines **scope depth only**.
-2. **NEVER say "Lean = 1 week" or similar time-based framing.** The original Shape Up used appetite as a calendar window (6 weeks), but stelow explicitly departs from that model — appetite caps preparation depth (spec size, number of scopes, interface variants, test layers), not calendar duration. Wall-clock time is not predictable under LLM execution.
-3. The descriptions above use spec page count and scope count as reference. This is intentional — these are scope metrics, not time metrics.
-4. If the user asks "how long will this take?", respond: "Appetite controls preparation depth, not duration. Execution time depends on scope complexity, not the appetite label."
+1. **NEVER reference time or calendar duration** (days, weeks, months, sprints, etc.) in the question text, option labels, or descriptions. Knobs define **consideration breadth and verification rigor only**.
+2. **NEVER say "Lean = 1 week" or similar time-based framing, and NEVER map the old appetite labels to time.** The original Shape Up used appetite as a calendar window (6 weeks); stelow caps breadth and rigor, not calendar duration. Wall-clock time is not predictable under LLM execution.
+3. If the user asks "how long will this take?", respond: "Knobs control breadth and rigor, not duration. Execution time depends on scope complexity, not the knob labels."
+4. If the user asks for the old Lean/Core/Complete labels, map them once through the legacy table above and continue with knobs.
 
 ---
 
@@ -469,7 +539,7 @@ When the Plan Critique finds gaps via the 7 checklists, each gap is classified a
 
 **Storage:** Save to `stelow.json` as `workflows[].config.review_mode` (single source of truth).
 
-> **Note:** Review Mode does NOT affect supervisor, parallelization, or which skills run. All stages run for all modes — only gates and questions change.
+> **Note:** Review Mode does NOT affect supervisor, parallelization, or which skills run. Those follow the run knobs (supervisor, quality, exploration). All stages run for all modes — only gates and questions change with Review Mode.
 
 /// END PATTERN 8
 
@@ -511,6 +581,7 @@ interface Option {
     path: string;      // e.g. ".stelow/2026-09-09/abc123/interfaces/proposal-a.md"
     display: string;   // short name shown on the open affordance
   };
+  selected?: boolean;  // preselected (opt-out confirms only, requires multiSelect)
 }
 
 interface Question {

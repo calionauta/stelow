@@ -362,7 +362,7 @@ Input:
       └→ Run review phases without E2E
 ```
 
-**Stelow awareness:** when inside stelow, reads `spec-tech*.md` and `scopes/` from `.stelow/*/*/plans/` for context (scope list, appetite, review mode). When standalone, files are auto-discovered in the current directory. The decision tree and phases work identically in both modes.
+**Stelow awareness:** when inside stelow, reads `spec-tech*.md` and `scopes/` from `.stelow/*/*/plans/` for context (scope list, quality, review mode). When standalone, files are auto-discovered in the current directory. The decision tree and phases work identically in both modes.
 
 ## References
 

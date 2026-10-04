@@ -61,6 +61,26 @@ intent: feature
 current_stage: ${current_stage}
 status: active
 config:
+  quality: production
+  supervisor: high
+  exploration_count: 3
+  exploration_hybrid: true
+  review_mode: Auto
+  product_type: software
+stages:
+  ${current_stage}: in-progress
+---
+# t
+`);
+}
+
+function makeLegacyState(wd: Workdir, current_stage: string): void {
+  writeFileSync(join(wd.dir, "state.md"), `---
+name: t
+intent: feature
+current_stage: ${current_stage}
+status: active
+config:
   appetite: Core
   review_mode: Auto
   product_type: software
@@ -109,12 +129,19 @@ describe("status", () => {
     expect(r.status).toBe(0);
     expect(r.stdout).toContain("workflow : t");
     expect(r.stdout).toContain("stage    : shape");
-    expect(r.stdout).toContain("appetite : Core");
-    // Auto is now named as what it is: no gate selected. The row reads the
-    // atom set, so "Auto" could only survive as a hardcoded literal — and a
-    // hardcoded literal cannot tell a reader that this workflow declared an
-    // empty set rather than one that never said anything.
-    expect(r.stdout).toContain("review   : none (Auto)");
+    expect(r.stdout).toContain("quality  : production");
+    expect(r.stdout).toContain("supervisor : high");
+    expect(r.stdout).toContain("explore  : count=3 hybrid=true");
+    expect(r.stdout).toContain("review   : Auto");
+  });
+
+  it("maps a legacy appetite-only state to knobs with an announced mapping", () => {
+    makeLegacyState(wd, "shape");
+    const r = run(wd, ["status"]);
+    expect(r.status).toBe(0);
+    expect(r.stdout).toContain("quality  : production (legacy appetite Core)");
+    expect(r.stdout).toContain("supervisor : high");
+    expect(r.stdout).toContain("explore  : count=3 hybrid=true");
   });
 
   it("status --json is parseable JSON with current_stage + config", () => {
@@ -123,7 +150,7 @@ describe("status", () => {
     expect(r.status).toBe(0);
     const j = JSON.parse(r.stdout);
     expect(j.current_stage).toBe("shape");
-    expect(j.config.appetite).toBe("Core");
+    expect(j.config.quality).toBe("production");
     expect(j.config.review_mode).toBe("Auto");
   });
 });
@@ -392,6 +419,25 @@ describe("audit-trail", () => {
     const rebuilt = JSON.parse(run(wd, ["audit-trail", "check", "--json"], env).stdout);
     expect(rebuilt.ok).toBe(true);
     expect(rebuilt.snapshot.untracked_count).toBeGreaterThan(result.snapshot.untracked_count);
+  });
+
+  // A linked worktree is the same repository in a different directory. The
+  // snapshot names the repository both directories share, so a host can tell
+  // that case from two repositories that merely look alike.
+  it("names the repository identity shared by a project and its worktree", () => {
+    const { env } = setup();
+    const build = run(wd, ["audit-trail", "build", "--json"], env);
+    expect(build.status).toBe(0);
+    const projectCommon = JSON.parse(build.stdout).snapshot.commonDir;
+    expect(projectCommon).toMatch(/\.git$/);
+
+    const wt = join(wd.dir, "wt");
+    execSync(`git worktree add -q --detach ${wt}`, { cwd: wd.dir });
+    const wbuild = run(wd, ["audit-trail", "build", "--json"], env, wt);
+    expect(wbuild.status).toBe(0);
+    const worktreeCommon = JSON.parse(wbuild.stdout).snapshot.commonDir;
+    expect(worktreeCommon).toBe(projectCommon);
+    expect(existsSync(worktreeCommon)).toBe(true);
   });
 
   it("rebuilds a stale audit trail after that receipt was committed", () => {

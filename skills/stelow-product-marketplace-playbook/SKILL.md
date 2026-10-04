@@ -144,7 +144,7 @@ In **workflow mode**, skip to `### Workflow slice` and emit a complete
 
 ```
 stage          : shape
-description    : Shape stage. Define appetite, hill chart, rabbit holes.
+description    : Shape stage. Define run knobs, hill chart, rabbit holes.
 status         : <done|partial|blocked>
 artifacts      : <paths created or modified>
 next-candidate : critique
@@ -161,7 +161,7 @@ router skill consumes the next-candidate field and calls
 Workflow mode for the **shape** stage. Standalone behavior lives in
 the rest of this file (unchanged). Summary:
 
-> Shape stage. Define appetite, hill chart, rabbit holes.
+> Shape stage. Define run knobs, hill chart, rabbit holes.
 
 Primary actions (per stages.yaml): `read, write`. Run only the actions that
 produce the artifacts promised in `## Hand-off`; skip anything that does

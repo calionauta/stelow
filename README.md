@@ -7,301 +7,91 @@
 [<img src="https://devin.ai/assets/askdeepwiki.png" alt="Ask DeepWiki" height="20"/>](https://deepwiki.com/calionauta/stelow)
 [![Ask zRead](https://img.shields.io/badge/Ask%20zRead-10B981)](https://zread.ai/calionauta/stelow)
 [![Version](https://img.shields.io/github/v/release/calionauta/stelow?logo=github&label=release)](https://github.com/calionauta/stelow/releases)
-[![CLI](https://img.shields.io/badge/Skills%20run%20on-Any%20agent-3B82F6)](https://github.com/calionauta/stelow#-host-support)
+[![CLI](https://img.shields.io/badge/Skills%20run%20on-Any%20agent-3B82F6)](https://calionauta.github.io/stelow/docs/getting-started/)
 
 > **Pre-1.0 status:** Stelow is under active product and market validation. Its
 > public release line is `0.x`; APIs, workflow contracts, and skills may change
-> incompatibly before a stable `1.0.0`. 
+> incompatibly before a stable `1.0.0`.
 
 > [!TIP]
 > 💡 **New here? Start with the official plugin.**
 >  Install now: [https://getbb.app/marketplace/stelow](https://getbb.app/marketplace/stelow).
 >  Prefer another harness? The skills-only path is below and works anywhere.
 
-I'm trying to make ai agents behave less like coding assistants and more like cross-functional product team. 
-[More about my background.](#about-the-author)
-
-This package brings product methodology to AI coding agents. Instead of open-ended feature lists, you shape proposals with clear scope boundaries, validate them through adversarial critique, and generate typed technical scopes ready for autonomous execution.
-
----
-
-**Key differentiators:**
-
-- **Shape Up methodology for AI agents** - IN/OUT scope boundaries, appetite-driven sizing, risk analysis, focused scoping. Every proposal is a shaped bet, not a wishlist.
-- **Appetite × Review Mode stage control** - Two orthogonal dimensions control the full workflow: how deep to prepare (Appetite: Lean / Core / Complete) and which gates run (Review Mode: Auto / Product Spec Gate / Product Spec + Interface Gates / Product Spec + Interface + Scopes / Product Spec + Interface + Tech Review). The cascade propagates automatically through critique depth, supervisor use, verification rigor, and gate requirements - no manual stage skipping needed.
-- **Adversarial plan critique** - Plans are reviewed for gaps, risks, and assumptions by parallel (fresh context) reviewers, not just approved in chat.
-- **Visual review gate** - Portable `visual_review` opens the full plan for point-by-point comments before implementation, not a rubber-stamp approval. The host-agnostic path writes approval receipts to `.stelow/approvals/{dirHash}/{file}.approved.md`.
-- **Appetite-scaled interface exploration** - 1, 3, or 5 ASCII archetypes plus hybrid depending on scope depth - no coded mockups wasted.
-- **Product domain libraries** - 9 domains auto-detected from your language (Pricing, Trust, Ads, Promotions, Paywall, Open Source, Health, Marketplace, Business Models).
-- **Typed technical scopes** - feature, spike, optimize, test-* with dependency mapping and sequencing for autonomous execution.
-- **Acceptance-based scope execution** - each scope is delegated with a contract (criteria, verify commands, stop rules). On acceptance-native harnesses (fresh-context subagents with self-correction), the child fixes gaps in the same context before returning. On other harnesses, the parent re-delegates with feedback until criteria pass or max iterations exhaust.
-- **Audit gap-to-scope loop** — post-execution audit classifies gaps (FIXED / DOCUMENTED / ESCALATED). ESCALATED gaps become new scopes in the tracking file. `/sw-next` validates the move (transition + required artifacts); the critique routes Audit back to Execution via the reject transition. The cycle repeats until no scopes remain pending — the loop is procedural (skill-driven), not a scope check in code.
-- **Deterministic audit trail — full lineage record** — the final audit always generates `audit-trail.md`, a stable projection of the workflow state, registered artifacts, and repository snapshot (Git root, `HEAD`, the tracked worktree diff, and non-ignored untracked files), all as SHA-256 evidence hashes. `scripts/stelow audit-trail check` fails closed if any of those inputs change — a later commit, an uncommitted edit, a new non-ignored file — so hosts can gate completion on the exact tree that was verified. `--strict` additionally refuses while any durable workflow output is unregistered; material ignored output must be registered as an artifact.
-- **Scopes, Tasks & Records — three-layer execution model**. Scopes are appetite-bounded delivery units committed at planning (Lean ≤2, Core ≤5, Complete ≈10). Tasks are sub-item checklists inside a scope — planned tasks seed from the spec-tech table; discovered tasks emerge during execution (always with a `note:` explaining the trigger). Records capture claim-proof evidence (files touched, commands run, verification checklist) before a scope is closed. Validation is ON by default (set `STELOW_VALIDATE=0` to disable). See [`docs/scopes-tasks-flow.md`](docs/scopes-tasks-flow.md) for the full pipeline.
-- **Bidirectional product ↔ tech flow** — tech constraints and opportunities inform product decisions *before* execution. Tech Preview uses cymbal for appetite-gated codebase recon; Alignment Check catches product-vs-tech misalignment with mode-dependent resolution (auto or user-flagged).
-- **Stack-matched skills + fresh docs** — during execution setup, the workflow discovers skills (via `npx skills`) optimized for the chosen tech stack and fetches current library docs (via `ctx7`). Both skip if already installed or unavailable. Skills install in project scope only, after user confirmation.
-- **Status tracking** — see workflow state as it progresses through all stages (`/sw-status`); visual overlays are host-owned (this repo ships no TUI).
-- **Host-owned scheduling** — Stelow ships no scheduler of its own. Each host drives `/sw-*` invocations from its native event surface (autopilot, scheduler, background runs). The bb plugin (`bb-plugin-stelow`) is the reference implementation: board + inbox + scheduled skills-sync. See "Host Installation Guide" below.
+Product methodology for AI coding agents: shape proposals with clear scope
+boundaries, validate them through adversarial critique, and generate typed
+technical scopes ready for autonomous execution.
 
 ---
 
-## 📋 Table of Contents
+## 📖 Docs (single source of truth)
 
-- [Why stelow](#why-stelow)
-- [🎚️ Appetite & Review Mode](#️-appetite--review-mode)
-- [🔄 Process](#-process)
-- [📋 Skills](#-skills)
-- [🚀 Quick Start](#-quick-start)
-- [📦 Installation](#-installation)
-- [External Dependencies](#external-dependencies)
-- [🎮 Commands](#-commands)
-- [🧰 stelow CLI (`scripts/stelow`)](#-stelow-cliscriptsstelow)
-- [🛠️ Installation Guide](#-installation-guide)
-- [🗂️ Visual Board and Inbox](#️-visual-board-and-inbox)
-- [🌐 Host Support](#-host-support)
-- [📁 Artifact Directory](#-artifact-directory)
-- [📖 Evidence & Limitations](#-evidence--limitations)
-- [About the Author](#about-the-author)
-- [License](#license)
-- [📞 Support](#-support)
+The manual lives on the site, not in this file:
+**[https://calionauta.github.io/stelow/docs/](https://calionauta.github.io/stelow/docs/)**
+— overview, getting started (bb and skills-only paths), architecture,
+workflow (run knobs × review mode, gates), scopes/tasks/records, CLI,
+skill inventory, plugin guides, FAQ, and status.
 
 ---
 
-## Why stelow
+## 🚀 Quick start
 
-> *"Let's go slow to go fast: invest time in thorough planning to gain speed and deliver value in execution."*
+**Path A — bb desktop (recommended):** visual board, inbox, and worker CLI.
 
-**Traditional AI development:** "Here's what I want. Start coding."
+1. Install and authenticate a coding-agent CLI, then get
+   [bb](https://getbb.app) (free) and open it.
+2. Run `curl -fsSL https://calionauta.github.io/stelow/install.sh | bash`
+   (or `bb plugin install stelow`, or the marketplace listing).
+3. Open **Stelow** in bb's navigation, pick a project, choose run knobs
+   (quality, supervision, exploration) and Review mode (default Auto), and describe the request.
+   Details: [docs/install-bb.md](docs/plugin/install-bb.md).
 
-**With stelow:** The user just says:
+**Path B — skills-only (any Agent Skills-compatible host):**
 
+```bash
+git clone https://github.com/calionauta/stelow.git
+cd stelow
+./install.sh
+# or: npx skills add calionauta/stelow -g
 ```
+
+```text
 /sw-start "Here's what I want to build"
+/sw-status
 ```
 
-And the workflow begins asking questions, exploring scope, shaping the proposal, reviewing for gaps, getting visual approval, and only then generating typed technical scopes for execution.
-
-**Critique → Gate → Scope sequencing.** Execution (stage 12) only runs after all three pass. Lighter review modes (Auto/Product Spec Gate) skip some gates; the full path is there when you need it.
-
-### The Problem
-
-Building products with AI agents often leads to:
-
-- Scope creep and unclear boundaries - defining *what not to build* is harder than *what to build*
-- Plans without adversarial review - no one questions assumptions before coding begins
-- Technical work before business validation - shipping features that shouldn't exist
-- No systematic testing for AI-generated code - AI writes fast, but also writes wrong
-- Generic workflows missing product-specific insights - pricing, trust, ads, and launch strategy are product decisions, not code decisions
-
-### What stelow does
-
-A structured workflow that makes AI think like a product manager:
-
-- ✅ **Measure thrice, cut once** - shapes proposals with IN/OUT boundaries BEFORE coding
-- ✅ **Strategic exploration** - Job To Be Done, Opportunity Mapping, Evolutionary Principles, Market Analysis, and Product Discovery knowledge integrated
-- ✅ **Adversarial critique** - reviews every plan for gaps, risks, and assumptions
-- ✅ **Visual review gate** - Plannotator opens the full plan for point-by-point comments (not just chat)
-- ✅ **Interface exploration in ASCII art** - visualize 5 different approaches in seconds, no coding wasted, then LLM creates a hybrid version combining the best points for the context
-- ✅ **Domain libraries** - auto-detects 9 product domains (Pricing, Trust, Ads, Promotions, Paywall, Open Source, Health, Marketplace, Business Models) from your language
-- ✅ **Technical scope mapping** - breaks down into typed scopes, maps dependencies, sequences execution
-- ✅ **AI-aware testing strategy** - for software products, with coverage targets, CI gates, and contextual evaluation of mutation testing for critical paths
-- ✅ **Greenfield & Brownfield** - works for new products and existing product evolution
-
-### Key Features
-
-- **30 skills total** in this repo: 15 workflow skills + 15 product skills (grouped by prefix — workflow: 15, product: 15)
-- Part of a broader ecosystem — the orchestrator composes these and can also invoke additional skills from the user's agent environment at runtime
-- Workflow status via `/sw-status`
-- Gate approval via Plannotator - review, comment, approve or reject before implementation
-- Typed scopes for autonomous execution (feature, spike, test-*, optimize)
-
----
-
-## 🎚️ Appetite & Review Mode
-
-The workflow is controlled by two orthogonal dimensions: **Appetite** (declared by the human) and **Review Mode** (declared by the human). Appetite controls scope/exploration depth. Review Mode controls which gates, questions, and approvals are active.
-
-### Appetite (Constraint, Not Estimate)
-
-Appetite is the **scope and exploration budget** - how much product depth the human wants prepared before execution.
-
-> **Appetite is a constraint, not an estimate.** Unlike traditional estimation (which asks "how long will this take?"), appetite asks "how much is this worth?" before the work is defined. This forces scope cuts to fit the budget - the budget never expands.
->
-> This departs from the original Shape Up (37signals/Basecamp), where appetite is a fixed calendar window — 6 weeks — serving as a circuit breaker against scope creep. Under LLM execution, wall-clock time is not a predictable constraint: an agent can batch-parallelize, context-switch instantly, or stall on a single stubborn test. That makes time a poor governor for scope. Here, appetite caps **preparation depth** — spec size, number of scopes, interface variants considered, test layers required — not calendar duration. The scope, not the schedule, is what gets cut.
-
-| Appetite | What it means | Scope depth | Interface exploration | Supervisor | Testing | Best for |
-|----------|---------------|-------------|----------------------|------------|---------|----------|
-| **Lean** | Validate an idea fast. Minimal scope ceremony. | 1 minimal feature, 1-2 scopes | 1 suggested interface; no alternative exploration | Low sensitivity | Smoke tests + critical-path unit tests; a11y lint/static if UI exists | Idea validation, spike, throwaway prototype |
-| **Core (default)** | Standard product feature. Enough depth to catch obvious gaps. | Main JTBD, 3-5 scopes | 3 interface archetypes explored + 1 hybrid recommendation | Medium sensitivity | Unit tests + integration tests for external seams; a11y codebase/browserless audit if UI exists | Most features, bug fixes, small improvements |
-| **Complete** | Multi-feature or high-risk product work. | 8-15 scopes, full edge mapping | 5 interface archetypes explored + 1 hybrid recommendation | High sensitivity | Unit + integration + behavior/e2e + security tests; live a11y audit if UI exists | Critical features, high-risk changes, production releases |
-
-**Cut policy implied by appetite:**
-
-| Appetite | What to cut first |
-|----------|-------------------|
-| **Lean** | Edge cases, secondary flows, alternative strategies, non-critical integrations. Keep only the happy path. |
-| **Core** | Low-value variants. Keep the main JTBD, obvious edge cases, and one alternative only if it changes the core flow. |
-| **Complete** | Cut nothing unless impossible. Keep full edge case mapping, multiple implementation strategies, and domain context. |
-
-The Shape Up stage runs a mechanical check (scope count, spec size) and writes a preliminary `appetite_fit` in the spec frontmatter. The **Plan Critique** stage validates it via its fresh-context feasibility reviewer (see `stelow-workflow-plan-critique` checklists — Scope Fit dimension). This uses the existing 5-reviewer infrastructure instead of adding a dedicated subagent.
-
-| `appetite_fit` | Meaning |
-|----------------|---------|
-| `fits` | Proposal fits within appetite - proceed as shaped |
-| `cuts_needed` | Proposal almost fits but needs targeted cuts (LLM suggests what; human decides) |
-| `reshape` | Proposal fundamentally exceeds appetite - must be reshaped before continuing |
-
-This is **not an estimate**. The LLM does not estimate effort - it checks whether the shaped design fits the human's declared budget. If it doesn't fit, the LLM proposes cuts or reshaping, never an appetite extension. The final decision is always human.
-
-All three appetites benefit from `appetite_fit` validation by the **Plan Critique**'s fresh-context feasibility reviewer — this uses the existing 5-reviewer infrastructure, no dedicated subagent needed. The Shape Up stage provides only a preliminary mechanical check (scope count, spec size). This aligns `appetite_fit` with the workflow's convention: all critical evaluations use fresh context via the Plan Critique stage.
-
-**Critique and Gate are Review Mode controls, not Appetite controls.** Product Critique and Plannotator Gate are governed by Review Mode: Auto skips gates; all other modes run the configured gates. Appetite changes the depth of the shaped proposal, interface exploration, supervisor sensitivity, and test scope breadth — not whether quality gates exist.
-
-**Appetite-specific execution budget:**
-
-| Area | Lean | Core | Complete |
-|------|------|------|----------|
-| **Spec + scopes** | ~1 page; 1-2 scopes; one direct implementation path | ~3 pages; 3-5 scopes; 1-2 implementation alternatives with brief rationale | ~8+ pages; 8-15 scopes; 3-5 alternatives with trade-offs |
-| **Cut policy** | Cut edge cases, secondary flows, alternative strategies, non-critical integrations. Keep the happy path. | Cut low-value variants. Keep main JTBD, obvious edge cases, and one alternative only if it changes the core flow. | Cut nothing unless impossible. Keep full edge mapping, multiple strategies, and domain context. |
-| **Interface exploration** | 1 suggested interface only | 3 archetypes explored + 1 hybrid recommendation | 5 archetypes explored + 1 hybrid recommendation |
-| **Supervisor** | Low sensitivity | Medium sensitivity | High sensitivity |
-| **Testing** | Smoke tests + critical-path unit tests | Unit tests + integration tests for external seams | Unit + integration + behavior/e2e + security tests |
-| **Quality baseline** | Build/test/lint/typecheck always; a11y lint/static if UI exists | Build/test/lint/typecheck always; a11y codebase/browserless audit if UI exists | Build/test/lint/typecheck always; live a11y audit if UI exists |
-
-### Review Mode
-
-Review Mode controls the **breadth** of human review — which gates, questions, and approvals are active. Unlike Appetite (depth of scope), Review Mode determines the **level of human oversight** during the workflow.
-
-Review Mode is set explicitly during the setup phase via `ask_user_question`. It is NOT auto-detected.
-
-| Review Mode | Plannotator Gates | Interface | IN/OUT Confirmation | Tech Approval | Best for |
-|---|---|---|---|---|---|
-| **Auto** | None | LLM decides | LLM decides | Auto | Throwaway prototype, quick validation, spike |
-| **Product Spec Gate** | **1 pre-tech** | LLM decides | LLM decides | Auto | Standard feature, bug fix, small improvement |
-| **Product Spec + Interface Gates** | **1 pre-tech + Int.Gate** | **User chooses** | LLM decides | Auto | Feature where interface matters |
-| **Product Spec + Interface + Scopes** | **Gate + Int.Gate** | User chooses | **User confirms** | Auto | Critical feature, product with domain context |
-| **Product Spec + Interface + Tech Review** | **Gate + Int.Gate + Plan.Gate** | User chooses | User confirms | **Gate + tech Qs** | Full pipeline, high-risk changes, production |
-| **Product Spec + Interface + Tech Review + Code Diff** | **Gate + Int.Gate + Plan.Gate + Diff.Gate** | User chooses | User confirms | **Gate + tech Qs + code diff** | Maximum oversight, critical infrastructure |
-
-**Key rules:**
-
-- **Auto:** No gates, no Plannotator, no questions. LLM decides everything. Quickest path.
-- **Product Spec Gate:** One Plannotator gate (spec-product visual approval before tech planning). AI resolves all gaps. Interface auto-generated, no choice. No IN/OUT confirmation.
-- **Product Spec + Interface Gates:** Product spec gate + interface gate. User chooses between generated interface alternatives. AI resolves trivial gaps, asks about moderate/critical.
-- **Product Spec + Interface + Scopes:** All product gates active (pre-tech + scope IN/OUT + int-gate). User confirms boundaries. Tech approval uses Auto.
-- **Product Spec + Interface + Tech Review:** Everything in product review + tech plan goes through Plannotator gate + user answers technical questions.
-- **Product Spec + Interface + Tech Review + Code Diff:** All the above + Plannotator code diff review on the working tree after verification. Maximum human oversight for critical changes.
-
-### How Appetite & Review Mode Interact
-
-```
-Review Mode controls WHAT runs (breadth)      →  Which gates are active
-Appetite controls HOW DEEP it runs             →  Scope depth per gate
-```
-
-| | Lean | Core | Complete |
-|---|---|---|---|
-| **Auto** | No gates. Fastest path: smaller spec, minimal verify. | No gates. Standard planning depth, standard verify. | No gates. Deep planning, full verify. |
-| **Product Spec + Interface + Scopes** | 2 gates (Gate + Int.Gate). User confirms IN/OUT. | 2 gates + IN/OUT confirmation. Full workflow. | 2 gates + all questions. No shortcuts. |
-| **Product Spec + Interface + Tech Review + Code Diff** | 4 gates + plan-gate + diff-gate. Full review. | 4 gates + all questions. Max oversight. | 4 gates + all questions + code diff review. No shortcuts. |
-
-**Examples:**
-- `Lean + Auto` → Fastest path: no gates, no questions, no Plannotator. LLM decides scope. Interface runs automatically with 1 suggested interface. (~6 stages)
-- `Core + Product Spec Gate` → Standard feature: 1 Plannotator gate (pre-tech), interface runs automatically with 3 interfaces + hybrid. (~10 stages)
-- `Core + Product Spec + Interface Gates` → Feature where interface matters: 1 Plannotator gate + user chooses among 3 interfaces + hybrid. (~8 stages)
-- `Complete + Product Spec + Interface + Tech Review` → Critical feature: 3 Plannotator gates + all questions. Interface explores all 5 archetypes + hybrid. No shortcuts. (~17 stages)
-- `Complete + Product Spec + Interface + Tech Review + Code Diff` → Maximum oversight: 4 Plannotator gates + code diff review. All questions. All archetypes. (~17 stages)
-
-### Motivation
-
-Product ideas vary widely in scope and risk. A throwaway prototype should not require the same planning depth as a critical production feature. The Appetite × Review Mode cascade system ensures:
-
-- **Lean appetite limits scope and exploration** - smaller spec, fewer scopes, one interface suggestion, and critical-path tests only.
-- **Complete appetite expands exploration and verification** - full edge mapping, all 5 interface archetypes + hybrid, behavior/e2e tests, security tests, and live a11y audit when UI exists.
-- **Auto review mode skips Plannotator** - for lightweight validations where visual review is overkill
-- **Product Spec + Interface + Scopes review mode enforces strategy** - JTBD, Opportunity Mapping, etc. run before shaping if product context exists
-
-This is an **appetite-first** design: the human's declaration of review budget propagates automatically through all stages - no estimation step required.
-
----
-
-## 🔄 Process
-
-The workflow has **3 conceptual phases** (17 stages total), from idea triage to post-execution audit. See the [Stage Index](#-skills) in the orchestrator skill for the complete stage map with auto-chain rules and flow diagram.
-
-### 1. 🎨 Shaping
-
-**Stages 0-11** — From raw idea through shaped proposal, adversarial critique, visual gate approval, interface exploration, to typed technical plan. **Stages 12** — Tech plan gate (conditional). **Stages 13+** — Execution onward.
-
-#### Bidirectional Product ↔ Tech Flow
-
-Traditional planning is linear: product spec → tech spec. stelow adds **two feedback loops** that let tech constraints and opportunities inform product decisions *before* execution:
-
-- **Tech Preview** — Before shaping the product spec, a lightweight codebase analysis runs (via [cymbal](https://github.com/1broseidon/cymbal), when available) to surface existing architecture, entry points, hotspots, and constraints. This prevents shaping features that conflict with the codebase reality. Depth is appetite-gated. Additionally searches existing features by workflow name/topic to avoid duplicating or conflicting with what already exists.
-
-- **Codebase Feature Recon** — Before tech planning generates typed scopes, a deeper cymbal investigation runs: searches for related modules, maps references (who connects to what), and analyzes impact (what breaks if changed). Depth varies by appetite — see table below.
-
-- **Alignment Check** — After tech planning generates typed scopes, a bidirectional check compares the tech plan against the product spec. If tech reveals constraints that change the product scope, the LLM classifies alignment and acts per Review Mode: Auto/Product Spec Gate auto-updates the product spec; Product Spec + Interface Gates and above ask the user. This catches "tech discovered too late" before any code is written.
-
-| Appetite | Tech Preview (shaping) | Codebase Feature Recon (planning) | Alignment Check |
-|----------|----------------------|-----------------------------------|----------------|
-| **Lean** | `cymbal search --text` by workflow name | `cymbal search --text` — verify existence | Quick feasibility |
-| **Core** | Structure overview (entry points, hotspots) + feature search | `search` + `cymbal refs` — find connections | Standard IN/OUT vs feasibility |
-| **Complete** | Structure + impact analysis (blast radius) + feature search | `search` + `refs` + `cymbal impact` — blast radius | Deep: each scope's ACs vs codebase |
-
-Greenfield skips all codebase analysis (no code to inspect).
-If cymbal is not installed, falls back to `find` + `git log` — no cross-references or impact data.
-
-| Review Mode | Alignment Check behavior |
-|------------|------------------------|
-| **Auto/Product Spec Gate** | Auto-resolve. Updates spec-product if needed. No questions. |
-| **Product Spec + Interface Gates** | Auto-resolve if aligned; flags user if misaligned. |
-| **Product Spec + Interface + Tech Review / +Code Diff** | Always shows diff, asks user to choose update/ignore/reshape. |
-
-These loops are **appetite- and mode-respecting by design** — they inherit the same two-axis control as the rest of the workflow. No new mechanism needed.
-
-### 2. ⚡ Execution
-
-**Stages 13-14** — Autonomous scope execution via acceptance contracts: each scope is delegated with criteria, verify commands, and stop rules. Self-correction is harness-dependent - acceptance-native harnesses (fresh-context subagents) let the child fix gaps in the same context; other harnesses use parent-controlled re-delegation. Optimization scopes use benchmark-driven iteration. Scope completion is contract-gated — acceptance criteria verify before a scope is marked complete; `/sw-next` validates the transition and required artifacts on advance.
-
-### 3. ✅ Verification & Audit
-
-**Stage 14** — Verification (tests, code review, UI audit). **Stage 15** — Code diff review gate (conditional). **Stage 16** — Execution critique (scope fidelity, NFR coverage, edge cases, docs, test quality). The audit classifies gaps as FIXED / DOCUMENTED / ESCALATED. ESCALATED gaps become new scopes. With pending scopes, the workflow routes Audit back to Execution (reject transition) instead of closing.
+`./install.sh` variants: `--minimal`, `update`, `remove`, `--help`
+(`ASSUME_YES=1` for CI). Advanced options and rationale:
+[docs/INSTALLATION.md](docs/INSTALLATION.md).
+Full onboarding for both paths:
+[docs/getting-started.md](docs/getting-started.md).
 
 ---
 
 ## 📋 Skills
 
-All 30 skills live flat in `skills/` and install into `~/.agents/skills/`: **15 workflow skills + 15 product skills**. `stelow-workflow-entry` and `stelow-workflow-router` are workflow control-plane skills (bootstrap + navigation).
+All 32 skills live flat in `skills/` and install into `~/.agents/skills/`: **17 workflow skills + 15 product skills**. `stelow-workflow-entry` and `stelow-workflow-router` are workflow control-plane skills (bootstrap + navigation).
 
 | Prefix | Count | Meaning | Distribution |
 |---|---|---|---|
-| `stelow-workflow-*` | 15 | Skills that run the 17-stage workflow: the orchestrator, the stage skills, and the execution/verification support they invoke | **Core** — auto-vendored into `bb-plugin-stelow` and auto-refreshed from this repo (no manual step) |
-| `stelow-product-*` | 15 | Product strategy & domain libraries consulted during stages (reference only, none execute stages) | **Vendored too** — `bb-plugin-stelow` ships all 30 and auto-refreshes them; standalone install via `npx skills`/`install.sh` unchanged |
-| Total | **15 workflow skills + 15 product skills = 30** | Entry and router are part of the workflow family | — |
+| `stelow-workflow-*` | 17 | Skills that run the 18-stage workflow: the orchestrator, the stage skills, and the execution/verification support they invoke | **Core** — auto-vendored into `bb-plugin-stelow` and auto-refreshed from this repo (no manual step) |
+| `stelow-product-*` | 15 | Product strategy and domain libraries consulted during stages (reference only, none execute stages) | **Vendored too** — `bb-plugin-stelow` ships all 32 and auto-refreshes them; standalone install via `npx skills`/`install.sh` unchanged |
+| Total | **17 workflow skills + 15 product skills = 32** | Entry and router are part of the workflow family | — |
 
-The prefix is the grouping: `stelow-workflow-*` is the machinery that executes the process, `stelow-product-*` is the knowledge consulted while doing it. Distribution differs by design:
+### 🏗️ Workflow (17)
 
-- **`stelow-workflow-*` = core, auto-vendored.** When running inside bb, `bb-plugin-stelow` vendors these and **auto-syncs them from this repo on a schedule** (`bb.background.schedule` + fetch of the GitHub tree), so a workflow-skill update here propagates to the plugin automatically — no manual re-install and no `~/.agents/skills` pollution. On other hosts they remain standalone-installable exactly as before.
-- **`stelow-product-*` = reference, vendored everywhere.** `bb-plugin-stelow` ships them like the workflow skills (auto-synced, workers load locally with `npx skills add` as fallback only); standalone install via `npx skills`/`install.sh` unchanged.
-
-Every skill is fully self-contained - the installer copies the complete directory tree including its own `references/cli-tools/`, `references/`, and `stages/` files. This means:
-- ✅ **Skills work standalone** - invoke any sub-skill (e.g., `stelow-workflow-shape-up`, `stelow-product-pricing`) independently of the orchestrator
-- ✅ **Portable across agents** - any Agent Skills-compatible host references skills by name (`~/.agents/skills/`)
-- ✅ **References resolve locally** - every `references/cli-tools/*.md` path is relative to the skill's own directory
-- ❌ **Not in `~/.agents/skills/`?** Use `./install.sh` or `npx skills add calionauta/stelow -g`
-
-### 🏗️ Workflow (15)
-
-`stelow-workflow-*` — skills that execute the 17-stage workflow. `stelow-workflow-orchestrator` composes the others; the stage skills and execution/verification support run the steps.
+<details>
+<summary>17 workflow skills (machine-readable list — human inventory at <a href="https://calionauta.github.io/stelow/docs/skills/">docs/skills</a>)</summary>
 
 | Skill | Purpose |
 |-------|---------|
-| `stelow-workflow-orchestrator` | Coordinates the multi-stage workflow (Setup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Planning → Plan.Gate → Execution → Verification → Diff.Gate → Audit) |
+| `stelow-workflow-orchestrator` | Coordinates the multi-stage workflow (Setup → Context → Shape → Critique → Gate → Scope → Interface → Int.Gate → Selection → Architecture → Planning → Plan.Gate → Execution → Verification → Diff.Gate → Audit) |
 | `stelow-workflow-entry` | Workflow entry point - classifies intent, scaffolds state, picks the first stage |
 | `stelow-workflow-router` | Workflow router - reads state, validates hand-offs, advances stages |
-| `stelow-workflow-shape-up` | Shape Up planning + **Tech Preview** (appetite-gated codebase recon via cymbal) — surfaces codebase reality before product decisions |
-| `stelow-workflow-interface-alternatives` | Interface alternatives exploration (1/3/5 archetypes by appetite) |
+| `stelow-workflow-shape-up` | Shape Up planning + **Tech Preview** (breadth-gated codebase recon via cymbal) — surfaces codebase reality before product decisions |
+| `stelow-workflow-interface-alternatives` | Interaction alternatives exploration (1–5 directions by exploration breadth + hybrid) |
+| `stelow-workflow-architecture-alternatives` | Architecture alternatives exploration (2–5 directions by exploration breadth + hybrid) |
+| `stelow-workflow-architecture-contrast` | Invariants-first architecture decision loop with selection receipt |
 | `stelow-workflow-plan-critique` | Product plan gap analysis (flows, states, affordances, data, system, compositional quality, feasibility); mode-dependent resolution |
 | `stelow-workflow-tech-planning` | Technical scope generation + **Alignment Check** (mode-gated bidirectional product↔tech feedback loop) |
 | `stelow-workflow-scope-executor` | Autonomous scope execution via acceptance contracts - child self-corrects (harness-dependent), parent evaluates final result |
@@ -313,9 +103,12 @@ Every skill is fully self-contained - the installer copies the complete director
 | `stelow-workflow-execution-critique` | Post-execution audit - classifies gaps as FIXED/DOCUMENTED/ESCALATED; ESCALATED gaps become new scopes |
 | `stelow-workflow-interface-contrast` | Reaction-first Interface Contrast - preserves the first reaction, compares bounded alternatives, emits a named disposition |
 
+</details>
+
 ### 📚 Product (15)
 
-`stelow-product-*` — product strategy & domain libraries consulted during Context, Shape, Scope, and Audit. All are `disable-model-invocation` reference skills — none execute a stage.
+<details>
+<summary>15 product skills (machine-readable list — human inventory at <a href="https://calionauta.github.io/stelow/docs/skills/">docs/skills</a>)</summary>
 
 | Skill | Strategy |
 |-------|----------|
@@ -335,489 +128,23 @@ Every skill is fully self-contained - the installer copies the complete director
 | `stelow-product-promotions` | Promotions and campaigns |
 | `stelow-product-trust-building` | Trust-building mechanisms |
 
----
-
-## 🚀 Quick Start
-
-This package is **skills-only and host-agnostic** — its 30 skills run on any Agent Skills-compatible host (see `references/host-levers.md` for activation recipes). There is no compiled plugin or per-host adapter; the runtime is the portable `scripts/stelow` CLI plus the skills themselves.
-
-| Your situation | Recommended command | What you get |
-|----------------|--------------------|-------------|
-| **bb desktop** (recommended) | Get <a href="https://getbb.app" rel="nofollow">bb</a> (free), open it, then run `curl -fsSL https://calionauta.github.io/stelow/install.sh \| bash` | Visual board + inbox + `bb stelow` worker CLI (25+ skills vendored & auto-synced; see [Path A](#-path-a-bb-desktop-recommended)) |
-| **Any other agent** | `npx skills add calionauta/stelow -g` | 25+ skills, copied to `~/.agents/skills/` |
-| **Existing repo / offline** | `git clone ... && ./install.sh` | 25+ skills + prune of retired/orphaned skills |
-
-### Intent-Aware Start
-
-`/sw-start` auto-detects what kind of request you're making:
-
-```bash
-/sw-start "reduce complexity of the codebase"
-# → Detected as: Refactor
-# → Pipeline: Planning → Execution → Verification → Audit
-# → Skips Shape Up, Interface, all Gates
-
-/sw-start "fix login crash when email is empty"
-# → Detected as: Bugfix
-# → Pipeline: Planning → Execution → Verification → Audit
-
-/sw-start "create a new invoicing platform"
-# → Detected as: New Product
-# → Full pipeline: Setup → Shape → ... → Execution → Audit
-```
-
-If detection is ambiguous or incorrect, you can change the category before the workflow starts. This prevents token waste from running the full Shape Up pipeline on a simple bugfix.
-
-### Drift-Aware Resume
-
-`/sw-resume` checks for git changes before resuming a paused workflow. If files changed while paused, it warns you and asks for confirmation before proceeding.
-
-See [docs/INSTALLATION.md](docs/INSTALLATION.md) for detailed options.
-Host command guide: [`HOSTING.md`](HOSTING.md). Per-harness activation recipes: [`references/host-levers.md`](references/host-levers.md).
+</details>
 
 ---
 
-## 📦 Installation
+## 📌 Status and honesty
 
-### Compatibility
-
-The skills work in any agent that reads `~/.agents/skills/<name>/SKILL.md` — the
-agentskills.io standard. This repo ships **no host-specific code**: every
-compatible agent consumes the same skill tree. Host specialization is optional
-and lives in the environment (`STELOW_WORKFLOW=1` + `STELOW_STATE=<path>` —
-see `references/host-levers.md`). The visual app (board, inbox,
-worker CLI) lives in a separate repo,
-[bb-plugin-stelow](https://github.com/calionauta/bb-plugin-stelow).
-
-| Feature | Any agentskills-compatible agent |
-|---|---|
-| **30 skills (15 workflow + 15 product)** | ✅ |
-| **`scripts/stelow` CLI (status / advance / doctor / seed / schema / ask / sync-scopes / lock / config)** | ✅ (bash + python3) |
-| **`/sw-*` workflow commands** | ✅ Routed by the entry + router skills |
-| **`visual_review` gate** | ✅ Portable approval receipts under `.stelow/approvals/` |
-| **Scope sync from spec-tech.md** | ✅ Skill-instructed parse into `stelow.json` |
-| **TUI overlay / lifecycle hooks** | ❌ Not shipped — host-side niceties only (no host code in this repo) |
-
-> **Bottom line:** The **30 skills + `scripts/stelow` run identically in any agent** that can read agentskills.io skill directories, and keep portable state in `stelow.json` / `.stelow/` / `state.md`. There is no extension code to install and no plugin to compile.
-
-### Auto-sync scopes from spec-tech.md
-
-Scopes populate from `spec-tech.md` via one canonical subcommand — run it at
-Execution phase setup (and re-run when spec-tech bumps to v2+):
-
-```bash
-scripts/stelow sync-scopes [--name <workflow>] [--json]
-# inside bb: the plugin wraps the same operation
-```
-
-- **How:** parses `[SCOPE-N]` blocks from the latest `.stelow/{date}/{hash}/plans/spec-tech_*.md`
-  into `{ id, type, name, blockedBy, targetFiles, maxIterations }` with `status: 'pending'`,
-  tracked by `wf.specTechFile` for idempotent re-sync.
-- **Fail-safe:** missing input is an exit-0 no-op; existing state is never replaced
-  with an empty scope list. A re-sync preserves host/worker overlay —
-  `audit-gap` rework scopes and `discovered` tasks survive spec revisions
-  (rework is rehoused if a revised spec reuses its number). See `skills/stelow-workflow-scope-executor/references/cli-tools/scope-init-fallback.md`
-  for the full contract.
-
-Known edge cases (race window, legacy workflows without `dirHash`) are handled idempotently; report new ones as [issues](https://github.com/calionauta/stelow/issues).
+Pre-1.0 (`0.x`): behavior may change incompatibly. What changed recently:
+[CHANGELOG.md](CHANGELOG.md) and
+[releases](https://github.com/calionauta/stelow/releases).
+Known limitations, evidence base, and experimental surfaces:
+[docs/status.md](docs/status.md).
 
 ---
 
-## External Dependencies
-
-stelow is designed to be **self-contained** — the 30 skills + installer cover the full workflow. Some features optionally integrate with external tools for enhanced capability. Every external dependency has a documented fallback.
-
-| Dependency | Required? | Used by | Install method | Fallback if absent |
-|---|---|---|---|---|
-| [cymbal](https://github.com/1broseidon/cymbal) | Optional | Tech Preview, Codebase Feature Recon, Alignment Check | `brew install 1broseidon/tap/cymbal` (macOS), or `go install` / binary release | Basic `find` + `git log` — no cross-references or impact data |
-| [npx skills](https://github.com/vercel-labs/skills) | Optional | Stack-matched skill discovery during execution setup | Part of Node.js ecosystem (`npx` bundled with npm) | Skip — workflow runs without stack-matched skills |
-| [ctx7](https://github.com/upstash/context7) | Optional | Current library doc fetching during execution setup | `npx @vedanth/context7` (auto-install via npx) | Skip — docs not fetched (less informed execution) |
-| [sem](https://github.com/Ataraxy-Labs/sem) | Optional | Entity-level diff in Execution Critique (functions, types, methods instead of raw lines); enhanced changelog + bump detection in releases | `curl -fsSL https://raw.githubusercontent.com/Ataraxy-Labs/sem/main/install.sh \| sh` (macOS / Linux), `winget install AtaraxyLabs.sem` (Windows), `brew install sem-cli` (macOS / Linuxbrew) | `git diff` — raw line-level only, no structural awareness |
-| [plannotator](https://plannotator.ai/) | Optional | Visual review gate annotation | `plannotator annotate ... --gate --json` via bash on any agent | Manual review with approval receipt file — no structured annotation |
-| Subagents (built-in to any agent) | Optional | Parallel reviewer orchestration during Plan Critique | `subagent(...)` / agent native subagent | Sequential execution — slower, same outcome (single-context review) |
-| Acceptance-native subagent loop | Optional | Same-context self-correction during scope execution (child fixes gaps before returning) | Any harness with fresh-context subagents (otherwise the parent-controlled re-delegation fallback below) | Without it: scope-executor falls back to parent-controlled loop (slower); no agent types — embed role in prompt |
-| Conversation supervision | Optional | Supervision during execution | Agent-native supervision where available | Skip — no supervision; rely on `stages-guard` for invariant enforcement |
-
-> **Note:** stelow's cli-tools (`skills/stelow-workflow-orchestrator/references/cli-tools/subagents.md`) document the invocation syntax. Host variability is handled by the skills themselves (`stages.yaml#tools` vocabulary + `skills/stelow-workflow-orchestrator/references/cli-tools/*.md`), not by host-specific code — no skill changes needed when switching agents.
-
-**Design principle:** stelow is **host-agnostic, skills-agnostic**. The 30 skills run identically in any agent that reads `~/.agents/skills/` — the full Shape Up workflow (plans, critique, scopes) works everywhere, driven by the `scripts/stelow` CLI for state mechanics. There is no extension layer and no compiled plugin in the repo; optional baseline tools install on top of any agent. No external tool is *required* to run the workflow — each optional integration enhances a phase but never blocks progress. `./install.sh` is the canonical skills installer: it flattens the skills into `~/.agents/skills/` (and prunes retired ones), then offers the optional cymbal/sem/ctx7 tooling. The cymbal/ast-grep **CLIs** and `sem`/`ctx7` remain user-managed (offered interactively during setup, or see the tools table above).
-
-For every external tool above, the workflow teaches the agent the **specific fallback strategy** in `skills/stelow-workflow-orchestrator/references/cli-tools/<tool>.md`. When a tool is unavailable, the orchestrator instructs the agent to use harness-native capabilities (built-in `subagent()`, `git grep`, terminal-based review with approval receipts) rather than skipping the workflow step entirely. Degraded capability is the trade-off — see the Fallback column above for what you lose without each tool.
-
-### 🚀 Path A: bb desktop (recommended)
-
-**The full experience: board, inbox, workers.** bb is a free, open-source,
-local-first IDE (<a href="https://getbb.app" rel="nofollow">getbb.app</a>) where your agents run on your
-own subscriptions. stelow runs there as a visual plugin — no terminal setup,
-no skill copying.
-
-**0. Prerequisite: a coding-agent CLI, installed and authenticated.** bb drives
-the coding-agent CLI you already have, or any harness in
-`references/host-levers.md`. Install and log in with the
-provider first; bb connects to it, it does not replace it.
-
-**1. Install bb (free) and open it:**
-
-- **macOS:** one-click download at <a href="https://getbb.app" rel="nofollow">getbb.app</a>
-- **Any OS with Node:** `npx bb-app@latest` (npm 12+: add `--allow-scripts=better-sqlite3,node-pty,@parcel/watcher`), then open `http://localhost:38886`
-- Windows via WSL; Linux & remote machines supported — see [get-bb/bb](https://github.com/get-bb/bb)
-
-**2. Add the Stelow plugin** (requires bb ≥ 0.38; awaiting marketplace
-approval, so install via git URL for now):
-
-```bash
-curl -fsSL https://calionauta.github.io/stelow/install.sh | bash
-```
-
-Or directly:
-
-```bash
-bb plugin install git:https://github.com/calionauta/bb-plugin-stelow.git --yes
-bb plugin list   # stelow should show as running
-```
-
-Or in the UI: Extensions → Plugins → Add plugin, paste
-`git:https://github.com/calionauta/bb-plugin-stelow.git`, Install.
-To track a fixed release instead of the default branch, append `@vX.Y.Z`
-(e.g. `@v0.1.57`); updates arrive via `bb plugin update stelow`.
-
-**3. Skills (already bundled):**
-
-The plugin ships all 30 skills (15 `stelow-workflow-*` + 15 `stelow-product-*`)
-in its own `skills/` and auto-syncs them from this repo — no manual installation
-step. `npx skills add calionauta/stelow -g` is only needed for non-bb agents.
-(`bb skill list` to confirm the bundled copies.)
-
-**4. Open Stelow** in bb's navigation, select a project (a normal project with
-a local workspace source), choose Appetite and Review mode, and create a card.
-Details in [🗂️ Visual Board and Inbox](#️-visual-board-and-inbox).
-
-### 📋 Path B: Any agent (universal, canonical)
-
-The **skills** are the core of this project - they work on **any** agent that reads `~/.agents/skills/<name>/SKILL.md` (the agentskills.io standard).
-
-```bash
-git clone https://github.com/calionauta/stelow.git
-cd stelow
-./install.sh
-```
-
-### Development checks
-
-For contributors and coding agents, install the development dependencies once
-and use the same commands as CI:
-
-```bash
-npm install
-npm run quality:report
-npm run verify:generated
-npm run security:full
-```
-
-The quality report surfaces lint, unused-code, and duplication backlog without
-making an existing checkout unusable. Generated workflow transitions are an
-enforced freshness check; the security command fails on high/critical npm
-advisories. A deeper Socket scan remains optional because it requires a
-repository-owned API token.
-
-The installer copies the **skills + command reference files**. No extensions, no TUI - just the 30 skills that run the workflow.
-
-**Or, with npx (no clone needed):**
-
-```bash
-npx skills add calionauta/stelow -g
-```
-
-This installs all 30 skills to `~/.agents/skills/` - works on any CLI.
-
-> For per-agent configuration (if your agent needs more than the universal skill path), see [docs/INSTALLATION.md](docs/INSTALLATION.md).
-
-### Manual setup & dependencies
-
-For per-CLI commands, required npm packages, third-party skills, and updates, see [docs/INSTALLATION.md](docs/INSTALLATION.md).
-
-For toolchain dependencies (TypeScript, Vitest), see [package.json](package.json).
-
-This project distributes exclusively via GitHub (no npm) — see [docs/SECURITY.md](docs/SECURITY.md) for rationale.
-
----
-
-## 🎮 Commands
-
-The `/sw-*` names are **conversational aliases** that a skill-capable agent
-may interpret; the skills-only core no longer registers slash commands with a
-host. The deterministic, cross-host interface is the `scripts/stelow` CLI
-(`status`, `advance`, `doctor`, `seed`, `schema`, `ask`, `sync-scopes`, `lock`,
-`config`, `audit-trail` — see [🧰 stelow CLI](#-stelow-cliscriptsstelow) below).
-
-| Alias | Deterministic equivalent |
-|-------|--------------------------|
-| `/sw-status` | `scripts/stelow status` |
-| `/sw-next` / `/sw-setphase` | `scripts/stelow advance <stage>` after the agent resolves the valid transition |
-| `/sw-doctor` | `scripts/stelow doctor` |
-| `/sw-start` | Agent-led entry flow, which seeds state with `scripts/stelow seed` |
-
-Use `scripts/stelow audit-trail build` to create the mandatory deterministic
-lineage report and `scripts/stelow audit-trail check` to verify it is current.
-`--strict` adds the completion gate: it refuses to build while any durable
-workflow output in the state directory is still unregistered, so the receipt
-can never quietly omit something the audit produced.
-
-Other actions such as archive, pause, thread navigation, or visual review are
-host-surface responsibilities. A host may offer aliases for them, but they are
-not portable Stelow command contracts. There is no `npm run sw-status` script.
-
----
-
-## 🧰 stelow CLI (`scripts/stelow`)
-
-`scripts/stelow` is stelow's own CLI — the durable state-machine boundary every
-host shells out to. No npm dependencies: bash + python3 only. Hosts point at a
-per-workflow state dir via `STELOW_STATEDIR` / `STELOW_STATE`; usage errors exit
-2 (worker misuse), runtime failures exit 1.
-
-Subcommands: `status`, `advance`, `doctor`, `seed`, `schema`, `ask`,
-`sync-scopes`, `lock`, `config`, `audit-trail` — full reference in
-[`references/cli-tools/stelow-helper.md`](references/cli-tools/stelow-helper.md)
-(or run `scripts/stelow --help` / `scripts/stelow schema`).
-
-> When running inside bb, you don't call this binary directly — the plugin wraps
-> the same operations as `bb stelow …` (full command surface in the plugin's
-> `FEATURES.md`; see [🗂️ Visual Board and Inbox](#️-visual-board-and-inbox)). The semantics
-> are identical; only the invocation surface changes.
-
----
-
-## 🛠️ Installation Guide
-
-Stelow is skills-only: there is **one** install path for every host. No
-host-specific code, plugins, or adapters ship in the repo.
-
-```bash
-git clone https://github.com/calionauta/stelow.git
-cd stelow
-./install.sh     # flattens skills/* into ~/.agents/skills/ + prunes retired/orphaned
-# — or, without cloning —
-npx skills add calionauta/stelow -g
-```
-
-- **Zero-to-running** (new machine): install and authenticate any Agent
-  Skills-compatible coding-agent CLI, then install
-  <a href="https://getbb.app" rel="nofollow">bb desktop</a>, open it, and run
-  the one-line installer
-  (`curl -fsSL https://calionauta.github.io/stelow/install.sh | bash`)
-  (see [Path A](#-path-a-bb-desktop-recommended))
-- **Activating the workflow:** the entry skill loads when the host sets
-  `STELOW_WORKFLOW=1` + `STELOW_STATE=<path>` (see
-  `references/host-levers.md`). Without the marker, the
-  skills still run standalone (`/sw-*` is routed by the skills themselves).
-- **Scheduling/automation:** host-owned. Use your agent's background tasks /
-  scheduled prompts. The repository does not ship a scheduler or inbox mirror —
-  the bb plugin below is the reference implementation that provides both.
-
-## 🗂️ Visual Board and Inbox
-
-[bb-plugin-stelow](https://github.com/calionauta/bb-plugin-stelow) is the reference Stelow app: a visual board and inbox with a `bb stelow` worker CLI, running inside bb (the local-first IDE from Path A). It keeps `stelow.json` and `.stelow/` as the source of truth — it maintains no second workflow database.
-
-```bash
-bb plugin install git:https://github.com/calionauta/bb-plugin-stelow.git --yes
-```
-
-(requires bb ≥ 0.38; pending marketplace approval, so install via the repository
-URL — or Extensions → Plugins → Add plugin in the UI and paste the same URL.
- Pin a release with `@vX.Y.Z`; update with `bb plugin update stelow`.)
-
-**What it adds:**
-
-- **Board** — build cards flow Triage → Analyse → Plan → Execute → Review → Done; research cards move To-Do → Doing → Done. While the worker waits on a structured question, the card stays in its column flagged as waiting, with an inbox item.
-- **Blocking questions** — single/multi-choice forms via `bb stelow ask` (batch several `--question` groups in one call). Unanswered questions stay answerable on the card; late answers are delivered to the worker thread.
-- **Worker CLI** — the same state machine as [`scripts/stelow`](#-stelow-cliscriptsstelow), wrapped for bb:
-  `bb stelow status [--json]`, `ask`, `seed`, `advance <stage>`, `doctor [--json]`, `preset list|add|remove|assign`.
-- **Skills distribution** — all 30 skills (15 `stelow-workflow-*` + 15 `stelow-product-*`) are vendored in the plugin's `skills/` and auto-synced from this repo on a schedule (default `33 */6 * * *`), plus the helper script (synced copy of `scripts/stelow`). Never hand-edit the vendored copies; fix methodology upstream and let the sync propagate.
-- **Gates, presets, mentions** — artifact review with contextual comments, approval receipts in the canonical filenames (`.stelow/approvals/{dirHash}/{gate,int-gate,plan-gate,diff-gate}-approved.md`), agent presets (provider/model/reasoning/permission per card), `@workflow-name` mentions resolving fresh state, and a sidebar badge counting unresolved inbox items + unseen completions.
-
-Open **Stelow** in bb's navigation, select a project, choose Appetite and Review mode, then create a card. The plugin seeds the workflow, starts the worker, and reflects its stages and generated artifacts in the board. Requires a normal bb project with a local workspace source. See the [plugin README](https://github.com/calionauta/bb-plugin-stelow#readme) for details.
-
----
-
-## 🌐 Host Support
-
-stelow runs on **any agent that reads `~/.agents/skills/<name>/SKILL.md`** —
-this repo ships no host-specific code. The hosting contract lives in
-[`HOSTING.md`](HOSTING.md) with the build guide in
-[`docs/host-plugin-blueprint.md`](docs/host-plugin-blueprint.md); per-harness activation recipes live in
-`references/host-levers.md`.
-
-| Host | How it runs stelow |
-|---|---|
-| **Any agentskills-compatible agent** | Reads the skills directly from `~/.agents/skills/`; no plugin import needed. Set `STELOW_WORKFLOW=1` + `STELOW_STATE=<path>` to auto-load the workflow. Stage state can additionally be projected onto the host's native surface (e.g. issue labels) via the skill instructions. `visual_review` writes portable receipts under `.stelow/approvals/`. State mechanics go through the [`scripts/stelow` CLI](#-stelow-cliscriptsstelow). |
-| **bb (via [bb-plugin-stelow](https://github.com/calionauta/bb-plugin-stelow))** | Reference app in a separate repo: visual board, inbox, blocking questions, presets, and the `bb stelow ...` worker CLI wrapping the same state machine. All 30 skills auto-sync from this repo. |
-
-Owner paths in this repo:
-
-- `skills/` (30 portable skills: 15 `stelow-product-*` and 15 `stelow-workflow-*`) — the only runtime content; loaded by any agentskills-compatible agent.
-- `scripts/stelow` — portable CLI (`status`, `advance`, `doctor`, `seed`, `schema`, `ask`, `sync-scopes`, `lock`, `config`); every host shells out to it.
-- `types/stages.ts` + `skills/stelow-workflow-orchestrator/stages.yaml` — the stage model and transitions.
-
-To add a new host you need **no code** — just an agent that reads
-agentskills.io skill directories. See [`HOSTING.md`](HOSTING.md) for the
-contract, [`docs/host-plugin-blueprint.md`](docs/host-plugin-blueprint.md) for the build guide,
-and `references/host-levers.md` for per-harness knobs.
-
----
-
-## 📁 Artifact Directory
-
-Workflow state lives at `<project>/stelow.json`; per-workflow artifacts and
-approval receipts live under `<project>/.stelow/`. Skills create the documents
-as their stages run, while `scripts/stelow` seeds and advances the durable
-state. The final audit always writes and validates its `audit-trail.md`
-receipt; users never need to create the workflow bookkeeping by hand.
-
-### Top-level
-
-| Path | Contents | Generated by |
-|------|----------|---------------|
-| `stelow.json` | Local tracking — workflow metadata, scopes, status | Workflow skills (schema: `stelow.schema.json`) |
-| `lessons-learned/` | Cross-cycle patterns generated by Execution Critique | Audit stage |
-| `session-knowledge/` | Passive context notes saved by the user mid-session | User (manual) |
-
-> The Stelow core no longer maintains an inbox mirror (`.stelow/inbox/`)
-> or provenance log (`.stelow/inbox/history.jsonl`) — those were removed in
-> v0.57.0. Hosts own their own inbox surface. The mandatory final-audit receipt
-> lives in `.stelow/{date}/{dirHash}/audit-trail.md`.
-
-### Per-workflow: `.stelow/{YYYY-MM-DD}/{dirHash}/`
-
-> The root `stelow.json` is the canonical workflow state. Per-workflow directories hold artifacts and per-workflow approvals; there is no generated per-workflow `index.json` mirror.
-
-| Path | Contents | Generated by | Stage |
-|------|----------|---------------|-------|
-| `specs/spec-product_v{N}.md` | Shaped product proposal with IN/OUT, appetite, risks | Shape Up | 4 |
-| `interfaces/interfaces_v{N}.md` | Interface proposals (1–5 archetypes + hybrid) | Interface Alternatives | 8 |
-| `plans/spec-tech_v{N}.md` | Typed scopes, dependencies, tasks table, target files | Tech Planning | 11 |
-| `plans/scopes/` | Scope detail files | Tech Planning | 11 |
-| `critiques/critique-report.md` | Adversarial gap analysis (flows, states, feasibility) | Plan Critique | 5 |
-| `approvals/` | Gate approval receipts | Gate stages | 6, 9, 12, 15 |
-| `sessions/{session-id}/checkpoint.json` | Session checkpoint for resume, when the host supports it | Workflow skills | Any |
-| `execution/iteration-state-{SCOPE-ID}.md` | Per-scope execution record (tasks, evidence, checklist) | Scope Executor | 13 |
-| `execution/scope-{N}/events.jsonl` | Per-scope event log (delegate, verify, completed, escalated) | Scope Executor | 13 |
-| `verification/code-quality-review.md` | Code quality review output (lint, thermo-nuclear) | Verification | 14 |
-| `audit-trail.md` | Deterministic linked lineage receipt from origin through validation, including the repository snapshot (`v3` contract) | `scripts/stelow audit-trail build --strict` | Audit |
-| `group-context/manifest.json` | Triage group manifest (when multiple items grouped) | Triage grouping | 0 |
-| `checklist.md` | Current phase task checklist (Plannotator-visible) | LLM (todo tool) | Any |
-
-### Approval receipts: `.stelow/approvals/{dirHash}/`
-
-| Path | Contents | Generated by |
-|------|----------|---------------|
-| `gate-approved.md` | Gate approval receipt (timestamp + host + method) | `visual_review` |
-| `int-gate-approved.md` | Interface gate approval receipt | `visual_review` |
-| `plan-gate-approved.md` | Tech plan gate approval receipt | `visual_review` |
-| `diff-gate-approved.md` | Code diff gate approval receipt | `visual_review` |
-
-`.plannotator/approvals/{dirHash}/` is retained only as a legacy
-compatibility/historical path; the portable canonical receipts live under
-`.stelow/approvals/`.
-
-> **Convention:** `{dirHash}` is a stable random identifier (e.g. `sw-abc123-xyz789`) generated at workflow creation. The display name may change via `/sw-rename`, but the directory hash stays constant.
-
----
-
-## 📖 Evidence & Limitations
-
-### ✅ Evidence-Based Design
-
-This workflow is grounded in empirical evidence from the 2025-2026 AI agent research boom. Every architectural decision - from parallel subagent orchestration to cross-session learning - is backed by peer-reviewed papers, open-source tools, and industry benchmarks.
-
-| Practice | Source | Evidence | Where We Implement |
-|----------|--------|----------|-------------------|
-| **Structured parallel execution** | [CAID](https://arxiv.org/abs/2603.21489) (Geng & Neubig, CMU, 2026) | +25.6pp PaperBench / +14.7pp Commit0 (absolute, vs same-framework single-agent; latest revision — v1 reported 26.7/14.3) via central manager + isolated `git worktree` per engineer + test-gated integration. Benchmarks are from-scratch construction, not brownfield edits | Plan Critique borrows the *isolation* pattern only (fresh context, independent files, single consolidator) — not worktrees or test-gated merges. Code execution stays sequential by default; the experimental structured-parallel path is specified in [rfc-parallel-scope-execution.md](docs/rfc-parallel-scope-execution.md) |
-| **Cross-session learning** | [Cat](https://arxiv.org/abs/2512.22087) (Liu et al., Beihang, 2025); [Memory Transfer](https://arxiv.org/abs/2604.14004) (Kim et al., KAIST, 2026) | Context as callable tool; +3.7% via abstract memory pools | Session knowledge from past cycles read during workflow setup |
-| **Output validation guards** | [Stage-Gate Agentic](https://community.pdma.org/knowledgehub/bok/product-innovation-process/stage-gate-agentic-the-coming-revolution-in-the-new-product-process) (PDMA, 2026); [Phaselock](https://github.com/infinri/Phaselock) (2026) | AI agents with gates reduce execution failures; 80 enforceable rules | Shape Up output guard + Tech Planning validation guard |
-| **Context isolation** | [Clean Context Pattern](https://agentfactory.panaversity.org/docs/General-Agents-Foundations/context-engineering/context-isolation) (Agent Factory, 2026); [GAM](https://arxiv.org/abs/2604.12285) (Zhejiang U., 2026) | Fresh context per agent outperforms shared pipelines; write isolation prevents contamination | `subagents.md` - `context:"fresh"` per subagent; disk-based artifacts |
-| **Visual review gate** | [Plannotator](https://plannotator.ai/) (backnotprop, 2025); [Placement Theory](https://tianpan.co/blog/2026-04-17-hitl-placement-theory-approval-gates) (Tian Pan, 2026) | Browser-based plan annotation with structured feedback loop | Plannotator gate active when Review Mode > Auto; skipped in Auto |
-| **Intra-step recovery** | [Try-Heal-Retry](https://adriennevermorel.com/notes/try-heal-retry-pattern/) (Nweke, 2026); [PALADIN](https://arxiv.org/abs/2509.25238) (Chaudhary et al., 2025) | 89.68% recovery rate via annotated failure trajectories | `subagents.md` - Retry 1× + skip with logged error per subagent |
-| **Unstructured cooperation penalty** | [CooperBench](https://arxiv.org/abs/2601.13295) (Khatua et al., 2026) | 600+ tasks, 12 libraries, 4 languages: peer agents score on average 30% lower together than solo; monotonic decline 68.6% → 46.5% → 30.0% as teams grow 2 → 3 → 4 | Plan Critique uses fresh-context subagents with zero inter-agent communication and independent file outputs; no peer-to-peer coordination exists anywhere in the workflow |
-| **Self-organizing team penalty** | [Multi-Agent Teams Hold Experts Back](https://arxiv.org/abs/2602.01011) (Pappu et al., 2026) | Self-organizing teams (no fixed roles) trail their own best member by up to 41.1% on ML benchmarks; failure mode is integrative compromise (averaging expert and non-expert views), worsening with team size | No self-organizing teams: every scope runs under a manager-owned plan with acceptance contracts and a single consolidator — never peer negotiation |
-| **Git-primitive coordination at scale** | [Building a C compiler with a team of parallel Claudes](https://www.anthropic.com/engineering/building-c-compiler) (Anthropic, Feb 2026) | Demonstration, not controlled evidence (no single-agent baseline reported): ~16 agents, ~2,000 sessions, ~$20k building a Rust-based C compiler (builds Linux 6.9); coordination through task lock-files written into git, merge conflicts frequent | `scripts/stelow lock` borrows the lock-file coordination idea; worktree isolation deliberately not adopted — merge burden judged disproportionate to 2–3-scope risk (see [scope-execution-strategy.md](docs/scope-execution-strategy.md)) |
-| **Communication topology limits** | [clawRxiv 2604.00736](https://clawrxiv.io/abs/2604.00736) (2026) | Overhead grows quadratically: C(n)=0.023n²+0.04n; 50% at n=7; agents inflate 34% when aware of peers | Max 4-5 parallel subagents (n≤5 optimal zone); no message passing between agents — each writes independent file |
-| **Partitioning decides parallelism** | [Co-Coder](https://arxiv.org/abs/2606.00953) (Yang et al., 2026) | 28 real-world projects on DevEval + CodeProjectEval: 56.8% → 68.1% (+11.3pp) with 2.10× speedup and −28% cost on DevEval; gains largest on densest cross-file dependencies. Naive file-parallel: no latency gain (806s vs 800s), +44% cost, negligible pass-rate gain; Claude Code Agent Teams lowest pass rate (54.1%) | Code execution defaults to sequential as a brownfield risk posture — not a Co-Coder deduction (the paper favors partitioning coupled work, not avoiding it). Parallel scope dispatch is opt-in with post-hoc `git diff --name-only` overlap audit; `target_files` intersection is coarser than cohesion partitioning — see the experimental upgrade path in [rfc-parallel-scope-execution.md](docs/rfc-parallel-scope-execution.md) |
-| **Metric-driven optimization** | [ReflexGrad](https://arxiv.org/abs/2511.14584) (Kadu et al., 2025); [ReliabilityBench](https://arxiv.org/abs/2601.06112) (Gupta et al., 2026) | +40pp lift via dual-process routing; standardized reliability measurement | `optimization` scopes routed to optimization goals (subagent + acceptance) |
-| **Acceptance-based execution** | Pattern inspired by [Try-Heal-Retry](https://adriennevermorel.com/notes/try-heal-retry-pattern/) (Nweke, 2026) and [PALADIN](https://arxiv.org/abs/2509.25238) (Chaudhary et al., 2025) | Self-correction in same context outperforms fresh re-delegation | Scope executor delegates with acceptance contract - child self-corrects (harness-dependent) before parent evaluates |
-| **Audit gap-to-scope loop** | Pattern inspired by [Agentic Debugging](https://arxiv.org/abs/2504.18032) (Zhang et al., 2025) | Multi-agent feedback loops improve fix rate | Audit classifies gaps → ESCALATED become new scopes → `/sw-next` enforces loop back to Execution |
-
-> **Structured parallelism, not more agents.** The evidence distinguishes *how* agents run in parallel, not *whether*: manager-led execution with isolated workspaces and test-gated integration beats the same single agent by large margins on long-horizon greenfield construction ([CAID 2026](https://arxiv.org/abs/2603.21489): +25.6pp PaperBench, +14.7pp Commit0; [Co-Coder 2026](https://arxiv.org/abs/2606.00953): +11.3pp on DevEval with 2.10× speedup) — with gains largest where cross-file dependencies are densest, provided work is partitioned by cohesion rather than by file. Unstructured cooperation degrades instead: peer agents score on average 30% lower together than solo ([CooperBench 2026](https://arxiv.org/abs/2601.13295)), and self-organizing teams trail their own expert by up to 41.1% ([Hold Experts Back 2026](https://arxiv.org/abs/2602.01011)). Stelow's sequential default for code execution is therefore a **scope-size and brownfield posture** — 1–5 scopes have a short critical path where worktree/merge overhead eats the gain, and legacy coupling makes cohesion partitioning unreliable — not a deduction from CAID/Co-Coder, which point the other way. Parallel scope dispatch stays opt-in with post-hoc overlap audit; the experimental structured-parallel path (Complete appetite, cymbal-verified transitive disjointness, parent-owned test-gated merge, measured sidecar) is specified in [rfc-parallel-scope-execution.md](docs/rfc-parallel-scope-execution.md).
-
-### ⚠️ Known Limitations & Radical Transparency
-
-Even with these guardrails, the AI agent still exhibits predictable failure modes. This workflow is a tool for **amplifying human judgment**, not a substitute for it.
-
-**How to read this table:** Each row is honest about what the workflow can and cannot do. Every mitigation has a corresponding "not solved" assessment. Read both before deciding whether this workflow helps your context.
-
-| # | Limitation | Impact | What the workflow tries to do | Why it's not solved |
-|---|-----------|--------|------------------------------|---------------------|
-| 1 | **Context rot** - compliance with own rules drops from ~73% (turn 5) to ~33% (turn 16) in long sessions | [Gamage 2026](https://arxiv.org/abs/2604.20911), 4,416 trials, 12 models/8 providers. Replicated by Liu et al. 2023 "Lost in the Middle". | Subagents use `context: "fresh"`. Ordered-execution-goal creates isolated scope execution. Execution stage has explicit "Context Rot Check" re-reading plan from disk. | **Reduced but not solved.** The orchestrator itself can forget its own rules in long sessions spanning multiple stages. The core transformer limitation (U-shaped attention curve) remains intrinsic. |
-| 2 | **Confabulated research references** - Agents cite nonexistent papers or books (~11-57% hallucination rate across models) | [arXiv 2604.03173](https://arxiv.org/abs/2604.03173) - 10 models/3 databases/69K citation instances | Claim verification via Lessons Learned cross-referencing during setup. | **Caught by structure, not guaranteed.** Multi-model consensus (≥3 LLMs citing same work) yields 95.6% accuracy, but the workflow doesn't enforce this. |
-| 3 | **Silent wrong answers** - Cross-task state leakage produces plausible but incorrect outputs | [UCC (arXiv 2604.01350)](https://arxiv.org/abs/2604.01350), 2026 | Write isolation per subagent; clean context pattern | **Mitigated by isolation, not by detection.** No mechanism to detect when contamination happens despite isolation. |
-| 4 | **Overconfidence in estimates** - AI systematically underestimates implementation complexity | [Agentic Overconfidence (ICLR 2026)](https://openreview.net/forum?id=Ld4bvamfKj) - all tested agents exhibit agentic overconfidence | Appetite is declared by human as a **constraint**, not estimated by the LLM. The LLM only checks `appetite_fit` (fits/cuts_needed/reshape). No estimation step. | **Addressed by design - appetite is a constraint, not an estimate.** The human sets the budget before shaping. The LLM checks fit, not effort. But the human still needs to set appetite honestly. |
-| 5 | **Approval gate fatigue** - Users can desensitize to visual gates and approve without scrutiny | [Tian Pan Apr 2026](https://tianpan.co/blog/2026-04-23-hitl-queue-dynamics-approver-fatigue) - HITL queues have dynamics | Plannotator requires active annotations (deletions, comments, labels). Auto/Product Spec Gate review modes skip gates entirely when appropriate. | **Delayed, not prevented.** Review Mode selection helps reduce unnecessary gates, but if the human always picks Complete+Product Spec + Interface + Scopes, fatigue still sets in. |
-| 6 | **80% Problem** - AI ships the happy path (CRUD, main flow) but omits error handling, observability, security, retry, rollback, edge cases | [Osmani Jan 2026](https://addyo.substack.com/p/the-80-problem-in-agentic-coding) (coined the term); [GitClear 2025](https://www.gitclear.com/ai_assistant_code_quality_2025_research) | Tech Planning requires NFRs per scope. Acceptance contracts can include NFR criteria (if the plan specifies them). Audit classifies omissions as gaps - ESCALATED ones become new scopes. | **Partially mitigated, not solved.** NFRs must be in the plan to appear in the contract. Audit classification depends on the LLM - misclassification means gaps slip through. Same model evaluates both stages. |
-| 7 | **Model dependency** - Claude Opus, Gemini Flash, GPT-4o produce significantly different quality | [Veracode 2025](https://www.veracode.com/wp-content/uploads/2025_GenAI_Code_Security_Report_Final.pdf) - 45% of AI-generated code contains flaws across 100+ models; [Anthropic Jan 2026](https://arxiv.org/abs/2601.20245) - RCT: AI-assisted devs score 17% lower on comprehension tests | Every artifact tracks `generated_by: {model_name}` in frontmatter. Gate stage shows provenance before Plannotator review. | **Transparency, not mitigation.** Knowing the model helps calibrate expectations, but it doesn't fix the quality gap. The comprehension penalty (Anthropic 2026) affects users regardless. |
-| 8 | **Constraint decay** - AI progressively violates its own self-imposed rules over time | [arXiv 2026 (Constraint Decay)](https://arxiv.org/abs/2605.06445) - structural constraints drift in backend code generation; [HORIZON](https://arxiv.org/abs/2604.11978) - agents break on long-horizon tasks | Context rot rules explicitly warn about this. "No patching in degraded context" rule blocks the most common decay pattern. | **Same root cause as context rot.** The warning helps, but stopping a session mid-flow is disruptive and users rarely do it. |
-| 9 | **Code hallucination** - AI invents APIs, functions, or contracts that don't exist (~20% of failures) | [CloudAPIBench](https://arxiv.org/abs/2407.09726) - 20.41% of failures are hallucinated APIs; [Code LLM failures](https://arxiv.org/abs/2407.06153) | Verification stage runs the test suite, which catches some hallucinated APIs. | **Caught by tests, not by the workflow.** If tests don't exist (or are also hallucinated), neither Verification nor Critique detects it. |
-| 10 | **Shallow review trap** - same LLM that wrote the code also reviews it | [Ox Security 2025](https://www.ox.security/wp-content/uploads/2025/10/Army-of-Juniors-The-AI-Code-Security-Crisis.pdf) - 300+ repos, 10 anti-patterns, AI code in production with critical flaws | Verification uses `context: "fresh"` subagent reviewers - same model but fresh session context. | **Automatic via `context: "fresh"`** - fresh context restores full rule awareness lost to context rot (~33% rule adherence at turn 16 vs ~73% at turn 5). True cross-model independence offers marginal additional benefit. |
-| 11 | **Expertise cliff** - AI fails in mature codebases with implicit conventions, undocumented architecture | [Tian Pan Mai 2026](https://tianpan.co/blog/2026-05-04-expertise-cliff-tacit-knowledge-ai-coding-agents); [METR 2025 RCT](https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/) - experienced devs 19% slower with AI | Domain libraries and structured specs help surface some conventions. Execution Critique checks for broken refs and anti-patterns. | **Not addressed.** This workflow was designed for greenfield or well-documented features. If your codebase has 10 years of undocumented architecture decisions, the AI will violate them. |
-| 12 | **Plan staleness** - plans generated against one snapshot; by execution time, target has changed | [Superpowers Issue #989](https://github.com/obra/superpowers/issues/989) - parallel sessions cause spec/plan staleness | Git diff check before scope execution detects if target files changed since plan creation. | **Staleness detected but not auto-resolved.** Only detects file-level changes, not semantic staleness. LLM decides whether staleness matters - no forced re-plan. |
-| 13 | **Pipeline memory loss** - no cross-session memory of own failure patterns | [Flamehaven 2026](https://flamehaven.space/writing/the-two-problems-no-one-talks-about-in-ai-agent-coding-pipelines/) - cross-session memory, MICA governance schema | Execution Critique saves lessons from each cycle. Setup stage automatically reads past lessons with forced reflection. | **Captured and injected, but not verified.** Same model that made mistakes reads the lessons. Context rot can still cause mid-session forgetting. Cannot auto-verify lesson adherence. |
-| 14 | **Code complexity growth** - AI-generated code increases complexity over time | [Cursor Study (MSR 2026)](https://arxiv.org/abs/2511.04427) - static analysis warnings +30%, code complexity +41% after month 2 | Execution Critique includes anti-pattern detection (god functions >100 lines, global mutable state). Optional Code Quality Gate with static analysis. | **Caught too late.** Complexity analysis happens after code is written. No mechanism to prevent complexity during generation - only flag it after. |
-| 15 | **Activity ≠ productivity** - more PRs, more commits does not mean more value delivered | [METR 2025 RCT](https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/) - 19% slower for experienced devs; [Faros AI 2025](https://www.faros.ai/ai-productivity-paradox) - 9% more tasks, 0% DORA improvement | Appetite system anchors scope size to human attention budget. OUT/IN scoping keeps proposals focused. Execution Critique includes "close without follow-up" as valid outcome. | **Honest assessment:** Appetite system mitigates scope bloat, but requires human to set appetite honestly. `appetite_fit` is validated by the Plan Critique stage's fresh-context feasibility reviewer (reusing existing 5-reviewer infrastructure). The appetite system is new - its real-world effectiveness is not yet measured. |
-| 16 | **Coordination overhead** — adding agents to shared-state coding tasks degrades quality | [CooperBench 2026](https://arxiv.org/abs/2601.13295) — peer agents score on average 30% lower together than solo (600+ tasks); [clawRxiv 2604.00736](https://clawrxiv.io/abs/2604.00736) — broadcast/P2P overhead C(n)=0.023n²+0.04n (R²=0.98), 50% at n=7 | Unstructured and self-organizing cooperation are banned outright (manager-owned plan + acceptance contracts everywhere; [CooperBench](https://arxiv.org/abs/2601.13295), [Hold Experts Back](https://arxiv.org/abs/2602.01011)). Research/review parallelism uses fresh context, zero inter-agent communication, independent file outputs. Code execution defaults to sequential; parallel scope dispatch is opt-in via post-hoc overlap detection (`git diff --name-only` per scope) + opt-in file-reservation locks (see [file-locking.md](skills/stelow-workflow-orchestrator/references/cli-tools/file-locking.md)). Full pipeline in [scope-execution-strategy.md](docs/scope-execution-strategy.md); experimental structured-parallel path in [rfc-parallel-scope-execution.md](docs/rfc-parallel-scope-execution.md). | **Partially addressed.** Sequential default + audit + cooperation bans cover the unstructured failure modes the papers demonstrate. What is *not* settled: whether structured parallel scope execution (the CAID/Co-Coder pattern) transfers to brownfield stelow scopes — the measurement mirror ships since v0.65.0, but no comparative data has been collected yet. The RFC defines the experiment that would settle it; until then the default stays sequential. |
-
-### What this means for you
-
-- **Every artifact is a draft.** Treat spec-product.md, spec-tech.md, critique reports, and interface proposals as first drafts that need human eyes.
-- **Results vary by model and codebase.** A small model generating a plan for a mature codebase is a recipe for failure - regardless of how structured the workflow is.
-- **Human review is required.** The workflow catches structural gaps (missing scopes, contradictory requirements, some untested edge cases). It does NOT catch logic errors in individual lines, security flaws in business logic, or nuanced architectural trade-offs - those need you.
-
-> We don't claim to solve product planning. We claim to **structure the thinking** so you catch more before you code. The rest is still up to you.
-
-*Research sourced May 2026. All references are hyperlinked for verification.*
-
----
-
-## About the Author
-
-This workflow wasn't designed in a vacuum. It comes from years inside real teams — as a developer, product manager, consultant, and leader across different organizations. The skills, patterns, and disciplines here were tested, broken, and rebuilt in live product environments and real codebases, not conference rooms.
-
-### 📚 Published Work
-
-- 🇧🇷 [e-book, Brazilian Portuguese] *Inovação baseada em Jobs To Be Done* (Innovation based on Jobs To Be Done)
-- 🇧🇷 [e-book, Brazilian Portuguese] *A Arte da Experimentação: Da Ideia ao Produto* (The Art of Experimentation: From Idea to Product - Innovate with a simplified process and AI assistance)
-
-### 💼 Experience
-
-- Former **Developer** — built products across the full stack before moving into product
-- Former **Product Manager** at tech companies
-- **Product Consultant** helping leaders with strategy and teams with processes
-- Creator of **Triple Track Agile** - adds an opportunity mapping track to product cycles
-- Developed **Contornos** - a social technology for decentralized decisions
-
-### 🌐 Profile
-
-- [GitHub Profile](https://github.com/calionauta/)
-- [LinkedIn](https://www.linkedin.com/in/calionauta/)
-
----
-
-## License
-
-MIT
-
----
-
-## 📞 Support
-
-- [Documentation](docs/)
-- [Issues](https://github.com/calionauta/stelow/issues)
-- [Discussions](https://github.com/calionauta/stelow/discussions)
+## License and support
+
+MIT — see [LICENSE](LICENSE). Methodology questions and proposals:
+[stelow issues](https://github.com/calionauta/stelow/issues).
+Anything about the bb board, inbox, or workers:
+[plugin issues](https://github.com/calionauta/bb-plugin-stelow/issues).

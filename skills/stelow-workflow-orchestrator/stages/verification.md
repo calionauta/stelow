@@ -5,9 +5,9 @@
 
 After all scopes are executed, run the testing protocol before delivery audit.
 
-### 🛡️ Quality Floor (never appetite-gated)
+### 🛡️ Quality Floor (never breadth-gated)
 
-**Appetite governs scope (how much the product does), never quality (how rigorously the product is verified).** The following gates ALWAYS run regardless of appetite — they are the floor, not the ceiling:
+**Exploration breadth governs scope (how much the product does), never quality (how rigorously the product is verified).** The following gates ALWAYS run regardless of breadth — they are the floor, not the ceiling:
 
 - ✅ **test-suite** — the project's test suite always runs
 - ✅ **code-quality-gate** — lint, typecheck, static analysis always run
@@ -15,43 +15,42 @@ After all scopes are executed, run the testing protocol before delivery audit.
 - ✅ **static a11y/lint when UI files exist** — syntax-level accessibility checks always run when `.templ`, `.html`, `.tsx`, `.jsx`, or `.css` files changed
 - ✅ **Quick Tier interactive-testing** — browserless logic audit (event handlers, state management, API patterns) always runs
 
-Appetite controls **depth** (how thoroughly), not **whether** these run:
+Quality controls **depth** (how thoroughly), not **whether** these run:
 
-| Appetite | What changes (additive depth) |
+| Quality | What changes (additive depth) |
 |----------|-------------------------------|
-| `Lean` | Light single-reviewer code review (parallel skipped); static UI audit only |
-| `Core` | Parallel code review (multiple reviewers); codebase-mode UX review (browserless, ~80% coverage) |
-| `Complete` | + Live-site UX audit (browser, real a11y); + Thermo-Nuclear code quality review; + Full-Tier browser interactive testing |
+| `production` | Parallel code review (multiple reviewers); codebase-mode UX review (browserless, ~80% coverage); + Live-site UX audit (browser, real a11y); + Thermo-Nuclear code quality review; + Full-Tier browser interactive testing |
+| `experimental` | Light single-reviewer code review (parallel skipped); static UI audit only. Probes only — never ship as-is. |
 
-**Rationale:** LLMs systematically overestimate implementation time and tend to cut quality out of fear of complexity (Estimation Bias Correction, Shape Up SKILL § Estimation Bias). If verification feels "too expensive" for an appetite, the answer is to cut scope, not to cut quality. The appetite ceiling for scope is enforced by `appetite_fit` (shape-up SKILL § shape:20) and the Plan Critique scope-fit checklist, not by skipping quality gates here.
+**Rationale:** LLMs systematically overestimate implementation time and tend to cut quality out of fear of complexity (Estimation Bias Correction, Shape Up SKILL § Estimation Bias). If verification feels "too expensive", the answer is to cut scope, not to cut quality. The scope ceiling (9) is enforced by `appetite_fit` (shape-up SKILL § shape:20) and the Plan Critique scope-fit checklist, not by skipping quality gates here.
 
-### Appetite Gate (verification depth)
+### Quality Gate (verification depth)
 
-**Before running verification steps, read appetite:**
+**Before running verification steps, read quality (with legacy appetite mapping):**
 
 ```bash
-APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "Core")
+QUALITY=$(grep -oP '^quality:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "")
+if [ -z "$QUALITY" ]; then
+  # Legacy appetite line maps to production for every legacy value.
+  QUALITY="production"
+fi
 SCOPE_COUNT=$(ls .stelow/{YYYY-MM-DD}/{_dir}/plans/scopes/*.md 2>/dev/null | wc -l | tr -d ' ')
 ```
 
-| Appetite | test-suite | code-review | ui-quality | interactive-testing | code-quality-gate | code-quality-review | invisible-20% |
+| Quality | test-suite | code-review | ui-quality | interactive-testing | code-quality-gate | code-quality-review | invisible-20% |
 |----------|-----------|-------------|------------|-------------------|-------------------|---------------------|---------------|
-| `Lean` | ✅ Run | ✅ Light (single reviewer) | ✅ Static a11y/lint | ✅ Quick Tier | ✅ Run | ✅ Light (skip Thermo-Nuclear) | ✅ Run |
-| `Core` | ✅ Run | ✅ Parallel reviewers | ✅ Codebase mode (~80%) | ✅ Quick Tier | ✅ Run | ✅ Conditional by risk (Nuclear if risk high) | ✅ Run |
-| `Complete` | ✅ Run | ✅ Parallel + Thermo-Nuclear when applicable | ✅ Live Site mode | ✅ Quick + Full Tier (browser) | ✅ Run | ✅ Mandatory for `Product Spec + Interface + Tech Review` and `Product Spec + Interface + Tech Review + Code Diff` | ✅ Run |
+| `production` | ✅ Run | ✅ Parallel reviewers + Thermo-Nuclear when applicable | ✅ Live Site mode | ✅ Quick + Full Tier (browser) | ✅ Run | ✅ Mandatory for `Product Spec + Interface + Tech Review` and `Product Spec + Interface + Tech Review + Code Diff` | ✅ Run |
+| `experimental` | ✅ Run | ✅ Light (single reviewer) | ✅ Static a11y/lint | ✅ Quick Tier | ✅ Run | ✅ Light (skip Thermo-Nuclear) | ✅ Run |
 
 **Rationale (per row):**
-- **Lean code-review:** A single fresh-context reviewer runs the standard check. Not skipped — quality floor.
-- **Core code-review:** Parallel reviewers run on the same diff (faster, more thorough). Quality floor + depth.
-- **Complete code-review:** Parallel reviewers + Thermo-Nuclear when risk warrants it. Quality floor + maximum depth.
-- **Lean ui-quality:** Static a11y/lint catches syntactic WCAG violations (~40%, Deque 2026) without a browser.
-- **Core ui-quality:** Codebase mode adds semantic correctness checks (AccessGuru 2025: ~84% violation score decrease from HTML-source analysis).
-- **Complete ui-quality:** Live Site mode opens a real browser for contrast, keyboard, screen reader audit.
-- **Lean interactive-testing:** Quick Tier is browserless — event handlers, state mgmt, API patterns. Catches `data-on` vs `data-on:` syntax bugs without a browser.
-- **Core interactive-testing:** Quick Tier runs by default; Full Tier only when a complex UI flow is in scope.
-- **Complete interactive-testing:** Quick + Full Tier when interactive elements exist.
-- **Lean code-quality-review:** The lightweight gate (lint + typecheck) runs. Thermo-Nuclear is skipped unless explicitly requested.
-- **Complete code-quality-review:** Thermo-Nuclear runs for software/hybrid code changes, mandatory in `Product Spec + Interface + Tech Review` and `Product Spec + Interface + Tech Review + Code Diff`.
+- **Production code-review:** Parallel reviewers + Thermo-Nuclear when risk warrants it. Quality floor + maximum depth.
+- **Experimental code-review:** A single fresh-context reviewer runs the standard check. Not skipped — quality floor. Probes only.
+- **Production ui-quality:** Live Site mode opens a real browser for contrast, keyboard, screen reader audit; codebase mode adds semantic correctness checks (AccessGuru 2025: ~84% violation score decrease from HTML-source analysis).
+- **Experimental ui-quality:** Static a11y/lint catches syntactic WCAG violations (~40%, Deque 2026) without a browser.
+- **Production interactive-testing:** Quick + Full Tier when interactive elements exist.
+- **Experimental interactive-testing:** Quick Tier is browserless — event handlers, state mgmt, API patterns. Catches `data-on` vs `data-on:` syntax bugs without a browser.
+- **Experimental code-quality-review:** The lightweight gate (lint + typecheck) runs. Thermo-Nuclear is skipped unless explicitly requested.
+- **Production code-quality-review:** Thermo-Nuclear runs for software/hybrid code changes, mandatory in `Product Spec + Interface + Tech Review` and `Product Spec + Interface + Tech Review + Code Diff`.
 
 ### Auto-chain
 
@@ -124,14 +123,14 @@ bound reads as diligence forever while the same gaps stay open.
 - The same rule applies to items deferred as "inherited debt" — a deferral
   names its file and stays open; it does not become a reason to re-verify.
 
-### code-review (appetite-aware depth)
+### code-review (quality-aware depth)
 
-Code review is **quality protection** and runs at every appetite — appetite only changes the depth. The Quality Floor above defines the minimum: one reviewer always runs. Appetite adds parallelism and rigor.
+Code review is **quality protection** and runs at every setting — quality only changes the depth. The Quality Floor above defines the minimum: one reviewer always runs. Production adds parallelism and rigor.
 
 **Reviewer independence:** prefer a reviewer running a different model family than the worker when the host offers one (provider/model presets, band routing); otherwise fresh context on the same model. Same model + same context never reviews its own output — that is the shallow-review trap, not a review.
 
 ```bash
-APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "Core")
+QUALITY=$(grep -oP '^quality:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "production")
 # Entity-first sizing: what changed (functions/types) decides review depth,
 # not raw file count. sem → git fallback (same convention as the audit skill).
 if command -v sem &>/dev/null; then
@@ -143,33 +142,29 @@ else
 fi
 
 # Quality Floor: code review always runs at least one reviewer.
-# Appetite adds parallelism and review depth, never skips the floor.
-case "$APPETITE" in
-  Lean)
-    echo "CODE_REVIEW_LIGHT: appetite Lean — single fresh-context reviewer, no parallelism."
+# Production adds parallelism and review depth, never skips the floor.
+case "$QUALITY" in
+  experimental)
+    echo "CODE_REVIEW_LIGHT: quality experimental — single fresh-context reviewer, no parallelism."
     REVIEWER_COUNT=1
     ;;
-  Core)
+  production)
     if [ "$DIFF_UNITS" -ge 3 ]; then
-      echo "CODE_REVIEW_PARALLEL: appetite Core, $DIFF_UNITS $DIFF_UNIT changed — launching parallel reviewers."
-      REVIEWER_COUNT=3
+      echo "CODE_REVIEW_PARALLEL: quality production, $DIFF_UNITS $DIFF_UNIT changed — launching parallel reviewers."
+      REVIEWER_COUNT=5
     else
-      echo "CODE_REVIEW_LIGHT: appetite Core, $DIFF_UNITS $DIFF_UNIT — single reviewer."
+      echo "CODE_REVIEW_LIGHT: quality production, $DIFF_UNITS $DIFF_UNIT — single reviewer with full checklist."
       REVIEWER_COUNT=1
     fi
     ;;
-  Complete)
-    echo "CODE_REVIEW_PARALLEL: appetite Complete — parallel reviewers + Thermo-Nuclear when risk warrants."
-    REVIEWER_COUNT=5
-    ;;
   *)
-    echo "CODE_REVIEW_DEFAULT: unknown appetite, defaulting to Core behavior — single reviewer."
-    REVIEWER_COUNT=1
+    echo "CODE_REVIEW_DEFAULT: unknown quality, defaulting to production behavior."
+    REVIEWER_COUNT=5
     ;;
 esac
 ```
 
-**Rule:** even at Lean, code review is never skipped. If the change is small (≤2 entities/files), the reviewer uses a lighter checklist (correctness, security baseline) instead of architectural analysis. This keeps quality floor while keeping cost proportionate to scope.
+**Rule:** code review is never skipped. If the change is small (≤2 entities/files), the reviewer still runs the full checklist at production quality. This keeps quality floor while keeping cost proportionate to scope.
 
 If running, launch a fresh-context reviewer.
 See `../references/cli-tools/subagents.md` for the delegation pattern — this works
@@ -183,16 +178,16 @@ same model, because the issue isn't identical models but contaminated context
 **Code-reviewer subagent invocation contract:**
 
 ```typescript
-// Parallel reviewers at Core/Complete appetite
+// Parallel reviewers at production quality
 subagent({
   agent: "reviewer",
   task: `Review diff for {dimension} (correctness | tests | simplicity | architecture).
 
-Appetite: ${configAppetite}  // Lean = single reviewer, Core/Complete = parallel
+Quality: ${configQuality}  // production = parallel reviewers, experimental = single reviewer
 Diff (sem diff HEAD~1 entity diff when available, else git diff HEAD~1):
 ${diffOutput}
 
-Read .stelow/{date}/{dir}/plans/spec-product_{v}.md for spec context (frontmatter: appetite, review_mode, domains_detected; body: scope, DoD).
+Read .stelow/{date}/{dir}/plans/spec-product_{v}.md for spec context (frontmatter: quality, review_mode, domains_detected; body: scope, DoD).
 Do NOT inherit orchestrator deliberation. Save review to {reviewOutputPath}.`,
   reads: [".stelow/{date}/{dir}/plans/spec-product_{v}.md"],
   output: reviewOutputPath,
@@ -202,19 +197,19 @@ Do NOT inherit orchestrator deliberation. Save review to {reviewOutputPath}.`,
 
 The reviewer gets:
 - The diff (from task string — it can't be inferred)
-- spec-product.md (from `reads` — appetite + scope + DoD)
+- spec-product.md (from `reads` — quality + scope + DoD)
 - Fresh context (defeats context rot, mitigates shallow review trap)
 
 The reviewer does NOT need:
 - Parent's deliberation history (would inject context rot)
 - Acceptance contract (this is review, not execution)
 
-### ui-quality (appetite-aware)
+### ui-quality (quality-aware)
 
-Check appetite and UI scope before running:
+Check quality and UI scope before running:
 
 ```bash
-APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "Core")
+QUALITY=$(grep -oP '^quality:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "production")
 if command -v sem &>/dev/null; then
   UI_FILES=$(sem diff HEAD~1 --format json 2>/dev/null | python3 -c "import json,sys; print(sum(1 for c in json.load(sys.stdin).get('changes',[]) if str(c.get('filePath','')).endswith(('.templ','.html','.tsx','.jsx','.css'))))" 2>/dev/null || echo "0")
 else
@@ -222,13 +217,11 @@ else
 fi
 ```
 
-| Appetite | UI files | Action |
+| Quality | UI files | Action |
 |----------|---------|--------|
-| `Lean` | any | **Static a11y/lint.** No browser/live audit unless upgraded. |
-| `Core` | 0 | **Skip.** No UI. |
-| `Core` | 1+ | **Normal.** Delegate to `stelow-workflow-ux-critique`. Codebase mode (browserless). |
-| `Complete` | 0 | **Skip.** No UI. |
-| `Complete` | 1+ | **Live Site mode.** Full browser audit. |
+| `experimental` | any | **Static a11y/lint.** No browser/live audit unless upgraded. |
+| `production` | 0 | **Skip.** No UI. |
+| `production` | 1+ | **Live Site mode.** Full browser audit (codebase mode first, then browser for flagged issues). |
 
 If running, delegate to `stelow-workflow-ux-critique`.
 
@@ -245,19 +238,18 @@ syntactic accessibility violations. Deque (2026) confirms ~40% of WCAG
 issues are auto-detectable; LLMs push this further by evaluating semantic
 correctness that rule-based tools cannot assess.
 
-### interactive-testing (appetite-aware depth)
+### interactive-testing (quality-aware depth)
 
-Interactive testing has two tiers. **Quick Tier (browserless) is the Quality Floor — it always runs.** Appetite controls whether Full Tier (browser) runs.
+Interactive testing has two tiers. **Quick Tier (browserless) is the Quality Floor — it always runs.** Quality controls whether Full Tier (browser) runs.
 
 ```bash
-APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "Core")
+QUALITY=$(grep -oP '^quality:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "production")
 ```
 
-| Appetite | Quick Tier (browserless) | Full Tier (browser) |
+| Quality | Quick Tier (browserless) | Full Tier (browser) |
 |----------|--------------------------|---------------------|
-| `Lean` | ✅ Always runs | **Skip** unless user requests browser testing |
-| `Core` | ✅ Always runs | **Skip** unless a complex flow (modal, multi-step form, drag-drop) is in scope |
-| `Complete` | ✅ Always runs | ✅ Runs when interactive elements exist |
+| `experimental` | ✅ Always runs | **Skip** unless user requests browser testing |
+| `production` | ✅ Always runs | ✅ Runs when interactive elements exist |
 
 If the feature has interactive elements (forms, clicks, inputs):
 
@@ -272,7 +264,7 @@ If the feature has interactive elements (forms, clicks, inputs):
 
 #### Full Tier — Browser Testing (agent-browser)
 
-**Appetite-gated:** runs in Complete by default, in Core when a complex flow is in scope, in Lean only when explicitly requested.
+**Quality-gated:** runs in production by default when interactive elements exist; in experimental only when explicitly requested.
 
 See `../references/cli-tools/agent_browser.md` for browser automation details.
 Use `dogfood` skill for structured exploratory testing:
@@ -308,30 +300,26 @@ cargo clippy -- -D warnings 2>&1 | head -20
 **Block on errors** (not warnings) — warnings are informational and should be
 reviewed but are not blockers. Address all errors before proceeding.
 
-### code-quality-review (appetite-aware depth)
+### code-quality-review (quality-aware depth)
 
-The code-quality-review stage has two layers. **A lightweight review (correctness, security baseline, naming, dead code) is the Quality Floor and always runs.** The ultra-strict Thermo-Nuclear review (1000-line files, complexity>5, abstraction quality) runs only when appetite or risk warrants it.
+The code-quality-review stage has two layers. **A lightweight review (correctness, security baseline, naming, dead code) is the Quality Floor and always runs.** The ultra-strict Thermo-Nuclear review (1000-line files, complexity>5, abstraction quality) runs at production quality.
 
 ```bash
-APPETITE=$(grep -oP '^appetite:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "Core")
+QUALITY=$(grep -oP '^quality:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "production")
 
 # Quality Floor: lightweight review always runs (lint + security + dead-code scan).
-# Thermo-Nuclear is appetite-gated and adds depth, not a floor.
-case "$APPETITE" in
-  Lean)
-    echo "CODE_QUALITY_REVIEW_LIGHT: appetite Lean — lightweight review (lint + security + dead-code)."
+# Thermo-Nuclear is quality-gated and adds depth, not a floor.
+case "$QUALITY" in
+  experimental)
+    echo "CODE_QUALITY_REVIEW_LIGHT: quality experimental — lightweight review (lint + security + dead-code)."
     REVIEW_TIER="light"
     ;;
-  Core)
-    echo "CODE_QUALITY_REVIEW_CONDITIONAL: appetite Core — Thermo-Nuclear only if risk is high."
-    REVIEW_TIER="conditional"
-    ;;
-  Complete)
-    echo "CODE_QUALITY_REVIEW_NUCLEAR: appetite Complete — Thermo-Nuclear for software/hybrid code changes."
+  production)
+    echo "CODE_QUALITY_REVIEW_NUCLEAR: quality production — Thermo-Nuclear for software/hybrid code changes."
     REVIEW_TIER="nuclear"
     ;;
   *)
-    REVIEW_TIER="light"
+    REVIEW_TIER="nuclear"
     ;;
 esac
 ```
@@ -344,7 +332,7 @@ When Thermo-Nuclear runs, save or copy the result to:
 .stelow/{YYYY-MM-DD}/{_dir}/verification/code-quality-review.md
 ```
 
-**Review Mode (orthogonal to appetite):**
+**Review Mode (orthogonal to quality):**
 
 - `Auto` / `Product Spec Gate`: run only if required by risk; fix simple issues or document accepted trade-offs.
 - `Product Spec + Interface Gates`: escalate P0/P1 findings to the user.
@@ -362,9 +350,9 @@ verification notes.
 - [ ] Tests for behavior you wrote have an independent red-team pass
 - [ ] Code review done (subagent or human)
 - [ ] Code quality gate completed
-- [ ] Code quality review completed (lightweight always; Thermo-Nuclear when appetite/risk warrant)
+- [ ] Code quality review completed (lightweight always; Thermo-Nuclear at production quality)
 - [ ] No regressions detected
-- [ ] UI accessible (if applicable — static a11y baseline always; Live Site when appetite warrants)
+- [ ] UI accessible (if applicable — static a11y baseline always; Live Site at production quality)
 - [ ] Documentation updated (if applicable)
 - [ ] AGENTS.md updated (if architecture changed)
 

@@ -1,0 +1,49 @@
+id: architecture-alternatives
+version: 1
+description: Compare construction directions and a synthesized hybrid recommendation.
+skill: stelow-workflow-architecture-alternatives
+mode: orchestrated
+write_policy: artifact
+permission_profile: inherit
+tasks:
+- id: alternatives
+  skill: stelow-workflow-architecture-alternatives
+  depends_on: []
+  output: architecture/alternatives.json
+  output_schema: schemas/architecture-alternatives.json
+  human_boundary: none
+  when: exploration_supports_fanout
+  failure_policy: fail
+  requirements:
+  - fanout
+  - pipeline
+  - structured-output
+- id: alternatives-verify
+  depends_on:
+  - alternatives
+  output: architecture/alternatives-verification.json
+  output_schema: schemas/architecture-alternatives.json
+  human_boundary: none
+  skill: stelow-workflow-architecture-alternatives
+  when: always
+  failure_policy: fail
+  requirements:
+  - pipeline
+  - structured-output
+- id: alternatives-hybrid
+  depends_on:
+  - alternatives-verify
+  output: architecture/architecture.md
+  output_schema: schemas/markdown.json
+  human_boundary: none
+  skill: stelow-workflow-architecture-alternatives
+  when: always
+  failure_policy: fail
+  requirements:
+  - pipeline
+  - structured-output
+partition: none
+fallback:
+  mode: sequential
+  preserves:
+  - artifact

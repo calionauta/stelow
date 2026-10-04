@@ -44,6 +44,7 @@
         "interface",
         "int-gate",
         "selection",
+        "architecture",
         "planning",
         "plan-gate",
         "execution",
@@ -63,6 +64,7 @@
         "interface",
         "int-gate",
         "selection",
+        "architecture",
         "planning",
         "plan-gate",
         "execution",
@@ -297,7 +299,7 @@
     {
       "order": 25,
       "model_hint": "standard",
-      "description": "Strategic context. Market analysis, JTBD, domain detection. Gated by `context:5` (appetite/review mode): Product Spec Gate+Auto skips; others use reduced ask. See the context stage, section 5.",
+      "description": "Strategic context. Market analysis, JTBD, domain detection. Gated by `context:5` (quality/review mode): experimental+Auto skips; experimental otherwise reduced ask. See the context stage, section 5.",
       "label": "Project Context",
       "produces": "Gathers the project context the proposal needs.",
       "artifacts": [],
@@ -359,7 +361,7 @@
     {
       "order": 40,
       "model_hint": "best",
-      "description": "Shape stage. Define appetite, hill chart, rabbit holes.",
+      "description": "Shape stage. Define run knobs, hill chart, rabbit holes.",
       "label": "Product Proposal",
       "produces": "Writes the product proposal (spec-product_vN.md) for the chosen item.",
       "artifacts": [
@@ -822,10 +824,7 @@
             "Product Spec + Interface + Tech Review",
             "Product Spec + Interface + Tech Review + Code Diff"
           ],
-          "appetite": [
-            "Core",
-            "Complete"
-          ],
+          "exploration_min_count": 2,
           "evidence": "per-option",
           "receipt": "interfaces/selected-interface.md"
         },
@@ -842,10 +841,10 @@
       ],
       "transitions": {
         "next": [
-          "planning"
+          "architecture"
         ],
         "accept": [
-          "planning"
+          "architecture"
         ],
         "reject": [
           "interface"
@@ -855,11 +854,90 @@
       "playbook_skill": "stelow-workflow-orchestrator"
     },
     {
+      "order": 105,
+      "model_hint": "best",
+      "description": "Architecture selection. Diverges construction directions, then a human pick via structured question in Tech-Review modes; worker adopts below that threshold (see references/human-gates.md).",
+      "label": "Architecture Choice",
+      "produces": "Selects which construction direction to plan and implement.",
+      "artifacts": [
+        "architecture/selected-architecture.md"
+      ],
+      "phase": "planning",
+      "skill": "stelow-workflow-orchestrator",
+      "playbook": "stages/architecture.md",
+      "execution": {
+        "mode": "direct",
+        "recipe": null,
+        "required_capabilities": [],
+        "preferred_capabilities": [],
+        "write_policy": "none",
+        "partition": "none",
+        "permission_profile": "inherit"
+      },
+      "blocked_tools": [
+        "bash",
+        "write"
+      ],
+      "allowed_tools": [
+        "ask_user_question",
+        "read",
+        "grep",
+        "ls",
+        "subagent"
+      ],
+      "preferred_tools": [
+        "ask_user_question",
+        "read"
+      ],
+      "primary_actions": [
+        "ask_user_question"
+      ],
+      "questions": [
+        {
+          "id": "architecture-pick",
+          "gate": "tech",
+          "kind": "human-ask",
+          "modes": [
+            "Product Spec + Interface + Tech Review",
+            "Product Spec + Interface + Tech Review + Code Diff"
+          ],
+          "exploration_min_count": 2,
+          "evidence": "per-option",
+          "receipt": "architecture/selected-architecture.md"
+        },
+        {
+          "id": "architecture-pick-auto",
+          "gate": "tech",
+          "kind": "agent-receipt",
+          "modes": [
+            "Auto",
+            "Product Spec Gate",
+            "Product Spec + Interface Gates",
+            "Product Spec + Interface + Scopes"
+          ],
+          "receipt": "architecture/selected-architecture.md"
+        }
+      ],
+      "transitions": {
+        "next": [
+          "planning"
+        ],
+        "accept": [
+          "planning"
+        ],
+        "reject": [
+          "scope"
+        ]
+      },
+      "id": "architecture",
+      "playbook_skill": "stelow-workflow-orchestrator"
+    },
+    {
       "order": 110,
       "model_hint": "best",
       "description": "Tech planning. Typed scopes + sequencing.",
       "label": "Tech Planning",
-      "produces": "Writes the technical plan (PLAN.md) from the interface and scope.",
+      "produces": "Writes the technical plan (PLAN.md) from the interface, architecture, and scope.",
       "artifacts": [
         "plans/spec-tech*.md"
       ],
@@ -903,7 +981,7 @@
           "plan-gate"
         ],
         "reject": [
-          "scope"
+          "architecture"
         ]
       },
       "id": "planning",

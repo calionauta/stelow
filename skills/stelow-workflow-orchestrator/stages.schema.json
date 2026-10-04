@@ -48,7 +48,8 @@
         "kind": { "enum": ["human-ask", "agent-receipt", "skip"] },
         "gate": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
         "modes": { "type": "array", "minItems": 1, "items": { "type": "string" } },
-        "appetite": { "type": "array", "items": { "enum": ["Lean", "Core", "Complete"] } },
+        "appetite": { "type": "array", "items": { "enum": ["Lean", "Core", "Complete"] }, "deprecated": true },
+        "exploration_min_count": { "type": "integer", "minimum": 1, "maximum": 5 },
         "evidence": { "type": "string" },
         "receipt": { "type": "string", "minLength": 1, "pattern": "^(?!/)(?!.*\\.\\.)[^ ]+$" }
       }

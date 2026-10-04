@@ -35,8 +35,8 @@ tools:
 # own board/timeline representation; they must not copy the list locally.
 routes:
   intents:
-    new-product: [triage, select, setup, context, shape, critique, gate, scope, interface, int-gate, selection, planning, plan-gate, execution, verification, diff-gate, audit]
-    feature: [triage, select, setup, context, shape, critique, gate, scope, interface, int-gate, selection, planning, plan-gate, execution, verification, diff-gate, audit]
+    new-product: [triage, select, setup, context, shape, critique, gate, scope, interface, int-gate, selection, architecture, planning, plan-gate, execution, verification, diff-gate, audit]
+    feature: [triage, select, setup, context, shape, critique, gate, scope, interface, int-gate, selection, architecture, planning, plan-gate, execution, verification, diff-gate, audit]
     bugfix: [triage, select, setup, context, shape, critique, gate, execution, verification, audit]
     refactor: [triage, select, setup, context, planning, plan-gate, execution, verification, audit]
     investigate: [triage, select, setup, context, audit]
@@ -150,7 +150,7 @@ stages:
   - name: context
     order: 25
     model_hint: standard
-    description: "Strategic context. Market analysis, JTBD, domain detection. Gated by `context:5` (appetite/review mode): Product Spec Gate+Auto skips; others use reduced ask. See the context stage, section 5."
+    description: "Strategic context. Market analysis, JTBD, domain detection. Gated by `context:5` (quality/review mode): experimental+Auto skips; experimental otherwise reduced ask. See the context stage, section 5."
     label: Project Context
     produces: "Gathers the project context the proposal needs."
     artifacts: []
@@ -189,7 +189,7 @@ stages:
   - name: shape
     order: 40
     model_hint: best
-    description: Shape stage. Define appetite, hill chart, rabbit holes.
+    description: Shape stage. Define run knobs, hill chart, rabbit holes.
     label: Product Proposal
     produces: "Writes the product proposal (spec-product_vN.md) for the chosen item."
     artifacts: [plans/spec-product*.md]
@@ -430,7 +430,7 @@ stages:
         gate: interface
         kind: human-ask
         modes: ["Product Spec + Interface Gates", "Product Spec + Interface + Scopes", "Product Spec + Interface + Tech Review", "Product Spec + Interface + Tech Review + Code Diff"]
-        appetite: [Core, Complete]
+        exploration_min_count: 2
         evidence: per-option
         receipt: interfaces/selected-interface.md
       - id: interface-pick-auto
@@ -439,16 +439,62 @@ stages:
         modes: [Auto, "Product Spec Gate"]
         receipt: interfaces/selected-interface.md
     transitions:
+      next: [architecture]
+      accept: [architecture]
+      reject: [interface]
+
+  - name: architecture
+    order: 105
+    model_hint: best
+    description: Architecture selection. Diverges construction directions, then a human pick via structured question in Tech-Review modes; worker adopts below that threshold (see references/human-gates.md).
+    label: Architecture Choice
+    produces: "Selects which construction direction to plan and implement."
+    artifacts: [architecture/selected-architecture.md]
+    phase: planning
+    skill: stelow-workflow-orchestrator
+    playbook: stages/architecture.md
+
+    execution:
+      mode: direct
+      recipe: null
+      required_capabilities: []
+      preferred_capabilities: []
+      write_policy: none
+      partition: none
+      permission_profile: inherit
+
+    blocked_tools: [bash, write]
+    allowed_tools: [ask_user_question, read, grep, ls, subagent]
+    preferred_tools: [ask_user_question, read]
+    primary_actions: [ask_user_question]
+    # Machine-readable question contract.  The host owns enforcement; this
+    # describes who resolves the architecture decision in each review mode.
+    # The pick is reviewed again at plan-gate through the tech plan that
+    # cites the selected architecture. No dedicated architecture gate stage.
+    questions:
+      - id: architecture-pick
+        gate: tech
+        kind: human-ask
+        modes: ["Product Spec + Interface + Tech Review", "Product Spec + Interface + Tech Review + Code Diff"]
+        exploration_min_count: 2
+        evidence: per-option
+        receipt: architecture/selected-architecture.md
+      - id: architecture-pick-auto
+        gate: tech
+        kind: agent-receipt
+        modes: [Auto, "Product Spec Gate", "Product Spec + Interface Gates", "Product Spec + Interface + Scopes"]
+        receipt: architecture/selected-architecture.md
+    transitions:
       next: [planning]
       accept: [planning]
-      reject: [interface]
+      reject: [scope]
 
   - name: planning
     order: 110
     model_hint: best
     description: Tech planning. Typed scopes + sequencing.
     label: Tech Planning
-    produces: "Writes the technical plan (PLAN.md) from the interface and scope."
+    produces: "Writes the technical plan (PLAN.md) from the interface, architecture, and scope."
     artifacts: [plans/spec-tech*.md]
     phase: planning
     skill: stelow-workflow-tech-planning
@@ -470,7 +516,7 @@ stages:
     transitions:
       next: [plan-gate]
       accept: [plan-gate]
-      reject: [scope]
+      reject: [architecture]
 
   - name: plan-gate
     order: 115

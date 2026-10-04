@@ -50,32 +50,29 @@ When running inside stelow, save or copy the result to:
 
 ## When to run
 
-The code-quality-review stage has two layers. The lightweight review (correctness, security baseline, naming, dead code) is the **Quality Floor** and always runs when `product_type` is `software` or `hybrid`. The ultra-strict Thermo-Nuclear review (1000-line files, complexity>5, abstraction quality) is **appetite-gated** by the matrix below.
+The code-quality-review stage has two layers. The lightweight review (correctness, security baseline, naming, dead code) is the **Quality Floor** and always runs when `product_type` is `software` or `hybrid`. The ultra-strict Thermo-Nuclear review (1000-line files, complexity>5, abstraction quality) is **quality-gated** by the matrix below. A legacy `appetite:` line maps to `production` for every legacy value.
 
 **Conditions for the lightweight review (Quality Floor, always runs):**
 
 1. `product_type` is `software` or `hybrid`
 2. the diff includes code changes
 
-**Conditions for the ultra-strict Thermo-Nuclear review (appetite-gated):**
+**Conditions for the ultra-strict Thermo-Nuclear review (quality-gated):**
 
-3. the appetite/review mode matrix below says to run it
+3. the quality/review mode matrix below says to run it
 
-### Appetite + review mode matrix
+### Quality + review mode matrix
 
 The matrix below controls Thermo-Nuclear only. The lightweight review is the Quality Floor and always runs.
 
-| Appetite | Review Mode | Decision |
+| Quality | Review Mode | Decision |
 |----------|-------------|----------|
-| `Lean` | any | **Light only.** Thermo-Nuclear skipped unless user explicitly requests it. |
-| `Core` | `Auto` / `Product Spec Gate` | **Light only.** Thermo-Nuclear skipped unless risk is high. |
-| `Core` | `Product Spec + Interface Gates` / `Product Spec + Interface + Scopes` | Thermo-Nuclear when risk is high. |
-| `Core` | `Product Spec + Interface + Tech Review` | Thermo-Nuclear when risk is high or the diff is meaningful. |
-| `Complete` | `Auto` / `Product Spec Gate` | **Thermo-Nuclear** if code changed. Resolve or document findings without asking. |
-| `Complete` | `Product Spec + Interface Gates` | **Thermo-Nuclear** if code changed. Escalate P0/P1 gaps to the user. |
-| `Complete` | `Product Spec + Interface + Scopes` | **Thermo-Nuclear** if code changed. P0/P1 gaps need fix or explicit human acceptance. |
-| `Complete` | `Product Spec + Interface + Tech Review` | **Thermo-Nuclear mandatory** for software/hybrid code changes. |
-| `Complete` | `Product Spec + Interface + Tech Review + Code Diff` | **Thermo-Nuclear mandatory** + code diff gate runs after fix. |
+| `experimental` | any | **Light only.** Thermo-Nuclear skipped unless user explicitly requests it. |
+| `production` | `Auto` / `Product Spec Gate` | **Thermo-Nuclear** if code changed. Resolve or document findings without asking. |
+| `production` | `Product Spec + Interface Gates` | **Thermo-Nuclear** if code changed. Escalate P0/P1 gaps to the user. |
+| `production` | `Product Spec + Interface + Scopes` | **Thermo-Nuclear** if code changed. P0/P1 gaps need fix or explicit human acceptance. |
+| `production` | `Product Spec + Interface + Tech Review` | **Thermo-Nuclear mandatory** for software/hybrid code changes. |
+| `production` | `Product Spec + Interface + Tech Review + Code Diff` | **Thermo-Nuclear mandatory** + code diff gate runs after fix. |
 
 ### High-risk trigger
 

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # read-config.sh — canonical helper for reading Workflow.config from stelow.json
 #
-# Source this in any skill that needs appetite/review_gates/domains_detected:
+# Source this in any skill that needs quality/supervisor/exploration/review_mode/domains_detected:
 #   source "$(dirname "${BASH_SOURCE[0]}")/../../stelow-workflow-orchestrator/references/cli-tools/read-config.sh"
-#   APPETITE=$(stelow_read_appetite)
+#   QUALITY=$(stelow_read_quality)
 #
 # Reads from stelow.json#workflows[].config (in-progress workflow only).
 # See references/cli-tools/read-config.md for full rationale + usage.
@@ -35,50 +35,64 @@ stelow_config() {
   echo "${value:-$default}"
 }
 
-# Public: read appetite from active workflow (default: Core)
+# Public: read quality from active workflow (default: production).
+# Legacy appetite lines map to production for every legacy value.
+stelow_read_quality() {
+  local q
+  q=$(stelow_config quality "")
+  if [ -n "$q" ]; then echo "$q"; return; fi
+  local legacy
+  legacy=$(stelow_config appetite "")
+  if [ -n "$legacy" ]; then echo "production"; return; fi
+  echo "production"
+}
+
+# Public: read supervisor knob from active workflow (default: high).
+# Legacy appetite lines map to high for every legacy value.
+stelow_read_supervisor() {
+  local s
+  s=$(stelow_config supervisor "")
+  if [ -n "$s" ]; then echo "$s"; return; fi
+  local legacy
+  legacy=$(stelow_config appetite "")
+  if [ -n "$legacy" ]; then echo "high"; return; fi
+  echo "high"
+}
+
+# Public: read exploration count from active workflow (default: 3).
+# Legacy appetite maps Lean->2, Core->3, Complete->5.
+stelow_read_exploration_count() {
+  local c
+  c=$(stelow_config exploration_count "")
+  if [ -n "$c" ]; then echo "$c"; return; fi
+  local legacy
+  legacy=$(stelow_config appetite "")
+  case "$legacy" in
+    Lean) echo "2" ;;
+    Complete) echo "5" ;;
+    Core|"") echo "3" ;;
+    *) echo "3" ;;
+  esac
+}
+
+# Public: read exploration hybrid flag (default: true whenever count >= 2).
+stelow_read_exploration_hybrid() {
+  local h
+  h=$(stelow_config exploration_hybrid "")
+  if [ -n "$h" ]; then echo "$h"; return; fi
+  echo "true"
+}
+
+# Deprecated: read appetite from active workflow (default: Core).
+# Kept for one release line so old states keep working. New code must use
+# the knob readers above.
 stelow_read_appetite() {
   stelow_config appetite "Core"
 }
 
-# Public: read the review gate set from active workflow.
-#
-# Usage: stelow_read_review_gates [default]
-#
-# Emits a space-separated atom list ("spec tech"), which is what every caller
-# branches on. It deliberately does NOT emit a ladder rung: a set like
-# `interface` alone has no rung, so a reader that expected one either got Auto
-# (which reads as "no gates" and refuses the tech plan) or an empty string.
-# `stelow_has_review_gate <atom> [default]` is the question callers actually ask.
-#
-# The default is the empty set, not a rung, and that default is deliberate: a
-# skill run outside stelow has declared nothing, and an assumed default that
-# invents three gates would park a standalone run waiting for a human nobody
-# asked. Callers that genuinely want more depth pass it as their own default.
-stelow_read_review_gates() {
-  local raw
-  raw=$(stelow_config review_gates "")
-  if [ -z "$raw" ]; then
-    printf '%s' "$1"
-    return
-  fi
-  # stelow.json stores an array; JSON.stringify's bracket form is stripped so
-  # the output is a plain space-separated list either way.
-  printf '%s' "$raw" | node -e "
-    const raw = require('fs').readFileSync(0, 'utf8').trim();
-    const list = raw.startsWith('[')
-      ? JSON.parse(raw)
-      : raw.replace(/^\[|\]$/g, '').split(',');
-    process.stdout.write(list.map(s => String(s).trim()).filter(Boolean).join(' '));
-  " 2>/dev/null || printf '%s' "$raw"
-}
-
-# Whether one atom is selected. Callers branch on this, never on the string:
-# a substring test reads "tech" as present inside "tech-plan" and inside the
-# word "matching", which is a gate nobody configured.
-# Usage: stelow_has_review_gate <atom> [default-when-undeclared]
-stelow_has_review_gate() {
-  local atom="$1"
-  stelow_read_review_gates "${2:-}" | tr ' ' '\n' | grep -qx "$atom"
+# Public: read review_mode from active workflow (default: Product Spec + Interface + Scopes)
+stelow_read_review_mode() {
+  stelow_config review_mode "Product Spec + Interface + Scopes"
 }
 
 # Public: read domains_detected as JSON array (default: [])

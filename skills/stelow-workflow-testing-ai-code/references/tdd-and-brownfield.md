@@ -189,7 +189,7 @@ impact:
 | Aspect | Strategy | Rationale |
 |--------|----------|----------|
 | **TDD adoption** | Full recommended | No legacy constraints, clean architecture |
-| **Coverage/risk targets** | Appetite-specific: Lean critical path only; Core main logic + external seams; Complete full edge mapping + security | Establish quality baseline from day one |
+| **Coverage/risk targets** | Quality-specific: experimental critical path only; production full edge mapping + security | Establish quality baseline from day one |
 | **Coverage** | Define target upfront | 80% baseline, higher for critical |
 | **Technical debt** | None yet | Focus on clean patterns, not remediation |
 
