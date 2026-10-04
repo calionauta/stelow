@@ -1,13 +1,17 @@
 # RFC: Experimental Structured Parallel Scope Execution
 
 > **Status:** proposal, partially implemented in v0.65.0-alpha.
+> Tracking epic (#15) closed 2026-10-04 as parked pending measurement —
+> the RFC stays the design reference; reopen the epic when a real
+> Complete workflow exists to measure.
 > Production quality + wide exploration only.
 >
 > Shipped in v0.65.0-alpha (PR #16): `blockedBy` cycle refusal at ingest
 > (`sync-scopes`), cymbal transitive-disjointness check before parallel
 > dispatch, parent-owned test-gated merge, pre-change regression baseline,
 > and the measurement mirror (`started_at/finished_at/duration_s/baseline`
-> + host-reported `cost`). Still open (see §5 + issue #15): schema
+> + host-reported `cost`). Still parked (see §5; epic #15 closed pending
+> measurement): schema
 > worktree-binding fields, G4 hub-first sequencing, CLI in-flight fields,
 > host mechanics (per-scope workers, G6 attention cap), and measured
 > comparative data from real production-wide workflows.

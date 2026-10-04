@@ -55,7 +55,7 @@ not.
 | Concept | State fields (canonical) | Meaning (do not reframe) | bb label (reference mapping) |
 |---|---|---|---|
 | **Appetite** | `appetite: Lean\|Core\|Complete` (state frontmatter, `stelow.json`, `seed --appetite`) | Scope budget the scope is cut to fit — **never a time/effort estimate** | Planning depth |
-| **Review Mode** | `review_mode:` ladder rung (enforced); `review_gates:` atom list (written by hosts, core promotion tracked — see rule 3) | Breadth of human oversight: which gates park for a decision | Pause for my review (+ rung presets) |
+| **Review Mode** | `review_mode:` ladder rung (the enforced gate contract); `review_gates:` atom list (host-side annotation, no core reader — see rule 3) | Breadth of human oversight: which gates park for a decision | Pause for my review (+ rung presets) |
 
 Rules for hosts:
 
@@ -63,11 +63,15 @@ Rules for hosts:
    A surface that shows anything else maps back on write.
 2. Never present appetite as an estimate of time or effort — in any
    language, on any surface. It is a budget declared before shaping.
-3. The six ladder rungs are the portable encoding of gate sets. Gate
-   combinations with no rung (e.g. interface-only) are expressible in
-   `review_gates:` but currently have **no core reader** — the core
-   enforces the ladder only. See the tracking issue for `review_gates`
-   promotion before relying on novel combinations portably.
+3. The six ladder rungs are the portable encoding of gate sets — and the
+   only encoding the core enforces. A host combination with no rung
+   (e.g. interface-only) must map to the nearest rung on write, erring
+   toward over-review (a rung that parks more gates) rather than silent
+   Auto, and warn the user when no rung fits. `review_gates:` may be
+   stored as a host-side annotation, but the core never reads it
+   (decision recorded in issue #50, closed 2026-10-04; the earlier
+   `review_gates` atoms direction was superseded by the knobs + ladder
+   model in 0.72.0-alpha).
 
 ## Adding a new host
 
