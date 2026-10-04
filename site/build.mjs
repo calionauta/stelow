@@ -76,6 +76,18 @@ function esc(s) {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
+// GitHub-compatible heading slug: lowercase, strip markdown links/backticks,
+// drop anything that is not a word char/space/hyphen, spaces -> hyphens.
+function slugify(text) {
+  return text
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1") // keep link text, drop the URL
+    .replace(/`/g, "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/\s+/g, "-");
+}
+
 function inline(s, pageDir) {
   // images first (none in use, but supported)
   s = s.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, src) => `<img alt="${esc(alt)}" src="${esc(rewrite(src, pageDir))}">`);
@@ -101,7 +113,12 @@ function rewrite(href, pageDir) {
   const relToDocs = relative(DOCS, abs).split(sep).join("/");
   const hit = MANIFEST.find((p) => p.file === relToDocs);
   if (hit) return rel(CUR_SLUG, hit.slug) + hash;
-  return `https://github.com/calionauta/stelow/blob/main/docs/${relToDocs}${hash}`;
+  // A path that escapes docs/ points at a repo file outside the docs tree.
+  // Resolve it against the repo ROOT, never docs/ — otherwise the URL keeps a
+  // literal `..` segment (blob/main/docs/../HOSTING.md), which GitHub only
+  // tolerates by accident and which 404s whenever the prefix is absent.
+  const relToRoot = relative(ROOT, abs).split(sep).join("/");
+  return `https://github.com/calionauta/stelow/blob/main/${relToRoot}${hash}`;
 }
 
 function renderBody(md, pageDir) {
@@ -127,7 +144,11 @@ function renderBody(md, pageDir) {
     const h = line.match(/^(#{1,4})\s+(.*)/);
     if (h) {
       flushPara(para);
-      out.push(`<h${h[1].length}>${inline(h[2], pageDir)}</h${h[1].length}>`);
+      const id = slugify(h[2]);
+      // Generator does not dedupe: duplicate heading text on one page would emit duplicate ids.
+      out.push(
+        `<h${h[1].length}${id ? ` id="${esc(id)}"` : ""}>${inline(h[2], pageDir)}</h${h[1].length}>`,
+      );
       i++;
       continue;
     }
@@ -232,6 +253,25 @@ ${body}
 </html>`;
 }
 
+// Valid heading anchors per markdown file, slugified with the same slugify()
+// used for rendering so the two can never disagree. Built lazily and cached;
+// missing or unreadable files yield an empty set.
+const anchorCache = new Map();
+function anchorsFor(abs) {
+  if (!anchorCache.has(abs)) {
+    const ids = new Set();
+    try {
+      const src = readFileSync(abs, "utf8");
+      for (const line of src.split("\n")) {
+        const h = /^(#{1,4})\s+(.*)$/.exec(line);
+        if (h) ids.add(slugify(h[2]));
+      }
+    } catch { /* missing/unreadable: leave empty */ }
+    anchorCache.set(abs, ids);
+  }
+  return anchorCache.get(abs);
+}
+
 function check() {
   let failed = 0;
   for (const p of MANIFEST) {
@@ -241,11 +281,18 @@ function check() {
   for (const p of MANIFEST) {
     const md = readFileSync(join(DOCS, p.file), "utf8");
     const pageDir = dirname(p.file) === "." ? "" : dirname(p.file);
-    for (const m of md.matchAll(/\]\(([^)#]+)(#[^)]*)?\)/g)) {
+    const curAbs = join(DOCS, p.file);
+    for (const m of md.matchAll(/\]\(([^)#]*)(#[^)]*)?\)/g)) {
       const target = m[1];
+      const frag = m[2] ? m[2].slice(1) : "";
       if (/^(https?:|mailto:)/.test(target)) continue;
-      const abs = resolve(DOCS, pageDir, target);
-      if (!existsSync(abs)) { console.error(`broken link in ${p.file}: ${target}`); failed++; }
+      if (!target && !frag) continue;
+      const abs = target === "" ? curAbs : resolve(DOCS, pageDir, target);
+      if (!existsSync(abs)) { console.error(`broken link in ${p.file}: ${target}`); failed++; continue; }
+      if (!frag) continue;
+      if (!abs.endsWith(".md")) continue;
+      const ids = anchorsFor(abs);
+      if (!ids.has(frag)) { console.error(`missing anchor in ${p.file}: ${target}#${frag}`); failed++; }
     }
   }
   if (failed) { console.error(`${failed} check failure(s)`); process.exit(1); }
