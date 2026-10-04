@@ -294,23 +294,27 @@ Interface Alternatives (if selected)
 
 **This section executes after visual review Gate approval** (not immediately after shaping).
 
-When triggered by the orchestrator:
+When triggered by the orchestrator, confirm the proposal's IN/OUT table as
+an opt-out question (Pattern 3 form in `../stelow-workflow-orchestrator/stages/ask-patterns.md`,
+proposal items as the option source —
+mapped scopes do not exist yet; they get their own confirm at the scope
+stage):
 
-Show the IN/OUT scope table. Ask:
-
-1. **Remove from IN?** — use the ask tool with multiSelect (see `../stelow-workflow-orchestrator/references/cli-tools/ask.md`) with current IN scopes
-2. **Add to IN?** — use the ask tool with multiSelect (see `../stelow-workflow-orchestrator/references/cli-tools/ask.md`) with OUT scope items
+1. **Keep IN?** — ask with multiSelect over the current IN items, ALL preselected (`selected: true`); unchecking removes. Include each item's one-line outcome as its description.
+2. **Add to IN?** — ask with multiSelect over OUT items, NONE preselected; checking adds.
 
 [Use the ask tool — see `../stelow-workflow-orchestrator/references/cli-tools/ask.md`]
 
-> **⚡ Estimation Bias:** When asking "Remove from IN?", the model tends to suggest
+> **⚡ Estimation Bias:** When presenting IN items, the model tends to suggest
 > removing items that **seem** complex, but could be simple to implement.
 > If the model recommends removing something due to "complexity", it must state that
 > this is an estimate and may be inflated. The final decision is human.
 
-**If user removes items:** update spec
+**If user unchecks items:** update spec (and record a scope-map challenge later if a boundary meaning changes at mapping time)
 **If user adds items:** create `spec-product_{v+1}.md` (user is aware)
-**If user selects nothing:** proceed without changes
+**If user keeps everything checked:** proceed without changes
+**If user unchecks everything:** reshape — an empty IN is not a proposal
+**If user skips:** proceed without changes (skip leaves the table untouched)
 
 Always write the scope-adjustment receipt to the resulting product-spec
 frontmatter, including the no-change case:

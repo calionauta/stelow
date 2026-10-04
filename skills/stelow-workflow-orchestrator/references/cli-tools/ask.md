@@ -15,8 +15,12 @@ convention instead:
   stelow ask \
     --question "<single clear question>" \
     --option "<label 1>" --option "<label 2>" \
-    [--option "<label 3>" ...] [--multiple]
+    [--option "<label 3>" ...] [--multiple] [--selected]
   ```
+  Append `--selected` right after an `--option` to preselect it (opt-out
+  confirms: the option starts checked and the human unchecks to remove).
+  Preselection only composes with `--multiple`; on single-select groups it
+  is refused.
 
   Identity comes from `STELOW_THREAD_ID` (fallback `BB_THREAD_ID`) — never
   a provider session id, a directory hash, or any other id, and never via

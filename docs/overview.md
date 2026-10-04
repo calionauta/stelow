@@ -35,7 +35,7 @@ source of truth). What the plugin adds is listed in
    leaves an `audit-trail.md` receipt hashed against the exact repository
    tree that was verified.
 
-The full pipeline is 17 stages (`triage` → … → `audit`); lighter review modes
+The full pipeline is 18 stages (`triage` → … → `audit`); lighter review modes
 skip gates without changing the shape. Details: [architecture.md](../architecture.md)
 and the workflow pages.
 
