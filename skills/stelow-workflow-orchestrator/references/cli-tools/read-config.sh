@@ -95,6 +95,33 @@ stelow_read_review_mode() {
   stelow_config review_mode "Product Spec + Interface + Scopes"
 }
 
+# Public: read red_first kill-switch (default: strict on production, advisory on experimental).
+# Single source: Workflow.config.red_first. STELOW_RED_FIRST env overrides
+# any stored value (enforced here and by `stelow config get red_first`).
+stelow_read_red_first() {
+  case "${STELOW_RED_FIRST:-}" in
+    strict|advisory|off) echo "$STELOW_RED_FIRST"; return ;;
+  esac
+  local helper
+  helper="$(git rev-parse --show-toplevel 2>/dev/null)/scripts/stelow"
+  if [ -x "$helper" ]; then
+    "$helper" config get red_first "" 2>/dev/null && return
+  fi
+  local value=""
+  if [ -f "stelow.json" ]; then
+    value=$(node -e "
+      const t = JSON.parse(require('fs').readFileSync('stelow.json','utf8'));
+      const wf = t.workflows.find(w => w.status === 'in-progress');
+      const cfg = (wf && wf.config) || {};
+      const v = cfg.red_first;
+      if (v === 'strict' || v === 'advisory' || v === 'off') { process.stdout.write(v); }
+      else if (cfg.quality === 'experimental') { process.stdout.write('advisory'); }
+      else { process.stdout.write('strict'); }
+    " 2>/dev/null)
+  fi
+  echo "${value:-strict}"
+}
+
 # Public: read domains_detected as JSON array (default: [])
 stelow_read_domains() {
   local helper

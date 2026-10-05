@@ -3,6 +3,23 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.73.0-alpha] - 2026-10-05
+
+### Added
+
+- **Red-first kill-switch (`config.red_first: strict|advisory|off`).**
+  Single source of truth for acceptance-test-first enforcement, with
+  `STELOW_RED_FIRST` env override and quality defaults
+  (production→strict, experimental→advisory). `seed --red-first`,
+  `config get/set red_first` (the only writable field).
+- **Acceptance contract evidence.** Scope contracts carry
+  `test_map`/`freeze_sha`/`red_proof`/`baseline` (schema + types in parity);
+  `scope done` refuses without the three in strict, warns in advisory,
+  test-\* scopes block feature close; pre-commit record check v3.
+- **Testing gates.** `BLOCK: missing acceptance test`, hand-mutation
+  `MUST FAIL`, `RED→RED-PROOF→FREEZE→GREEN`, fresh-oracle rule, audit flags
+  for baseline-empty/red-missing/frozen-edited.
+
 ## [0.72.0-alpha] - 2026-10-03
 
 ### Added

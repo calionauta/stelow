@@ -130,7 +130,9 @@ Flag as gap if any of:
 - `record.verified !== true` → **warning**: Verification checklist incomplete.
 - `record.commands_count === 0` → **warning**: "verified via vibes" pattern.
 - `record.suggested_commit` is empty → **minor**: no commit guidance for next PR.
-- `record.commands_count > 0` but `record.baseline` is empty/missing → **warning**: no pre-change baseline, regressions undetectable (legitimate only when Limitations says the commands cannot run pre-change).
+- `record.commands_count > 0` but `record.baseline` is empty/missing → **warning** (`baseline-empty`): no pre-change baseline, regressions undetectable (legitimate only when Limitations says the commands cannot run pre-change).
+- `record.red_proof` missing, or `exit_code === 0` → **warning** (`red-missing`): no observed FAIL — a guard never seen failing is untrusted.
+- test text changed after `freeze_sha` → **block** (`frozen-edited`): never edit the frozen test to make it pass; re-freeze under a new sha instead.
 - `record.duration_s` is null on a `completed` scope → **minor**: no timing, parallel payoff unmeasurable.
 - `iteration-state-{SCOPE-ID}.md` lacks a `## Record` section even when
   `stelow.json` has the mirror fields → **warning**: mirror may be hallucinated.

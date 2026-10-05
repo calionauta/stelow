@@ -25,6 +25,22 @@ whether the harness enforces it natively or the parent loops over it.
 
 ---
 
+## Scope contract fields (frozen acceptance)
+
+Every scope contract (`scopes/{scope-id}.json`, schema
+`stelow.schema.json#/definitions/scope-contract`) carries the frozen
+acceptance alongside the criteria:
+
+- `test_map`: test file → acceptance criteria it guards (P-1 test-first;
+  AC-sem-teste=reject — unmapped criteria never execute).
+- `freeze_sha`: SHA of the frozen acceptance text (tests freeze here).
+- `red_proof`: observed FAIL before the fix (`failed_command` + non-zero `exit_code`).
+- `baseline`: pre-change verify exit codes (`{command: exitCode}`).
+
+The delegate `acceptance.criteria` mirror `acceptance_criteria`; the four
+fields above are the freeze/red/baseline evidence the executor and
+verification stages check.
+
 ## Subagent with acceptance (acceptance-native harnesses)
 
 Pass an acceptance contract directly to the harness's delegate tool

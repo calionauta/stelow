@@ -57,6 +57,13 @@ console.log(JSON.stringify({ undeclared, overlaps, lockConflicts }, null, 2));
 
 Each completed scope's Record carries a `### Baseline` (verify exit codes captured pre-change at Step 3c). Re-run the same verify commands on the finished tree and compare: any command that passed at baseline and fails at close is a **regression gap** — append it to the report as a gap blocking advance (same bar as class (a)/(b)), routed to Audit as a candidate ESCALATED scope. Commands skipped at baseline (listed in Limitations) are excluded from comparison — they were never promised.
 
+**Red-first evidence columns:** the report lists per completed scope whether
+`red_proof` (observed FAIL), `freeze_sha`, and `baseline` are present.
+`red-missing` (no observed FAIL) and `baseline-empty` (no pre-change exits)
+are gaps blocking advance; test text changed after `freeze_sha`
+(`frozen-edited`) is a hard block — re-freeze under a new sha instead.
+Open test-* scopes at close time are gaps on the same bar: test-* bloqueiam feature.
+
 **4-class overlap report:**
 
 | Class | Definition | Action |
@@ -84,6 +91,7 @@ Append the overlap result to the report. If any non-clean class is non-empty, su
   class (c) stale locks:        {n}
   class (d) clean scopes:       {n}
   regressions vs baseline:      {n}
+  red-missing / baseline-empty / frozen-edited: {n}
 
 Timeline: {total duration}
 Commits: {commit hashes for each scope}

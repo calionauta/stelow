@@ -427,6 +427,21 @@ describe("scope", () => {
     return JSON.parse(readFileSync(join(wd.dir, "stelow.json"), "utf8")).workflows[0].scopes;
   }
 
+  // Red-first contract (Fase 1 Executor): scope done requires a complete
+  // Record in strict mode — verified + red_proof + freeze_sha + baseline.
+  const FULL_RECORD = {
+    verified: true,
+    red_proof: { failed_command: "npm test", exit_code: 1 },
+    freeze_sha: "abc123",
+    baseline: { "npm test": 1 },
+  };
+
+  function setRecord(wd: any, id: string, record: unknown): void {
+    const t = JSON.parse(readFileSync(join(wd.dir, "stelow.json"), "utf8"));
+    t.workflows[0].scopes.find((s: any) => s.id === id).record = record;
+    writeFileSync(join(wd.dir, "stelow.json"), JSON.stringify(t, null, 2));
+  }
+
   it("starts a scope with started_at and enforces dependency order", () => {
     const { wd, statedir } = seedScope("scope-start");
     const env = { STELOW_STATEDIR: statedir };
@@ -438,6 +453,7 @@ describe("scope", () => {
     const first = scopesOf(wd).find((s: any) => s.id === "scope-1");
     expect(first.status).toBe("in-progress");
     expect(typeof first.started_at).toBe("string");
+    setRecord(wd, "scope-1", { ...FULL_RECORD });
     expect(run(wd, ["scope", "done", "--scope", "scope-1"], env).status).toBe(0);
     expect(run(wd, ["scope", "start", "--scope", "scope-2"], env).status).toBe(0);
     expect(run(wd, ["scope", "start", "--scope", "scope-1"], env).status).toBe(1);
@@ -448,6 +464,7 @@ describe("scope", () => {
     const env = { STELOW_STATEDIR: statedir };
     expect(run(wd, ["scope", "start", "--scope", "scope-1"], env).status).toBe(0);
     expect(run(wd, ["scope", "done", "--scope", "scope-9"], env).status).toBe(1);
+    setRecord(wd, "scope-1", { ...FULL_RECORD });
     expect(run(wd, ["scope", "done", "--scope", "scope-1", "--json"], env).status).toBe(0);
     expect(scopesOf(wd).find((s: any) => s.id === "scope-1").status).toBe("done");
     expect(run(wd, ["scope", "done", "--scope", "scope-1"], env).status).toBe(1);
@@ -468,7 +485,7 @@ describe("scope", () => {
     expect(run(wd, ["scope", "done", "--scope", "scope-1"], env).status).toBe(1);
     setScope((s) => { s.tasks = [{ id: "1.1", name: "x", status: "done", source: "planned" }]; s.record = { verified: false }; });
     expect(run(wd, ["scope", "done", "--scope", "scope-1"], env).status).toBe(1);
-    setScope((s) => { s.record = { verified: true }; });
+    setScope((s) => { s.record = { ...FULL_RECORD }; });
     expect(run(wd, ["scope", "done", "--scope", "scope-1"], env).status).toBe(0);
   });
 
@@ -476,6 +493,7 @@ describe("scope", () => {
     const { wd, statedir } = seedScope("scope-close-meta");
     const env = { STELOW_STATEDIR: statedir };
     expect(run(wd, ["scope", "start", "--scope", "scope-1"], env).status).toBe(0);
+    setRecord(wd, "scope-1", { ...FULL_RECORD });
     expect(run(wd, ["scope", "done", "--scope", "scope-1", "--iteration", "3", "--actual-files", "a.ts,b.ts"], env).status).toBe(0);
     const scope = JSON.parse(readFileSync(join(wd.dir, "stelow.json"), "utf8")).workflows[0].scopes.find((s: any) => s.id === "scope-1");
     expect(scope).toMatchObject({ status: "done", iteration: 3, actual_files: ["a.ts", "b.ts"] });
@@ -497,6 +515,7 @@ describe("scope", () => {
     const started = run(wd, ["scope", "start", "--scope", "scope-2", "--start-sha", "abc123"], env);
     expect(started.status).toBe(1);
     expect(seed([{ id: "1.1", name: "Migration", status: "done" }, { id: "1.2", name: "Endpoint", status: "done" }]).status).toBe(0);
+    setRecord(wd, "scope-1", { ...FULL_RECORD });
     expect(run(wd, ["scope", "done", "--scope", "scope-1"], env).status).toBe(0);
     expect(run(wd, ["scope", "start", "--scope", "scope-2", "--start-sha", "abc123"], env).status).toBe(0);
     expect(JSON.parse(readFileSync(join(wd.dir, "stelow.json"), "utf8")).workflows[0].scopes.find((s: any) => s.id === "scope-2").start_sha).toBe("abc123");

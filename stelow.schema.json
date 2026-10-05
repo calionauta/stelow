@@ -168,6 +168,15 @@
               "type": "string",
               "description": "Review Mode: Auto / Product Spec Gate / Product Spec + Interface Gates / Product Spec + Interface + Scopes / Product Spec + Interface + Tech Review / Product Spec + Interface + Tech Review + Code Diff"
             },
+            "red_first": {
+              "type": "string",
+              "enum": [
+                "strict",
+                "advisory",
+                "off"
+              ],
+              "description": "Red-first enforcement: strict=BLOCK without red_proof+freeze+baseline+no-test-edit, advisory=WARN+log, off=skip. Default strict on quality production, advisory on experimental; STELOW_RED_FIRST env overrides."
+            },
             "domains_detected": {
               "type": "array",
               "items": {
@@ -456,6 +465,14 @@
     },
     "scope-contract": {
       "type": "object",
+      "required": [
+        "acceptance_criteria",
+        "verify_commands",
+        "test_map",
+        "freeze_sha",
+        "red_proof",
+        "baseline"
+      ],
       "properties": {
         "acceptance_criteria": {
           "type": "array",
@@ -473,6 +490,49 @@
           "type": "array",
           "items": {
             "type": "string"
+          }
+        },
+        "test_map": {
+          "type": "object",
+          "description": "P-1 test-first: each test file maps to the acceptance_criteria entries it guards. Every criterion must appear in at least one list — AC-sem-teste=reject.",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          }
+        },
+        "freeze_sha": {
+          "type": "string",
+          "minLength": 1,
+          "description": "SHA (short or full) of the frozen acceptance text. Tests freeze at this SHA — never edit the test to make it pass."
+        },
+        "red_proof": {
+          "type": "object",
+          "description": "Observed FAIL before the fix: the mutation/command that failed and its non-zero exit.",
+          "required": ["failed_command", "exit_code"],
+          "properties": {
+            "failed_command": {
+              "type": "string",
+              "minLength": 1
+            },
+            "exit_code": {
+              "type": "integer",
+              "not": { "const": 0 }
+            },
+            "output_excerpt": {
+              "type": "string"
+            }
+          }
+        },
+        "baseline": {
+          "type": "object",
+          "description": "Pre-change verify exit codes ({command: exitCode}) captured at scope start; must be non-empty ({} only when legitimately skipped AND said so in Limitations).",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "integer"
           }
         }
       }

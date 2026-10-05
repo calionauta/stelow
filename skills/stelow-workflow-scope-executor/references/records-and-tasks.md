@@ -26,6 +26,18 @@ Template (copy into `iteration-state-{SCOPE-ID}.md` on scope start, fill on clos
 - `npm test` → exit 0 (412 passed)
 - `npm run typecheck` → exit 0
 
+### Red-proof (observed FAIL before the fix)
+<!-- Captured at Step 3b-bis BEFORE implementing: run the new mapped test
+     once against the unmodified tree. A guard never seen failing is
+     untrusted — `scope done` refuses without this in strict mode. -->
+- failed_command: `npm test -- auth` → exit 1 (2 failed: AC-1, AC-2)
+- output_excerpt: "AssertionError: expected token, got undefined"
+
+### Freeze (pinned acceptance text)
+<!-- freeze_sha pins the test/acceptance text at the RED moment. Never edit
+     the frozen test to make it pass — re-freeze under a new sha instead. -->
+- freeze_sha: abc123
+
 ### Timing (machine-written, never hand-edited)
 <!-- started_at is written by the seed guard; finished_at + duration_s at
      close. cost is host-reported tokens only — omit when unknown, never
@@ -84,6 +96,8 @@ if (wf?.scopes) {
       finished_at: new Date().toISOString(),
       duration_s: scope.started_at ? Math.round((Date.now() - new Date(scope.started_at).getTime()) / 1000) : null,
       baseline: {BASELINE_JSON_FROM_RECORD},  // {command: exitCode} captured pre-change; {} when legitimately skipped (say so in Limitations)
+      red_proof: {RED_PROOF_JSON_FROM_RECORD},  // {failed_command, exit_code} — observed FAIL at Step 3b-bis, exit != 0
+      freeze_sha: '{FREEZE_SHA}',  // pinned acceptance text; never edit the frozen test to pass
       cost: {COST_JSON_OR_NULL},  // host-reported tokens only; null when unknown — never estimate
       files_count: scope.actual_files.length,
       commands_count: {COMMAND_COUNT_FROM_BODY},
@@ -98,8 +112,20 @@ if (wf?.scopes) {
 ```
 
 **Enforcement:**
-- By default, `record` is an advisory convention. `stelow-workflow-execution-critique`
+- `stelow scope done` is the red-first gate: it refuses close (exit 1)
+  without a complete Record — `verified: true` + `red_proof` (observed
+  FAIL, exit != 0) + `freeze_sha` + non-empty `baseline` — when
+  `red_first=strict` (default on production); `advisory` warns and closes,
+  `off` skips. A feature scope additionally refuses while guarding test-*
+  scopes are open (test-* bloqueiam feature).
+- `stelow-workflow-execution-critique`
   Criterion 6 flags scopes with `status: 'completed'` AND `record.verified !== true`.
+- `STELOW_VALIDATE=1` enables runtime validation (see `scripts/pre-commit-record.sh`). The
+  record validators check every scope's `record` and `tasks`
+  before persisting the tracking file.
+- Pre-commit hook at `scripts/pre-commit-record.sh` blocks commits with
+  completed/done scopes missing `verified` or any of the red-first three
+  (`red_proof`, `freeze_sha`, `baseline`).
 - `STELOW_VALIDATE=1` enables runtime validation (see `scripts/pre-commit-record.sh`). The
   record validators check every scope's `record` and `tasks`
   before persisting the tracking file.

@@ -164,7 +164,7 @@ pytest
 
 **If no tests exist:** Create unit tests only for critical business logic (auth, payment, data validation). Skip for CRUD/standard paths.
 
-**Wiring check — exercised, not just present:** a green suite proves nothing if the new tests assert text existence instead of behavior. Reject presence-only assertions (source-text grep/regex, string-presence checks) unless they constrain topology, counts, or refusal shapes. New behavior must be *executed* by a test that fails when the behavior is inverted or removed — verify by hand-mutation (see `stelow-workflow-testing-ai-code`, hand-mutation). Runnable-but-shallow is the most common LLM test failure mode (VibeCheck, Sep 2026: weak assertions and missing edge cases outnumber blocking failures).
+**Wiring check — exercised, not just present:** a green suite proves nothing if the new tests assert text existence instead of behavior. Reject presence-only assertions (source-text grep/regex, string-presence checks) unless they constrain topology, counts, or refusal shapes. New behavior must be *executed* by a test that fails when the behavior is inverted or removed — verify by hand-mutation (see `stelow-workflow-testing-ai-code`, hand-mutation). BLOCK missing acceptance test — an AC with no mapped test (AC-sem-teste) stops this phase: write the test first, then proceed. Runnable-but-shallow is the most common LLM test failure mode (VibeCheck, Sep 2026: weak assertions and missing edge cases outnumber blocking failures).
 
 **Block until tests pass.** Do not proceed with failing tests.
 
@@ -174,7 +174,7 @@ pytest
 
 **Real scenario:** Developer implements auth flow. Subagent reviewer finds: (1) missing rate limiting on login endpoint, (2) JWT token not invalidated on password change, (3) error messages leak user existence. None of these showed in unit tests.
 
-**Test-quality reviewer (third lens on critical paths):** give a fresh subagent the requirement plus the tests — *not* the implementation — and ask: "would these tests catch an inverted behavior?" This breaks same-author circular validation, the dominant LLM-test failure mode (TDFlow, EACL 2026: human-written tests resolve 94.3% vs self-generated 68%; VibeCheck, Sep 2026: cross-agent peer evaluation exposes weak assertions). One red-team pass on the tests is cheaper than debugging a false-green suite later.
+**Test-quality reviewer (fresh-oracle third lens on critical paths):** give a fresh subagent the requirement plus the tests — *not* the implementation — and ask: "would these tests catch an inverted behavior?" This breaks same-author circular validation, the dominant LLM-test failure mode (TDFlow, EACL 2026: human-written tests resolve 94.3% vs self-generated 68%; VibeCheck, Sep 2026: cross-agent peer evaluation exposes weak assertions). One red-team pass on the tests is cheaper than debugging a false-green suite later.
 
 **When to use subagents:**
 - Diff touches 3+ files

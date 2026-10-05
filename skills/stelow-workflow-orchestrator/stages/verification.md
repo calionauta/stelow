@@ -96,7 +96,9 @@ node --test tests/foo.test.mjs   # MUST PASS
 Record the mutation and its result in `verification/tests.json`. A guard you
 did not see fail is a guard you know nothing about — that is how a card ships
 five consecutive cycles where verification finds something every earlier gate
-passed.
+passed. Cross-check the scope contract freeze evidence: `test_map` covers
+every AC (AC-sem-teste=reject), `freeze_sha` matches the frozen acceptance,
+`red_proof` shows the observed FAIL, `baseline` shows pre-change exits.
 
 **Independence:** the agent that wrote the behavior may not be the only author
 of the test that guards it. Hand a fresh subagent the requirement plus the

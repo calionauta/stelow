@@ -47,4 +47,9 @@ Before generating the final report, cross-reference the original plan (spec-tech
 3. **Principles:** read `stelow-workflow-coding-standards` (skill)
    and check if principles were followed in the generated code
    - If violations were detected by parallel-review: were they fixed?
-4. **Verification result:** APPROVED | CAVEATS | REJECTED
+4. **test-* gates (BLOCK):** test-* scopes carry the same red-first evidence
+   (`scope done` requires verified + red_proof + freeze_sha + baseline) and
+   block feature close — a feature scope with open test-* scopes refuses
+   `scope done` in strict mode (warns in advisory). Step 8 reports open
+   test-* scopes as gaps on the same bar as classes (a)/(b).
+5. **Verification result:** APPROVED | CAVEATS | REJECTED

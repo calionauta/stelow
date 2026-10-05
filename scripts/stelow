@@ -16,6 +16,7 @@
 #   scripts/stelow ask ...
 #   scripts/stelow sync-scopes [--name <workflow>] [--json]
 #   scripts/stelow config get <field> [default]
+#   scripts/stelow config set red_first <strict|advisory|off>
 #   scripts/stelow lock acquire|release|check ...
 #   scripts/stelow --help
 
@@ -164,7 +165,7 @@ if os.path.exists(state):
     for k in ("name", "intent", "current_stage", "status"):
         out[k.replace("name", "workflow") if k == "name" else k] = get_top(blob, k)
     cfg = {}
-    for k in ("quality", "supervisor", "exploration_count", "exploration_hybrid", "appetite", "review_mode", "product_type"):
+    for k in ("quality", "supervisor", "exploration_count", "exploration_hybrid", "appetite", "review_mode", "red_first", "product_type"):
         v = get_nested(blob, "config", k)
         if v is not None: cfg[k] = v
     out["config"] = cfg
@@ -642,7 +643,7 @@ PY
 # scaffolded state.md plus a stelow.json tracking entry. Prints the state
 # dir so callers export STELOW_STATEDIR for follow-up commands.
 do_seed() {
-  local name="" intent="" quality="" supervisor="" exploration_count="" exploration_hybrid="" legacy_appetite="" review_mode="Auto" json=""
+  local name="" intent="" quality="" supervisor="" exploration_count="" exploration_hybrid="" legacy_appetite="" review_mode="Auto" red_first="" json=""
   while [ $# -gt 0 ]; do
     case "$1" in
       --name) name="${2:-}"; shift 2 ;;
@@ -654,6 +655,7 @@ do_seed() {
       --no-hybrid) exploration_hybrid="false"; shift ;;
       --appetite) legacy_appetite="${2:-}"; shift 2 ;;
       --review-mode) review_mode="${2:-}"; shift 2 ;;
+      --red-first) red_first="${2:-}"; shift 2 ;;
       --json) json="1"; shift ;;
       *) usage_error "seed: unknown arg '$1' (try --help)" ;;    esac
   done
@@ -683,6 +685,15 @@ do_seed() {
   [ -z "$supervisor" ] && supervisor="high"
   [ -z "$exploration_count" ] && exploration_count="3"
   [ -z "$exploration_hybrid" ] && exploration_hybrid="true"
+  # Red-first kill-switch (single source: config.red_first). Explicit flag
+  # wins; otherwise production defaults strict, experimental advisory.
+  case "$red_first" in
+    ""|strict|advisory|off) ;;
+    *) usage_error "seed: --red-first must be strict|advisory|off" ;;
+  esac
+  if [ -z "$red_first" ]; then
+    if [ "$quality" = "experimental" ]; then red_first="advisory"; else red_first="strict"; fi
+  fi
   case "$quality" in
     production|experimental) ;;
     *) usage_error "seed: --quality must be production|experimental" ;;
@@ -703,9 +714,9 @@ do_seed() {
     exploration_hybrid="false"
   fi
   [ -n "$review_mode" ] || usage_error "seed: --review-mode must be non-empty"
-  python3 - "$ROOT" "$STATEDIR" "$TRANSITIONS" "$name" "$intent" "$quality" "$supervisor" "$exploration_count" "$exploration_hybrid" "$review_mode" "$json" <<'PY' || die "seed failed"
+  python3 - "$ROOT" "$STATEDIR" "$TRANSITIONS" "$name" "$intent" "$quality" "$supervisor" "$exploration_count" "$exploration_hybrid" "$review_mode" "$red_first" "$json" <<'PY' || die "seed failed"
 import sys, os, re, json, secrets, datetime
-root, statedir, trans_path, name, intent, quality, supervisor, exploration_count, exploration_hybrid, review_mode, want_json = sys.argv[1:12]
+root, statedir, trans_path, name, intent, quality, supervisor, exploration_count, exploration_hybrid, review_mode, red_first, want_json = sys.argv[1:13]
 if not os.path.exists(trans_path):
     print(f"seed: transitions reference not found at {trans_path}", file=sys.stderr); sys.exit(1)
 text = open(trans_path).read()
@@ -726,7 +737,7 @@ fm = ["---", f"name: {name}", f"intent: {intent}", f"current_stage: {first}",
       f"  exploration_hybrid: {exploration_hybrid}"]
 alias_for = {"1": "Lean", "2": "Lean", "3": "Core", "4": "Complete", "5": "Complete"}.get(exploration_count, "Core")
 fm += ["  appetite: " + alias_for + "  # DEPRECATED alias, knobs above are canonical",
-      f"  review_mode: {review_mode}", "  product_type: software", "stages:"]
+      f"  review_mode: {review_mode}", f"  red_first: {red_first}", "  product_type: software", "stages:"]
 fm += [f"  {s}: pending" for s in stages]
 fm += ["artifacts: []", "history: []", "---", "", f"# {name}", ""]
 with open(os.path.join(statedir, "state.md"), "w") as handle:
@@ -746,7 +757,8 @@ entry = {"name": name, "description": "", "status": "in-progress", "cwd": root,
                     "exploration_hybrid": exploration_hybrid,
                     # DEPRECATED alias for old hosts; knobs above are canonical.
                     "appetite": alias_for_entry,
-                    "review_mode": review_mode},
+                    "review_mode": review_mode,
+                    "red_first": red_first},
          "stage": {"current_stage": first, "previous_stage": None,
                    "transitioned_at": now,
                    "history": [{"stage": first, "entered_at": now}]},
@@ -806,8 +818,8 @@ commands = {
     "output": "text lines or {findings: [{severity, class, message}], ok}",
   },
   "seed": {
-    "usage": "stelow seed --name <n> --intent <i> [--quality production|experimental] [--supervisor low|med|high] [--exploration-count 1-5] [--exploration-hybrid true|false | --no-hybrid] [--review-mode M] [--json]",
-    "flags": ["--name", "--intent", "--quality", "--supervisor", "--exploration-count", "--exploration-hybrid", "--no-hybrid", "--appetite", "--review-mode", "--json"],
+    "usage": "stelow seed --name <n> --intent <i> [--quality production|experimental] [--supervisor low|med|high] [--exploration-count 1-5] [--exploration-hybrid true|false | --no-hybrid] [--review-mode M] [--red-first strict|advisory|off] [--json]",
+    "flags": ["--name", "--intent", "--quality", "--supervisor", "--exploration-count", "--exploration-hybrid", "--no-hybrid", "--appetite", "--review-mode", "--red-first", "--json"],
     "env": ["STELOW_STATEDIR"],
     "exit_codes": {"0": "seeded (prints state path)", "1": "seed failed", "2": "usage"},
     "output": "state path or {state, statedir, dirHash, created} with --json",
@@ -830,7 +842,7 @@ commands = {
     "usage": "stelow scope start|done|seed-tasks --scope <id> [--name <workflow>] [--iteration <n>] [--actual-files <a,b>] [--tasks <json>] [--start-sha <sha>] [--json]",
     "flags": ["--scope", "--name", "--iteration", "--actual-files", "--tasks", "--start-sha", "--json"],
     "env": ["STELOW_STATEDIR"],
-    "exit_codes": {"0": "transition committed", "1": "refused (terminal, deps, containment, seed validation) or unreadable state", "2": "usage or ambiguous workflow"},
+    "exit_codes": {"0": "transition committed", "1": "refused (terminal, deps, containment, red-first evidence, open test-* gates, seed validation) or unreadable state", "2": "usage or ambiguous workflow"},
     "output": "text line or {id, status, started_at} with --json",
   },
   "lock": {
@@ -841,10 +853,10 @@ commands = {
     "output": "text lines or {acquired|locks} JSON with --json",
   },
   "config": {
-    "usage": "stelow config get <field> [default]",
+    "usage": "stelow config get <field> [default] | stelow config set red_first <strict|advisory|off>",
     "flags": [],
-    "env": ["STELOW_STATEDIR", "STELOW_STATE"],
-    "exit_codes": {"0": "prints value or default (missing state yields default)", "2": "usage"},
+    "env": ["STELOW_STATEDIR", "STELOW_STATE", "STELOW_RED_FIRST"],
+    "exit_codes": {"0": "prints value or default (missing state yields default); set persists and mirrors to state.md", "2": "usage or invalid red_first value"},
     "output": "scalar value, JSON for arrays/objects",
   },
   "audit-trail": {
@@ -1635,6 +1647,66 @@ elif op == "done":
     record = scope.get("record")
     if isinstance(record, dict) and record.get("verified") is not True:
         fail(f"'{scope_id}' carries an unverified Record — complete every verification checklist item and re-run the verify commands first")
+    # Red-first evidence gate (scope-executor Steps 3b-bis / 3e-bis).
+    # Single source: STELOW_RED_FIRST env > Workflow.config.red_first >
+    # quality default (experimental→advisory, else strict).
+    _config = workflow.get("config") if isinstance(workflow.get("config"), dict) else {}
+    _env_mode = (os.environ.get("STELOW_RED_FIRST") or "").strip()
+    if _env_mode in ("strict", "advisory", "off"):
+        _red_first = _env_mode
+    elif _config.get("red_first") in ("strict", "advisory", "off"):
+        _red_first = _config.get("red_first")
+    elif _config.get("quality") == "experimental":
+        _red_first = "advisory"
+    else:
+        _red_first = "strict"
+    def _red_missing():
+        rec = scope.get("record")
+        if not isinstance(rec, dict):
+            return ["record", "red_proof", "freeze_sha", "baseline"]
+        missing = []
+        if rec.get("verified") is not True:
+            missing.append("record.verified")
+        rp = rec.get("red_proof")
+        if (not isinstance(rp, dict) or not rp.get("failed_command")
+                or not isinstance(rp.get("exit_code"), int)
+                or isinstance(rp.get("exit_code"), bool)
+                or rp.get("exit_code") == 0):
+            missing.append("red_proof")
+        if not isinstance(rec.get("freeze_sha"), str) or not rec.get("freeze_sha"):
+            missing.append("freeze_sha")
+        bl = rec.get("baseline")
+        if not isinstance(bl, dict) or len(bl) == 0:
+            missing.append("baseline")
+        return missing
+    _missing = _red_missing()
+    if _missing:
+        _msg = (f"'{scope_id}' refuses close without red-first Record evidence: "
+                f"{', '.join(_missing)} "
+                f"(see scope-executor Step 3e-bis; red_first={_red_first})")
+        if _red_first == "strict":
+            fail(_msg)
+        elif _red_first == "advisory":
+            print(f"scope {op}: warning: {_msg}", file=sys.stderr)
+    # test-* bloqueiam feature: a feature scope only closes after its
+    # guarding test-* scopes are done (test-first order: RED nos testes
+    # antes do GREEN na feature).
+    _stype = str(scope.get("type") or "feature").lower()
+    if _stype == "feature":
+        _open_tests = sorted(
+            x.get("id") for x in scopes
+            if isinstance(x, dict) and str(x.get("type") or "").lower().startswith("test-")
+            and x.get("id") != scope_id
+            and x.get("status") not in ("done", "completed", "skipped")
+        )
+        if _open_tests:
+            _tmsg = (f"'{scope_id}' (feature) waits on open test scope(s): "
+                     f"{', '.join(_open_tests)} — close test-* scopes first "
+                     f"(test-* bloqueiam feature; red_first={_red_first})")
+            if _red_first == "strict":
+                fail(_tmsg)
+            elif _red_first == "advisory":
+                print(f"scope {op}: warning: {_tmsg}", file=sys.stderr)
     if iteration is not None:
         scope["iteration"] = iteration
     if actual_files is not None:
@@ -1663,15 +1735,21 @@ PY
 # workflow, or null/empty field all yield the default (exit 0).
 do_config() {
   local sub="${1:-}"; shift || true
-  [ "$sub" = "get" ] || usage_error "config needs get (try --help)"
-  local field="${1:-}"; shift || true
-  [ -n "$field" ] || usage_error "config get needs <field> [default]"
-  local default="${1:-}"; shift || true
-  [ $# -eq 0 ] || usage_error "config get takes only <field> [default]"
-  python3 - "$ROOT" "$STATE" "$STATEDIR" "$field" "$default" <<'PY' || exit $?
+  case "$sub" in
+    get|set) ;;
+    *) usage_error "config needs get|set (try --help)" ;;
+  esac
+  if [ "$sub" = "get" ]; then
+    local field="${1:-}"; shift || true
+    [ -n "$field" ] || usage_error "config get needs <field> [default]"
+    local default="${1:-}"; shift || true
+    [ $# -eq 0 ] || usage_error "config get takes only <field> [default]"
+    python3 - "$ROOT" "$STATE" "$STATEDIR" "$field" "$default" <<'PY' || exit $?
 import sys, os, json, re
 root, state_path, statedir, field, default = sys.argv[1:6]
 tracking_path = os.path.join(root, "stelow.json")
+
+RED_FIRST_MODES = ("strict", "advisory", "off")
 
 
 def state_owner_id(path):
@@ -1708,11 +1786,118 @@ if workflow is None:
 if workflow is None:
     workflow = next((w for w in workflows if w.get("status") == "in-progress"), None)
 config = (workflow or {}).get("config") or {}
+if field == "red_first":
+    # Single source resolution: env override > stored > quality default.
+    # strict on production, advisory on experimental, strict when quality
+    # is unknown and no explicit default was passed.
+    env = os.environ.get("STELOW_RED_FIRST", "").strip()
+    if env in RED_FIRST_MODES:
+        print(env)
+    elif isinstance(config.get(field), str) and config.get(field) in RED_FIRST_MODES:
+        print(config.get(field))
+    elif config.get("quality") == "experimental":
+        print("advisory")
+    elif config.get("quality") == "production":
+        print("strict")
+    elif default:
+        print(default)
+    else:
+        print("strict")
+    sys.exit(0)
 value = config.get(field)
 if value is None or value == "":
     print(default)
 else:
     print(json.dumps(value) if isinstance(value, (list, dict)) else str(value))
+PY
+    return $?
+  fi
+  # config set red_first <strict|advisory|off> — the only writable field.
+  # Persists to the resolved stelow.json entry and mirrors into state.md.
+  local field="${1:-}"; shift || true
+  local value="${1:-}"; shift || true
+  [ $# -eq 0 ] || usage_error "config set takes only <field> <value>"
+  [ "$field" = "red_first" ] || usage_error "config set supports only red_first (got '$field')"
+  case "$value" in
+    strict|advisory|off) ;;
+    *) usage_error "config set red_first must be strict|advisory|off (got '$value')" ;;
+  esac
+  python3 - "$ROOT" "$STATE" "$STATEDIR" "$field" "$value" <<'PY' || exit $?
+import sys, os, re, json, datetime, tempfile
+root, state_path, statedir, field, value = sys.argv[1:6]
+tracking_path = os.path.join(root, "stelow.json")
+try:
+    tracking = json.loads(open(tracking_path).read())
+except Exception as error:
+    print(f"config set: could not read {tracking_path} ({error})", file=sys.stderr)
+    sys.exit(1)
+workflows = tracking.get("workflows")
+if not isinstance(workflows, list) or not workflows:
+    print("config set: no workflows in tracking", file=sys.stderr)
+    sys.exit(1)
+dir_hash = os.path.basename(statedir.rstrip("/"))
+workflow = next((w for w in workflows if w.get("dirHash") and w.get("dirHash") == dir_hash), None)
+if workflow is None:
+    workflow = next((w for w in workflows if w.get("status") == "in-progress"), None)
+if workflow is None or not isinstance(workflow, dict):
+    print("config set: no selectable workflow (pass STELOW_STATEDIR)", file=sys.stderr)
+    sys.exit(1)
+workflow.setdefault("config", {})[field] = value
+workflow["updated"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+tracking["updated"] = workflow["updated"]
+fd, temporary = tempfile.mkstemp(prefix=".stelow.", dir=root)
+try:
+    with os.fdopen(fd, "w") as handle:
+        handle.write(json.dumps(tracking, indent=2, sort_keys=True) + "\n")
+    os.replace(temporary, tracking_path)
+except Exception as error:
+    try: os.unlink(temporary)
+    except Exception: pass
+    print(f"config set: could not write {tracking_path} ({error})", file=sys.stderr)
+    sys.exit(1)
+# Mirror into state.md config: so readers without stelow.json agree.
+try:
+    blob = open(state_path).read()
+except Exception:
+    print(f"config set: {field}={value}")
+    sys.exit(0)
+m = re.match(r"^(---\n)(.*?)(\n---)(.*)$", blob, re.DOTALL)
+if not m:
+    print(f"config set: {field}={value}")
+    sys.exit(0)
+header_open, fm, header_close, body = m.group(1), m.group(2), m.group(3), m.group(4)
+lines = fm.splitlines()
+out, in_config, done = [], False, False
+for line in lines:
+    if line == "config:":
+        in_config = True
+        out.append(line)
+        continue
+    if in_config:
+        if re.match(r"^  red_first:\s*", line):
+            out.append(f"  {field}: {value}")
+            done = True
+            continue
+        if re.match(r"^[A-Za-z_][\w-]*:", line):
+            if not done:
+                out.append(f"  {field}: {value}")
+                done = True
+            in_config = False
+    out.append(line)
+if in_config and not done:
+    out.append(f"  {field}: {value}")
+if not any(line == "config:" for line in out):
+    out.extend(["config:", f"  {field}: {value}"])
+new_blob = header_open + "\n".join(out) + header_close + body
+fd, temporary = tempfile.mkstemp(prefix=".state.", dir=os.path.dirname(state_path) or ".", text=True)
+try:
+    with os.fdopen(fd, "w") as handle:
+        handle.write(new_blob)
+    os.replace(temporary, state_path)
+finally:
+    if os.path.exists(temporary):
+        os.unlink(temporary)
+print(f"config set: {field}={value}")
 PY
 }
 
@@ -1945,12 +2130,13 @@ Usage:
   $PROG status [--json]
   $PROG advance <candidate> [--dry-run] [--json]
   $PROG doctor [--json]
-  $PROG seed --name <n> --intent <i> [--quality production|experimental] [--supervisor low|med|high] [--exploration-count 1-5] [--exploration-hybrid true|false | --no-hybrid] [--review-mode M] [--json]
+  $PROG seed --name <n> --intent <i> [--quality production|experimental] [--supervisor low|med|high] [--exploration-count 1-5] [--exploration-hybrid true|false | --no-hybrid] [--review-mode M] [--red-first strict|advisory|off] [--json]
   (--appetite Lean|Core|Complete still accepted as a deprecated alias)
   $PROG schema [command]
   $PROG ask --question <t> [--multiple] --option <label>... [--selected] (repeat --question groups)
   $PROG sync-scopes [--name <workflow>] [--json]
   $PROG config get <field> [default]
+  $PROG config set red_first <strict|advisory|off>
   $PROG audit-trail build|check|path [--strict] [--json]
   $PROG lock acquire --scope <id> --file <f>... [--ttl N] [--json]
   $PROG lock release --scope <id> --file <f>...

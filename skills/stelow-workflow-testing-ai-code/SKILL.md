@@ -196,6 +196,7 @@ generated_at: {YYYY-MM-DD}
 
 ## CI/CD Gates
 - BLOCK: missing required critical-path tests
+- BLOCK: missing acceptance test — every AC maps to a test in test_map (AC-sem-teste=reject)
 - BLOCK: security_findings > 0 on critical paths
 - WARN: flaky_rate > 5%
 

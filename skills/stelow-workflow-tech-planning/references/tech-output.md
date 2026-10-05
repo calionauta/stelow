@@ -77,15 +77,24 @@ state dir (`scope-1` → `scopes/scope-1.json`):
 {
   "acceptance_criteria": ["Observable outcome 1", "Observable outcome 2"],
   "verify_commands": ["npm test -- scope-area"],
-  "target_files": ["path/to/area.ts"]
+  "target_files": ["path/to/area.ts"],
+  "test_map": { "tests/scope-area.test.ts": ["Observable outcome 1", "Observable outcome 2"] },
+  "freeze_sha": "<sha-of-frozen-acceptance-text>",
+  "red_proof": { "failed_command": "npm test -- scope-area", "exit_code": 1 },
+  "baseline": { "npm test -- scope-area": 1 }
 }
 ```
 
 `acceptance_criteria` are observable outcomes (the same sentences the
 Scope DoD states), never process descriptions. `verify_commands` run
-against the tree and exit non-zero on failure. A scope without its
-contract file executes against prose only — hosts surface that as an
-explicit condition instead of guessing.
+against the tree and exit non-zero on failure. `test_map` is P-1
+test-first evidence: every criterion must map to at least one test —
+**AC-sem-teste=reject** (a scope with an unmapped criterion does not
+execute). `freeze_sha` pins the frozen acceptance text (tests freeze
+here — never edit the test to make it pass). `red_proof` records the
+observed FAIL before the fix. `baseline` records pre-change verify exit
+codes. A scope without its contract file executes against prose only —
+hosts surface that as an explicit condition instead of guessing.
 
 **After persisting:**
 - explicitly provide the saved path

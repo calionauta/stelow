@@ -36,8 +36,9 @@ if [ -z "$STELOW_FILES" ]; then
 fi
 
 for FILE in $STELOW_FILES; do
-  # Fast check: skip if no completed scopes (no need to parse)
-  if ! grep -q '"status":\s*"completed"' "$FILE" 2>/dev/null; then
+  # Fast check: skip if no completed/done scopes (no need to parse).
+  # Both statuses count: the CLI commits `done`, older flows `completed`.
+  if ! grep -Eq '"status":\s*"(completed|done)"' "$FILE" 2>/dev/null; then
     continue
   fi
 
@@ -49,9 +50,16 @@ for FILE in $STELOW_FILES; do
     const bad = [];
     for (const wf of track.workflows ?? []) {
       for (const sc of wf.scopes ?? []) {
-        if (sc.status !== 'completed') continue;
-        if (!sc.record || !sc.record.verified) {
-          bad.push(\"\${wf.name}/\${sc.id}: record missing or verified=false\");
+        if (sc.status !== 'completed' && sc.status !== 'done') continue;
+        const rec = sc.record ?? {};
+        const missing = [];
+        if (rec.verified !== true) missing.push('verified');
+        const rp = rec.red_proof ?? {};
+        if (!rp.failed_command || typeof rp.exit_code !== 'number' || rp.exit_code === 0) missing.push('red_proof');
+        if (!rec.freeze_sha) missing.push('freeze_sha');
+        if (!rec.baseline || typeof rec.baseline !== 'object' || Object.keys(rec.baseline).length === 0) missing.push('baseline');
+        if (missing.length > 0) {
+          bad.push(\"\${wf.name}/\${sc.id}: record missing \${missing.join(', ')}\");
         }
       }
     }

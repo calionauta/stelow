@@ -218,8 +218,11 @@ impact:
 2. RED-PROOF: Demonstrate the test failing without the implementation
    (stash the fix, run pre-fix, or hand-mutate). A test never observed
    failing is untrusted — reject it.
-3. GREEN: AI implements only enough to pass test
-4. REFACTOR: Clean up with tests still passing
+3. FREEZE: Pin the test text (freeze_sha) — never edit the test to make it pass.
+4. GREEN: AI implements only enough to pass test
+5. REFACTOR: Clean up with tests still passing
+
+Sequence name: RED-REDPROOF-FREEZE-GREEN.
 
 Key difference from human TDD:
 - AI must see failing test BEFORE implementation

@@ -153,6 +153,22 @@ fi
 # Check ceiling violation: scope count vs the single ceiling of 9
 SCOPE_COUNT=$(grep -c "^### " "$SPEC_TECH")
 
+# P-1 test-first guard: AC-sem-teste=reject. Each scope contract must map
+# every AC to a test in test_map; an unmapped AC rejects the scope.
+for CONTRACT in .stelow/{YYYY-MM-DD}/{_dir}/scopes/scope-*.json; do
+  [ -f "$CONTRACT" ] || continue
+  python3 - "$CONTRACT" <<'EOF' || VALID=false
+import json, sys
+c = json.load(open(sys.argv[1]))
+criteria = c.get("acceptance_criteria", [])
+mapped = {a for tests in (c.get("test_map") or {}).values() for a in tests}
+unmapped = [a for a in criteria if a not in mapped]
+if unmapped:
+    print(f"AC-sem-teste REJECT: {sys.argv[1]} — {len(unmapped)} unmapped AC(s)")
+    sys.exit(1)
+EOF
+done
+
 # Ceiling check: scope count stays at or under 9 (discovered, never a target)
 if [ "$SCOPE_COUNT" -gt 9 ]; then
   echo "CEILING_VIOLATION: $SCOPE_COUNT scopes exceed the ceiling of 9. Consolidate or split into multiple cycles."

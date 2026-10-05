@@ -137,6 +137,9 @@ of truth — harness-native todos are display-only.
 
 > **Goal system:** See `../references/cli-tools/goals.md` for all scope types —
 > optimization scopes use the acceptance contract with benchmark verify commands.
+> Every scope reads its frozen contract (`scopes/{scope-id}.json`:
+> `test_map` / `freeze_sha` / `red_proof` / `baseline`); a scope with an
+> unmapped AC (AC-sem-teste) is rejected before dispatch.
 
 **Before routing, read the supervisor knob from spec-product.md (legacy appetite maps to `high`).**
 ```bash

@@ -205,9 +205,18 @@ Never run optimization loops directly in the main agent — this creates infinit
 
 ---
 
-## Sequencing Principles (Principles 0-6)
+## Sequencing Principles (Principles P-1–6)
 
 These principles guide the ordering of tasks within each scope. Apply them in sequence when building the detailed task breakdown.
+
+### Principle P-1: Test-First (Red-First)
+
+Every acceptance criterion (AC) must map to at least one test in the
+scope contract `test_map` before the scope executes. AC-sem-teste=reject:
+a scope with an unmapped criterion is rejected at planning validation
+(see `scope-generation.md` → Output Validation Guard), not warned.
+Freeze the acceptance text (`freeze_sha`) and record the observed FAIL
+(`red_proof`) plus pre-change exits (`baseline`) in the contract.
 
 ### Principle 0: External Interface Mocks
 Create mocks for external interfaces first. This allows development to proceed without waiting for external dependencies.
