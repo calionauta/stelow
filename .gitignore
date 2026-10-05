@@ -106,3 +106,8 @@ edge-case-review.md
 
 # npm pack tarballs (used by pi-sandbox-install + pi-session-lifecycle tests)
 calionauta-stelow-*.tgz
+
+# BB session scratch (workflow runs, thread storage). Keep local-only;
+# to share a workflow intentionally: git add -f .bb/workflows/<name>.js
+# AND reference it from docs (see mini-redis-comparison precedent).
+.bb/
