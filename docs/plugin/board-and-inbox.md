@@ -26,6 +26,27 @@ Research and Explore move To-Do → Doing → Done. New cards start in Triage
   archive is restored by one human-initiated action behind a confirm,
   back to its exact stage — pending questions stay withheld for the fresh worker to re-ask, with the count trailed on the card.
 
+## When a question could not be recorded
+
+A worker that reports **"The question could not be recorded"** has stopped, and the card
+says why: an entry in **Needs attention** naming the cause, and a line on the card's trail.
+
+This is an interrupted write, not lost work. The question was never stored, so there is
+nothing to recover and nothing was answered into a void. What happened is that the card was
+marked as waiting for your answer, the answer timed out, and the write that files the
+question for later failed — most often a database lock that outlived its one automatic
+retry, less often a closed handle or a full disk.
+
+**To resume: send any message on the worker thread.** The worker re-asks once on its next
+turn. Do not archive the card and do not start a fresh one — nothing is broken, and the card
+picks up where it stopped.
+
+The plugin log (`~/.bb/plugins/stelow/logs/plugin.log`) carries one
+`stelow ask persist attempt` warning per attempt. A single `SQLITE_BUSY` is normal and
+expected: a reconcile pass or a sync poll can hold the lock briefly. Repeated non-busy
+errors mean the plugin lost its database handle or the disk is full, and restarting bb is
+then the real fix.
+
 ## Views and setup
 
 - **List view** for narrow screens, **hill view** for Build progress
