@@ -378,12 +378,14 @@ function build() {
     groups += `<li><a href="./${p.slug}/">${esc(p.title)}</a> — ${esc(p.desc)}</li>`;
   }
   groups += "</ul>".repeat(new Set(MANIFEST.map((p) => p.group)).size);
+  groups += `<h2>Releases</h2>\n<ul><li><a href="../releases/">All releases</a> — stelow core plus bb-plugin entries, each version as its own article page.</li></ul>`;
   let idxNav = `<a class="home" href="../">← stelow</a>`;
   let idxGroup = "";
   for (const p of MANIFEST) {
     if (p.group !== idxGroup) { idxGroup = p.group; idxNav += `<h4>${esc(p.group)}</h4>`; }
     idxNav += `<a href="./${p.slug}/">${esc(p.title)}</a>`;
   }
+  idxNav += `<h4>Releases</h4><a href="../releases/">All releases</a>`;
   mkdirSync(join(OUT, "docs"), { recursive: true });
   writeFileSync(join(OUT, "docs", "index.html"),
     pageShell("Docs", "", `<h1>Stelow docs</h1>\n${groups}`, `<a href="../">← stelow home</a>`, idxNav));
