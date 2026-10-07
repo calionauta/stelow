@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# scripts/stelow — stelow workflow CLI (status / advance / doctor / seed / schema / ask / sync-scopes / lock / config / scope).
+# scripts/stelow — stelow workflow CLI (status / advance / doctor / seed / schema / ask / sync-scopes / lock / config / scope / decide).
 #
 # Passive: reads/writes one workflow state. Hosts may point at a per-workflow
 # directory with STELOW_STATEDIR/STELOW_STATE; root paths are the standalone
@@ -865,6 +865,13 @@ commands = {
     "env": ["STELOW_STATEDIR", "STELOW_STATE"],
     "exit_codes": {"0": "built, valid, or path printed", "1": "missing state/trail, stale trail, unsafe artifact path, or unregistered documents with --strict", "2": "usage"},
     "output": "canonical audit-trail.md path or {ok, contract, path, artifacts, snapshot}",
+  },
+  "decide": {
+    "usage": "stelow decide --selected <id> [--rejected a,b] [--scopes s1,s2] [--reason <t>] [--supersedes r-old] [--challenge r-live] [--json]",
+    "flags": ["--selected", "--rejected", "--scopes", "--reason", "--supersedes", "--challenge", "--json"],
+    "env": ["STELOW_STATEDIR", "STELOW_STATE"],
+    "exit_codes": {"0": "decision recorded", "1": "contradicts a live receipt without --challenge naming it, or runtime failure", "2": "usage"},
+    "output": "text line or {ok, id, selectedId} with --json",
   },
 }
 if want and want not in commands:
@@ -1901,6 +1908,173 @@ print(f"config set: {field}={value}")
 PY
 }
 
+# --- decisions -----------------------------------------------------------------
+#
+# A selection the worker writes down itself is self-attestation, and a receipt
+# nobody reads is decoration. The worker proposes through this verb; the helper
+# mints the host-side record into <statedir>/decision-receipts.json — the same
+# file and schema the BB plugin reads and writes, so the two never diverge.
+# Contradicting a live receipt refuses unless --challenge names it.
+do_decide() {
+  python3 - "$STATEDIR" "$STATE" "$@" <<'PY' || exit $?
+import json, os, re, sys, tempfile, datetime
+statedir, state_path, argv = sys.argv[1], sys.argv[2], sys.argv[3:]
+STORE = os.path.join(statedir, "decision-receipts.json")
+ID_RE = re.compile(r"^[A-Za-z0-9_.-]{1,80}$")
+# Receipt contract v1, shared with the BB plugin (lib/decision-receipts.mjs).
+# A helper that emits anything else breaks every host that reads this file.
+SCHEMA_VERSION = 1
+
+def usage(text):
+    print(f"decide: {text} (try --help)", file=sys.stderr)
+    sys.exit(2)
+
+def fail(text):
+    print(f"decide: {text}", file=sys.stderr)
+    sys.exit(1)
+
+def ids(value):
+    if value is None:
+        return []
+    parts = [p.strip() for p in value.split(",")]
+    out = [p for p in dict.fromkeys(parts) if p]
+    if any(not ID_RE.match(p) for p in out):
+        usage("ids must match [A-Za-z0-9_.-]{1,80}")
+    return out
+
+selected, rejected, scopes, reason, supersedes, challenge = None, None, None, None, None, None
+want_json = False
+i = 0
+while i < len(argv):
+    arg = argv[i]
+    def need(val):
+        if val is None or not str(val).strip():
+            usage(f"{arg} needs a value")
+        return str(val)
+    if arg == "--selected":
+        i += 1; selected = need(argv[i] if i < len(argv) else None)
+    elif arg == "--rejected":
+        i += 1; rejected = need(argv[i] if i < len(argv) else None)
+    elif arg == "--scopes":
+        i += 1; scopes = need(argv[i] if i < len(argv) else None)
+    elif arg == "--reason":
+        i += 1; reason = need(argv[i] if i < len(argv) else None)
+    elif arg == "--supersedes":
+        i += 1; supersedes = need(argv[i] if i < len(argv) else None)
+    elif arg == "--challenge":
+        i += 1; challenge = need(argv[i] if i < len(argv) else None)
+    elif arg == "--json":
+        want_json = True
+    elif arg.startswith("--"):
+        usage(f"unknown flag '{arg}'")
+    else:
+        usage(f"unexpected positional '{arg}'")
+    i += 1
+if not selected or not ID_RE.match(selected):
+    usage("--selected <option-id> names the winning option")
+rejected_ids = ids(rejected)
+if selected in rejected_ids:
+    usage("the winning option cannot also be rejected")
+scope_ids = ids(scopes)
+supersede_ids = ids(supersedes)
+
+def load():
+    try:
+        with open(STORE) as handle:
+            blob = json.load(handle)
+        receipts = blob.get("receipts", []) if isinstance(blob, dict) else []
+        return [r for r in receipts if isinstance(r, dict) and r.get("schemaVersion") == SCHEMA_VERSION
+                and isinstance(r.get("id"), str) and isinstance(r.get("selectedId"), str)]
+    except Exception:
+        return []
+
+def shape_version():
+    try:
+        with open(state_path) as handle:
+            for line in handle.read().splitlines():
+                match = re.match(r"^shape_version:\s*(.+?)\s*$", line)
+                if match and match.group(1):
+                    return match.group(1)
+    except Exception:
+        pass
+    return None
+
+def overlaps(proposal_scopes, receipt_scopes):
+    if not isinstance(receipt_scopes, list):
+        return True
+    if not proposal_scopes:
+        return True
+    return any(s in receipt_scopes for s in proposal_scopes)
+
+def contradiction(proposal_selected, proposal_scopes, receipt):
+    if proposal_selected in (receipt.get("rejectedOptionIds") or []):
+        return f"proposes rejected option {proposal_selected}"
+    own = receipt.get("selectedId")
+    if isinstance(own, str) and own and own != proposal_selected and overlaps(proposal_scopes, receipt.get("scopeIds")):
+        return f"selects {proposal_selected} where receipt selected {own}"
+    if not (receipt.get("rejectedOptionIds") or []) and not isinstance(own, str):
+        if overlaps(proposal_scopes, receipt.get("scopeIds")):
+            return "revisits decided scopes without naming the receipt"
+    return None
+
+stored = load()
+by_id = {r["id"]: r for r in stored}
+live = [r for r in stored if not (isinstance(r.get("supersededBy"), str) and r["supersededBy"])]
+current_shape = shape_version()
+authoritative = []
+for receipt in live:
+    authorized = (receipt.get("authorizesVersions") or {}).get("shape_version")
+    if authorized is not None and current_shape is not None and authorized != current_shape:
+        continue  # stale: routes to reconfirmation, never to challenge
+    authoritative.append(receipt)
+named = {challenge} if challenge else set()
+for receipt in authoritative:
+    if receipt["id"] in named:
+        continue
+    hit = contradiction(selected, scope_ids, receipt)
+    if hit:
+        fail(f"refused: this {hit} under live receipt {receipt['id']}. "
+             f"Open a challenge naming it and re-run with --challenge {receipt['id']}.")
+
+receipt_id = "dec-" + os.urandom(6).hex()
+now = datetime.datetime.now(datetime.timezone.utc).isoformat()
+receipt = {
+    "schemaVersion": SCHEMA_VERSION,
+    "id": receipt_id,
+    "kind": "selection",
+    "selectedId": selected,
+    "rejectedOptionIds": rejected_ids,
+    "scopeIds": scope_ids,
+    "authorizesVersions": ({"shape_version": current_shape} if current_shape else {}),
+    "supersedes": supersede_ids,
+    "supersededBy": None,
+    "challengeId": challenge,
+    "reason": reason,
+    "approvedBy": "operator",
+    "approvedAt": now,
+}
+known = {r["id"] for r in stored}
+for older in supersede_ids:
+    if older in by_id and not by_id[older].get("supersededBy"):
+        by_id[older]["supersededBy"] = receipt_id
+ordered = [r for r in stored if r["id"] != receipt_id] + [receipt]
+os.makedirs(statedir, exist_ok=True)
+body = json.dumps({"version": 1, "receipts": ordered}, indent=2, sort_keys=False) + "\n"
+fd, temporary = tempfile.mkstemp(prefix=".decisions.", dir=statedir, text=True)
+try:
+    with os.fdopen(fd, "w") as handle:
+        handle.write(body)
+    os.replace(temporary, STORE)
+finally:
+    if os.path.exists(temporary):
+        os.unlink(temporary)
+if want_json:
+    print(json.dumps({"ok": True, "id": receipt_id, "selectedId": selected}))
+else:
+    print(f"Decision recorded: {receipt_id} selects {selected}.")
+PY
+}
+
 # --- dispatch ----------------------------------------------------------------
 
 # --- audit trail -------------------------------------------------------------
@@ -2124,7 +2298,7 @@ PY
 
 usage() {
   cat <<EOF
-$PROG — stelow workflow helper (status / advance / doctor / seed / schema / ask / sync-scopes / lock / config / scope)
+$PROG — stelow workflow helper (status / advance / doctor / seed / schema / ask / sync-scopes / lock / config / scope / decide)
 
 Usage:
   $PROG status [--json]
@@ -2138,6 +2312,7 @@ Usage:
   $PROG config get <field> [default]
   $PROG config set red_first <strict|advisory|off>
   $PROG audit-trail build|check|path [--strict] [--json]
+  $PROG decide --selected <id> [--rejected a,b] [--scopes s1,s2] [--reason <t>] [--supersedes r-old] [--challenge r-live] [--json]
   $PROG lock acquire --scope <id> --file <f>... [--ttl N] [--json]
   $PROG lock release --scope <id> --file <f>...
   $PROG lock check [--scope <id>] [--file <f>...] [--json]
@@ -2209,6 +2384,10 @@ case "${1:-}" in
   audit-trail)
     shift
     do_audit_trail "$@"
+    ;;
+  decide)
+    shift
+    do_decide "$@"
     ;;
   -h|--help|help|"") usage ;;
   *) usage_error "unknown subcommand '$1' (try --help)" ;;

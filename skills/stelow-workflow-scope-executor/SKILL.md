@@ -63,7 +63,7 @@ You have access to the harness's tools and subagents. Use them.
 
 ### Step 1: Read and parse the plan
 
-Read the approved plan file. Identify every scope and its type.
+Read the approved plan file. Identify every scope and its type. Read `<statedir>/decision-receipts.json` when present and treat receipts covering your scopes as binding: never revive a rejected option or overturn a recorded pick without opening a challenge that names the receipt (`scripts/stelow decide --selected <id> --challenge <receipt>`).
 
 Example scope shape:
 ```

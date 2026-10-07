@@ -31,7 +31,7 @@ Use this skill during the existing Architecture stage. It does not create a new 
 3. Generate bounded directions with explicit trade-offs, reversibility notes, and compatibility with the approved scopes.
 4. Show trade-offs, evidence, missing evidence, and accepted sacrifice.
 5. Stop for a live question when the choice changes technical authority or cannot be made from current evidence.
-6. Emit a selection receipt only after a current answer or an explicit agent disposition.
+6. Emit a selection receipt only after a current answer or an explicit agent disposition. Then record the pick host-side with `scripts/stelow decide --selected <winner> --rejected <losers> --scopes <covered>` — the JSON receipt is the brief's record, the host record is what binds future work. Never hand-write `decision-receipts.json`; overturning a live pick without `--challenge <receipt>` is refused.
 
 ## Artifact contract
 
@@ -66,5 +66,6 @@ Before returning:
 - fixed constraints, invariants, and accepted sacrifice are explicit;
 - the current Shape, Scope Map, and selected-interface versions are recorded;
 - the disposition names a valid next route;
+- the pick is recorded host-side (`scripts/stelow decide`), not only in `contrast.json`;
 - a human boundary, when present, carries a contract ID, boundary ID, versions, and answer schema;
 - no missing input is silently invented.

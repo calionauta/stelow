@@ -22,6 +22,7 @@ scripts/stelow sync-scopes [--name <workflow>] [--json]
 scripts/stelow scope start|done|seed-tasks --scope <id> [--name <workflow>] [--iteration <n>] [--actual-files <a,b>] [--tasks <json>] [--start-sha <sha>] [--json]
 scripts/stelow config get <field> [default]
 scripts/stelow audit-trail build|check|path [--strict] [--json]
+scripts/stelow decide --selected <id> [--rejected a,b] [--scopes s1,s2] [--reason <t>] [--supersedes r-old] [--challenge r-live] [--json]
 scripts/stelow lock acquire|release|check --scope <id> [--file <f>...] [--ttl N] [--json]
 scripts/stelow schema [command]
 ```
@@ -38,6 +39,7 @@ scripts/stelow schema [command]
 | `lock` | File-reservation locks for parallel dispatch (exit 0 ok, 1 conflict naming the holder, 2 usage; default TTL 1800s). |
 | `config` | Reads workflow config fields with an optional default. |
 | `audit-trail` | `build` writes the deterministic `audit-trail.md` (state + artifacts + repo snapshot as SHA-256); `check` fails on missing/stale; `--strict` refuses unregistered outputs. Receipt contract `v3` — hosts that don't recognize the version must fail closed. |
+| `decide` | Records one decided selection into `<statedir>/decision-receipts.json` (receipt contract `v1`, shared with host plugins — a host that doesn't recognize the version must fail closed). Reviving a rejected option or overturning a live pick without `--challenge` naming the receipt refuses; stale or superseded receipts route to reconfirmation, never to challenge. |
 | `schema` | Machine-readable subcommand contracts. |
 
 `/sw-*` skill commands are conversational aliases agents recognize while
