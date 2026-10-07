@@ -1979,10 +1979,6 @@ No deprecation window, no migration cosmetics, no cosupport tickets.**
 
 ### Added
 
-## [0.41.0] - 2026-07-06
-
-### Added
-
 - **Per-CLI deterministic subagent dispatch** (`subagents.md`) — New explicit table for `pi` (built-in + pi-subagents), `opencode`, `claude-code`, `codex`, `generic`. Eliminates LLM translation of intent — orchestrator picks the row for `detected_cli` and emits the literal call shape. Critical rule block at top: **EVERY stelow subagent call passes `context: "fresh"` EXPLICITLY**.
 - **Strategic-context worked example** (`subagents.md`) — Concrete `subagent()` invocation for `context:10`/`context:20` showing the user's verbatim request in the task string + `reads: [index.json]` (NOT spec-product.md, which doesn't exist yet at this stage).
 - **Packaged-agent gotcha table** (`subagents.md`) — Documents that pi-subagents' `worker`/`planner`/`oracle` ship with `defaultContext: "fork"`. All other packaged agents default to fresh. Stelow always overrides with explicit `context: "fresh"` for predictability.

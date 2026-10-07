@@ -1,8 +1,13 @@
 // Stelow docs site builder — zero dependencies (node stdlib only).
 //
-// Inputs:  docs/**/*.md listed in MANIFEST below (explicit list = stable slugs).
-// Outputs: site/docs/<slug>/index.html, site/docs/index.html, site/llms.txt,
-//          site/llms-full.txt, site/sitemap.xml.
+// Inputs:  docs/**/*.md listed in MANIFEST below (explicit list = stable slugs),
+//          plus CHANGELOG.md sections (see RELEASE_SOURCES).
+// Outputs: site/docs/<slug>/index.html, site/docs/index.html,
+//          site/releases/index.html + site/releases/<version>.html,
+//          site/llms.txt, site/llms-full.txt, site/sitemap.xml.
+//
+// Releases pattern: skill cali-ops-changelog-site (agent-sync-public);
+// site/releases.mjs is a byte-identical vendored copy of its script.
 //
 // Refresh procedure (same rule as docs/cli.md): to add a page, append one
 // MANIFEST row with a one-line description, then run `npm run gen:site`.
@@ -15,6 +20,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from "node:fs";
 import { join, dirname, resolve, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import { checkReleases, buildReleases } from "./releases.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const DOCS = join(ROOT, "docs");
@@ -23,6 +29,16 @@ const BASE = "https://calionauta.github.io/stelow";
 
 // emitting page context for link rewriting (set per page in build())
 let CUR_SLUG = "";
+
+// CHANGELOG.md sections → /releases/ article pages (pattern: skill
+// cali-ops-changelog-site). Core + vendored bb-plugin snapshot merged into
+// one date-ordered index; versions share one slug namespace. The plugin
+// snapshot is pinned (site/vendor/bb-plugin-SHA); refresh it explicitly with
+// site/vendor/refresh.sh — the build never live-fetches.
+const RELEASE_SOURCES = [
+  { file: "CHANGELOG.md", origin: "core", repo: "calionauta/stelow", tagPrefix: "v" },
+  { file: "site/vendor/bb-plugin-CHANGELOG.md", origin: "bb-plugin", repo: "calionauta/bb-plugin-stelow", tagPrefix: "v" },
+];
 
 // slug, source file (under docs/), one-line description (also feeds llms.txt)
 const MANIFEST = [
@@ -213,6 +229,9 @@ function sidebar(cur) {
     const cls = p.slug === cur ? ` class="cur"` : "";
     html += `<a${cls} href="${rel(cur, p.slug)}">${esc(p.title)}</a>`;
   }
+  // Releases live outside MANIFEST (CHANGELOG sections); the href is computed
+  // for the caller's depth so flat and nested slugs alike resolve to /releases/.
+  html += `<h4>Releases</h4><a href="${"../".repeat(cur.split("/").length + 1)}releases/">All releases</a>`;
   return html;
 }
 
@@ -274,6 +293,7 @@ function anchorsFor(abs) {
 
 function check() {
   let failed = 0;
+  checkReleases(ROOT, RELEASE_SOURCES);
   for (const p of MANIFEST) {
     const path = join(DOCS, p.file);
     if (!existsSync(path)) { console.error(`missing manifest file: ${p.file}`); failed++; }
@@ -358,12 +378,14 @@ function build() {
     groups += `<li><a href="./${p.slug}/">${esc(p.title)}</a> — ${esc(p.desc)}</li>`;
   }
   groups += "</ul>".repeat(new Set(MANIFEST.map((p) => p.group)).size);
+  groups += `<h2>Releases</h2>\n<ul><li><a href="../releases/">All releases</a> — stelow core plus bb-plugin entries, each version as its own article page.</li></ul>`;
   let idxNav = `<a class="home" href="../">← stelow</a>`;
   let idxGroup = "";
   for (const p of MANIFEST) {
     if (p.group !== idxGroup) { idxGroup = p.group; idxNav += `<h4>${esc(p.group)}</h4>`; }
     idxNav += `<a href="./${p.slug}/">${esc(p.title)}</a>`;
   }
+  idxNav += `<h4>Releases</h4><a href="../releases/">All releases</a>`;
   mkdirSync(join(OUT, "docs"), { recursive: true });
   writeFileSync(join(OUT, "docs", "index.html"),
     pageShell("Docs", "", `<h1>Stelow docs</h1>\n${groups}`, `<a href="../">← stelow home</a>`, idxNav));
@@ -375,11 +397,12 @@ function build() {
   const full = MANIFEST.map((p) => `# ${p.title}\n\nSource: docs/${p.file} — ${BASE}/docs/${p.slug}/\n\n${p.md.trim()}\n`).join("\n---\n\n");
   writeFileSync(join(OUT, "llms-full.txt"), `# Stelow docs (full)\n\n${full}`);
   // sitemap
-  const urls = ["", "docs/", ...MANIFEST.map((p) => `docs/${p.slug}/`)];
+  const releaseUrls = buildReleases({ ROOT, OUT, NAME: "stelow", SOURCES: RELEASE_SOURCES, h: { esc, renderBody, pageShell } });
+  const urls = ["", "docs/", ...MANIFEST.map((p) => `docs/${p.slug}/`), ...releaseUrls];
   writeFileSync(join(OUT, "sitemap.xml"),
     `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
     urls.map((u) => `  <url><loc>${BASE}/${u}</loc></url>`).join("\n") + `\n</urlset>\n`);
-  console.log(`built ${MANIFEST.length} pages + index + llms.txt + llms-full.txt + sitemap.xml`);
+  console.log(`built ${MANIFEST.length} pages + index + llms.txt + llms-full.txt + sitemap.xml + releases (${releaseUrls.length - 1} versions)`);
 }
 
 if (process.argv.includes("--check")) check();
