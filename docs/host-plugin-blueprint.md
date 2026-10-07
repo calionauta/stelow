@@ -1318,6 +1318,35 @@ staleness stays the header's fact and the rows stay quiet about it. Unknown is a
 first-class answer here — a freshness value that could not be read says so
 rather than falling back to the reassuring one.
 
+### Decision receipts: the host mints, the worker proposes
+
+A selection the worker writes down itself is self-attestation, and a receipt
+nobody reads is decoration. The portable shape that survived both failures:
+
+- **The worker proposes; the host records.** The decision verb takes the
+  winning option, the rejected ones, the scopes covered, and an optional reason;
+  the host stamps the receipt id, the approver, and the versions the decision
+  authorizes (at minimum the Shape version). The receipt persists in the card's
+  state dir, next to the scope map, never inside the worker's prose.
+- **Past decisions arrive with the work.** Execution start serves the receipts
+  covering the run's scopes as mandatory reads, capped with the omitted ids
+  named. A receipt behind a lookup the worker must know to perform will not be
+  read; serving is what makes the receipt bind.
+- **Overturning names the receipt.** Proposing what a live receipt rejected —
+  reviving a discarded option or picking a different winner in the same scopes —
+  refuses unless the new record names the contradicted receipt in a challenge.
+  The refusal names the exact flag to re-run with. Stale (version-moved) and
+  superseded receipts never trigger this: they route to reconfirmation, not to
+  challenge.
+- **Authority is version-bound, not clock-bound.** A receipt authorizes the
+  versions it saw. A Shape bump past them, or code movement under its scopes,
+  marks it stale: still readable as history, no longer load-bearing as
+  permission. Missing versions mean unknown, never current.
+- **Supersession is an explicit chain.** A new decision retires the old one by
+  id; two live receipts contradicting on overlapping scopes surface as a
+  conflict rather than letting the next agent pick one at random. Automation may
+  mark stale; only a human (or an authorized agent receipt) marks superseded.
+
 ## 15. Host runtime composition and lifecycle slices
 
 A host with a large plugin entrypoint should keep the package entry as a
