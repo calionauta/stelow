@@ -47,6 +47,19 @@ The judge never edits code. Deterministic failures ride along in the prompt
 different model family from the implementer where configured, else fresh
 context (breaks memory, not family blindness — recorded as a caveat).
 
+## Conflict resolution (whose side is wrong?)
+
+When a guard fails, two readings compete: the code broke, or the guard is
+wrong. Sensitivity (probe, red observation) cannot distinguish intended vs
+unintended change — that takes a more trusted source of truth. Here the
+source is the frozen planned case (`test_map` AC + `freeze_sha`): the
+planned case wins by default. The worker never silently edits either side
+to make green — editing the guard requires re-freeze under a new sha plus
+a recorded `human_decision`; changing the planned case requires human
+re-approval. A probe that finds an insensitive guard routes to
+`human-review`, never auto-rewrite: an insensitive guard on a correct case
+and a wrong guard on correct code look identical to the probe.
+
 ## Routing
 
 | | Critical path (auth/payment/data) | Standard | Experimental |
