@@ -32,7 +32,7 @@ Use this skill during the existing Interface stage. It does not create a new roo
 5. Ground every alternative in the delivery slices: record per-option scope coverage (served scope IDs, friction scope IDs with notes) against the recorded map version. When no map exists, say so and why — never invent coverage.
 5. Show trade-offs, evidence, missing evidence, and accepted sacrifice.
 6. Stop for a live question when the choice changes product authority or cannot be made from current evidence.
-7. Emit a selection receipt only after a current answer or an explicit agent disposition. Then record the pick host-side with `scripts/stelow decide --selected <winner> --rejected <losers> --scopes <covered>` — the JSON receipt is the brief's record, the host record is what binds future work. Never hand-write `decision-receipts.json`; overturning a live pick without `--challenge <receipt>` is refused.
+7. Emit a selection receipt only after a current answer or an explicit agent disposition. Then record the pick host-side with `scripts/stelow decide --selected <winner> --rejected <losers> --scopes <covered>` — the JSON receipt is the brief's record, the host record is what binds future work. Never hand-write `decision-receipts.json`; overturning a live pick needs an opened challenge (`scripts/stelow decide --open-challenge --against <receipt> --reason <why>`, then `--challenge <challenge-id>`).
 
 ## Artifact contract
 
