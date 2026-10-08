@@ -178,7 +178,7 @@ name the exact tests at risk (TDAD impact subset) and run those.
 
 **Real scenario:** Developer implements auth flow. Subagent reviewer finds: (1) missing rate limiting on login endpoint, (2) JWT token not invalidated on password change, (3) error messages leak user existence. None of these showed in unit tests.
 
-**Test-quality reviewer (fresh-oracle third lens on critical paths):** give a fresh subagent the requirement plus the tests — *not* the implementation — and ask: "would these tests catch an inverted behavior?" This breaks same-author circular validation, the dominant LLM-test failure mode (TDFlow, EACL 2026: human-written tests resolve 94.3% vs self-generated 68%; VibeCheck, Sep 2026: cross-agent peer evaluation exposes weak assertions). One red-team pass on the tests is cheaper than debugging a false-green suite later.
+**Test-quality reviewer (fresh-oracle third lens on critical paths):** give a fresh subagent the requirement plus the tests — *not* the implementation — and ask: "would these tests catch an inverted behavior?" This breaks same-author circular validation, the dominant LLM-test failure mode (TDFlow, EACL 2026: human-written tests resolve 94.3% vs self-generated 68%; VibeCheck, Sep 2026: cross-agent peer evaluation exposes weak assertions). One red-team pass on the tests is cheaper than debugging a false-green suite later. Full decision spec (layers, verdicts, routing, tripwire): `references/guard-quality-decision.md`.
 
 **When to use subagents:**
 - Diff touches 3+ files

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # read-config.sh — canonical helper for reading Workflow.config from stelow.json
 #
-# Source this in any skill that needs quality/supervisor/exploration/review_mode/domains_detected:
+# Source this in any skill that needs quality/supervisor/exploration/review_mode/guard_judge/domains_detected:
 #   source "$(dirname "${BASH_SOURCE[0]}")/../../stelow-workflow-orchestrator/references/cli-tools/read-config.sh"
 #   QUALITY=$(stelow_read_quality)
 #
@@ -114,6 +114,33 @@ stelow_read_red_first() {
       const wf = t.workflows.find(w => w.status === 'in-progress');
       const cfg = (wf && wf.config) || {};
       const v = cfg.red_first;
+      if (v === 'strict' || v === 'advisory' || v === 'off') { process.stdout.write(v); }
+      else if (cfg.quality === 'experimental') { process.stdout.write('advisory'); }
+      else { process.stdout.write('strict'); }
+    " 2>/dev/null)
+  fi
+  echo "${value:-strict}"
+}
+
+# Public: read guard_judge kill-switch (default: strict on production, advisory on experimental).
+# Single source: Workflow.config.guard_judge. STELOW_GUARD_JUDGE env overrides
+# any stored value (enforced here and by `stelow config get guard_judge`).
+stelow_read_guard_judge() {
+  case "${STELOW_GUARD_JUDGE:-}" in
+    strict|advisory|off) echo "$STELOW_GUARD_JUDGE"; return ;;
+  esac
+  local helper
+  helper="$(git rev-parse --show-toplevel 2>/dev/null)/scripts/stelow"
+  if [ -x "$helper" ]; then
+    "$helper" config get guard_judge "" 2>/dev/null && return
+  fi
+  local value=""
+  if [ -f "stelow.json" ]; then
+    value=$(node -e "
+      const t = JSON.parse(require('fs').readFileSync('stelow.json','utf8'));
+      const wf = t.workflows.find(w => w.status === 'in-progress');
+      const cfg = (wf && wf.config) || {};
+      const v = cfg.guard_judge;
       if (v === 'strict' || v === 'advisory' || v === 'off') { process.stdout.write(v); }
       else if (cfg.quality === 'experimental') { process.stdout.write('advisory'); }
       else { process.stdout.write('strict'); }
