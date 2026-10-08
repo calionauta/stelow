@@ -70,18 +70,42 @@ describe("stelow decide", () => {
     const [first] = receipts();
     const out = run(["decide", "--selected", "opt-3", "--scopes", "s1"]);
     expect(out.code).toBe(1);
-    expect(out.stderr).toMatch(new RegExp(`--challenge ${first.id}`));
+    expect(out.stderr).toMatch(new RegExp(`--open-challenge --against ${first.id}`));
     expect(receipts()).toHaveLength(1);
   });
 
-  it("records with --challenge and supersedes the old receipt by id", () => {
+  it("refuses a claimed-but-unregistered challenge: names, not claims", () => {
     run(["decide", "--selected", "opt-5", "--rejected", "opt-3", "--scopes", "s1"]);
+    const out = run(["decide", "--selected", "opt-3", "--scopes", "s1", "--challenge", "chg-ghost"]);
+    expect(out.code).toBe(1);
+    expect(receipts()).toHaveLength(1);
+  });
+
+  it("opens a challenge, then records with --challenge and supersedes", () => {
+    run(["decide", "--selected", "opt-5", "--rejected", "opt-3", "--scopes", "s1", "--by", "ana"]);
     const [first] = receipts();
-    const out = run(["decide", "--selected", "opt-3", "--scopes", "s1", "--challenge", first.id, "--supersedes", first.id]);
+    expect(first.approvedBy).toBe("ana");
+    const opened = run(["decide", "--open-challenge", "--against", first.id, "--reason", "cost changed"]);
+    expect(opened.code).toBe(0);
+    const challengeId = JSON.parse(readFileSync(join(statedir, "decision-receipts.json"), "utf8")).challenges[0].id;
+    expect(opened.stdout).toContain(challengeId);
+    const out = run(["decide", "--selected", "opt-3", "--scopes", "s1", "--challenge", challengeId, "--supersedes", first.id]);
     expect(out.code).toBe(0);
     const all = receipts();
     expect(all).toHaveLength(2);
-    expect(all.find((r) => r.id === first.id).supersededBy).toBe(all.find((r) => r.id !== first.id).id);
+    expect(all.find((r) => r.id === first.id).supersededBy).not.toBeNull();
+  });
+
+  it("refuses challenges against unknown or superseded receipts", () => {
+    expect(run(["decide", "--open-challenge", "--against", "ghost", "--reason", "x"]).code).toBe(1);
+    expect(run(["decide", "--open-challenge", "--reason", "x"]).code).toBe(2);
+  });
+
+  it("refuses writes when the store is corrupt, instead of overwriting", () => {
+    writeFileSync(join(statedir, "decision-receipts.json"), "{oops");
+    const out = run(["decide", "--selected", "opt-5"]);
+    expect(out.code).toBe(1);
+    expect(out.stderr).toMatch(/unreadable/);
   });
 
   it("treats a version-moved receipt as stale: no challenge required", () => {

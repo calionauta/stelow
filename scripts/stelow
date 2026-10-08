@@ -867,8 +867,8 @@ commands = {
     "output": "canonical audit-trail.md path or {ok, contract, path, artifacts, snapshot}",
   },
   "decide": {
-    "usage": "stelow decide --selected <id> [--rejected a,b] [--scopes s1,s2] [--reason <t>] [--supersedes r-old] [--challenge r-live] [--json]",
-    "flags": ["--selected", "--rejected", "--scopes", "--reason", "--supersedes", "--challenge", "--json"],
+    "usage": "stelow decide --selected <id> [--rejected a,b] [--scopes s1,s2] [--reason <t>] [--by <name>] [--supersedes r-old] [--challenge ch-id] [--json] | stelow decide --open-challenge --against <receipt> --reason <t> [--json]",
+    "flags": ["--selected", "--rejected", "--scopes", "--reason", "--by", "--supersedes", "--challenge", "--open-challenge", "--against", "--json"],
     "env": ["STELOW_STATEDIR", "STELOW_STATE"],
     "exit_codes": {"0": "decision recorded", "1": "contradicts a live receipt without --challenge naming it, or runtime failure", "2": "usage"},
     "output": "text line or {ok, id, selectedId} with --json",
@@ -1942,8 +1942,10 @@ def ids(value):
         usage("ids must match [A-Za-z0-9_.-]{1,80}")
     return out
 
-selected, rejected, scopes, reason, supersedes, challenge = None, None, None, None, None, None
+selected, rejected, scopes, reason, by_name, supersedes, challenge = None, None, None, None, None, None, None
 want_json = False
+open_challenge = False
+against = None
 i = 0
 while i < len(argv):
     arg = argv[i]
@@ -1959,10 +1961,16 @@ while i < len(argv):
         i += 1; scopes = need(argv[i] if i < len(argv) else None)
     elif arg == "--reason":
         i += 1; reason = need(argv[i] if i < len(argv) else None)
+    elif arg == "--by":
+        i += 1; by_name = need(argv[i] if i < len(argv) else None)
     elif arg == "--supersedes":
         i += 1; supersedes = need(argv[i] if i < len(argv) else None)
     elif arg == "--challenge":
         i += 1; challenge = need(argv[i] if i < len(argv) else None)
+    elif arg == "--against":
+        i += 1; against = need(argv[i] if i < len(argv) else None)
+    elif arg == "--open-challenge":
+        open_challenge = True
     elif arg == "--json":
         want_json = True
     elif arg.startswith("--"):
@@ -1970,23 +1978,47 @@ while i < len(argv):
     else:
         usage(f"unexpected positional '{arg}'")
     i += 1
-if not selected or not ID_RE.match(selected):
-    usage("--selected <option-id> names the winning option")
+approved_by = by_name if by_name else "operator"
+
 rejected_ids = ids(rejected)
 if selected in rejected_ids:
     usage("the winning option cannot also be rejected")
 scope_ids = ids(scopes)
 supersede_ids = ids(supersedes)
 
-def load():
+def valid_challenge(entry):
+    return (isinstance(entry, dict) and isinstance(entry.get("id"), str)
+            and isinstance(entry.get("receiptId"), str) and isinstance(entry.get("reason"), str))
+
+def load_store():
+    """(receipts, challenges), ([], []) when absent, None when corrupt."""
     try:
         with open(STORE) as handle:
             blob = json.load(handle)
-        receipts = blob.get("receipts", []) if isinstance(blob, dict) else []
-        return [r for r in receipts if isinstance(r, dict) and r.get("schemaVersion") == SCHEMA_VERSION
-                and isinstance(r.get("id"), str) and isinstance(r.get("selectedId"), str)]
+    except FileNotFoundError:
+        return ([], [])
     except Exception:
-        return []
+        return None
+    if not isinstance(blob, dict):
+        return None
+    receipts = [r for r in (blob.get("receipts") or []) if isinstance(r, dict)
+                and r.get("schemaVersion") == SCHEMA_VERSION
+                and isinstance(r.get("id"), str) and isinstance(r.get("selectedId"), str)]
+    challenges = [c for c in (blob.get("challenges") or []) if valid_challenge(c)]
+    return (receipts, challenges)
+
+def write_store(receipts, challenges):
+    os.makedirs(statedir, exist_ok=True)
+    body = json.dumps({"version": 1, "receipts": receipts, "challenges": challenges},
+                      indent=2, sort_keys=False) + "\n"
+    fd, temporary = tempfile.mkstemp(prefix=".decisions.", dir=statedir, text=True)
+    try:
+        with os.fdopen(fd, "w") as handle:
+            handle.write(body)
+        os.replace(temporary, STORE)
+    finally:
+        if os.path.exists(temporary):
+            os.unlink(temporary)
 
 def shape_version():
     try:
@@ -2017,7 +2049,33 @@ def contradiction(proposal_selected, proposal_scopes, receipt):
             return "revisits decided scopes without naming the receipt"
     return None
 
-stored = load()
+store = load_store()
+if store is None:
+    fail("refusing to write: decision-receipts.json is present but unreadable")
+if open_challenge:
+    if selected or rejected or scopes or supersedes or challenge:
+        usage("--open-challenge takes only --against, --reason, and --json")
+    if not against or not reason:
+        usage("--open-challenge needs --against <receipt> and --reason <text>")
+    receipts, challenges = store
+    target = next((r for r in receipts if r.get("id") == against), None)
+    if target is None:
+        fail(f"no decision receipt {against} here")
+    if isinstance(target.get("supersededBy"), str) and target["supersededBy"]:
+        fail(f"receipt {against} is already superseded; contest the live one instead")
+    challenge_id = "chg-" + os.urandom(6).hex()
+    challenges.append({"id": challenge_id, "receiptId": against, "reason": reason,
+                       "openedBy": approved_by,
+                       "openedAt": datetime.datetime.now(datetime.timezone.utc).isoformat()})
+    write_store(receipts, challenges)
+    if want_json:
+        print(json.dumps({"ok": True, "id": challenge_id, "against": against}))
+    else:
+        print(f"Challenge recorded: {challenge_id} contests {against}.")
+    sys.exit(0)
+if not selected or not ID_RE.match(selected):
+    usage("--selected <option-id> names the winning option (or --open-challenge)")
+stored, registered = store
 by_id = {r["id"]: r for r in stored}
 live = [r for r in stored if not (isinstance(r.get("supersededBy"), str) and r["supersededBy"])]
 current_shape = shape_version()
@@ -2027,14 +2085,16 @@ for receipt in live:
     if authorized is not None and current_shape is not None and authorized != current_shape:
         continue  # stale: routes to reconfirmation, never to challenge
     authoritative.append(receipt)
-named = {challenge} if challenge else set()
 for receipt in authoritative:
-    if receipt["id"] in named:
-        continue
     hit = contradiction(selected, scope_ids, receipt)
-    if hit:
+    if not hit:
+        continue
+    honored = (challenge is not None
+               and any(c["id"] == challenge and c["receiptId"] == receipt["id"] for c in registered))
+    if not honored:
         fail(f"refused: this {hit} under live receipt {receipt['id']}. "
-             f"Open a challenge naming it and re-run with --challenge {receipt['id']}.")
+             f"Open a challenge first: scripts/stelow decide --open-challenge --against {receipt['id']} --reason <why>, "
+             f"then re-run with --challenge <challenge-id>.")
 
 receipt_id = "dec-" + os.urandom(6).hex()
 now = datetime.datetime.now(datetime.timezone.utc).isoformat()
@@ -2050,24 +2110,14 @@ receipt = {
     "supersededBy": None,
     "challengeId": challenge,
     "reason": reason,
-    "approvedBy": "operator",
+    "approvedBy": approved_by,
     "approvedAt": now,
 }
-known = {r["id"] for r in stored}
 for older in supersede_ids:
     if older in by_id and not by_id[older].get("supersededBy"):
         by_id[older]["supersededBy"] = receipt_id
 ordered = [r for r in stored if r["id"] != receipt_id] + [receipt]
-os.makedirs(statedir, exist_ok=True)
-body = json.dumps({"version": 1, "receipts": ordered}, indent=2, sort_keys=False) + "\n"
-fd, temporary = tempfile.mkstemp(prefix=".decisions.", dir=statedir, text=True)
-try:
-    with os.fdopen(fd, "w") as handle:
-        handle.write(body)
-    os.replace(temporary, STORE)
-finally:
-    if os.path.exists(temporary):
-        os.unlink(temporary)
+write_store(ordered, registered)
 if want_json:
     print(json.dumps({"ok": True, "id": receipt_id, "selectedId": selected}))
 else:
@@ -2312,7 +2362,8 @@ Usage:
   $PROG config get <field> [default]
   $PROG config set red_first <strict|advisory|off>
   $PROG audit-trail build|check|path [--strict] [--json]
-  $PROG decide --selected <id> [--rejected a,b] [--scopes s1,s2] [--reason <t>] [--supersedes r-old] [--challenge r-live] [--json]
+  $PROG decide --selected <id> [--rejected a,b] [--scopes s1,s2] [--reason <t>] [--by <name>] [--supersedes r-old] [--challenge ch-id] [--json]
+  $PROG decide --open-challenge --against <receipt> --reason <t> [--json]
   $PROG lock acquire --scope <id> --file <f>... [--ttl N] [--json]
   $PROG lock release --scope <id> --file <f>...
   $PROG lock check [--scope <id>] [--file <f>...] [--json]
