@@ -251,8 +251,8 @@ commands + stop rules, `MAX_ITERATIONS` cap). The child self-corrects on
 feedback (`feedback_log`); on plateau, retry with a different approach;
 ESCALATE to a human after max iterations. Persist state to
 `iteration-state-{SCOPE-ID}.md` as you go — resume/rehydrate from disk after
-compaction, never from memory. Red-first first: Step 3b-bis generates the
-mapped test and records fail + freeze before green; `scope done` refuses
+compaction, never from memory. Fail-observed first: Step 3b-bis materializes the
+mapped test and records fail + freeze before passing; `scope done` refuses
 without verified + red_proof + freeze_sha + baseline (strict) and refuses
 feature close while test-* scopes are open. Full loop, evidence snippets,
 Record template and planned/discovered task tracking: `references/step-3-feature.md`, then

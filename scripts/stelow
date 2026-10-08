@@ -643,7 +643,7 @@ PY
 # scaffolded state.md plus a stelow.json tracking entry. Prints the state
 # dir so callers export STELOW_STATEDIR for follow-up commands.
 do_seed() {
-  local name="" intent="" quality="" supervisor="" exploration_count="" exploration_hybrid="" legacy_appetite="" review_mode="Auto" red_first="" json=""
+  local name="" intent="" quality="" supervisor="" exploration_count="" exploration_hybrid="" legacy_appetite="" review_mode="Auto" red_first="" guard_judge="" json=""
   while [ $# -gt 0 ]; do
     case "$1" in
       --name) name="${2:-}"; shift 2 ;;
@@ -656,6 +656,7 @@ do_seed() {
       --appetite) legacy_appetite="${2:-}"; shift 2 ;;
       --review-mode) review_mode="${2:-}"; shift 2 ;;
       --red-first) red_first="${2:-}"; shift 2 ;;
+      --guard-judge) guard_judge="${2:-}"; shift 2 ;;
       --json) json="1"; shift ;;
       *) usage_error "seed: unknown arg '$1' (try --help)" ;;    esac
   done
@@ -694,6 +695,14 @@ do_seed() {
   if [ -z "$red_first" ]; then
     if [ "$quality" = "experimental" ]; then red_first="advisory"; else red_first="strict"; fi
   fi
+  # Guard-judge kill-switch (single source: config.guard_judge). Same default rule.
+  case "$guard_judge" in
+    ""|strict|advisory|off) ;;
+    *) usage_error "seed: --guard-judge must be strict|advisory|off" ;;
+  esac
+  if [ -z "$guard_judge" ]; then
+    if [ "$quality" = "experimental" ]; then guard_judge="advisory"; else guard_judge="strict"; fi
+  fi
   case "$quality" in
     production|experimental) ;;
     *) usage_error "seed: --quality must be production|experimental" ;;
@@ -714,9 +723,9 @@ do_seed() {
     exploration_hybrid="false"
   fi
   [ -n "$review_mode" ] || usage_error "seed: --review-mode must be non-empty"
-  python3 - "$ROOT" "$STATEDIR" "$TRANSITIONS" "$name" "$intent" "$quality" "$supervisor" "$exploration_count" "$exploration_hybrid" "$review_mode" "$red_first" "$json" <<'PY' || die "seed failed"
+  python3 - "$ROOT" "$STATEDIR" "$TRANSITIONS" "$name" "$intent" "$quality" "$supervisor" "$exploration_count" "$exploration_hybrid" "$review_mode" "$red_first" "$guard_judge" "$json" <<'PY' || die "seed failed"
 import sys, os, re, json, secrets, datetime
-root, statedir, trans_path, name, intent, quality, supervisor, exploration_count, exploration_hybrid, review_mode, red_first, want_json = sys.argv[1:13]
+root, statedir, trans_path, name, intent, quality, supervisor, exploration_count, exploration_hybrid, review_mode, red_first, guard_judge, want_json = sys.argv[1:14]
 if not os.path.exists(trans_path):
     print(f"seed: transitions reference not found at {trans_path}", file=sys.stderr); sys.exit(1)
 text = open(trans_path).read()
@@ -737,7 +746,7 @@ fm = ["---", f"name: {name}", f"intent: {intent}", f"current_stage: {first}",
       f"  exploration_hybrid: {exploration_hybrid}"]
 alias_for = {"1": "Lean", "2": "Lean", "3": "Core", "4": "Complete", "5": "Complete"}.get(exploration_count, "Core")
 fm += ["  appetite: " + alias_for + "  # DEPRECATED alias, knobs above are canonical",
-      f"  review_mode: {review_mode}", f"  red_first: {red_first}", "  product_type: software", "stages:"]
+      f"  review_mode: {review_mode}", f"  red_first: {red_first}", f"  guard_judge: {guard_judge}", "  product_type: software", "stages:"]
 fm += [f"  {s}: pending" for s in stages]
 fm += ["artifacts: []", "history: []", "---", "", f"# {name}", ""]
 with open(os.path.join(statedir, "state.md"), "w") as handle:
@@ -758,7 +767,8 @@ entry = {"name": name, "description": "", "status": "in-progress", "cwd": root,
                     # DEPRECATED alias for old hosts; knobs above are canonical.
                     "appetite": alias_for_entry,
                     "review_mode": review_mode,
-                    "red_first": red_first},
+                    "red_first": red_first,
+                    "guard_judge": guard_judge},
          "stage": {"current_stage": first, "previous_stage": None,
                    "transitioned_at": now,
                    "history": [{"stage": first, "entered_at": now}]},
@@ -818,8 +828,8 @@ commands = {
     "output": "text lines or {findings: [{severity, class, message}], ok}",
   },
   "seed": {
-    "usage": "stelow seed --name <n> --intent <i> [--quality production|experimental] [--supervisor low|med|high] [--exploration-count 1-5] [--exploration-hybrid true|false | --no-hybrid] [--review-mode M] [--red-first strict|advisory|off] [--json]",
-    "flags": ["--name", "--intent", "--quality", "--supervisor", "--exploration-count", "--exploration-hybrid", "--no-hybrid", "--appetite", "--review-mode", "--red-first", "--json"],
+    "usage": "stelow seed --name <n> --intent <i> [--quality production|experimental] [--supervisor low|med|high] [--exploration-count 1-5] [--exploration-hybrid true|false | --no-hybrid] [--review-mode M] [--red-first strict|advisory|off] [--guard-judge strict|advisory|off] [--json]",
+    "flags": ["--name", "--intent", "--quality", "--supervisor", "--exploration-count", "--exploration-hybrid", "--no-hybrid", "--appetite", "--review-mode", "--red-first", "--guard-judge", "--json"],
     "env": ["STELOW_STATEDIR"],
     "exit_codes": {"0": "seeded (prints state path)", "1": "seed failed", "2": "usage"},
     "output": "state path or {state, statedir, dirHash, created} with --json",
@@ -853,11 +863,18 @@ commands = {
     "output": "text lines or {acquired|locks} JSON with --json",
   },
   "config": {
-    "usage": "stelow config get <field> [default] | stelow config set red_first <strict|advisory|off>",
+    "usage": "stelow config get <field> [default] | stelow config set red_first|guard_judge <strict|advisory|off>",
     "flags": [],
-    "env": ["STELOW_STATEDIR", "STELOW_STATE", "STELOW_RED_FIRST"],
-    "exit_codes": {"0": "prints value or default (missing state yields default); set persists and mirrors to state.md", "2": "usage or invalid red_first value"},
+    "env": ["STELOW_STATEDIR", "STELOW_STATE", "STELOW_RED_FIRST", "STELOW_GUARD_JUDGE"],
+    "exit_codes": {"0": "prints value or default (missing state yields default); set persists and mirrors to state.md", "2": "usage or invalid mode value"},
     "output": "scalar value, JSON for arrays/objects",
+  },
+  "guard-judge": {
+    "usage": "stelow guard-judge status|check [--apply] [--json]",
+    "flags": ["--apply", "--json"],
+    "env": ["STELOW_STATEDIR", "STELOW_GUARD_JUDGE"],
+    "exit_codes": {"0": "status printed, or check clean (tripwire not tripped); check --apply persists advisory downgrade when tripped", "1": "check tripped (trailing-30 overturn rate above 0.1) without --apply, or unreadable state", "2": "usage"},
+    "output": "text lines or {judged, overturned, rate, tripped, window, mode, applied} with --json",
   },
   "audit-trail": {
     "usage": "stelow audit-trail build|check|path [--strict] [--json]",
@@ -1696,8 +1713,8 @@ elif op == "done":
         elif _red_first == "advisory":
             print(f"scope {op}: warning: {_msg}", file=sys.stderr)
     # test-* bloqueiam feature: a feature scope only closes after its
-    # guarding test-* scopes are done (test-first order: RED nos testes
-    # antes do GREEN na feature).
+    # guarding test-* scopes are done (fail-observed order: FAIL nos testes
+    # antes do PASSING na feature).
     _stype = str(scope.get("type") or "feature").lower()
     if _stype == "feature":
         _open_tests = sorted(
@@ -1811,6 +1828,23 @@ if field == "red_first":
     else:
         print("strict")
     sys.exit(0)
+if field == "guard_judge":
+    # Single source resolution: env override > stored > quality default.
+    # Mirrors red_first: strict on production, advisory on experimental.
+    env = os.environ.get("STELOW_GUARD_JUDGE", "").strip()
+    if env in RED_FIRST_MODES:
+        print(env)
+    elif isinstance(config.get(field), str) and config.get(field) in RED_FIRST_MODES:
+        print(config.get(field))
+    elif config.get("quality") == "experimental":
+        print("advisory")
+    elif config.get("quality") == "production":
+        print("strict")
+    elif default:
+        print(default)
+    else:
+        print("strict")
+    sys.exit(0)
 value = config.get(field)
 if value is None or value == "":
     print(default)
@@ -1819,15 +1853,15 @@ else:
 PY
     return $?
   fi
-  # config set red_first <strict|advisory|off> — the only writable field.
+  # config set red_first|guard_judge <strict|advisory|off> — the only writable fields.
   # Persists to the resolved stelow.json entry and mirrors into state.md.
   local field="${1:-}"; shift || true
   local value="${1:-}"; shift || true
   [ $# -eq 0 ] || usage_error "config set takes only <field> <value>"
-  [ "$field" = "red_first" ] || usage_error "config set supports only red_first (got '$field')"
+  [ "$field" = "red_first" ] || [ "$field" = "guard_judge" ] || usage_error "config set supports only red_first|guard_judge (got '$field')"
   case "$value" in
     strict|advisory|off) ;;
-    *) usage_error "config set red_first must be strict|advisory|off (got '$value')" ;;
+    *) usage_error "config set $field must be strict|advisory|off (got '$value')" ;;
   esac
   python3 - "$ROOT" "$STATE" "$STATEDIR" "$field" "$value" <<'PY' || exit $?
 import sys, os, re, json, datetime, tempfile
@@ -1881,7 +1915,7 @@ for line in lines:
         out.append(line)
         continue
     if in_config:
-        if re.match(r"^  red_first:\s*", line):
+        if re.match(rf"^  {re.escape(field)}:\s*", line):
             out.append(f"  {field}: {value}")
             done = True
             continue
@@ -1905,6 +1939,176 @@ finally:
     if os.path.exists(temporary):
         os.unlink(temporary)
 print(f"config set: {field}={value}")
+PY
+}
+
+# --- guard-judge ---------------------------------------------------------------
+#
+# Overturn tripwire for the guard-quality judge (see
+# skills/stelow-workflow-testing-execution/references/guard-quality-decision.md).
+# Aggregates Record.guard_verdicts across scopes, evaluates the trailing-30
+# co-reviewed window in both directions, and — with --apply — persists the
+# strict→advisory downgrade when tripped. No training, no calibration step:
+# counters plus a threshold. Pure aggregation here; the verdict logic lives
+# in types/stages.ts so node tests import production code.
+do_guard_judge() {
+  local sub="${1:-}"; shift || true
+  case "$sub" in
+    status|check) ;;
+    *) usage_error "guard-judge needs status|check (try --help)" ;;
+  esac
+  local apply="" json=""
+  for arg in "$@"; do
+    case "$arg" in
+      --apply) apply="1" ;;
+      --json) json="1" ;;
+      *) usage_error "guard-judge: unknown flag '$arg' (try --help)" ;;
+    esac
+  done
+  [ "$sub" = "status" ] && [ -n "$apply" ] && usage_error "guard-judge status takes no --apply (use check --apply)"
+  python3 - "$ROOT" "$STATE" "$STATEDIR" "$sub" "$apply" "$json" <<'PY' || exit $?
+import sys, os, re, json, tempfile, datetime
+root, state_path, statedir, sub, apply, want_json = sys.argv[1:7]
+apply = apply == "1"
+want_json = want_json == "1"
+tracking_path = os.path.join(root, "stelow.json")
+WINDOW = 30
+MAX_RATE = 0.1
+MODES = ("strict", "advisory", "off")
+
+def usage(text):
+    print(f"guard-judge: {text} (try --help)", file=sys.stderr)
+    sys.exit(2)
+
+def fail(text):
+    print(f"guard-judge: {text}", file=sys.stderr)
+    sys.exit(1)
+
+try:
+    tracking = json.loads(open(tracking_path).read())
+    workflows = tracking.get("workflows") or []
+except Exception as error:
+    fail(f"could not read {tracking_path} ({error})")
+if not isinstance(workflows, list) or not workflows:
+    fail("no workflows in tracking")
+dir_hash = os.path.basename((statedir or "").rstrip("/"))
+workflow = next((w for w in workflows if w.get("dirHash") and w.get("dirHash") == dir_hash), None)
+if workflow is None:
+    workflow = next((w for w in workflows if w.get("status") == "in-progress"), None)
+if workflow is None or not isinstance(workflow, dict):
+    fail("no selectable workflow (pass STELOW_STATEDIR)")
+scopes = workflow.get("scopes")
+if not isinstance(scopes, list):
+    scopes = []
+config = workflow.get("config") if isinstance(workflow.get("config"), dict) else {}
+
+def co_reviewed(entry):
+    return (
+        isinstance(entry, dict)
+        and entry.get("verdict") in ("pass", "needs-revision")
+        and entry.get("human_decision") in ("approved", "reworked")
+    )
+
+def overturned(entry):
+    return (
+        (entry.get("verdict") == "needs-revision" and entry.get("human_decision") == "approved")
+        or (entry.get("verdict") == "pass" and entry.get("human_decision") == "reworked")
+    )
+
+reviewed = []
+for scope in scopes:
+    if not isinstance(scope, dict):
+        continue
+    record = scope.get("record")
+    if not isinstance(record, dict):
+        continue
+    verdicts = record.get("guard_verdicts")
+    if not isinstance(verdicts, list):
+        continue
+    reviewed.extend(e for e in verdicts if co_reviewed(e))
+window = reviewed[-WINDOW:]
+judged = len(window)
+over = sum(1 for e in window if overturned(e))
+rate = (over / judged) if judged else 0.0
+tripped = judged >= WINDOW and rate > MAX_RATE
+
+env = os.environ.get("STELOW_GUARD_JUDGE", "").strip()
+if env in MODES:
+    mode = env
+elif isinstance(config.get("guard_judge"), str) and config.get("guard_judge") in MODES:
+    mode = config.get("guard_judge")
+elif config.get("quality") == "experimental":
+    mode = "advisory"
+else:
+    mode = "strict"
+
+applied = False
+if sub == "check" and tripped and apply:
+    if mode == "strict":
+        workflow.setdefault("config", {})["guard_judge"] = "advisory"
+        workflow["updated"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+        tracking["updated"] = workflow["updated"]
+        fd, temporary = tempfile.mkstemp(prefix=".stelow.", dir=root)
+        try:
+            with os.fdopen(fd, "w") as handle:
+                handle.write(json.dumps(tracking, indent=2, sort_keys=True) + "\n")
+            os.replace(temporary, tracking_path)
+        except Exception as error:
+            try: os.unlink(temporary)
+            except Exception: pass
+            fail(f"could not write {tracking_path} ({error})")
+        try:
+            blob = open(state_path).read()
+            m = re.match(r"^(---\n)(.*?)(\n---)(.*)$", blob, re.DOTALL)
+            if m:
+                header_open, fm, header_close, body = m.group(1), m.group(2), m.group(3), m.group(4)
+                lines = fm.splitlines()
+                out, in_config, done = [], False, False
+                for line in lines:
+                    if line == "config:":
+                        in_config = True
+                        out.append(line)
+                        continue
+                    if in_config:
+                        if re.match(r"^  guard_judge:\s*", line):
+                            out.append("  guard_judge: advisory  # auto-downgraded: guard-judge overturn tripwire")
+                            done = True
+                            continue
+                        if re.match(r"^[A-Za-z_][\w-]*:", line):
+                            if not done:
+                                out.append("  guard_judge: advisory  # auto-downgraded: guard-judge overturn tripwire")
+                                done = True
+                            in_config = False
+                    out.append(line)
+                if in_config and not done:
+                    out.append("  guard_judge: advisory  # auto-downgraded: guard-judge overturn tripwire")
+                if not any(line == "config:" for line in out):
+                    out.extend(["config:", "  guard_judge: advisory  # auto-downgraded: guard-judge overturn tripwire"])
+                new_blob = header_open + "\n".join(out) + header_close + body
+                fd, temporary = tempfile.mkstemp(prefix=".state.", dir=os.path.dirname(state_path) or ".", text=True)
+                try:
+                    with os.fdopen(fd, "w") as handle:
+                        handle.write(new_blob)
+                    os.replace(temporary, state_path)
+                finally:
+                    if os.path.exists(temporary):
+                        os.unlink(temporary)
+        except Exception as error:
+            print(f"guard-judge: tracking updated; state.md mirror failed ({error})", file=sys.stderr)
+        mode = "advisory"
+        applied = True
+
+if want_json:
+    print(json.dumps({
+        "judged": judged, "overturned": over, "rate": round(rate, 4),
+        "tripped": tripped, "window": WINDOW, "mode": mode, "applied": applied,
+    }))
+else:
+    print(f"guard-judge: judged={judged} overturned={over} rate={rate:.3f} window={WINDOW} tripped={'yes' if tripped else 'no'} mode={mode}"
+          + (" applied=advisory-downgrade" if applied else ""))
+if sub == "check" and tripped and not apply:
+    print(f"guard-judge: overturn rate {rate:.3f} over {judged} co-reviewed guards exceeds {MAX_RATE} — re-run with --apply to downgrade to advisory, or set STELOW_GUARD_JUDGE=off to skip", file=sys.stderr)
+    sys.exit(1)
 PY
 }
 
@@ -2385,22 +2589,23 @@ PY
 
 usage() {
   cat <<EOF
-$PROG — stelow workflow helper (status / advance / doctor / seed / schema / ask / sync-scopes / lock / config / scope / decide)
+$PROG — stelow workflow helper (status / advance / doctor / seed / schema / ask / sync-scopes / lock / config / scope / decide / guard-judge)
 
 Usage:
   $PROG status [--json]
   $PROG advance <candidate> [--dry-run] [--json]
   $PROG doctor [--json]
-  $PROG seed --name <n> --intent <i> [--quality production|experimental] [--supervisor low|med|high] [--exploration-count 1-5] [--exploration-hybrid true|false | --no-hybrid] [--review-mode M] [--red-first strict|advisory|off] [--json]
+  $PROG seed --name <n> --intent <i> [--quality production|experimental] [--supervisor low|med|high] [--exploration-count 1-5] [--exploration-hybrid true|false | --no-hybrid] [--review-mode M] [--red-first strict|advisory|off] [--guard-judge strict|advisory|off] [--json]
   (--appetite Lean|Core|Complete still accepted as a deprecated alias)
   $PROG schema [command]
   $PROG ask --question <t> [--multiple] --option <label>... [--selected] (repeat --question groups)
   $PROG sync-scopes [--name <workflow>] [--json]
   $PROG config get <field> [default]
-  $PROG config set red_first <strict|advisory|off>
+  $PROG config set red_first|guard_judge <strict|advisory|off>
   $PROG audit-trail build|check|path [--strict] [--json]
   $PROG decide --selected <id> [--rejected a,b] [--scopes s1,s2] [--reason <t>] [--by <name>] [--supersedes r-old] [--challenge ch-id] [--json]
   $PROG decide --open-challenge --against <receipt> --reason <t> [--json]
+  $PROG guard-judge status|check [--apply] [--json]
   $PROG lock acquire --scope <id> --file <f>... [--ttl N] [--json]
   $PROG lock release --scope <id> --file <f>...
   $PROG lock check [--scope <id>] [--file <f>...] [--json]
@@ -2476,6 +2681,10 @@ case "${1:-}" in
   decide)
     shift
     do_decide "$@"
+    ;;
+  guard-judge)
+    shift
+    do_guard_judge "$@"
     ;;
   -h|--help|help|"") usage ;;
   *) usage_error "unknown subcommand '$1' (try --help)" ;;

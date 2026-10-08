@@ -175,7 +175,16 @@
                 "advisory",
                 "off"
               ],
-              "description": "Red-first enforcement: strict=BLOCK without red_proof+freeze+baseline+no-test-edit, advisory=WARN+log, off=skip. Default strict on quality production, advisory on experimental; STELOW_RED_FIRST env overrides."
+              "description": "Fail-observed enforcement: strict=BLOCK without red_proof+freeze+baseline+no-test-edit, advisory=WARN+log, off=skip. Default strict on quality production, advisory on experimental; STELOW_RED_FIRST env overrides."
+            },
+            "guard_judge": {
+              "type": "string",
+              "enum": [
+                "strict",
+                "advisory",
+                "off"
+              ],
+              "description": "Guard-quality judge enforcement: strict=BLOCK new/changed guards on critical paths pending judge pass (1 revision round, then human-review), advisory=log verdicts only, off=skip. Default strict on quality production, advisory on experimental; STELOW_GUARD_JUDGE env overrides. Auto-downgrades to advisory when the trailing-30 overturn rate exceeds 0.1 (see guard-judge check)."
             },
             "domains_detected": {
               "type": "array",
@@ -391,6 +400,36 @@
         },
         "suggested_commit": {
           "type": "string"
+        },
+        "guard_verdicts": {
+          "type": "array",
+          "description": "Guard-quality judge verdicts, one per judged guard (shadow-logged from day one; see guard-quality decision spec)",
+          "items": {
+            "type": "object",
+            "required": ["guard", "test_sha", "verdict"],
+            "properties": {
+              "guard": {
+                "type": "string",
+                "description": "Guard file path, relative to repo root"
+              },
+              "test_sha": {
+                "type": "string",
+                "description": "Frozen guard text id — re-judge only on re-freeze"
+              },
+              "verdict": {
+                "type": "string",
+                "enum": ["pass", "needs-revision", "human-review"]
+              },
+              "human_decision": {
+                "type": "string",
+                "enum": ["approved", "reworked"],
+                "description": "Human decision on appeal/review; absent while pending"
+              },
+              "cost_tokens": {
+                "type": "integer"
+              }
+            }
+          }
         }
       }
     },
@@ -494,7 +533,7 @@
         },
         "test_map": {
           "type": "object",
-          "description": "P-1 test-first: each test file maps to the acceptance_criteria entries it guards. Every criterion must appear in at least one list — AC-sem-teste=reject.",
+          "description": "P-1 fail-observed: each test file maps to the acceptance_criteria entries it guards. Every criterion must appear in at least one list — AC-sem-teste=reject.",
           "minProperties": 1,
           "additionalProperties": {
             "type": "array",

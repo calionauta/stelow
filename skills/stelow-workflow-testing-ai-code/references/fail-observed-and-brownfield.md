@@ -1,4 +1,4 @@
-## TDD Guidance (Research-Based)
+## Fail-Observed Guard Guidance (Research-Based)
 
 **Empirical findings on TDD with AI agents:**
 
@@ -11,16 +11,16 @@
 | TDAD (2026) | Procedural TDD instructions without test context *increased* regressions (6.08% → 9.94%); graph test-context cut them 70% — context beats ritual |
 | James et al. / Fucci family | No consistent TDD advantage over iterative test-last; short steady cycles and small tasks explain most gains — rhythm matters more than test order |
 
-### When to Use TDD (Based on Research)
+### When to Use Fail-Observed Guards (Based on Research)
 
-| Code Type | TDD Recommended? | Rationale |
+| Code Type | Fail-Observed Guard? | Rationale |
 |-----------|-----------------|-----------|
-| **Critical business logic** | ✅ **Yes — with red-proof + fresh oracle** | TDD constrains AI output only when the test is observed failing first and assertions capture failure modes; otherwise it is expensive test-last |
-| **Security-sensitive** | ⚠️ **TDD + automated gates** | Write tests first, then run SAST continuously (45% vulnerability rate) |
-| **I/O-, UI-, framework-coupled code** | ⚠️ **Characterization first** | TDD pays most in pure/deterministic domains; at seams prefer characterization + integration over strict test-first |
+| **Critical business logic** | ✅ **Only with human-described cases + red-proof + freeze** | Cases constrain AI output only when written independently of the implementation, observed failing first, and frozen; the implementing agent never self-certifies in-loop (ProgramBench 2026: mandated TDD −3.6pp at +55% cost) |
+| **Security-sensitive** | ⚠️ **Human-described cases + automated gates** | Write cases first (human or fresh-oracle authored), then run SAST continuously (45% vulnerability rate) |
+| **I/O-, UI-, framework-coupled code** | ⚠️ **Characterization first** | Guards pay most in pure/deterministic domains; at seams prefer characterization + integration over strict fail-first ordering |
 | **External APIs** | ❌ No — test-after | Over-mocking is anti-pattern; use real dependencies |
 | **Agent workflows** | ❌ No — behavioral testing | Non-deterministic — needs multi-run validation |
-| **Standard features** | ⚠️ **Optional** | Use TDD for clarity; risk-based tests for standard paths |
+| **Standard features** | ⚠️ **Test-after, never mandated in-loop** | Use cases for clarity post-implementation; risk-based tests for standard paths |
 
 ### Brownfield Testing (Existing Products)
 
@@ -29,7 +29,7 @@
 | Aspect | Strategy | Rationale |
 |--------|----------|----------|
 | **Existing tests** | Adapt, don't replace | High coverage = regression focus; Low coverage = characterization tests |
-| **New features** | TDD for critical, test-after for standard | Protect existing, innovate safely |
+| **New features** | Human-described cases for critical, test-after for standard | Protect existing, innovate safely |
 | **Existing invariants** | Regression + simulation/replay testing | AI agents can break invariants without detection |
 | **Technical debt** | Risk-aware testing targets | Higher depth for risky areas |
 
@@ -188,7 +188,7 @@ impact:
 
 | Aspect | Strategy | Rationale |
 |--------|----------|----------|
-| **TDD adoption** | Full recommended | No legacy constraints, clean architecture |
+| **Guard adoption** | Acceptance-first; unit/integration test-after with red-proof + freeze | No legacy constraints, clean architecture — still no mandated fail-pass micro-cycles in-loop (ProgramBench 2026) |
 | **Coverage/risk targets** | Quality-specific: experimental critical path only; production full edge mapping + security | Establish quality baseline from day one |
 | **Coverage** | Define target upfront | 80% baseline, higher for critical |
 | **Technical debt** | None yet | Focus on clean patterns, not remediation |
@@ -199,7 +199,7 @@ impact:
 
 | Aspect | Strategy | Rationale |
 |--------|----------|----------|
-| **New code** | TDD for critical, test-after for standard | Same as greenfield |
+| **New code** | Human-described cases for critical, test-after for standard | Same as greenfield |
 | **Existing code** | Regression + protection | Same as brownfield |
 | **Integration points** | Extra verification | Ensure new doesn't break old |
 | **Agent behavior** | Behavioral + regression | Non-deterministic risk |
@@ -211,7 +211,7 @@ impact:
 - ❌ Ignoring technical debt in scope planning
 - ❌ Asserting on untestable-handler source text instead of extracting — when behavior lives in a closure/handler that unit tests can't reach, extract a pure helper to a testable module and test outputs there
 
-### TDD Cycle for AI Agents
+### Fail-Observed Cycle for AI Agents
 
 ```
 1. RED: Write failing test (human or AI with explicit constraints)
@@ -222,15 +222,21 @@ impact:
 4. GREEN: AI implements only enough to pass test
 5. REFACTOR: Clean up with tests still passing
 
-Sequence name: RED-REDPROOF-FREEZE-GREEN.
+Sequence name: FAIL-OBSERVED-FREEZE-PASS.
 
-Key difference from human TDD:
+Key difference from human test-first ritual:
 - AI must see failing test BEFORE implementation
 - Tests must be written independently of implementation
 - Human validates test quality via critical-path coverage and negative cases
 - Test-first reasoning improves both code and test effectiveness when the
   tests are executable before implementation (TDD-Agent, Aug 2026); generated
   tests that never fail pre-fix are static validators of unknown value
+
+In-loop guard (ProgramBench Jun 2026, DeepSWE Oct 2026): never run this
+cycle as the implementing agent's own workflow — fail-pass micro-cycles
+by the author lock in incomplete scope (green reads as done) at +55% cost
+for worse quality. The cases come from the human or a fresh-oracle
+reviewer; the implementer only turns them green against a frozen text.
 ```
 
 ---

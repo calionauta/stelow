@@ -153,7 +153,7 @@ fi
 # Check ceiling violation: scope count vs the single ceiling of 9
 SCOPE_COUNT=$(grep -c "^### " "$SPEC_TECH")
 
-# P-1 test-first guard: AC-sem-teste=reject. Each scope contract must map
+# P-1 fail-observed guard: AC-sem-teste=reject. Each scope contract must map
 # every AC to a test in test_map; an unmapped AC rejects the scope.
 for CONTRACT in .stelow/{YYYY-MM-DD}/{_dir}/scopes/scope-*.json; do
   [ -f "$CONTRACT" ] || continue

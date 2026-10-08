@@ -31,7 +31,7 @@ Every scope contract (`scopes/{scope-id}.json`, schema
 `stelow.schema.json#/definitions/scope-contract`) carries the frozen
 acceptance alongside the criteria:
 
-- `test_map`: test file → acceptance criteria it guards (P-1 test-first;
+- `test_map`: test file → acceptance criteria it guards (P-1 fail-observed;
   AC-sem-teste=reject — unmapped criteria never execute).
 - `freeze_sha`: SHA of the frozen acceptance text (tests freeze here).
 - `red_proof`: observed FAIL before the fix (`failed_command` + non-zero `exit_code`).
