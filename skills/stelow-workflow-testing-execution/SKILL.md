@@ -149,24 +149,25 @@ Use `stelow-workflow-ux-critique` for a focused UX/UI quality audit.
 
 **Real scenario:** A payment handler passes E2E but fails under race condition when two requests hit simultaneously. Unit tests covering concurrency logic catch this.
 
-Run the project's test suite:
+Run the project's test suite — scoped to the change, not the world:
 
 ```bash
-# Go
-go test ./...
+# Go (changed packages only)
+go test ./features/todo/... ./internal/queue/...
 
-# Node
-npm test
-
-# Python
-pytest
+# Node (impact subset)
+npx vitest run <affected-files>
 ```
+
+Full `go test ./...` / `npm test` stays a CI gate. In-loop full-suite
+execution measured ~zero success gain at real token cost (DeepSWE Oct 2026);
+name the exact tests at risk (TDAD impact subset) and run those.
 
 **If no tests exist:** Create unit tests only for critical business logic (auth, payment, data validation). Skip for CRUD/standard paths.
 
-**Wiring check — exercised, not just present:** a green suite proves nothing if the new tests assert text existence instead of behavior. Reject presence-only assertions (source-text grep/regex, string-presence checks) unless they constrain topology, counts, or refusal shapes. New behavior must be *executed* by a test that fails when the behavior is inverted or removed — verify by hand-mutation (see `stelow-workflow-testing-ai-code`, hand-mutation). BLOCK missing acceptance test — an AC with no mapped test (AC-sem-teste) stops this phase: write the test first, then proceed. Runnable-but-shallow is the most common LLM test failure mode (VibeCheck, Sep 2026: weak assertions and missing edge cases outnumber blocking failures).
+**Wiring check — exercised, not just present:** a green suite proves nothing if the new tests assert text existence instead of behavior. Reject presence-only assertions (source-text grep/regex, string-presence checks) unless they constrain topology, counts, or refusal shapes. New behavior must be *executed* by a test that fails when the behavior is inverted or removed — verify by hand-mutation (see `stelow-workflow-testing-ai-code`, hand-mutation). Runnable-but-shallow is the most common LLM test failure mode (VibeCheck, Sep 2026: weak assertions and missing edge cases outnumber blocking failures).
 
-**Block until tests pass.** Do not proceed with failing tests.
+**Block until tests pass.** Do not proceed with failing tests. BLOCK missing acceptance test — an AC with no mapped test (AC-sem-teste) stops this phase: the case must be described by the human or a fresh-oracle reviewer, written, red-proofed, and only then green — never self-certified by the implementing agent to unblock itself (DeepSWE Oct 2026).
 
 ## Phase 4: Parallel Code Review via Subagents
 
@@ -206,8 +207,9 @@ Before marking feature complete:
 - [ ] New tests red-proofed — observed failing without the fix (if applicable)
 - [ ] Tests co-located correctly — no production code in test files and vice versa
 - [ ] Code review done (subagent or human)
+- [ ] Reviewed against the user's stated intent, not the diff — a deliberate decision is not a mistake (no-mistakes intent rule)
 - [ ] No regressions detected
-- [ ] Documentation updated (if applicable)
+- [ ] Documentation updated — BLOCK when user-facing behavior changed without a doc update in the same change (most common AI-change defect class)
 - [ ] AGENTS.md updated (if architecture changed)
 
 ## Workflow Summary

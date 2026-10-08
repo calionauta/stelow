@@ -15,12 +15,12 @@
 
 | Code Type | TDD Recommended? | Rationale |
 |-----------|-----------------|-----------|
-| **Critical business logic** | ✅ **Yes — with red-proof + fresh oracle** | TDD constrains AI output only when the test is observed failing first and assertions capture failure modes; otherwise it is expensive test-last |
-| **Security-sensitive** | ⚠️ **TDD + automated gates** | Write tests first, then run SAST continuously (45% vulnerability rate) |
+| **Critical business logic** | ✅ **Only with human-described cases + red-proof + freeze** | Cases constrain AI output only when written independently of the implementation, observed failing first, and frozen; the implementing agent never self-certifies in-loop (ProgramBench 2026: mandated TDD −3.6pp at +55% cost) |
+| **Security-sensitive** | ⚠️ **Human-described cases + automated gates** | Write cases first (human or fresh-oracle authored), then run SAST continuously (45% vulnerability rate) |
 | **I/O-, UI-, framework-coupled code** | ⚠️ **Characterization first** | TDD pays most in pure/deterministic domains; at seams prefer characterization + integration over strict test-first |
 | **External APIs** | ❌ No — test-after | Over-mocking is anti-pattern; use real dependencies |
 | **Agent workflows** | ❌ No — behavioral testing | Non-deterministic — needs multi-run validation |
-| **Standard features** | ⚠️ **Optional** | Use TDD for clarity; risk-based tests for standard paths |
+| **Standard features** | ⚠️ **Test-after, never mandated in-loop** | Use cases for clarity post-implementation; risk-based tests for standard paths |
 
 ### Brownfield Testing (Existing Products)
 
@@ -29,7 +29,7 @@
 | Aspect | Strategy | Rationale |
 |--------|----------|----------|
 | **Existing tests** | Adapt, don't replace | High coverage = regression focus; Low coverage = characterization tests |
-| **New features** | TDD for critical, test-after for standard | Protect existing, innovate safely |
+| **New features** | Human-described cases for critical, test-after for standard | Protect existing, innovate safely |
 | **Existing invariants** | Regression + simulation/replay testing | AI agents can break invariants without detection |
 | **Technical debt** | Risk-aware testing targets | Higher depth for risky areas |
 
@@ -188,7 +188,7 @@ impact:
 
 | Aspect | Strategy | Rationale |
 |--------|----------|----------|
-| **TDD adoption** | Full recommended | No legacy constraints, clean architecture |
+| **TDD adoption** | Acceptance-first; unit/integration test-after with red-proof + freeze | No legacy constraints, clean architecture — still no mandated red-green in-loop (ProgramBench 2026) |
 | **Coverage/risk targets** | Quality-specific: experimental critical path only; production full edge mapping + security | Establish quality baseline from day one |
 | **Coverage** | Define target upfront | 80% baseline, higher for critical |
 | **Technical debt** | None yet | Focus on clean patterns, not remediation |
@@ -199,7 +199,7 @@ impact:
 
 | Aspect | Strategy | Rationale |
 |--------|----------|----------|
-| **New code** | TDD for critical, test-after for standard | Same as greenfield |
+| **New code** | Human-described cases for critical, test-after for standard | Same as greenfield |
 | **Existing code** | Regression + protection | Same as brownfield |
 | **Integration points** | Extra verification | Ensure new doesn't break old |
 | **Agent behavior** | Behavioral + regression | Non-deterministic risk |
@@ -231,6 +231,12 @@ Key difference from human TDD:
 - Test-first reasoning improves both code and test effectiveness when the
   tests are executable before implementation (TDD-Agent, Aug 2026); generated
   tests that never fail pre-fix are static validators of unknown value
+
+In-loop guard (ProgramBench Jun 2026, DeepSWE Oct 2026): never run this
+cycle as the implementing agent's own workflow — red-green micro-cycles
+by the author lock in incomplete scope (green reads as done) at +55% cost
+for worse quality. The cases come from the human or a fresh-oracle
+reviewer; the implementer only turns them green against a frozen text.
 ```
 
 ---
