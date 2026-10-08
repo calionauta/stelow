@@ -2118,10 +2118,47 @@ for older in supersede_ids:
         by_id[older]["supersededBy"] = receipt_id
 ordered = [r for r in stored if r["id"] != receipt_id] + [receipt]
 write_store(ordered, registered)
+# A fresh contradiction between two live receipts is a fact the next agent
+# would otherwise pick through at random. It surfaces on stdout where the
+# decision lives — never as a new artifact kind the contracts do not declare.
+def live_ids(entries):
+    return [r for r in entries if not (isinstance(r.get("supersededBy"), str) and r["supersededBy"])]
+
+def overlap(a, b):
+    sa = a.get("scopeIds")
+    sb = b.get("scopeIds")
+    if not isinstance(sa, list) or not isinstance(sb, list) or not sa or not sb:
+        return []
+    return [s for s in sa if s in sb]
+
+def clashes(a, b):
+    if a["id"] == b["id"]:
+        return False
+    if not overlap(a, b):
+        return False
+    if isinstance(a.get("selectedId"), str) and isinstance(b.get("selectedId"), str) and a["selectedId"] != b["selectedId"]:
+        return True
+    ra = set(a.get("rejectedOptionIds") or [])
+    rb = set(b.get("rejectedOptionIds") or [])
+    return bool((isinstance(a.get("selectedId"), str) and a["selectedId"] in rb)
+                or (isinstance(b.get("selectedId"), str) and b["selectedId"] in ra))
+
+mine = next((r for r in ordered if r["id"] == receipt_id), None)
+notes = []
+if mine is not None:
+    for other in live_ids(ordered):
+        if clashes(mine, other):
+            shared = overlap(mine, other)
+            notes.append(f"{mine['id']} vs {other['id']} ({', '.join(shared) if shared else 'shared scopes'})")
 if want_json:
-    print(json.dumps({"ok": True, "id": receipt_id, "selectedId": selected}))
+    out = {"ok": True, "id": receipt_id, "selectedId": selected}
+    if notes:
+        out["conflicts"] = notes
+    print(json.dumps(out))
 else:
     print(f"Decision recorded: {receipt_id} selects {selected}.")
+    for note in notes:
+        print(f"Warning: this contradicts live decision(s): {note}.")
 PY
 }
 
