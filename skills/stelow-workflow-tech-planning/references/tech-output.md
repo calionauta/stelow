@@ -88,7 +88,7 @@ state dir (`scope-1` → `scopes/scope-1.json`):
 `acceptance_criteria` are observable outcomes (the same sentences the
 Scope DoD states), never process descriptions. `verify_commands` run
 against the tree and exit non-zero on failure. `test_map` is P-1
-test-first evidence: every criterion must map to at least one test —
+fail-observed evidence: every criterion must map to at least one test —
 **AC-sem-teste=reject** (a scope with an unmapped criterion does not
 execute). `freeze_sha` pins the frozen acceptance text (tests freeze
 here — never edit the test to make it pass). `red_proof` records the

@@ -33,8 +33,8 @@ In those situations, return to shape-up-planning or invoke interface-alternative
 
 | Context | Description | Testing Strategy Adaptation |
 |---------|-------------|----------------------------|
-| **Greenfield** | New product, no existing code | TDD-first, risk-based coverage, no legacy constraints |
-| **Brownfield** | Existing product, existing code/features | Test-after for features, TDD for critical paths, regression focus |
+| **Greenfield** | New product, no existing code | Fail-observed guards, risk-based coverage, no legacy constraints |
+| **Brownfield** | Existing product, existing code/features | Test-after for features, fail-observed guards for critical paths, regression focus |
 | **Hybrid** | Adding features to existing product | Separate new from existing, protect invariants |
 
 ### Brownfield Considerations (Existing Products)
@@ -44,7 +44,7 @@ When evolving an existing product:
 1. **Existing tests?** → Adapt strategy based on current test coverage
    - High coverage: Focus on regression + characterization tests
    - Low coverage: Prioritize characterization tests + test coverage
-   - No tests: Start with test-after, build momentum for TDD
+   - No tests: Start with test-after, build momentum for guards
 
 2. **Existing features** → Protection over innovation
    - Add `test-regression` scopes for existing functionality
@@ -60,8 +60,8 @@ When evolving an existing product:
 
 When building a new product:
 
-1. **No legacy constraints** → Full TDD adoption possible
-   - TDD for critical business logic (recommended)
+1. **No legacy constraints** → Full guard coverage possible
+   - Fail-observed guards for critical business logic (recommended)
    - Risk-based coverage from day one
    - Clean architecture, no technical debt
 
@@ -82,14 +82,14 @@ Use the ask tool (see `cli-tools/ask.md`):
 ```
 ask tool: "Is this a new product or an evolution of an existing one?"
 Options:
-  - Greenfield — New product: Full TDD + risk-based coverage. No legacy constraints.
+  - Greenfield — New product: Fail-observed guards + risk-based coverage. No legacy constraints.
   - Brownfield — Existing product: Focus on regression + characterization tests.
   - Hybrid — Feature addition: Protect invariants, test new carefully.
 ```
 
 **Based on answer:**
-- `greenfield`: Full TDD recommendation, risk-based coverage targets
-- `brownfield`: TDD for critical paths only, test-after + regression for existing code
+- `greenfield`: Fail-observed guard recommendation, risk-based coverage targets
+- `brownfield`: Fail-observed guards for critical paths only, test-after + regression for existing code
 - `hybrid`: Separate scope for new vs existing, protect existing with regression tests
 
 ---

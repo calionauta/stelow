@@ -132,7 +132,7 @@ export interface ScopeContract {
   acceptance_criteria: string[];
   verify_commands: string[];
   target_files?: string[];
-  /** P-1 test-first: test file → acceptance criteria it guards. Every criterion must be mapped. */
+  /** P-1 fail-observed: test file → acceptance criteria it guards. Every criterion must be mapped. */
   test_map: Record<string, string[]>;
   /** SHA of the frozen acceptance text — tests freeze here, never edited to pass. */
   freeze_sha: string;
@@ -164,7 +164,7 @@ export interface ScopeContractVerdict {
 }
 
 /**
- * P-1 test-first gate (AC-sem-teste=reject): a scope contract is accepted
+ * P-1 fail-observed gate (AC-sem-teste=reject): a scope contract is accepted
  * only when every acceptance criterion maps to a test and the
  * freeze/red/baseline evidence is present. Pure function — hosts shell out
  * to scripts/stelow for state, but the verdict logic lives here so tests

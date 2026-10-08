@@ -1696,8 +1696,8 @@ elif op == "done":
         elif _red_first == "advisory":
             print(f"scope {op}: warning: {_msg}", file=sys.stderr)
     # test-* bloqueiam feature: a feature scope only closes after its
-    # guarding test-* scopes are done (test-first order: RED nos testes
-    # antes do GREEN na feature).
+    # guarding test-* scopes are done (fail-observed order: FAIL nos testes
+    # antes do PASSING na feature).
     _stype = str(scope.get("type") or "feature").lower()
     if _stype == "feature":
         _open_tests = sorted(

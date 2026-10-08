@@ -175,7 +175,7 @@
                 "advisory",
                 "off"
               ],
-              "description": "Red-first enforcement: strict=BLOCK without red_proof+freeze+baseline+no-test-edit, advisory=WARN+log, off=skip. Default strict on quality production, advisory on experimental; STELOW_RED_FIRST env overrides."
+              "description": "Fail-observed enforcement: strict=BLOCK without red_proof+freeze+baseline+no-test-edit, advisory=WARN+log, off=skip. Default strict on quality production, advisory on experimental; STELOW_RED_FIRST env overrides."
             },
             "domains_detected": {
               "type": "array",
@@ -494,7 +494,7 @@
         },
         "test_map": {
           "type": "object",
-          "description": "P-1 test-first: each test file maps to the acceptance_criteria entries it guards. Every criterion must appear in at least one list — AC-sem-teste=reject.",
+          "description": "P-1 fail-observed: each test file maps to the acceptance_criteria entries it guards. Every criterion must appear in at least one list — AC-sem-teste=reject.",
           "minProperties": 1,
           "additionalProperties": {
             "type": "array",

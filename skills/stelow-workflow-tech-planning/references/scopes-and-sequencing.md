@@ -54,34 +54,34 @@ Each scope should explicitly state the layer decomposition to reduce the gap bet
 
 Each scope must be typed:
 
-| Type | Description | Executor | TDD Recommended? |
+| Type | Description | Executor | Fail-Observed? |
 |------|-------------|----------|------------------|
 | **`feature`** | Implement new functionality, UI, API endpoints, workflows | worker + iteration loop (see `[MAX_ITERATIONS]`) | Optional |
 | **`optimization`** | Improve an existing measurable metric (perf, bundle, build time, test speed, Lighthouse score, memory, cost) | subagent + acceptance (benchmark verify) | No |
 | **`spike`** | Research/prototype to reduce uncertainty | scout + researcher | No |
-| **`test-unit`** | Unit tests for business logic with coverage/risk gates | worker | **Yes — for critical paths** |
-| **`test-integration`** | Integration tests with real dependencies (DB, APIs) | worker | No (test-after) |
-| **`test-security`** | SAST, vulnerability scanning, security gates | worker | No (automated) |
+| **`test-unit`** | Unit tests for business logic with coverage/risk gates | worker | **Guards on critical paths** |
+| **`test-integration`** | Integration tests with real dependencies (DB, APIs) | worker | Test-after |
+| **`test-security`** | SAST, vulnerability scanning, security gates | worker | Automated |
 | **`test-behavior`** | Behavioral testing for agent workflows | worker | No |
 
-### TDD Guidance for AI-Aware Testing
+### Fail-Observed Guidance for AI-Aware Testing
 
-Based on empirical research (AgentAssay 2026, MSR 2026, CodeRabbit 2025):
+Based on empirical research (AgentAssay 2026, MSR 2026, CodeRabbit 2025, ProgramBench 2026, DeepSWE 2026):
 
-| Code Type | TDD Recommended? | Rationale |
+| Code Type | Fail-Observed Guard? | Rationale |
 |-----------|-----------------|-----------|
-| Critical business logic | ✅ **Yes** | Isolated, deterministic — TDD provides design feedback |
+| Critical business logic | ✅ **Guards from planned cases** | Isolated, deterministic — human-described cases + fail-observation + freeze; worker never self-certifies |
 | External APIs (integration) | ❌ No — test after | Over-mocking is anti-pattern for AI code |
 | Security-sensitive | ❌ No — automated gates | 45% vulnerability rate requires continuous scanning |
 | Agent workflows | ❌ No — behavioral | Non-deterministic — needs multi-run validation |
-| Standard features | ⚠️ **TDD optional** | Use test-after + risk-based tests |
+| Standard features | ⚠️ **Test-after** | Use test-after + risk-based tests |
 
-**Key insight from research:** TDD alone is **insufficient** for AI-generated code.
+**Key insight from research:** mandated test-first ceremony alone is **insufficient** for AI-generated code.
 - AI code has 1.7x more bugs than human code
 - AI misses corner cases (75% more logic errors)
 - Same AI that generates code shouldn't also generate tests (circular validation)
 
-**Best practice:** Use TDD for critical paths + risk-based tests for everything else.
+**Best practice:** fail-observed guards from human-described cases on critical paths + risk-based tests for everything else.
 
 If a scope has both feature and optimization aspects, split it into two scopes or mark it as the dominant type and note the secondary concern in the description.
 
@@ -209,7 +209,7 @@ Never run optimization loops directly in the main agent — this creates infinit
 
 These principles guide the ordering of tasks within each scope. Apply them in sequence when building the detailed task breakdown.
 
-### Principle P-1: Test-First (Red-First)
+### Principle P-1: Fail-Observed Guard
 
 Every acceptance criterion (AC) must map to at least one test in the
 scope contract `test_map` before the scope executes. AC-sem-teste=reject:

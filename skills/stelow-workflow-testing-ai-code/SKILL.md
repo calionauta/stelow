@@ -73,7 +73,7 @@ Then determine the product context:
 | **Hybrid** | Adding features to existing product | Separate new from existing, protect invariants |
 
 **Based on context from setup or the spec-product file:**
-- `greenfield`: Acceptance-first; unit/integration test-after with red-proof + freeze. Never a mandated TDD red-green in-loop for the implementing agent (ProgramBench 2026).
+- `greenfield`: Acceptance-first; unit/integration test-after with fail-observation + freeze. Never mandated fail-pass micro-cycles in-loop for the implementing agent (ProgramBench 2026).
 - `brownfield`: Human-described cases for critical paths only, test-after + regression for existing code
 - `hybrid`: Add `test-regression` scopes for existing functionality
 
@@ -142,10 +142,10 @@ Generate appetite-specific targets, classify test scope types, score mutation
 fit, and define CI gates. Full tables, heuristics and gate definitions:
 `references/test-targets-and-gates.md`.
 
-## TDD & Brownfield Guidance (Research-Based)
+## Fail-Observed & Brownfield Guidance (Research-Based)
 
-When to use TDD, regression/characterization/simulation patterns for existing
-products. Full guidance: `references/tdd-and-brownfield.md`.
+When to use fail-observed guards, regression/characterization/simulation patterns for existing
+products. Full guidance: `references/fail-observed-and-brownfield.md`.
 
 ## Risk-Based Test Feedback Loop
 
@@ -212,7 +212,7 @@ generated_at: {YYYY-MM-DD}
 - ❌ Mocks for simple objects
 - ❌ 100% coverage target
 - ❌ Same AI for code AND tests
-- ❌ Mandated TDD red-green in-loop (implementing agent self-certifying — ProgramBench 2026, DeepSWE 2026)
+- ❌ Mandated fail-pass micro-cycles in-loop (implementing agent self-certifying — ProgramBench 2026, DeepSWE 2026)
 - ❌ Presence tests (source-text existence without behavioral consequence)
 - ❌ Unreasoned oracles (assertions that don't capture a failure mode)
 - ❌ Suite growth without pruning — more tests ≠ better (TENET 2026: small targeted sets outperform large suites); each added test justifies its signal, dead tests are deleted
