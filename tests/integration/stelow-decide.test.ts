@@ -96,6 +96,17 @@ describe("stelow decide", () => {
     expect(all.find((r) => r.id === first.id).supersededBy).not.toBeNull();
   });
 
+  it("warns on stdout when the new pick contradicts a live receipt", () => {
+    run(["decide", "--selected", "opt-5", "--rejected", "opt-3", "--scopes", "s1"]);
+    const [first] = receipts();
+    const opened = run(["decide", "--open-challenge", "--against", first.id, "--reason", "cost"]);
+    expect(opened.code).toBe(0);
+    const challengeId = JSON.parse(readFileSync(join(statedir, "decision-receipts.json"), "utf8")).challenges[0].id;
+    const out = run(["decide", "--selected", "opt-3", "--scopes", "s1", "--challenge", challengeId]);
+    expect(out.code).toBe(0);
+    expect(out.stdout).toMatch(/contradicts live decision/);
+  });
+
   it("refuses challenges against unknown or superseded receipts", () => {
     expect(run(["decide", "--open-challenge", "--against", "ghost", "--reason", "x"]).code).toBe(1);
     expect(run(["decide", "--open-challenge", "--reason", "x"]).code).toBe(2);
