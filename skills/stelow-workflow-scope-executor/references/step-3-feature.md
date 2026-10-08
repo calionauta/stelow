@@ -61,7 +61,7 @@ From the scope definition in spec-tech.md, extract:
 Gere o teste a partir do `test_map` do contrato ANTES de implementar
 (P-1 test-first; AC-sem-teste=reject — critério sem teste mapeado não executa):
 
-1. **GERAR (RED):** escreva o teste que guarda cada AC (fonte: `test_map` em `scopes/{SCOPE-ID}.json`). Rode uma vez contra a árvore intacta — deve FALHAR.
+1. **GERAR (RED):** escreva o teste que guarda cada AC (fonte: `test_map` em `scopes/{SCOPE-ID}.json`). O worker materializa o caso planejado — nunca inventa casos para fazer o próprio verde passar; casos além do mapa exigem humano ou fresh-oracle. Rode uma vez contra a árvore intacta — deve FALHAR.
 2. **FAIL (REDPROOF):** capture `red_proof` (`failed_command` + `exit_code != 0` + trecho da saída) no `## Record`. Guarda nunca vista falhando é guarda não confiável.
 3. **FREEZE:** fixe o texto do teste/aceitação em `freeze_sha`. Nunca edite o teste congelado para fazer passar — re-freeze sob novo sha.
 4. **GREEN:** só então implemente o mínimo para passar, sem tocar no teste.

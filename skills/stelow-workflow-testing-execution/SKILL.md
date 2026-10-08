@@ -153,10 +153,13 @@ Run the project's test suite — scoped to the change, not the world:
 
 ```bash
 # Go (changed packages only)
-go test ./features/todo/... ./internal/queue/...
+go test ./<changed-pkg>/...
 
 # Node (impact subset)
 npx vitest run <affected-files>
+
+# Python (impact subset)
+pytest <affected-test-files>
 ```
 
 Full `go test ./...` / `npm test` stays a CI gate. In-loop full-suite

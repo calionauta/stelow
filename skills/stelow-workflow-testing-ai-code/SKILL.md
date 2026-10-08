@@ -57,7 +57,7 @@ Quality controls **test breadth**. Production verifies everything the same way e
 
 | Quality | Test breadth |
 |----------|-------------|
-| `production` | Behavior/E2E (full coverage + edge cases) + unit + integration + security tests/scans. |
+| `production` | Behavior/E2E (full coverage + edge cases) + unit + integration + security tests/scans — cases human/fresh-oracle described, never implementing-agent self-certified. |
 | `experimental` | Behavior/E2E (1 happy path) + smoke tests + critical-path unit tests. Add integration only when an external seam is in scope. Never ship as-is. |
 
 **Baseline applies at every setting:** build/test/lint/typecheck always run when available, and a11y checks run whenever UI files exist. Quality changes breadth, not whether gates exist.
