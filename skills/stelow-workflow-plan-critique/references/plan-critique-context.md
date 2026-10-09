@@ -50,7 +50,7 @@ If the plan claims improvements without sufficient evidence of visible change, f
 - A proposal arrived from upstream (shaping, product) and needs implementation readiness assessment
 
 ### Do NOT use this skill when:
-- The proposal is still being brainstormed (use `interface-alternatives` instead)
+- The proposal is still being brainstormed (use `interface-contrast` instead; `interface-alternatives` only for standalone breadth exploration)
 - The team needs a new proposal generated (this skill only critiques existing ones)
 - The proposal is a rough sketch with no detail to evaluate
 

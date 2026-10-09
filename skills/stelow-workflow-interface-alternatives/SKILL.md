@@ -25,7 +25,15 @@ metadata:
 
 ## Overview
 
-This skill executes the Interface Alternatives phase.
+This skill executes breadth-scaled interface proposal generation (1 to 5
+proposals plus a hybrid) for the Explore track and standalone use.
+
+> **Scope:** the Build-track `interface` stage runs reaction-first
+> Interface Contrast instead (`stelow-workflow-interface-contrast`:
+> bounded alternatives with scope coverage and a named disposition). This
+> skill never owns Build-track card state — its proposals are picked via
+> `ask-patterns.md` Pattern 2A (Explore) while Build-track picks follow
+> Pattern 2 from the contrast receipt.
 
 ## How to Load
 

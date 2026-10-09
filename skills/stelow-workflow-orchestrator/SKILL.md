@@ -204,8 +204,8 @@ Follow the sequence below. For Shape Up, Critique, Interface, and Int. Gate stag
 
 1. Shape: see the `stelow-workflow-shape-up` skill for instructions
 2. Critique: see the `stelow-workflow-plan-critique` skill for instructions
-3. Interface: see the `stelow-workflow-interface-alternatives` skill for instructions
-4. Int. Gate: see the `stelow-workflow-interface-alternatives` skill for instructions
+3. Interface: see the `stelow-workflow-interface-contrast` skill for instructions
+4. Int. Gate: visual review gate — run the `visual_review` tool on the contrast rendering (see `references/cli-tools/visual_review.md`), not a skill
 
 Do NOT use `/skill:` for internal subskills.
 
@@ -221,9 +221,9 @@ Do NOT use `/skill:` for internal subskills.
 | `critique` | **Product Critique** | Multi-dimensional critique (plan/codebase/site) | — |
 | `gate` | **Review Gate (visual review)** | Visual approval — **never skip** | — |
 | `scope` | **Scope Adjustment** | Add/remove from IN/OUT (ask) | — |
-| `interface` | **Interaction Alternatives** | Breadth-scaled interaction exploration: 1 to 5 proposals + hybrid (single by explicit choice only) | — |
-| `int-gate` | **Interface Gate (visual review)** | Visual review of all interfaces | — |
-| `selection` | **Interface Selection** | Human pick via ask with preview in Interface-Gates modes; LLM decides in `Auto` / `Product Spec Gate` (`references/human-gates.md`). Chosen interface saved to `selected-interface.md` | — |
+| `interface` | **Interface Contrast** | Reaction-first decision loop: preserves the first reaction, compares bounded alternatives with scope coverage, emits a named disposition (`interfaces/contrast.json` + readable rendering) | — |
+| `int-gate` | **Interface Gate (visual review)** | Visual review of the contrast rendering via `visual_review` | — |
+| `selection` | **Interface Selection** | Human pick from the contrast options via ask with preview in Interface-Gates modes; LLM decides in `Auto` / `Product Spec Gate` (`references/human-gates.md`, ask Pattern 2). Chosen interface saved to `selected-interface.md` | — |
 | `architecture` | **Architecture Alternatives + Choice** | Breadth-scaled construction exploration: 2 to 5 directions + hybrid, then human pick at tech-review modes (worker adopts below). Chosen architecture saved to `selected-architecture.md` | — |
 | `planning` | **Tech Planning** | Typed scopes + sequencing from the selected interface and architecture. Includes `planning:15` — **Alignment Check** (review mode-gated bidirectional feedback: spec-tech vs spec-product) | — |
 | `plan-gate` | **Tech Plan Gate (visual review)** | Visual review of spec-tech.md. Only in Tech Review / Code Diff modes | After planning |

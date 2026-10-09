@@ -82,7 +82,7 @@ Include:
 - technical risks
 
 Escalate major interaction complexity to:
-`interface-alternatives`
+`interface-contrast` (reaction-first decision loop with scope coverage; `interface-alternatives` only for standalone breadth exploration)
 
 ---
 

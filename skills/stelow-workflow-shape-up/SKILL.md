@@ -383,7 +383,7 @@ Should NOT activate: "write the code" (execution), "break into sprint tasks" (us
 ## Related Skills
 
 - **stelow**: Coordinates this skill with other phases
-- **stelow-workflow-interface-alternatives**: Interface exploration after shaping
+- **stelow-workflow-interface-contrast**: Interface decision loop after shaping (Build track)
 - **stelow-workflow-plan-critique**: Plan review after shaping
 
 ## Input Detection (Standalone Mode)
