@@ -50,7 +50,7 @@ If the plan claims improvements without sufficient evidence of visible change, f
 - A proposal arrived from upstream (shaping, product) and needs implementation readiness assessment
 
 ### Do NOT use this skill when:
-- The proposal is still being brainstormed (use `interface-alternatives` instead)
+- The proposal is still being brainstormed (use `interface-contrast` instead; `interface-alternatives` only for standalone breadth exploration)
 - The team needs a new proposal generated (this skill only critiques existing ones)
 - The proposal is a rough sketch with no detail to evaluate
 
@@ -64,7 +64,7 @@ This critique should be invoked **after the complete plan exists** and **before 
 
 ```
 1. Shape Up Planning → spec artifact
-2. [Optional] Interface Alternatives → proposals artifact
+2. [Optional] Interface Contrast → contrast receipt + rendering
 3. Tech Planning Sequencing → complete plan
 4. Product Critique ← HERE
    ├── Systematic gap analysis (all categories)

@@ -190,7 +190,7 @@ Should NOT activate: "implement the chosen direction" (execution), "pick the UI"
 ## Related Skills
 
 - **stelow-workflow-shape-up**: Produces the shaped proposal that feeds this phase
-- **stelow-workflow-interface-alternatives**: Interaction exploration that this phase serves, never reinterprets
+- **stelow-workflow-interface-contrast**: Interaction decision that this phase serves, never reinterprets
 - **stelow-workflow-architecture-contrast**: Decision loop that runs during the same stage
 - **stelow**: Coordinates this skill with other phases
 

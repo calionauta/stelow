@@ -23,7 +23,7 @@ date: 2026-05-15
 - Shaping ambiguities remain significant
 - Brainstorming is still active
 
-In those situations, return to shape-up-planning or invoke interface-alternatives.
+In those situations, return to shape-up-planning or invoke interface-contrast.
 
 ---
 

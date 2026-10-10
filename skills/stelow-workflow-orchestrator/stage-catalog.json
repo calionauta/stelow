@@ -206,7 +206,7 @@
       "artifacts": [],
       "phase": "analysis",
       "skill": "stelow-workflow-orchestrator",
-      "playbook": null,
+      "playbook": "stages/selection.md",
       "execution": {
         "mode": "direct",
         "recipe": null,
@@ -785,7 +785,7 @@
       ],
       "phase": "planning",
       "skill": "stelow-workflow-orchestrator",
-      "playbook": "stages/selection.md",
+      "playbook": "stages/interface-selection.md",
       "execution": {
         "mode": "direct",
         "recipe": null,

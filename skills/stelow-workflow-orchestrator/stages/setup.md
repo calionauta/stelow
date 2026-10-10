@@ -392,7 +392,7 @@ Review Mode is orthogonal to appetite: appetite defines depth, review mode defin
     options: [
       { label: "Auto", description: "No gates, no questions, no visual review. AI resolves all gaps without asking." },
       { label: "Product Spec Gate", description: "One visual review gate on the shaped product spec. AI resolves all gaps without asking. No IN/OUT confirmation." },
-      { label: "Product Spec + Interface Gates", description: "Product spec gate + interface gate. User picks the UI direction from generated alternatives. AI resolves trivial gaps, asks about moderate/critical." },
+      { label: "Product Spec + Interface Gates", description: "Product spec gate + interface gate. User picks the UI direction from the contrast options. AI resolves trivial gaps, asks about moderate/critical." },
       { label: "Product Spec + Interface + Scopes", description: "All product gates including scope IN/OUT confirmation after gate approval. User adjusts boundaries. AI resolves trivial gaps, asks about moderate/critical." },
       { label: "Product Spec + Interface + Tech Review", description: "All product gates + tech plan gate (visual review on spec-tech.md) + technical questions. Full pipeline oversight with AI recommendations." },
       { label: "Product Spec + Interface + Tech Review + Code Diff", description: "All gates including code diff review via visual review. Maximum human oversight: spec → interfaces → scopes → tech plan → code diff." }

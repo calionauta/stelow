@@ -98,7 +98,7 @@ stages:
     artifacts: []
     phase: analysis
     skill: stelow-workflow-orchestrator
-    playbook: null
+    playbook: stages/selection.md
 
     execution:
       mode: direct
@@ -407,7 +407,7 @@ stages:
     artifacts: [interfaces/selected-interface.md]
     phase: planning
     skill: stelow-workflow-orchestrator
-    playbook: stages/selection.md
+    playbook: stages/interface-selection.md
 
     execution:
       mode: direct
@@ -424,7 +424,7 @@ stages:
     primary_actions: [ask_user_question]
     # Machine-readable question contract.  The host owns enforcement; this
     # describes who resolves the interface decision in each review mode.
-    # Keep methodology prose in stages/selection.md and human-gates.md.
+    # Keep methodology prose in stages/interface-selection.md and human-gates.md.
     questions:
       - id: interface-pick
         gate: interface

@@ -89,9 +89,53 @@ Recommendation: [justification based on project context].`,
 
 ---
 
-## Pattern 2: Interface Proposal Selection (Interface Selection stage)
+## Pattern 2: Interface Selection (Interface Selection stage)
 
-Used in `stelow-workflow-interface-alternatives` for visual proposal comparison.
+Used for the `interface-pick` question: the human chooses one direction
+from the Interface Contrast receipt (`interfaces/contrast.json`).
+
+> **Option source:** every option comes from a receipt option
+> (`contrast.json` → `options[]`). `label` is the option `id` verbatim
+> (an id over 60 chars refuses the pick — never truncate it);
+> `description` names the primary value plus served/friction scope coverage
+> (or states explicitly that no map exists); `preview` is ≤15 rows built
+> only from receipt fields (decision question, primary value, related
+> values, coverage, criteria) — never an invented wireframe; `artifact`
+> is the readable rendering (`interfaces/interfaces.md`), already written.
+> There is no recommendation field: authority lives with the decider, so a
+> human pick and an agent auto-adopt read the same options. Anything else —
+> a stop/shape/research route, an invalid receipt, a single existing
+> interface — refuses with a named reason instead of a pick.
+
+```typescript
+ask_user_question({
+  questions: [{
+    question: `{decisionQuestion from contrast.json}`,
+    header: "Interface",
+    options: [
+      {
+        label: "{option id}",
+        description: "{primaryValue}. Served: {scopeIds}. Friction: {scopeIds}.",
+        preview: `{decisionQuestion}
+{primaryValue}
+Related: {relatedValues}
+Serves {scopeId} — {note}
+Friction {scopeId} — {note}
+Judged by: {criteria}`,
+        artifact: { path: ".stelow/{YYYY-MM-DD}/{dir}/interfaces/interfaces.md", display: "interfaces.md" }
+      }
+      // ... one option per receipt option (1-4, all valid)
+    ]
+  }]
+})
+```
+
+### Pattern 2A: Breadth Proposal Selection (Explore track only)
+
+Used in `stelow-workflow-interface-alternatives` for visual proposal
+comparison on the Explore track or standalone. Never on the Build track:
+there the `interface` stage runs Interface Contrast and the pick follows
+Pattern 2 above.
 
 > **Preview format:** Extract the first ASCII wireframe from each proposal's output.
 > Markdown rendering supports ASCII art, headers, lists, and code blocks.

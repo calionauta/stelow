@@ -269,7 +269,7 @@ Language models are trained on human data, and humans systematically
    but must present both scenarios (with and without cuts),
    explicitly stating that the estimate may be inflated.
 
-- Do not ask about Interface Alternatives — already decided in the `setup` stage
+- Do not ask about the interface direction — already decided in the `setup` stage (contrast pick or auto-adopt)
 - **Do NOT ask scope adjustment yet** — this happens after Product Critique and Gate approval (see workflow sequence below)
 
 ## Workflow Sequence
@@ -285,7 +285,7 @@ visual review (Gate — visual approval)
     ↓
 Scope Adjustment (ask) ← HERE scope happens
     ↓
-Interface Alternatives (if selected)
+Interface Contrast (Build track; breadth proposals only on Explore)
 ```
 
 **Note:** Scope Adjustment comes AFTER Gate approval, not before.
@@ -383,7 +383,7 @@ Should NOT activate: "write the code" (execution), "break into sprint tasks" (us
 ## Related Skills
 
 - **stelow**: Coordinates this skill with other phases
-- **stelow-workflow-interface-alternatives**: Interface exploration after shaping
+- **stelow-workflow-interface-contrast**: Interface decision loop after shaping (Build track)
 - **stelow-workflow-plan-critique**: Plan review after shaping
 
 ## Input Detection (Standalone Mode)
