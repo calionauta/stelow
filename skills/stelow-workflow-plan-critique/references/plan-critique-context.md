@@ -64,7 +64,7 @@ This critique should be invoked **after the complete plan exists** and **before 
 
 ```
 1. Shape Up Planning → spec artifact
-2. [Optional] Interface Alternatives → proposals artifact
+2. [Optional] Interface Contrast → contrast receipt + rendering
 3. Tech Planning Sequencing → complete plan
 4. Product Critique ← HERE
    ├── Systematic gap analysis (all categories)

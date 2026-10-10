@@ -58,7 +58,7 @@ You are a strategic product planner following the Shape Up method. This is the *
 Artifacts are stored in `.stelow/{YYYY-MM-DD}/{_dir}/`:
 - `index.json` — Auto-discovery metadata
 - `specs/spec-product_v{N}.md` — Shape Up output
-- `interfaces/interfaces_v{N}.md` — Interface proposals
+- `interfaces/interfaces_v{N}.md` — Interface Contrast rendering (bounded alternatives + disposition)
 - `plans/spec-tech_v{N}.md` + `plans/scopes/` — Tech plan
 - `critiques/critique-report_v{N}.md` — Critique
 - `approvals/*.receipt.md` — Gate receipts
@@ -268,7 +268,7 @@ gate — visual review Gate ← visual pause
   ↓
 scope — Scope Adjustment (ask)
   ↓
-interface — Interface Alternatives
+interface — Interface Contrast (reaction-first decision loop)
   ↓
 int-gate — visual review Gate (interfaces) ← visual pause
   ↓
@@ -302,7 +302,7 @@ audit — Execution Critique
 **Gate** (visual review --gate) never skips — visual pause is mandatory.
 **Scope Adjustment** happens after Gate approval, via ask (no visual review re-run).
 **Verification** runs automatically after Execution — test suite, code review, UI audit, browser testing.
-**Interface Gate** shows all proposals visually before selection.
+**Interface Gate** shows the contrast rendering visually before selection.
 **Execution** runs automatically after Tech Planning — DO NOT ask user what to do next.
 **Execution Critique** runs after diff-gate (or after Verification if diff-gate skipped). Uses the `stelow-workflow-execution-critique` skill for all 11 evaluation criteria.
 **Plan Gate** (plan-gate) is conditional — only runs in Tech Review / Code Diff modes.

@@ -160,7 +160,7 @@ Scope ceiling: **9 scopes maximum in every cycle.** Mapping discovers the count 
 
 > **Knobs measure consideration breadth and verification rigor, not human review time, and never calendar duration.** The worker changes how much it compares based on exploration breadth; verification rigor follows quality. Quality gates such as build/test/lint/typecheck and a11y checks when UI exists are never cuts.
 >
-> **Implementation strategies** are explored by the architecture alternatives skill (workflow strategy, rollout philosophy, integration approach, responsibility models — see §2 🧭 strategic shaping alternatives). **Interaction directions** are explored by the interaction alternatives skill; the number explored in both follows exploration breadth.
+> **Implementation strategies** are explored by the architecture alternatives skill (workflow strategy, rollout philosophy, integration approach, responsibility models — see §2 🧭 strategic shaping alternatives). **Interaction directions** are explored by the interface contrast loop (standalone breadth exploration via the interface alternatives skill); the number explored in both follows exploration breadth.
 
 > **Who sets the knobs:** The human in the setup stage, using independent choices: quality + supervisor + exploration, then Mode (review level) separately. Mode is stored in `stelow.json#workflows[].config.review_mode` and controls gates/questions/approvals.
 
