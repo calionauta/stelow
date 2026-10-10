@@ -612,23 +612,24 @@ When the Plan Critique finds gaps via the 7 checklists, each gap is classified a
    file handles, `[Stelow boundary …]` markers. Use titles and outcomes in
    question text, labels, descriptions, and previews; IDs live in artifacts
    and receipts.
-4. **Use preview** when visual comparison adds value
-5. **Use artifact** when the human must review full details before picking
+6. **Use preview** when visual comparison adds value
+7. **Use artifact** when the human must review full details before picking
    (interface proposals, plan documents, generated reports): pass the
    workspace-relative path of the already-written file. `preview` is the
    inline glance (≤20 rows side-by-side, ≤15 stacked); `artifact` is the
    openable source of truth — they compose, never compete. A missing file
    degrades to the preview and never blocks the question.
-6. **Batch independent questions** in one call (repeat question blocks);
+8. **Batch independent questions** in one call (repeat question blocks);
    sequence dependent ones. Appetite (Pattern 7) and Review Mode
    (Pattern 8) always stay separate — deliberate sequencing, not dependency
-7. **Every option must be submittable exactly as shown.** Never write an
-   option whose execution depends on free text the form cannot attach to
-   the pick ("tell me which in your reply", "specify below"): option and
-   custom text are mutually exclusive, so a conditional option submitted
-   bare is a wasted round — the worker must re-ask for the missing piece
-   it forbade itself to guess. Either decide the option from the row
-   alone, or ask the open question that collects the text.
+9. **Every option must be decidable from its row, with the note box as its
+   voice.** A pick composes with free text — the note travels with the
+   decision, except on split proposals where pick and text stay exclusive —
+   so conditional options ("trim the scope — tell me which") are actionable
+   when the human adds the which. A conditional option submitted bare is
+   still a wasted round: the worker must re-ask for the missing piece
+   rather than guess it. Never write an option that needs text without
+   naming the needed piece in the option itself.
 
 ---
 
