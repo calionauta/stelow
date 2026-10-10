@@ -596,6 +596,56 @@ When the Plan Critique finds gaps via the 7 checklists, each gap is classified a
 
 /// END PATTERN 8
 
+## Pattern 9: Split Proposal (triage/select, Build track only)
+
+Used when the human signals split intent: ask the formal split question
+IMMEDIATELY — never a freeform "want to split?" pre-question first. The
+pre-question costs a full round and its answer ("yes, split") still needs
+the formal one; asking it is the rework.
+
+> **Shape (host-enforced):** `--tag split`, `--multiple`, one question,
+> slices with outcome plus done-criteria, exactly one `"Keep as one card"`
+> option with that exact label. Anything else is refused before the human
+> is pinged.
+
+```typescript
+ask_user_question({
+  questions: [{
+    question: `Following your call to split: confirm which slices become
+separate cards — or keep together after all.`,
+    header: "Split",
+    multiSelect: true,
+    options: [
+      {
+        label: "Slice A — {outcome}",
+        description: "{what moves} Done when {verifiable done-criteria}.",
+      },
+      {
+        label: "Slice B — {outcome}",
+        description: "{what moves} Done when {verifiable done-criteria}.",
+      },
+      {
+        label: "Keep as one card",
+        description: "Everything stays here after all.",
+      }
+    ]
+  }]
+})
+```
+
+Rules for this pattern:
+
+- **Acknowledge the prior decision in the question.** "Following your call
+  to split" tells the human the worker heard them; a bare slice list
+  reads as if the earlier answer never happened.
+- **Keep is the veto, and it stays even after a pro-split decision** — it
+  is stronger after the slices are concrete, not weaker: the human may
+  look at the slices and keep together after all. Never drop it to
+  "honor" the earlier call.
+- **Slices carry new information** (grouping rationale, done-criteria),
+  never an echo of the human's own words. An echo reads as ignored input
+  even when the content matches.
+
 ## Usage Rules
 
 1. **Read this file** before any `ask_user_question` call
@@ -640,6 +690,14 @@ When the Plan Critique finds gaps via the 7 checklists, each gap is classified a
    must re-ask for the missing piece rather than guess it. Never write an
    option that needs text without naming the needed piece in the option
    itself.
+10. **No channel, no dependency: tool-path asks resolve elaboration with a
+    follow-up question.** `ask_user_question` carries no `--needs-note`
+    flag — only `bb stelow ask` declares it. An expectant option on the
+    tool path ("Adjust groups", "Adjust the list") must therefore end in a
+    second question asked immediately ("Which group would you like to
+    change?"), never in "tell me X" prose with nowhere to put X. Prefer
+    the CLI path with `--needs-note` wherever a conditional pick needs
+    enforcing rather than convention.
 
 ---
 
