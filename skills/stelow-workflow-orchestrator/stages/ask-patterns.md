@@ -633,10 +633,13 @@ When the Plan Critique finds gaps via the 7 checklists, each gap is classified a
    voice.** A pick composes with free text — the note travels with the
    decision, except on split proposals where pick and text stay exclusive —
    so conditional options ("trim the scope — tell me which") are actionable
-   when the human adds the which. A conditional option submitted bare is
-   still a wasted round: the worker must re-ask for the missing piece
-   rather than guess it. Never write an option that needs text without
-   naming the needed piece in the option itself.
+   when the human adds the which. Mark them explicitly with `--needs-note`
+   (CLI path): submit then waits until the note box carries the missing
+   piece, instead of shipping a bare pick into a clarification round. A
+   conditional option submitted bare is still a wasted round: the worker
+   must re-ask for the missing piece rather than guess it. Never write an
+   option that needs text without naming the needed piece in the option
+   itself.
 
 ---
 
