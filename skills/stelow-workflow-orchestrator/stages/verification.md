@@ -10,6 +10,8 @@ After all scopes are executed, run the testing protocol before delivery audit.
 **Exploration breadth governs scope (how much the product does), never quality (how rigorously the product is verified).** The following gates ALWAYS run regardless of breadth — they are the floor, not the ceiling:
 
 - ✅ **test-suite** — the project's test suite always runs
+- ✅ **guard-quality** — new/changed guards judged (rules always; judge per
+  `guard-quality-decision.md` routing; verdicts shadow-logged to the Record)
 - ✅ **code-quality-gate** — lint, typecheck, static analysis always run
 - ✅ **invisible-20%** — error handling, observability, security, validation, rollback checks always run
 - ✅ **static a11y/lint when UI files exist** — syntax-level accessibility checks always run when `.templ`, `.html`, `.tsx`, `.jsx`, or `.css` files changed

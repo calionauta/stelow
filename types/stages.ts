@@ -30,6 +30,9 @@ export type Capability = (typeof CAPABILITIES)[number];
 export const RED_FIRST_MODES = ["strict", "advisory", "off"] as const;
 export type RedFirstMode = (typeof RED_FIRST_MODES)[number];
 
+export const GUARD_JUDGE_MODES = ["strict", "advisory", "off"] as const;
+export type GuardJudgeMode = (typeof GUARD_JUDGE_MODES)[number];
+
 export interface WorkflowConfig {
   quality?: "production" | "experimental";
   supervisor?: "low" | "med" | "high";
@@ -38,6 +41,7 @@ export interface WorkflowConfig {
   review_mode?: string;
   domains_detected?: string[];
   red_first?: RedFirstMode;
+  guard_judge?: GuardJudgeMode;
 }
 
 export interface StageTransitionMap {
@@ -132,7 +136,7 @@ export interface ScopeContract {
   acceptance_criteria: string[];
   verify_commands: string[];
   target_files?: string[];
-  /** P-1 test-first: test file → acceptance criteria it guards. Every criterion must be mapped. */
+  /** P-1 fail-observed: test file → acceptance criteria it guards. Every criterion must be mapped. */
   test_map: Record<string, string[]>;
   /** SHA of the frozen acceptance text — tests freeze here, never edited to pass. */
   freeze_sha: string;
@@ -164,7 +168,7 @@ export interface ScopeContractVerdict {
 }
 
 /**
- * P-1 test-first gate (AC-sem-teste=reject): a scope contract is accepted
+ * P-1 fail-observed gate (AC-sem-teste=reject): a scope contract is accepted
  * only when every acceptance criterion maps to a test and the
  * freeze/red/baseline evidence is present. Pure function — hosts shell out
  * to scripts/stelow for state, but the verdict logic lives here so tests
@@ -243,6 +247,92 @@ export interface RecordEvidence {
   baseline?: Record<string, number>;
   /** Hash of the current test text — differs from freeze_sha when the frozen test was edited. */
   test_sha?: string;
+  /** Guard-quality judge verdicts, one per judged guard (shadow-logged from day one). */
+  guard_verdicts?: GuardQualityEntry[];
+}
+
+/** Verdicts the guard-quality judge accepts. Anything else is human-review. */
+export type GuardVerdict = "pass" | "needs-revision" | "human-review";
+
+export interface GuardQualityEntry {
+  /** Guard file path, relative to repo root. */
+  guard: string;
+  /** Frozen guard text id — re-judge only on re-freeze. */
+  test_sha: string;
+  verdict: GuardVerdict;
+  /** Human decision on appeal/review; absent while pending. */
+  human_decision?: "approved" | "reworked";
+  cost_tokens?: number;
+}
+
+/** Trailing co-reviewed window for the auto-downgrade tripwire. */
+export const GUARD_JUDGE_WINDOW = 30;
+/** Overturn rate above this trips strict → advisory. */
+export const GUARD_JUDGE_MAX_OVERTURN_RATE = 0.1;
+
+export interface GuardOverturnStats {
+  judged: number;
+  overturned: number;
+  rate: number;
+  tripped: boolean;
+}
+
+function guardEntryOverturned(entry: GuardQualityEntry): boolean {
+  return (
+    (entry.verdict === "needs-revision" && entry.human_decision === "approved") ||
+    (entry.verdict === "pass" && entry.human_decision === "reworked")
+  );
+}
+
+/**
+ * Overturn stats over the trailing window of co-reviewed guards.
+ * `human-review` verdicts are excluded (routed to a human by design, not
+ * judge-vs-human disagreements); entries without a human decision are
+ * pending and excluded. Both directions count: a blocked guard the human
+ * approves AND a passed guard the human reworks are overturns — otherwise
+ * the metric is blind to false-pass, the dangerous direction.
+ * Pure function — the tripwire logic lives here so tests import production code.
+ */
+export function guardOverturnStats(entries: GuardQualityEntry[]): GuardOverturnStats {
+  const reviewed = (Array.isArray(entries) ? entries : []).filter(
+    (e) =>
+      e &&
+      typeof e === "object" &&
+      e.verdict !== "human-review" &&
+      (e.human_decision === "approved" || e.human_decision === "reworked"),
+  );
+  const window = reviewed.slice(-GUARD_JUDGE_WINDOW);
+  const judged = window.length;
+  const overturned = window.filter(guardEntryOverturned).length;
+  const rate = judged === 0 ? 0 : overturned / judged;
+  return {
+    judged,
+    overturned,
+    rate,
+    tripped: judged >= GUARD_JUDGE_WINDOW && rate > GUARD_JUDGE_MAX_OVERTURN_RATE,
+  };
+}
+
+/**
+ * Single source resolution for the guard-judge kill-switch:
+ * STELOW_GUARD_JUDGE env > Workflow.config.guard_judge >
+ * quality default (experimental→advisory, else strict).
+ * Pure function — scripts/stelow mirrors it for the CLI.
+ */
+export function resolveGuardJudgeMode(input: {
+  env?: string;
+  config?: Pick<WorkflowConfig, "guard_judge" | "quality">;
+}): GuardJudgeMode {
+  const env = (input.env ?? "").trim();
+  if ((GUARD_JUDGE_MODES as readonly string[]).includes(env)) {
+    return env as GuardJudgeMode;
+  }
+  const stored = input.config?.guard_judge;
+  if (stored && (GUARD_JUDGE_MODES as readonly string[]).includes(stored)) {
+    return stored;
+  }
+  if (input.config?.quality === "experimental") return "advisory";
+  return "strict";
 }
 
 /**

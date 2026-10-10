@@ -203,8 +203,8 @@ Compare tech plan against product spec; resolve misalignment per `review_mode`
 | `production` | `test-behavior` (full E2E coverage + edge cases); `test-unit`, `test-integration`, `test-security`. |
 | `experimental` | `test-behavior` (1 E2E test for happy path); `test-unit` for critical business logic; optional `test-integration` only when an external seam is in IN scope; `test-security` only for auth/payment/data in IN scope. Never ship as-is. |
 
-**Note on TDD:** Research shows TDD alone is insufficient for AI-generated code.
-- Use TDD for critical business logic (isolated, deterministic)
+**Note on test-first ceremony:** Research shows mandated test-first is insufficient for AI-generated code — and harmful as an agent in-loop workflow (ProgramBench 2026).
+- Use fail-observed guards with human-described cases for critical business logic (isolated, deterministic)
 - Use Test-After + risk-based tests for standard paths
 - Never use same AI for both code AND test generation
 

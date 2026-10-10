@@ -59,7 +59,7 @@ describe("estrategia red-first: contract verdicts (production code)", () => {
     expect(validateScopeContract(noRed as ScopeContract).ok).toBe(false);
   });
 
-  it("RED-REDPROOF-FREEZE-GREEN evidence: frozen sha and pre-change baseline are required", () => {
+  it("FAIL-OBSERVED-FREEZE-PASS evidence: frozen sha and pre-change baseline are required", () => {
     const { freeze_sha: _f, ...noFreeze } = GOOD;
     expect(validateScopeContract(noFreeze as ScopeContract).ok).toBe(false);
     expect(validateScopeContract({ ...GOOD, baseline: {} }).ok).toBe(false);

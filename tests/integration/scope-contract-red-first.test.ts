@@ -1,5 +1,5 @@
 /**
- * Scope-contract red-first (Fase 0 Contrato — P-1 test-first, AC-sem-teste=reject).
+ * Scope-contract red-first (Fase 0 Contrato — P-1 fail-observed, AC-sem-teste=reject).
  *
  * Bug it catches: a scope contract that lists acceptance criteria with no
  * mapped test is accepted and executes against prose only. The validator in
@@ -40,7 +40,7 @@ const GOOD: ScopeContract = {
   baseline: { "npm test -- auth": 1 },
 };
 
-describe("scope contract red-first (P-1 test-first)", () => {
+describe("scope contract red-first (P-1 fail-observed)", () => {
   it("accepts a fully mapped contract with freeze/red/baseline evidence", () => {
     expect(validateScopeContract(GOOD).ok).toBe(true);
     expect(findUnmappedCriteria(GOOD)).toEqual([]);
@@ -67,7 +67,7 @@ describe("scope contract red-first (P-1 test-first)", () => {
   });
 
   it("rejects a verify command with no baseline entry (never executed pre-change)", () => {
-    // P-1 test-first RED: every verify_command must have been executed
+    // P-1 fail-observed: every verify_command must have been executed
     // pre-change and recorded in baseline. A command with no baseline
     // entry was never observed, so the contract must be rejected even
     // when red_proof.failed_command itself is covered. Uses only the

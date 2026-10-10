@@ -33,6 +33,13 @@ metadata:
 > - Hamidi et al., Sep 2026: oracles fail on the faults that matter; assertions need manual reasoning
 > - TDAD 2026: graph test-context beats procedural TDD instructions (−70% regressions); concise skills win
 > - TDFlow, EACL 2026: human-written tests 94.3% vs self-generated 68% — test authorship is the hurdle
+> - Kun Chen ProgramBench (Jun 2026): mandated TDD skill hurt pass rate
+>   (−3.6pp, p<0.0001) at +55% cost — self-written tests lock in incomplete
+>   scope, green reads as done.
+> - Kun Chen DeepSWE (Oct 2026): agent-written unit (65%) + integration (35%)
+>   tests added zero success-rate gain vs writing none; executing existing
+>   suites in-loop also measured ~zero. Human-described cases may still help
+>   (unproven); e2e inconclusive.
 
 **Standalone awareness:** when inside stelow, triggered automatically by `product_type` in spec-product frontmatter. When standalone, invoke directly with a spec-product path (`spec-product*.md`). Appetite defaults to Core if not found — documented in output. All test-breadth tables and quality baselines work identically in both modes.
 
@@ -50,7 +57,7 @@ Quality controls **test breadth**. Production verifies everything the same way e
 
 | Quality | Test breadth |
 |----------|-------------|
-| `production` | Behavior/E2E (full coverage + edge cases) + unit + integration + security tests/scans. |
+| `production` | Behavior/E2E (full coverage + edge cases) + unit + integration + security tests/scans — cases human/fresh-oracle described, never implementing-agent self-certified. |
 | `experimental` | Behavior/E2E (1 happy path) + smoke tests + critical-path unit tests. Add integration only when an external seam is in scope. Never ship as-is. |
 
 **Baseline applies at every setting:** build/test/lint/typecheck always run when available, and a11y checks run whenever UI files exist. Quality changes breadth, not whether gates exist.
@@ -61,13 +68,13 @@ Then determine the product context:
 
 | Context | Description | Testing Approach |
 |---------|-------------|-----------------|
-| **Greenfield** | New product, no existing code | TDD-first, quality-specific coverage targets, clean slate |
-| **Brownfield** | Existing product with features | TDD for critical paths, test-after for existing code, regression focus |
+| **Greenfield** | New product, no existing code | Acceptance-first, quality-specific coverage targets, clean slate |
+| **Brownfield** | Existing product with features | Human-described cases for critical paths, test-after for existing code, regression focus |
 | **Hybrid** | Adding features to existing product | Separate new from existing, protect invariants |
 
 **Based on context from setup or the spec-product file:**
-- `greenfield`: TDD recommendation, quality-specific coverage targets
-- `brownfield`: TDD for critical paths only, test-after + regression for existing code
+- `greenfield`: Acceptance-first; unit/integration test-after with fail-observation + freeze. Never mandated fail-pass micro-cycles in-loop for the implementing agent (ProgramBench 2026).
+- `brownfield`: Human-described cases for critical paths only, test-after + regression for existing code
 - `hybrid`: Add `test-regression` scopes for existing functionality
 
 ## When to use
@@ -135,10 +142,10 @@ Generate appetite-specific targets, classify test scope types, score mutation
 fit, and define CI gates. Full tables, heuristics and gate definitions:
 `references/test-targets-and-gates.md`.
 
-## TDD & Brownfield Guidance (Research-Based)
+## Fail-Observed & Brownfield Guidance (Research-Based)
 
-When to use TDD, regression/characterization/simulation patterns for existing
-products. Full guidance: `references/tdd-and-brownfield.md`.
+When to use fail-observed guards, regression/characterization/simulation patterns for existing
+products. Full guidance: `references/fail-observed-and-brownfield.md`.
 
 ## Risk-Based Test Feedback Loop
 
@@ -205,6 +212,7 @@ generated_at: {YYYY-MM-DD}
 - ❌ Mocks for simple objects
 - ❌ 100% coverage target
 - ❌ Same AI for code AND tests
+- ❌ Mandated fail-pass micro-cycles in-loop (implementing agent self-certifying — ProgramBench 2026, DeepSWE 2026)
 - ❌ Presence tests (source-text existence without behavioral consequence)
 - ❌ Unreasoned oracles (assertions that don't capture a failure mode)
 - ❌ Suite growth without pruning — more tests ≠ better (TENET 2026: small targeted sets outperform large suites); each added test justifies its signal, dead tests are deleted
@@ -249,7 +257,7 @@ criteria:
 
 **Steps:**
 1. Read quality (production) and classify the scope (critical).
-2. Emit `test-unit` (happy path + negative cases, TDD), `test-integration` (payment seam, test-after), `test-security` (SAST gate).
+2. Emit `test-unit` (happy path + negative cases, test-after with red-proof + freeze), `test-integration` (payment seam, test-after), `test-security` (SAST gate). Cases described by the human or a fresh-oracle reviewer — never self-certified by the implementing agent.
 
 **Output:** testing-strategy.md rows for the scope, plus BLOCK gates on missing critical tests and security findings.
 
