@@ -98,7 +98,8 @@ from the Interface Contrast receipt (`interfaces/contrast.json`).
 > (`contrast.json` → `options[]`). `label` is the option `id` verbatim
 > (an id over 60 chars refuses the pick — never truncate it);
 > `description` names the primary value plus served/friction scope coverage
-> (or states explicitly that no map exists); `preview` is ≤15 rows built
+> by scope TITLE from the scope map (or states explicitly that no map
+> exists) — never bare scope IDs; `preview` is ≤15 rows built
 > only from receipt fields (decision question, primary value, related
 > values, coverage, criteria) — never an invented wireframe; `artifact`
 > is the readable rendering (`interfaces/interfaces.md`), already written.
@@ -115,12 +116,12 @@ ask_user_question({
     options: [
       {
         label: "{option id}",
-        description: "{primaryValue}. Served: {scopeIds}. Friction: {scopeIds}.",
+        description: "{primaryValue}. Served: {scope titles}. Friction: {scope titles}.",
         preview: `{decisionQuestion}
 {primaryValue}
 Related: {relatedValues}
-Serves {scopeId} — {note}
-Friction {scopeId} — {note}
+Serves {scope title} — {note}
+Friction {scope title} — {note}
 Judged by: {criteria}`,
         artifact: { path: ".stelow/{YYYY-MM-DD}/{dir}/interfaces/interfaces.md", display: "interfaces.md" }
       }
@@ -244,6 +245,14 @@ checked confirms the map; unchecking removes. Unchecking everything means
 "remove all" (reshape territory) — distinct from skipping, which leaves the
 map unchanged.
 
+> **Address the human by outcome, never by scope ID.** Labels carry the
+> scope's outcome (what the person gets); the stable ID lives only in the
+> `scope-map.json` artifact and the decision receipt, where the worker —
+> never the person — reads it back to record the pick. A label like
+> "A5 — checkout" forces the person to decode worker vocabulary; the host
+> also maps known IDs to titles at render time, but the question should not
+> need the safety net.
+
 ```typescript
 ask_user_question({
   questions: [
@@ -253,7 +262,7 @@ ask_user_question({
       multiSelect: true,
       options: [
         {
-          label: "{scope-id — outcome}",
+          label: "{outcome}",
           description: "{IN items + key dependencies}",
           selected: true,
           preview: "{outcome, IN/OUT, dependencies — ≤15 rows}",
@@ -592,6 +601,17 @@ When the Plan Critique finds gaps via the 7 checklists, each gap is classified a
 1. **Read this file** before any `ask_user_question` call
 2. **Use the appropriate pattern** for the context
 3. **Adapt labels/summaries** to the specific situation
+4. **Verify every factual premise by reading before asking.** Never assert
+   what a file contains, which line does what, or what an ID refers to
+   from memory: read the file, the scope map, or the receipt first, then
+   ask. A question asked on a wrong premise (a "CI edit" that is actually a
+   product-surface removal) costs the human a correction round the read
+   would have prevented — and the correction must name what was wrong,
+   what changed, and what the new evidence is.
+5. **Never address the human by internal IDs** — scope IDs, stage slugs,
+   file handles, `[Stelow boundary …]` markers. Use titles and outcomes in
+   question text, labels, descriptions, and previews; IDs live in artifacts
+   and receipts.
 4. **Use preview** when visual comparison adds value
 5. **Use artifact** when the human must review full details before picking
    (interface proposals, plan documents, generated reports): pass the
