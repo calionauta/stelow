@@ -622,6 +622,13 @@ When the Plan Critique finds gaps via the 7 checklists, each gap is classified a
 6. **Batch independent questions** in one call (repeat question blocks);
    sequence dependent ones. Appetite (Pattern 7) and Review Mode
    (Pattern 8) always stay separate — deliberate sequencing, not dependency
+7. **Every option must be submittable exactly as shown.** Never write an
+   option whose execution depends on free text the form cannot attach to
+   the pick ("tell me which in your reply", "specify below"): option and
+   custom text are mutually exclusive, so a conditional option submitted
+   bare is a wasted round — the worker must re-ask for the missing piece
+   it forbade itself to guess. Either decide the option from the row
+   alone, or ask the open question that collects the text.
 
 ---
 
