@@ -642,6 +642,11 @@ Rules for this pattern:
   is stronger after the slices are concrete, not weaker: the human may
   look at the slices and keep together after all. Never drop it to
   "honor" the earlier call.
+- **Preselect slices the human already named.** When the prior answer chose
+  split with named slices, mark those slices `--selected` (split is already
+  `--multiple`, so preselection is legal): the human submits to confirm
+  instead of re-picking what they just picked. Unchecking removes; Keep
+  stays unchecked — preselecting the veto would answer for the human.
 - **Slices carry new information** (grouping rationale, done-criteria),
   never an echo of the human's own words. An echo reads as ignored input
   even when the content matches.
