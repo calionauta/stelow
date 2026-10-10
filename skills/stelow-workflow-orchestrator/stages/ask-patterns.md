@@ -622,6 +622,13 @@ When the Plan Critique finds gaps via the 7 checklists, each gap is classified a
 8. **Batch independent questions** in one call (repeat question blocks);
    sequence dependent ones. Appetite (Pattern 7) and Review Mode
    (Pattern 8) always stay separate — deliberate sequencing, not dependency
+9. **Stage-gate options carry their destination and the recommendation.**
+   Every option ends with where it goes ("→ goes to critique", "→ back
+   to shape"): the human picks a destination, not a sentence — and a bare
+   approve is then fully determined by contract plus transition table, no
+   context needed. Mark the recommended option "(Recommended)" first. An
+   approve-as-written option states plainly that no changes and no note
+   are needed — just submit.
 9. **Every option must be decidable from its row, with the note box as its
    voice.** A pick composes with free text — the note travels with the
    decision, except on split proposals where pick and text stay exclusive —
