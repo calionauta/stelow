@@ -151,6 +151,62 @@ When LoB and SoC conflict:
 See `references/file-function-sizes.md` for detailed limits by language, rationale, and enforcement patterns.
 See `references/ci-enforcement.md` for CI patterns to enforce these standards.
 
+## When to Use
+
+Activate when: writing or reviewing product code of any language,
+splitting an oversized file or function, deciding where behavior lives
+(template vs backend), choosing between a quick fix and a structural
+one, or setting up size/lint enforcement for a project. Do not
+activate for copy writing, marketing pages, release notes, or
+infrastructure secrets handling.
+
+## Examples
+
+### Example 1: Oversized function
+
+**Input:** "This handler is 120 lines, add retry to it."
+
+**Steps:**
+1. Measure first: 120 lines exceeds the limit (Go: 100).
+2. Extract helpers with one job each (validate, execute, render) before adding logic.
+3. New retry logic lands in its own helper, not inline.
+
+**Output:** "Split into 4 focused functions (all under limit), retry added as one helper. No file grew past its budget."
+
+### Example 2: Template vs backend placement
+
+**Input:** "Where does this filter toggle go?"
+
+**Steps:**
+1. Apply the tie-breaker: frontend layer -> LoB.
+2. Put the behavior in the template that owns it (reactive attribute), not in a separate script file.
+
+**Output:** "Lives in the template via a reactive attribute; zero new JS files."
+
+### Example 3: Failing fast
+
+**Input:** "Handle this invalid request."
+
+**Steps:**
+1. Validate at the boundary (handler entry), return the error immediately.
+2. Never thread invalid state into deeper layers for them to discover.
+
+**Output:** "Guard clause at function entry; deeper layers assume valid input."
+
+## Test Cases
+
+### Should activate
+- "Split this 400-line file"
+- "Where should this validation live"
+- "Is this function too long"
+- "Review this diff against the coding standards"
+
+### Should NOT activate
+- "Write landing-page copy" (content, not code)
+- "Design the pricing page CSS" (styling decision, see UX critique)
+- "Rotate the production API key" (secrets handling, not code structure)
+- "Bump the marketing site Tailwind" (dependency bump, not principles)
+
 ---
 
 ## Output Structure
