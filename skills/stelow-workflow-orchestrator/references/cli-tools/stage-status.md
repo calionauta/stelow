@@ -24,7 +24,7 @@
 | select | Item Selection — after triage |
 | setup | Project Setup — stage selection, safe-change |
 | context | Strategic Context (optional) |
-| shape | Shape Up — spec-product output |
+| shape | Shaping — spec-product output |
 | critique | Product Critique |
 | gate | Review Gate (visual review) |
 | scope | Scope Adjustment |
