@@ -49,14 +49,14 @@ Preview limits:
 
 Used in the context stage for strategic approach selection.
 
-> **Gate awareness:** Before applying this pattern, run `context:5` (appetite/mode gate). If `Lean` + `Auto`, skip the question entirely. If `Lean` + non-Auto, present this pattern with opt-in execution note (subagents not automatic). If `Core`/`Complete`, apply as-is.
+> **Gate awareness:** Before applying this pattern, run `context:5` (quality/review-mode gate). If `experimental` + `Auto`, skip the question entirely. If `experimental` + non-Auto, or the intent pre-check reduced the stage, present this pattern with opt-in execution note (subagents not automatic). Otherwise, apply as-is.
 
 ```typescript
 ask_user_question({
   questions: [{
-    question: `Before planning, would you like to explore strategic directions?
-Each approach below generates inputs that feed into Shape Up.
-Recommendation: [justification based on project context].`,
+    question: `Would you like extra exploration before shaping the plan?
+Each approach below feeds findings into the shaped plan.
+Recommendation: [approach(es) + one-line why, in plain words].`,
     header: "Strategy",
     multiSelect: true,
     options: [
@@ -86,6 +86,11 @@ Recommendation: [justification based on project context].`,
 
 > **Note:** When using `multiSelect: true`, do NOT include "None" or "Skip" options — the user can simply select nothing to proceed without strategic exploration.
 ```
+
+Rules for this pattern:
+
+- **Recommend, don't dump.** Name the 1–2 approaches that fit with `(Recommended)` in the label and one line why; say in one line why the rest don't fit. Never ship the question without a recommendation — an unranked menu of five is the worker abstaining.
+- **Context in plain words, two sentences max.** Who gains what — never recon internals (bundle counts, parseable rows, file handles), stage slugs, or methodology brand names. Recon detail goes in `preview`, never inline.
 
 ---
 
@@ -342,7 +347,7 @@ ask_user_question({
   questions: [
     {
       question: `Which Product Definition Workflow stages should be activated?
-Recommendation: [Shape Up + Interface + Tech Planning] | [Shape Up only] | etc.
+Recommendation: [Shaping + Interface + Tech Planning] | [Shaping only] | etc.
 Justification: [1-2 sentences explaining why].
 
 Select the desired stages:`,
@@ -350,7 +355,7 @@ Select the desired stages:`,
       multiSelect: true,
       options: [
         {
-          label: "Shape Up Planning (Recommended)",
+          label: "Shaping (Recommended)",
           description: "Understand problem, expose assumptions, map risks, define IN/OUT scope. Generates spec-product.md. → Automatically activates Product Critique + Review Gate."
         },
         {
@@ -359,7 +364,7 @@ Select the desired stages:`,
         },
         {
           label: "Tech Planning Sequencing",
-          description: "Break into scopes with DoD + acceptance criteria. If standalone (no Shape Up/Interface): includes own Review Gate. If post-approval: no gate."
+          description: "Break into scopes with DoD + acceptance criteria. If standalone (no Shaping/Interface): includes own Review Gate. If post-approval: no gate."
         }
       ]
     },
@@ -519,7 +524,7 @@ Review Mode will be asked separately in the next step.`,
 When presenting knob options to the user:
 
 1. **NEVER reference time or calendar duration** (days, weeks, months, sprints, etc.) in the question text, option labels, or descriptions. Knobs define **consideration breadth and verification rigor only**.
-2. **NEVER say "Lean = 1 week" or similar time-based framing, and NEVER map the old appetite labels to time.** The original Shape Up used appetite as a calendar window (6 weeks); stelow caps breadth and rigor, not calendar duration. Wall-clock time is not predictable under LLM execution.
+2. **NEVER say "Lean = 1 week" or similar time-based framing, and NEVER map the old appetite labels to time.** The original method used appetite as a calendar window (6 weeks); stelow caps breadth and rigor, not calendar duration. Wall-clock time is not predictable under LLM execution.
 3. If the user asks "how long will this take?", respond: "Knobs control breadth and rigor, not duration. Execution time depends on scope complexity, not the knob labels."
 4. If the user asks for the old Lean/Core/Complete labels, map them once through the legacy table above and continue with knobs.
 
@@ -703,6 +708,15 @@ Rules for this pattern:
     change?"), never in "tell me X" prose with nowhere to put X. Prefer
     the CLI path with `--needs-note` wherever a conditional pick needs
     enforcing rather than convention.
+11. **Write for the decider, not the log.** Question text stays short (a
+    few lines) and in plain words: who gains what, and what the choice
+    changes. Never stage slugs, file handles or paths, recon internals
+    (bundle counts, parseable rows), process markers, or methodology
+    brand names — name a document only when the human must open or
+    approve it. Justification and evidence travel in `preview`/`artifact`
+    (CLI: `--preview`/`--artifact`), never inline. A question that needs
+    a paragraph to be understood is a question asked too early: read
+    first, then ask once.
 
 ---
 
