@@ -3,6 +3,34 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.74.0-alpha] - 2026-10-17
+
+### Added
+
+- **Conditional options declare `--needs-note`.** An option that needs text
+  names the needed piece in the option itself, so an expectant pick ("Adjust
+  the list") can no longer end in prose with nowhere to put the answer. The
+  ask contract carries the flag; the tool path (`ask_user_question`), which
+  has no such flag, resolves elaboration with an immediate follow-up question
+  instead.
+- **Option documents: one verb, self-sufficient options.** Picks compose with
+  notes, and each option says enough on its own to be acted on.
+- **Stage-gate options carry destination and recommendation,** so a gate's
+  choices describe where they lead rather than only what they are.
+
+### Fixed
+
+- Question copy reads as the answers a person gives, in realtime, with the
+  committed text normalised (em/en dashes to hyphens).
+- Humans are addressed by outcome and title, and the premise is verified
+  before the question is asked.
+- A split intent points at the formal question.
+- Preselect slices the human already named instead of re-deriving it.
+- The decider's language is the Stelow vocabulary, so a stage name is a stage
+  name on every surface.
+- `ask-patterns.md` stays host-agnostic: it names the `stelow` CLI, which a
+  host wraps, never a host-specific invocation.
+
 ## [0.73.0-alpha] - 2026-10-05
 
 ### Added
