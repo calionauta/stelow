@@ -18,7 +18,7 @@ bash <skill-dir>/references/cli-tools/recon.sh <tech-preview|feature-recon>
 ```
 
 It writes `context/recon-receipt.json`, which records the Git workspace and
-the live availability of cymbal, ripwire, sem, and ast-grep. Treat it as
+the live availability of cymbal, ripwire, sem, ast-grep, and xerj. Treat it as
 evidence, not a requirement to install anything:
 
 - `RECON_READY:cymbal` — use cymbal for the applicable commands below.
@@ -88,6 +88,22 @@ patterns) and for renames spanning files. Install: `brew install ast-grep`
 (or `npm i -g @ast-grep/cli`). `install.sh` offers it automatically once a
 skill references `ast_grep`.
 
+### Text — xerj: prose and reference retrieval
+
+The one rung that needs a running node, and the only one that answers about
+**text** rather than symbols: which doc still describes the old behaviour, how
+peers solved this, where a term is explained across a large tree.
+
+```bash
+xerj autoindex . --dry-run            # plan first; an unpreviewed index is an unmade decision
+xerj code <corpus> "<what you need>"  # reference retrieval over a corpus of peer projects
+```
+
+Read `xerj.md` before the first call: node lifecycle, ignore and secret rules,
+the 30-day corpus staleness refusal, and what it must never be used for. When
+there is no node, no corpus, or the tree is small, `grep -rn` is the whole
+answer — say that instead of booting an index mid-stage.
+
 ## Tier boundaries (no overlap)
 
 | Question | Tool |
@@ -97,4 +113,5 @@ skill references `ast_grep`.
 | Find file / fuzzy text? | fffind / ffgrep (fallback only) |
 | Find a code shape / rename safely? | ast-grep pattern / `--rewrite` |
 | What entities changed? | `sem diff` (version control, not navigation) |
+| Which doc says X / how do peers do Y? | xerj `code` (node required; `grep -rn` when it is not) |
 | None installed? | `find` + `git log` + `grep` (documented per-skill fallbacks) |
