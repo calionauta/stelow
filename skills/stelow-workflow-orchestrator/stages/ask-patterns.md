@@ -702,7 +702,7 @@ Rules for this pattern:
    itself.
 10. **No channel, no dependency: tool-path asks resolve elaboration with a
     follow-up question.** `ask_user_question` carries no `--needs-note`
-    flag — only `bb stelow ask` declares it. An expectant option on the
+    flag — only `stelow ask` declares it. An expectant option on the
     tool path ("Adjust groups", "Adjust the list") must therefore end in a
     second question asked immediately ("Which group would you like to
     change?"), never in "tell me X" prose with nowhere to put X. Prefer
