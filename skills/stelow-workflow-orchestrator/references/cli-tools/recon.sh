@@ -33,13 +33,17 @@ cymbal="$(tool_state cymbal)"
 ripwire="$(tool_state ripwire)"
 sem="$(tool_state sem)"
 if command -v ast-grep >/dev/null 2>&1 || command -v sg >/dev/null 2>&1; then ast_grep=available; else ast_grep=missing; fi
+# Presence only. A bare `xerj` binary says nothing about whether a node is
+# listening or whether a corpus is loaded, and recon must not boot either:
+# the retrieval rung reads `xerj.md` and falls back to grep when this is missing.
+xerj="$(tool_state xerj)"
 if [ "$cymbal" = available ]; then method=cymbal; elif [ "$ripwire" = available ]; then method=ripwire; else method=portable; fi
 
 mkdir -p "$receipt_dir"
-node - "$kind" "$root" "$state_dir" "$receipt_dir/recon-receipt.json" "$method" "$cymbal" "$ripwire" "$sem" "$ast_grep" <<'NODE'
-const [kind, root, stateDir, output, method, cymbal, ripwire, sem, astGrep] = process.argv.slice(2);
+node - "$kind" "$root" "$state_dir" "$receipt_dir/recon-receipt.json" "$method" "$cymbal" "$ripwire" "$sem" "$ast_grep" "$xerj" <<'NODE'
+const [kind, root, stateDir, output, method, cymbal, ripwire, sem, astGrep, xerj] = process.argv.slice(2);
 const fs = require("node:fs");
-const tools = { cymbal, ripwire, sem, "ast-grep": astGrep };
+const tools = { cymbal, ripwire, sem, "ast-grep": astGrep, xerj };
 const missing = Object.entries(tools).filter(([, state]) => state === "missing").map(([name]) => name);
 fs.writeFileSync(output, JSON.stringify({
   contract: "stelow-recon-v2", kind, workspace: { root, git: true }, workflow: { stateDir: stateDir || null },

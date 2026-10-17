@@ -103,6 +103,12 @@ Check all changed files for:
 - README.md updated?
 - AGENTS.md updated? (if architecture changed)
 - CHANGELOG.md has entry?
+- **Stale prose sweep.** A behaviour change usually leaves the old claim
+  standing somewhere else. Search for the *old* wording — `xerj code <corpus>
+  "<old behaviour>"` when a reference corpus is loaded (see
+  `cli-tools/xerj.md`), otherwise `grep -rn "<old wording>"` across the repo's
+  docs — then update every hit or record why it stays. A document that still
+  describes the previous behaviour is a second source of truth.
 - Unit/integration tests exist for new code?
 - Critical-path coverage adequate? (target from testing-strategy.md if available)
 
