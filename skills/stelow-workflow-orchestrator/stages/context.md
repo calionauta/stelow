@@ -52,7 +52,7 @@ echo "Proceeding directly to shape:10"
 1. Read `../references/strategic-exploration.md` for each approach's details
 2. (Unless `context:5` reduced this to opt-in.) Execute the selected ones **in parallel** using the subagents tool (see `../references/cli-tools/subagents.md`):
 3. Consolidate into `strategic-insights.md`
-4. Incorporate outputs as Shape Up input
+4. Incorporate outputs as Shaping input
 
 **If nothing selected (No strategic analysis):** proceed directly to Domain Context Detection (`:20`).
 
@@ -75,8 +75,8 @@ echo "Proceeding directly to shape:10"
 
 **Mode A — Purely domain-specific request** (user asks only about a domain topic):
 The user's request is exclusively about one of these domains (e.g., "help me define a pricing strategy").
-→ Route directly to the detected skill. Do NOT proceed to Shape Up.
-→ The user can always choose to continue to Shape Up afterwards.
+→ Route directly to the detected skill. Do NOT proceed to Shaping.
+→ The user can always choose to continue to Shaping afterwards.
 
 **Mode B — General product request with domain overlap** (user asks for product planning but mentions domains):
 The user wants full product planning but the input also contains domain signals.
@@ -88,8 +88,8 @@ ask tool: multiSelect question with detected domain options
 
 **If user selects libraries:**
 1. Load the selected skill(s) content as additional context
-2. Proceed to Shape Up with domain context enriched
-3. **Persist detected domains** to `stelow.json#workflows[].config.domains_detected` (single source of truth — consumed by Shape Up's frontmatter generator and by all subagents via `reads: [spec-product.md]`):
+2. Proceed to Shaping with domain context enriched
+3. **Persist detected domains** to `stelow.json#workflows[].config.domains_detected` (single source of truth — consumed by the shaping stage's frontmatter generator and by all subagents via `reads: [spec-product.md]`):
 
 ```bash
 if [ -n "{selected_domains_json}" ] && [ -f "stelow.json" ]; then
@@ -107,4 +107,4 @@ fs.writeFileSync('stelow.json', JSON.stringify(t, null, 2));
 fi
 ```
 
-**If nothing detected or user declines:** proceed directly to Shape Up or end (set `domains_detected: []` in `stelow.json`; default is `[]`).
+**If nothing detected or user declines:** proceed directly to Shaping or end (set `domains_detected: []` in `stelow.json`; default is `[]`).

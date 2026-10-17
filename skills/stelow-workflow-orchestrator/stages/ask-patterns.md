@@ -49,14 +49,14 @@ Preview limits:
 
 Used in the context stage for strategic approach selection.
 
-> **Gate awareness:** Before applying this pattern, run `context:5` (appetite/mode gate). If `Lean` + `Auto`, skip the question entirely. If `Lean` + non-Auto, present this pattern with opt-in execution note (subagents not automatic). If `Core`/`Complete`, apply as-is.
+> **Gate awareness:** Before applying this pattern, run `context:5` (quality/review-mode gate). If `experimental` + `Auto`, skip the question entirely. If `experimental` + non-Auto, or the intent pre-check reduced the stage, present this pattern with opt-in execution note (subagents not automatic). Otherwise, apply as-is.
 
 ```typescript
 ask_user_question({
   questions: [{
-    question: `Before planning, would you like to explore strategic directions?
-Each approach below generates inputs that feed into Shape Up.
-Recommendation: [justification based on project context].`,
+    question: `Would you like extra exploration before shaping the plan?
+Each approach below feeds findings into the shaped plan.
+Recommendation: [approach(es) + one-line why, in plain words].`,
     header: "Strategy",
     multiSelect: true,
     options: [
@@ -87,6 +87,11 @@ Recommendation: [justification based on project context].`,
 > **Note:** When using `multiSelect: true`, do NOT include "None" or "Skip" options — the user can simply select nothing to proceed without strategic exploration.
 ```
 
+Rules for this pattern:
+
+- **Recommend, don't dump.** Name the 1–2 approaches that fit with `(Recommended)` in the label and one line why; say in one line why the rest don't fit. Never ship the question without a recommendation — an unranked menu of five is the worker abstaining.
+- **Context in plain words, two sentences max.** Who gains what — never recon internals (bundle counts, parseable rows, file handles), stage slugs, or methodology brand names. Recon detail goes in `preview`, never inline.
+
 ---
 
 ## Pattern 2: Interface Selection (Interface Selection stage)
@@ -98,7 +103,8 @@ from the Interface Contrast receipt (`interfaces/contrast.json`).
 > (`contrast.json` → `options[]`). `label` is the option `id` verbatim
 > (an id over 60 chars refuses the pick — never truncate it);
 > `description` names the primary value plus served/friction scope coverage
-> (or states explicitly that no map exists); `preview` is ≤15 rows built
+> by scope TITLE from the scope map (or states explicitly that no map
+> exists) — never bare scope IDs; `preview` is ≤15 rows built
 > only from receipt fields (decision question, primary value, related
 > values, coverage, criteria) — never an invented wireframe; `artifact`
 > is the readable rendering (`interfaces/interfaces.md`), already written.
@@ -115,12 +121,12 @@ ask_user_question({
     options: [
       {
         label: "{option id}",
-        description: "{primaryValue}. Served: {scopeIds}. Friction: {scopeIds}.",
+        description: "{primaryValue}. Served: {scope titles}. Friction: {scope titles}.",
         preview: `{decisionQuestion}
 {primaryValue}
 Related: {relatedValues}
-Serves {scopeId} — {note}
-Friction {scopeId} — {note}
+Serves {scope title} — {note}
+Friction {scope title} — {note}
 Judged by: {criteria}`,
         artifact: { path: ".stelow/{YYYY-MM-DD}/{dir}/interfaces/interfaces.md", display: "interfaces.md" }
       }
@@ -244,6 +250,14 @@ checked confirms the map; unchecking removes. Unchecking everything means
 "remove all" (reshape territory) — distinct from skipping, which leaves the
 map unchanged.
 
+> **Address the human by outcome, never by scope ID.** Labels carry the
+> scope's outcome (what the person gets); the stable ID lives only in the
+> `scope-map.json` artifact and the decision receipt, where the worker —
+> never the person — reads it back to record the pick. A label like
+> "A5 — checkout" forces the person to decode worker vocabulary; the host
+> also maps known IDs to titles at render time, but the question should not
+> need the safety net.
+
 ```typescript
 ask_user_question({
   questions: [
@@ -253,7 +267,7 @@ ask_user_question({
       multiSelect: true,
       options: [
         {
-          label: "{scope-id — outcome}",
+          label: "{outcome}",
           description: "{IN items + key dependencies}",
           selected: true,
           preview: "{outcome, IN/OUT, dependencies — ≤15 rows}",
@@ -333,7 +347,7 @@ ask_user_question({
   questions: [
     {
       question: `Which Product Definition Workflow stages should be activated?
-Recommendation: [Shape Up + Interface + Tech Planning] | [Shape Up only] | etc.
+Recommendation: [Shaping + Interface + Tech Planning] | [Shaping only] | etc.
 Justification: [1-2 sentences explaining why].
 
 Select the desired stages:`,
@@ -341,7 +355,7 @@ Select the desired stages:`,
       multiSelect: true,
       options: [
         {
-          label: "Shape Up Planning (Recommended)",
+          label: "Shaping (Recommended)",
           description: "Understand problem, expose assumptions, map risks, define IN/OUT scope. Generates spec-product.md. → Automatically activates Product Critique + Review Gate."
         },
         {
@@ -350,7 +364,7 @@ Select the desired stages:`,
         },
         {
           label: "Tech Planning Sequencing",
-          description: "Break into scopes with DoD + acceptance criteria. If standalone (no Shape Up/Interface): includes own Review Gate. If post-approval: no gate."
+          description: "Break into scopes with DoD + acceptance criteria. If standalone (no Shaping/Interface): includes own Review Gate. If post-approval: no gate."
         }
       ]
     },
@@ -510,7 +524,7 @@ Review Mode will be asked separately in the next step.`,
 When presenting knob options to the user:
 
 1. **NEVER reference time or calendar duration** (days, weeks, months, sprints, etc.) in the question text, option labels, or descriptions. Knobs define **consideration breadth and verification rigor only**.
-2. **NEVER say "Lean = 1 week" or similar time-based framing, and NEVER map the old appetite labels to time.** The original Shape Up used appetite as a calendar window (6 weeks); stelow caps breadth and rigor, not calendar duration. Wall-clock time is not predictable under LLM execution.
+2. **NEVER say "Lean = 1 week" or similar time-based framing, and NEVER map the old appetite labels to time.** The original method used appetite as a calendar window (6 weeks); stelow caps breadth and rigor, not calendar duration. Wall-clock time is not predictable under LLM execution.
 3. If the user asks "how long will this take?", respond: "Knobs control breadth and rigor, not duration. Execution time depends on scope complexity, not the knob labels."
 4. If the user asks for the old Lean/Core/Complete labels, map them once through the legacy table above and continue with knobs.
 
@@ -587,21 +601,122 @@ When the Plan Critique finds gaps via the 7 checklists, each gap is classified a
 
 /// END PATTERN 8
 
+## Pattern 9: Split Proposal (triage/select, Build track only)
+
+Used when the human signals split intent: ask the formal split question
+IMMEDIATELY — never a freeform "want to split?" pre-question first. The
+pre-question costs a full round and its answer ("yes, split") still needs
+the formal one; asking it is the rework.
+
+> **Shape (host-enforced):** `--tag split`, `--multiple`, one question,
+> slices with outcome plus done-criteria, exactly one `"Keep as one card"`
+> option with that exact label. Anything else is refused before the human
+> is pinged.
+
+```typescript
+ask_user_question({
+  questions: [{
+    question: `Following your call to split: confirm which slices become
+separate cards — or keep together after all.`,
+    header: "Split",
+    multiSelect: true,
+    options: [
+      {
+        label: "Slice A — {outcome}",
+        description: "{what moves} Done when {verifiable done-criteria}.",
+      },
+      {
+        label: "Slice B — {outcome}",
+        description: "{what moves} Done when {verifiable done-criteria}.",
+      },
+      {
+        label: "Keep as one card",
+        description: "Everything stays here after all.",
+      }
+    ]
+  }]
+})
+```
+
+Rules for this pattern:
+
+- **Acknowledge the prior decision in the question.** "Following your call
+  to split" tells the human the worker heard them; a bare slice list
+  reads as if the earlier answer never happened.
+- **Keep is the veto, and it stays even after a pro-split decision** — it
+  is stronger after the slices are concrete, not weaker: the human may
+  look at the slices and keep together after all. Never drop it to
+  "honor" the earlier call.
+- **Preselect slices the human already named.** When the prior answer chose
+  split with named slices, mark those slices `--selected` (split is already
+  `--multiple`, so preselection is legal): the human submits to confirm
+  instead of re-picking what they just picked. Unchecking removes; Keep
+  stays unchecked — preselecting the veto would answer for the human.
+- **Slices carry new information** (grouping rationale, done-criteria),
+  never an echo of the human's own words. An echo reads as ignored input
+  even when the content matches.
+
 ## Usage Rules
 
 1. **Read this file** before any `ask_user_question` call
 2. **Use the appropriate pattern** for the context
 3. **Adapt labels/summaries** to the specific situation
-4. **Use preview** when visual comparison adds value
-5. **Use artifact** when the human must review full details before picking
+4. **Verify every factual premise by reading before asking.** Never assert
+   what a file contains, which line does what, or what an ID refers to
+   from memory: read the file, the scope map, or the receipt first, then
+   ask. A question asked on a wrong premise (a "CI edit" that is actually a
+   product-surface removal) costs the human a correction round the read
+   would have prevented — and the correction must name what was wrong,
+   what changed, and what the new evidence is.
+5. **Never address the human by internal IDs** — scope IDs, stage slugs,
+   file handles, `[Stelow boundary …]` markers. Use titles and outcomes in
+   question text, labels, descriptions, and previews; IDs live in artifacts
+   and receipts.
+6. **Use preview** when visual comparison adds value
+7. **Use artifact** when the human must review full details before picking
    (interface proposals, plan documents, generated reports): pass the
    workspace-relative path of the already-written file. `preview` is the
    inline glance (≤20 rows side-by-side, ≤15 stacked); `artifact` is the
    openable source of truth — they compose, never compete. A missing file
    degrades to the preview and never blocks the question.
-6. **Batch independent questions** in one call (repeat question blocks);
+8. **Batch independent questions** in one call (repeat question blocks);
    sequence dependent ones. Appetite (Pattern 7) and Review Mode
    (Pattern 8) always stay separate — deliberate sequencing, not dependency
+9. **Stage-gate options carry their destination and the recommendation.**
+   Every option ends with where it goes ("→ goes to critique", "→ back
+   to shape"): the human picks a destination, not a sentence — and a bare
+   approve is then fully determined by contract plus transition table, no
+   context needed. Mark the recommended option "(Recommended)" first. An
+   approve-as-written option states plainly that no changes and no note
+   are needed — just submit.
+9. **Every option must be decidable from its row, with the note box as its
+   voice.** A pick composes with free text — the note travels with the
+   decision, except on split proposals where pick and text stay exclusive —
+   so conditional options ("trim the scope — tell me which") are actionable
+   when the human adds the which. Mark them explicitly with `--needs-note`
+   (CLI path): submit then waits until the note box carries the missing
+   piece, instead of shipping a bare pick into a clarification round. A
+   conditional option submitted bare is still a wasted round: the worker
+   must re-ask for the missing piece rather than guess it. Never write an
+   option that needs text without naming the needed piece in the option
+   itself.
+10. **No channel, no dependency: tool-path asks resolve elaboration with a
+    follow-up question.** `ask_user_question` carries no `--needs-note`
+    flag — only `stelow ask` declares it. An expectant option on the
+    tool path ("Adjust groups", "Adjust the list") must therefore end in a
+    second question asked immediately ("Which group would you like to
+    change?"), never in "tell me X" prose with nowhere to put X. Prefer
+    the CLI path with `--needs-note` wherever a conditional pick needs
+    enforcing rather than convention.
+11. **Write for the decider, not the log.** Question text stays short (a
+    few lines) and in plain words: who gains what, and what the choice
+    changes. Never stage slugs, file handles or paths, recon internals
+    (bundle counts, parseable rows), process markers, or methodology
+    brand names — name a document only when the human must open or
+    approve it. Justification and evidence travel in `preview`/`artifact`
+    (CLI: `--preview`/`--artifact`), never inline. A question that needs
+    a paragraph to be understood is a question asked too early: read
+    first, then ask once.
 
 ---
 

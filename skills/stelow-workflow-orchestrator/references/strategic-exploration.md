@@ -54,7 +54,7 @@ If user selects one or more:
    - `Detected domains: ${configDomainsDetected}`
    - `Workflow dir: ${WF_DIR}`
 
-   **Reads:** `reads: [".stelow/{date}/{dir}/index.json"]` — spec-product.md does NOT exist yet at this stage (Shape Up creates it later). index.json is the only canonical config artifact available.
+   **Reads:** `reads: [".stelow/{date}/{dir}/index.json"]` — spec-product.md does NOT exist yet at this stage (Shaping creates it later). index.json is the only canonical config artifact available.
 
    See the "Strategic-context worked example" in `subagents.md` for the literal invocation shape.
 
@@ -74,9 +74,9 @@ If user selects one or more:
 5. For each skill, ask granular integration using the ask tool (see `cli-tools/ask.md`).
 ```
    - If no insights selected from a skill → skip that skill
-   - Proceed to next or Shape Up
+   - Proceed to next or Shaping
 
-6. Integrate selected insights into Shape Up:
+6. Integrate selected insights into Shaping:
    - Inject as context
    - Add sections to spec-product.md (e.g. `## Considered Jobs`)
 

@@ -36,8 +36,8 @@ After Triage completes with one or more accepted items. If the user had a single
    ```
 
 3. **User picks one** — Let the user choose one candidate:
-   - **Individual**: proceeds to Shape Up for that single item
-   - **Group**: proceeds to Shape Up with the group manifest
+   - **Individual**: proceeds to Shaping for that single item
+   - **Group**: proceeds to Shaping with the group manifest
 
    Remove the selected item(s) from `.stelow/inbox/items.md`:
    - Group: remove all group items from inbox, delete `.stelow/inbox/groups/{slug}.json`
@@ -62,7 +62,7 @@ After Triage completes with one or more accepted items. If the user had a single
    cp .stelow/inbox/groups/{slug}.json .stelow/{date}/{dir}/group-context/manifest.json
    ```
 
-   The Setup stage reads this and passes `group_items: [...]` to Shape Up.
+   The Setup stage reads this and passes `group_items: [...]` to Shaping.
 
 6. **Update inbox** — After routing remainders:
    - Deferred items stay in `.stelow/inbox/items.md`

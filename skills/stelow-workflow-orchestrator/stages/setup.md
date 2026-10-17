@@ -240,7 +240,7 @@ After identifying the workflow:
 
 4. **Map artifacts to completed stages**:
    - Approval in `.stelow/approvals/` → that stage's gate has passed
-   - `spec-product.md` exists → Shape Up stage completed
+   - `spec-product.md` exists → Shaping stage completed
    - `interfaces.md` exists → Interface stages completed
    - `critique-report.md` exists → Product Critique stage completed
    - `spec-tech.md` exists and approved → Tech Planning stage completed
@@ -272,7 +272,7 @@ fi
 If `GROUP_MODE: true`, prefix the session with:
 > **Group mode active.** This workflow shapes ALL items in the group together under one spec. Each group item becomes a separate typed scope during Tech Planning. IN/OUT boundaries apply to the whole group.
 
-This propagates to the Shape Up stage: the spec's `## IN` / `## OUT` sections cover the entire group, and each item in the group becomes a dedicated section under `## Solution`. The gate approves the group spec as a whole — individual item veto is treated as a scope adjustment.
+This propagates to the Shaping stage: the spec's `## IN` / `## OUT` sections cover the entire group, and each item in the group becomes a dedicated section under `## Solution`. The gate approves the group spec as a whole — individual item veto is treated as a scope adjustment.
 
 ### setup:15 — Run Knobs Declaration
 
@@ -443,7 +443,7 @@ console.log('Config saved to stelow.json (workflow: ' + wf.name + ')');
 
 #### Step 4: Inject into spec-product.md frontmatter
 
-When the LLM generates `spec-product.md` later in the Shape Up stage, it MUST include:
+When the LLM generates `spec-product.md` later in the Shaping stage, it MUST include:
 ```yaml
 quality: {chosen_quality}            # production | experimental (human-set)
 supervisor: {chosen_supervisor}      # low | med | high (human-set)
@@ -453,8 +453,8 @@ review_mode: {chosen_review_mode}
 review_mode_source: setup
 domains_detected: {json_array_from_config}  # populated by context:20
 ```
-A legacy `appetite:` line is still accepted and mapped per the table in setup:15, then rewritten to knobs. The Shape Up validation guard rejects the file if `quality:` is missing; `review_mode:` and `domains_detected:` (when domains were detected) are required as before. All are **canonical inputs** for downstream subagents — they read the frontmatter explicitly via `reads: [spec-product.md]` rather than receiving these values through conversation history.
-The Shape Up stage runs a preliminary mechanical check (scope count against the ceiling of 9) and writes `appetite_fit`. The **Plan Critique** stage validates it via its fresh-context feasibility reviewer — this reuses the existing 5-reviewer infrastructure. If the critique finds `cuts_needed` or `reshape`, the scope must be
+A legacy `appetite:` line is still accepted and mapped per the table in setup:15, then rewritten to knobs. The Shaping validation guard rejects the file if `quality:` is missing; `review_mode:` and `domains_detected:` (when domains were detected) are required as before. All are **canonical inputs** for downstream subagents — they read the frontmatter explicitly via `reads: [spec-product.md]` rather than receiving these values through conversation history.
+The Shaping stage runs a preliminary mechanical check (scope count against the ceiling of 9) and writes `appetite_fit`. The **Plan Critique** stage validates it via its fresh-context feasibility reviewer — this reuses the existing 5-reviewer infrastructure. If the critique finds `cuts_needed` or `reshape`, the scope must be
 cut or reshaped. Knobs are constraints, not targets — never widened.
 
 > **Rules:**
@@ -476,9 +476,9 @@ cut or reshaped. Knobs are constraints, not targets — never widened.
 
 | Review Mode | Stage selection |
 |-------------|----------------|
-| Auto | Auto-selects Shape Up → Execution (auto-determined). Skip Pattern 5 entirely. |
-| Product Spec Gate | Auto-selects Shape Up → Critique → Gate → Interface (LLM-recommended) → Planning → Plan.Gate → Execution. Skip Pattern 5 entirely. |
-| Product Spec + Interface Gates | Show Pattern 5 (recommended: Shape Up + Interface). |
+| Auto | Auto-selects Shaping → Execution (auto-determined). Skip Pattern 5 entirely. |
+| Product Spec Gate | Auto-selects Shaping → Critique → Gate → Interface (LLM-recommended) → Planning → Plan.Gate → Execution. Skip Pattern 5 entirely. |
+| Product Spec + Interface Gates | Show Pattern 5 (recommended: Shaping + Interface). |
 | Product Spec + Interface + Scopes | Show Pattern 5 (recommended: all stages). |
 | Product Spec + Interface + Tech Review | Show Pattern 5 (recommended: all stages). |
 | Product Spec + Interface + Tech Review + Code Diff | Show Pattern 5 (recommended: all stages). |
@@ -504,12 +504,12 @@ cut or reshaped. Knobs are constraints, not targets — never widened.
 
 | User selection | Stages that run automatically |
 |---|---|
-| Shape Up only | Shape Up → **Product Critique** → **Review Gate** → Tech Planning (no gate) → Execution |
+| Shaping only | Shaping → **Product Critique** → **Review Gate** → Tech Planning (no gate) → Execution |
 | Interface only | Interface Brain. → **Product Critique** → **Review Gate** → Tech Planning (no gate) → Execution |
-| Shape Up + Interface | Shape Up → Interface Brain. → **Product Critique** → **Review Gate** → Tech Planning (no gate) → Execution |
+| Shaping + Interface | Shaping → Interface Brain. → **Product Critique** → **Review Gate** → Tech Planning (no gate) → Execution |
 | Tech Planning only | Tech Planning (with its own **Review Gate**) → Execution |
-| Shape Up + Tech Planning | Shape Up → **Product Critique** → **Review Gate** → Tech Planning (no gate) → Execution |
-| All | Shape Up → Interface Brain. → **Product Critique** → **Review Gate** → Tech Planning (no gate) → Execution |
+| Shaping + Tech Planning | Shaping → **Product Critique** → **Review Gate** → Tech Planning (no gate) → Execution |
+| All | Shaping → Interface Brain. → **Product Critique** → **Review Gate** → Tech Planning (no gate) → Execution |
 
 **Product Critique** and **Review Gate** never appear as options — they are automatic.
 
