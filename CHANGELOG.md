@@ -3,6 +3,21 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.75.0-alpha] - 2026-10-17
+
+### Added
+
+- **xerj as the prose and reference retrieval rung.** `cli-tools/xerj.md`
+  documents the one optional tool that needs a running node: a folder you own
+  (`autoindex`, plan-first `--dry-run`, the `.xerjignore` chain, hidden files
+  skipped even under `--no-ignore`) and `xerj code` over a named corpus of peer
+  projects, with its 30-day staleness refusal and the recorded override. The
+  recon receipt records xerj alongside cymbal, ripwire, sem and ast-grep, and
+  `code-map.md` gives it a tier boundary so it never substitutes for symbol
+  navigation. The audit checklist gains the stale-prose sweep: when behaviour
+  changes, the old claim standing elsewhere in the docs is a second source of
+  truth to search for, not a leftover to assume absent.
+
 ## [0.74.0-alpha] - 2026-10-17
 
 ### Added
