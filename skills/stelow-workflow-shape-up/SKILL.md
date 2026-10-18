@@ -233,14 +233,14 @@ If warnings fire, flag them in the output but do NOT block — the **Plan Critiq
 The `appetite_fit` field in the spec frontmatter is the **human-readable summary**; the Plan Critique validates it.
 >
 > **Knobs are constraints, not estimates:**
-> - `quality`, `supervisor`, `exploration_count`, `exploration_hybrid` — set by the **human** during setup. How much the run may consider and how rigorously it is checked.
+> - `quality`, `exploration_count`, `exploration_hybrid` — set by the **human** during setup. How much the run may consider and how rigorously it is checked.
 > - `appetite_fit` — initial mechanical check in Shape Up, validated by Plan Critique (feasibility reviewer fresh-context) post-shaping. Does the proposal fit within the declared knobs?
 >
 > **If `appetite_fit = cuts_needed`:** the LLM suggests specific cuts. The human decides which to accept.
 > **If `appetite_fit = reshape`:** the proposal fundamentally exceeds the knobs — must be reshaped before continuing.
 > The LLM **never** widens the knobs. Knobs are fixed for the cycle.
 >
-> **How to define the knobs:** see `references/proposal-structure.md` — quality (rigor), supervisor (cadence), exploration (breadth). Mode controls gates/questions independently (stored in `stelow.json#config`).
+> **How to define the knobs:** see `references/proposal-structure.md` — quality (rigor), exploration (breadth). Mode controls gates/questions independently (stored in `stelow.json#config`).
 
 ---
 

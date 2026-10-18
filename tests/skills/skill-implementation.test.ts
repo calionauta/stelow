@@ -90,12 +90,8 @@ describe('Main SKILL.md Structure', () => {
       expect(content).toMatch(/mandatory|never skip|obligatory/i);
     });
 
-    it('supervisor should not activate before Execution', () => {
-      expect(content).toMatch(/never activate during stages before Execution/i);
-    });
-
-    it('should warn about re-submitting Plannotator via supervisor', () => {
-      expect(content).toMatch(/re-submit|supervisor.*plannotator/i);
+    it('does not register a supervisor pass before Execution', () => {
+      expect(content).not.toMatch(/supervisor/i);
     });
   });
 

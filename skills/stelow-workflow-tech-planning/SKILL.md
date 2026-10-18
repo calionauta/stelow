@@ -313,7 +313,7 @@ Read the stelow-workflow-scope-executor skill for routing rules.
 
 | Scope type | Route to |
 |------------|----------|
-| `feature` | worker + iteration loop (see scope-executor Step 3 — implement → verify → review → quality, repeat) + supervision (see `../stelow-workflow-orchestrator/references/cli-tools/supervise.md`) |
+| `feature` | worker + iteration loop (see scope-executor Step 3 — implement → verify → review → quality, repeat) |
 | `optimization` | subagent + acceptance with benchmark verify (see `../stelow-workflow-orchestrator/references/cli-tools/goals.md` → Optimization Goals) |
 | `spike` | scout + researcher (see `../stelow-workflow-orchestrator/references/cli-tools/subagents.md`) |
 | `test-*` | subagent + acceptance (see `../stelow-workflow-orchestrator/references/cli-tools/goals.md`) with testing gates |

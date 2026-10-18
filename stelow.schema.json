@@ -127,7 +127,7 @@
         },
         "config": {
           "type": "object",
-          "description": "Workflow-level config (quality, supervisor, exploration, review_mode, domains_detected). Canonical source of truth; mirrored to index.json via TS extension write-through. appetite is a deprecated alias.",
+          "description": "Workflow-level config (quality, exploration, review_mode, domains_detected). Canonical source of truth; mirrored to index.json via TS extension write-through. appetite is a deprecated alias.",
           "properties": {
             "quality": {
               "type": "string",
@@ -136,15 +136,6 @@
                 "experimental"
               ],
               "description": "Verification rigor declared by human at setup"
-            },
-            "supervisor": {
-              "type": "string",
-              "enum": [
-                "low",
-                "med",
-                "high"
-              ],
-              "description": "Execution checkpoint cadence declared by human at setup"
             },
             "exploration_count": {
               "type": ["string", "integer"],
@@ -266,10 +257,6 @@
               }
             }
           }
-        },
-        "supervisor_active": {
-          "type": "boolean",
-          "description": "Whether supervisor is active in current stage"
         }
       }
     },

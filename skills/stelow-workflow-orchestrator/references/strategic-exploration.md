@@ -49,7 +49,7 @@ If user selects one or more:
 
    **Task string must include the user's verbatim request** — strategic-context subagents do NOT inherit orchestrator deliberation. Pass:
    - `USER REQUEST (verbatim): ${userOriginalRequest}` — the literal text the user typed at workflow start
-   - `Quality: ${configQuality}, Supervisor: ${configSupervisor}, Exploration: ${configExplorationCount}+hybrid`
+   - `Quality: ${configQuality}, Exploration: ${configExplorationCount}+hybrid`
    - `Review Mode: ${configReviewMode}`
    - `Detected domains: ${configDomainsDetected}`
    - `Workflow dir: ${WF_DIR}`

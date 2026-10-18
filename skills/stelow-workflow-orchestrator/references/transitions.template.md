@@ -201,7 +201,6 @@ gate:      requires_approval: true
 {{ARTIFACTS:execution}}
 rework:    shape    (full rework path — returns to shape)
 gate:      (none)
-           supervisor: true (host-native supervision when available)
 ```
 
 ### verification

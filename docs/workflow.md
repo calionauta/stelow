@@ -13,7 +13,7 @@ Explicit run knobs plus **Review Mode** control the whole pipeline.
 Knobs bound consideration breadth and verification rigor — never calendar
 duration. **Review Mode** controls which gates and human waits run.
 These are the canonical names. Hosts may show friendlier labels — the bb
-board calls them *Quality*, *Supervision*, *Exploration* and *Pause for my
+board calls them *Quality*, *Exploration* and *Pause for my
 review* — but state and docs always use the canonical terms (see HOSTING.md
 vocabulary).
 
@@ -29,7 +29,6 @@ accepted and mapped once to knobs, rigor always strongest, then rewritten.)
 | Knob | Values | What it changes | Best for |
 |---|---|---|---|
 | **Quality** | `production` (default) / `experimental` | Full paths, edge cases, parallel reviewers, full test layers; experimental runs lighter, probes only | Production for anything shippable; experimental for idea evolution |
-| **Supervisor** | `low` / `med` / `high` (default) | Checkpoint cadence during execution | High for anything that matters; low for trivial, reversible work |
 | **Exploration** | count 1–5 (default 3) + hybrid whenever count ≥ 2 | Directions compared per divergence, interaction and architecture | 2–3 for most work; 4–5 for high-stakes decisions |
 
 Scope ceiling: 9 scopes maximum, discovered by mapping, never a target.

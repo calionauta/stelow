@@ -14,7 +14,6 @@ All paths below are relative to `skills/stelow-workflow-orchestrator/references/
 | `cli-tools/stage-status.md` | Status display, `/sw-next`, `/sw-setphase` |
 | `cli-tools/ask.md` | `ask_user_question` pattern reference |
 | `cli-tools/subagents.md` | Subagent delegation patterns |
-| `cli-tools/supervise.md` | Supervisor activation during execution |
 | `cli-tools/todo.md` | Task management tool reference |
 
 ## Other References

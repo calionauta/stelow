@@ -24,7 +24,7 @@ source of truth). What the plugin adds is listed in
 ## How it works, in five lines
 
 1. **Shape** the idea into a proposal with IN/OUT scope boundaries and an
-   run knobs (quality, supervision, exploration).
+   run knobs (quality, exploration).
 2. **Critique** it adversarially and pass the review gates you asked for
    (product spec, interface, tech plan, code diff).
 3. **Scope** it into typed delivery units (feature, spike, optimize, test-*)

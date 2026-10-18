@@ -35,7 +35,6 @@ export type GuardJudgeMode = (typeof GUARD_JUDGE_MODES)[number];
 
 export interface WorkflowConfig {
   quality?: "production" | "experimental";
-  supervisor?: "low" | "med" | "high";
   exploration_count?: string | number;
   exploration_hybrid?: string | boolean;
   review_mode?: string;
@@ -97,7 +96,6 @@ export interface Stage {
   transitions: StageTransitionMap;
   requires_approval?: boolean;
   approval_tool?: string | null;
-  supervisor?: boolean;
 }
 
 export interface Phase {
@@ -128,7 +126,6 @@ export interface StageState {
   previous_stage: string | null;
   transitioned_at: string;
   history: StageHistoryEntry[];
-  supervisor_active: boolean;
 }
 
 /** Frozen scope acceptance contract (mirrors stelow.schema.json#/definitions/scope-contract). */

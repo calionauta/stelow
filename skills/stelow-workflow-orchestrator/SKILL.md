@@ -24,8 +24,7 @@ You are a strategic product planner following the Shape Up method. This is the *
 1. **Follow the stage sequence.** Do NOT skip stages arbitrarily — the pipeline is intentional. However, the workflow may arrive with an `Intent:` override in the activation message (e.g. bugfix, refactor, investigate) that adjusts which stages run. Respect the intent override when present.
 2. **🚨 ALWAYS use the structured question tool for ALL user-facing questions. NEVER ask questions in chat/markdown/prose format.** Every user interaction requiring a decision must use the structured question tool (Patterns from `stages/ask-patterns.md`). Free-form conversation is the #1 rule violation that causes workflow drift. Resolve `ask_user_question` via the host mapping in `references/cli-tools/ask.md`. Never write prose like "waiting for your choice".
 3. **Review Gate (visual review --gate) is MANDATORY.** Verbal approval is not a substitute.
-4. **NEVER activate the supervisor during stages before Execution.** The supervisor would re-submit visual review. Only in the Execution stage.
-5. If a tool is unavailable, the fallback is documented in each `references/cli-tools/*.md` file.
+4. If a tool is unavailable, the fallback is documented in each `references/cli-tools/*.md` file.
 6. **Use todo tool via reference**: Always reference `references/cli-tools/todo.md` for task management. Never call todo tools directly.
 7. **Every response starts with stage indicator**: See todo.md for response format with stage indicator, tasks, and navigation hint.
 
@@ -43,7 +42,6 @@ You are a strategic product planner following the Shape Up method. This is the *
 | `goal-system` (acceptance contracts) | `references/cli-tools/goals.md` |
 | `safe-change` | `references/cli-tools/safe-change.md` |
 | `intercom` | `references/cli-tools/intercom.md` |
-| `supervise` | `references/cli-tools/supervise.md` |
 || `/sw-next`, `/sw-setphase` | `references/cli-tools/stage-status.md` |
 | `todo` | `references/cli-tools/todo.md` |
 
@@ -156,10 +154,6 @@ LLMs suffer from **context rot**: compliance with their own rules drops from
   - Add `test-*` scope types to spec-tech.md
   - See the `stelow-workflow-testing-ai-code` skill
 
-### Supervisor (Execution)
-- **Never activate during stages before Execution.** The supervisor would re-submit visual review.
-- Activate only during execution, WHEN STARTING each scope.
-
 ### Execution
 - **DO NOT ask** "Would you like to execute?", "Create a goal?", "Review plan first?"
 - **Execution is automatic** after Tech Planning approval. Proceed directly.
@@ -215,7 +209,7 @@ Do NOT use `/skill:` for internal subskills.
 |------|-------|-------------|---------|
 | `triage` | **Inbox Triage** | Extract items from the host's inbox surface (Stelow no longer mirrors `.stelow/inbox/`), suggest groups, user confirms/adjusts. | Auto (list detected) |
 | `select` | **Item Selection** | Show all candidates (individuals + groups), user picks one and routes remainders | After triage |
-| `setup` | **Project Setup** | Group context injection, run-knob/quality/supervisor/exploration + review mode declaration, stages selection, safe-change | — |
+| `setup` | **Project Setup** | Group context injection, run-knob quality/exploration + review mode declaration, stages selection, safe-change | — |
 | `context` | **Strategic Context** (optional) | Strategic exploration + domain detection. See `context:5` (quality/review mode gate), `context:10` (Strategic Approaches — 5 options), `context:20` (Domain Libraries — 8 libraries) | — |
 | `shape` | **Shape Up** | Create spec with problem/solution/scope. Includes `shape:12` — **Tech Preview** (breadth-gated cymbal recon for brownfield codebase understanding) | — |
 | `critique` | **Product Critique** | Multi-dimensional critique (plan/codebase/site) | — |
@@ -322,8 +316,7 @@ cross-CLI adapters, and LLM stage tracking.
 The file contains a `workflows[]` array. Each active workflow has:
 - `currentPhase` (number index into PHASE_NAMES)
 - `phases[]` (array of {id, name, status})
-- `stage` (object with `current_stage`, `previous_stage`, `transitioned_at`, `history`,
-  `supervisor_active`)
+- `stage` (object with `current_stage`, `previous_stage`, `transitioned_at`, `history`)
 
 ### Stage Transitions
 

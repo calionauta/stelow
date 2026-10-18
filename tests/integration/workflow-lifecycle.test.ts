@@ -58,7 +58,6 @@ function makeWorkflowEntry(overrides?: Partial<Record<string, unknown>>) {
       previous_stage: null,
       transitioned_at: now,
       history: [],
-      supervisor_active: false,
     },
     created: now,
     updated: now,

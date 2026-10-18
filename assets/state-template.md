@@ -12,7 +12,6 @@ current_stage: <stage-name>
 status: active
 config:
   quality: production
-  supervisor: high
   exploration_count: 3
   exploration_hybrid: true
   review_mode: Auto
@@ -54,7 +53,6 @@ history: []
 - **current_stage** — the active stage; updated by `stelow advance`
 - **status** — `active` | `paused` | `archived` | `completed`
 - **config.quality** — `production` (default) | `experimental`
-- **config.supervisor** — `low` | `med` | `high` (default)
 - **config.exploration_count** — `1`–`5` (default `3`)
 - **config.exploration_hybrid** — `true` (default whenever count ≥ 2)
 - **config.appetite** — DEPRECATED alias (`Lean` | `Core` | `Complete`), accepted and mapped once, then rewritten to knobs

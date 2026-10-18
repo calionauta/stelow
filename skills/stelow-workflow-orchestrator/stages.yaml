@@ -573,7 +573,6 @@ stages:
     allowed_tools: [edit, write, bash, read, grep, ls, subagent, ask_user_question, agent_browser]
     preferred_tools: [edit, write, bash]
     primary_actions: [edit, write, bash]
-    supervisor: true
     transitions:
       next: [verification]
       accept: [verification]

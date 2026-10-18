@@ -6,7 +6,7 @@
 **After Setup**, the flow enters Strategic Context to enrich planning with optional context.
 The LLM checks if the user should be offered strategic analysis and/or domain libraries.
 
-**Prerequisites:** Run knobs (quality, supervisor, exploration) and Review Mode (Auto / Product Spec Gate / Product Spec + Interface Gates / Product Spec + Interface + Scopes / Product Spec + Interface + Tech Review / Product Spec + Interface + Tech Review + Code Diff) must already be declared in `setup:15` (knobs) and `setup:16` (Review Mode), then stored in `stelow.json#workflows[].config`.
+**Prerequisites:** Run knobs (quality, exploration) and Review Mode (Auto / Product Spec Gate / Product Spec + Interface Gates / Product Spec + Interface + Scopes / Product Spec + Interface + Tech Review / Product Spec + Interface + Tech Review + Code Diff) must already be declared in `setup:15` (knobs) and `setup:16` (Review Mode), then stored in `stelow.json#workflows[].config`.
 
 ### context:5 — Quality & Review Mode Gate (auto-skip / reduced)
 

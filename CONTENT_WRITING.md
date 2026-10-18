@@ -35,7 +35,7 @@ Note: underlying principles that originally came from narrative-practice thinkin
 
 #### Functionality / Technical
 
-- **"Knobs × Review Mode: bounds, then oversight"** — run knobs (quality/supervisor/exploration) = bounds negotiated like a PM would; review mode = trust calibration like an EM/lead would decide. Together they simulate two conversations a real product team has before starting work.
+- **"Knobs × Review Mode: bounds, then oversight"** — run knobs (quality/exploration) = bounds negotiated like a PM would; review mode = trust calibration like an EM/lead would decide. Together they simulate two conversations a real product team has before starting work.
 - **The bidirectional product↔tech loop** — Tech Preview → Codebase Feature Recon → Alignment Check formalizes the PM↔Eng Lead negotiation. A coding assistant never negotiates feasibility; it just implements.
 - **Anatomy of a self-contained skill** — skills as portable "job functions," not code snippets. Each skill represents a role-competency, so it survives being dropped into different harnesses.
 - **Fallbacks as first-class citizens** — a resilient team routes around a blocked dependency instead of stopping. Documented fallbacks mirror that behavior.

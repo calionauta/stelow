@@ -17,7 +17,7 @@ for the full pattern that ensures portability across CLIs.
 ## What this means for AGENTS.md and stage files
 
 Stage files **must NEVER** call technical tools directly
-(e.g. `ask_user_question({...})`, `subagent({...})`, `start_supervision({...})`).
+(e.g. `ask_user_question({...})`, `subagent({...})`).
 Instead, reference the CLI-agnostic `.md` file in `references/cli-tools/`
 that documents the tool. The exception is the `.md` files inside
 `references/cli-tools/` themselves, which may document per-CLI syntax.

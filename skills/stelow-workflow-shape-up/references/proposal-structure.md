@@ -127,7 +127,6 @@ The proposal MUST include this YAML frontmatter at the top:
 name: {product-name}
 product_type: {software|service|hybrid}
 quality: {production|experimental}  # human-set: verification rigor
-supervisor: {low|med|high}          # human-set: execution checkpoint cadence
 exploration_count: {1-5}            # human-set: directions compared per divergence
 exploration_hybrid: {true|false}    # hybrid synthesis whenever count >= 2
 appetite: {Lean|Core|Complete}      # DEPRECATED alias, accepted and mapped once, then rewritten to knobs
@@ -144,7 +143,6 @@ generated_by: "{model_name}"
 | Knob | Values | What it changes |
 |------|--------|-----------------|
 | `quality` | `production` (default), `experimental` | Production: full paths, edge cases, parallel reviewers, full test layers including security where applicable, full critique depth. Experimental: reduced paths and checks for probes; never ships as-is. |
-| `supervisor` | `low`, `med`, `high` (default) | Checkpoint cadence during execution. |
 | `exploration_count` | 1–5 (default 3) | Directions compared per divergence (interaction + architecture). |
 | `exploration_hybrid` | true (default whenever count ≥ 2) | Hybrid synthesis after all directions complete. Count 1 has no hybrid. |
 
@@ -162,7 +160,7 @@ Scope ceiling: **9 scopes maximum in every cycle.** Mapping discovers the count 
 >
 > **Implementation strategies** are explored by the architecture alternatives skill (workflow strategy, rollout philosophy, integration approach, responsibility models — see §2 🧭 strategic shaping alternatives). **Interaction directions** are explored by the interface contrast loop (standalone breadth exploration via the interface alternatives skill); the number explored in both follows exploration breadth.
 
-> **Who sets the knobs:** The human in the setup stage, using independent choices: quality + supervisor + exploration, then Mode (review level) separately. Mode is stored in `stelow.json#workflows[].config.review_mode` and controls gates/questions/approvals.
+> **Who sets the knobs:** The human in the setup stage, using independent choices: quality + exploration, then Mode (review level) separately. Mode is stored in `stelow.json#workflows[].config.review_mode` and controls gates/questions/approvals.
 
 > **`appetite_fit`** is validated by the Plan Critique's fresh-context feasibility reviewer (see `stelow-workflow-plan-critique` checklists — Scope Fit dimension). The Shape Up stage writes a preliminary value based on a mechanical check (scope count against the ceiling of 9). The Plan Critique evaluates it properly using the existing 5-reviewer infrastructure.
 >
@@ -192,7 +190,6 @@ Mode is defined independently and stored in `index.json`. It affects gates and q
 |------|---------|--------|
 | Quality `production` | Always unless Experimental chosen | Full paths, edge cases, parallel reviewers, full test layers including security where applicable, full critique depth |
 | Quality `experimental` | Probes only | Reduced paths and checks; output must be upgraded before shipping |
-| Supervisor | low / med / high | Checkpoint cadence during execution |
 | Exploration | 1–5 + hybrid (≥2) | Direction counts for interaction and architecture divergence |
 
 **Note:** Mode blocks gates/questions independently of these knobs. E.g., even with exploration 5, if mode=Auto, visual review is skipped and no questions are asked.
