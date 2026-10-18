@@ -3,6 +3,36 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.76.0-alpha] - 2026-10-18
+
+### Removed
+
+- **The `supervisor` run knob.** It asked the human to declare an execution
+  checkpoint cadence (`low` / `med` / `high`), stored it, and never enforced
+  it: nothing in `scripts/stelow`, the stage machine, or a host branched on
+  the value, and no artifact recorded that a checkpoint ever ran. Its only
+  consumer was prose telling the worker to re-check itself against the
+  definition of done, priced by `cli-tools/supervise.md` at a full headless
+  harness spawn every 3 to 10 tool calls — the most expensive operation this
+  repo describes. Two of the three values told the worker to skip supervision
+  entirely.
+
+  Scope close already proves the same work with evidence on disk (`test_map`,
+  `freeze_sha`, `red_proof`, `baseline`, under `red_first`), and the
+  parent-controlled loop re-delegates on a failed verify with a fresh context
+  per iteration. So drift has a door that does not need a second model reading
+  prose, and the budget left over stays with the gates that block.
+
+  Gone with it: the `--supervisor` seed flag, `stelow_read_supervisor`
+  (defined and never called), `cli-tools/supervise.md` and its references, the
+  cadence/sensitivity tables, the setup question, the spec frontmatter field,
+  `WorkflowConfig.supervisor`, `Stage.supervisor`, and
+  `StageState.supervisor_active`.
+
+  States written by earlier versions keep a `supervisor:` line — readers
+  ignore it exactly as they ignored it before, and a legacy `appetite:` still
+  maps to the remaining knobs (production, breadth 2/3/5).
+
 ## [0.75.0-alpha] - 2026-10-17
 
 ### Added
