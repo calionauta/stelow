@@ -136,7 +136,7 @@ $INTERFACE_COUNT parallel workers (fresh context, explicit reads):
   2. references/interface-rules.md — Smell Self-Audit (mandatory Section 6)
   3. references/interface-rules.md — State Coverage Baseline (mandatory Section 7)
   4. references/output-format.md — full output format with all 8 sections
-  5. spec-product.md — body + frontmatter (`quality`, `supervisor`, `exploration_count`, `exploration_hybrid`, `review_mode`, `domains_detected`)
+  5. spec-product.md — body + frontmatter (`quality`, `exploration_count`, `exploration_hybrid`, `review_mode`, `domains_detected`)
   6. tech-recon.md — tech constraints (if it exists)
 
   For counts 2-5: also read

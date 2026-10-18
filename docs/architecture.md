@@ -19,7 +19,7 @@ same workflow. Hosts only add an optional marker protocol
 | `scripts/stelow` | Portable helper (bash + python3): `status`, `advance`, `doctor`, `seed`, `schema`, `ask`. Single source of runtime mechanics. |
 | `skills/stelow-workflow-orchestrator/references/cli-tools/` | Single source for shared tool references. Sub-skills link it via sibling-relative paths (`../stelow-workflow-orchestrator/...`) — no copies, no sync step. |
 | `install.sh` | Installer. Flattens `skills/*` into `~/.agents/skills/`, prunes retired/orphaned skills, offers optional tooling (cymbal, sem, ctx7). |
-| `types/stages.ts` | Shared TypeScript interfaces for the `stages.yaml` stage model (transitions, gates, supervisor). |
+| `types/stages.ts` | Shared TypeScript interfaces for the `stages.yaml` stage model (transitions, gates). |
 | `stelow.schema.json` / `stelow.json` | Workflow tracking JSON schema + per-project runtime tracking state. |
 | `tests/` | Vitest suite (`unit/`, `integration/`, `skills/`) + contract tests (skill-count, dual-mode, fs/e2e). |
 | `docs/design/`, `docs/agents-md-refs/` | Historical design docs / agent reference notes (EN artifacts, PT-BR discussion). |
@@ -28,7 +28,7 @@ same workflow. Hosts only add an optional marker protocol
 ## Stage model (the 18-stage state machine)
 
 - **Single source of truth:** `skills/stelow-workflow-orchestrator/stages.yaml`
-  (tools per stage, transitions, gates, supervisor activation).
+  (tools per stage, transitions, gates).
 - **Behavioral companion:** `skills/stelow-workflow-orchestrator/stages/*.md`
   (one file per stage, describing what happens in that stage).
 - **Data-only mirror:** `skills/stelow-workflow-orchestrator/references/transitions.md`

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # read-config.sh — canonical helper for reading Workflow.config from stelow.json
 #
-# Source this in any skill that needs quality/supervisor/exploration/review_mode/guard_judge/domains_detected:
+# Source this in any skill that needs quality/exploration/review_mode/guard_judge/domains_detected:
 #   source "$(dirname "${BASH_SOURCE[0]}")/../../stelow-workflow-orchestrator/references/cli-tools/read-config.sh"
 #   QUALITY=$(stelow_read_quality)
 #
@@ -45,18 +45,6 @@ stelow_read_quality() {
   legacy=$(stelow_config appetite "")
   if [ -n "$legacy" ]; then echo "production"; return; fi
   echo "production"
-}
-
-# Public: read supervisor knob from active workflow (default: high).
-# Legacy appetite lines map to high for every legacy value.
-stelow_read_supervisor() {
-  local s
-  s=$(stelow_config supervisor "")
-  if [ -n "$s" ]; then echo "$s"; return; fi
-  local legacy
-  legacy=$(stelow_config appetite "")
-  if [ -n "$legacy" ]; then echo "high"; return; fi
-  echo "high"
 }
 
 # Public: read exploration count from active workflow (default: 3).

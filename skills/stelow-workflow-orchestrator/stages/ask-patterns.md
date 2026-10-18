@@ -432,7 +432,7 @@ What would you like to do?`,
 ---
 ## Pattern 7: Run Knobs Declaration
 
-Used by `setup:15` when the human declares quality, supervisor, and exploration breadth.
+Used by `setup:15` when the human declares quality and exploration breadth.
 
 > **Trigger:** Before stage selection, after inbox/lessons/session knowledge injection.
 > **⚠️ This is a SEPARATE question from Pattern 8 (Review Mode).** Never combine them into one `ask_user_question` call.
@@ -452,24 +452,6 @@ Production checks everything the same way every time. Experimental runs lighter,
         {
           label: "Experimental",
           description: "Reduced paths and checks for probes and idea evolution. Never ship as-is without upgrading to Production."
-        }
-      ]
-    },
-    {
-      question: `How closely should the supervisor watch execution?`,
-      header: "Supervisor",
-      options: [
-        {
-          label: "High (Recommended)",
-          description: "Tight checkpoints, frequent progress checks during execution."
-        },
-        {
-          label: "Medium",
-          description: "Standard checkpoints during execution."
-        },
-        {
-          label: "Low",
-          description: "Minimal checkpoints. Only for trivial, easily reversible work."
         }
       ]
     },
@@ -510,12 +492,11 @@ Review Mode will be asked separately in the next step.`,
 | Knob | What it changes | What it never changes |
 |------|----------------|----------------------|
 | Quality | Paths, edge cases, reviewer parallelism, test layers, critique depth | Whether verification runs — it always runs |
-| Supervisor | Checkpoint cadence during execution | Whether supervision exists |
 | Exploration | Direction count (interaction + architecture), hybrid synthesis | Decision ownership — a pick is always recorded |
 
 **Cut policy:** breadth 1 keeps only the direct path. Breadth 2–3 keeps the main JTBD and obvious edge cases, cutting low-value variants. Breadth 4–5 cuts nothing unless impossible. Quality gates are not cut: build/test/lint/typecheck run at every setting, and a11y checks run whenever UI files exist. Production verifies every scope the same way regardless of breadth.
 
-**Storage:** Save to `stelow.json` as `workflows[].config.quality`, `workflows[].config.supervisor`, `workflows[].config.exploration` (single source of truth), and inject into `spec-product.md` frontmatter as `quality:`, `supervisor:`, `exploration_count:`, `exploration_hybrid:`. Review Mode follows the same pattern (`workflows[].config.review_mode` + `review_mode:` in frontmatter). All are canonical subagent inputs — see `../references/cli-tools/subagents.md` (Input Files table). A legacy `appetite:` line is accepted and mapped once (Lean → production/high/2, Core → production/high/3, Complete → production/high/5), then rewritten to knobs.
+**Storage:** Save to `stelow.json` as `workflows[].config.quality`, `workflows[].config.exploration` (single source of truth), and inject into `spec-product.md` frontmatter as `quality:`, `exploration_count:`, `exploration_hybrid:`. Review Mode follows the same pattern (`workflows[].config.review_mode` + `review_mode:` in frontmatter). All are canonical subagent inputs — see `../references/cli-tools/subagents.md` (Input Files table). A legacy `appetite:` line is accepted and mapped once (Lean → production/2, Core → production/3, Complete → production/5), then rewritten to knobs.
 
 > **Key rule:** Knobs are FIXED for the cycle. The LLM cannot widen them. If scope doesn't fit, the LLM splits — the human decides whether to accept the split or start a NEW cycle with different knobs.
 
@@ -597,7 +578,7 @@ When the Plan Critique finds gaps via the 7 checklists, each gap is classified a
 
 **Storage:** Save to `stelow.json` as `workflows[].config.review_mode` (single source of truth).
 
-> **Note:** Review Mode does NOT affect supervisor, parallelization, or which skills run. Those follow the run knobs (supervisor, quality, exploration). All stages run for all modes — only gates and questions change with Review Mode.
+> **Note:** Review Mode does NOT affect parallelization or which skills run. Those follow the run knobs (quality, exploration). All stages run for all modes — only gates and questions change with Review Mode.
 
 /// END PATTERN 8
 

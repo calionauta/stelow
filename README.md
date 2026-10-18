@@ -43,7 +43,7 @@ skill inventory, plugin guides, FAQ, and status.
 2. Run `curl -fsSL https://calionauta.github.io/stelow/install.sh | bash`
    (or `bb plugin install stelow`, or the marketplace listing).
 3. Open **Stelow** in bb's navigation, pick a project, choose run knobs
-   (quality, supervision, exploration) and Review mode (default Auto), and describe the request.
+   (quality, exploration) and Review mode (default Auto), and describe the request.
    Details: [docs/install-bb.md](docs/plugin/install-bb.md).
 
 **Path B — skills-only (any Agent Skills-compatible host):**

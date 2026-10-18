@@ -4,7 +4,7 @@
  * Regression guard for the spec-product.md frontmatter contract.
  *
  * spec-product.md is the SINGLE SOURCE OF TRUTH for product-level config
- * (`quality`, `supervisor`, `exploration_count`, `exploration_hybrid`,
+ * (`quality`, `exploration_count`, `exploration_hybrid`,
  * `review_mode`, `domains_detected`, `product_type`,
  * `appetite_fit`, `interface`). A legacy `appetite` line is accepted once
  * and mapped to knobs. Every downstream subagent reads these
@@ -96,9 +96,8 @@ describe('proposal-structure.md frontmatter template', () => {
 describe('setup.md frontmatter injection', () => {
   const setup = read(SETUP_MD);
 
-  it('writes quality/supervisor/exploration to stelow.json#workflows[].config (canonical)', () => {
+  it('writes quality/exploration to stelow.json#workflows[].config (canonical)', () => {
     expect(setup).toMatch(/quality:\s*'\{chosen_quality\}'/);
-    expect(setup).toMatch(/supervisor:\s*'\{chosen_supervisor\}'/);
     expect(setup).toMatch(/exploration_count:\s*'\{chosen_count\}'/);
   });
 
@@ -127,7 +126,7 @@ describe('ask-patterns.md storage contract', () => {
   const patterns = read(ASK_PATTERNS);
 
   it('documents storage of knobs in stelow.json (canonical) AND spec frontmatter', () => {
-    expect(patterns).toMatch(/workflows\[\]\.config\.(quality|supervisor|exploration)/);
+    expect(patterns).toMatch(/workflows\[\]\.config\.(quality|exploration)/);
     expect(patterns).toMatch(/spec-product\.md.*frontmatter/);
   });
 

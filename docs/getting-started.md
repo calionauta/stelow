@@ -26,8 +26,8 @@ Then:
 
 1. Open **Stelow** in bb's left navigation and select a project with Stelow
    state.
-2. Choose **run knobs** (quality, supervision, exploration) and **Review mode** (default Auto) —
-   labeled *Quality*, *Supervision*, *Exploration* and *Pause for my review* on the board —
+2. Choose **run knobs** (quality, exploration) and **Review mode** (default Auto) —
+   labeled *Quality*, *Exploration* and *Pause for my review* on the board —
    enter a product request in the composer, and submit. The card is created
    in Triage and the agent begins there.
 3. When the agent needs a decision, a structured question appears — answer

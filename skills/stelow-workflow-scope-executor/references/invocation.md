@@ -36,16 +36,11 @@ This skill runs **after** the visual review gate approves the plan, replacing ma
 
 ## How to invoke
 
-### With supervision (recommended for autonomous execution)
+### Before starting
 
-Activate execution steering (see `cli-tools/supervise.md`) before starting:
-```text
-Outcome: Execute the approved plan routing scopes correctly. Save report to execution-report.md.
-```
-
-After supervision confirms, load this skill.
-
-### Without supervision
+Load this skill once the approved plan is in place. There is no separate
+supervision pass to activate first: the executor's own verify commands and the
+scope-close gates are what hold the run to its contract.
 
 Read this SKILL.md and follow the steps directly.
 
@@ -63,7 +58,6 @@ Delegate to a subagent (see `cli-tools/subagents.md`):
 |---------|-----------|
 | Goal creation and tracking | `cli-tools/goals.md` |
 | Subagent delegation (worker, reviewer, scout, researcher) | `cli-tools/subagents.md` |
-| Execution steering | `cli-tools/supervise.md` |
 | Optimization goals | `cli-tools/goals.md` (Optimization Goals section) |
 | Visual review gate | `cli-tools/visual_review.md` |
 

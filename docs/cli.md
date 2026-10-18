@@ -16,7 +16,7 @@ three — `--help` alone under-reports (it omits `scope` and the `ask`
 scripts/stelow status [--json]
 scripts/stelow advance <candidate> [--dry-run] [--json]
 scripts/stelow doctor [--json]
-scripts/stelow seed --name <n> --intent <i> [--quality production|experimental] [--supervisor low|med|high] [--exploration-count 1-5] [--review-mode M] [--json]
+scripts/stelow seed --name <n> --intent <i> [--quality production|experimental] [--exploration-count 1-5] [--review-mode M] [--json]
 scripts/stelow ask --question <t> [--contract <id>] [--multiple] --option <label>... (repeat --question groups)
 scripts/stelow sync-scopes [--name <workflow>] [--json]
 scripts/stelow scope start|done|seed-tasks --scope <id> [--name <workflow>] [--iteration <n>] [--actual-files <a,b>] [--tasks <json>] [--start-sha <sha>] [--json]

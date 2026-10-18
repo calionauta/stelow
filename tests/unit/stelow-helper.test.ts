@@ -62,7 +62,6 @@ current_stage: ${current_stage}
 status: active
 config:
   quality: production
-  supervisor: high
   exploration_count: 3
   exploration_hybrid: true
   review_mode: Auto
@@ -130,7 +129,6 @@ describe("status", () => {
     expect(r.stdout).toContain("workflow : t");
     expect(r.stdout).toContain("stage    : shape");
     expect(r.stdout).toContain("quality  : production");
-    expect(r.stdout).toContain("supervisor : high");
     expect(r.stdout).toContain("explore  : count=3 hybrid=true");
     expect(r.stdout).toContain("review   : Auto");
   });
@@ -140,7 +138,6 @@ describe("status", () => {
     const r = run(wd, ["status"]);
     expect(r.status).toBe(0);
     expect(r.stdout).toContain("quality  : production (legacy appetite Core)");
-    expect(r.stdout).toContain("supervisor : high");
     expect(r.stdout).toContain("explore  : count=3 hybrid=true");
   });
 

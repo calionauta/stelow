@@ -75,7 +75,7 @@ function corpus(): string {
 
 // ═════════════════════════════════════════════════════════════════════
 // 1. RUN KNOBS — PRODUCED + CONSUMED + CANONICAL SOURCE
-// (quality / supervisor / exploration; legacy appetite accepted once and mapped)
+// (quality / exploration; legacy appetite accepted once and mapped)
 // ═════════════════════════════════════════════════════════════════════
 
 describe('run knobs field flow', () => {
@@ -84,7 +84,6 @@ describe('run knobs field flow', () => {
   it('is WRITTEN to stelow.json by setup.md (canonical source as of v0.50.0)', () => {
     const setupMd = read(join(SKILLS_DIR, 'stelow-workflow-orchestrator/stages/setup.md'));
     expect(setupMd).toMatch(/quality:\s*'\{chosen_quality\}'/);
-    expect(setupMd).toMatch(/supervisor:\s*'\{chosen_supervisor\}'/);
     expect(setupMd).toMatch(/exploration_count:\s*'\{chosen_count\}'/);
   });
 
@@ -111,7 +110,7 @@ describe('run knobs field flow', () => {
 
   it('is READ by execution stage', () => {
     const e = read(join(SKILLS_DIR, 'stelow-workflow-orchestrator/stages/execution.md'));
-    expect(e).toMatch(/grep -oP.*\^supervisor/);
+    expect(e).toMatch(/No separate supervision pass/);
   });
 
   it('keeps a deprecated appetite alias with a documented mapping', () => {
@@ -226,7 +225,6 @@ describe('No orphaned producer-only fields', () => {
       .map((s) => s.replace(/:\s*['"[{]/, '').trim());
 
     expect(fields).toContain('quality');
-    expect(fields).toContain('supervisor');
     expect(fields).toContain('exploration_count');
     expect(fields).toContain('review_mode');
     expect(fields).toContain('domains_detected');

@@ -377,7 +377,7 @@ it('should validate workflow status after gate', () => {
         workflows: [{
           name: 'test-wf', description: '',
           status: 'in-progress', currentPhase: 2, phases: [],
-          stage: { current_stage: 'setup', previous_stage: null, transitioned_at: now, history: [], supervisor_active: false },
+          stage: { current_stage: 'setup', previous_stage: null, transitioned_at: now, history: [] },
           created: now, updated: now, dirHash: 'sw-test-skill-001',
           detectedCLI: 'generic', intent: 'unknown',
           config: { appetite: undefined, review_mode: undefined, domains_detected: [] },

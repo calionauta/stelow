@@ -4,8 +4,7 @@
 
 1. **NEVER skip stages** — Always follow stages/ sequence
 2. **NEVER skip Gate approval** — Visual review via Plannotator is mandatory
-3. **NEVER activate supervisor during planning** — Only during execution
-4. **NEVER call tools directly from skills** — Use tool references in references/cli-tools/
+3. **NEVER call tools directly from skills** — Use tool references in references/cli-tools/
 
 ## Safety Boundaries
 
@@ -24,7 +23,7 @@ See `skills/stelow-workflow-orchestrator/stages.yaml` for current tool restricti
 | selection | bash, write, agent_browser |
 | shape | bash, agent_browser |
 | gate | edit, write, bash, subagent, agent_browser |
-| execution | (none - all allowed, supervisor active) |
+| execution | (none - all allowed) |
 | audit | bash |
 
 ## Enforcement

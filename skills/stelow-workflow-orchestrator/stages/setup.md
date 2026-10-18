@@ -285,11 +285,11 @@ Review Mode will be asked separately in `setup:16`.
 
 > **⚠️ IMPORTANT:** Run knobs and Review Mode are TWO SEPARATE decisions. Ask them as two separate `ask_user_question` calls. NEVER combine them into one question. Knobs are asked first (here), Review Mode is asked second (setup:16).
 
-#### Step 1: Ask quality, supervisor, exploration
+#### Step 1: Ask quality and exploration
 
 Use **Pattern 7 (Run Knobs Declaration)** from `ask-patterns.md`.
 
-Present three questions in one call:
+Present two questions in one call:
 
 ```
 ask_user_question({
@@ -301,15 +301,6 @@ Production checks everything the same way every time. Experimental runs lighter,
       options: [
         { label: "Production (Recommended)", description: "Full paths, edge cases, parallel reviewers, full test layers including security where applicable, full critique depth." },
         { label: "Experimental", description: "Reduced paths and checks for probes and idea evolution. Never ship as-is without upgrading to Production." }
-      ]
-    },
-    {
-      question: `How closely should the supervisor watch execution?`,
-      header: "Supervisor",
-      options: [
-        { label: "High (Recommended)", description: "Tight checkpoints, frequent progress checks during execution." },
-        { label: "Medium", description: "Standard checkpoints during execution." },
-        { label: "Low", description: "Minimal checkpoints. Only for trivial, easily reversible work." }
       ]
     },
     {
@@ -331,14 +322,9 @@ A hybrid synthesis is produced whenever more than one direction exists. Review M
 **Validate the knob values:**
 ```bash
 VALID_QUALITY="production experimental"
-VALID_SUPERVISOR="low med high"
 VALID_EXPLORATION_COUNT="1 2 3 4 5"
 if ! echo "$VALID_QUALITY" | grep -qw "{chosen_quality}"; then
   echo "INVALID_QUALITY: '{chosen_quality}' must be one of: production experimental"
-  exit 1
-fi
-if ! echo "$VALID_SUPERVISOR" | grep -qw "{chosen_supervisor}"; then
-  echo "INVALID_SUPERVISOR: '{chosen_supervisor}' must be one of: low med high"
   exit 1
 fi
 if ! echo "$VALID_EXPLORATION_COUNT" | grep -qw "{chosen_exploration_count}"; then
@@ -360,8 +346,8 @@ of breadth. Only an explicit Experimental choice runs lighter, and its output
 must be upgraded before shipping.
 
 **Legacy appetite mapping (deprecated alias):** states carrying only a legacy
-`appetite:` and no knobs resolve as Lean → {quality production, supervisor high,
-exploration 2}, Core → {production, high, 3}, Complete → {production, high, 5}.
+`appetite:` and no knobs resolve as Lean → {quality production,
+exploration 2}, Core → {production, 3}, Complete → {production, 5}.
 Rigor always resolves to the strongest level; breadth preserves the old intent.
 The mapping is announced once when applied — never silent.
 
@@ -423,7 +409,6 @@ const t = JSON.parse(fs.readFileSync(path, 'utf8'));
 const wf = t.workflows[t.workflows.length - 1];
 wf.config = {
   quality: '{chosen_quality}',
-  supervisor: '{chosen_supervisor}',
   exploration_count: '{chosen_count}',
   exploration_hybrid: '{chosen_hybrid}',
   appetite: '{chosen_appetite_alias}',
@@ -446,7 +431,6 @@ console.log('Config saved to stelow.json (workflow: ' + wf.name + ')');
 When the LLM generates `spec-product.md` later in the Shaping stage, it MUST include:
 ```yaml
 quality: {chosen_quality}            # production | experimental (human-set)
-supervisor: {chosen_supervisor}      # low | med | high (human-set)
 exploration_count: {chosen_count}    # 1-5 (human-set)
 exploration_hybrid: {true|false}     # hybrid synthesis whenever count >= 2
 review_mode: {chosen_review_mode}

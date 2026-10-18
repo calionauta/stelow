@@ -78,7 +78,6 @@
         "questions": { "type": "array", "items": { "$ref": "#/$defs/question" } },
         "requires_approval": { "type": "boolean" },
         "approval_tool": { "type": ["string", "null"] },
-        "supervisor": { "type": "boolean" },
         "transitions": { "type": "object", "minProperties": 1, "additionalProperties": { "type": "array", "items": { "type": "string" } } }
       }
     }

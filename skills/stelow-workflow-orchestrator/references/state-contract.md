@@ -38,7 +38,6 @@ current_stage: shape     # single string, always one of the stage names below
 status: active           # active | paused | archived | completed
 config:
   quality: production   # production | experimental
-  supervisor: high      # low | med | high
   exploration_count: 3  # 1-5
   exploration_hybrid: true
   appetite: Core          # DEPRECATED alias, mapped once, then rewritten

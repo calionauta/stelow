@@ -1,11 +1,7 @@
-## Execution: Supervisor + Scope Execution
+## Execution: Scope Execution
 
 > **Part of stelow** — See [`SKILL.md`](../SKILL.md) for stage sequence, safety rules, and capability reference.
 > **Tool Restrictions:** See `stages.yaml` for blocked/allowed tools in this stage.
-### ⚠️ Activate the supervisor ONLY during execution
-**Never activate during stages before Execution.** The supervisor would re-submit visual review.
-**Activate in Execution stage only** — when starting scope execution.
-
 ### ⚠️ Context Rot + Plan Staleness Check (before executing)
 
 **Reading spec-tech.md from disk.** The plan was generated in a previous session
@@ -141,31 +137,27 @@ of truth — harness-native todos are display-only.
 > `test_map` / `freeze_sha` / `red_proof` / `baseline`); a scope with an
 > unmapped AC (AC-sem-teste) is rejected before dispatch.
 
-**Before routing, read the supervisor knob from spec-product.md (legacy appetite maps to `high`).**
-```bash
-SUPERVISOR=$(grep -oP '^supervisor:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "high")
-```
+**No separate supervision pass is needed here, and none is registered.** An
+earlier revision of this stage read a `supervisor` knob (`low`/`med`/`high`)
+from `spec-product.md` and activated a mid-flight checkpoint every 3 to 10 tool
+calls. That knob was retired: it steered nothing a scope-close gate did not
+already prove, and each checkpoint cost a full headless harness spawn — the most
+expensive operation this reference describes, spent to re-read work the
+acceptance contract verifies with evidence on disk. Drift has a door without it:
+the parent-controlled loop re-delegates on a failed verify with a fresh context
+per iteration, and the close gates below refuse the scope outright.
 
-**Supervisor decision by knob** (see `../references/cli-tools/supervise.md` for full reference):
+The columns that remain are the enforcement that does run, per scope type:
 
-| Supervisor | Sensitivity | Human-in-loop | Rationale |
-|----------|-----------|-------------|---------------|----------|
-| `low` | `low` | No | Trivial, easily reversible work. Low sensitivity catches clear deviations without false-positive noise. |
-| `med` | `medium` | No | Standard balance of steering vs autonomy. |
-| `high` | `high` | No | Default. Drift is caught early. |
-
-> **Human-in-loop is controlled by Review Mode** (from `stelow.json#workflows[].config.review_mode`), not by the knobs.
-> Review Mode = "Product Spec + Interface + Scopes", "Product Spec + Interface + Tech Review", or "Product Spec + Interface + Tech Review + Code Diff" may add human approval checkpoints per PR.
-
-| Scope Type | Executor | Supervision |
+| Scope Type | Executor | Enforcement |
 |---|---|---|
 | `[TYPE] optimization` | acceptance contract (see `../references/cli-tools/goals.md`, Optimization Goals) | Metric verify (auto) |
 | `[EXECUTOR] optimization-goal` | acceptance contract (see `../references/cli-tools/goals.md`, Optimization Goals) | Metric verify (auto) |
 | Spike with metric | acceptance contract (see `../references/cli-tools/goals.md`, Optimization Goals) | Metric verify (auto) |
-| `feature` | iteration loop (see scope-executor Step 3 — implement → verify → review → quality, repeat until criteria met or `[MAX_ITERATIONS]` exhausted) | supervision checkpoint (DoD as outcome) |
-| Refactoring without metric | acceptance contract (see `../references/cli-tools/goals.md`) — without native acceptance: parent-controlled loop | supervision checkpoint (DoD as outcome) |
-| Investigative spike | acceptance contract (see `../references/cli-tools/goals.md`) — without native acceptance: parent-controlled loop | supervision checkpoint (DoD as outcome) |
-| Interface alternatives | acceptance contract (see `../references/cli-tools/goals.md`) — without native acceptance: parent-controlled loop | supervision checkpoint (DoD as outcome) |
+| `feature` | iteration loop (see scope-executor Step 3 — implement → verify → review → quality, repeat until criteria met or `[MAX_ITERATIONS]` exhausted) | acceptance contract (DoD as outcome) + red-first close gate |
+| Refactoring without metric | acceptance contract (see `../references/cli-tools/goals.md`) — without native acceptance: parent-controlled loop | acceptance contract |
+| Investigative spike | acceptance contract (see `../references/cli-tools/goals.md`) — without native acceptance: parent-controlled loop | acceptance contract |
+| Interface alternatives | acceptance contract (see `../references/cli-tools/goals.md`) — without native acceptance: parent-controlled loop | acceptance contract |
 | `test-unit` | acceptance contract (see `../references/cli-tools/goals.md`) — without native acceptance: parent-controlled loop | Testing gates (see below) |
 | `test-integration` | acceptance contract (see `../references/cli-tools/goals.md`) — without native acceptance: parent-controlled loop | Testing gates (see below) |
 | `test-security` | acceptance contract (see `../references/cli-tools/goals.md`) — without native acceptance: parent-controlled loop | Testing gates (see below) |
@@ -173,25 +165,24 @@ SUPERVISOR=$(grep -oP '^supervisor:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/s
 
 ### When starting execution of each scope:
 
-1. **Read supervisor knob** from spec-product.md (legacy appetite maps to `high`):
-   ```bash
-   SUPERVISOR=$(grep -oP '^supervisor:\s*\K\S+' .stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md 2>/dev/null || echo "high")
-   ```
+1. **No supervision pass to start.** The retired `supervisor` knob is gone; the
+   enforcing gates are scope close (red-first + frozen acceptance, below) and
+   the parent-controlled loop's verify step.
 
 2. **Feature/refactor/spike without metric → acceptance contract** (see `../references/cli-tools/goals.md`)
    - Without native acceptance: **parent-controlled loop** (delegate → verify → fix → repeat, no discussion, starts immediately)
-   - **Supervisor:** See the canonical knob-based decision table in `execution:20` above. Activate a supervision checkpoint with outcome="Execute scope '{scope_name}' per spec-tech.md. DoD: {DoD}. AC: {acceptance criteria}. Do not deviate from approved scope." Add `sensitivity:` from the supervisor knob (`low`/`med`/`high`).
-   - The supervisor detects deviation and re-centers if the LLM leaves scope
+   - Drift is caught by the verify commands and the close gates, not by a mid-flight reader
 
 3. **Optimization/spike with metric → acceptance contract** (see `../references/cli-tools/goals.md`, Optimization Goals)
-   - No supervisor needed (acceptance contract with benchmark verify is self-supervising via metric)
+   - The acceptance contract with benchmark verify is self-enforcing via metric
 
 3. **If blocked:** record the blockage with reason, pause the scope, flag to user
 
 4. **Scope adjustment:** re-plan the scope if it needs modification during execution (never silently expand)
 
-> **Tip:** supervision checkpoints are especially useful for long scopes where the LLM
-> may forget the original objective. Activate WHEN STARTING the scope, not before.
+> **Tip:** the acceptance contract is most valuable on long scopes where the LLM
+> may lose the original objective. Its verify commands run at scope start and
+> again at close — the two points where the DoD is actually checked.
 
 ### execution:20 — Testing Gates (AI-Aware Testing for Software Products)
 
@@ -231,9 +222,9 @@ After visual review approval on spec-tech_v{N}.md:
 
 | Scope Type | Executor | Command |
 |------------|----------|--------|
-| `feature` | acceptance contract (see `../references/cli-tools/goals.md`) + supervision checkpoint | see the `stelow-workflow-scope-executor` skill for instructions |
+| `feature` | acceptance contract (see `../references/cli-tools/goals.md`) | see the `stelow-workflow-scope-executor` skill for instructions |
 | `optimization` | acceptance contract (see `../references/cli-tools/goals.md`, Optimization Goals) | see the `stelow-workflow-scope-executor` skill for instructions |
-| `spike` | acceptance contract (see `../references/cli-tools/goals.md`) + supervision checkpoint | see the `stelow-workflow-scope-executor` skill for instructions |
+| `spike` | acceptance contract (see `../references/cli-tools/goals.md`) | see the `stelow-workflow-scope-executor` skill for instructions |
 | `test-*` | acceptance contract (see `../references/cli-tools/goals.md`) + testing gates | see the `stelow-workflow-scope-executor` skill for instructions |
 
 ### Executing Scopes
