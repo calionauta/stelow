@@ -381,7 +381,11 @@ function rel(fromSlug, toSlug) {
 
 // relative URL from the page at slug back to the site root
 function up(slug) {
-  return "../".repeat(slug.split("/").length + 1);
+  // "" is the docs/releases index (one directory below the site root).
+  // "".split("/") is [""], which made this return "../../" and sent every
+  // root-relative asset one level above a GitHub Pages project path.
+  const depth = slug ? slug.split("/").length : 0;
+  return "../".repeat(depth + 1);
 }
 
 function pageShell(title, cur, body, prevNext, navOverride) {
