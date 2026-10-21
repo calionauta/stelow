@@ -12,6 +12,10 @@ on:
     paths:
       - "site/build.mjs"
       - "site/releases.mjs"
+      - "site/search.mjs"
+      - "site/search/search.js"
+      - "site/search/minisearch.js"
+      - "site/search/MINISEARCH-LICENSE.txt"
       - "scripts/site-layout.test.mjs"
       - "site/UPSTREAM_SHA"
   workflow_dispatch:

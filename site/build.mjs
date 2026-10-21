@@ -19,6 +19,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { join, dirname, resolve, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { checkReleases, buildReleases } from "./releases.mjs";
+import { buildSearchIndex, searchAssets, searchButton, SEARCH_CSS } from "./search.mjs";
 
 // Project configuration lives next to this file. Everything project-specific
 // (name, base URL, the manifest, release sources) is there; this file is the
@@ -32,6 +33,7 @@ const NAME = config.name;
 const BASE = config.base;
 const MANIFEST = config.manifest;
 const RELEASE_SOURCES = config.releases || [];
+const SEARCH_ENABLED = config.search !== false;
 
 // emitting page context for link rewriting (set per page in build())
 let CUR_SLUG = "";
@@ -80,7 +82,7 @@ let CUR_SLUG = "";
 //                                 prose into ~100px, so the table keeps word
 //                                 wrapping and scrolls, which is what the fade
 //                                 affordance is for.
-const CSS = `
+const CSS = `${SEARCH_ENABLED ? SEARCH_CSS : ""}
 :root{--measure:640px}
 *{box-sizing:border-box}
 body{margin:0;font:16px/1.65 system-ui,-apple-system,sans-serif;color:#1a1a1a;background:#fff}
@@ -387,6 +389,8 @@ function pageShell(title, cur, body, prevNext, navOverride) {
   // The same links in the phone menu, minus the leading home anchor (the
   // topbar already shows it).
   const menu = nav.replace(/^\s*<a class="home"[^>]*>[\s\S]*?<\/a>/, "");
+  const searchTop = SEARCH_ENABLED ? searchButton(up(cur)) : "";
+  const searchScripts = SEARCH_ENABLED ? searchAssets(up(cur)) : "";
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -398,15 +402,16 @@ function pageShell(title, cur, body, prevNext, navOverride) {
 <body>
 <header class="topbar">
 <a class="home" href="${up(cur)}">← ${NAME}</a>
-<details class="menu"><summary>docs menu</summary><div class="menu-body">${menu}</div></details>
+<div class="topbar-actions">${searchTop}<details class="menu"><summary>docs menu</summary><div class="menu-body">${menu}</div></details></div>
 </header>
 <div class="wrap">
-<nav class="side">${nav}</nav>
+<nav class="side">${searchTop}${nav}</nav>
 <main>
 ${body}
 <div class="prevnext">${prevNext}</div>
 </main>
 </div>
+${searchScripts}
 <script>
 (function () {
   function copyText(text, done) {
@@ -515,6 +520,12 @@ function check() {
   for (const p of MANIFEST) {
     const path = join(DOCS, p.file);
     if (!existsSync(path)) { console.error(`missing manifest file: ${p.file}`); failed++; }
+  }
+  if (SEARCH_ENABLED) for (const rel of ["search/minisearch.js", "search/search.js"]) {
+    if (!existsSync(join(ROOT, "site", rel))) {
+      console.error(`missing search asset: site/${rel}`);
+      failed++;
+    }
   }
   if (failed) { console.error(`${failed} check failure(s)`); process.exit(1); }
   // every internal .md link must resolve (to a file, or to a manifest slug)
@@ -643,13 +654,16 @@ function build() {
   // llms-full.txt (concatenated sources)
   const full = MANIFEST.map((p) => `# ${p.title}\n\nSource: docs/${p.file} — ${BASE}/docs/${p.slug}/\n\n${p.md.trim()}\n`).join("\n---\n\n");
   writeFileSync(join(OUT, "llms-full.txt"), `# ${NAME} docs (full)\n\n${full}`);
+  // search index
+  const searchCount = SEARCH_ENABLED ? buildSearchIndex({ OUT, DOCS, MANIFEST }) : 0;
   // sitemap
   const releaseUrls = buildReleases({ ROOT, OUT, NAME, SOURCES: RELEASE_SOURCES, h: { esc, renderBody, pageShell } });
   const urls = ["", "docs/", ...MANIFEST.map((p) => `docs/${p.slug}/`), ...releaseUrls];
   writeFileSync(join(OUT, "sitemap.xml"),
     `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
     urls.map((u) => `  <url><loc>${BASE}/${u}</loc></url>`).join("\n") + `\n</urlset>\n`);
-  console.log(`built ${MANIFEST.length} pages + index + llms.txt + llms-full.txt + sitemap.xml + releases (${releaseUrls.length - 1} versions)`);
+  const searchLog = SEARCH_ENABLED ? ` + search (${searchCount} pages)` : "";
+  console.log(`built ${MANIFEST.length} pages + index${searchLog} + llms.txt + llms-full.txt + sitemap.xml + releases (${releaseUrls.length - 1} versions)`);
 }
 
 if (process.argv.includes("--check")) check();
