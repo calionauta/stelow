@@ -45,6 +45,24 @@ body {
 .links a.early { color: var(--accent); }
 .links a.early:hover { background: #f6e3d3; color: var(--accent); }
 .links a.early i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); margin-right: 7px; vertical-align: 1px; }
+
+/* Below 900px the primary links are hidden; without this the landing had no
+   navigation at all on a phone. <details> needs no JS to open. */
+.mobile-menu { display: none; position: relative; }
+.mobile-menu summary {
+  cursor: pointer; list-style: none; border: 1px solid var(--line);
+  border-radius: 999px; padding: 8px 14px; font-weight: 600;
+  color: var(--muted); background: var(--card);
+}
+.mobile-menu summary::-webkit-details-marker { display: none; }
+.mobile-menu[open] summary { color: var(--ink); }
+.mobile-menu-body {
+  position: absolute; right: 0; top: calc(100% + 8px); min-width: 210px;
+  background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+  padding: 8px 14px; box-shadow: var(--shadow); z-index: 20;
+}
+.mobile-menu-body a { display: block; padding: 7px 0; color: var(--muted); text-decoration: none; font-weight: 600; }
+.mobile-menu-body a:hover { color: var(--ink); }
 .icon-link { display: inline-flex; align-items: center; gap: 8px; }
 .icon-link svg { flex: none; }
 .social { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; margin: 6px 0; }
@@ -272,11 +290,16 @@ footer a { color: var(--ink); }
 /* reveal */
 .reveal { opacity: 0; transform: translateY(14px); transition: opacity 0.5s ease, transform 0.5s ease; }
 .reveal.in { opacity: 1; transform: none; }
+/* The header's links need ~1040px plus brand and CTA: below this the row
+   overflows the page, so the menu takes over before the links stop fitting. */
+@media (max-width: 1320px) {
+  .links { display: none; }
+  .mobile-menu { display: block; }
+}
 @media (max-width: 900px) {
   .hero-grid, .two-col, .dials { grid-template-columns: 1fr; }
   .grid-3 { grid-template-columns: 1fr; }
   .strat-grid { grid-template-columns: 1fr; }
-  .links { display: none; }
   .mascot-says { transform: translateX(-50%) rotate(-3deg); }
   .hero-mascot { padding-top: 8px; }
   .hero-mascot::before { width: min(240px, 70vw); }

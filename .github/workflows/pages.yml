@@ -31,7 +31,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
       - run: node site/build.mjs
+      # The layout contract: no clipped tables, navigation at every width,
+      # prose inside its measure. Fails the publish, not the reader.
+      - run: node scripts/site-layout.test.mjs
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

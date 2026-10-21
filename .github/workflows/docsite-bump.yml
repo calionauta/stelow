@@ -1,0 +1,34 @@
+name: docsite bump
+
+# The engine is vendored and pinned. This opens (or updates) a PR when upstream
+# moves, so a layout fix reaches this site without anyone copying files by hand.
+# Merge the PR only after its layout test is green.
+
+on:
+  schedule:
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash scripts/bump-docsite.sh
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet; then echo "already current"; exit 0; fi
+          sha=$(cat site/UPSTREAM_SHA)
+          git config user.name "docsite-bot"
+          git config user.email "docsite-bot@users.noreply.github.com"
+          git checkout -b docsite/bump
+          git commit -am "chore(site): bump docsite to $sha"
+          git push -u origin docsite/bump --force
+          gh pr create --title "chore(site): bump docsite to $sha" \
+            --body "Re-vendors the docs engine at $sha. Review the diff and the layout test; the engine is not edited here." \
+            || true

@@ -34,9 +34,22 @@ export function splitSections(md) {
 //   [0.36.4] - 2026-10-06            (gogogo / stelow core)
 //   [0.78.1](https://.../compare/...) (2026-10-07)   (release-please)
 //   [0.33.0] - 2026-10-04 · [0.32.0] - 2026-10-04    (shared section)
-//   [Unreleased]                       (no date, no tag link)
+//   [Unreleased]                       (no date, no tag link; supported but
+//     no longer written — the file is release-please-owned)
+//   0.43.2 (2026-10-11)                (release-please with
+//     "changelog-type": "github" — bare semver, no brackets; the matching
+//     "## What's Changed" subsection is folded back into the version body
+//     by loadReleases below, never rendered as its own page. The config is
+//     "github" today (the type must not change — see CHANGELOG.md), so this
+//     is the live shape, not a historical one.)
+// NOTE: this diverges from the canonical skill copy (see header) which
+// predates the github changelog-type; re-apply on refresh.
 export function parseRelease(header) {
   const versions = [...header.matchAll(/\[([^\]]+)\]/g)].map((m) => m[1].trim());
+  if (!versions.length) {
+    const bare = header.match(/^(\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?)\b/);
+    if (bare) versions.push(bare[1]);
+  }
   const dm = header.match(/(\d{4}-\d{2}-\d{2})/);
   return { versions, date: dm ? dm[1] : "" };
 }
@@ -72,6 +85,13 @@ export function loadReleases(ROOT, SOURCES) {
       process.exit(1);
     }
     for (const { header, body } of splitSections(readFileSync(abs, "utf8"))) {
+      // "## What's Changed" is a release-please (changelog-type: github)
+      // subsection, not a version: fold it into the version entry above
+      // instead of rendering a page for it.
+      if (/^what's changed$/i.test(header.trim())) {
+        if (entries.length) entries[entries.length - 1].body += `\n\n${body}`;
+        continue;
+      }
       const { versions, date } = parseRelease(header);
       if (!versions.length) {
         console.error(`releases: unparseable section header in ${src.file}: ${header}`);
