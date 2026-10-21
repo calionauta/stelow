@@ -46,11 +46,13 @@ const MEASURE = { min: 560, max: 700 }; // prose line box, px (see --measure)
 // The landing menu appears when the primary links are hidden; that breakpoint
 // is a project choice (620 for a compact header, 900 when links vanish early).
 const LANDING_MENU_BELOW = CONFIG.landingMenuBelow ?? 620;
+const SEARCH_ENABLED = CONFIG.search !== false;
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
   ".css": "text/css; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
+  ".json": "application/json; charset=utf-8",
   ".txt": "text/plain; charset=utf-8",
   ".xml": "application/xml; charset=utf-8",
   ".png": "image/png",
@@ -211,6 +213,29 @@ try {
         if (prose && r.proseWidth > 0) {
           if (r.proseWidth < MEASURE.min || r.proseWidth > MEASURE.max) {
             fail(`${where}: prose line box is ${r.proseWidth}px, outside ${MEASURE.min}-${MEASURE.max}px (widening the column to fit tables costs every page's readability)`);
+          }
+        }
+        // One search smoke per run: open the palette, search a term taken
+        // from the first docs-index title, and require a result. This proves
+        // the index, the vendored MiniSearch build and the dialog wiring
+        // together; it does not pin ranking.
+        if (SEARCH_ENABLED && path === "/docs/") {
+          const trigger = page.locator("[data-search-open]:visible").first();
+          if (!(await trigger.count())) {
+            fail(`${where}: no search trigger`);
+          } else {
+            const firstTitle = await page.locator("main ul li a").first().innerText().catch(() => "");
+            const term = firstTitle.split(/\s+/).find((w) => w.length > 3) || firstTitle;
+            await trigger.click();
+            const searchInput = page.locator(".search-input");
+            await searchInput.fill(term);
+            const found = await page.waitForFunction(
+              () => document.querySelectorAll(".search-results a").length > 0,
+              null,
+              { timeout: 3000 },
+            ).then(() => true).catch(() => false);
+            if (!found) fail(`${where}: search for ${JSON.stringify(term)} returned no result`);
+            await page.keyboard.press("Escape");
           }
         }
       }
