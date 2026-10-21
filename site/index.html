@@ -41,6 +41,20 @@
       <span>GitHub</span>
     </a>
   </nav>
+  <details class="mobile-menu">
+    <summary aria-label="Open menu">Menu</summary>
+    <div class="mobile-menu-body">
+      <a href="#why">Why</a>
+      <a href="#how">How it works</a>
+      <a href="#edge">Edge</a>
+      <a href="#strategies">Strategies</a>
+      <a href="#teams">Teams</a>
+      <a href="#paths">Install</a>
+      <a href="docs/">Docs</a>
+      <a href="releases/">Releases</a>
+      <a href="https://github.com/calionauta/stelow" rel="noopener">GitHub</a>
+    </div>
+  </details>
   <a class="btn small" href="#paths">Try it</a>
 </header>
 
@@ -410,6 +424,16 @@ const io = new IntersectionObserver((entries) => {
   for (const e of entries) if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
 }, { threshold: 0.12 });
 document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+// Mobile menu: <details> opens natively; close it on a chosen link, an outside
+// tap or Escape so the panel never covers the section it opened from.
+document.querySelectorAll('.mobile-menu').forEach((d) => {
+  const summary = d.querySelector('summary');
+  d.addEventListener('click', (e) => { if (e.target.closest('a')) d.open = false; });
+  document.addEventListener('click', (e) => { if (d.open && !d.contains(e.target)) d.open = false; });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && d.open) { d.open = false; if (summary) summary.focus(); }
+  });
+});
 // Scout speech bubble rotation
 const saysEl = document.getElementById('mascotSays');
 const saysLines = ['boop me.', 'shape first.', "what's out of scope?", 'argue before building.', 'receipts, please.', 'where do I wait for you?'];

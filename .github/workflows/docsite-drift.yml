@@ -1,0 +1,24 @@
+name: docsite drift
+
+# The docs-site engine is vendored from calionauta/docsite and pinned by
+# site/UPSTREAM_SHA. This fails when the vendored files no longer match the
+# pin (a local "fix" that never went upstream), and it runs on a schedule so a
+# stale pin is visible.
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  pull_request:
+    paths:
+      - "site/build.mjs"
+      - "site/releases.mjs"
+      - "scripts/site-layout.test.mjs"
+      - "site/UPSTREAM_SHA"
+  workflow_dispatch:
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash scripts/check-docsite-drift.sh
