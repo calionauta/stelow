@@ -72,7 +72,15 @@ function build() {
 function serve() {
   const server = createServer((req, res) => {
     const url = decodeURIComponent((req.url || "/").split("?")[0]);
-    let path = join(SITE, url);
+    // Serve the site under its real GitHub Pages prefix. Testing at "/" hid
+    // the bug where a root-relative asset climbed one directory too far on
+    // /gogogo/ or /stelow/ and 404'd only in production.
+    if (PREFIX && url !== PREFIX && !url.startsWith(PREFIX + "/")) {
+      res.writeHead(404, { "content-type": "text/plain" }).end("outside site prefix");
+      return;
+    }
+    const local = PREFIX ? url.slice(PREFIX.length) || "/" : url;
+    let path = join(SITE, local);
     if (!resolve(path).startsWith(SITE)) {
       res.writeHead(403).end();
       return;
@@ -107,10 +115,11 @@ function pages() {
   // A landing page is project-specific and optional; when it exists, its
   // navigation and command blocks are measured too.
   const hasLanding = existsSync(join(SITE, "index.html"));
+  const prefix = PREFIX || "";
   return [
-    ...(hasLanding ? [{ path: "/", prose: false }] : []),
-    { path: "/docs/", prose: false },
-    ...docs.map((p) => ({ path: p, prose: true })),
+    ...(hasLanding ? [{ path: "/", url: prefix + "/", prose: false }] : []),
+    { path: "/docs/", url: prefix + "/docs/", prose: false },
+    ...docs.map((p) => ({ path: p, url: prefix + p, prose: true })),
   ];
 }
 
@@ -164,8 +173,8 @@ try {
   for (const vw of VIEWPORTS) {
     const page = await browser.newPage({ viewport: { width: vw, height: 900 } });
     let checked = 0;
-    for (const { path, prose } of list) {
-      await page.goto(base + path, { waitUntil: "load" });
+    for (const { path, url, prose } of list) {
+      await page.goto(base + url, { waitUntil: "load" });
       const r = await measurePage(page);
       const where = `${path} @ ${vw}px`;
       checked++;
