@@ -13,6 +13,8 @@ on:
       - "site/build.mjs"
       - "site/releases.mjs"
       - "scripts/site-layout.test.mjs"
+      - "scripts/check-docsite-drift.sh"
+      - "scripts/bump-docsite.sh"
       - "site/UPSTREAM_SHA"
   workflow_dispatch:
 
