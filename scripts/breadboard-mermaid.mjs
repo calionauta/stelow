@@ -50,11 +50,22 @@ const KIND_STYLE = {
 /**
  * Mermaid node ids cannot start with a digit and cannot contain characters
  * that read as syntax. Ours are `P1`, `U1`, `N1`, `S1` — safe — but a place
- * reference (`_letter-browser`) is not, so ids are rewritten to a stable
- * prefix form.
+ * reference (`_letter-browser`) is not, and a subplace (`P2.1`) carries a dot.
+ *
+ * The rewrite must be INJECTIVE. Mapping `-` to `_` was not: `_a-b` and `_a_b`
+ * are two different references, and both became `ref_a_b`, merging two nodes
+ * into one in the diagram while the map kept them apart. Everything outside
+ * [A-Za-z0-9] is encoded as `_<hex>_` instead, and the encoding is injective
+ * because a literal `_` is encoded too — no bare underscore survives except
+ * the ones the encoder emits.
  */
 function nodeId(raw) {
-  return raw.replace(/^_/, "ref_").replace(/[^A-Za-z0-9_]/g, "_");
+  const isReference = raw.startsWith("_");
+  const body = isReference ? raw.slice(1) : raw;
+  const encoded = body.replace(/[^A-Za-z0-9]/g, (character) => `_${character.codePointAt(0).toString(16)}_`);
+  // A place reference's leading underscore is structure, not content: it
+  // becomes the `ref_` prefix so the node reads as a reference in the source.
+  return isReference ? `ref_${encoded}` : encoded;
 }
 
 /** Escape the characters Mermaid treats as syntax inside a quoted label. */
@@ -89,7 +100,9 @@ function nodeLine(item, indent) {
  * The Mermaid source for a breadboard.
  *
  * Shape:
- *   - one subgraph per place, containing its affordances
+ *   - one subgraph per place, with its subplaces NESTED inside it (containment
+ *     is the model's relationship; flat siblings would say a subplace is a
+ *     separate screen)
  *   - control flow as solid arrows
  *   - data flow as dashed arrows
  *   - a navigation wire lands on the place boundary, not on a node inside it
@@ -102,15 +115,32 @@ export function toMermaid(breadboard) {
   const affordances = breadboard.affordances ?? [];
   const placeIds = new Set(places.map((place) => place.id));
 
+  // A subplace is `P2.1`; its parent is `P2`. Nesting is decided by id, which
+  // is how the map records containment, so the picture cannot disagree with
+  // the table about what is inside what.
+  const childrenOf = new Map();
+  const roots = [];
+  for (const place of places) {
+    const parentId = place.id.includes(".") ? place.id.slice(0, place.id.indexOf(".")) : null;
+    if (parentId && placeIds.has(parentId)) {
+      if (!childrenOf.has(parentId)) childrenOf.set(parentId, []);
+      childrenOf.get(parentId).push(place);
+    } else {
+      roots.push(place);
+    }
+  }
+
+  const membersOf = (placeId) => affordances.filter((item) => item.place === placeId);
   const lines = [`${DIAGRAM_KIND} TB`];
 
-  // Places, in declaration order, each with the affordances that live in it.
-  for (const place of places) {
-    const members = affordances.filter((item) => item.place === place.id);
-    lines.push(`  subgraph ${nodeId(place.id)}[${placeLabel(place)}]`);
-    for (const member of members) lines.push(nodeLine(member, "    "));
-    lines.push("  end");
-  }
+  const emitPlace = (place, indent) => {
+    lines.push(`${indent}subgraph ${nodeId(place.id)}[${placeLabel(place)}]`);
+    for (const member of membersOf(place.id)) lines.push(nodeLine(member, indent + "  "));
+    for (const child of childrenOf.get(place.id) ?? []) emitPlace(child, indent + "  ");
+    lines.push(`${indent}end`);
+  };
+
+  for (const place of roots) emitPlace(place, "  ");
 
   // Affordances whose place is not a declared place would be invisible inside
   // a subgraph; they are emitted at the top level so the map never hides one.

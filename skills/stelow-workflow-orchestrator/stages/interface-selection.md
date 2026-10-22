@@ -75,7 +75,7 @@ chooses, records the choice, and moves on.
    rule in prose and a rule that runs:
 
    ```bash
-   node scripts/render-diagram.mjs breadboard \
+   node <stelow-checkout>/scripts/render-diagram.mjs breadboard \
      --input ".stelow/{YYYY-MM-DD}/{_dir}/interfaces/breadboard.json" --check
    ```
 
@@ -87,19 +87,20 @@ chooses, records the choice, and moves on.
    gate) can actually read, the HTML is the durable picture:
 
    ```bash
-   node scripts/render-diagram.mjs breadboard \
+   node <stelow-checkout>/scripts/render-diagram.mjs breadboard \
      --input ".stelow/{YYYY-MM-DD}/{_dir}/interfaces/breadboard.json" \
      --emit-markdown --with-diagram \
      --out   ".stelow/{YYYY-MM-DD}/{_dir}/interfaces/breadboard.html"
    ```
 
-   The renderer is a repo tool, not a host dependency: only `scripts/stelow`
-   is installed by `install.sh` and synced by the plugin, so on a standalone
-   host the command may be absent. The map is the artifact; the views are
-   views. If the render fails or the script is missing, the map still stands —
-   never let a diagram block the pick. **But a missing script is not a passing
-   check:** say in the hand-off that the map was not checked, so the next stage
-   knows the difference between "clean" and "unchecked".
+   `<stelow-checkout>` is the stelow repository (e.g. `~/repos/stelow`), not
+   the product repo this workflow writes into. The script is repo-side
+   tooling: `install.sh` and the plugin sync ship only `scripts/stelow`, so
+   the command may be absent on a standalone host. The map is the artifact;
+   the views are views. If the render fails or the script is missing, the map
+   still stands — never let a diagram block the pick. **But a missing script is
+   not a passing check:** say in the hand-off that the map was not checked, so
+   the next stage knows the difference between "clean" and "unchecked".
 
 ### Do NOT
 

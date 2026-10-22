@@ -3,6 +3,49 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.79.0-alpha] - 2026-10-22
+
+### Added
+
+- **Place checks.** Two places with one id are an error — they draw one box in
+  every view, and the map stops saying where the user is. A place with no
+  affordances is a gap unless it holds a subplace, and a subplace whose parent
+  the map never declares is an error: a widget inside a place that does not
+  exist renders as a screen of its own.
+- **A test that the standalone alternatives recipes have not drifted.** The
+  `interface-alternatives` / `architecture-alternatives` recipes are copies of
+  the canonical recipes' first three tasks (they remain as Explore/standalone
+  entry points). The test pins the copy to the original, so editing the gate's
+  pipeline cannot leave the standalone pipeline running the old shape.
+
+### Fixed
+
+- **Subplaces are drawn inside their place.** `P2.1` was emitted as a sibling
+  of `P2`, which says the widget is a separate screen and that the user leaves
+  P2 to reach it. The serializer nests it, and the markdown view gained a
+  `Within` column (and a `(within P2)` heading) so the containment survives
+  without the picture.
+- **Two place references that differ only by punctuation merged into one
+  node.** Node ids rewrote every punctuation character to `_`, so `_a-b` and
+  `_a_b` — two different references — became one Mermaid node. The rewrite is
+  injective now (`_<hex>_`).
+- **The renderer ignored unknown flags.** `--emmit-markdown` exited 0 and
+  wrote nothing, which reads exactly like a successful run. A run with flags
+  but no command did the same, so a scripted `--check` could report success
+  without checking. Both are usage errors now; `--with-diagram` without
+  `--emit-markdown` is refused instead of ignored.
+- **The markdown frontmatter broke on a colon in the interface id.** Values
+  are quoted; `A: the "quiet" one` is a legal id and an illegal unquoted YAML
+  scalar.
+- **The playbooks pointed at a script the product repo does not contain.** The
+  check and render commands now name `<stelow-checkout>`, and the reference
+  says what that is, that `install.sh` does not install it, and that a missing
+  script means "unchecked", never "clean".
+- **`state-contract.md` claimed only Markdown is registered.** `stelow advance`
+  registers every file in the workflow directory (`kind: artifact` for
+  anything that is not `.md`), which is what makes `breadboard.md`, `.mmd` and
+  `.html` legal outputs.
+
 ## [0.78.0-alpha] - 2026-10-22
 
 ### Added
