@@ -70,7 +70,7 @@ Conflict rule: planned case (`test_map` + `freeze_sha`) wins by default. Worker 
 |---------|-----------|------------------|
 | Strategy/breadth per quality | `testing-ai-code/SKILL.md` + `test-targets-and-gates.md` Steps 4–5 | link |
 | Brownfield/regression/impact | `fail-observed-and-brownfield.md` | link |
-| Execution + Record | `scope-executor/references/step-3-feature.md` 3b-bis, `records-and-tasks.md` | link |
-| Verification enforce | `orchestrator/stages/verification.md`, `testing-execution/SKILL.md` | link |
-| Judge routing/tripwire | `testing-execution/references/guard-quality-decision.md` | link |
-| Audit check | `execution-critique/references/workflow-audit.md` Criterion 6 | link |
+| Execution + Record | `../../stelow-workflow-scope-executor/references/step-3-feature.md` 3b-bis, `records-and-tasks.md` | link |
+| Verification enforce | `../../stelow-workflow-orchestrator/stages/verification.md`, `testing-execution/SKILL.md` | link |
+| Judge routing/tripwire | `../../stelow-workflow-testing-execution/references/guard-quality-decision.md` | link |
+| Audit check | `../../stelow-workflow-execution-critique/references/workflow-audit.md` Criterion 6 | link |
