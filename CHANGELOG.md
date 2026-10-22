@@ -12,6 +12,17 @@ All notable changes to this project are documented in this file, following
   times and the mode policy was read in a seventh. The knobs now come from
   one parse, and the mode check moved into the query that needs it — the
   reason for a refusal is now written by one place instead of two.
+- **The `artifacts:` manifest had two writers and the worker's entry was
+  silently dropped.** The helper writes the manifest in the state
+  front-matter; a host prompt also tells the worker to append a block of
+  its own (the research and explore tracks have no `stelow advance` to
+  write it for them). The append landed AFTER the front-matter — a second
+  `artifacts:` key, which is a duplicate key in YAML — and the helper read
+  only the front-matter, so it never saw the worker's entry. The next
+  advance rewrote the front-matter from the helper's own list and the
+  worker's artifact vanished: the card lost it with no error anywhere.
+  Every block is now read, wherever it is, and merged into one canonical
+  list; the file carries exactly one `artifacts:` key afterwards.
 
 ## [0.83.0-alpha] - 2026-10-22
 

@@ -778,19 +778,102 @@ else:
 # Advancing is the durable workflow boundary: record every durable output
 # that appeared since an earlier transition as produced by the stage being
 # left. The manifest is a list so a stage can own more than one artifact.
-artifacts = []
-artifact_start, artifact_end = block_bounds("artifacts")
-if artifact_start is not None:
-    entry = {}
-    for line in lines[artifact_start + 1:artifact_end]:
-        item = re.match(r"^  - ([a-z_]+):\s*(.+)$", line)
-        field = re.match(r"^    ([a-z_]+):\s*(.+)$", line)
+def parse_artifact_blocks(text):
+    """Every `artifacts:` block in the text, merged into one list.
+
+    The manifest had two writers and two shapes: the helper writes it in the
+    front-matter, and a host prompt tells the worker to append a block of
+    its own. The helper read only the front-matter, so the worker's entry
+    was invisible to it — and the worker's append landed AFTER the
+    front-matter, as a SECOND `artifacts:` key, which is a duplicate key in
+    YAML. The next advance then rewrote the front-matter from the
+    helper's own list and the worker's artifact was silently dropped.
+
+    So: read every block, wherever it is, and merge. One list, one shape,
+    written back in the helper's canonical form.
+    """
+    found = []
+    entry = None
+    inside = False
+    for line in text.splitlines():
+        if re.match(r"^artifacts:\s*(\[\])?\s*$", line):
+            if entry: found.append(entry)
+            entry = None
+            inside = True
+            continue
+        # A new top-level key ends the block. Without this the scan would
+        # read the `history:` list as artifacts — every list in the file
+        # looked like a manifest entry.
+        if inside and re.match(r"^\S", line):
+            if entry: found.append(entry)
+            entry = None
+            inside = False
+        if not inside:
+            continue
+        item = re.match(r"^\s*- ([a-z_]+):\s*(.+)$", line)
+        field = re.match(r"^\s+([a-z_]+):\s*(.+)$", line)
         if item:
-            if entry: artifacts.append(entry)
+            if entry: found.append(entry)
             entry = {item.group(1): item.group(2).strip()}
         elif field and entry:
             entry[field.group(1)] = field.group(2).strip()
-    if entry: artifacts.append(entry)
+    if entry: found.append(entry)
+    return found
+
+def drop_duplicate_artifact_blocks(lines):
+    """Keep the first `artifacts:` block in the front-matter, drop the rest.
+
+    A second `artifacts:` key is a DUPLICATE KEY in YAML: a parser may take
+    the first, the last, or refuse the file. The worker's append landed
+    there, so the file could carry two, and the two readers disagreed about
+    which one was the manifest.
+    """
+    out = []
+    index = 0
+    seen_first = False
+    while index < len(lines):
+        line = lines[index]
+        if re.match(r"^artifacts:\s*(\[\])?\s*$", line):
+            end = index + 1
+            while end < len(lines) and (lines[end].startswith(" ") or not lines[end].strip()):
+                end += 1
+            if not seen_first:
+                seen_first = True
+                out.extend(lines[index:end])
+            index = end
+            continue
+        out.append(line)
+        index += 1
+    return out
+
+def strip_artifact_blocks(text):
+    """The text with every `artifacts:` block removed."""
+    out = []
+    index = 0
+    lines = text.split("\n")
+    while index < len(lines):
+        line = lines[index]
+        if re.match(r"^artifacts:\s*(\[\])?\s*$", line):
+            index += 1
+            while index < len(lines) and (lines[index].startswith(" ") or not lines[index].strip()):
+                index += 1
+            continue
+        out.append(line)
+        index += 1
+    return "\n".join(out)
+
+artifacts = []
+seen_paths = set()
+for item in parse_artifact_blocks(blob):
+    # NOT `path`: that name is the STATE FILE in this scope, and shadowing it
+    # made the advance write the state to the artifact's path instead.
+    item_path = item.get("path")
+    if item_path and item_path in seen_paths:
+        continue
+    if item_path: seen_paths.add(item_path)
+    artifacts.append(item)
+lines = drop_duplicate_artifact_blocks(lines)
+artifact_start, artifact_end = block_bounds("artifacts")
 known_paths = {item.get("path") for item in artifacts}
 CONTROL_FILES = {"state.md", "audit-trail.md", "invariants.json"}
 def workflow_output(absolute):
@@ -829,7 +912,7 @@ if artifact_start is None:
 else:
     lines[artifact_start:artifact_end] = manifest
 
-new_blob = header_open + "\n".join(lines) + header_close + body
+new_blob = header_open + "\n".join(lines) + header_close + strip_artifact_blocks(body)
 fd, temporary = tempfile.mkstemp(prefix=".state.", dir=os.path.dirname(path) or ".", text=True)
 try:
     with os.fdopen(fd, "w") as handle:
