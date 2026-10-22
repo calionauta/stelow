@@ -99,6 +99,51 @@ sys.exit(1)
 PY
 }
 
+# The state's scalars, read in ONE pass.
+#
+# Every key used to cost its own python process: a transition read six of
+# them — the same file, parsed six times — and every host that asks the
+# helper "what is legal from here" paid for all six. One parse, one process.
+#
+# Prints "key<TAB>value" per key that is present; a key that is absent is
+# simply not printed, which is how the callers tell "missing" from "empty".
+yaml_get_all() {
+  local file="$1"; shift
+  [ -f "$file" ] || return 1
+  python3 - "$file" "$@" <<'PYEOF'
+import sys, re
+path, keys = sys.argv[1], sys.argv[2:]
+text = open(path).read()
+m = re.match(r"^---\n(.*?)\n---", text, re.DOTALL)
+if not m: sys.exit(1)
+lines = m.group(1).splitlines()
+for key in keys:
+    pattern = re.compile(r"^" + re.escape(key) + r":\s*(.*)$")
+    nested = re.compile(r"^  " + re.escape(key) + r":\s*(.*)$")
+    value = None
+    # First pass: top-level scalar match.
+    for line in lines:
+        mm = pattern.match(line)
+        if mm:
+            value = mm.group(1).strip()
+            break
+    # Second pass: a scalar one level under a "config:" block.
+    if value is None:
+        in_block = None
+        for line in lines:
+            if re.match(r"^[A-Za-z_][\w-]*:\s*$", line):
+                in_block = line.rstrip(":").strip()
+                continue
+            if in_block == "config":
+                mm = nested.match(line)
+                if mm:
+                    value = mm.group(1).strip()
+                    break
+    if value is not None:
+        print(key + "\t" + value)
+PYEOF
+}
+
 status_text() {
   local name intent stage status quality exploration_count exploration_hybrid review_mode
   name=$(yaml_get name "$STATE" 2>/dev/null || echo "?")
@@ -244,7 +289,6 @@ lock_acquire() {
 # The transition facts, read from the transitions reference — the one file that
 # carries the graph, the intent routes and the review-mode policy.
 #
-#   transition_facts modes                                  -> the known review modes
 #   transition_facts allowed <stage> <intent> <mode> <quality> <exploration> <appetite>
 #                                                          -> the legal candidates
 #   transition_facts redirect <candidate> <intent> <mode>  -> the successor of a
@@ -302,10 +346,6 @@ def parse_route(text, intent):
     return [part.strip() for part in m.group(1).split("→")]
 
 modes = parse_review_modes(text)
-
-if query == "modes":
-    print("\n".join(modes))
-    sys.exit(0)
 
 if query == "redirect":
     candidate, intent, mode = args[0], args[1], args[2]
@@ -443,27 +483,40 @@ TRANSITION_APPETITE=""
 
 resolve_transition_context() {
   [ -f "$STATE" ] || die "state.md not found at $STATE (run /stelow entry first)"
-  TRANSITION_STAGE=$(yaml_get current_stage "$STATE" 2>/dev/null) || die "state.md has no current_stage (run /stelow entry first)"
-  TRANSITION_INTENT=$(yaml_get intent "$STATE" 2>/dev/null || echo "unknown")
-  TRANSITION_MODE=$(yaml_get review_mode "$STATE" 2>/dev/null || true)
+  # One parse of the state, not one per key.
+  local knobs
+  knobs=$(yaml_get_all "$STATE" current_stage intent review_mode quality exploration_count appetite) || die "state.md has no readable front-matter"
+  TRANSITION_STAGE=""
+  TRANSITION_INTENT=""
+  TRANSITION_MODE=""
+  TRANSITION_QUALITY=""
+  TRANSITION_EXPLORATION=""
+  TRANSITION_APPETITE=""
+  while IFS="$(printf '\t')" read -r key value; do
+    case "$key" in
+      current_stage) TRANSITION_STAGE="$value" ;;
+      intent) TRANSITION_INTENT="$value" ;;
+      review_mode) TRANSITION_MODE="$value" ;;
+      quality) TRANSITION_QUALITY="$value" ;;
+      exploration_count) TRANSITION_EXPLORATION="$value" ;;
+      appetite) TRANSITION_APPETITE="$value" ;;
+    esac
+  done <<< "$knobs"
+  [ -n "$TRANSITION_STAGE" ] || die "state.md has no current_stage (run /stelow entry first)"
+  [ -n "$TRANSITION_INTENT" ] || TRANSITION_INTENT="unknown"
   [ -n "$TRANSITION_MODE" ] || die "state.md has no review_mode (run stelow seed, or set config.review_mode)"
-  TRANSITION_QUALITY=$(yaml_get quality "$STATE" 2>/dev/null || true)
-  TRANSITION_EXPLORATION=$(yaml_get exploration_count "$STATE" 2>/dev/null || true)
-  TRANSITION_APPETITE=$(yaml_get appetite "$STATE" 2>/dev/null || true)
-  local known_modes
-  known_modes=$(transition_facts modes) || die "could not read the review-mode policy"
-  if ! printf '%s\n' "$known_modes" | grep -qxF -- "$TRANSITION_MODE"; then
-    die "unknown review_mode '$TRANSITION_MODE' (known: $(printf '%s\n' "$known_modes" | paste -sd, -))"
-  fi
 }
 
 # The candidates `advance` accepts from the current stage, under the current
-# review mode. Exits 1 when the stage has no transition at all.
+# review mode. Exits 1 when the stage has no transition at all, and prints
+# the reason on stderr when it is the mode that is wrong (the vocabulary is
+# closed, so an unknown mode is a bug, not a lenient default).
 legal_candidates() {
   transition_facts allowed \
     "$TRANSITION_STAGE" "$TRANSITION_INTENT" "$TRANSITION_MODE" \
     "$TRANSITION_QUALITY" "$TRANSITION_EXPLORATION" "$TRANSITION_APPETITE"
 }
+
 
 do_next() {
   # The legal moves from the current stage, under the current review mode.
@@ -475,7 +528,18 @@ do_next() {
   # between the two answers. One owner: the helper asks itself.
   resolve_transition_context
   local allowed forward
-  allowed=$(legal_candidates) || die "no transition defined from stage '$TRANSITION_STAGE'"
+  local reason_file
+  reason_file=$(mktemp)
+  local status
+  allowed=$(legal_candidates 2>"$reason_file") && status=0 || status=$?
+  if [ "$status" -ne 0 ]; then
+    local reason
+    reason=$(cat "$reason_file")
+    rm -f "$reason_file"
+    [ -n "$reason" ] && die "$reason"
+    die "no transition defined from stage '$TRANSITION_STAGE'"
+  fi
+  rm -f "$reason_file"
   forward=$(transition_facts forward \
     "$TRANSITION_STAGE" "$TRANSITION_INTENT" "$TRANSITION_MODE" \
     "$TRANSITION_QUALITY" "$TRANSITION_EXPLORATION" "$TRANSITION_APPETITE") || forward=""
@@ -501,7 +565,18 @@ do_advance() {
   [ -n "$candidate" ] || die "advance requires a <candidate> argument"
   resolve_transition_context
   local current="$TRANSITION_STAGE" intent="$TRANSITION_INTENT" review_mode="$TRANSITION_MODE" allowed
-  allowed=$(legal_candidates) || die "no transition defined from stage '$current'"
+  local reason_file
+  reason_file=$(mktemp)
+  local status
+  allowed=$(legal_candidates 2>"$reason_file") && status=0 || status=$?
+  if [ "$status" -ne 0 ]; then
+    local reason
+    reason=$(cat "$reason_file")
+    rm -f "$reason_file"
+    [ -n "$reason" ] && die "$reason"
+    die "no transition defined from stage '$current'"
+  fi
+  rm -f "$reason_file"
 
   # A stage that does not run in this review mode must never be entered: it
   # parks the worker waiting for a review nobody configured. Refuse with the
@@ -703,19 +778,102 @@ else:
 # Advancing is the durable workflow boundary: record every durable output
 # that appeared since an earlier transition as produced by the stage being
 # left. The manifest is a list so a stage can own more than one artifact.
-artifacts = []
-artifact_start, artifact_end = block_bounds("artifacts")
-if artifact_start is not None:
-    entry = {}
-    for line in lines[artifact_start + 1:artifact_end]:
-        item = re.match(r"^  - ([a-z_]+):\s*(.+)$", line)
-        field = re.match(r"^    ([a-z_]+):\s*(.+)$", line)
+def parse_artifact_blocks(text):
+    """Every `artifacts:` block in the text, merged into one list.
+
+    The manifest had two writers and two shapes: the helper writes it in the
+    front-matter, and a host prompt tells the worker to append a block of
+    its own. The helper read only the front-matter, so the worker's entry
+    was invisible to it — and the worker's append landed AFTER the
+    front-matter, as a SECOND `artifacts:` key, which is a duplicate key in
+    YAML. The next advance then rewrote the front-matter from the
+    helper's own list and the worker's artifact was silently dropped.
+
+    So: read every block, wherever it is, and merge. One list, one shape,
+    written back in the helper's canonical form.
+    """
+    found = []
+    entry = None
+    inside = False
+    for line in text.splitlines():
+        if re.match(r"^artifacts:\s*(\[\])?\s*$", line):
+            if entry: found.append(entry)
+            entry = None
+            inside = True
+            continue
+        # A new top-level key ends the block. Without this the scan would
+        # read the `history:` list as artifacts — every list in the file
+        # looked like a manifest entry.
+        if inside and re.match(r"^\S", line):
+            if entry: found.append(entry)
+            entry = None
+            inside = False
+        if not inside:
+            continue
+        item = re.match(r"^\s*- ([a-z_]+):\s*(.+)$", line)
+        field = re.match(r"^\s+([a-z_]+):\s*(.+)$", line)
         if item:
-            if entry: artifacts.append(entry)
+            if entry: found.append(entry)
             entry = {item.group(1): item.group(2).strip()}
         elif field and entry:
             entry[field.group(1)] = field.group(2).strip()
-    if entry: artifacts.append(entry)
+    if entry: found.append(entry)
+    return found
+
+def drop_duplicate_artifact_blocks(lines):
+    """Keep the first `artifacts:` block in the front-matter, drop the rest.
+
+    A second `artifacts:` key is a DUPLICATE KEY in YAML: a parser may take
+    the first, the last, or refuse the file. The worker's append landed
+    there, so the file could carry two, and the two readers disagreed about
+    which one was the manifest.
+    """
+    out = []
+    index = 0
+    seen_first = False
+    while index < len(lines):
+        line = lines[index]
+        if re.match(r"^artifacts:\s*(\[\])?\s*$", line):
+            end = index + 1
+            while end < len(lines) and (lines[end].startswith(" ") or not lines[end].strip()):
+                end += 1
+            if not seen_first:
+                seen_first = True
+                out.extend(lines[index:end])
+            index = end
+            continue
+        out.append(line)
+        index += 1
+    return out
+
+def strip_artifact_blocks(text):
+    """The text with every `artifacts:` block removed."""
+    out = []
+    index = 0
+    lines = text.split("\n")
+    while index < len(lines):
+        line = lines[index]
+        if re.match(r"^artifacts:\s*(\[\])?\s*$", line):
+            index += 1
+            while index < len(lines) and (lines[index].startswith(" ") or not lines[index].strip()):
+                index += 1
+            continue
+        out.append(line)
+        index += 1
+    return "\n".join(out)
+
+artifacts = []
+seen_paths = set()
+for item in parse_artifact_blocks(blob):
+    # NOT `path`: that name is the STATE FILE in this scope, and shadowing it
+    # made the advance write the state to the artifact's path instead.
+    item_path = item.get("path")
+    if item_path and item_path in seen_paths:
+        continue
+    if item_path: seen_paths.add(item_path)
+    artifacts.append(item)
+lines = drop_duplicate_artifact_blocks(lines)
+artifact_start, artifact_end = block_bounds("artifacts")
 known_paths = {item.get("path") for item in artifacts}
 CONTROL_FILES = {"state.md", "audit-trail.md", "invariants.json"}
 def workflow_output(absolute):
@@ -754,7 +912,7 @@ if artifact_start is None:
 else:
     lines[artifact_start:artifact_end] = manifest
 
-new_blob = header_open + "\n".join(lines) + header_close + body
+new_blob = header_open + "\n".join(lines) + header_close + strip_artifact_blocks(body)
 fd, temporary = tempfile.mkstemp(prefix=".state.", dir=os.path.dirname(path) or ".", text=True)
 try:
     with os.fdopen(fd, "w") as handle:
