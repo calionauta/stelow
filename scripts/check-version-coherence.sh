@@ -12,8 +12,8 @@
 
 set -euo pipefail
 
-RELEASE_BUMP_RE='^Release-Bump: v[0-9]+\.[0-9]+\.[0-9]+$'
-ROLLBACK_RE='^Rollback: v[0-9]+\.[0-9]+\.[0-9]+ → v[0-9]+\.[0-9]+\.[0-9]+ — [^[:space:]].*'
+RELEASE_BUMP_RE='^Release-Bump: v[0-9]+\.[0-9]+\.[0-9]+(-alpha)?$'
+ROLLBACK_RE='^Rollback: v[0-9]+\.[0-9]+\.[0-9]+(-alpha)? → v[0-9]+\.[0-9]+\.[0-9]+(-alpha)? — [^[:space:]].*'
 # Tag resolution is scoped to the active pre-1.0 line: the frozen 1.x
 # milestones stay on main's history but are not the release baseline
 # (see AGENTS.md "Pre-1.0 policy": new releases continue from 0.58.0).
@@ -104,7 +104,7 @@ run_commit_msg_check() {
   # `Rollback:` requires a non-empty reason. Reject the case where the
   # trailer line is present but has no `— <reason>` tail so the operator
   # cannot bypass intent declaration by writing a bare trailer.
-  if printf '%s\n' "$trailer_text" | grep -Eq '^Rollback: v[0-9]+\.[0-9]+\.[0-9]+ → v[0-9]+\.[0-9]+\.[0-9]+$'; then
+  if printf '%s\n' "$trailer_text" | grep -Eq '^Rollback: v[0-9]+\.[0-9]+\.[0-9]+(-alpha)? → v[0-9]+\.[0-9]+\.[0-9]+(-alpha)?$'; then
     printf '%s\n' \
       'ERROR: a Rollback: trailer requires a mandatory reason after `—`.' \
       'Add `Rollback: v<X.Y.Z> → v<A.B.C> — <reason>` with a non-empty reason.' >&2
