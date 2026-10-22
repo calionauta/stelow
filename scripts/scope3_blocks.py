@@ -40,9 +40,14 @@ STAGE_BY_NAME = {s["name"]: s for s in stages}
 
 # 2. Map skill directory -> stage (heuristic: filename contains stage, else description).
 #    Falls back to a generic template.
+#
+#    A hint that names a stage the graph does not have is a typo, and a typo
+#    used to be written into a shipped skill: `ads` pointed at "promotions",
+#    which is not a stage, so the skill told a workflow to hand off to a
+#    stage that does not exist. The check below refuses to write that.
 STAGE_HINTS = {
     "shape-up": "shape",
-    "plan-critique": "plan-gate",
+    "plan-critique": "critique",
     "ux-critique": "int-gate",
     "tech-planning": "planning",
     "interface-alternatives": "interface",
@@ -57,7 +62,7 @@ STAGE_HINTS = {
     "job-to-be-done": "context",
     "evolutionary-principles": "context",
     "opportunity-mapping": "triage",
-    "ads": "promotions",
+    "ads": "shape",
     "business-models": "shape",
     "coding-standards": "execution",
     "health": "audit",
@@ -67,6 +72,13 @@ STAGE_HINTS = {
     "promotions": "shape",
     "trust-building": "shape",
 }
+
+_unknown_hints = {skill: stage for skill, stage in STAGE_HINTS.items() if stage not in STAGE_BY_NAME}
+if _unknown_hints:
+    raise SystemExit(
+        "scope3_blocks: these hints name a stage the graph does not have: "
+        + ", ".join(f"{skill} -> {stage}" for skill, stage in sorted(_unknown_hints.items()))
+    )
 
 ENTRY_BLOCK = """## Entry (mode detection)
 

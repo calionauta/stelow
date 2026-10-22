@@ -26,6 +26,7 @@
   },
   "$defs": {
     "capability": { "enum": ["fanout", "pipeline", "structured-output", "durable-run", "resume", "cancel", "status", "hidden-workers", "human-input", "per-call-model", "per-call-permission", "isolated-workspace", "file-claims"] },
+    "condition": { "enum": ["always", "appetite_supports_fanout", "exploration_supports_fanout", "partition_is_safe", "ui_scope_present", "findings_exist"] },
     "task": {
       "type": "object",
       "required": ["id", "skill", "depends_on", "when", "failure_policy", "output", "output_schema", "human_boundary"],
@@ -34,7 +35,7 @@
         "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
         "skill": { "type": "string", "pattern": "^stelow-[a-z0-9-]+$" },
         "depends_on": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
-        "when": { "type": "string", "minLength": 1 },
+        "when": { "$ref": "#/$defs/condition" },
         "requirements": { "type": "array", "items": { "$ref": "#/$defs/capability" }, "uniqueItems": true },
         "failure_policy": { "enum": ["fail", "skip-with-reason"] },
         "output": { "type": "string", "minLength": 1, "pattern": "^(?!/)(?!.*\\.\\.)[^ ]+$" },

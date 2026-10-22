@@ -146,12 +146,6 @@
       "review": "diff-gate"
     }
   },
-  "entry_stages": {
-    "analysis": "triage",
-    "planning": "critique",
-    "execution": "execution",
-    "review": "diff-gate"
-  },
   "stages": [
     {
       "order": 10,

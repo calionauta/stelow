@@ -127,6 +127,39 @@ describe("check breadboard: the two severities", () => {
     expect(result.json?.problems[0].reason).toContain("P404");
   });
 
+  it("refuses an affordance that wires to itself", () => {
+    // The bug this pins: a self-wire satisfied the "connects" rule and the
+    // "is read" rule, so a store that only talked to itself and a code
+    // affordance that only called itself both passed every check. The map
+    // looked complete and said nothing.
+    const map = structuredClone(COMPLETE);
+    const store = map.affordances.find((item) => item.id === "S1");
+    store.returnsTo = ["S1"];
+    const result = runCheck(map, ["--json"]);
+    expect(result.status).toBe(1);
+    expect(problemIds(result, "error")).toEqual(["S1"]);
+    expect(result.json?.problems[0].check).toBe("wiring does not point at itself");
+  });
+
+  it("reports a store whose data only circulates between stores", () => {
+    // A loop of stores passes the old rule — every store in it declared a
+    // reader — while nothing outside the loop ever receives the data.
+    const map = structuredClone(COMPLETE);
+    const stores = map.affordances.filter((item) => item.kind === "store");
+    stores[0].returnsTo = [stores[1].id];
+    stores[1].returnsTo = [stores[0].id];
+    const result = runCheck(map, ["--json"]);
+    expect(result.status).toBe(0);
+    expect(result.json?.counts.errors).toBe(0);
+    // The two stores now circulate; the display they used to feed also lost
+    // its source, which is the same story told from the other end.
+    expect(problemIds(result, "gap")).toEqual([stores[0].id, stores[1].id, "U3"]);
+    const circulation = result.json?.problems.find((problem) =>
+      problem.reason.includes("only circulates between stores"),
+    );
+    expect(circulation?.id).toBe(stores[0].id);
+  });
+
   it("prints findings on stderr and a summary on stdout without --json", () => {
     const map = structuredClone(COMPLETE);
     map.affordances[0].wiresOut = ["P404"];
@@ -252,6 +285,46 @@ function rulesFromSchema(): Mutation[] {
         },
       });
     }
+    // The type keyword was the one the walker skipped, and the one the helper
+    // got wrong: `schemaVersion: true` passed the check, because Python says
+    // `True != 1` is False while the contract says a boolean is not a number.
+    // A type case per declared field is what catches that class of bug.
+    if (node.type === "string") {
+      mutations.push({
+        label: `${where}: a number where the contract declares string`,
+        apply: (map) => {
+          const parent = at(map, path.slice(0, -1));
+          if (parent) parent[path[path.length - 1]] = 42;
+        },
+      });
+    }
+    if (node.type === "number") {
+      mutations.push({
+        label: `${where}: a string where the contract declares number`,
+        apply: (map) => {
+          const parent = at(map, path.slice(0, -1));
+          if (parent) parent[path[path.length - 1]] = "one";
+        },
+      });
+    }
+    if (node.type === "boolean") {
+      mutations.push({
+        label: `${where}: a string where the contract declares boolean`,
+        apply: (map) => {
+          const parent = at(map, path.slice(0, -1));
+          if (parent) parent[path[path.length - 1]] = "yes";
+        },
+      });
+    }
+    if (node.type === "array") {
+      mutations.push({
+        label: `${where}: a string where the contract declares array`,
+        apply: (map) => {
+          const parent = at(map, path.slice(0, -1));
+          if (parent) parent[path[path.length - 1]] = "not-an-array";
+        },
+      });
+    }
   };
 
   walk(SCHEMA, []);
@@ -282,6 +355,19 @@ describe("the helper's contract is the published schema", () => {
       expect(result.json?.counts.contract, mutation.label).toBeGreaterThan(0);
     }
   }, 120_000);
+
+  it("rejects a boolean where the contract declares a number", () => {
+    // The schema says `schemaVersion` is the number 1. Python says `True != 1`
+    // is False, so the helper used to accept `true` — a type the contract
+    // does not allow, from a language whose truthiness rules are not the
+    // contract's. The schema-derived cases above plant a string; this one
+    // plants the boolean that actually shipped past the check.
+    const map = structuredClone(COMPLETE);
+    map.schemaVersion = true;
+    const result = runCheck(map, ["--json"]);
+    expect(result.status).toBe(1);
+    expect(result.json?.counts.contract).toBeGreaterThan(0);
+  });
 });
 
 // ── the guard: leaving selection requires a valid map ────────────────────────
@@ -289,7 +375,7 @@ describe("the helper's contract is the published schema", () => {
 // The worker can forget to run the checks; `advance` cannot. This is the whole
 // point of moving the rules into the helper — the host already runs it.
 
-function workflowRepo(map: unknown): { dir: string; state: string } {
+function workflowRepo(map: unknown, mapAt = "interfaces"): { dir: string; state: string } {
   const dir = mkdtempSync(join(tmpdir(), "stelow-guard-"));
   spawnSync("git", ["init", "-q"], { cwd: dir });
   spawnSync("git", ["config", "user.email", "t@t"], { cwd: dir });
@@ -326,7 +412,9 @@ stages:
 `,
   );
   writeFileSync(join(stateDir, "interfaces", "selected-interface.md"), "# selected\n");
-  writeFileSync(join(stateDir, "interfaces", "breadboard.json"), JSON.stringify(map));
+  const mapDir = join(stateDir, mapAt);
+  mkdirSync(mapDir, { recursive: true });
+  writeFileSync(join(mapDir, "breadboard.json"), JSON.stringify(map));
   return { dir, state };
 }
 
@@ -381,6 +469,26 @@ describe("advance runs the check on the selection transition", () => {
       expect(result.status, result.stderr).toBe(0);
       expect(result.stderr).toContain("place has affordances");
       expect(result.stage).toBe("architecture");
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("checks a map the precondition accepted from a subdirectory", () => {
+    // The bug this pins: the precondition accepts any file whose path ENDS in
+    // `interfaces/breadboard.json`, while the guard resolved two exact paths.
+    // A map parked one directory deeper therefore satisfied "the artifact
+    // exists" and the check was skipped without a word — a broken map
+    // advanced the workflow. The guard now checks every map the precondition
+    // accepts.
+    const map = structuredClone(COMPLETE);
+    map.affordances[0].wiresOut = ["P404"];
+    const { dir, state } = workflowRepo(map, join("backup", "interfaces"));
+    try {
+      const result = advance(dir, state);
+      expect(result.status, result.stderr).not.toBe(0);
+      expect(result.stderr).toContain("wires to P404");
+      expect(result.stage).toBe("selection");
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

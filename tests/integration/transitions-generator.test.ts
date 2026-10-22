@@ -11,8 +11,9 @@
  */
 import { describe, it, expect } from "vitest";
 import { spawnSync, execSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
+import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -57,5 +58,71 @@ describe("transitions generator gate", () => {
   it("generator reports its own path on unknown template stages (not silent)", () => {
     const out = execSync(`python3 ${GENERATOR} --check 2>&1 || true`, { cwd: REPO_ROOT, encoding: "utf8" });
     expect(out).not.toMatch(/unknown stage/);
+  });
+});
+
+/**
+ * The layers the runtime PARSES must move when the source moves.
+ *
+ * The helper reads the intent route and the rework edges out of
+ * `transitions.md`. Both used to be hand-written in the template, so
+ * `stages.yaml` declared them and the enforced file did not have to agree:
+ * changing `routes.intents.investigate` changed the published catalog, left
+ * the mirror byte-identical, and no test failed. A silent divergence between
+ * the source of truth and what actually runs is the failure this pins.
+ *
+ * The proof runs the real generator against a real copy of the tree: the
+ * committed mirror, a mutated `stages.yaml`, and the rendered output.
+ */
+describe("the enforced mirror follows the source", () => {
+  function renderWith(mutate: (yaml: string) => string): string {
+    const dir = mkdtempSync(join(tmpdir(), "stelow-transitions-"));
+    try {
+      const script = join(REPO_ROOT, "scripts", "generate-transitions.py");
+      // The generator resolves the repo from its own location, so the copy has
+      // to carry the whole tree it reads: stages.yaml and the template.
+      const tree = join(dir, "repo");
+      mkdirSync(join(tree, "skills", "stelow-workflow-orchestrator", "references"), { recursive: true });
+      mkdirSync(join(tree, "scripts"), { recursive: true });
+      writeFileSync(
+        join(tree, "skills", "stelow-workflow-orchestrator", "stages.yaml"),
+        mutate(readFileSync(STAGES_YAML, "utf8")),
+      );
+      writeFileSync(
+        join(tree, "skills", "stelow-workflow-orchestrator", "references", "transitions.template.md"),
+        readFileSync(TEMPLATE, "utf8"),
+      );
+      copyFileSync(script, join(tree, "scripts", "generate-transitions.py"));
+      const run = spawnSync("python3", [join(tree, "scripts", "generate-transitions.py")], {
+        cwd: tree,
+        encoding: "utf8",
+      });
+      expect(run.status, run.stderr).toBe(0);
+      return readFileSync(
+        join(tree, "skills", "stelow-workflow-orchestrator", "references", "transitions.md"),
+        "utf8",
+      );
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }
+
+  it("changing an intent route changes the enforced route line", () => {
+    const mutated = renderWith((yaml) =>
+      yaml.replace(
+        "    investigate: [triage, select, setup, context, audit]",
+        "    investigate: [triage, select, setup, context, shape, audit]",
+      ),
+    );
+    expect(mutated).not.toBe(readFileSync(OUTPUT, "utf8"));
+    expect(mutated).toContain("**investigate:** triage → select → setup → context → shape → audit");
+  });
+
+  it("changing a rework edge changes the enforced rework line", () => {
+    const mutated = renderWith((yaml) =>
+      yaml.replace("      rework: [shape]", "      rework: [context]"),
+    );
+    expect(mutated).not.toBe(readFileSync(OUTPUT, "utf8"));
+    expect(mutated).toContain("rework:    context");
   });
 });

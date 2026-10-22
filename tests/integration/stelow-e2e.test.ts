@@ -87,8 +87,9 @@ describe("e2e: entry -> router -> shape -> critique -> gate", () => {
   it("mini-workflow completes and returns control to router", () => {
     const wd = makeWorkdir();
 
-    // Step 1 — entry: scaffold state.md with current_stage=setup (per the
-    // entry skill convention: setup is the first stage for feature intent).
+    // Step 1 — entry: scaffold state.md at setup. The workflow really starts
+    // at triage (every intent route does), but this fixture starts mid-flow
+    // to reach the interesting stages without replaying triage and select.
     writeFileSync(join(wd.dir, "state.md"),
       `---
 name: e2e-fixture

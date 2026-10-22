@@ -415,13 +415,13 @@ In **workflow mode**, skip to `### Workflow slice` and emit a complete
 ## Hand-off (workflow mode)
 
 ```
-stage          : plan-gate
-description    : Tech plan gate. Visual review of spec-tech.md via visual review. Only in Product Spec + Interface + Tech Review or Code 
+stage          : critique
+description    : Product review. Decides whether the proposal is accepted, rejected, or reworked. 
 status         : <done|partial|blocked>
 artifacts      : <paths created or modified>
-next-candidate : execution
+next-candidate : gate
 gate           : none
-rework-on      : planning
+rework-on      : shape
 ```
 
 Workflow mode: emit the above Hand-off block verbatim, then stop. The

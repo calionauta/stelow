@@ -389,12 +389,21 @@ do_advance() {
   # past shape with "missing required artifact" even though the file was
   # there. The state dir is derived from STATE; the .stelow root stays as a
   # fallback for the legacy flat layout.
-  python3 - "$current" "$ROOT" "$STATEDIR" "$TRANSITIONS" "$STATE" <<'PY' || die "pre-condition check failed"
+  local map_list
+  map_list="$(mktemp)"
+  python3 - "$current" "$ROOT" "$STATEDIR" "$TRANSITIONS" "$STATE" "$map_list" <<'PY' || die "pre-condition check failed"
 import sys, re, os, glob
-current, root, statedir, transitions, state = sys.argv[1:6]
+current, root, statedir, transitions, state, map_list = sys.argv[1:7]
 trans = open(transitions).read()
 m = re.search(r"^### " + re.escape(current) + r"\s*\n(.*?)(?=^### |\Z)", trans, re.MULTILINE | re.DOTALL)
-if not m: sys.exit(0)
+# A stage with no section in the transitions reference means the reference is
+# truncated or the stage is not in it. Requiring nothing and allowing the
+# transition is fail-open: the guard that was supposed to check the stage's
+# artifacts checks nothing. It is unreachable today (the candidate check
+# refuses an unknown stage first), and a guard that only works while another
+# guard happens to run first is not a guard.
+if not m:
+    print(f"pre-condition: no section for stage '{current}' in the transitions reference", file=sys.stderr); sys.exit(1)
 
 def is_inside(child, parent):
     # realpath, not abspath: on macOS tmpdir() is /var/folders/... (a symlink
@@ -444,6 +453,24 @@ for line in m.group(1).splitlines():
         pat = am.group(1)
         if not any(found_under(base, pat) for base in bases):
             print(f"missing required artifact: {pat} (expected under {state_dir or statedir})", file=sys.stderr); sys.exit(1)
+
+# Every breadboard map the precondition would accept, so the transition checks
+# exactly what it demanded. The guard used to resolve two exact paths while
+# the precondition accepted any file ENDING in `interfaces/breadboard.json`, so
+# a map parked in a subdirectory satisfied "the artifact exists" and the check
+# was skipped without a word: a broken map advanced the workflow.
+map_paths = []
+for base in bases:
+    canonical = os.path.join(base, "interfaces", "breadboard.json")
+    if os.path.isfile(canonical):
+        map_paths.append(canonical)
+        continue
+    for path in sorted(glob.glob(os.path.join(base, "**", "interfaces", "breadboard.json"), recursive=True)):
+        if os.path.isfile(path):
+            map_paths.append(path)
+if map_paths:
+    with open(map_list, "w") as handle:
+        handle.write("\n".join(dict.fromkeys(map_paths)) + "\n")
 PY
 
   # A breadboard is not merely a file that must exist: leaving `selection`
@@ -454,22 +481,18 @@ PY
   #
   # Gaps are advisory (a display with no source may be a map the writer is
   # still completing), so only errors refuse. The views carry the gaps.
-  if [ "$current" = "selection" ]; then
-    local map_path="" state_dir
-    state_dir="$(dirname "$STATE")"
-    if [ -f "$state_dir/interfaces/breadboard.json" ]; then
-      map_path="$state_dir/interfaces/breadboard.json"
-    elif [ -f "$STATEDIR/interfaces/breadboard.json" ]; then
-      map_path="$STATEDIR/interfaces/breadboard.json"
-    fi
-    if [ -n "$map_path" ]; then
+  if [ "$current" = "selection" ] && [ -s "$map_list" ]; then
+    local map_path
+    while IFS= read -r map_path; do
+      [ -n "$map_path" ] || continue
       # `bash "$SELF"`, not `"$SELF"`: hosts sync the helper as a 0644 file and
       # run it with `bash` (server/runtime/helper-script.ts). Executing it
       # directly would fail on every host with "Permission denied".
       bash "$SELF" check breadboard "$map_path" >/dev/null \
         || die "breadboard check failed for $map_path (fix the errors above; gaps are advisory)"
-    fi
+    done < "$map_list"
   fi
+  rm -f "$map_list"
 
   # dry run validates without side effects (no lock, no mutation)
   if [ -n "${DRY_RUN:-}" ]; then
@@ -686,7 +709,13 @@ if os.path.isdir(lockdir):
             add("warn", "orphan-pid", "lock pid file points at dead pid")
 
 # 4. state<->transitions drift
-if os.path.exists(state_path) and os.path.exists(trans_path):
+# A missing transitions reference is not "no drift": it is the reference the
+# whole state machine reads. A vendored helper without it reports "doctor: ok"
+# and every check that needed it silently did nothing.
+if not os.path.exists(trans_path):
+    add("error", "transitions-missing",
+        f"transitions reference not found at {trans_path} — the state machine cannot be checked")
+elif os.path.exists(state_path):
     blob = open(state_path).read()
     cm = re.search(r"^current_stage:\s*(\S+)", blob, re.MULTILINE)
     if cm:
@@ -800,7 +829,18 @@ text = open(trans_path).read()
 stages = [m.group(1) for m in re.finditer(r"^### (\S+)\s*$", text, re.MULTILINE)]
 if not stages:
     print("seed: no stages in transitions reference", file=sys.stderr); sys.exit(1)
-first = "triage" if intent == "new-product" else "setup"
+# The first stage is the FIRST STAGE OF THE INTENT'S ROUTE, read from the same
+# route the transitions reference declares for it. It used to be hardcoded as
+# "triage" for new-product and "setup" for everything else, which disagreed
+# with every route in `stages.yaml` (all of them start at triage) and with the
+# entry skill that writes the first stage by hand. Two entry paths, two
+# answers, and the test pinned the wrong one.
+route = re.search(r"^\*\*" + re.escape(intent) + r":\*\*\s*(.+)$", text, re.MULTILINE)
+if not route:
+    print(f"seed: no route for intent '{intent}' in the transitions reference", file=sys.stderr); sys.exit(1)
+first = route.group(1).split("→")[0].strip()
+if not first:
+    print(f"seed: empty route for intent '{intent}' in the transitions reference", file=sys.stderr); sys.exit(1)
 if first not in stages:
     print(f"seed: first stage '{first}' not in transitions reference", file=sys.stderr); sys.exit(1)
 date = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
@@ -2723,7 +2763,7 @@ def contract_problems(map):
             return
         if min_length is not None and len(value) < min_length:
             err("%s.%s" % (path, name), "empty string where the contract requires at least %d character(s)" % min_length)
-        if pattern is not None and not re.search(pattern, value):
+        if pattern is not None and not re.fullmatch(pattern, value):
             err("%s.%s" % (path, name), '"%s" does not match %s' % (value, pattern))
         if enum is not None and value not in enum:
             err("%s.%s" % (path, name), '"%s" is not one of %s' % (value, " | ".join('"%s"' % e for e in enum)))
@@ -2735,8 +2775,13 @@ def contract_problems(map):
     closed(map, "$", {"schemaVersion", "interfaceId", "selectedBy", "scopeCoverage", "places", "affordances"})
     require(map, "$", ("schemaVersion", "interfaceId", "places", "affordances"))
 
-    if "schemaVersion" in map and map["schemaVersion"] != 1:
-        err("$.schemaVersion", "%s is not 1" % json.dumps(map["schemaVersion"]))
+    if "schemaVersion" in map:
+        version = map["schemaVersion"]
+        # `True != 1` is False in Python, so a boolean passed the old check
+        # while the contract declares a number. JSON Schema's `true` is not a
+        # number, and the two must agree.
+        if isinstance(version, bool) or not isinstance(version, (int, float)) or version != 1:
+            err("$.schemaVersion", "%s is not 1" % json.dumps(version))
     string(map, "$", "interfaceId", min_length=1)
     string(map, "$", "selectedBy", enum=SELECTORS)
 
@@ -2809,7 +2854,7 @@ def contract_problems(map):
                 target_path = "%s.%s[%d]" % (path, field, target_index)
                 if not isinstance(target, str):
                     err(target_path, "not a string where the contract declares string")
-                elif not re.search(pattern, target):
+                elif not re.fullmatch(pattern, target):
                     err(target_path, '"%s" does not match %s' % (target, pattern))
 
     return problems
@@ -2976,16 +3021,46 @@ def check_displays_have_source(board):
     ]
 
 
+def check_wiring_not_self(board):
+    """An affordance cannot trigger itself, and a store cannot read itself.
+
+    Self-wires were accepted as real wiring: `N1 wiresOut ["N1"]` counted as
+    "this code affordance connects", and `S1 returnsTo ["S1"]` counted as
+    "this store is read". Both then satisfied the rule with the map's own
+    emptiness — a store that only talks to itself reads nothing, and a code
+    affordance that only calls itself is disconnected. The audit called it a
+    hole and it was one: a map could pass every check while saying nothing.
+    """
+    flagged = []
+    for item in board["affordances"]:
+        for field in ("wiresOut", "returnsTo"):
+            targets = item.get(field) or []
+            if item["id"] in targets:
+                flagged.append(
+                    finding(
+                        item,
+                        "points at itself through %s — an affordance cannot trigger itself, and a store cannot "
+                        "read itself; this wire carries no information" % field,
+                    )
+                )
+                break
+    return flagged
+
+
 def check_code_affordances_connect(board):
+    # A self-wire is not a wire (see check_wiring_not_self), so it must not
+    # satisfy "connects" either.
     targeted = set()
     for item in board["affordances"]:
-        targeted.update(item.get("wiresOut") or [])
-        targeted.update(item.get("returnsTo") or [])
+        for target in (item.get("wiresOut") or []) + (item.get("returnsTo") or []):
+            if target != item["id"]:
+                targeted.add(target)
     flagged = []
     for item in board["affordances"]:
         if item["kind"] != "code":
             continue
-        if not item.get("wiresOut") and not item.get("returnsTo") and item["id"] not in targeted:
+        wires = [t for t in (item.get("wiresOut") or []) + (item.get("returnsTo") or []) if t != item["id"]]
+        if not wires and item["id"] not in targeted:
             flagged.append(
                 finding(
                     item,
@@ -2997,15 +3072,51 @@ def check_code_affordances_connect(board):
 
 
 def check_stores_are_read(board):
-    return [
-        finding(
-            item,
-            "a store nothing reads — no affordance receives its data, so it is unused state or its reader is "
-            "missing from the map",
-        )
-        for item in board["affordances"]
-        if item["kind"] == "store" and not item.get("returnsTo")
-    ]
+    """A store is read when its data reaches something that is not a store.
+
+    The previous rule asked only "does the store declare a reader?", so a
+    store that returned to itself — or to another store that returned to it —
+    counted as read. A cycle of stores with no display anywhere passes the
+    "read" rule while nothing in the interface ever shows the data. Following
+    the data flow to the first non-store is the same story the prose tells,
+    and it is what "receives its data" means.
+    """
+    by_id = {item["id"]: item for item in board["affordances"]}
+    flagged = []
+    for item in board["affordances"]:
+        if item["kind"] != "store":
+            continue
+        if not item.get("returnsTo"):
+            flagged.append(
+                finding(
+                    item,
+                    "a store nothing reads — no affordance receives its data, so it is unused state or its reader is "
+                    "missing from the map",
+                )
+            )
+            continue
+        seen = set()
+        frontier = [t for t in item["returnsTo"] if t != item["id"]]
+        reaches_reader = False
+        while frontier:
+            target = frontier.pop()
+            if target in seen:
+                continue
+            seen.add(target)
+            reader = by_id.get(target)
+            if reader is None or reader["kind"] != "store":
+                reaches_reader = True
+                break
+            frontier.extend(t for t in (reader.get("returnsTo") or []) if t not in seen)
+        if not reaches_reader:
+            flagged.append(
+                finding(
+                    item,
+                    "a store whose data only circulates between stores — nothing outside the loop receives it, so it "
+                    "is unused state",
+                )
+            )
+    return flagged
 
 
 def check_names_are_real(board):
@@ -3031,6 +3142,7 @@ CHECKS = (
     ("ids are unique", "error", check_ids_unique),
     ("id prefix matches kind", "error", check_id_kind_matches),
     ("wiring resolves", "error", None),  # needs the dangling set; wired below
+    ("wiring does not point at itself", "error", check_wiring_not_self),
     ("affordance has a declared place", "error", check_affordances_have_place),
     ("subplace has a declared parent", "error", check_subplaces_have_parent),
     ("navigation lands on a place", "error", check_navigation_lands_on_places),

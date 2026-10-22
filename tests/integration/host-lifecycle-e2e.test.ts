@@ -148,12 +148,17 @@ function writeReceipt(name: string): void {
 }
 
 describe("host lifecycle e2e", () => {
-  it("seeds at setup for feature intent", () => {
-    expect(currentStage()).toBe("setup");
+  it("seeds at triage for feature intent", () => {
+    // Every intent route in stages.yaml starts at triage, and the entry skill
+    // says the same. The seed used to start every intent but new-product at
+    // setup — a stage no route declared for them.
+    expect(currentStage()).toBe("triage");
   });
 
-  it("walks setup → audit, honoring gate receipts", () => {
+  it("walks triage → audit, honoring gate receipts", () => {
     const chain: Array<{ stage: string; receipt?: string }> = [
+      { stage: "select" },
+      { stage: "setup" },
       { stage: "context" },
       { stage: "shape" },
       { stage: "critique" },
@@ -185,7 +190,7 @@ describe("host lifecycle e2e", () => {
     expect(seed.status).toBe(0);
     const other = JSON.parse(seed.stdout).statedir as string;
     const e2 = { STELOW_STATEDIR: other };
-    for (const s of ["context", "shape", "critique", "gate", "scope", "interface", "int-gate", "selection", "architecture", "planning"]) {
+    for (const s of ["select", "setup", "context", "shape", "critique", "gate", "scope", "interface", "int-gate", "selection", "architecture", "planning"]) {
       writeStageArtifacts(s, other);
       const r = run(ctx.helper, ["advance", s], ctx.dir, e2);
       expect(r.status, `advance ${s}`).toBe(0);
@@ -213,6 +218,8 @@ describe("host lifecycle e2e", () => {
     const wf = tracking.workflows.find((w: any) => w.name === "e2e-sync");
     expect(wf.scopes.map((s: any) => s.id)).toEqual(["scope-1"]);
     // Tracking stays valid for subsequent advances.
+    expect(run(ctx.helper, ["advance", "select"], ctx.dir, e2).status).toBe(0);
+    expect(run(ctx.helper, ["advance", "setup"], ctx.dir, e2).status).toBe(0);
     expect(run(ctx.helper, ["advance", "context"], ctx.dir, e2).status).toBe(0);
   });
 
@@ -245,9 +252,10 @@ describe("host lifecycle e2e", () => {
     const parsed = JSON.parse(seed.stdout);
     const e2 = { STELOW_STATEDIR: parsed.statedir as string };
     const state = parsed.state as string;
-    const r = run(ctx.helper, ["advance", "context", "--dry-run"], ctx.dir, e2);
+    // The feature route starts at triage, so the first legal move is select.
+    const r = run(ctx.helper, ["advance", "select", "--dry-run"], ctx.dir, e2);
     expect(r.status).toBe(0);
-    expect(readFileSync(state, "utf8")).toMatch(/^current_stage:\s*setup/m);
+    expect(readFileSync(state, "utf8")).toMatch(/^current_stage:\s*triage/m);
   });
 
   it("ask without identity is a usage error (exit 2, no hang)", () => {
