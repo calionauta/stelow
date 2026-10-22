@@ -165,3 +165,55 @@ describe("the enforced mirror follows the source", () => {
     expect(template).not.toMatch(/^\| plan-gate \| Auto \| skip \|/m);
   });
 });
+
+/**
+ * The drift gate must FAIL on a drifted tree.
+ *
+ * The suite proved the gate passes on a clean tree — which a neutered gate
+ * also does. Nothing checked the refusal, so the one check that stands
+ * between a hand edit and a published mirror could be turned off and the
+ * suite stayed green. (The mutation gate caught exactly this: the
+ * `generator-drift-allowed` mutant SURVIVED until this test existed.)
+ */
+describe("the drift gate refuses a drifted tree", () => {
+  function checkWith(mutate: (yaml: string) => string): { status: number; output: string } {
+    const dir = mkdtempSync(join(tmpdir(), "stelow-transitions-check-"));
+    try {
+      const tree = join(dir, "repo");
+      mkdirSync(join(tree, "skills", "stelow-workflow-orchestrator", "references"), { recursive: true });
+      mkdirSync(join(tree, "scripts"), { recursive: true });
+      writeFileSync(
+        join(tree, "skills", "stelow-workflow-orchestrator", "stages.yaml"),
+        mutate(readFileSync(STAGES_YAML, "utf8")),
+      );
+      writeFileSync(
+        join(tree, "skills", "stelow-workflow-orchestrator", "references", "transitions.template.md"),
+        readFileSync(TEMPLATE, "utf8"),
+      );
+      copyFileSync(join(REPO_ROOT, "scripts", "generate-transitions.py"), join(tree, "scripts", "generate-transitions.py"));
+      const run = spawnSync("python3", [join(tree, "scripts", "generate-transitions.py"), "--check"], {
+        cwd: tree,
+        encoding: "utf8",
+      });
+      return { status: run.status ?? -1, output: `${run.stdout}${run.stderr}` };
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }
+
+  it("refuses a tree whose committed mirror no longer matches its source", () => {
+    const drifted = checkWith((yaml) =>
+      yaml.replace(
+        "    investigate: [triage, select, setup, context, audit]",
+        "    investigate: [triage, select, setup, context, shape, audit]",
+      ),
+    );
+    expect(drifted.status, drifted.output).not.toBe(0);
+    expect(drifted.output).toContain("stale");
+  });
+
+  it("refuses a tree with no committed mirror at all", () => {
+    const missing = checkWith((yaml) => yaml);
+    expect(missing.status, missing.output).not.toBe(0);
+  });
+});

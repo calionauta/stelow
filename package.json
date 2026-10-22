@@ -1,6 +1,6 @@
 {
   "name": "@calionauta/stelow",
-  "version": "0.83.1-alpha",
+  "version": "0.83.2-alpha",
   "description": "stelow — opinionated product workflow. stellar clarity. low friction.",
   "keywords": [
     "ai-coding-agent",
@@ -51,6 +51,7 @@
     "test:coverage": "vitest run --coverage",
     "test:ci": "./scripts/test-ci.sh",
     "test:rigor": "bash scripts/rigor-scan.sh 60",
+    "test:mutation": "python3 scripts/mutation-gate.py",
     "typecheck": "tsc --noEmit",
     "lint": "npm run typecheck && oxlint .",
     "deadcode": "knip --no-exit-code --include files,dependencies,unlisted,unresolved",
