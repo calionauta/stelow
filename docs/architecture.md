@@ -16,7 +16,7 @@ same workflow. Hosts only add an optional marker protocol
 | `skills/stelow-workflow-router/` | Router. Validates the next candidate against `transitions.md`, calls `scripts/stelow advance`, loads the next stage skill, appends the hand-off audit record. |
 | `skills/stelow-workflow-orchestrator/` | Orchestrator. Coordinates the 18-stage pipeline (Setup → Shape → Critique → Gate → Scope → Interface → Selection → Architecture → Planning → Execution → Verification → Audit). |
 | `skills/stelow-product-<area>/` | Product strategy playbooks + domain tactics (15 total, reference-only). |
-| `scripts/stelow` | Portable helper (bash + python3): `status`, `advance`, `doctor`, `seed`, `schema`, `ask`. Single source of runtime mechanics. |
+| `scripts/stelow` | Portable helper (bash + python3): `status`, `advance`, `doctor`, `seed`, `schema`, `check`, `ask`. Single source of runtime mechanics. |
 | `skills/stelow-workflow-orchestrator/references/cli-tools/` | Single source for shared tool references. Sub-skills link it via sibling-relative paths (`../stelow-workflow-orchestrator/...`) — no copies, no sync step. |
 | `install.sh` | Installer. Flattens `skills/*` into `~/.agents/skills/`, prunes retired/orphaned skills, offers optional tooling (cymbal, sem, ctx7). |
 | `types/stages.ts` | Shared TypeScript interfaces for the `stages.yaml` stage model (transitions, gates). |
@@ -64,17 +64,24 @@ It is the source of truth for the interface's shape, and the prose in
 `selected-interface.md` is its commentary — the same "the map is the truth,
 the text explains it" rule the rest of the workflow already follows.
 
+The map's rules live in the portable helper: `stelow check breadboard` runs the
+contract in `schemas/breadboard.json` and the affordance checks, and
+`stelow advance` runs it on the `selection` transition — a map with errors is
+refused, a map with only gaps advances with the findings printed. The placement
+is deliberate: the helper is the one artifact every execution environment runs
+(the host spawns it for `advance`), so the check happens where the map is
+written instead of in repo-side scripting a workflow never reaches.
+
 `scripts/render-diagram.mjs` projects the map into Mermaid and then into
 views: a self-contained HTML file (inline SVG, zoom, CSS-variable theme, no
-external request) and a markdown reading view. It also runs the map's own
-rules — the semantic checks in `scripts/breadboard-checks.mjs` and the
-contract in `scripts/breadboard-contract.mjs` (a fail-closed interpreter of
-`schemas/breadboard.json`) — and refuses to draw a map that contradicts
-itself, because a view of a broken map presents a hole as a decision.
+external request) and a markdown reading view. It reads the verdict from the
+helper — never a second opinion — and refuses to draw a map with errors,
+because a view of a broken map presents a hole as a decision.
 
 The renderer is repo-side tooling, not part of the installed skill surface:
 `install.sh` and the plugin sync ship only `scripts/stelow`. It therefore
-degrades — no renderer means no diagram, and the map still stands.
+degrades — no renderer means no diagram, and the map still stands. The check
+is not part of that degradation: it ships with the helper.
 
 ## Data flow
 

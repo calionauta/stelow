@@ -10,17 +10,21 @@
  * blocks the workflow: the JSON is written and valid before this runs, and
  * every downstream stage reads the JSON, not the HTML.
  *
- * Two different failures, two different answers:
+ * This script renders. It does not decide whether the map is valid — the rules
+ * live in `scripts/stelow check breadboard`, the one artifact every execution
+ * environment has, and the same verdict `advance` enforces at the transition.
+ * A view and the gate must never disagree about whether a map is valid.
  *
- *   The map contradicts its contract or itself (a wire to an id nobody
- *   declares, a duplicate id, an unknown property). Drawing it would draw a
- *   hole as if it were a decision, so the views are refused and the run exits
- *   non-zero. The map still stands; it just needs fixing.
+ * What the verdict means here:
  *
- *   A check reports a gap (a display with no source, a store nothing reads).
- *   That is a judgement the writer has to make, not something a renderer can
- *   settle, so the views are written and the gaps are printed inside them —
- *   the reader of the picture learns what the map says it does not know.
+ *   Error (a wire to an id nobody declares, a duplicate id, a contract
+ *   violation). Drawing it would draw a hole as if it were a decision, so the
+ *   views are refused and the run exits non-zero. The map still stands; it
+ *   just needs fixing.
+ *
+ *   Gap (a display with no source, a store nothing reads). That is a
+ *   judgement the writer has to make, so the views are written and the gaps
+ *   are printed inside them — the reader learns what the map does not know.
  *
  * Degradation, in order:
  *   1. no renderer available → the map stands, no HTML, exit 0
@@ -35,16 +39,15 @@
  *   --emit-mermaid       also write <input-basename>.mmd
  *   --emit-markdown      also write <input-basename>.md (the affordance tables)
  *   --with-diagram       include the Mermaid source in the markdown
- *   --check              validate the map and report problems; write nothing
- *   --strict             exit non-zero on a gap as well as on an error
  */
+import { spawnSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
-import { resolve } from "node:path";
-import { pathToFileURL } from "node:url";
-import { toMermaid, wiringReport } from "./breadboard-mermaid.mjs";
-import { collectProblems } from "./breadboard-checks.mjs";
-import { contractProblems } from "./breadboard-contract.mjs";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { toMermaid } from "./breadboard-mermaid.mjs";
 import { toMarkdown, toMarkdownWithDiagram } from "./breadboard-markdown.mjs";
+
+const MODULE_DIR = dirname(fileURLToPath(import.meta.url));
 
 export const USAGE = `render-diagram — turn a breadboard map into a diagram
 
@@ -56,13 +59,13 @@ Options:
   --emit-mermaid        also write <input-basename>.mmd
   --emit-markdown       also write <input-basename>.md (tables + optional diagram)
   --with-diagram        include the Mermaid source in the markdown
-  --check               validate the map and report problems; write nothing
-  --strict              exit non-zero on a gap as well as on an error
 
 Exit codes:
-  0  valid map (gaps may still be reported)
-  1  the map contradicts its contract or itself, or --strict saw a gap
+  0  views written (gaps may still be reported inside them)
+  1  the map has errors, so no view was written
   2  usage error
+
+Validate the map with:  stelow check breadboard <map.json> [--strict]
 `;
 
 /**
@@ -89,8 +92,6 @@ function parseArgs(argv) {
     emitMermaid: false,
     emitMarkdown: false,
     withDiagram: false,
-    check: false,
-    strict: false,
     errors: [],
   };
   const rest = [];
@@ -117,8 +118,6 @@ function parseArgs(argv) {
     } else if (token === "--emit-mermaid") options.emitMermaid = true;
     else if (token === "--emit-markdown") options.emitMarkdown = true;
     else if (token === "--with-diagram") options.withDiagram = true;
-    else if (token === "--check") options.check = true;
-    else if (token === "--strict") options.strict = true;
     else if (token === "--help" || token === "-h") options.help = true;
     // An unknown flag must fail. `--emmit-markdown` used to be ignored in
     // silence: the run exited 0 and wrote nothing, which reads exactly like
@@ -255,6 +254,7 @@ function affordanceTable(affordances) {
           item.kind === "ui" ? "UI" : item.kind === "code" ? "Code" : "Store",
         )}</span></td>` +
         `<td>${escapeHtml(item.name)}</td>` +
+        `<td class="id">${escapeHtml(item.control ?? "—")}</td>` +
         `<td class="id">${escapeHtml(item.place)}</td>` +
         `<td class="id">${escapeHtml((item.wiresOut ?? []).join(", ") || "—")}</td>` +
         `<td class="id">${escapeHtml((item.returnsTo ?? []).join(", ") || "—")}</td></tr>`,
@@ -264,7 +264,7 @@ function affordanceTable(affordances) {
     <summary>Affordances (${affordances.length})</summary>
     <table>
       <thead>
-        <tr><th>#</th><th>Kind</th><th>Affordance</th><th>Place</th><th>Wires out</th><th>Returns to</th></tr>
+        <tr><th>#</th><th>Kind</th><th>Affordance</th><th>Control</th><th>Place</th><th>Wires out</th><th>Returns to</th></tr>
       </thead>
       <tbody>
 ${rows}
@@ -611,12 +611,34 @@ export function assertRenderable(map, path) {
   }
 }
 
+/**
+ * Ask the portable helper for the map's verdict.
+ *
+ * `scripts/stelow check breadboard` is the single implementation: the helper
+ * is installed wherever a workflow runs, the `advance` guard calls it, and
+ * this script reads the same answer. Two checkers would eventually disagree.
+ */
+function readVerdict(inputPath) {
+  const helper = join(MODULE_DIR, "stelow");
+  const result = spawnSync(helper, ["check", "breadboard", inputPath, "--json"], { encoding: "utf8" });
+  if (result.error) throw new Error(`cannot run the checker at ${helper}: ${result.error.message}`);
+  const stdout = (result.stdout ?? "").trim();
+  if (!stdout) {
+    throw new Error(`the checker returned no verdict for ${inputPath}: ${(result.stderr ?? "").trim() || "no output"}`);
+  }
+  try {
+    return JSON.parse(stdout);
+  } catch {
+    throw new Error(`the checker's verdict for ${inputPath} is not JSON: ${stdout.slice(0, 200)}`);
+  }
+}
+
 /** Report each finding on stderr, one line, naming what it costs. */
-function reportFindings(path, contract, problems) {
-  for (const problem of contract) {
+function reportFindings(path, verdict) {
+  for (const problem of verdict.contract ?? []) {
     process.stderr.write(`render-diagram: ${path}: contract — ${problem.path}: ${problem.message}\n`);
   }
-  for (const problem of problems) {
+  for (const problem of verdict.problems ?? []) {
     process.stderr.write(
       `render-diagram: ${path}: ${problem.severity} — ${problem.id} (${problem.name}): ${problem.check}: ${problem.reason}\n`,
     );
@@ -636,9 +658,9 @@ async function main() {
   }
   if (!options.command) {
     // Bare invocation prints usage; a run with flags but no command is a
-    // mistake. Returning 0 either way would let a scripted `--check` report
-    // success without checking anything.
-    if (options.input || options.out || options.emitMarkdown || options.emitMermaid || options.check) {
+    // mistake. Returning 0 either way would let a scripted run report success
+    // without doing anything.
+    if (options.input || options.out || options.emitMarkdown || options.emitMermaid) {
       process.stderr.write(`render-diagram: missing command (expected "breadboard")\n${USAGE}`);
       return 2;
     }
@@ -664,35 +686,18 @@ async function main() {
   const map = readMap(inputPath);
   assertRenderable(map, inputPath);
 
-  const report = wiringReport(map);
-  const contract = contractProblems(map);
-  const problems = collectProblems(map);
-  reportFindings(inputPath, contract, problems);
+  const verdict = readVerdict(inputPath);
+  const problems = verdict.problems ?? [];
+  const errorCount = verdict.counts?.errors ?? 0;
+  reportFindings(inputPath, verdict);
 
   // An error means the map contradicts itself or its contract. Every view is
   // a projection of the map, so a view of a broken map would present a hole
   // as a decision. The JSON stands; nothing else is written.
-  const errorCount = contract.length + problems.filter((problem) => problem.severity === "error").length;
-  const gapCount = problems.filter((problem) => problem.severity === "gap").length;
-
-  if (options.check) {
-    process.stdout.write(
-      `render-diagram: ${report.known.size} id(s), ${report.referenced.size} referenced, ` +
-        `${report.dangling.length} dangling, ${contract.length} contract, ` +
-        `${errorCount - contract.length} error(s), ${gapCount} gap(s)\n`,
-    );
-    if (errorCount > 0) return 1;
-    return options.strict && gapCount > 0 ? 1 : 0;
-  }
-
   if (errorCount > 0) {
     process.stderr.write(
       `render-diagram: ${errorCount} error(s) — refusing to draw a map that contradicts itself or its contract\n`,
     );
-    return 1;
-  }
-  if (options.strict && gapCount > 0) {
-    process.stderr.write(`render-diagram: ${gapCount} gap(s) found under --strict\n`);
     return 1;
   }
 

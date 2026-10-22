@@ -3,6 +3,44 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.80.0-alpha] - 2026-10-22
+
+### Changed
+
+- **The breadboard rules moved into the portable helper.** `stelow check
+  breadboard <map>` is now the single implementation of the map's contract and
+  affordance checks. They used to live in repo-side JavaScript that a workflow
+  never reached: the host spawns `scripts/stelow` for `advance`, and a project
+  has no checkout, so the checks ran only where someone happened to have the
+  repo. A rule that cannot run where the work happens is prose with a test.
+- **`advance` runs the check on the `selection` transition.** Leaving
+  `selection` with a map that has an **error** is refused, with the findings on
+  stderr; a map with only **gaps** advances and prints them. The workflow can no
+  longer get past a broken map by forgetting to look.
+- **The renderer no longer checks.** `render-diagram` reads the verdict from
+  the helper and refuses to draw a map with errors — a view and a gate must
+  never disagree. `--check` and `--strict` are gone from its flags; they belong
+  to `stelow check breadboard` (and using one now fails as an unknown option).
+
+### Added
+
+- **Schema-derived parity tests.** The helper enforces a copy of
+  `schemas/breadboard.json`, and the tests generate one violation per rule FROM
+  the schema, so a rule added there fails until the helper learns it. The
+  walker plants violations in optional fields too, so a rule cannot pass by
+  being absent from the fixture.
+- **Advance-guard tests.** A valid map advances, an erroring map is refused
+  with the stage untouched, and a map with gaps advances with the findings
+  printed — the three outcomes the two severities exist for.
+- **The HTML affordance table carries `Control`**, matching the markdown view.
+
+### Fixed
+
+- **The guard could not execute itself on a host.** Hosts sync the helper as a
+  0644 file and spawn it with `bash`; the guard's self-invocation now does the
+  same instead of relying on an executable bit. (Caught by the new guard test —
+  it copies the helper the way the host does.)
+
 ## [0.79.0-alpha] - 2026-10-22
 
 ### Added

@@ -37,8 +37,8 @@ extracted lifecycle, inbox, ask/answer, sync, and UI rules with the
 | `skills/stelow-workflow-router/` | Router: validate next candidate, `advance` via helper, load next stage, append hand-off audit. |
 | `skills/stelow-workflow-orchestrator/` | Orchestrator + `stages.yaml` + `stages/*.md` + `references/transitions.md`. |
 | `skills/stelow-product-*/` + `skills/stelow-workflow-*/` | The other 27 self-contained skills (12 stage/execution workflow + 15 product). |
-| `scripts/stelow` | Portable CLI: `status`, `advance`, `doctor`, `seed`, `schema`, `ask` (lock + TTL, invariants). |
-| `scripts/render-diagram.mjs` + `scripts/breadboard-mermaid.mjs` | Breadboard map → Mermaid → SVG/HTML. Repo-side tooling (not installed by `install.sh`); the map JSON is the artifact, the diagram is a view. |
+| `scripts/stelow` | Portable CLI: `status`, `advance`, `doctor`, `seed`, `schema`, `check`, `ask` (lock + TTL, invariants). The breadboard rules live here so every environment that runs the workflow can run them. |
+| `scripts/render-diagram.mjs` + `scripts/breadboard-mermaid.mjs` + `scripts/breadboard-markdown.mjs` | Breadboard map → Mermaid → SVG/HTML/markdown views. Repo-side tooling (not installed by `install.sh`); the map JSON is the artifact, the views are projections. Validation is `stelow check breadboard`, not this. |
 | `types/stages.ts` | Stage-model TS interfaces mirroring `stages.yaml`. |
 | `stelow.schema.json` / `stelow.json` | Workflow tracking schema + per-project runtime state. |
 | `tests/` | Vitest: `unit/` + `integration/` + `skills/` contract tests. |
@@ -60,11 +60,11 @@ Stage/skill/command counts are pinned to the canonical sources by regression
 tests — not from this file:
 
 - **Skills (32)**: `find skills -maxdepth 2 -name SKILL.md \( -path '*/stelow-product-*' -o -path '*/stelow-workflow-*' \) | wc -l` (17 workflow + 15 product). Pinned against the README `## 📋 Skills` section by `tests/integration/skill-count-readme-contract.test.ts`.
-- **Stages (17)**: `skills/stelow-workflow-orchestrator/stages.yaml` + its mirror `references/transitions.md` (the `triage`..`audit` chain).
+- **Stages (18)**: `skills/stelow-workflow-orchestrator/stages.yaml` + its mirror `references/transitions.md` (the `triage`..`audit` chain).
 - **Stage transitions and conditional gates**: `skills/stelow-workflow-orchestrator/stages.yaml`.
 - **Recipe wiring**: one recipe runs per stage — the host refuses any recipe that is not the stage's canonical `execution.recipe`. `supporting_recipes` is metadata only; tasks that must run in a stage live inside that stage's recipe.
-- **Interface map**: `schemas/breadboard.json` is the contract for the interface's places/affordances/wiring; `skills/stelow-workflow-orchestrator/references/breadboard.md` holds the writing rules. The map is the source of truth; the prose is its commentary.
-- **Helper mechanics**: `scripts/stelow` (status/advance/doctor), pinned by `tests/unit/stelow-helper.test.ts`, `tests/integration/stelow-fs.test.ts`, `tests/integration/stelow-e2e.test.ts`.
+- **Interface map**: `schemas/breadboard.json` is the contract for the interface's places/affordances/wiring; `skills/stelow-workflow-orchestrator/references/breadboard.md` holds the writing rules. `stelow check breadboard` enforces them, and `advance` runs it on the `selection` transition (errors refuse, gaps are reported). The map is the source of truth; the prose is its commentary.
+- **Helper mechanics**: `scripts/stelow` (status/advance/doctor/check), pinned by `tests/unit/stelow-helper.test.ts`, `tests/integration/stelow-fs.test.ts`, `tests/integration/stelow-e2e.test.ts`, `tests/integration/breadboard-check.test.ts`.
 - **Product strategies**: `product-strategies.json` (id → skill → contract + substeps) is the canonical contract hosts consume. Any change to `skills/stelow-product-*` (add, remove, rename, new substeps) MUST update the registry in the same commit — enforced by the host-surface contract test.
 
 ```bash
@@ -140,7 +140,7 @@ Run before releases. A test file moving from OK to REVIEW over time signals rot.
 
 **Thresholds:**
 
-- **CI gate**: 60 (anything below fails the build)
+- **CI**: not wired — CI runs `quality:report` and the test suite; `rigor` is a local signal
 - **Local pre-push**: 60 (same) — the `.husky/pre-push` hook was removed with the tooling-dirs cleanup; run `npm run test:rigor` locally to enforce
 - **Release target**: all test files should be B+ (80+)
 
