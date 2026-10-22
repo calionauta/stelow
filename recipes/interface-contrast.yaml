@@ -1,14 +1,65 @@
 id: interface-contrast
-version: 1
-description: Run the reaction-first Interface Contrast decision loop with structured receipts.
+version: 2
+description: Generate interface alternatives with wireframes, then run the reaction-first
+  Interface Contrast decision loop over them with structured receipts.
 skill: stelow-workflow-interface-contrast
 mode: orchestrated
 write_policy: artifact
 permission_profile: inherit
 tasks:
+# ── Diverge ────────────────────────────────────────────────────────
+# The alternatives tasks live HERE, inside the canonical recipe, because the
+# host runs ONE recipe per stage: it refuses any recipe that is not
+# stage.execution.recipe ("Recipe X is not the current stage's canonical
+# recipe"). A separate `interface-alternatives` recipe was therefore
+# orphaned — declared in recipes/, reachable from no stage — and the output
+# that mattered (the proposals WITH wireframes) never reached the interface
+# gate. The gate is a VISUAL review; an option with no wireframe cannot be
+# looked at.
+- id: alternatives
+  skill: stelow-workflow-interface-alternatives
+  depends_on: []
+  output: interfaces/alternatives.json
+  output_schema: schemas/interface-alternatives.json
+  human_boundary: none
+  when: exploration_supports_fanout
+  failure_policy: fail
+  requirements:
+  - fanout
+  - pipeline
+  - structured-output
+- id: alternatives-verify
+  depends_on:
+  - alternatives
+  output: interfaces/alternatives-verification.json
+  output_schema: schemas/interface-alternatives.json
+  human_boundary: none
+  skill: stelow-workflow-interface-alternatives
+  when: always
+  failure_policy: fail
+  requirements:
+  - pipeline
+  - structured-output
+- id: alternatives-hybrid
+  depends_on:
+  - alternatives-verify
+  output: interfaces/alternatives.md
+  output_schema: schemas/markdown.json
+  human_boundary: none
+  skill: stelow-workflow-interface-alternatives
+  when: always
+  failure_policy: fail
+  requirements:
+  - pipeline
+  - structured-output
+# ── Decide ─────────────────────────────────────────────────────────
+# The contrast reads the proposals the tasks above produced: every option it
+# compares must carry the wireframe of the proposal it came from, so the
+# receipt describes something a reader can actually look at.
 - id: contrast
   skill: stelow-workflow-interface-contrast
-  depends_on: []
+  depends_on:
+  - alternatives-hybrid
   output: interfaces/contrast.json
   output_schema: schemas/interface-contrast.json
   human_boundary: coordinator

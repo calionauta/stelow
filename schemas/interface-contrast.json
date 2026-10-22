@@ -177,6 +177,11 @@
           "compatibility": {
             "const": "valid"
           },
+          "wireframe": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The ASCII sketch of this option, copied from the proposal it came from. The interface gate is a VISUAL review: an option with no sketch cannot be looked at, so the gate cannot review it. Declared (not required) here so the published schema stays field-for-field in step with the host's runtime validator; the skill's own completeness contract is what makes it mandatory in practice."
+          },
           "scopeCoverage": {
             "type": "array",
             "description": "Per-scope impact of this option against the recorded Scope Map version. Omitted only when the contrast runs with no map; then the brief says why.",

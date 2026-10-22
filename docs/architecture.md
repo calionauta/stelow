@@ -51,6 +51,25 @@ same workflow. Hosts only add an optional marker protocol
 | `stelow.json` | Multi-workflow tracking (schema `stelow.schema.json`): `workflows[]` with phases, scope sync from `spec-tech.md`. | workflow skills (agent) |
 | `.stelow/{date}/{dirHash}/` | Per-workflow artifacts: `specs/`, `interfaces/`, `plans/`, `critiques/`, `approvals/`, `execution/`, `verification/`. | workflow skills |
 
+### The interface map
+
+`interfaces/breadboard.json` is the structured form of the chosen interface:
+places (`P1`), UI affordances (`U1`), code affordances (`N1`), data stores
+(`S1`), and the wiring between them — `wiresOut` for control flow,
+`returnsTo` for data flow. The contract is `schemas/breadboard.json`; the
+writing rules are in
+`skills/stelow-workflow-orchestrator/references/breadboard.md`.
+
+It is the source of truth for the interface's shape, and the prose in
+`selected-interface.md` is its commentary — the same "the map is the truth,
+the text explains it" rule the rest of the workflow already follows.
+
+`scripts/render-diagram.mjs` projects the map into Mermaid and then into a
+self-contained HTML file (inline SVG, zoom, CSS-variable theme). It is
+repo-side tooling, not part of the installed skill surface: `install.sh` and
+the plugin sync ship only `scripts/stelow`. The renderer therefore degrades —
+no renderer means no diagram, and the map still stands.
+
 ## Data flow
 
 1. Host sets `STELOW_WORKFLOW=1`; entry skill loads, classifies intent, scaffolds
@@ -61,6 +80,10 @@ same workflow. Hosts only add an optional marker protocol
    updates `state.md` frontmatter, appends `.stelow/invariants.json`, and
    releases the lock.
 3. Stage skill loads and runs, writing artifacts under `.stelow/{date}/{dirHash}/`.
+   The stage's `artifacts:` list in `stages.yaml` names what it must produce;
+   `scripts/stelow advance` refuses the transition when one is missing. The
+   check resolves the workflow's own directory from `STELOW_STATE`, so an
+   artifact belonging to a DIFFERENT workflow cannot satisfy this one.
 4. `scripts/stelow doctor` detects drift classes (stale-lock, missing-dir,
    parallel-lock, state-transitions) across the workflow tree.
 

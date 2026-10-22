@@ -99,7 +99,9 @@ function writeStageArtifacts(stage: string, statedir: string): void {
     scope: ["scope-map.json"],
     interface: ["interfaces/interfaces.md", "interfaces/contrast.json"],
     "int-gate": ["interfaces/int-gate.md"],
-    selection: ["interfaces/selected-interface.md"],
+    // The selection stage records the pick AND the breadboard map: the map is
+    // the source of truth for the interface's shape, the prose its commentary.
+    selection: ["interfaces/selected-interface.md", "interfaces/breadboard.json"],
     architecture: ["architecture/selected-architecture.md"],
     execution: ["plans/spec-tech_v1.md"],
   };

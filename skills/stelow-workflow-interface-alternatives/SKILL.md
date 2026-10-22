@@ -152,7 +152,7 @@ Each outputs to .stelow/{date}/{dir}/interfaces/proposal-{letter}.md
 
 - Each worker generates **one** proposal (independent, no cross-contamination)
 - Each proposal **must** include Work Pattern Declaration (Section 0), Design Smell Audit (Section 6), and State Coverage Table (Section 7)
-- Combined output: `.stelow/{YYYY-MM-DD}/{_dir}/interfaces/interfaces_{v}.md`
+- Combined output: `.stelow/{YYYY-MM-DD}/{_dir}/interfaces/alternatives.md`
 
 
 **Step 2:** see `references/output-format.md` for instructions to format and concatenate selected proposals.
@@ -187,10 +187,10 @@ Prefer the harness-registered `visual_review` tool when available. Fall back to 
 
 ```
 # Primary (tool, works when bash is blocked):
-visual_review filePath=.stelow/{YYYY-MM-DD}/{_dir}/interfaces/interfaces_v{N}.md
+visual_review filePath=.stelow/{YYYY-MM-DD}/{_dir}/interfaces/alternatives.md
 
 # Fallback (bash):
-visual_review annotate .stelow/{YYYY-MM-DD}/{_dir}/interfaces/interfaces_v{N}.md --gate --json
+visual_review annotate .stelow/{YYYY-MM-DD}/{_dir}/interfaces/alternatives.md --gate --json
 ```
 
 Wait for the decision. If `approved`, the tool auto-creates the receipt. Then advance to Interface Selection.
@@ -210,7 +210,7 @@ Fill every option so the human can review before picking — labels alone force 
 
 ### Save Selected Interface as Permanent Artifact
 
-After the user picks a proposal, extract it from `interfaces_{v}.md` into a dedicated artifact:
+After the user picks a proposal, extract it from `alternatives.md` into a dedicated artifact:
 
 ```bash
 PROPOSAL_LABEL="{chosen_proposal_label}"  # e.g. "A — Convention Navigator"
@@ -221,7 +221,7 @@ awk -v label="$PROPOSAL_LABEL" '
   /^## Proposal / && !started { started = ($0 ~ label); next }
   /^## Proposal / && started { exit }
   started { print }
-' ".stelow/{YYYY-MM-DD}/{_dir}/interfaces/interfaces_{v}.md" > "$OUTPUT"
+' ".stelow/{YYYY-MM-DD}/{_dir}/interfaces/alternatives.md" > "$OUTPUT"
 
 # Verify: chosen interface must contain Work Pattern and Breadboarding
 grep -q "Work Pattern" "$OUTPUT" || { echo "ERROR: selected interface missing Work Pattern Declaration"; exit 1; }
@@ -232,17 +232,76 @@ The saved artifact contains the **complete proposal**: work pattern declaration,
 
 The tech planning and execution stages reference this file for UI direction — they should NOT regenerate or reinterpret the interface.
 
+### Build the Breadboard Map
+
+The prose above says WHAT the interface is. The breadboard says WHERE it is:
+which places the user can be in, what they can act on in each, and how those
+things are wired. It is the structured form of the same decision — and it is
+what the Architecture and Planning stages read when they need to know the
+shape of the thing they are building.
+
+Write it to `interfaces/breadboard.json` using the contract in
+`schemas/breadboard.json`. The rules — the blocking test for places, the
+difference between containment and wiring, and the five checks that catch a
+map which looks complete and says nothing — are in
+`../stelow-workflow-orchestrator/references/breadboard.md`.
+
+Read that reference before writing. The parts that are easy to get wrong:
+
+- A **Place** is perceptual, not technical. Use the blocking test: can the
+  user interact with what is behind? If not, it is a different Place.
+- **Containment** is the `place` field; **wiring** is `wiresOut` (control
+  flow) and `returnsTo` (data flow). They are different relationships.
+- Navigation wires to a **Place id**, not to an affordance inside it.
+- Every display needs a source, and every code affordance needs a connection.
+  A map that fails these checks is a diagram of a system nobody can change.
+
+Then render the diagram (optional — the JSON is the artifact):
+
+```bash
+node scripts/render-diagram.mjs breadboard \
+  --input ".stelow/{YYYY-MM-DD}/{_dir}/interfaces/breadboard.json" \
+  --out   ".stelow/{YYYY-MM-DD}/{_dir}/interfaces/breadboard.html" \
+  --emit-mermaid
+```
+
+If the render fails, the map still stands. Do not let the diagram block the
+pick.
+
+> **The renderer is a repo tool, not a host dependency.** Only `scripts/stelow`
+> is installed by `install.sh` and synced by the plugin, so on a standalone
+> host this command may simply be absent. The breadboard JSON is the
+> artifact; the diagram is a view. If the script is not there, write the map
+> and move on — never let a missing renderer stop the pick.
+
 ## Output
 
 Interface proposals are saved to:
 ```
-.stelow/{YYYY-MM-DD}/{_dir}/interfaces/interfaces_{v}.md
+.stelow/{YYYY-MM-DD}/{_dir}/interfaces/alternatives.md
+```
+
+The recipe records the same proposals as structured data next to the
+document:
+```
+.stelow/{YYYY-MM-DD}/{_dir}/interfaces/alternatives.json
+.stelow/{YYYY-MM-DD}/{_dir}/interfaces/alternatives-verification.json
 ```
 
 The chosen interface (after user selection) is saved to:
 ```
 .stelow/{YYYY-MM-DD}/{_dir}/interfaces/selected-interface.md
 ```
+
+and its structured map to:
+```
+.stelow/{YYYY-MM-DD}/{_dir}/interfaces/breadboard.json
+```
+
+The breadboard is written by the **Selection** stage, not here: it describes
+ONE chosen interface, and a map of five alternatives is noise. See
+`../stelow-workflow-orchestrator/references/breadboard.md` for the schema and
+the writing rules.
 
 Completeness contract (the host validates these minima — never submit fewer,
 per proposal; proposal count follows exploration breadth):

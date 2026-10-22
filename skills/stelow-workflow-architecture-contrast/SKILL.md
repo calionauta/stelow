@@ -52,7 +52,7 @@ The agent may classify and recommend. It may not fabricate decision-maker eviden
 
 ## Shape and scope routing
 
-- A product commitment or new approval actor routes to `shape-contrast` / Shape.
+- A product commitment or new approval actor sets `route: "shape-contrast"`, which returns the workflow to the `shape` stage. That is the receipt's route VALUE — the stage it names is `shape`; there is no separate skill called `shape-contrast`, and the route/disposition pair it accepts is `stop:human-decision-required` or `stop:shape-required`.
 - Insufficient evidence routes to `research-needed` or `repair-brief`.
 - A new scope boundary, dependency, or construction invariant emits a challenge record; it never mutates the approved map or an approved decision in place.
 - An accepted existing architecture uses `existing-architecture-no-comparison` and spends no focal round.

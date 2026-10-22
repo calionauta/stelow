@@ -3,6 +3,57 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.77.0-alpha] - 2026-10-22
+
+### Added
+
+- **Interface breadboard (`interfaces/breadboard.json`).** The chosen interface
+  is now mapped into a structured graph — the places the user can be in, the
+  affordances in each, and the wiring between them — under the contract in
+  `schemas/breadboard.json`. The map is the source of truth for the
+  interface's shape; the prose in `selected-interface.md` is its commentary.
+  The Selection stage records both, and the advance guard requires both.
+- **Breadboard renderer (`scripts/render-diagram.mjs`).** Turns the map into
+  Mermaid, then into a self-contained HTML file with the diagram as inline
+  SVG, zoom, and a light/dark theme driven by CSS variables. The renderer is
+  repo-side tooling (`pele`, MIT, zero runtime dependencies) and degrades
+  rather than blocks: the JSON is the artifact, the diagram is a view, and a
+  missing renderer never stops the pick.
+- **Wireframe on every contrast option.** `schemas/interface-contrast.json`
+  declares `wireframe` on each option, and the Interface Contrast skill
+  requires it. The interface gate is a VISUAL review, so an option nobody can
+  look at is an option nobody chose on purpose.
+
+### Fixed
+
+- **The interface alternatives recipe was orphaned.** `recipes/interface-alternatives.yaml`
+  and `recipes/architecture-alternatives.yaml` were declared but reachable
+  from no stage, and their output collided with the contrast recipe's (both
+  wrote the same file). The host runs ONE recipe per stage and refuses any
+  recipe that is not the stage's canonical `execution.recipe`, so the
+  alternatives — the proposals that carry the wireframes the gate reviews —
+  never ran. Their tasks now live inside the canonical recipes
+  (`interface-contrast`, `architecture-contrast`), and each recipe owns its
+  own output file.
+- **`stages/selection.md` is the Item Selection playbook again.** It was
+  wired to the Interface Choice stage, which had no playbook of its own.
+  `stages/interface-selection.md` owns the pick; `stages/selection.md` owns
+  the inbox triage item choice.
+- **The `int-gate` stage had no playbook.** It is a visual review, and
+  nothing said which document it reviews or what "reviewed" means. It now
+  reviews `interfaces/alternatives.md` (the proposals, with their
+  wireframes) — not `interfaces/interfaces.md`, which is the receipt.
+- **The advance guard could not find artifacts in a real workflow dir.** It
+  globbed the `.stelow` ROOT, but a workflow mints `.stelow/<date>/<dirHash>/`
+  and points `STELOW_STATE` at the state.md inside it, so every real
+  workflow was refused with "missing required artifact" while the file sat
+  right there. The guard now resolves the workflow's own directory from
+  `STATE`, and treats it as authoritative: an artifact belonging to another
+  workflow no longer satisfies this one.
+- **The `shape-contrast` route named a skill that does not exist.** It is a
+  receipt route VALUE (its destination is the `shape` stage); the skills now
+  say so instead of implying a `shape-contrast` skill.
+
 ## [0.76.0-alpha] - 2026-10-18
 
 ### Removed

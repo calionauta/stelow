@@ -180,6 +180,37 @@ describe("advance", () => {
     expect(Buffer.compare(before, after)).toBe(0);
   });
 
+  it("finds a required artifact in the workflow's own nested state dir", () => {
+    // REGRESSION. The workflow mints .stelow/<date>/<dirHash>/ and points
+    // STELOW_STATE at the state.md inside it. The guard globbed only the
+    // .stelow ROOT, so "plans/spec-product*.md" never matched the nested
+    // file and every real workflow was refused with "missing required
+    // artifact" — the guard said the file was absent while it sat right
+    // there. The state dir has to be derived from STATE.
+    const stateDir = join(wd.dir, ".stelow", "2026-09-02", "nested-guard");
+    mkdirSync(join(stateDir, "plans"), { recursive: true });
+    const statePath = join(stateDir, "state.md");
+    writeFileSync(statePath, readFileSync(join(wd.dir, "state.md")));
+    writeFileSync(join(stateDir, "plans", "spec-product_v1.md"), "# Product spec");
+
+    const result = run(wd, ["advance", "critique"], { STELOW_STATE: statePath });
+    expect(result.status, result.stderr).toBe(0);
+    expect(readFileSync(statePath, "utf8")).toMatch(/current_stage: critique/);
+  });
+
+  it("still refuses to leave shape when the nested artifact is missing", () => {
+    // The fix must not turn the guard off: a workflow dir with no artifact
+    // is exactly the case the guard exists for.
+    const stateDir = join(wd.dir, ".stelow", "2026-09-02", "nested-guard-missing");
+    mkdirSync(join(stateDir, "plans"), { recursive: true });
+    const statePath = join(stateDir, "state.md");
+    writeFileSync(statePath, readFileSync(join(wd.dir, "state.md")));
+
+    const result = run(wd, ["advance", "critique"], { STELOW_STATE: statePath });
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("missing required artifact: plans/spec-product*.md");
+  });
+
   it("rejects a known stage that is not reachable from the current stage", () => {
     const before = readFileSync(join(wd.dir, "state.md"));
     const r = run(wd, ["advance", "scope"]);

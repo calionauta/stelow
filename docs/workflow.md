@@ -86,6 +86,37 @@ execution critique. Gaps classify as FIXED / DOCUMENTED / ESCALATED —
 escalated gaps become new scopes and the workflow routes Audit back to
 Execution until none remain pending.
 
+## The interface map
+
+The `selection` stage records two things about the interface it picked:
+
+| Artifact | What it is |
+|---|---|
+| `interfaces/selected-interface.md` | The proposal in prose: work pattern, breadboarding notes, ASCII sketch, trade-offs. |
+| `interfaces/breadboard.json` | The same decision as a graph: the **places** the user can be in, the **affordances** in each, and the **wiring** between them. |
+
+The map is the source of truth for the interface's shape; the prose is its
+commentary. Two consequences worth knowing:
+
+- A place is perceptual, not technical. It is decided by the blocking test —
+  *can the user interact with what is behind?* — not by the URL or the
+  component tree. A modal is a place; a dropdown is not.
+- Wiring separates **control flow** (`wiresOut` — what triggers what) from
+  **data flow** (`returnsTo` — where the output goes). Navigation wires to a
+  place, not to an affordance inside it.
+
+The map is what the architecture and planning stages read when they need the
+shape of the thing they are building, and it is the thing an agent can edit
+without rewriting a paragraph.
+
+A diagram is available as a **view**: `scripts/render-diagram.mjs` turns the
+map into Mermaid and then into a self-contained HTML file with the SVG inline,
+zoom enabled, and a light/dark theme. It is repo-side tooling and degrades
+rather than blocks — the JSON is the artifact, the diagram is a convenience,
+and a missing renderer never stops the pick. See
+[the breadboard reference](../skills/stelow-workflow-orchestrator/references/breadboard.md)
+for the schema and the writing rules.
+
 ## Gates and receipts
 
 The applicable gates (`gate`, plus `int-gate`, `plan-gate`, `diff-gate`

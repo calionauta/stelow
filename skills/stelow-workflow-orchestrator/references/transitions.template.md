@@ -151,6 +151,11 @@ rework:    (none)
 gate:      (none)
 ```
 
+The selection stage records the chosen interface AND its breadboard map. The
+map is the source of truth for the interface's shape; the prose is its
+commentary. Both are required: a pick with no map leaves the architecture and
+planning stages reading prose where a graph belongs.
+
 ### architecture
 
 ```
@@ -275,6 +280,7 @@ transition. The stage catalog declares these per stage:
 | critique | `critiques/critique-report.md` |
 | interface | `interfaces/*.md` |
 | selection | `interfaces/selected-interface.md` |
+| selection | `interfaces/breadboard.json` |
 | architecture | `architecture/selected-architecture.md` |
 | planning | `plans/spec-tech*.md` |
 

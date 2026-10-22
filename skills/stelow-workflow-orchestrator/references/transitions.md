@@ -25,9 +25,9 @@ after any change to verify.
 | 45 | critique | Plan critique. Pre-flight check before gate. |
 | 60 | gate | Gate review. Visual approval via visual review required. Use `visual_review` tool (not bash). |
 | 70 | scope | Owns the approved Scope Map for feature routes. Shape may propose candidate slices; this stage finalizes the map without creating a second stage. Narrow mechanical refactors may bypass Scope. |
-| 80 | interface | Reaction-first Interface Contrast. Preserves the first reaction, compares bounded alternatives, and emits a named disposition. |
+| 80 | interface | Interface exploration + reaction-first contrast. Generates bounded alternatives with wireframes, preserves the first reaction, compares them, and emits a named disposition. |
 | 90 | int-gate | Interface gate. Visual review of all interface proposals. Use `visual_review` tool (not bash). |
-| 100 | selection | Interface selection. Human pick via structured question in Interface-Gates modes; LLM decides in Auto / Product Spec Gate (see references/human-gates.md). |
+| 100 | selection | Interface selection. Human pick via structured question in Interface-Gates modes; LLM decides in Auto / Product Spec Gate (see references/human-gates.md). Records the chosen interface and its breadboard map. |
 | 105 | architecture | Architecture selection. Diverges construction directions, then a human pick via structured question in Tech-Review modes; worker adopts below that threshold (see references/human-gates.md). |
 | 110 | planning | Tech planning. Typed scopes + sequencing. |
 | 115 | plan-gate | Tech plan gate. Visual review of spec-tech.md via visual review. Only in Product Spec + Interface + Tech Review or Code Diff mode. |
@@ -159,9 +159,15 @@ next:      architecture
 accept:    architecture
 reject:    interface
 artifact:   interfaces/selected-interface.md
+artifact:   interfaces/breadboard.json
 rework:    (none)
 gate:      (none)
 ```
+
+The selection stage records the chosen interface AND its breadboard map. The
+map is the source of truth for the interface's shape; the prose is its
+commentary. Both are required: a pick with no map leaves the architecture and
+planning stages reading prose where a graph belongs.
 
 ### architecture
 
@@ -281,6 +287,7 @@ transition. The stage catalog declares these per stage:
 | critique | `critiques/critique-report.md` |
 | interface | `interfaces/*.md` |
 | selection | `interfaces/selected-interface.md` |
+| selection | `interfaces/breadboard.json` |
 | architecture | `architecture/selected-architecture.md` |
 | planning | `plans/spec-tech*.md` |
 

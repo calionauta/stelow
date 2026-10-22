@@ -37,6 +37,31 @@ chooses, records the choice, and moves on.
    direction into `interfaces/selected-interface.md` with who chose it
    (`selected_by: human` with the mode, or `selected_by: llm`). The tech
    planning and execution stages read this file for UI direction.
+6. **Map the pick into a breadboard** — Write `interfaces/breadboard.json`:
+   the places the user can be in, the affordances in each, and the wiring
+   between them. The prose above says WHAT the interface is; the map says
+   WHERE it is, and it is what the Architecture and Planning stages read when
+   they need the shape of the thing they are building.
+
+   Read `../references/breadboard.md` before writing — it holds the schema
+   (`schemas/breadboard.json`), the blocking test that decides a place, the
+   difference between containment and wiring, and the five checks that catch
+   a map which looks complete and says nothing.
+
+   Then render the diagram (optional — the JSON is the artifact):
+
+   ```bash
+   node scripts/render-diagram.mjs breadboard \
+     --input ".stelow/{YYYY-MM-DD}/{_dir}/interfaces/breadboard.json" \
+     --out   ".stelow/{YYYY-MM-DD}/{_dir}/interfaces/breadboard.html" \
+     --emit-mermaid
+   ```
+
+   The renderer is a repo tool, not a host dependency: only `scripts/stelow`
+   is installed by `install.sh` and synced by the plugin, so on a standalone
+   host the command may be absent. The map is the artifact; the diagram is a
+   view. If the render fails or the script is missing, the map still stands —
+   never let a diagram block the pick.
 
 ### Do NOT
 
@@ -48,5 +73,6 @@ chooses, records the choice, and moves on.
 
 ### Completion
 
-`interfaces/selected-interface.md` written (human answer or agent
-receipt recorded), then advance to Architecture automatically.
+`interfaces/selected-interface.md` and `interfaces/breadboard.json` written
+(human answer or agent receipt recorded), then advance to Architecture
+automatically.
