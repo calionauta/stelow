@@ -79,6 +79,56 @@ routes:
     planning: critique
     execution: execution
     review: diff-gate
+  # Stages that do not run under a declared condition.
+  #
+  # A stage may be absent for two reasons, and they are different kinds:
+  # `review_modes.<mode>.skipped` says the stage does not exist in that mode
+  # (nobody to approve it); a rule here says the stage does not exist under
+  # a condition of the RUN KNOBS.
+  #
+  # The condition shape is one thing: every key in `when` must hold (the
+  # value is the set of allowed values), and when `any_of` is present at
+  # least one of its keys must hold. `when` alone is a conjunction;
+  # `any_of` adds a disjunction inside it.
+  # Why the context stage is a spike, and when a spike is not worth it:
+  #
+  #   The context stage answers ONE question — "which strategic approach?" —
+  #   and its output is consumed by Shape and Scope. That is a spike: a
+  #   time-boxed exploration whose product is knowledge, not software. A
+  #   spike is worth running when it reduces uncertainty that will change a
+  #   consequential decision, and when its answer has a consumer.
+  #
+  #   Two independent signals say the answer changes nothing:
+  #     quality=experimental — a probe that will not ship as-is; the
+  #       strategic choice is not going to be acted on as a product
+  #       decision.
+  #     exploration_count=1 — the human chose "one direct direction, no
+  #       hybrid, trivial changes only, by explicit choice". There is no
+  #       divergence to explore.
+  #
+  #   One signal says the answer HAS a consumer:
+  #     review_mode != Auto — a human reviews the strategic approaches, so
+  #       cutting the stage removes their input.
+  #
+  #   So the stage runs unless the mode is Auto AND one of the two "no
+  #   question to answer" signals holds. The policy and the gate used to
+  #   disagree in BOTH directions: the published matrix skipped only for
+  #   experimental+Auto, while the helper skipped for a single direction
+  #   too — so a worker following the policy was refused by the gate.
+  stage_policies:
+    - stage: context
+      id: context-spike
+      # When the stage does NOT run. Omit the block and it always runs.
+      skip:
+        when:
+          review_mode: [Auto]
+          any_of:
+            quality: [experimental]
+            exploration_count: [1]
+      # How much the stage asks when it DOES run, per quality.
+      ask:
+        experimental: reduced
+        production: full
 
 stages:
   - name: triage

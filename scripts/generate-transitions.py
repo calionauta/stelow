@@ -73,6 +73,7 @@ def render():
     if not review_modes:
         print("generate-transitions: stages.yaml declares no review_modes", file=sys.stderr)
         sys.exit(1)
+    stage_policies = routes.get("stage_policies") or []
     template = TEMPLATE.read_text().split("\n")
     if template and template[-1] == "":
         template.pop()
@@ -152,6 +153,11 @@ def render():
         if stripped == "{{REVIEW_MODE_TABLE}}":
             out.extend(review_mode_table(review_modes))
             continue
+        # The stage skips: the rules that make a stage not run under a
+        # condition of the run knobs. The helper PARSES this block.
+        if stripped == "{{STAGE_SKIPS}}":
+            out.extend(stage_skip_block(stage_policies))
+            continue
         out.append(line)
     return "\n".join(out) + "\n"
 
@@ -202,6 +208,66 @@ def gate_mode_lines(stage, review_modes):
     if no_human:
         out.append(f"           No human wait in: {quote_all(no_human)}")
     return out
+
+
+def stage_skip_block(stage_policies):
+    """The machine-readable stage-skip rules the helper parses.
+
+    One `stage_skip:` header per rule, then the stage it removes and the
+    condition that removes it. The helper reads the skip set out of this
+    file, so this file is the only place the rule and the enforced
+    behaviour can both come from.
+    """
+    out = [
+        "<!-- generated from stages.yaml routes.stage_policies — do not edit -->",
+        "",
+        "The helper parses this block. A rule names a stage that does NOT",
+        "run while its condition holds: the stage is refused, and the stage",
+        "before it moves straight to the stage after it.",
+        "",
+        "`when` is a conjunction: every key must hold, and the value is the",
+        "set of allowed values. `any_of` adds a disjunction inside it: at",
+        "least one of its keys must hold.",
+    ]
+    for policy in stage_policies:
+        skip = policy.get("skip") or {}
+        if not skip:
+            continue
+        out.append("")
+        out.append(f"stage_skip: {policy['id']}")
+        out.append(f"stage: {policy['stage']}")
+        for key, allowed in (skip.get("when") or {}).items():
+            if key == "any_of":
+                for any_key, any_allowed in allowed.items():
+                    out.append(f"any_of: {any_key} {', '.join(str(v) for v in any_allowed)}")
+            else:
+                out.append(f"when: {key} {', '.join(str(v) for v in allowed)}")
+    return out
+
+
+def stage_skip_table(stage_skips, review_modes):
+    """The stage-skip rules, rendered for a human reader."""
+    out = [
+        "| Rule | Stage | Absent when |",
+        "|---|---|---|",
+    ]
+    for rule in stage_skips:
+        out.append(f"| `{rule['id']}` | {rule['stage']} | {describe_condition(rule.get('when') or {})} |")
+    return out
+
+
+def describe_condition(condition):
+    """The condition, in a sentence a reader can check against the knobs."""
+    parts = []
+    for key, allowed in condition.items():
+        if key == "any_of":
+            alternatives = " or ".join(
+                f"{name} is {', '.join(str(v) for v in values)}" for name, values in allowed.items()
+            )
+            parts.append(f"({alternatives})")
+        else:
+            parts.append(f"{key} is {', '.join(str(v) for v in allowed)}")
+    return " and ".join(parts)
 
 
 def review_mode_table(review_modes):

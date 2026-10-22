@@ -3,6 +3,44 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.84.0-alpha] - 2026-10-22
+
+### Fixed
+
+- **The published context policy and the enforced gate disagreed, in BOTH
+  directions.** `context:5` skipped the Context stage for an experimental
+  probe under Auto; the helper skipped it for a single direction too. So a
+  worker that followed the policy was refused by the gate with no redirect
+  (`invalid transition 'setup' -> 'shape'`), and a worker that followed the
+  gate ran a stage the policy said to skip. The two answers came from two
+  owners of one rule.
+  The rule is now ONE fact in `stages.yaml` (`routes.stage_policies`),
+  rendered into two faces that cannot disagree: the decision table the LLM
+  reads in `stages/context.md`, and the machine-readable block the helper
+  parses out of `references/transitions.md`. A new parity test reads the
+  table the way the LLM reads it — first matching row wins — and compares
+  its answer with the helper's for all 48 (quality, exploration, review
+  mode) combinations.
+- **A legacy appetite state carried a third copy of the rule.** A state
+  with only `appetite: Lean` and no knobs skipped the Context stage; the
+  documented mapping says Lean resolves as `{production, 2}`, and a
+  production run with two directions runs the stage. The mapping is the
+  owner now, and the third copy is gone.
+
+### Changed
+
+- **The Context stage is skipped when its answer changes no consequential
+  decision AND nobody reviews it.** The rule is now: `Auto` review mode
+  AND (`quality` is `experimental` OR `exploration_count` is `1`). The
+  Context stage is a spike — it answers one question, "which strategic
+  approach?" — and a spike is worth running only when it reduces
+  uncertainty that will change a consequential decision, and when its
+  answer has a consumer. A probe will not ship as-is, so its strategic
+  choice is not acted on as a product decision; one direction is "trivial
+  changes only, by explicit choice", so there is no divergence to explore;
+  and a gated review mode has a person reading the output, so cutting the
+  stage there removes their input.
+
 ## [0.83.2-alpha] - 2026-10-22
 
 ### Added

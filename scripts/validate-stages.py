@@ -304,10 +304,48 @@ def validate_stages() -> dict:
     for phase, target in (data.get("routes", {}).get("entry_stages", {}) or {}).items():
         if phase not in phase_ids or target not in names:
             fail(f"entry stage {phase}: unknown phase or stage")
+    validate_stage_policies(data.get("routes", {}).get("stage_policies", []) or [], names)
     for path in sorted((REPO / "skills").glob("stelow-*/SKILL.md")):
         validate_skill(path, set(recipes))
     validate_stage_skill_binding(stages, recipes)
     return data
+
+
+def validate_stage_policies(policies: list[dict], names: set[str]) -> None:
+    """A stage policy must name a real stage and a rule the runtime can read.
+
+    The policy is one fact with two faces — the gate that refuses a stage
+    which does not run, and the matrix the LLM reads — so a policy that
+    names a stage the graph does not have, or a condition the runtime
+    cannot evaluate, is a dead rule in one of them.
+    """
+    known_knobs = {"quality", "review_mode", "exploration_count", "appetite", "intent"}
+    seen: set[str] = set()
+    for policy in policies:
+        identifier = policy.get("id")
+        stage = policy.get("stage")
+        if not identifier or identifier in seen:
+            fail(f"stage policy {identifier!r}: missing or duplicate id")
+        seen.add(identifier)
+        if stage not in names:
+            fail(f"stage policy {identifier}: unknown stage {stage!r}")
+        skip = policy.get("skip") or {}
+        condition = skip.get("when") or {}
+        if skip and not condition:
+            fail(f"stage policy {identifier}: a skip rule needs a condition")
+        for key in condition.keys():
+            if key != "any_of" and key not in known_knobs:
+                fail(f"stage policy {identifier}: unknown knob {key!r}")
+        for key in (condition.get("any_of") or {}).keys():
+            if key not in known_knobs:
+                fail(f"stage policy {identifier}: unknown knob {key!r}")
+        for key, allowed in (condition.get("any_of") or {}).items():
+            if not allowed:
+                fail(f"stage policy {identifier}: any_of.{key} allows nothing")
+        ask = policy.get("ask") or {}
+        for quality, level in ask.items():
+            if level not in ("reduced", "full"):
+                fail(f"stage policy {identifier}: unknown ask level {level!r}")
 
 
 def validate_stage_skill_binding(stages: list[dict], recipes: dict[str, dict]) -> None:

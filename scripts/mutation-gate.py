@@ -48,8 +48,8 @@ MUTANTS = [
     {
         "id": "mode-skipped-gate-not-refused",
         "rule": "a stage that does not run in this review mode is refused with a redirect",
-        "find": 'if [ -n "$redirect" ]; then\n    die "$candidate is skipped in \'$review_mode\' review mode — advance directly to $redirect instead"\n  fi',
-        "replace": 'if [ -n "$redirect" ]; then\n    :\n  fi',
+        "find": '    die "$candidate is skipped in \'$review_mode\' review mode — advance directly to $redirect instead"',
+        "replace": '    :',
         "test": "tests/integration/stelow-advance-modes.test.ts",
     },
     {
@@ -86,6 +86,21 @@ MUTANTS = [
         "find": 'print(f"missing required artifact: {pat} (expected under {state_dir or statedir})", file=sys.stderr); sys.exit(1)',
         "replace": 'print(f"artifact note: {pat}", file=sys.stderr); sys.exit(0)',
         "test": "tests/unit/stelow-helper.test.ts",
+    },
+    {
+        "id": "context-skip-policy-ignored",
+        "rule": "a stage the policy removes is refused and its predecessor moves on",
+        "find": "    for stage in absent_by_policy(parse_stage_skips(text), scoped):",
+        "replace": "    for stage in []:",
+        "test": "tests/integration/context-policy-parity.test.ts",
+    },
+    {
+        "id": "context-ask-level-wrong",
+        "rule": "the matrix says the ask level the policy declares",
+        "find": '    for quality, level in (policy.get("ask") or {}).items():',
+        "replace": '    for quality, level in (policy.get("ask") or {}).items():\n        level = "full"',
+        "file": "scripts/generate-stage-policies.py",
+        "test": "tests/integration/context-policy-parity.test.ts",
     },
     {
         "id": "generator-drift-allowed",

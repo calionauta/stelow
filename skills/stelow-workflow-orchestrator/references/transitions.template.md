@@ -251,6 +251,12 @@ gate:      (none)
 
 ---
 
+## Stage Skips
+
+{{STAGE_SKIPS}}
+
+---
+
 ## Gate Conditions by review_mode
 
 {{REVIEW_MODE_TABLE}}
