@@ -3,6 +3,38 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.84.2-alpha] - 2026-10-22
+
+### Added
+
+- **Single owner for the test-guard contract.** New
+  `skills/stelow-workflow-testing-ai-code/references/guard-contract.md`
+  holds the 5-question ladder, the FAIL-OBSERVED-FREEZE-PASS ritual, the
+  Layers order, the canonical anti-patterns and the canonical CI gates.
+  Code truth stays in `types/stages.ts` and `stelow.schema.json`; the file
+  is prose commentary and links to them.
+
+### Changed
+
+- **Seven consumers link instead of copying.** `test-targets-and-gates.md`,
+  `testing-ai-code/SKILL.md`, `testing-execution/SKILL.md`,
+  `verification.md`, `step-3-feature.md`, `execution.md` and `goals.md`
+  now point at `guard-contract.md`. Four more files with guard logic
+  (`guard-quality-decision.md`, `workflow-audit.md`,
+  `fail-observed-and-brownfield.md`, `records-and-tasks.md`) carry a
+  header pointer. No code-entity changes.
+
+### Fixed
+
+- **Two broken relative links.** `testing-execution/SKILL.md` pointed at a
+  `references/guard-contract.md` that does not exist in that skill, and
+  `goals.md` used one `../` too few. Both resolve now.
+- **Duplicated runtime-validation block.** `records-and-tasks.md` carried
+  the `STELOW_VALIDATE=1` paragraph and the pre-commit paragraph twice.
+  One copy removed; enforcement unchanged.
+- **`mutation-gate.py` says what it is.** Docstring now states repo-self-gate
+  (14 hand-mutants for `scripts/stelow` only), not general mutation testing.
+
 ## [0.84.1-alpha] - 2026-10-22
 
 ### Fixed
