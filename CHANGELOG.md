@@ -3,6 +3,39 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.84.1-alpha] - 2026-10-22
+
+### Fixed
+
+- **The test-value scanner could not see the tests it was meant to judge.**
+  Its body-extraction regex matched greedily across the NEXT test, so every
+  shape check ran against the rest of the file — which is why it reported
+  "0 DELETE, 0 REVIEW" on a suite with fourteen tests that cannot fail for
+  a reason that matters. The criteria now apply per TEST (a file can carry
+  six load-bearing tests and one that checks a file exists), and the
+  scanner found the fourteen.
+
+### Removed
+
+- **Fourteen tests that observed a committed file instead of exercising the
+  code.** They asserted that a fixture, a SKILL.md, a reference or the
+  transitions reference EXISTS — a fact a commit already guarantees, and one
+  the content assertions beside them imply (a missing file fails the read).
+  The convention they meant to pin is now pinned by a test that can fail:
+  every artifact in the fixture directory follows the versioned naming
+  convention (a property of the set, so a badly named artifact is caught),
+  and every reference a stage defers to carries content and headings.
+
+### Added
+
+- **The mutation gate covers the critical workflow rules.** Fourteen
+  mutants now span the transition rule, the review-mode policy, the
+  manifest, the artifact guard, the stage block, the history, the lock
+  conflict, the ask identity and the generator drift. Two SURVIVED the
+  first sweep — the state's own `stages:` block and its `history:` were
+  recorded nowhere but in `invariants.json`, so a state that lied about
+  the walk passed the suite. Both are pinned now.
+
 ## [0.84.0-alpha] - 2026-10-22
 
 ### Fixed

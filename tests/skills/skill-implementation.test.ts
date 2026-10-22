@@ -229,10 +229,6 @@ describe('Per-Skill Implementation', () => {
     describe(skill.name, () => {
       const path = join(PROJECT_ROOT, 'skills', skill.path);
 
-      it('SKILL.md should exist', () => {
-        expect(existsSync(path)).toBe(true);
-      });
-
       const content = readFileSync(path, 'utf8');
 
       it('should have frontmatter with name', () => {
@@ -355,10 +351,6 @@ describe('Stage Files', () => {
     describe(stage, () => {
       const path = join(PROJECT_ROOT, 'skills/stelow-workflow-orchestrator/stages', stage);
 
-      it('should exist', () => {
-        expect(existsSync(path)).toBe(true);
-      });
-
       it('should reference SKILL.md', () => {
         const content = readFileSync(path, 'utf8');
         expect(content).toMatch(/SKILL\.md/i);
@@ -379,10 +371,6 @@ describe('Stage Files', () => {
 
 describe('cli-tools References', () => {
   const cliToolsDir = join(PROJECT_ROOT, 'skills/stelow-workflow-orchestrator/references/cli-tools');
-
-  it('cli-tools directory should exist', () => {
-    expect(existsSync(cliToolsDir)).toBe(true);
-  });
 
   // Map of SKILL.md reference -> actual cli-tools file
   const toolFileMap: Record<string, string> = {
@@ -412,10 +400,6 @@ describe('cli-tools References', () => {
 describe('Ask Patterns', () => {
   const askPath = join(PROJECT_ROOT, 'skills/stelow-workflow-orchestrator/stages/ask-patterns.md');
 
-  it('ask-patterns.md should exist', () => {
-    expect(existsSync(askPath)).toBe(true);
-  });
-
   it('should document ask_user_question usage', () => {
     expect(readFileSync(askPath, 'utf8')).toMatch(/ask_user_question/);
   });
@@ -429,23 +413,22 @@ describe('Ask Patterns', () => {
 describe('References Directory', () => {
   const refsDir = join(PROJECT_ROOT, 'skills/stelow-workflow-orchestrator/references');
 
-  it('should exist', () => {
-    expect(existsSync(refsDir)).toBe(true);
-  });
-
-  ['strategic-exploration.md', 'output-expectations.md'].forEach(ref => {
-    it(`${ref} should exist`, () => {
-      expect(existsSync(join(refsDir, ref))).toBe(true);
-    });
+  // The references a stage file NAMES must be the ones that carry the
+  // content it defers to. A reference that exists but says nothing is
+  // worse than a missing one: the stage reads it and finds no rule.
+  it('every reference the stages defer to carries content', () => {
+    const stagesDir = join(PROJECT_ROOT, 'skills/stelow-workflow-orchestrator/stages');
+    const references = ['strategic-exploration.md', 'output-expectations.md', 'human-gates.md'];
+    for (const reference of references) {
+      const content = readFileSync(join(refsDir, reference), 'utf8');
+      expect(content.trim().length, `${reference} is a stub`).toBeGreaterThan(200);
+      expect(content, `${reference} has no headings`).toMatch(/^#{1,3} /m);
+    }
   });
 });
 
 describe('Execution Phase', () => {
   const execPath = join(PROJECT_ROOT, 'skills/stelow-workflow-orchestrator/stages/execution.md');
-
-  it('execution.md should exist', () => {
-    expect(existsSync(execPath)).toBe(true);
-  });
 
   it('should document scope executor or goals (subagent + acceptance)', () => {
     expect(readFileSync(execPath, 'utf8')).toMatch(/scope.*executor|goal|subagent.*acceptance/i);

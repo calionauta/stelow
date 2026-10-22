@@ -28,12 +28,6 @@ describe("host vendoring surface", () => {
     expect(statSync(helper).mode & 0o111).toBeTruthy();
   });
 
-  it("transitions.md exists (stage slugs hosts enforce)", () => {
-    expect(
-      existsSync(join(ROOT, "skills", "stelow-workflow-orchestrator", "references", "transitions.md")),
-    ).toBe(true);
-  });
-
   it("stelow.schema.json exists and parses", () => {
     const raw = readFileSync(join(ROOT, "stelow.schema.json"), "utf8");
     expect(() => JSON.parse(raw)).not.toThrow();

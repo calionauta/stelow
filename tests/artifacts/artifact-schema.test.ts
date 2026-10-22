@@ -8,7 +8,7 @@
  * Previously this file tested against inline strings — now it reads real files.
  */
 import { describe, it, expect } from 'vitest';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -119,20 +119,19 @@ describe('approval receipt schema', () => {
 // ── FILE NAMING CONVENTIONS ────────────────────────────────────
 
 describe('file naming conventions', () => {
-  it('spec-product should use versioned naming', () => {
-    expect(existsSync(join(FIXTURES_DIR, 'spec-product_v1.md'))).toBe(true);
-  });
-
-  it('spec-tech should use versioned naming', () => {
-    expect(existsSync(join(FIXTURES_DIR, 'spec-tech_v1.md'))).toBe(true);
-  });
-
-  it('interfaces should use versioned naming', () => {
-    expect(existsSync(join(FIXTURES_DIR, 'interfaces_v1.md'))).toBe(true);
-  });
-
-  it('approval receipt should follow naming convention', () => {
-    expect(existsSync(join(FIXTURES_DIR, 'spec-product_v1.approved.md'))).toBe(true);
+  it('every artifact follows the versioned naming convention', () => {
+    // The convention is a property of the SET, not of one file. A check per
+    // file can only ever pin the file it names — it passes for every
+    // artifact that does not exist yet. This one fails when an artifact
+    // that breaks the convention is added.
+    const artifacts = readdirSync(FIXTURES_DIR).filter((name) => name.endsWith('.md'));
+    expect(artifacts.length, 'the fixture directory holds artifacts').toBeGreaterThan(0);
+    const convention = /^[a-z-]+_v\d+(\.approved)?\.md$/;
+    const offenders = artifacts.filter((name) => !convention.test(name));
+    expect(
+      offenders,
+      `these artifacts break the versioned naming convention: ${offenders.join(', ')}`,
+    ).toEqual([]);
   });
 
   it('version field should be in YAML frontmatter', () => {
