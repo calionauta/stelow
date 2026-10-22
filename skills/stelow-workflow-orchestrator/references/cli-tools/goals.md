@@ -227,11 +227,7 @@ DoD: critical-path tests cover happy path and negative cases`,
 
 ## Testing Gates
 
-| Gate | Condition | Action |
-|------|-----------|--------|
-| Critical Path Tests | missing required tests | 🔴 BLOCK |
-| Security | > 0 critical | 🔴 BLOCK |
-| Flaky Rate | > 5% | 🟡 WARN |
+Canonical table in `../../../stelow-workflow-testing-ai-code/references/guard-contract.md` — do not copy here.
 
 ---
 

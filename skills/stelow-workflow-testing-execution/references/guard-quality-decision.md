@@ -1,5 +1,8 @@
 # Decision Point: guard-quality
 
+> Canonical guard reference: `../../stelow-workflow-testing-ai-code/references/guard-contract.md`
+> (Layers, ritual, anti-patterns). This file keeps judge routing, modes, shadow-log, tripwire.
+
  judges whether a new or changed guard (test) actually guards anything —
 the one thing deterministic checks cannot decide. Formalizes the fresh-oracle
 third lens: the judge reads the planned case plus the guard, never the

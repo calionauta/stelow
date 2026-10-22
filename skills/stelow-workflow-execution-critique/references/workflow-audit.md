@@ -114,6 +114,9 @@ Check all changed files for:
 
 **Record Evidence (criteria 6):**
 
+> Field semantics: `../../stelow-workflow-testing-ai-code/references/guard-contract.md`.
+> Flags below (`red-missing`, `baseline-empty`, `frozen-edited`) implement that contract.
+
 For every scope that is CLOSED in `stelow.json` — `status: 'done'` OR
 `status: 'completed'`; the host writes `done` and `isDoneStatus`
 (`lib/trackables.mjs`) treats both as terminal — verify the Record evidence

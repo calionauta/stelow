@@ -202,20 +202,12 @@ generated_at: {YYYY-MM-DD}
 | {feature-name} | test-security | SAST clean on critical paths |
 
 ## CI/CD Gates
-- BLOCK: missing required critical-path tests
-- BLOCK: missing acceptance test — every AC maps to a test in test_map (AC-sem-teste=reject)
-- BLOCK: security_findings > 0 on critical paths
-- WARN: flaky_rate > 5%
+
+Canonical table in `references/guard-contract.md` — summary: BLOCK missing critical tests / AC-sem-teste / security findings; WARN flaky_rate.
 
 ## Anti-Patterns
-- ❌ > 3 mocks per test
-- ❌ Mocks for simple objects
-- ❌ 100% coverage target
-- ❌ Same AI for code AND tests
-- ❌ Mandated fail-pass micro-cycles in-loop (implementing agent self-certifying — ProgramBench 2026, DeepSWE 2026)
-- ❌ Presence tests (source-text existence without behavioral consequence)
-- ❌ Unreasoned oracles (assertions that don't capture a failure mode)
-- ❌ Suite growth without pruning — more tests ≠ better (TENET 2026: small targeted sets outperform large suites); each added test justifies its signal, dead tests are deleted
+
+Canonical list in `references/guard-contract.md` — do not copy here.
 ```
 
 ---

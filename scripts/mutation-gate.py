@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-"""mutation-gate.py — does the suite actually pin the helper's behavior?
+"""mutation-gate.py — repo-self-gate: does the suite actually pin the helper's behavior?
 
 Mutation testing for a repository whose production surface is a shell
 script, the Python inside it, and the markdown it generates. The off-the-shelf
 mutators cover JavaScript (Stryker, PIT, mutmut); this repo's rules live in
 `scripts/stelow`, so the mutators that would answer the question do not
-reach it.
+reach it. This gate is NOT general mutation testing — it is 14 hand-mutants
+for `scripts/stelow` only. See `skills/stelow-workflow-testing-ai-code/references/guard-contract.md`
+for the 5-question ladder (this gate answers Q1 for the own-suite).
 
 The question the gate answers is the one the test policy already states:
 "If your test passes against a no-op stub of the function, it's worthless."
