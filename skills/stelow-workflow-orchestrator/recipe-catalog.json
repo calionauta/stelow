@@ -16,8 +16,8 @@
           "depends_on": [],
           "output": "architecture/alternatives.json",
           "output_schema": "schemas/architecture-alternatives.json",
+          "when": "always",
           "human_boundary": "none",
-          "when": "exploration_supports_fanout",
           "failure_policy": "fail",
           "requirements": [
             "fanout",
@@ -247,8 +247,8 @@
           "depends_on": [],
           "output": "architecture/alternatives.json",
           "output_schema": "schemas/architecture-alternatives.json",
+          "when": "always",
           "human_boundary": "none",
-          "when": "exploration_supports_fanout",
           "failure_policy": "fail",
           "requirements": [
             "fanout",
@@ -948,8 +948,8 @@
           "depends_on": [],
           "output": "interfaces/alternatives.json",
           "output_schema": "schemas/interface-alternatives.json",
+          "when": "always",
           "human_boundary": "none",
-          "when": "exploration_supports_fanout",
           "failure_policy": "fail",
           "requirements": [
             "fanout",
@@ -1179,8 +1179,8 @@
           "depends_on": [],
           "output": "interfaces/alternatives.json",
           "output_schema": "schemas/interface-alternatives.json",
+          "when": "always",
           "human_boundary": "none",
-          "when": "exploration_supports_fanout",
           "failure_policy": "fail",
           "requirements": [
             "fanout",
@@ -3068,8 +3068,7 @@
         {
           "id": "verification-report",
           "depends_on": [
-            "tests",
-            "ui-review"
+            "tests"
           ],
           "output": "verification/report.md",
           "output_schema": "schemas/markdown.json",

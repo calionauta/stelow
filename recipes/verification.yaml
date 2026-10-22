@@ -28,10 +28,14 @@ tasks:
   requirements:
   - pipeline
   - structured-output
+# The report must run whether or not there was a UI to review: depending on
+# the optional `ui-review` made the cascade skip it (`deps.some(skipped)`), so
+# a non-UI project silently lost the stage's only human-readable artifact.
+# The report reads `verification/ui-review.md` when it exists and says "no UI
+# scope" when it does not.
 - id: verification-report
   depends_on:
   - tests
-  - ui-review
   output: verification/report.md
   output_schema: schemas/markdown.json
   human_boundary: none
