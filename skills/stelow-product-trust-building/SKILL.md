@@ -120,6 +120,7 @@ Should NOT activate: "write the ad copy" (generation, not trust design).
 ### B2B committee buying
 - One guarantee rarely fits all stakeholders; layer them.
 
+<!-- stelow:scope3:begin -->
 ## Entry (mode detection)
 
 When this skill loads, check for the stelow workflow marker:
@@ -144,13 +145,15 @@ stage          : shape
 description    : Shape stage. Define run knobs, hill chart, rabbit holes.
 status         : <done|partial|blocked>
 artifacts      : <paths created or modified>
-next-candidate : critique
+next-candidate : <the stage scripts/stelow next reports — run `scripts/stelow next`>
 gate           : none
 rework-on      : shape
 ```
 
-Workflow mode: emit the above Hand-off block verbatim, then stop. The
-router skill consumes the next-candidate field and calls
+Workflow mode: emit the above Hand-off block verbatim, then stop. Fill
+`next-candidate` from `scripts/stelow next`: it is the workflow's own
+answer, already accounting for this run's intent route and review mode.
+The router skill consumes the next-candidate field and calls
 `scripts/stelow advance <next-candidate>` to move state forward.
 
 ### Workflow slice
@@ -163,4 +166,6 @@ the rest of this file (unchanged). Summary:
 Primary actions (per stages.yaml): `read, write`. Run only the actions that
 produce the artifacts promised in `## Hand-off`; skip anything that does
 not advance the workflow.
+
+<!-- stelow:scope3:end -->
 

@@ -67,7 +67,7 @@ cp "$git_root/assets/state-template.md" "$state_path"
 #   status: active
 #   config:
 #     quality/exploration: derived from intent + scope (production/3 defaults; legacy appetite mapped once)
-#     review_mode: <Auto | Product Spec Gate | Product Spec + Interface + Scopes | Product Spec + Interface + Tech Review + Code Diff>
+#     review_mode: <Auto | Product Spec Gate | Product Spec + Interface Gates | Product Spec + Interface + Scopes | Product Spec + Interface + Tech Review | Product Spec + Interface + Tech Review + Code Diff>
 #     product_type: <software | docs | infra | data | research>
 ```
 

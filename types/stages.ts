@@ -69,9 +69,23 @@ export interface StageExecution {
   permission_profile: "inherit" | "per-call" | "host-preset";
 }
 
+/**
+ * A review mode's skip policy. The two lists mean different things and the
+ * runtime enforces exactly one of them:
+ *
+ *   skipped       — the stage DOES NOT RUN. The helper refuses to enter it
+ *                   and lets the predecessor move straight to the successor.
+ *   no_human_wait — the stage DOES run, but never parks for a person: the
+ *                   agent decides and records the receipt.
+ */
+export interface ReviewModePolicy {
+  skipped: string[];
+  no_human_wait: string[];
+}
+
 export interface StageRoute {
   intents?: Record<string, string[]>;
-  review_modes?: Record<string, { skipped: string[] }>;
+  review_modes?: Record<string, ReviewModePolicy>;
   entry_stages?: Record<string, string>;
 }
 
@@ -109,7 +123,7 @@ export interface StagesConfig {
   tools: string[];
   routes?: {
     intents?: Record<string, string[]>;
-    review_modes?: Record<string, { skipped: string[] }>;
+    review_modes?: Record<string, ReviewModePolicy>;
     entry_stages?: Record<string, string>;
   };
   stages: Stage[];

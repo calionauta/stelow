@@ -239,6 +239,7 @@ specialized analysis.
 - **stelow-workflow-plan-critique**: For product plan critique (use instead when you have spec-product.md)
 - **stelow-workflow-execution-critique**: Post-implementation audit
 
+<!-- stelow:scope3:begin -->
 ## Entry (mode detection)
 
 When this skill loads, check for the stelow workflow marker:
@@ -260,16 +261,18 @@ In **workflow mode**, skip to `### Workflow slice` and emit a complete
 
 ```
 stage          : diff-gate
-description    : Code diff review. visual review review of working tree diff. Only in Product Spec + Interface + Tech Review + Code Diff 
+description    : Code diff review. visual review review of working tree diff. Only in Product Spec + Interface + Tech Review + Code Diff mode.
 status         : <done|partial|blocked>
 artifacts      : <paths created or modified>
-next-candidate : audit
-gate           : none
+next-candidate : <the stage scripts/stelow next reports — run `scripts/stelow next`>
+gate           : approval-required (visual_review)
 rework-on      : execution
 ```
 
-Workflow mode: emit the above Hand-off block verbatim, then stop. The
-router skill consumes the next-candidate field and calls
+Workflow mode: emit the above Hand-off block verbatim, then stop. Fill
+`next-candidate` from `scripts/stelow next`: it is the workflow's own
+answer, already accounting for this run's intent route and review mode.
+The router skill consumes the next-candidate field and calls
 `scripts/stelow advance <next-candidate>` to move state forward.
 
 ### Workflow slice
@@ -279,7 +282,9 @@ the rest of this file (unchanged). Summary:
 
 > Code diff review. visual review review of working tree diff. Only in Product Spec + Interface + Tech Review + Code Diff mode.
 
-Primary actions (per stages.yaml): `read, write`. Run only the actions that
+Primary actions (per stages.yaml): `read`. Run only the actions that
 produce the artifacts promised in `## Hand-off`; skip anything that does
 not advance the workflow.
+
+<!-- stelow:scope3:end -->
 

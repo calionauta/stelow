@@ -287,8 +287,20 @@ def validate_stages() -> dict:
         if any(target not in names for target in route):
             fail(f"route {intent}: unknown stage")
     for mode, route in (data.get("routes", {}).get("review_modes", {}) or {}).items():
-        if any(target not in names for target in route.get("skipped", [])):
-            fail(f"review route {mode}: unknown stage")
+        # Two kinds of skip, and both lists must be present: a mode that
+        # omits one is ambiguous, and the helper would silently enforce the
+        # wrong rule for it.
+        for key in ("skipped", "no_human_wait"):
+            if key not in route:
+                fail(f"review route {mode}: missing '{key}' — a review mode declares both "
+                     f"(skipped = the stage does not run, no_human_wait = it runs but nobody is asked)")
+        for key in ("skipped", "no_human_wait"):
+            if any(target not in names for target in route.get(key, [])):
+                fail(f"review route {mode}.{key}: unknown stage")
+        overlap = set(route.get("skipped", [])) & set(route.get("no_human_wait", []))
+        if overlap:
+            fail(f"review route {mode}: {', '.join(sorted(overlap))} is both skipped and "
+                 f"no_human_wait — a stage either does not run or runs without a human, never both")
     for phase, target in (data.get("routes", {}).get("entry_stages", {}) or {}).items():
         if phase not in phase_ids or target not in names:
             fail(f"entry stage {phase}: unknown phase or stage")

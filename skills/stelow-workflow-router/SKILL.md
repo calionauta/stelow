@@ -42,22 +42,29 @@ Output:
 ## Algorithm
 
 ```bash
-# 1. Read current_stage and the previous skill's Hand-off block.
+# 1. Ask the helper what is legal from here. The helper owns the rule: the
+#    intent route, the review-mode policy and the graph all live in
+#    stages.yaml, and it is the only implementation of them. Re-deriving the
+#    set here was a FOURTH implementation — coarser than the helper's (no
+#    intent route, no review mode) — and it accepted moves the helper then
+#    refused (`diff-gate` in Auto), so the workflow stalled between the two
+#    answers.
 current=$(scripts/stelow status --json | jq -r .current_stage)
 next=$(extract_hand_off_field next-candidate)
 
-# 2. Validate next against transitions.md.
-transitions=skills/stelow-workflow-orchestrator/references/transitions.md
-allowed=$(awk "/^### $current\$/,/^### |\$/" "$transitions" \
-            | grep -E "^(next|accept|rework):" \
-            | head -1 | awk "{print \$2}" | tr -d "[],\"")
-if ! echo "$allowed" | grep -qw "$next"; then
+# 2. Validate next against the helper's own answer.
+allowed=$(scripts/stelow next --json | jq -r '.allowed[]')
+forward=$(scripts/stelow next --json | jq -r '.forward[]')
+if ! echo "$allowed" | grep -qx "$next"; then
   echo "router: rejected '$next' (allowed from $current: $allowed)"
-  # rework path: return to previous stage
-  prev=$(echo "$allowed" | head -1)
-  scripts/stelow advance "$prev"
-  load_skill "$prev"
-  exit 1
+  # The forward move is the way out: it is the successor of the current
+  # stage, with every stage this review mode skips already accounted for.
+  next=$(echo "$forward" | head -1)
+  if [ -z "$next" ]; then
+    echo "router: no forward move from $current — the workflow is done or blocked"
+    exit 1
+  fi
+  echo "router: taking the forward move '$next'"
 fi
 
 # 3. Advance state and load next stage.
@@ -76,9 +83,11 @@ EOF
 
 If `next` is not in the allowed list:
 
-- Default behavior: advance to the first `rework` candidate (or the
-  `reject` candidate if no rework is defined) so the workflow can
-  recover without manual intervention.
+- Take the helper's **forward** move — the successor of the current stage,
+  with every stage this review mode skips already accounted for. The helper
+  is the only implementation of that rule.
+- If there is no forward move, the workflow is done or blocked: stop and say
+  so. Never invent a transition.
 - Record the rejection in `state.md` body so the next agent can see
   why it was bounced.
 
@@ -93,5 +102,7 @@ skills — just the algorithm above plus the conventions below.
   `git rev-parse --show-toplevel`; do not assume cwd.
 - The router never writes to `.stelow/invariants.json` directly —
   `stelow advance` is the only writer.
+- The router never parses `transitions.md` itself. `scripts/stelow next`
+  answers the question; a second parser is a second opinion that drifts.
 - After `stelow advance` succeeds, kill the current tmux session and
   start a fresh one for the next stage (clean context).

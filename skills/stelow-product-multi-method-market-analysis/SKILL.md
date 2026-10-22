@@ -286,6 +286,7 @@ Should NOT activate: "our sprint plan" (execution, not analysis).
 ### Client wants a number (TAM)
 - Give ranges with method attached; single-point TAMs are fiction.
 
+<!-- stelow:scope3:begin -->
 ## Entry (mode detection)
 
 When this skill loads, check for the stelow workflow marker:
@@ -307,16 +308,18 @@ In **workflow mode**, skip to `### Workflow slice` and emit a complete
 
 ```
 stage          : context
-description    : Strategic context. Market analysis, JTBD, domain detection. Gated by `context:5` (quality/review mode): Product Spec Ga
+description    : Strategic context. Market analysis, JTBD, domain detection. Gated by `context:5` (quality/review mode): experimental+Auto skips; experimental otherwise reduced ask. See the context stage, section 5.
 status         : <done|partial|blocked>
 artifacts      : <paths created or modified>
-next-candidate : shape
+next-candidate : <the stage scripts/stelow next reports — run `scripts/stelow next`>
 gate           : none
 rework-on      : setup
 ```
 
-Workflow mode: emit the above Hand-off block verbatim, then stop. The
-router skill consumes the next-candidate field and calls
+Workflow mode: emit the above Hand-off block verbatim, then stop. Fill
+`next-candidate` from `scripts/stelow next`: it is the workflow's own
+answer, already accounting for this run's intent route and review mode.
+The router skill consumes the next-candidate field and calls
 `scripts/stelow advance <next-candidate>` to move state forward.
 
 ### Workflow slice
@@ -324,8 +327,11 @@ router skill consumes the next-candidate field and calls
 Workflow mode for the **context** stage. Standalone behavior lives in
 the rest of this file (unchanged). Summary:
 
-> Strategic context. Market analysis, JTBD, domain detection. Gated by `context:5` (quality/review mode): Product Spec Gate+Auto skips; others use reduced ask. S
+> Strategic context. Market analysis, JTBD, domain detection. Gated by `context:5` (quality/review mode): experimental+Auto skips; experimental otherwise reduced ask. See the context stage, section 5.
 
 Primary actions (per stages.yaml): `read, write`. Run only the actions that
 produce the artifacts promised in `## Hand-off`; skip anything that does
 not advance the workflow.
+
+<!-- stelow:scope3:end -->
+

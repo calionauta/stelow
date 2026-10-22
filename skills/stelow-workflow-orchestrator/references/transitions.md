@@ -38,6 +38,41 @@ after any change to verify.
 
 ---
 
+## Review Modes
+
+<!-- generated from stages.yaml routes.review_modes — do not edit -->
+
+The helper parses this block. `skipped` stages DO NOT RUN in that
+review mode: entering one is refused, and the predecessor moves
+straight to the successor. `no_human_wait` stages DO run, but never
+park for a person — the agent decides and records the receipt.
+
+review_mode: Auto
+skipped:    plan-gate, diff-gate
+no_human_wait: selection
+
+review_mode: Product Spec Gate
+skipped:    plan-gate, diff-gate
+no_human_wait: selection
+
+review_mode: Product Spec + Interface Gates
+skipped:    plan-gate, diff-gate
+no_human_wait: (none)
+
+review_mode: Product Spec + Interface + Scopes
+skipped:    plan-gate, diff-gate
+no_human_wait: (none)
+
+review_mode: Product Spec + Interface + Tech Review
+skipped:    diff-gate
+no_human_wait: (none)
+
+review_mode: Product Spec + Interface + Tech Review + Code Diff
+skipped:    (none)
+no_human_wait: (none)
+
+---
+
 ## Transition Table
 
 ### triage
@@ -162,6 +197,7 @@ artifact:   interfaces/selected-interface.md
 artifact:   interfaces/breadboard.json
 rework:    (none)
 gate:      (none)
+           No human wait in: "Auto", "Product Spec Gate"
 ```
 
 The selection stage records the chosen interface AND its breadboard map. The
@@ -203,10 +239,8 @@ reject:    planning
 rework:    (none)
 gate:      requires_approval: true
            approval_tool: visual_review
-           Only in: "Product Spec + Interface + Tech Review",
-           "Product Spec + Interface + Tech Review + Code Diff"
-           Skipped in: Auto, "Product Spec Gate",
-           "Product Spec + Interface Gates", "Product Spec + Interface + Scopes"
+           Only in: "Product Spec + Interface + Tech Review", "Product Spec + Interface + Tech Review + Code Diff"
+           Skipped in: "Auto", "Product Spec Gate", "Product Spec + Interface Gates", "Product Spec + Interface + Scopes"
 ```
 
 ### execution
@@ -239,8 +273,7 @@ annotate:  execution
 gate:      requires_approval: true
            approval_tool: visual_review
            Only in: "Product Spec + Interface + Tech Review + Code Diff"
-           Skipped in: Auto, "Product Spec Gate",
-                       "Product Spec + Interface Gates", "Product Spec + Interface + Scopes", "Product Spec + Interface + Tech Review"
+           Skipped in: "Auto", "Product Spec Gate", "Product Spec + Interface Gates", "Product Spec + Interface + Scopes", "Product Spec + Interface + Tech Review"
 ```
 
 ### audit
@@ -262,17 +295,20 @@ gate:      (none)
 | context | all | see `context:5` | `context:5` is canonical: it decides skip, reduced ask, or full ask from quality and intent. |
 | gate | all | block | `requires_approval: true`, `visual_review` required |
 | int-gate | all | block | `requires_approval: true`, `visual_review` required |
-| plan-gate | Auto | skip | skipped |
-| plan-gate | Product Spec Gate | skip | skipped |
-| plan-gate | Product Spec + Interface + Scopes | skip | skipped |
-| plan-gate | Product Spec + Interface Gates | skip | skipped; planning redirects directly to execution |
-| plan-gate | Product Spec + Interface + Tech Review / Product Spec + Interface + Tech Review + Code Diff | block | `requires_approval: true`, `visual_review` required |
-| diff-gate | Auto | skip | skipped |
-| diff-gate | Product Spec Gate | skip | skipped |
-| diff-gate | Product Spec + Interface Gates | skip | skipped; verification redirects directly to audit |
-| diff-gate | Product Spec + Interface + Scopes | skip | skipped |
-| diff-gate | Product Spec + Interface + Tech Review | skip | skipped |
+| plan-gate | Auto | skip | skipped; the predecessor moves straight to the successor |
+| plan-gate | Product Spec Gate | skip | skipped; the predecessor moves straight to the successor |
+| plan-gate | Product Spec + Interface Gates | skip | skipped; the predecessor moves straight to the successor |
+| plan-gate | Product Spec + Interface + Scopes | skip | skipped; the predecessor moves straight to the successor |
+| plan-gate | Product Spec + Interface + Tech Review | block | `requires_approval: true`, `visual_review` required |
+| plan-gate | Product Spec + Interface + Tech Review + Code Diff | block | `requires_approval: true`, `visual_review` required |
+| diff-gate | Auto | skip | skipped; the predecessor moves straight to the successor |
+| diff-gate | Product Spec Gate | skip | skipped; the predecessor moves straight to the successor |
+| diff-gate | Product Spec + Interface Gates | skip | skipped; the predecessor moves straight to the successor |
+| diff-gate | Product Spec + Interface + Scopes | skip | skipped; the predecessor moves straight to the successor |
+| diff-gate | Product Spec + Interface + Tech Review | skip | skipped; the predecessor moves straight to the successor |
 | diff-gate | Product Spec + Interface + Tech Review + Code Diff | block | `requires_approval: true`, `visual_review` required |
+| selection | Auto | agent decides | the stage runs, but nobody is asked to pick (see `human-gates.md`) |
+| selection | Product Spec Gate | agent decides | the stage runs, but nobody is asked to pick (see `human-gates.md`) |
 
 ---
 

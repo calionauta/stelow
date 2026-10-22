@@ -278,6 +278,7 @@ Should NOT activate: "write the spec" (use stelow-workflow-shape-up instead).
 ### Map goes stale
 - Re-run on a cadence; opportunities decay as markets move.
 
+<!-- stelow:scope3:begin -->
 ## Entry (mode detection)
 
 When this skill loads, check for the stelow workflow marker:
@@ -302,13 +303,15 @@ stage          : triage
 description    : Initial assessment. Determine if this is a valid request.
 status         : <done|partial|blocked>
 artifacts      : <paths created or modified>
-next-candidate : select
+next-candidate : <the stage scripts/stelow next reports — run `scripts/stelow next`>
 gate           : none
 rework-on      : (none)
 ```
 
-Workflow mode: emit the above Hand-off block verbatim, then stop. The
-router skill consumes the next-candidate field and calls
+Workflow mode: emit the above Hand-off block verbatim, then stop. Fill
+`next-candidate` from `scripts/stelow next`: it is the workflow's own
+answer, already accounting for this run's intent route and review mode.
+The router skill consumes the next-candidate field and calls
 `scripts/stelow advance <next-candidate>` to move state forward.
 
 ### Workflow slice
@@ -318,6 +321,9 @@ the rest of this file (unchanged). Summary:
 
 > Initial assessment. Determine if this is a valid request.
 
-Primary actions (per stages.yaml): `read, write`. Run only the actions that
+Primary actions (per stages.yaml): `ask_user_question`. Run only the actions that
 produce the artifacts promised in `## Hand-off`; skip anything that does
 not advance the workflow.
+
+<!-- stelow:scope3:end -->
+
