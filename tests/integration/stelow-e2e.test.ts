@@ -130,6 +130,23 @@ stages:
     expect(inv.history).toHaveLength(4);
     expect(inv.history.map((h: any) => h.stage)).toEqual(expectedPath);
 
+    // The STATE carries its own record of the same walk: the stage it left
+    // is done, the one it entered is in-progress, and the history names the
+    // stages left behind. invariants.json held this alone — and the state
+    // is what a reader (or the next worker) opens.
+    const stateBlob = readFileSync(join(wd.dir, "state.md"), "utf8");
+    expect(stateBlob).toMatch(/current_stage:\s*gate/);
+    expect(stateBlob).toMatch(/^\s*setup:\s*done$/m);
+    expect(stateBlob).toMatch(/^\s*context:\s*done$/m);
+    expect(stateBlob).toMatch(/^\s*shape:\s*done$/m);
+    expect(stateBlob).toMatch(/^\s*critique:\s*done$/m);
+    expect(stateBlob).toMatch(/^\s*gate:\s*in-progress$/m);
+    // The history block only: the artifacts manifest also carries
+    // `- stage:` entries, and a loose match reads one list as the other.
+    const historyBlock = stateBlob.split(/^history:$/m)[1]?.split(/^\S/m)[0] ?? "";
+    const historyEntries = [...historyBlock.matchAll(/^\s*- stage:\s*(\S+)$/gm)].map((m) => m[1]);
+    expect(historyEntries).toEqual(["setup", "context", "shape", "critique"]);
+
     // lock dir should be released after each advance (not held at end)
     expect(existsSync(join(wd.dir, ".stelow", "lock"))).toBe(false);
   });

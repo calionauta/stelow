@@ -17,7 +17,7 @@
  * across 7 skills and breaking it cascades to every downstream consumer.
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtempSync, writeFileSync, mkdirSync, rmSync, existsSync, readFileSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, mkdirSync, rmSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { execSync } from 'node:child_process';
@@ -32,16 +32,10 @@ const HELPER_PATH = join(
   'skills/stelow-workflow-orchestrator/references/cli-tools/read-config.sh',
 );
 
-describe('read-config.sh helper exists and is executable', () => {
-  it('helper file exists', () => {
-    expect(existsSync(HELPER_PATH)).toBe(true);
-  });
-
-  it('helper has shebang', () => {
-    const content = readFileSync(HELPER_PATH, 'utf8');
-    expect(content).toMatch(/^#!\/usr\/bin\/env bash/);
-  });
-});
+// The helper's own behaviour is exercised by the tests below — they RUN it
+// against a real stelow.json. A test that only checks the file is there
+// cannot fail for a reason that matters: the file is a committed artifact,
+// and every other test in this file would fail loudly if it were missing.
 
 describe('stelow_read_appetite / stelow_read_review_mode', () => {
   let tmpDir: string;
