@@ -64,11 +64,17 @@ It is the source of truth for the interface's shape, and the prose in
 `selected-interface.md` is its commentary — the same "the map is the truth,
 the text explains it" rule the rest of the workflow already follows.
 
-`scripts/render-diagram.mjs` projects the map into Mermaid and then into a
-self-contained HTML file (inline SVG, zoom, CSS-variable theme). It is
-repo-side tooling, not part of the installed skill surface: `install.sh` and
-the plugin sync ship only `scripts/stelow`. The renderer therefore degrades —
-no renderer means no diagram, and the map still stands.
+`scripts/render-diagram.mjs` projects the map into Mermaid and then into
+views: a self-contained HTML file (inline SVG, zoom, CSS-variable theme, no
+external request) and a markdown reading view. It also runs the map's own
+rules — the semantic checks in `scripts/breadboard-checks.mjs` and the
+contract in `scripts/breadboard-contract.mjs` (a fail-closed interpreter of
+`schemas/breadboard.json`) — and refuses to draw a map that contradicts
+itself, because a view of a broken map presents a hole as a decision.
+
+The renderer is repo-side tooling, not part of the installed skill surface:
+`install.sh` and the plugin sync ship only `scripts/stelow`. It therefore
+degrades — no renderer means no diagram, and the map still stands.
 
 ## Data flow
 

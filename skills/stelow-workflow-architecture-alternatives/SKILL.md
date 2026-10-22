@@ -98,8 +98,9 @@ CRITICAL — Before generating, each worker MUST read:
   3. spec-product.md — body + frontmatter (scope, IN/OUT, constraints)
   4. scope-map.json — approved scope boundaries and dependencies (when it exists)
   5. selected-interface.md — chosen interaction direction (when it exists; the construction must serve it, never reinterpret it)
+  6. breadboard.json — the chosen interface as a map (when it exists): name where its code affordances (`N…`) live and which stores (`S…`) they read and write, so the direction carries the interface instead of redesigning it
 
-Each worker MUST receive `reads: [spec-product.md, scope-map.json]` (plus `selected-interface.md` when present).
+Each worker MUST receive `reads: [spec-product.md, scope-map.json]` (plus `selected-interface.md` and `breadboard.json` when present).
 Each worker runs `context: "fresh"` — directions must be independent of orchestrator deliberation history.
 Each outputs to .stelow/{date}/{dir}/architecture/direction-{letter}.md
 ```

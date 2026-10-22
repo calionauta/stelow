@@ -173,106 +173,51 @@ Output: Append to interfaces.md per hybrid-recommendation.md
 ```
 
 The hybrid section must carry **its own composed wireframe** in a fenced block
-and name the proposals it composes with their headings. The interface gate below
-reviews wireframes: a hybrid written only as prose cannot be reviewed there, and
-a reader who clicks the hybrid option would land on text while the mockups it
-merges sit elsewhere in the file.
+and name the proposals it composes with their headings. The `int-gate` stage
+reviews wireframes: a hybrid written only as prose cannot be reviewed there,
+and a reader who clicks the hybrid option would land on text while the mockups
+it merges sit elsewhere in the file.
 
 
-## Visual Review (Interface Gate — Automatic)
+## Where this skill ends
 
-**After all selected proposals (+ Hybrid when applicable), use the visual review gate** (see `../stelow-workflow-orchestrator/references/cli-tools/visual_review.md` for the correct command). Execute it directly — do NOT describe it to the user.
+This skill produces the proposals and the hybrid. It does **not** run the
+gate, make the pick, or write the interface artifacts — the workflow splits
+those into their own stages, and duplicating them here is how a worker asks
+the question twice or parks for a review nobody configured:
 
-Prefer the harness-registered `visual_review` tool when available. Fall back to bash CLI if unavailable:
+| What happens next | Owner | What it writes |
+|---|---|---|
+| The wireframes are reviewed by a human | `int-gate` stage (`../stelow-workflow-orchestrator/stages/int-gate.md`) | `interfaces/alternatives.approved.md` |
+| The interface is chosen | `selection` stage (`../stelow-workflow-orchestrator/stages/interface-selection.md`) | `interfaces/selected-interface.md` |
+| The chosen interface is mapped | the same `selection` stage, per `../stelow-workflow-orchestrator/references/breadboard.md` | `interfaces/breadboard.json` |
 
-```
-# Primary (tool, works when bash is blocked):
-visual_review filePath=.stelow/{YYYY-MM-DD}/{_dir}/interfaces/alternatives.md
+So in workflow mode: finish `interfaces/alternatives.md` (every proposal with
+its own wireframe, plus the hybrid), emit the hand-off block below, and stop.
+The router advances to `int-gate`; the pick and the map happen after it.
 
-# Fallback (bash):
-visual_review annotate .stelow/{YYYY-MM-DD}/{_dir}/interfaces/alternatives.md --gate --json
-```
+The next stage submits `interfaces/alternatives.md` to `visual_review` — see
+`../stelow-workflow-orchestrator/references/cli-tools/visual_review.md` for the
+command — and the stage after that asks the pick question with Pattern 2 from
+`../stelow-workflow-orchestrator/stages/ask-patterns.md`. Both instructions
+live in their own playbooks, not here: this skill's job is to leave the file
+they act on in a state worth reviewing.
 
-Wait for the decision. If `approved`, the tool auto-creates the receipt. Then advance to Interface Selection.
+**Standalone mode is different.** There is no gate and no `selection` stage,
+so a human who asked you to explore directions may simply pick one. Even then,
+do not write `selected-interface.md`, `breadboard.json`, or a review receipt:
+those are workflow artifacts, and a hand-written one is a file the workflow
+will never read.
 
-Then use **Pattern 2** from `../stelow-workflow-orchestrator/stages/ask-patterns.md` (mechanism: `../stelow-workflow-orchestrator/references/cli-tools/ask.md`) to let the user pick one proposal — **but only when the review mode requires a human pick**. Check `review_mode` first (see `../stelow-workflow-orchestrator/references/human-gates.md`):
+### Who owns what after the proposals
 
-- `Auto` / `Product Spec Gate` → **LLM decides.** Adopt the hybrid recommendation (or the single proposal for count 1) as the choice: extract it to `selected-interface.md` per the section below with `selected_by: llm (review_mode=<mode>)` noted, and advance. Do NOT park waiting for a human pick — a wait with no mode mandate is a stuck workflow.
-- `Product Spec + Interface Gates` and above → **user chooses.** Execute the Pattern 2 ask (`../stelow-workflow-orchestrator/stages/ask-patterns.md`).
-
-Do NOT just describe what comes next — execute the mandated path.
-
-## User Selection (Interface Selection)
-
-When the review mode requires a human pick, after visual review and approval use **Pattern 2** from `../stelow-workflow-orchestrator/stages/ask-patterns.md` (mechanism: `../stelow-workflow-orchestrator/references/cli-tools/ask.md`) to ask the user which proposal to follow. In `Auto` / `Product Spec Gate` modes skip this section entirely (the hybrid adoption above replaces it).
-
-Fill every option so the human can review before picking — labels alone force a blind choice. Per option pass the proposal's ASCII wireframe as the inline preview and the proposal artifact file as the openable reference (host CLIs accept `--preview` / `--artifact` per `--option`; the `ask_user_question` tool takes `preview` / `artifact` fields — see the Schema Reference in `ask-patterns.md`). The artifact path must be workspace-relative and already written; a missing file degrades to the preview, never blocks the question.
-
-### Save Selected Interface as Permanent Artifact
-
-After the user picks a proposal, extract it from `alternatives.md` into a dedicated artifact:
-
-```bash
-PROPOSAL_LABEL="{chosen_proposal_label}"  # e.g. "A — Convention Navigator"
-OUTPUT=".stelow/{YYYY-MM-DD}/{_dir}/interfaces/selected-interface.md"
-
-# Extract the chosen proposal's full content (all 7 sections)
-awk -v label="$PROPOSAL_LABEL" '
-  /^## Proposal / && !started { started = ($0 ~ label); next }
-  /^## Proposal / && started { exit }
-  started { print }
-' ".stelow/{YYYY-MM-DD}/{_dir}/interfaces/alternatives.md" > "$OUTPUT"
-
-# Verify: chosen interface must contain Work Pattern and Breadboarding
-grep -q "Work Pattern" "$OUTPUT" || { echo "ERROR: selected interface missing Work Pattern Declaration"; exit 1; }
-grep -q "Breadboarding" "$OUTPUT" || { echo "ERROR: selected interface missing Breadboarding section"; exit 1; }
-```
-
-The saved artifact contains the **complete proposal**: work pattern declaration, breadboarding guidelines, ASCII wireframe, interaction flow, trade-off analysis, design smell audit, and state coverage table.
-
-The tech planning and execution stages reference this file for UI direction — they should NOT regenerate or reinterpret the interface.
-
-### Build the Breadboard Map
-
-The prose above says WHAT the interface is. The breadboard says WHERE it is:
-which places the user can be in, what they can act on in each, and how those
-things are wired. It is the structured form of the same decision — and it is
-what the Architecture and Planning stages read when they need to know the
-shape of the thing they are building.
-
-Write it to `interfaces/breadboard.json` using the contract in
-`schemas/breadboard.json`. The rules — the blocking test for places, the
-difference between containment and wiring, and the five checks that catch a
-map which looks complete and says nothing — are in
-`../stelow-workflow-orchestrator/references/breadboard.md`.
-
-Read that reference before writing. The parts that are easy to get wrong:
-
-- A **Place** is perceptual, not technical. Use the blocking test: can the
-  user interact with what is behind? If not, it is a different Place.
-- **Containment** is the `place` field; **wiring** is `wiresOut` (control
-  flow) and `returnsTo` (data flow). They are different relationships.
-- Navigation wires to a **Place id**, not to an affordance inside it.
-- Every display needs a source, and every code affordance needs a connection.
-  A map that fails these checks is a diagram of a system nobody can change.
-
-Then render the diagram (optional — the JSON is the artifact):
-
-```bash
-node scripts/render-diagram.mjs breadboard \
-  --input ".stelow/{YYYY-MM-DD}/{_dir}/interfaces/breadboard.json" \
-  --out   ".stelow/{YYYY-MM-DD}/{_dir}/interfaces/breadboard.html" \
-  --emit-mermaid
-```
-
-If the render fails, the map still stands. Do not let the diagram block the
-pick.
-
-> **The renderer is a repo tool, not a host dependency.** Only `scripts/stelow`
-> is installed by `install.sh` and synced by the plugin, so on a standalone
-> host this command may simply be absent. The breadboard JSON is the
-> artifact; the diagram is a view. If the script is not there, write the map
-> and move on — never let a missing renderer stop the pick.
+The per-proposal trade-off and smell audit are the proposal's own rationale —
+they belong to divergence. The decision-level trade-off, the accepted
+sacrifice, and the evidence belong to `stelow-workflow-interface-contrast`
+(convergence). A post-build UX audit belongs to
+`stelow-workflow-ux-critique`. Do not restate the decision record here, and do
+not re-audit a proposal against the smells after the contrast has already
+weighed it.
 
 ## Output
 
@@ -288,7 +233,7 @@ document:
 .stelow/{YYYY-MM-DD}/{_dir}/interfaces/alternatives-verification.json
 ```
 
-The chosen interface (after user selection) is saved to:
+The chosen interface (after the pick) is saved to:
 ```
 .stelow/{YYYY-MM-DD}/{_dir}/interfaces/selected-interface.md
 ```
@@ -298,10 +243,10 @@ and its structured map to:
 .stelow/{YYYY-MM-DD}/{_dir}/interfaces/breadboard.json
 ```
 
-The breadboard is written by the **Selection** stage, not here: it describes
-ONE chosen interface, and a map of five alternatives is noise. See
-`../stelow-workflow-orchestrator/references/breadboard.md` for the schema and
-the writing rules.
+Both are written by the **Selection** stage, not here: the pick and the map
+describe ONE chosen interface, and a map of five alternatives is noise. See
+`../stelow-workflow-orchestrator/stages/interface-selection.md` and
+`../stelow-workflow-orchestrator/references/breadboard.md`.
 
 Completeness contract (the host validates these minima — never submit fewer,
 per proposal; proposal count follows exploration breadth):

@@ -9,9 +9,43 @@
  *
  * Kept apart from the renderer so the interesting half (mapping a graph onto
  * Mermaid syntax) is testable without a browser, a DOM, or a renderer at all.
+ *
+ * ## Visual language
+ *
+ * A breadboard's three element kinds are not decoration: UI affordances are
+ * what the user touches, code affordances are what the code does, and stores
+ * hold state. The diagram says so with SHAPE first and colour second:
+ *
+ *   UI      rectangle          (a thing on the screen)
+ *   code    double-bordered    (a function/subroutine)
+ *   store   cylinder           (held data)
+ *   place   subgraph           (a bounded context of interaction)
+ *
+ * Shape survives a monochrome print, a theme swap, and a host that ignores
+ * classDef; colour is the bonus. Ryan Singer's whiteboard conventions say the
+ * same thing with position and colour, because the picture is how a reader
+ * checks the map without reading the table.
  */
 
 export const DIAGRAM_KIND = "flowchart";
+
+/** Shape wrapper per kind, in Mermaid's node syntax. */
+const SHAPE = {
+  ui: (label) => `[${label}]`,
+  code: (label) => `[[${label}]]`,
+  store: (label) => `[(${label})]`,
+};
+
+/**
+ * Colour per kind, chosen to stay legible on both a white and a near-black
+ * page: classDef cannot use `var(...)` (pele's parser rejects it), so these
+ * are literal mid-tones rather than theme-aware tokens.
+ */
+const KIND_STYLE = {
+  ui: ["kindUi", "stroke:#3f8f63"],
+  code: ["kindCode", "stroke:#8a63d2"],
+  store: ["kindStore", "stroke:#b07d18"],
+};
 
 /**
  * Mermaid node ids cannot start with a digit and cannot contain characters
@@ -37,14 +71,18 @@ function label(text) {
  * the diagram is read by people who do not have the map open.
  */
 function nodeLabel(affordance) {
-  const name = label(affordance.name);
-  return `"${affordance.id}: ${name}"`;
+  return `"${affordance.id}: ${label(affordance.name)}"`;
 }
 
 function placeLabel(place) {
   const parts = [`${place.id}: ${label(place.name)}`];
   if (place.mode) parts.push(`(${label(place.mode)})`);
   return `"${parts.join(" ")}"`;
+}
+
+function nodeLine(item, indent) {
+  const shape = SHAPE[item.kind] ?? SHAPE.ui;
+  return `${indent}${nodeId(item.id)}${shape(nodeLabel(item))}`;
 }
 
 /**
@@ -62,6 +100,7 @@ function placeLabel(place) {
 export function toMermaid(breadboard) {
   const places = breadboard.places ?? [];
   const affordances = breadboard.affordances ?? [];
+  const placeIds = new Set(places.map((place) => place.id));
 
   const lines = [`${DIAGRAM_KIND} TB`];
 
@@ -69,43 +108,44 @@ export function toMermaid(breadboard) {
   for (const place of places) {
     const members = affordances.filter((item) => item.place === place.id);
     lines.push(`  subgraph ${nodeId(place.id)}[${placeLabel(place)}]`);
-    for (const member of members) {
-      // A tentative affordance is dashed, not merely marked: the reader has to
-      // see at a glance that this part of the map may not survive the next
-      // shaping cycle. The class goes AFTER the label — `id:::class["label"]`
-      // is not valid Mermaid.
-      const style = member.tentative ? ":::tentative" : "";
-      lines.push(`    ${nodeId(member.id)}[${nodeLabel(member)}]${style}`);
-    }
+    for (const member of members) lines.push(nodeLine(member, "    "));
     lines.push("  end");
   }
 
   // Affordances whose place is not a declared place would be invisible inside
   // a subgraph; they are emitted at the top level so the map never hides one.
-  const placeIds = new Set(places.map((place) => place.id));
   for (const item of affordances) {
     if (placeIds.has(item.place)) continue;
-    const style = item.tentative ? ":::tentative" : "";
-    lines.push(`  ${nodeId(item.id)}[${nodeLabel(item)}]${style}`);
+    lines.push(nodeLine(item, "  "));
   }
 
-  // Control flow: solid arrows. Data flow: dashed arrows.
-  const edges = [];
+  // Control flow: solid arrows. Data flow: dashed arrows. Both read forward:
+  // the arrow starts at the affordance the map names first.
   for (const item of affordances) {
     for (const target of item.wiresOut ?? []) {
-      edges.push(`  ${nodeId(item.id)} --> ${nodeId(target)}`);
+      lines.push(`  ${nodeId(item.id)} --> ${nodeId(target)}`);
     }
     for (const target of item.returnsTo ?? []) {
-      edges.push(`  ${nodeId(item.id)} -.-> ${nodeId(target)}`);
+      lines.push(`  ${nodeId(item.id)} -.-> ${nodeId(target)}`);
     }
   }
-  lines.push(...edges);
 
-  // Style last: Mermaid applies class definitions to the nodes that used
-  // them, so the definition has to appear in the source.
-  if (affordances.some((item) => item.tentative)) {
-    lines.push("  classDef tentative stroke-dasharray:5 5,stroke-opacity:.7");
+  // Style last, grouped by class so the output is stable: Mermaid has to see
+  // a classDef before it can apply, and one `class` line per kind keeps the
+  // diff of a one-node change to one line.
+  const classLines = [];
+  for (const [kind, [className, style]] of Object.entries(KIND_STYLE)) {
+    const ids = affordances.filter((item) => item.kind === kind).map((item) => nodeId(item.id));
+    if (ids.length === 0) continue;
+    classLines.push(`  class ${ids.join(",")} ${className}`);
+    classLines.push(`  classDef ${className} ${style}`);
   }
+  const tentative = affordances.filter((item) => item.tentative).map((item) => nodeId(item.id));
+  if (tentative.length > 0) {
+    classLines.push(`  class ${tentative.join(",")} tentative`);
+    classLines.push("  classDef tentative stroke-dasharray:5 5,stroke-opacity:.7");
+  }
+  lines.push(...classLines);
 
   return lines.join("\n") + "\n";
 }

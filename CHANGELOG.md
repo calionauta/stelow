@@ -3,6 +3,70 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.78.0-alpha] - 2026-10-22
+
+### Added
+
+- **The breadboard contract now runs.** `scripts/breadboard-contract.mjs`
+  interprets `schemas/breadboard.json` (fail-closed: a keyword it does not
+  implement is an error, not a silently skipped rule), so a map that invents
+  `wiresout` or drops a required trigger is reported instead of rendered.
+- **A markdown view the review can actually open.** `--emit-markdown` writes
+  `breadboard.md` next to the map — places, affordance tables, both flows, the
+  checks' findings, and (with `--with-diagram`) the diagram source. The visual
+  gate reviews markdown; without this file it never saw the chosen map.
+- **The map's gaps travel with the map.** Findings from the executable checks
+  are written into both views. A picture of a map with a display nothing feeds
+  now says so, instead of reading as finished.
+- **Kind-specific diagram language.** UI, code, and store are drawn as a
+  rectangle, a double-bordered rectangle, and a cylinder (with colour as a
+  second cue), plus a how-to-read key. Shape survives a monochrome print and a
+  host that ignores styling.
+- **Place references.** An affordance id of the form `_letter-browser` is
+  accepted as a UI affordance that marks where a detached place renders —
+  Ryan Singer's convention, which the serializer already knew and the contract
+  rejected.
+
+### Fixed
+
+- **The data-flow checks read the arrow backwards.** A display was treated as
+  fed when its own `returnsTo` pointed somewhere, and a store as read when
+  something pointed at it — the reverse of the model, and the reverse of what
+  the reference document says. A display is now fed by an incoming wire; a
+  store is read by its own outgoing return. A map that wired a display to its
+  own source and called it fed — easy to write, and it passed — is now flagged.
+- **The renderer could not find its own zoom anchor.** The wheel handler added
+  the container's scroll offset and then subtracted a bounding box that
+  already included it, so zooming drifted away from the pointer as soon as the
+  diagram was scrolled. The transform now targets a plain canvas element and
+  measures its layout box, which a transform does not disturb.
+- **The interface-alternatives skill ran the gate and the pick.** It still
+  carried the visual-review submission, the ask, and the instructions for
+  writing `selected-interface.md` and `breadboard.json` — all owned by the
+  `int-gate` and `selection` stages after the recipe split. A worker following
+  the skill could ask the question twice or write artifacts its stage does not
+  declare. The skill now ends at the proposals and points at the owners.
+- **`breadboard.json` was write-only.** The prose claimed Architecture and
+  Planning read it, and neither did. Both now read the map: architecture
+  directions must name where the map's code affordances live and which stores
+  they read, and planning must trace each scope to affordances in it.
+
+### Changed
+
+- **`control` is required on every affordance** in `schemas/breadboard.json`.
+  It is what distinguishes a display (`render`) from an input (`type`) from a
+  handler (`click`/`call`), so a map without it is a map the checks cannot
+  classify.
+- **Contrast options require a `wireframe`** in
+  `schemas/interface-contrast.json` (non-empty). This schema is the contract a
+  worker follows; the host's runtime validator still enforces the original
+  trio, and its vendored copy adopts the requirement when the pin advances —
+  its parity test is the signal.
+- **Two severities, two answers.** `--check` reports, `--strict` refuses a
+  gap, and an **error** (unknown id, duplicate, kind/prefix mismatch, contract
+  violation) refuses every view: a view of a broken map presents a hole as a
+  decision.
+
 ## [0.77.0-alpha] - 2026-10-22
 
 ### Added

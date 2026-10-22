@@ -102,20 +102,35 @@ commentary. Two consequences worth knowing:
   *can the user interact with what is behind?* — not by the URL or the
   component tree. A modal is a place; a dropdown is not.
 - Wiring separates **control flow** (`wiresOut` — what triggers what) from
-  **data flow** (`returnsTo` — where the output goes). Navigation wires to a
-  place, not to an affordance inside it.
+  **data flow** (`returnsTo` — where the output flows), and both read forward.
+  A display is fed by a wire pointing AT it; a store is read by its own wire
+  pointing AWAY from it. Navigation wires to a place, not to an affordance
+  inside it.
 
 The map is what the architecture and planning stages read when they need the
 shape of the thing they are building, and it is the thing an agent can edit
 without rewriting a paragraph.
 
-A diagram is available as a **view**: `scripts/render-diagram.mjs` turns the
-map into Mermaid and then into a self-contained HTML file with the SVG inline,
-zoom enabled, and a light/dark theme. It is repo-side tooling and degrades
-rather than blocks — the JSON is the artifact, the diagram is a convenience,
-and a missing renderer never stops the pick. See
+Before the map is saved, `scripts/render-diagram.mjs ... --check` runs the
+executable rules from the breadboard reference plus the published contract
+(`schemas/breadboard.json`). Findings carry a severity: an **error** means the
+map contradicts itself (an unknown id, a duplicate, a kind that fights its
+prefix) and no view is produced; a **gap** means the map may be incomplete (a
+display nothing feeds) and is reported in the views, where the writer decides.
+
+Views of the map are optional and clearly marked as views:
+
+| Output | What it is for |
+|---|---|
+| `--emit-markdown --with-diagram` | The reading view a document review can open: places, affordance tables, both flows, the diagram source, and the checks' findings. |
+| `--out <file.html>` | A self-contained page (inline SVG, zoom, light/dark theme) for a human who wants the picture offline. |
+| `--emit-mermaid` | The diagram source alone, for a host that renders diagrams itself. |
+
+The renderer is repo-side tooling and degrades rather than blocks — the JSON
+is the artifact, the views are conveniences, and a missing renderer never
+stops the pick. See
 [the breadboard reference](../skills/stelow-workflow-orchestrator/references/breadboard.md)
-for the schema and the writing rules.
+for the schema, the rules, and the checks.
 
 ## Gates and receipts
 

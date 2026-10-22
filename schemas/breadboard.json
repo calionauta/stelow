@@ -68,12 +68,12 @@
       "description": "Everything the user or the code can act upon. UI affordances (U) are what the user sees and touches; code affordances (N) are the methods, subscriptions, and stores underneath; data stores (S) hold state that is read and written.",
       "items": {
         "type": "object",
-        "required": ["id", "kind", "name", "place"],
+        "required": ["id", "kind", "name", "place", "control"],
         "properties": {
           "id": {
             "type": "string",
-            "pattern": "^[UNS][0-9]+$",
-            "description": "Affordance id. U for UI, N for code, S for data store."
+            "pattern": "^[UNS][0-9]+$|^_[A-Za-z][A-Za-z0-9_-]*$",
+            "description": "Affordance id. U for UI, N for code, S for data store. A place reference is written with a leading underscore (_letter-browser) and is a UI affordance: it marks where a detached place renders inside this one."
           },
           "kind": {
             "enum": ["ui", "code", "store"],
@@ -95,17 +95,18 @@
           },
           "control": {
             "type": "string",
-            "description": "What triggers it: click, type, call, observe, write, render."
+            "minLength": 1,
+            "description": "What triggers it: click, type, call, observe, write, render. Required because a display is recognised by control=render, and an affordance with no trigger is a row the reader cannot place."
           },
           "wiresOut": {
             "type": "array",
-            "description": "Control flow — what this triggers. Navigation wires to a PLACE id, not to an affordance inside it.",
-            "items": { "type": "string", "pattern": "^[UNS][0-9]+$|^P[0-9]+(\\.[0-9]+)?$" }
+            "description": "Control flow, read forward: this affordance triggers that one. Navigation wires to a PLACE id, not to an affordance inside it.",
+            "items": { "type": "string", "pattern": "^[UNS][0-9]+$|^_[A-Za-z][A-Za-z0-9_-]*$|^P[0-9]+(\\.[0-9]+)?$" }
           },
           "returnsTo": {
             "type": "array",
-            "description": "Data flow — where this affordance's output goes. A display with nothing feeding it is a gap.",
-            "items": { "type": "string", "pattern": "^[UNS][0-9]+$" }
+            "description": "Data flow, read forward: this affordance's output flows to that one. A display is fed by an INCOMING return; a store is read by its own OUTGOING return.",
+            "items": { "type": "string", "pattern": "^[UNS][0-9]+$|^_[A-Za-z][A-Za-z0-9_-]*$" }
           },
           "tentative": {
             "type": "boolean",

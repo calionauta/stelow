@@ -41,7 +41,15 @@ describe("interface-contrast schema", () => {
   it("requires the same trios the host validator checks", () => {
     expect(itemRequired("fixedConstraints")).toEqual(["name", "value", "source"]);
     expect(itemRequired("evidence")).toEqual(["source", "reference", "claim"]);
-    expect(itemRequired("options")).toEqual(["id", "primaryValue", "compatibility"]);
+    // The option set carries the wireframe as a FOURTH required field: the
+    // interface gate is a VISUAL review, and an option with no sketch cannot
+    // be looked at. This file is the contract a WORKER follows. The host's
+    // runtime validator still enforces only the original trio — its vendored
+    // copy of this schema is synced from a pinned commit, and its own parity
+    // test is what fails, loudly, the moment that pin advances. Tightening
+    // here first is the safe direction: a worker that follows this schema
+    // writes a receipt the looser validator accepts.
+    expect(itemRequired("options")).toEqual(["id", "primaryValue", "compatibility", "wireframe"]);
   });
 
   it("closes the value sets the validator closes", () => {
@@ -49,6 +57,14 @@ describe("interface-contrast schema", () => {
       "fixture", "scenario", "simulation", "measured", "human",
     ]);
     expect(schema.properties.options.items.properties.compatibility.const).toBe("valid");
+  });
+
+  it("requires a non-empty wireframe on every option", () => {
+    // An empty string would satisfy a bare "required" while still giving the
+    // gate nothing to look at — the same failure as a missing field.
+    const wireframe = schema.properties.options.items.properties.wireframe;
+    expect(wireframe.type).toBe("string");
+    expect(wireframe.minLength).toBe(1);
   });
 
   it("still describes the arrays as arrays of those items", () => {
