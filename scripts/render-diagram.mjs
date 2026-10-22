@@ -91,19 +91,40 @@ function parseArgs(argv) {
     withDiagram: false,
     check: false,
     strict: false,
+    errors: [],
   };
   const rest = [];
+
+  // A flag that takes a value must HAVE one. `--input` at the end of the
+  // line used to leave `input` undefined and the run reported "--input is
+  // required" — true, but it hid the actual mistake.
+  const takeValue = (flag, at) => {
+    const value = argv[at + 1];
+    if (value === undefined || value.startsWith("--")) {
+      options.errors.push(`${flag} needs a value`);
+      return { value: null, consumed: 0 };
+    }
+    return { value, consumed: 1 };
+  };
+
   for (let index = 0; index < argv.length; index += 1) {
     const token = argv[index];
-    if (token === "--input") options.input = argv[++index];
-    else if (token === "--out") options.out = argv[++index];
-    else if (token === "--emit-mermaid") options.emitMermaid = true;
+    if (token === "--input" || token === "--out") {
+      const taken = takeValue(token, index);
+      if (token === "--input") options.input = taken.value;
+      else options.out = taken.value;
+      index += taken.consumed;
+    } else if (token === "--emit-mermaid") options.emitMermaid = true;
     else if (token === "--emit-markdown") options.emitMarkdown = true;
     else if (token === "--with-diagram") options.withDiagram = true;
     else if (token === "--check") options.check = true;
     else if (token === "--strict") options.strict = true;
     else if (token === "--help" || token === "-h") options.help = true;
-    else if (!token.startsWith("-")) rest.push(token);
+    // An unknown flag must fail. `--emmit-markdown` used to be ignored in
+    // silence: the run exited 0 and wrote nothing, which reads exactly like
+    // a successful run that had nothing to write.
+    else if (token.startsWith("-")) options.errors.push(`unknown option ${token}`);
+    else rest.push(token);
   }
   options.command = rest[0] ?? null;
   return options;
@@ -604,7 +625,23 @@ function reportFindings(path, contract, problems) {
 
 async function main() {
   const options = parseArgs(process.argv.slice(2));
-  if (options.help || !options.command) {
+  if (options.help) {
+    process.stdout.write(USAGE);
+    return 0;
+  }
+  if (options.errors.length > 0) {
+    for (const error of options.errors) process.stderr.write(`render-diagram: ${error}\n`);
+    process.stderr.write(USAGE);
+    return 2;
+  }
+  if (!options.command) {
+    // Bare invocation prints usage; a run with flags but no command is a
+    // mistake. Returning 0 either way would let a scripted `--check` report
+    // success without checking anything.
+    if (options.input || options.out || options.emitMarkdown || options.emitMermaid || options.check) {
+      process.stderr.write(`render-diagram: missing command (expected "breadboard")\n${USAGE}`);
+      return 2;
+    }
     process.stdout.write(USAGE);
     return 0;
   }
@@ -614,6 +651,12 @@ async function main() {
   }
   if (!options.input) {
     process.stderr.write(`render-diagram: --input is required\n${USAGE}`);
+    return 2;
+  }
+  // `--with-diagram` only means something for the markdown view. Silently
+  // ignoring it leaves the caller believing a diagram is in the file.
+  if (options.withDiagram && !options.emitMarkdown) {
+    process.stderr.write(`render-diagram: --with-diagram needs --emit-markdown\n${USAGE}`);
     return 2;
   }
 

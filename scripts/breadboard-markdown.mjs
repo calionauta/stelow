@@ -52,8 +52,11 @@ export function toMarkdown(breadboard, problems = []) {
   const lines = [];
 
   lines.push("---");
-  lines.push(`interface: ${cell(breadboard.interfaceId ?? "unknown")}`);
-  if (breadboard.selectedBy) lines.push(`selected_by: ${cell(breadboard.selectedBy)}`);
+  // Quoted, always: an interface id or an author string may carry a colon,
+  // a hash, or a quote, and an unquoted YAML scalar turns any of those into
+  // a different value or a parse error. JSON string escaping is valid YAML.
+  lines.push(`interface: ${JSON.stringify(String(breadboard.interfaceId ?? "unknown"))}`);
+  if (breadboard.selectedBy) lines.push(`selected_by: ${JSON.stringify(String(breadboard.selectedBy))}`);
   lines.push("breadboard: true");
   lines.push("---");
   lines.push("");
@@ -78,14 +81,20 @@ export function toMarkdown(breadboard, problems = []) {
     lines.push("");
   }
 
+  // Containment is the id: `P2.1` lives inside `P2`. The table says it out
+  // loud so a reader who never opens the diagram still knows which screen a
+  // subplace belongs to.
+  const parentOf = (place) => (place.id.includes(".") ? place.id.slice(0, place.id.indexOf(".")) : null);
   lines.push("## Places");
   lines.push("");
-  lines.push("| # | Place | Description | System |");
-  lines.push("|---|---|---|---|");
+  lines.push("| # | Place | Within | Description | System |");
+  lines.push("|---|---|---|---|---|");
   for (const place of places) {
     const label = place.mode ? `${place.name} (${place.mode})` : place.name;
     lines.push(
-      `| ${cell(place.id)} | ${cell(label)} | ${cell(place.description ?? "—")} | ${cell(place.system ?? "—")} |`,
+      `| ${cell(place.id)} | ${cell(label)} | ${cell(parentOf(place) ?? "—")} | ${cell(place.description ?? "—")} | ${cell(
+        place.system ?? "—",
+      )} |`,
     );
   }
   lines.push("");
@@ -94,7 +103,8 @@ export function toMarkdown(breadboard, problems = []) {
     const members = byPlace.get(place.id) ?? [];
     if (members.length === 0) continue;
     const label = place.mode ? `${place.name} (${place.mode})` : place.name;
-    lines.push(`## ${place.id} — ${label}`);
+    const within = parentOf(place);
+    lines.push(`## ${place.id} — ${label}${within ? ` (within ${within})` : ""}`);
     lines.push("");
     if (place.description) {
       lines.push(place.description);

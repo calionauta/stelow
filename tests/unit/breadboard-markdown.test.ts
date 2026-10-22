@@ -40,7 +40,14 @@ describe("the markdown follows the map", () => {
     // that does not say which interface it is belongs to is ambiguous the
     // moment a second interface exists.
     const markdown = toMarkdown(MAP);
-    expect(markdown.startsWith("---\ninterface: A\nselected_by: human\nbreadboard: true\n---")).toBe(true);
+    expect(markdown.startsWith('---\ninterface: "A"\nselected_by: "human"\nbreadboard: true\n---')).toBe(true);
+  });
+
+  it("quotes frontmatter values that would otherwise change meaning", () => {
+    // An interface label like `A: the "quiet" one #2` is a legal id and an
+    // illegal unquoted YAML scalar. Quoting always is the cheap fix.
+    const markdown = toMarkdown({ ...MAP, interfaceId: 'A: the "quiet" one #2' });
+    expect(markdown).toContain('interface: "A: the \\"quiet\\" one #2"');
   });
 
   it("gives each place its own section, in declaration order", () => {
@@ -65,6 +72,23 @@ describe("the markdown follows the map", () => {
     expect(control).not.toContain("N1 -.-> ");
     expect(data).toContain("| S2 | U3 |");
     expect(data).not.toContain("| U1 | P2 |");
+  });
+
+  it("says which place a subplace belongs to", () => {
+    // The diagram nests it; the table has to say it too, or a reader who
+    // never opens the picture thinks `P2.1` is a screen of its own.
+    const withSubplace = {
+      ...MAP,
+      places: [...MAP.places, { id: "P2.1", name: "Sales widget" }],
+      affordances: [
+        ...MAP.affordances,
+        { id: "U7", kind: "ui", name: "sales total", place: "P2.1", control: "render", returnsTo: ["S9"] },
+        { id: "S9", kind: "store", name: "sales", place: "P2.1", control: "write", returnsTo: ["U7"] },
+      ],
+    };
+    const markdown = toMarkdown(withSubplace);
+    expect(markdown).toContain("| P2.1 | Sales widget | P2 |");
+    expect(markdown).toContain("## P2.1 — Sales widget (within P2)");
   });
 
   it("escapes a pipe so one affordance cannot break the table", () => {

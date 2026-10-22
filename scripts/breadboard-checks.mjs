@@ -47,10 +47,25 @@ function kindOfId(id) {
   return KIND_BY_PREFIX[id[0]] ?? null;
 }
 
-/** Two affordances sharing an id merge into one node in every view. */
+/**
+ * Two affordances sharing an id merge into one node in every view — and two
+ * places do the same to a whole screen, so the map stops saying where the
+ * user is.
+ */
 export function checkIdsUnique(breadboard) {
   const seen = new Map();
   const flagged = [];
+  for (const place of breadboard.places ?? []) {
+    if (seen.has(place.id)) {
+      flagged.push({
+        id: place.id,
+        name: place.name,
+        reason: `shares its id with ${seen.get(place.id)} — two places with one id draw one box in every view, and the map stops saying where the user is`,
+      });
+      continue;
+    }
+    seen.set(place.id, place.name);
+  }
   for (const item of breadboard.affordances ?? []) {
     if (seen.has(item.id)) {
       flagged.push(finding(item, `shares its id with ${seen.get(item.id)}, so every view merges two affordances into one`));
@@ -138,6 +153,43 @@ export function checkAffordancesHaveDeclaredPlace(breadboard) {
     }
   }
   return flagged;
+}
+
+/**
+ * A place with nothing in it is not a place: there is nothing to act on, so
+ * either it is a section of another place, or its affordances are missing
+ * from the map. A place that HOLDS a subplace is not empty — the widget is
+ * where the user acts.
+ */
+export function checkPlacesHaveAffordances(breadboard) {
+  const places = breadboard.places ?? [];
+  const used = new Set((breadboard.affordances ?? []).map((item) => item.place));
+  const hasChild = (id) => places.some((place) => place.id.startsWith(`${id}.`));
+  return places
+    .filter((place) => !used.has(place.id) && !hasChild(place.id))
+    .map((place) =>
+      finding(
+        place,
+        "a place with no affordances — nothing to act on here, so either it is part of another place or its affordances are missing from the map",
+      ),
+    );
+}
+
+/**
+ * A subplace (`P2.1`) lives INSIDE its parent (`P2`). Without the parent in
+ * the map it renders as a screen of its own, which is the opposite of what
+ * containment means.
+ */
+export function checkSubplacesHaveParent(breadboard) {
+  const ids = new Set((breadboard.places ?? []).map((place) => place.id));
+  return (breadboard.places ?? [])
+    .filter((place) => place.id.includes(".") && !ids.has(place.id.slice(0, place.id.indexOf("."))))
+    .map((place) =>
+      finding(
+        place,
+        `is a subplace of ${place.id.slice(0, place.id.indexOf("."))}, which the map never declares — a widget inside a place that does not exist`,
+      ),
+    );
 }
 
 /**
@@ -263,7 +315,9 @@ export const CHECKS = [
   { name: "id prefix matches kind", severity: "error", run: checkIdKindMatches },
   { name: "wiring resolves", severity: "error", run: checkWiringResolves },
   { name: "affordance has a declared place", severity: "error", run: checkAffordancesHaveDeclaredPlace },
+  { name: "subplace has a declared parent", severity: "error", run: checkSubplacesHaveParent },
   { name: "navigation lands on a place", severity: "error", run: checkNavigationLandsOnPlaces },
+  { name: "place has affordances", severity: "gap", run: checkPlacesHaveAffordances },
   { name: "display has a source", severity: "gap", run: checkDisplaysHaveSource },
   { name: "code affordance connects", severity: "gap", run: checkCodeAffordancesConnect },
   { name: "store is read by something", severity: "gap", run: checkStoresAreRead },

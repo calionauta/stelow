@@ -111,7 +111,7 @@ The map is what the architecture and planning stages read when they need the
 shape of the thing they are building, and it is the thing an agent can edit
 without rewriting a paragraph.
 
-Before the map is saved, `scripts/render-diagram.mjs ... --check` runs the
+Before the map is saved, `<stelow-checkout>/scripts/render-diagram.mjs ... --check` runs the
 executable rules from the breadboard reference plus the published contract
 (`schemas/breadboard.json`). Findings carry a severity: an **error** means the
 map contradicts itself (an unknown id, a duplicate, a kind that fights its

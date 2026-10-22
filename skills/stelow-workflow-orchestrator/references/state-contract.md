@@ -75,11 +75,12 @@ history:
 ---
 ```
 
-`artifacts` is the complete typed manifest of material Markdown outputs. At a
-successful transition, `scripts/stelow advance` records every previously
-unregistered Markdown file in the workflow directory with the stage it is
-leaving. Hosts can therefore show each artifact beside its producing stage
-without a second index or filename-based stage inference.
+`artifacts` is the complete typed manifest of material outputs. At a successful
+transition, `scripts/stelow advance` records every previously unregistered file
+in the workflow directory with the stage it is leaving — `.md` files as
+`kind: document`, anything else (`.json`, `.mmd`, `.html`) as `kind: artifact`.
+Hosts can therefore show each artifact beside its producing stage without a
+second index or filename-based stage inference.
 
 ### Valid Stage Names
 

@@ -25,7 +25,9 @@ import {
   checkIdsUnique,
   checkNavigationLandsOnPlaces,
   checkNamesAreReal,
+  checkPlacesHaveAffordances,
   checkStoresAreRead,
+  checkSubplacesHaveParent,
   checkWiringResolves,
   collectErrors,
   collectProblems,
@@ -67,7 +69,7 @@ describe("a well-formed map passes every check", () => {
   it("runs every check, not just some of them", () => {
     const checks = runAffordanceChecks(WELL_FORMED);
     expect(checks.length).toBe(CHECKS.length);
-    expect(checks.length).toBe(9);
+    expect(checks.length).toBe(11);
     for (const check of checks) {
       expect(check.flagged, check.name).toEqual([]);
     }
@@ -299,6 +301,75 @@ describe("ids are unique and their prefix matches the kind", () => {
   });
 });
 
+describe("places are unique and used", () => {
+  it("flags two places sharing an id", () => {
+    // Two places with one id draw one box in every view, and the reader can
+    // no longer tell which screen an affordance belongs to.
+    const map = {
+      ...WELL_FORMED,
+      places: [
+        { id: "P1", name: "Inbox" },
+        { id: "P1", name: "Editor" },
+      ],
+    };
+    const flagged = checkIdsUnique(map);
+    expect(flagged.map((item) => item.id)).toEqual(["P1"]);
+    expect(flagged[0].reason).toContain("stops saying where the user is");
+  });
+
+  it("flags a place with no affordances", () => {
+    // Nothing to act on is not a place: either it is part of another place,
+    // or its affordances are missing.
+    const map = {
+      ...WELL_FORMED,
+      places: [...WELL_FORMED.places, { id: "P3", name: "Empty" }],
+    };
+    expect(checkPlacesHaveAffordances(map).map((item) => item.id)).toEqual(["P3"]);
+  });
+
+  it("does not flag a place that holds affordances", () => {
+    expect(checkPlacesHaveAffordances(WELL_FORMED)).toEqual([]);
+  });
+
+  it("does not flag a place whose only content is a subplace", () => {
+    // The false positive this pins: a dashboard whose widget is `P2.1` has
+    // no affordances of its own, and flagging it would make every map with a
+    // subplace look broken.
+    const map = {
+      ...WELL_FORMED,
+      places: [
+        { id: "P2", name: "Dashboard" },
+        { id: "P2.1", name: "Sales widget" },
+      ],
+      affordances: [
+        { id: "U1", kind: "ui", name: "sales total", place: "P2.1", control: "render", returnsTo: ["S1"] },
+        { id: "S1", kind: "store", name: "sales", place: "P2.1", control: "write", returnsTo: ["U1"] },
+      ],
+    };
+    expect(checkPlacesHaveAffordances(map)).toEqual([]);
+  });
+
+  it("flags a subplace whose parent the map never declares", () => {
+    const map = {
+      ...WELL_FORMED,
+      places: [{ id: "P2.1", name: "Sales widget" }],
+      affordances: [{ id: "U1", kind: "ui", name: "total", place: "P2.1", control: "render" }],
+    };
+    expect(checkSubplacesHaveParent(map).map((item) => item.id)).toEqual(["P2.1"]);
+  });
+
+  it("does not flag a subplace with its parent declared", () => {
+    const map = {
+      ...WELL_FORMED,
+      places: [
+        { id: "P2", name: "Dashboard" },
+        { id: "P2.1", name: "Sales widget" },
+      ],
+    };
+    expect(checkSubplacesHaveParent(map)).toEqual([]);
+  });
+});
+
 describe("wiring resolves", () => {
   it("flags the affordance that wires to an undeclared id", () => {
     const map = {
@@ -349,6 +420,7 @@ describe("collectProblems", () => {
   it("names the check that found each problem and what it costs", () => {
     const map = {
       ...WELL_FORMED,
+      places: [{ id: "P1", name: "Inbox" }],
       affordances: [{ id: "U1", kind: "ui", name: "Letter list", place: "P1", control: "render" }],
     };
     const problems = collectProblems(map);
@@ -365,6 +437,7 @@ describe("collectProblems", () => {
     // writer may know something the map does not.
     const map = {
       ...WELL_FORMED,
+      places: [{ id: "P1", name: "Inbox" }],
       affordances: [
         { id: "U1", kind: "ui", name: "Letter list", place: "P1", control: "render" },
         { id: "N1", kind: "code", name: "load()", place: "P1", control: "call", wiresOut: ["N9"] },

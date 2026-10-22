@@ -98,7 +98,9 @@ nothing.
 #### Place references
 
 When a nested Place has too many affordances to draw inside its parent,
-detach it and leave a **reference** where it renders:
+detach it and leave a **reference** where it renders. This is one row of a
+map, not a map of its own — `--check` on this fragment alone says there is
+nothing to draw:
 
 ```json
 { "id": "_letter-browser", "kind": "ui", "name": "Letter browser",
@@ -163,9 +165,13 @@ They are executable, because a rule that lives only in prose is a rule the
 writer can forget:
 
 ```bash
-node scripts/render-diagram.mjs breadboard --input <breadboard.json> --check
-node scripts/render-diagram.mjs breadboard --input <breadboard.json> --check --strict
+node <stelow-checkout>/scripts/render-diagram.mjs breadboard --input <breadboard.json> --check
+node <stelow-checkout>/scripts/render-diagram.mjs breadboard --input <breadboard.json> --check --strict
 ```
+
+`<stelow-checkout>` is the stelow repository (e.g. `~/repos/stelow`). The
+script is not in the product repo the workflow is writing into, and it is not
+installed by `install.sh` — the map travels, the checker does not.
 
 `--check` writes nothing and reports; `--strict` also exits non-zero when a
 **gap** remains. Two severities, and the difference matters:
@@ -204,7 +210,12 @@ node scripts/render-diagram.mjs breadboard --input <breadboard.json> --check --s
 
 7. **Ids are unique, and the prefix matches the kind.** `U…` is UI, `N…` is
    code, `S…` is a store. A `U1` that declares `kind: "code"` is a row the
-   reader will misread, and two `U1`s merge into one node in every view.
+   reader will misread, and two `U1`s merge into one node in every view. Two
+   `P1`s merge two screens.
+
+8. **Every place has something to act on.** A place with no affordances is
+   either a section of another place or a place whose affordances are missing
+   from the map. There is nothing a user can do in it.
 
 The schema check runs the published contract (`schemas/breadboard.json`) and
 is fail-closed: a property the map invents (`wiresout`) is an error rather
@@ -267,7 +278,7 @@ place a scope id appears in this map.
 ## Rendering it
 
 ```bash
-node scripts/render-diagram.mjs breadboard \
+node <stelow-checkout>/scripts/render-diagram.mjs breadboard \
   --input ".stelow/{date}/{dir}/interfaces/breadboard.json" \
   --emit-markdown --with-diagram \
   --out   ".stelow/{date}/{dir}/interfaces/breadboard.html"
@@ -286,7 +297,8 @@ Two views, two jobs:
 
 The picture distinguishes kinds by shape, not only by colour: UI is a
 rectangle, code a double-bordered rectangle, a store a cylinder; solid arrows
-are control flow, dashed arrows are data flow. Shape survives a monochrome
+are control flow, dashed arrows are data flow. A subplace (`P2.1`) is drawn
+inside its parent's box — the same containment the id already says. Shape survives a monochrome
 print and a host that ignores styling.
 
 The renderer is repo-side tooling, so it is not installed by `install.sh` and

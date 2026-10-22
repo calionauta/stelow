@@ -27,12 +27,15 @@ import { describe, it, expect } from "vitest";
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { toMermaid, wiringReport } from "../../scripts/breadboard-mermaid.mjs";
 import { readMap as readMapForTest } from "../../scripts/render-diagram.mjs";
 import { render as renderMermaid } from "pele";
 
-const REPO_ROOT = join(import.meta.dirname, "..", "..");
+// fileURLToPath, not import.meta.dirname: the declared engine floor is Node
+// 20.0, and import.meta.dirname only landed in 20.11.
+const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const RENDER = join(REPO_ROOT, "scripts", "render-diagram.mjs");
 
 function tempDir(): string {
@@ -149,8 +152,53 @@ describe("breadboard → Mermaid serializer", () => {
       ],
     };
     const mermaid = toMermaid(withReference);
-    expect(mermaid).toContain('ref_letter_browser["_letter-browser: Letter browser"]');
-    expect(mermaid).toContain("ref_letter_browser --> P2");
+    expect(mermaid).toContain('ref_letter_2d_browser["_letter-browser: Letter browser"]');
+    expect(mermaid).toContain("ref_letter_2d_browser --> P2");
+    expect(() => renderMermaid(mermaid)).not.toThrow();
+  });
+
+  it("keeps two references that differ only by punctuation apart", () => {
+    // THE BUG THIS PINS: node ids were rewritten by mapping every punctuation
+    // character to "_", so `_a-b` and `_a_b` — two different references —
+    // became one Mermaid node. The map kept them apart; the diagram merged
+    // them, silently.
+    const map = {
+      ...MAP,
+      affordances: [
+        ...MAP.affordances,
+        { id: "_a-b", kind: "ui", name: "dashed ref", place: "P1", control: "render", wiresOut: ["P2"] },
+        { id: "_a_b", kind: "ui", name: "underscore ref", place: "P1", control: "render", wiresOut: ["P2"] },
+      ],
+    };
+    const mermaid = toMermaid(map);
+    expect(mermaid).toContain("ref_a_2d_b");
+    expect(mermaid).toContain("ref_a_5f_b");
+    expect(() => renderMermaid(mermaid)).not.toThrow();
+  });
+
+  it("nests a subplace inside its parent place", () => {
+    // Containment is the model's relationship: `P2.1` is a widget INSIDE P2,
+    // not a screen beside it. Drawing them as siblings says the user leaves
+    // P2 to reach the widget, which the map never claimed.
+    const withSubplace = {
+      ...MAP,
+      places: [...MAP.places, { id: "P2.1", name: "Sales widget" }],
+      affordances: [
+        ...MAP.affordances,
+        { id: "U7", kind: "ui", name: "sales total", place: "P2.1", control: "render", returnsTo: ["S9"] },
+        { id: "S9", kind: "store", name: "sales", place: "P2.1", control: "write", returnsTo: ["U7"] },
+      ],
+    };
+    const mermaid = toMermaid(withSubplace);
+    const parent = mermaid.indexOf("subgraph P2[");
+    const child = mermaid.indexOf("subgraph P2_2e_1[");
+    // The child opens after the parent and before the parent's `end`.
+    expect(parent).toBeGreaterThan(-1);
+    expect(child).toBeGreaterThan(parent);
+    // A flat sibling would sit at two spaces; a nested one sits inside the
+    // parent's block. That indentation is the nesting.
+    const childLine = mermaid.split("\n").find((line) => line.includes("subgraph P2_2e_1"));
+    expect(childLine?.startsWith("    subgraph")).toBe(true);
     expect(() => renderMermaid(mermaid)).not.toThrow();
   });
 
@@ -459,5 +507,43 @@ describe("render-diagram", () => {
     const result = runRender(["gantt"]);
     expect(result.status).toBe(2);
     expect(result.stderr).toContain("unknown command");
+  });
+
+  it("rejects an unknown option instead of ignoring it", () => {
+    // `--emmit-markdown` used to be skipped in silence: exit 0, nothing
+    // written, which reads exactly like a successful run with nothing to do.
+    const dir = tempDir();
+    try {
+      const input = join(dir, "breadboard.json");
+      writeFileSync(input, JSON.stringify(MAP), "utf8");
+      const result = runRender(["breadboard", "--input", input, "--emmit-markdown"]);
+      expect(result.status).toBe(2);
+      expect(result.stderr).toContain("unknown option --emmit-markdown");
+      expect(existsSync(join(dir, "breadboard.md"))).toBe(false);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("rejects a flag that was given no value", () => {
+    const result = runRender(["breadboard", "--out"]);
+    expect(result.status).toBe(2);
+    expect(result.stderr).toContain("--out needs a value");
+  });
+
+  it("rejects a run with flags but no command", () => {
+    // Exit 0 here would let a scripted `--check` report success without
+    // checking anything at all.
+    const result = runRender(["--input", "somewhere.json", "--check"]);
+    expect(result.status).toBe(2);
+    expect(result.stderr).toContain("missing command");
+  });
+
+  it("rejects --with-diagram without --emit-markdown", () => {
+    // The flag only means something for the markdown view; ignoring it leaves
+    // the caller believing a diagram was written.
+    const result = runRender(["breadboard", "--input", "somewhere.json", "--with-diagram"]);
+    expect(result.status).toBe(2);
+    expect(result.stderr).toContain("--with-diagram needs --emit-markdown");
   });
 });
