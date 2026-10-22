@@ -111,12 +111,13 @@ The map is what the architecture and planning stages read when they need the
 shape of the thing they are building, and it is the thing an agent can edit
 without rewriting a paragraph.
 
-Before the map is saved, `<stelow-checkout>/scripts/render-diagram.mjs ... --check` runs the
-executable rules from the breadboard reference plus the published contract
-(`schemas/breadboard.json`). Findings carry a severity: an **error** means the
-map contradicts itself (an unknown id, a duplicate, a kind that fights its
-prefix) and no view is produced; a **gap** means the map may be incomplete (a
-display nothing feeds) and is reported in the views, where the writer decides.
+`stelow check breadboard <map>` runs the executable rules from the breadboard
+reference plus the published contract (`schemas/breadboard.json`), and
+`stelow advance` runs the same check on the `selection` transition. Findings
+carry a severity: an **error** means the map contradicts itself (an unknown id,
+a duplicate, a kind that fights its prefix) and the transition is refused; a
+**gap** means the map may be incomplete (a display nothing feeds), so the
+transition proceeds and the finding is printed and written into the views.
 
 Views of the map are optional and clearly marked as views:
 

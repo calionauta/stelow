@@ -88,6 +88,24 @@ function currentStage(): string {
   return blob.match(/^current_stage:\s*(\S+)/m)?.[1] ?? "";
 }
 
+/**
+ * The breadboard is the one artifact the advance guard READS, not just looks
+ * for: leaving `selection` runs `stelow check breadboard`, so a fixture that
+ * writes `{}` cannot advance. A minimal map that satisfies every rule keeps the
+ * walk honest — and doubles as a regression on the guard's own wiring.
+ */
+const VALID_BREADBOARD = {
+  schemaVersion: 1,
+  interfaceId: "A",
+  places: [{ id: "P1", name: "Screen" }],
+  affordances: [
+    { id: "U1", kind: "ui", name: "Do it", place: "P1", control: "click", wiresOut: ["N1"] },
+    { id: "N1", kind: "code", name: "doIt()", place: "P1", control: "call", returnsTo: ["S1"] },
+    { id: "S1", kind: "store", name: "result", place: "P1", control: "write", returnsTo: ["U2"] },
+    { id: "U2", kind: "ui", name: "result line", place: "P1", control: "render" },
+  ],
+};
+
 function writeStageArtifacts(stage: string, statedir: string): void {
   // A stage can require MORE THAN ONE artifact (transitions.md carries one
   // `artifact:` line per required path), so this maps a stage to a list. The
@@ -110,9 +128,14 @@ function writeStageArtifacts(stage: string, statedir: string): void {
   for (const relative of relatives) {
     const target = join(statedir, relative);
     mkdirSync(dirname(target), { recursive: true });
-    // The .json receipts are read by a schema-aware host; the advance guard
-    // only globs for the path, but valid JSON keeps the fixture honest.
-    writeFileSync(target, relative.endsWith(".json") ? "{}\n" : `# ${stage} artifact\n`);
+    // The .json receipts are read by a schema-aware host; the breadboard is
+    // additionally read by the advance guard's check, so it gets a real map.
+    const body = relative === "interfaces/breadboard.json"
+      ? `${JSON.stringify(VALID_BREADBOARD, null, 2)}\n`
+      : relative.endsWith(".json")
+        ? "{}\n"
+        : `# ${stage} artifact\n`;
+    writeFileSync(target, body);
   }
 }
 

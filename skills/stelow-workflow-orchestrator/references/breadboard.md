@@ -165,16 +165,23 @@ They are executable, because a rule that lives only in prose is a rule the
 writer can forget:
 
 ```bash
-node <stelow-checkout>/scripts/render-diagram.mjs breadboard --input <breadboard.json> --check
-node <stelow-checkout>/scripts/render-diagram.mjs breadboard --input <breadboard.json> --check --strict
+stelow check breadboard <breadboard.json>            # report
+stelow check breadboard <breadboard.json> --strict   # also fail on a gap
+stelow check breadboard <breadboard.json> --json     # machine verdict
 ```
 
-`<stelow-checkout>` is the stelow repository (e.g. `~/repos/stelow`). The
-script is not in the product repo the workflow is writing into, and it is not
-installed by `install.sh` — the map travels, the checker does not.
+The rules live in `scripts/stelow` (the portable helper; `stelow` when it is on
+PATH). The host runs that helper for `advance`, a checkout runs it directly,
+and a project can call `scripts/stelow`. That placement is the point: **the
+check runs where the map is written**, not in a repo-side script a workflow
+never reaches.
 
-`--check` writes nothing and reports; `--strict` also exits non-zero when a
-**gap** remains. Two severities, and the difference matters:
+**You rarely have to remember it.** `stelow advance` runs the check on the
+`selection` transition: a map with an **error** is refused, and a map with only
+gaps advances with the findings printed. A workflow cannot get past a broken
+map by forgetting to look.
+
+Two severities, and the difference matters:
 
 | Severity | Meaning | Examples |
 |---|---|---|
@@ -215,16 +222,20 @@ installed by `install.sh` — the map travels, the checker does not.
 
 8. **Every place has something to act on.** A place with no affordances is
    either a section of another place or a place whose affordances are missing
-   from the map. There is nothing a user can do in it.
+   from the map. There is nothing a user can do in it. A place that holds a
+   subplace is not empty — the widget is where the user acts.
+
+9. **A subplace has its parent.** `P2.1` lives inside `P2`. Without `P2` in the
+   map the widget renders as a screen of its own, which is the opposite of what
+   containment means.
 
 The schema check runs the published contract (`schemas/breadboard.json`) and
 is fail-closed: a property the map invents (`wiresout`) is an error rather
 than a silently ignored field.
 
-**When the script is not there**, the checks cannot run. That is not a pass:
-say in the hand-off that the map is unchecked rather than implying it was
-verified. The script lives in the stelow checkout, not in the product repo —
-if the workflow runs elsewhere, point the command at that checkout.
+`--json` prints `{path, ok, counts, contract, problems}` for a host that wants
+to render the verdict itself. Exit codes: `0` valid (gaps allowed), `1` errors
+(or a gap under `--strict`, or an unreadable map), `2` usage.
 
 ## Writing it
 
@@ -301,8 +312,10 @@ are control flow, dashed arrows are data flow. A subplace (`P2.1`) is drawn
 inside its parent's box — the same containment the id already says. Shape survives a monochrome
 print and a host that ignores styling.
 
-The renderer is repo-side tooling, so it is not installed by `install.sh` and
-is absent on a standalone host. It degrades rather than blocks:
+The renderer is repo-side tooling (`<stelow-checkout>`); `install.sh` and the
+plugin sync do not ship it. It does **not** decide whether the map is valid — it
+asks `stelow check breadboard` and reads the same verdict the `advance` guard
+enforces, so a view and a gate can never disagree:
 
 - **An error** (a wire to an id nobody declares, a contract violation) refuses
   every view. A view of a broken map presents a hole as a decision.
@@ -310,6 +323,8 @@ is absent on a standalone host. It degrades rather than blocks:
   decides; the picture does not pretend the map is finished.
 - **No renderer available** → the JSON stands, no HTML, exit 0.
 - **The render itself fails** → the JSON stands, exit 0 with a note.
+- **The checker cannot be run** → nothing is written and the run fails: a view
+  without a verdict would present unchecked as checked.
 
 Nothing downstream reads the views. The Architecture and Planning stages read
 the JSON.

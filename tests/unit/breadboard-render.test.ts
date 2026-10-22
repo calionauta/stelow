@@ -404,7 +404,10 @@ describe("render-diagram", () => {
     }
   });
 
-  it("refuses under --strict when the map still has gaps", () => {
+  it("draws a map with gaps and carries them into the views", () => {
+    // A gap is the writer's call, not the renderer's: the picture is drawn and
+    // says what the map does not know yet. (The check's own --strict refusal
+    // is the checker's business — see tests/integration/breadboard-check.)
     const dir = tempDir();
     try {
       const input = join(dir, "breadboard.json");
@@ -417,21 +420,23 @@ describe("render-diagram", () => {
         "utf8",
       );
 
-      const lenient = runRender(["breadboard", "--input", input, "--check"]);
-      expect(lenient.status, lenient.stderr).toBe(0);
-      expect(lenient.stderr).toContain("display has a source");
+      const result = runRender(["breadboard", "--input", input, "--emit-markdown"]);
+      expect(result.status, result.stderr).toBe(0);
+      expect(result.stderr).toContain("display has a source");
 
-      const strict = runRender(["breadboard", "--input", input, "--check", "--strict"]);
-      expect(strict.status).toBe(1);
+      const markdown = readFileSync(join(dir, "breadboard.md"), "utf8");
+      expect(markdown).toContain("## What the checks flag");
+      expect(markdown).toContain("U1");
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
   });
 
-  it("reports a dangling wire as an error, not as a footnote", () => {
+  it("refuses to draw a map whose wiring points at an id nobody declares", () => {
     const dir = tempDir();
     try {
       const input = join(dir, "breadboard.json");
+      const out = join(dir, "out.html");
       writeFileSync(
         input,
         JSON.stringify({
@@ -443,21 +448,22 @@ describe("render-diagram", () => {
         "utf8",
       );
 
-      const result = runRender(["breadboard", "--input", input, "--check"]);
+      const result = runRender(["breadboard", "--input", input, "--out", out]);
       expect(result.status).toBe(1);
       expect(result.stderr).toContain("P9");
       expect(result.stderr).toContain("error");
+      expect(existsSync(out)).toBe(false);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
   });
 
-  it("keeps the map usable when the map itself is malformed, naming the file", () => {
+  it("refuses a malformed map, naming the file", () => {
     const dir = tempDir();
     try {
       const input = join(dir, "broken.json");
       writeFileSync(input, "{ not json", "utf8");
-      const result = runRender(["breadboard", "--input", input, "--check"]);
+      const result = runRender(["breadboard", "--input", input]);
       expect(result.status).toBe(1);
       expect(result.stderr).toContain("broken.json");
     } finally {
@@ -532,9 +538,9 @@ describe("render-diagram", () => {
   });
 
   it("rejects a run with flags but no command", () => {
-    // Exit 0 here would let a scripted `--check` report success without
-    // checking anything at all.
-    const result = runRender(["--input", "somewhere.json", "--check"]);
+    // Exit 0 here would let a scripted run report success without doing
+    // anything at all.
+    const result = runRender(["--input", "somewhere.json", "--emit-markdown"]);
     expect(result.status).toBe(2);
     expect(result.stderr).toContain("missing command");
   });

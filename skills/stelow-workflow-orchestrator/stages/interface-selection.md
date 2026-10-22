@@ -71,17 +71,20 @@ chooses, records the choice, and moves on.
    direction of the two wires, and the checks that catch a map which looks
    complete and says nothing.
 
-   Then run the checks **before** saving. They are the difference between a
-   rule in prose and a rule that runs:
+   Then run the checks. They are the difference between a rule in prose and a
+   rule that runs — `advance` runs the same check on this transition and
+   refuses a map with errors, so this pass is how you see the findings before
+   the guard does:
 
    ```bash
-   node <stelow-checkout>/scripts/render-diagram.mjs breadboard \
-     --input ".stelow/{YYYY-MM-DD}/{_dir}/interfaces/breadboard.json" --check
+   scripts/stelow check breadboard \
+     ".stelow/{YYYY-MM-DD}/{_dir}/interfaces/breadboard.json"
    ```
 
    Fix every `error` (a wire to an id nobody declares, a duplicate id, a kind
    that contradicts its prefix, a contract violation). A `gap` is a judgement
-   call: either fix the map or keep it and let the view carry the finding.
+   call: either fix the map, or keep it — the gap is printed on the transition
+   and written into the view, so nothing is hidden.
 
    Then write the two views — the markdown is what a reader (or the review
    gate) can actually read, the HTML is the durable picture:
@@ -94,13 +97,11 @@ chooses, records the choice, and moves on.
    ```
 
    `<stelow-checkout>` is the stelow repository (e.g. `~/repos/stelow`), not
-   the product repo this workflow writes into. The script is repo-side
-   tooling: `install.sh` and the plugin sync ship only `scripts/stelow`, so
-   the command may be absent on a standalone host. The map is the artifact;
-   the views are views. If the render fails or the script is missing, the map
-   still stands — never let a diagram block the pick. **But a missing script is
-   not a passing check:** say in the hand-off that the map was not checked, so
-   the next stage knows the difference between "clean" and "unchecked".
+   the product repo this workflow writes into: the renderer is repo-side
+   tooling, and `install.sh`/the plugin sync do not ship it. The map is the
+   artifact; the views are views. If the render fails or the script is missing,
+   the map still stands and the check (which lives in `scripts/stelow`) still
+   ran — never let a diagram block the pick.
 
 ### Do NOT
 
