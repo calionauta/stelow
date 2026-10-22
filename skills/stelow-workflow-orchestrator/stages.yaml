@@ -341,7 +341,7 @@ stages:
   - name: interface
     order: 80
     model_hint: best
-    description: "Reaction-first Interface Contrast. Preserves the first reaction, compares bounded alternatives, and emits a named disposition."
+    description: "Interface exploration + reaction-first contrast. Generates bounded alternatives with wireframes, preserves the first reaction, compares them, and emits a named disposition."
     label: Interface
     produces: "Designs the user-facing interface for the approved scope with explicit alternatives, evidence, and selection receipt."
     artifacts: [interfaces/*.md, interfaces/contrast.json]
@@ -376,7 +376,7 @@ stages:
     artifacts: []
     phase: planning
     skill: stelow-workflow-orchestrator
-    playbook: null
+    playbook: stages/int-gate.md
 
     execution:
       mode: direct
@@ -401,10 +401,10 @@ stages:
   - name: selection
     order: 100
     model_hint: standard
-    description: Interface selection. Human pick via structured question in Interface-Gates modes; LLM decides in Auto / Product Spec Gate (see references/human-gates.md).
+    description: Interface selection. Human pick via structured question in Interface-Gates modes; LLM decides in Auto / Product Spec Gate (see references/human-gates.md). Records the chosen interface and its breadboard map.
     label: Interface Choice
-    produces: "Selects which interface variant to implement."
-    artifacts: [interfaces/selected-interface.md]
+    produces: "Selects which interface variant to implement, and maps it into a breadboard."
+    artifacts: [interfaces/selected-interface.md, interfaces/breadboard.json]
     phase: planning
     skill: stelow-workflow-orchestrator
     playbook: stages/interface-selection.md
@@ -418,8 +418,8 @@ stages:
       partition: none
       permission_profile: inherit
 
-    blocked_tools: [bash, write]
-    allowed_tools: [ask_user_question, read, grep, ls, subagent]
+    blocked_tools: []
+    allowed_tools: [ask_user_question, read, grep, ls, subagent, write, bash]
     preferred_tools: [ask_user_question, read]
     primary_actions: [ask_user_question]
     # Machine-readable question contract.  The host owns enforcement; this

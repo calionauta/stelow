@@ -10,9 +10,18 @@ Delegate to a planner subagent (see `cli-tools/subagents.md`):
 - Inputs (all via `reads:`):
   - `.stelow/{YYYY-MM-DD}/{_dir}/plans/spec-product_{v}.md` (canonical product spec)
   - `.stelow/{YYYY-MM-DD}/{_dir}/interfaces/selected-interface.md` (user's chosen interaction direction from int-gate — exists by this stage; absent only if interface stage was skipped via Review Mode)
+  - `.stelow/{YYYY-MM-DD}/{_dir}/interfaces/breadboard.json` (the chosen interface as a map: places, affordances, wiring — see `../../stelow-workflow-orchestrator/references/breadboard.md`; absent only when the interface stages were skipped)
   - `.stelow/{YYYY-MM-DD}/{_dir}/architecture/selected-architecture.md` (chosen construction direction from the architecture stage — exists by this stage; absent only for legacy states predating the stage)
   - context/tech-recon.md (tech constraints from shape:12)
 - `context: "fresh"` — planner must NOT inherit orchestrator's deliberation
+
+> **The map is a constraint, not a suggestion.** When `breadboard.json`
+> exists, each scope's work must be traceable to affordances in it: the code
+> affordances (`N…`) named in the plan carry the store ids (`S…`) and place
+> ids (`P…`) they serve. Do not invent affordances the map does not have, and
+> do not drop one — a scope that silently redesigns the interface is the
+> planning-stage version of reinterpreting the pick. If the map is wrong, the
+> workflow goes back to Selection; the plan does not paper over it.
 
 > **⚡ Estimation Bias Correction:** The planner subagent may tend to generate
 > conservative scopes or suggest cuts by overestimating complexity

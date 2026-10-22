@@ -3,6 +3,127 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.78.0-alpha] - 2026-10-22
+
+### Added
+
+- **The breadboard contract now runs.** `scripts/breadboard-contract.mjs`
+  interprets `schemas/breadboard.json` (fail-closed: a keyword it does not
+  implement is an error, not a silently skipped rule), so a map that invents
+  `wiresout` or drops a required trigger is reported instead of rendered.
+- **A markdown view the review can actually open.** `--emit-markdown` writes
+  `breadboard.md` next to the map — places, affordance tables, both flows, the
+  checks' findings, and (with `--with-diagram`) the diagram source. The visual
+  gate reviews markdown; without this file it never saw the chosen map.
+- **The map's gaps travel with the map.** Findings from the executable checks
+  are written into both views. A picture of a map with a display nothing feeds
+  now says so, instead of reading as finished.
+- **Kind-specific diagram language.** UI, code, and store are drawn as a
+  rectangle, a double-bordered rectangle, and a cylinder (with colour as a
+  second cue), plus a how-to-read key. Shape survives a monochrome print and a
+  host that ignores styling.
+- **Place references.** An affordance id of the form `_letter-browser` is
+  accepted as a UI affordance that marks where a detached place renders —
+  Ryan Singer's convention, which the serializer already knew and the contract
+  rejected.
+
+### Fixed
+
+- **The data-flow checks read the arrow backwards.** A display was treated as
+  fed when its own `returnsTo` pointed somewhere, and a store as read when
+  something pointed at it — the reverse of the model, and the reverse of what
+  the reference document says. A display is now fed by an incoming wire; a
+  store is read by its own outgoing return. A map that wired a display to its
+  own source and called it fed — easy to write, and it passed — is now flagged.
+- **The renderer could not find its own zoom anchor.** The wheel handler added
+  the container's scroll offset and then subtracted a bounding box that
+  already included it, so zooming drifted away from the pointer as soon as the
+  diagram was scrolled. The transform now targets a plain canvas element and
+  measures its layout box, which a transform does not disturb.
+- **The interface-alternatives skill ran the gate and the pick.** It still
+  carried the visual-review submission, the ask, and the instructions for
+  writing `selected-interface.md` and `breadboard.json` — all owned by the
+  `int-gate` and `selection` stages after the recipe split. A worker following
+  the skill could ask the question twice or write artifacts its stage does not
+  declare. The skill now ends at the proposals and points at the owners.
+- **`breadboard.json` was write-only.** The prose claimed Architecture and
+  Planning read it, and neither did. Both now read the map: architecture
+  directions must name where the map's code affordances live and which stores
+  they read, and planning must trace each scope to affordances in it.
+- **The advance guard fell through to the repo root on macOS.** `tmpdir()` is a
+  symlink to `/private/var/...` there while git reports the physical path, and
+  the guard compared `abspath`, so a workflow's own nested dir looked outside
+  `.stelow` and the root fallback could satisfy the guard with ANOTHER
+  workflow's `plans/spec-product` artifact. It compares `realpath` now, and the
+  test drives the helper through a symlink so Linux catches this too.
+
+### Changed
+
+- **`control` is required on every affordance** in `schemas/breadboard.json`.
+  It is what distinguishes a display (`render`) from an input (`type`) from a
+  handler (`click`/`call`), so a map without it is a map the checks cannot
+  classify.
+- **Contrast options require a `wireframe`** in
+  `schemas/interface-contrast.json` (non-empty). This schema is the contract a
+  worker follows; the host's runtime validator still enforces the original
+  trio, and its vendored copy adopts the requirement when the pin advances —
+  its parity test is the signal.
+- **Two severities, two answers.** `--check` reports, `--strict` refuses a
+  gap, and an **error** (unknown id, duplicate, kind/prefix mismatch, contract
+  violation) refuses every view: a view of a broken map presents a hole as a
+  decision.
+
+## [0.77.0-alpha] - 2026-10-22
+
+### Added
+
+- **Interface breadboard (`interfaces/breadboard.json`).** The chosen interface
+  is now mapped into a structured graph — the places the user can be in, the
+  affordances in each, and the wiring between them — under the contract in
+  `schemas/breadboard.json`. The map is the source of truth for the
+  interface's shape; the prose in `selected-interface.md` is its commentary.
+  The Selection stage records both, and the advance guard requires both.
+- **Breadboard renderer (`scripts/render-diagram.mjs`).** Turns the map into
+  Mermaid, then into a self-contained HTML file with the diagram as inline
+  SVG, zoom, and a light/dark theme driven by CSS variables. The renderer is
+  repo-side tooling (`pele`, MIT, zero runtime dependencies) and degrades
+  rather than blocks: the JSON is the artifact, the diagram is a view, and a
+  missing renderer never stops the pick.
+- **Wireframe on every contrast option.** `schemas/interface-contrast.json`
+  declares `wireframe` on each option, and the Interface Contrast skill
+  requires it. The interface gate is a VISUAL review, so an option nobody can
+  look at is an option nobody chose on purpose.
+
+### Fixed
+
+- **The interface alternatives recipe was orphaned.** `recipes/interface-alternatives.yaml`
+  and `recipes/architecture-alternatives.yaml` were declared but reachable
+  from no stage, and their output collided with the contrast recipe's (both
+  wrote the same file). The host runs ONE recipe per stage and refuses any
+  recipe that is not the stage's canonical `execution.recipe`, so the
+  alternatives — the proposals that carry the wireframes the gate reviews —
+  never ran. Their tasks now live inside the canonical recipes
+  (`interface-contrast`, `architecture-contrast`), and each recipe owns its
+  own output file.
+- **`stages/selection.md` is the Item Selection playbook again.** It was
+  wired to the Interface Choice stage, which had no playbook of its own.
+  `stages/interface-selection.md` owns the pick; `stages/selection.md` owns
+  the inbox triage item choice.
+- **The `int-gate` stage had no playbook.** It is a visual review, and
+  nothing said which document it reviews or what "reviewed" means. It now
+  reviews `interfaces/alternatives.md` (the proposals, with their
+  wireframes) — not `interfaces/interfaces.md`, which is the receipt.
+- **The advance guard could not find artifacts in a real workflow dir.** It
+  globbed the `.stelow` ROOT, but a workflow mints `.stelow/<date>/<dirHash>/`
+  and points `STELOW_STATE` at the state.md inside it, so every real
+  workflow was refused with "missing required artifact" while the file sat
+  right there. The guard now resolves the workflow's own directory from
+  `STATE`, and treats it as authoritative: an artifact belonging to another
+  workflow no longer satisfies this one.
+- **The `shape-contrast` route named a skill that does not exist.** It is a
+  receipt route VALUE (its destination is the `shape` stage); the skills now
+  say so instead of implying a `shape-contrast` skill.
+
 ## [0.76.0-alpha] - 2026-10-18
 
 ### Removed

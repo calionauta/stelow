@@ -33,7 +33,7 @@ tasks:
 - id: alternatives-hybrid
   depends_on:
   - alternatives-verify
-  output: interfaces/interfaces.md
+  output: interfaces/alternatives.md
   output_schema: schemas/markdown.json
   human_boundary: none
   skill: stelow-workflow-interface-alternatives

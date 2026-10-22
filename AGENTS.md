@@ -38,6 +38,7 @@ extracted lifecycle, inbox, ask/answer, sync, and UI rules with the
 | `skills/stelow-workflow-orchestrator/` | Orchestrator + `stages.yaml` + `stages/*.md` + `references/transitions.md`. |
 | `skills/stelow-product-*/` + `skills/stelow-workflow-*/` | The other 27 self-contained skills (12 stage/execution workflow + 15 product). |
 | `scripts/stelow` | Portable CLI: `status`, `advance`, `doctor`, `seed`, `schema`, `ask` (lock + TTL, invariants). |
+| `scripts/render-diagram.mjs` + `scripts/breadboard-mermaid.mjs` | Breadboard map → Mermaid → SVG/HTML. Repo-side tooling (not installed by `install.sh`); the map JSON is the artifact, the diagram is a view. |
 | `types/stages.ts` | Stage-model TS interfaces mirroring `stages.yaml`. |
 | `stelow.schema.json` / `stelow.json` | Workflow tracking schema + per-project runtime state. |
 | `tests/` | Vitest: `unit/` + `integration/` + `skills/` contract tests. |
@@ -61,6 +62,8 @@ tests — not from this file:
 - **Skills (32)**: `find skills -maxdepth 2 -name SKILL.md \( -path '*/stelow-product-*' -o -path '*/stelow-workflow-*' \) | wc -l` (17 workflow + 15 product). Pinned against the README `## 📋 Skills` section by `tests/integration/skill-count-readme-contract.test.ts`.
 - **Stages (17)**: `skills/stelow-workflow-orchestrator/stages.yaml` + its mirror `references/transitions.md` (the `triage`..`audit` chain).
 - **Stage transitions and conditional gates**: `skills/stelow-workflow-orchestrator/stages.yaml`.
+- **Recipe wiring**: one recipe runs per stage — the host refuses any recipe that is not the stage's canonical `execution.recipe`. `supporting_recipes` is metadata only; tasks that must run in a stage live inside that stage's recipe.
+- **Interface map**: `schemas/breadboard.json` is the contract for the interface's places/affordances/wiring; `skills/stelow-workflow-orchestrator/references/breadboard.md` holds the writing rules. The map is the source of truth; the prose is its commentary.
 - **Helper mechanics**: `scripts/stelow` (status/advance/doctor), pinned by `tests/unit/stelow-helper.test.ts`, `tests/integration/stelow-fs.test.ts`, `tests/integration/stelow-e2e.test.ts`.
 - **Product strategies**: `product-strategies.json` (id → skill → contract + substeps) is the canonical contract hosts consume. Any change to `skills/stelow-product-*` (add, remove, rename, new substeps) MUST update the registry in the same commit — enforced by the host-surface contract test.
 

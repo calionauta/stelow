@@ -13,9 +13,14 @@ citing the selected architecture.
 ### Process
 
 1. **Read inputs** — the shaped proposal (`spec-product.md`), the approved
-   scope map (`scope-map.json`) when one exists, and `selected-interface.md`
-   when one exists. The construction must serve the chosen interaction
-   direction, never reinterpret it. Record all three versions in the output.
+   scope map (`scope-map.json`) when one exists, `selected-interface.md` when
+   one exists, and `interfaces/breadboard.json` when one exists. The map is
+   the interface's shape as a graph — its places, its code affordances, and
+   the stores they read and write. A construction direction has to carry
+   those affordances: if a direction cannot name where `handleSubmit()` lives
+   or which store `results$` reads, it is not a direction yet. The
+   construction must serve the chosen interaction direction, never
+   reinterpret it. Record the versions you read in the output.
 
 2. **Diverge** — run `stelow-workflow-architecture-alternatives` with the
    active exploration breadth (count 2–5, hybrid whenever count ≥ 2).

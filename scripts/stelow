@@ -370,26 +370,69 @@ do_advance() {
 
   # pre-condition: required artifacts, resolved against the workflow's own
   # state dir first, then the repo root.
-  python3 - "$current" "$ROOT" "$STATEDIR" "$TRANSITIONS" <<'PY' || die "pre-condition check failed"
+  #
+  # The state dir is the directory that HOLDS state.md, not the global
+  # .stelow root: the workflow mints .stelow/<date>/<dirHash>/ and points
+  # STELOW_STATE at the state.md inside it. Globbing only the .stelow root
+  # found nothing for every real workflow, so the guard refused to advance
+  # past shape with "missing required artifact" even though the file was
+  # there. The state dir is derived from STATE; the .stelow root stays as a
+  # fallback for the legacy flat layout.
+  python3 - "$current" "$ROOT" "$STATEDIR" "$TRANSITIONS" "$STATE" <<'PY' || die "pre-condition check failed"
 import sys, re, os, glob
-current, root, statedir, transitions = sys.argv[1:5]
+current, root, statedir, transitions, state = sys.argv[1:6]
 trans = open(transitions).read()
 m = re.search(r"^### " + re.escape(current) + r"\s*\n(.*?)(?=^### |\Z)", trans, re.MULTILINE | re.DOTALL)
 if not m: sys.exit(0)
+
+def is_inside(child, parent):
+    # realpath, not abspath: on macOS tmpdir() is /var/folders/... (a symlink
+    # to /private/var/...), and git reports the physical path. Comparing
+    # abspath made the workflow's own dir look OUTSIDE .stelow, so the guard
+    # fell back to the root and could be satisfied by a DIFFERENT workflow's
+    # artifact — the exact hole the no-fallback rule exists to close.
+    try:
+        return os.path.commonpath([os.path.realpath(child), os.path.realpath(parent)]) == os.path.realpath(parent)
+    except ValueError:
+        return False
+
+state_dir = os.path.dirname(os.path.abspath(state)) if state else ""
+# The directory that HOLDS state.md is the workflow's own directory: the
+# workflow mints .stelow/<date>/<dirHash>/ and points STELOW_STATE at the
+# state.md inside it. Globbing only the .stelow ROOT found nothing for every
+# real workflow, so the guard refused to advance past shape with "missing
+# required artifact" while the file sat right there.
+#
+# When the state dir sits INSIDE the .stelow root, it is authoritative and
+# the root is NOT searched as a fallback: the root may hold a DIFFERENT
+# workflow's artifacts, and finding one there would satisfy this workflow's
+# guard with a file that is not its own.
+bases = []
+if state_dir:
+    bases.append(state_dir)
+    if not is_inside(state_dir, statedir):
+        # Legacy layout: state.md at the repo root, artifacts under .stelow.
+        bases.extend([statedir, root])
+else:
+    bases.extend([statedir, root])
+
+def found_under(base, pat):
+    fullpat = pat if pat.startswith("/") else os.path.join(base, pat)
+    if glob.glob(fullpat):
+        return True
+    if not any(ch in pat for ch in "*?["):
+        suffix = os.sep + pat
+        for candidate in glob.glob(os.path.join(base, "**", "*"), recursive=True):
+            if candidate.endswith(suffix) and os.path.isfile(candidate):
+                return True
+    return False
+
 for line in m.group(1).splitlines():
     am = re.match(r"^artifact:\s*(\S+)\s*$", line.strip())
     if am:
         pat = am.group(1)
-        bases = [statedir, root]
-        if pat.startswith("/"): bases = [""]
-        matched = False
-        for base in bases:
-            fullpat = pat if base == "" else os.path.join(base, pat)
-            if glob.glob(fullpat):
-                matched = True
-                break
-        if not matched:
-            print(f"missing required artifact: {pat} (expected under {statedir})", file=sys.stderr); sys.exit(1)
+        if not any(found_under(base, pat) for base in bases):
+            print(f"missing required artifact: {pat} (expected under {state_dir or statedir})", file=sys.stderr); sys.exit(1)
 PY
 
   # dry run validates without side effects (no lock, no mutation)

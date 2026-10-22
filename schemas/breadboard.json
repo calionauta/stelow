@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://calionauta.stelow/schemas/breadboard.json",
+  "title": "Stelow Interface Breadboard",
+  "description": "The structured map of a selected interface: the places the user can be, the affordances in each, and the wiring between them. This JSON is the SOURCE OF TRUTH for the interface's shape; the prose in selected-interface.md is its commentary. The rendered diagram is a view of this file, never a second decision state.",
+  "type": "object",
+  "required": ["schemaVersion", "interfaceId", "places", "affordances"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "type": "number",
+      "const": 1
+    },
+    "interfaceId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The id of the selected interface this breadboard maps (the proposal id, e.g. 'A')."
+    },
+    "selectedBy": {
+      "type": "string",
+      "enum": ["human", "llm"],
+      "description": "Who resolved the interface pick. Mirrors the selected-interface.md receipt."
+    },
+    "scopeCoverage": {
+      "type": "array",
+      "description": "Which delivery slices this interface serves, against the recorded Scope Map version.",
+      "items": {
+        "type": "object",
+        "required": ["scopeId", "effect"],
+        "properties": {
+          "scopeId": { "type": "string" },
+          "effect": { "enum": ["served", "friction"] },
+          "note": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "places": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Places — bounded contexts of interaction. A Place is perceptual: it is where the user is, in terms of what they can do right now. The blocking test decides it: if the user cannot interact with what is behind, it is a different Place.",
+      "items": {
+        "type": "object",
+        "required": ["id", "name"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^P[0-9]+(\\.[0-9]+)?$",
+            "description": "Place id. P1, P2, ... for places; P2.1 for a subplace inside P2."
+          },
+          "name": { "type": "string", "minLength": 1 },
+          "description": { "type": "string" },
+          "system": {
+            "type": "string",
+            "description": "Which system this place belongs to, when the interface spans more than one (e.g. 'frontend', 'backend')."
+          },
+          "mode": {
+            "type": "string",
+            "description": "For a mode-based place, the mode name (e.g. 'Read Mode', 'Edit Mode'). A mode that transforms the whole screen is its own Place."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "affordances": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Everything the user or the code can act upon. UI affordances (U) are what the user sees and touches; code affordances (N) are the methods, subscriptions, and stores underneath; data stores (S) hold state that is read and written.",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "name", "place", "control"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[UNS][0-9]+$|^_[A-Za-z][A-Za-z0-9_-]*$",
+            "description": "Affordance id. U for UI, N for code, S for data store. A place reference is written with a leading underscore (_letter-browser) and is a UI affordance: it marks where a detached place renders inside this one."
+          },
+          "kind": {
+            "enum": ["ui", "code", "store"],
+            "description": "What the affordance is."
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The specific thing, named so it can be pointed at. For code affordances, the real method or property name — 'DATABASE' is not an affordance."
+          },
+          "place": {
+            "type": "string",
+            "pattern": "^P[0-9]+(\\.[0-9]+)?$",
+            "description": "The place this affordance belongs to. Containment, not wiring."
+          },
+          "component": {
+            "type": "string",
+            "description": "Which component or service owns it."
+          },
+          "control": {
+            "type": "string",
+            "minLength": 1,
+            "description": "What triggers it: click, type, call, observe, write, render. Required because a display is recognised by control=render, and an affordance with no trigger is a row the reader cannot place."
+          },
+          "wiresOut": {
+            "type": "array",
+            "description": "Control flow, read forward: this affordance triggers that one. Navigation wires to a PLACE id, not to an affordance inside it.",
+            "items": { "type": "string", "pattern": "^[UNS][0-9]+$|^_[A-Za-z][A-Za-z0-9_-]*$|^P[0-9]+(\\.[0-9]+)?$" }
+          },
+          "returnsTo": {
+            "type": "array",
+            "description": "Data flow, read forward: this affordance's output flows to that one. A display is fed by an INCOMING return; a store is read by its own OUTGOING return.",
+            "items": { "type": "string", "pattern": "^[UNS][0-9]+$|^_[A-Za-z][A-Za-z0-9_-]*$" }
+          },
+          "tentative": {
+            "type": "boolean",
+            "description": "True when the affordance is speculative — it may not survive the next shaping cycle."
+          },
+          "notes": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

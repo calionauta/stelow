@@ -198,7 +198,7 @@
           "depends_on": [
             "alternatives-verify"
           ],
-          "output": "architecture/architecture.md",
+          "output": "architecture/alternatives.md",
           "output_schema": "schemas/markdown.json",
           "human_boundary": "none",
           "skill": "stelow-workflow-architecture-alternatives",
@@ -234,17 +234,232 @@
     },
     {
       "id": "architecture-contrast",
-      "version": 1,
-      "description": "Run the invariants-first Architecture Contrast decision loop with structured receipts.",
+      "version": 2,
+      "description": "Generate construction alternatives, then run the invariants-first Architecture Contrast decision loop over them with structured receipts.",
       "skill": "stelow-workflow-architecture-contrast",
       "mode": "orchestrated",
       "write_policy": "artifact",
       "permission_profile": "inherit",
       "tasks": [
         {
+          "id": "alternatives",
+          "skill": "stelow-workflow-architecture-alternatives",
+          "depends_on": [],
+          "output": "architecture/alternatives.json",
+          "output_schema": "schemas/architecture-alternatives.json",
+          "human_boundary": "none",
+          "when": "exploration_supports_fanout",
+          "failure_policy": "fail",
+          "requirements": [
+            "fanout",
+            "pipeline",
+            "structured-output"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "alternatives",
+              "tradeoffs",
+              "verdict"
+            ],
+            "properties": {
+              "alternatives": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "summary",
+                    "states"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "summary": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "states": {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "tradeoffs": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "alternativeId",
+                    "benefit",
+                    "cost"
+                  ],
+                  "properties": {
+                    "alternativeId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "benefit": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "cost": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "verdict": {
+                "enum": [
+                  "ready",
+                  "needs-revision"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "id": "alternatives-verify",
+          "depends_on": [
+            "alternatives"
+          ],
+          "output": "architecture/alternatives-verification.json",
+          "output_schema": "schemas/architecture-alternatives.json",
+          "human_boundary": "none",
+          "skill": "stelow-workflow-architecture-alternatives",
+          "when": "always",
+          "failure_policy": "fail",
+          "requirements": [
+            "pipeline",
+            "structured-output"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "alternatives",
+              "tradeoffs",
+              "verdict"
+            ],
+            "properties": {
+              "alternatives": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "summary",
+                    "states"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "summary": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "states": {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "tradeoffs": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "alternativeId",
+                    "benefit",
+                    "cost"
+                  ],
+                  "properties": {
+                    "alternativeId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "benefit": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "cost": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "verdict": {
+                "enum": [
+                  "ready",
+                  "needs-revision"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "id": "alternatives-hybrid",
+          "depends_on": [
+            "alternatives-verify"
+          ],
+          "output": "architecture/alternatives.md",
+          "output_schema": "schemas/markdown.json",
+          "human_boundary": "none",
+          "skill": "stelow-workflow-architecture-alternatives",
+          "when": "always",
+          "failure_policy": "fail",
+          "requirements": [
+            "pipeline",
+            "structured-output"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "content"
+            ],
+            "properties": {
+              "content": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
           "id": "contrast",
           "skill": "stelow-workflow-architecture-contrast",
-          "depends_on": [],
+          "depends_on": [
+            "alternatives-hybrid"
+          ],
           "output": "architecture/contrast.json",
           "output_schema": "schemas/architecture-contrast.json",
           "human_boundary": "coordinator",
@@ -915,7 +1130,7 @@
           "depends_on": [
             "alternatives-verify"
           ],
-          "output": "interfaces/interfaces.md",
+          "output": "interfaces/alternatives.md",
           "output_schema": "schemas/markdown.json",
           "human_boundary": "none",
           "skill": "stelow-workflow-interface-alternatives",
@@ -951,17 +1166,232 @@
     },
     {
       "id": "interface-contrast",
-      "version": 1,
-      "description": "Run the reaction-first Interface Contrast decision loop with structured receipts.",
+      "version": 2,
+      "description": "Generate interface alternatives with wireframes, then run the reaction-first Interface Contrast decision loop over them with structured receipts.",
       "skill": "stelow-workflow-interface-contrast",
       "mode": "orchestrated",
       "write_policy": "artifact",
       "permission_profile": "inherit",
       "tasks": [
         {
+          "id": "alternatives",
+          "skill": "stelow-workflow-interface-alternatives",
+          "depends_on": [],
+          "output": "interfaces/alternatives.json",
+          "output_schema": "schemas/interface-alternatives.json",
+          "human_boundary": "none",
+          "when": "exploration_supports_fanout",
+          "failure_policy": "fail",
+          "requirements": [
+            "fanout",
+            "pipeline",
+            "structured-output"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "alternatives",
+              "tradeoffs",
+              "verdict"
+            ],
+            "properties": {
+              "alternatives": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "summary",
+                    "states"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "summary": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "states": {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "tradeoffs": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "alternativeId",
+                    "benefit",
+                    "cost"
+                  ],
+                  "properties": {
+                    "alternativeId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "benefit": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "cost": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "verdict": {
+                "enum": [
+                  "ready",
+                  "needs-revision"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "id": "alternatives-verify",
+          "depends_on": [
+            "alternatives"
+          ],
+          "output": "interfaces/alternatives-verification.json",
+          "output_schema": "schemas/interface-alternatives.json",
+          "human_boundary": "none",
+          "skill": "stelow-workflow-interface-alternatives",
+          "when": "always",
+          "failure_policy": "fail",
+          "requirements": [
+            "pipeline",
+            "structured-output"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "alternatives",
+              "tradeoffs",
+              "verdict"
+            ],
+            "properties": {
+              "alternatives": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "summary",
+                    "states"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "summary": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "states": {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "tradeoffs": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "alternativeId",
+                    "benefit",
+                    "cost"
+                  ],
+                  "properties": {
+                    "alternativeId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "benefit": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "cost": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "verdict": {
+                "enum": [
+                  "ready",
+                  "needs-revision"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "id": "alternatives-hybrid",
+          "depends_on": [
+            "alternatives-verify"
+          ],
+          "output": "interfaces/alternatives.md",
+          "output_schema": "schemas/markdown.json",
+          "human_boundary": "none",
+          "skill": "stelow-workflow-interface-alternatives",
+          "when": "always",
+          "failure_policy": "fail",
+          "requirements": [
+            "pipeline",
+            "structured-output"
+          ],
+          "output_schema_contract": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "required": [
+              "content"
+            ],
+            "properties": {
+              "content": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
           "id": "contrast",
           "skill": "stelow-workflow-interface-contrast",
-          "depends_on": [],
+          "depends_on": [
+            "alternatives-hybrid"
+          ],
           "output": "interfaces/contrast.json",
           "output_schema": "schemas/interface-contrast.json",
           "human_boundary": "coordinator",
@@ -1132,7 +1562,8 @@
                   "required": [
                     "id",
                     "primaryValue",
-                    "compatibility"
+                    "compatibility",
+                    "wireframe"
                   ],
                   "properties": {
                     "id": {
@@ -1149,6 +1580,11 @@
                     },
                     "compatibility": {
                       "const": "valid"
+                    },
+                    "wireframe": {
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "The ASCII sketch of this option, copied from the proposal it came from. REQUIRED because the interface gate is a VISUAL review: an option with no sketch cannot be looked at, so the gate cannot review it. This schema is the published contract a worker follows; the host's runtime validator enforces the trio it shipped with and adopts the wireframe requirement when its vendored copy of this file is next synced (the host's parity test is what announces that)."
                     },
                     "scopeCoverage": {
                       "type": "array",

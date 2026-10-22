@@ -159,7 +159,8 @@
         "required": [
           "id",
           "primaryValue",
-          "compatibility"
+          "compatibility",
+          "wireframe"
         ],
         "properties": {
           "id": {
@@ -176,6 +177,11 @@
           },
           "compatibility": {
             "const": "valid"
+          },
+          "wireframe": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The ASCII sketch of this option, copied from the proposal it came from. REQUIRED because the interface gate is a VISUAL review: an option with no sketch cannot be looked at, so the gate cannot review it. This schema is the published contract a worker follows; the host's runtime validator enforces the trio it shipped with and adopts the wireframe requirement when its vendored copy of this file is next synced (the host's parity test is what announces that)."
           },
           "scopeCoverage": {
             "type": "array",
