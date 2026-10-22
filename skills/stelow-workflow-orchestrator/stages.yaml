@@ -40,19 +40,40 @@ routes:
     bugfix: [triage, select, setup, context, shape, critique, gate, execution, verification, audit]
     refactor: [triage, select, setup, context, planning, plan-gate, execution, verification, audit]
     investigate: [triage, select, setup, context, audit]
+  # Two kinds of "skip", and they mean different things:
+  #
+  #   skipped        — the stage DOES NOT RUN in this mode. The helper refuses
+  #                    to enter it and lets the predecessor move straight to
+  #                    the successor. Only approval stages live here: a stage
+  #                    that needs an approver nobody configured.
+  #   no_human_wait  — the stage DOES run, but it never parks for a person:
+  #                    the agent decides and records the receipt. `selection`
+  #                    lives here in Auto/Product Spec Gate (see
+  #                    references/human-gates.md).
+  #
+  # One list for both was a vocabulary that lied: the helper cannot bypass
+  # `selection` (it runs and produces required artifacts) while the timeline
+  # must still show it as "no human pick". The kinds are named so the runtime
+  # enforces exactly one of them.
   review_modes:
     Auto:
-      skipped: [selection, plan-gate, diff-gate]
+      skipped: [plan-gate, diff-gate]
+      no_human_wait: [selection]
     Product Spec Gate:
-      skipped: [selection, plan-gate, diff-gate]
+      skipped: [plan-gate, diff-gate]
+      no_human_wait: [selection]
     Product Spec + Interface Gates:
       skipped: [plan-gate, diff-gate]
+      no_human_wait: []
     Product Spec + Interface + Scopes:
       skipped: [plan-gate, diff-gate]
+      no_human_wait: []
     Product Spec + Interface + Tech Review:
       skipped: [diff-gate]
+      no_human_wait: []
     Product Spec + Interface + Tech Review + Code Diff:
       skipped: []
+      no_human_wait: []
   entry_stages:
     analysis: triage
     planning: critique

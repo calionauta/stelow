@@ -1,5 +1,5 @@
 # Transitions Reference
-<!-- TEMPLATE: this file generates transitions.md (same dir) via scripts/generate-transitions.py. {{STAGE_ORDER}} and {{TRANSITIONS:<stage>:<verb>}} markers expand from stages.yaml. Gate prose, (none) lines, tables and stubs below are curated and pass through verbatim. -->
+<!-- TEMPLATE: this file generates transitions.md (same dir) via scripts/generate-transitions.py. {{STAGE_ORDER}}, {{TRANSITIONS:<stage>:<verb>}}, {{REVIEW_MODES}}, {{GATE_MODES:<stage>}} and {{REVIEW_MODE_TABLE}} markers expand from stages.yaml. Everything else — gate prose, (none) lines, headers — is curated and passes through verbatim. -->
 
 This file is a **data-only mirror** of `skills/stelow-workflow-orchestrator/stages.yaml`.
 It is the single source of truth used by the `stelow advance` helper and the
@@ -19,6 +19,12 @@ after any change to verify.
 | Order | Stage | Description |
 |---|---|---|
 {{STAGE_ORDER}}
+
+---
+
+## Review Modes
+
+{{REVIEW_MODES}}
 
 ---
 
@@ -150,6 +156,7 @@ gate:      requires_approval: true
 {{ARTIFACTS:selection}}
 {{REWORK:selection}}
 gate:      (none)
+{{GATE_MODES:selection}}
 ```
 
 The selection stage records the chosen interface AND its breadboard map. The
@@ -192,10 +199,7 @@ gate:      (none)
 {{REWORK:plan-gate}}
 gate:      requires_approval: true
            approval_tool: visual_review
-           Only in: "Product Spec + Interface + Tech Review",
-           "Product Spec + Interface + Tech Review + Code Diff"
-           Skipped in: Auto, "Product Spec Gate",
-           "Product Spec + Interface Gates", "Product Spec + Interface + Scopes"
+{{GATE_MODES:plan-gate}}
 ```
 
 ### execution
@@ -231,9 +235,7 @@ gate:      (none)
 {{TRANSITIONS:diff-gate:annotate}}
 gate:      requires_approval: true
            approval_tool: visual_review
-           Only in: "Product Spec + Interface + Tech Review + Code Diff"
-           Skipped in: Auto, "Product Spec Gate",
-                       "Product Spec + Interface Gates", "Product Spec + Interface + Scopes", "Product Spec + Interface + Tech Review"
+{{GATE_MODES:diff-gate}}
 ```
 
 ### audit
@@ -251,22 +253,7 @@ gate:      (none)
 
 ## Gate Conditions by review_mode
 
-| Stage | review_mode | Blocked? | Gate rule |
-|---|---|---|---|
-| context | all | see `context:5` | `context:5` is canonical: it decides skip, reduced ask, or full ask from quality and intent. |
-| gate | all | block | `requires_approval: true`, `visual_review` required |
-| int-gate | all | block | `requires_approval: true`, `visual_review` required |
-| plan-gate | Auto | skip | skipped |
-| plan-gate | Product Spec Gate | skip | skipped |
-| plan-gate | Product Spec + Interface + Scopes | skip | skipped |
-| plan-gate | Product Spec + Interface Gates | skip | skipped; planning redirects directly to execution |
-| plan-gate | Product Spec + Interface + Tech Review / Product Spec + Interface + Tech Review + Code Diff | block | `requires_approval: true`, `visual_review` required |
-| diff-gate | Auto | skip | skipped |
-| diff-gate | Product Spec Gate | skip | skipped |
-| diff-gate | Product Spec + Interface Gates | skip | skipped; verification redirects directly to audit |
-| diff-gate | Product Spec + Interface + Scopes | skip | skipped |
-| diff-gate | Product Spec + Interface + Tech Review | skip | skipped |
-| diff-gate | Product Spec + Interface + Tech Review + Code Diff | block | `requires_approval: true`, `visual_review` required |
+{{REVIEW_MODE_TABLE}}
 
 ---
 

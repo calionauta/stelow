@@ -10,6 +10,7 @@
 # Usage:
 #   scripts/stelow status [--json]
 #   scripts/stelow advance <candidate> [--dry-run] [--json]
+#   scripts/stelow next [--json]
 #   scripts/stelow doctor [--json]
 #   scripts/stelow seed --name <n> --intent <i> [--json]
 #   scripts/stelow schema [command]
@@ -240,144 +241,281 @@ lock_acquire() {
 
 # --- advance -----------------------------------------------------------------
 
-allowed_candidates_for_stage() {
-  local stage="$1" intent="$2"
-  [ -f "$TRANSITIONS" ] || die "transitions reference not found at $TRANSITIONS"
-  python3 - "$stage" "$intent" "$TRANSITIONS" <<'PY'
+# The transition facts, read from the transitions reference — the one file that
+# carries the graph, the intent routes and the review-mode policy.
+#
+#   transition_facts modes                                  -> the known review modes
+#   transition_facts allowed <stage> <intent> <mode> <quality> <exploration> <appetite>
+#                                                          -> the legal candidates
+#   transition_facts redirect <candidate> <intent> <mode>  -> the successor of a
+#                                                             stage that does not run
+#
+# The review-mode policy used to be a `case` statement here AND a hand-typed
+# table in the transitions template AND a list in stages.yaml: three owners of
+# one fact, and a mode added to stages.yaml left this helper enforcing the
+# old rules. It now parses the generated block, so the helper, the published
+# catalog and the reference table cannot disagree.
+transition_facts() {
+  local query="$1"; shift
+  python3 - "$query" "$TRANSITIONS" "$@" <<'PY'
 import sys, re
-stage, intent, path = sys.argv[1:4]
-text = open(path).read()
-m = re.search(r"^### " + re.escape(stage) + r"\s*\n(.*?)(?=^### |\Z)", text, re.MULTILINE | re.DOTALL)
-if not m:
+query, path = sys.argv[1], sys.argv[2]
+args = sys.argv[3:]
+
+def fail(message):
+    print(message, file=sys.stderr)
     sys.exit(1)
+
+try:
+    text = open(path).read()
+except OSError as exc:
+    fail(f"transitions reference not readable at {path}: {exc}")
+
+# --- the review-mode policy ------------------------------------------------
+# Bounded to the generated section, so a stray "skipped:" line anywhere else
+# in the file can never be read as policy.
+def parse_review_modes(text):
+    section = re.search(r"^## Review Modes\s*$(.*?)(?=^## )", text, re.MULTILINE | re.DOTALL)
+    if not section:
+        fail("transitions reference has no '## Review Modes' section — regenerate it "
+             "(python3 scripts/generate-transitions.py)")
+    modes, current = {}, None
+    for line in section.group(1).splitlines():
+        m = re.match(r"^review_mode:\s*(.+)$", line)
+        if m:
+            current = m.group(1).strip()
+            modes[current] = {"skipped": [], "no_human_wait": []}
+            continue
+        if current is None:
+            continue
+        m = re.match(r"^(skipped|no_human_wait):\s*(.*)$", line)
+        if m:
+            value = m.group(2).strip()
+            if value and value != "(none)":
+                modes[current][m.group(1)] = [v.strip() for v in value.split(",") if v.strip()]
+    return modes
+
+def parse_route(text, intent):
+    m = re.search(r"^\*\*" + re.escape(intent) + r":\*\*\s*(.+)$", text, re.MULTILINE)
+    if not m:
+        return None
+    return [part.strip() for part in m.group(1).split("→")]
+
+modes = parse_review_modes(text)
+
+if query == "modes":
+    print("\n".join(modes))
+    sys.exit(0)
+
+if query == "redirect":
+    candidate, intent, mode = args[0], args[1], args[2]
+    if mode not in modes:
+        fail(f"unknown review_mode '{mode}' (known: {', '.join(modes)})")
+    route = parse_route(text, intent) or []
+    skipped = modes[mode]["skipped"]
+    if candidate not in skipped:
+        sys.exit(0)                      # not refused here
+    if candidate in route:
+        idx = route.index(candidate)
+        if idx + 1 < len(route):
+            print(route[idx + 1])
+            sys.exit(0)
+    print("(the stage after it)")
+    sys.exit(0)
+
+if query not in ("allowed", "forward"):
+    fail(f"transition_facts: unknown query '{query}'")
+
+stage, intent, mode, quality, exploration, appetite = args[0], args[1], args[2], args[3], args[4], args[5]
+if mode not in modes:
+    fail(f"unknown review_mode '{mode}' (known: {', '.join(modes)})")
+skipped = modes[mode]["skipped"]
+
+block = re.search(r"^### " + re.escape(stage) + r"\s*\n(.*?)(?=^### |\Z)", text, re.MULTILINE | re.DOTALL)
+if not block:
+    sys.exit(1)                          # no section for this stage
+# Each candidate keeps its verb, so the caller can tell a move FORWARD
+# (next/accept) from a move BACKWARD (reject/rework). "The first allowed
+# candidate" is the forward one only because the verbs are parsed in that
+# order — a fact the caller must not have to know.
 allowed = []
-for line in m.group(1).splitlines():
+for line in block.group(1).splitlines():
     mm = re.match(r"^(next|accept|reject|rework|annotate):\s*(.*)$", line.strip())
     if not mm:
         continue
+    verb = mm.group(1)
     # Trailing prose comments (e.g. "(full rework path ...)") must never
     # leak words as candidates: cut the line at the first paren.
     value = mm.group(2).split("(", 1)[0]
     for token in re.split(r"[,\s]+", value):
         token = token.strip("[]\"'")
         if token and re.match(r"^[a-z][a-z0-9-]*$", token):
-            allowed.append(token)
+            allowed.append((verb, token))
 
 # Intent routes are projections of the full graph, never extra edges. A
 # route may omit stages, but it may not invent a transition outside the graph.
-route = re.search(r"^\*\*" + re.escape(intent) + r":\*\*\s*(.+)$", text, re.MULTILINE)
-if route:
-    stages = [part.strip() for part in route.group(1).split("→")]
-    if stage in stages:
-        # Scoped by route POSITION, not membership. Every route ends at
-        # `audit`, so "is this stage in my route" admits audit for all
-        # of them and cannot express the investigate shortcut at all.
-        # What distinguishes investigate is that audit is the stage that
-        # FOLLOWS context there.
-        #
-        # Three kinds of move survive, and the asymmetry is the point:
-        #   - forward: only the route's IMMEDIATE next stage. Anything
-        #     further ahead is reached by the review-mode skip
-        #     passthrough, which names the successor of a skipped
-        #     stage; that is what carries verification -> audit when
-        #     diff-gate is skipped. Admitting every later stage here
-        #     would let one graph edge rewrite every other track.
-        #   - backward: any stage already behind, which is what a
-        #     reject/rework needs. Filtering those out would strand a
-        #     card that must go back to setup.
-        #   - itself: re-running the current stage is declared rework
-        #     (`rework: shape` at shape) and is never a route
-        #     violation. Filtering it out refuses `shape -> shape` and
-        #     takes shape rework with it.
-        idx = stages.index(stage)
-        reachable = set(stages[:idx]) | set(stages[idx + 1:idx + 2]) | {stage}
-        allowed = [c for c in allowed if c in reachable]
+route = parse_route(text, intent)
+if route and stage in route:
+    # Scoped by route POSITION, not membership. Every route ends at
+    # `audit`, so "is this stage in my route" admits audit for all
+    # of them and cannot express the investigate shortcut at all.
+    # What distinguishes investigate is that audit is the stage that
+    # FOLLOWS context there.
+    #
+    # Three kinds of move survive, and the asymmetry is the point:
+    #   - forward: only the route's IMMEDIATE next stage. Anything
+    #     further ahead is reached by the review-mode skip
+    #     passthrough, which names the successor of a skipped
+    #     stage; that is what carries verification -> audit when
+    #     diff-gate is skipped. Admitting every later stage here
+    #     would let one graph edge rewrite every other track.
+    #   - backward: any stage already behind, which is what a
+    #     reject/rework needs. Filtering those out would strand a
+    #     card that must go back to setup.
+    #   - itself: re-running the current stage is declared rework
+    #     (`rework: shape` at shape) and is never a route
+    #     violation. Filtering it out refuses `shape -> shape` and
+    #     takes shape rework with it.
+    idx = route.index(stage)
+    reachable = set(route[:idx]) | set(route[idx + 1:idx + 2]) | {stage}
+    allowed = [(verb, c) for verb, c in allowed if c in reachable]
 
-for candidate in dict.fromkeys(allowed):
+# A stage that does not run in this review mode is not a legal move: it
+# parks the worker waiting for a review nobody configured. The set reported
+# here is what `advance` ACCEPTS, so a skipped stage is not in it — and the
+# refusal below names the successor instead.
+allowed = [(verb, c) for verb, c in allowed if c not in skipped]
+
+# The review-mode passthrough: a stage that does not run in this mode leaves
+# a hole in the route, so the stage BEFORE it may move straight to the stage
+# AFTER it. Without this the worker deadlocks — refused AT the hole by the
+# gate guard, and with no legal way past it. Derived from the generated skip
+# set, so a mode that skips a new stage needs no change here.
+for skipped_stage in skipped:
+    if not route or skipped_stage not in route:
+        continue
+    idx = route.index(skipped_stage)
+    if idx == 0 or idx + 1 >= len(route):
+        continue
+    if route[idx - 1] == stage:
+        allowed.append(("next", route[idx + 1]))
+
+# The context skip is a QUALITY rule, not a review-mode rule: a trivial
+# probe has nothing to explore. The knobs come from the state; the rule
+# lives here so `advance` and `next` cannot disagree about it.
+if not exploration:
+    exploration = {"Lean": "2", "Complete": "5"}.get(appetite, "3")
+trivial = exploration == "1" or (not quality and appetite == "Lean")
+if trivial and mode == "Auto" and stage == "setup":
+    allowed.append(("next", "shape"))
+
+seen = set()
+unique = []
+for verb, candidate in allowed:
+    if candidate in seen:
+        continue
+    seen.add(candidate)
+    unique.append((verb, candidate))
+
+if query == "forward":
+    unique = [(verb, c) for verb, c in unique if verb in ("next", "accept")]
+
+for verb, candidate in unique:
     print(candidate)
 PY
 }
 
-all_stages() {
-  python3 - "$TRANSITIONS" <<'PY'
-import sys, re
-text = open(sys.argv[1]).read()
-for m in re.finditer(r"^### (\S+)\s*$", text, re.MULTILINE):
-    print(m.group(1))
+# The transition context: the stage, the intent and the review mode the
+# transition rule runs against, resolved from the state and validated.
+#
+# One resolution, so `advance` (which enforces) and `next` (which reports)
+# can never disagree about what is legal. The review mode decides which
+# stages exist, and an unknown or missing mode used to skip enforcement
+# silently: the worker walked into a stage that does not run in its mode and
+# parked there. The vocabulary is closed and owned by stages.yaml, so a mode
+# the helper does not know is a bug, not a lenient default.
+TRANSITION_STAGE=""
+TRANSITION_INTENT=""
+TRANSITION_MODE=""
+TRANSITION_QUALITY=""
+TRANSITION_EXPLORATION=""
+TRANSITION_APPETITE=""
+
+resolve_transition_context() {
+  [ -f "$STATE" ] || die "state.md not found at $STATE (run /stelow entry first)"
+  TRANSITION_STAGE=$(yaml_get current_stage "$STATE" 2>/dev/null) || die "state.md has no current_stage (run /stelow entry first)"
+  TRANSITION_INTENT=$(yaml_get intent "$STATE" 2>/dev/null || echo "unknown")
+  TRANSITION_MODE=$(yaml_get review_mode "$STATE" 2>/dev/null || true)
+  [ -n "$TRANSITION_MODE" ] || die "state.md has no review_mode (run stelow seed, or set config.review_mode)"
+  TRANSITION_QUALITY=$(yaml_get quality "$STATE" 2>/dev/null || true)
+  TRANSITION_EXPLORATION=$(yaml_get exploration_count "$STATE" 2>/dev/null || true)
+  TRANSITION_APPETITE=$(yaml_get appetite "$STATE" 2>/dev/null || true)
+  local known_modes
+  known_modes=$(transition_facts modes) || die "could not read the review-mode policy"
+  if ! printf '%s\n' "$known_modes" | grep -qxF -- "$TRANSITION_MODE"; then
+    die "unknown review_mode '$TRANSITION_MODE' (known: $(printf '%s\n' "$known_modes" | paste -sd, -))"
+  fi
+}
+
+# The candidates `advance` accepts from the current stage, under the current
+# review mode. Exits 1 when the stage has no transition at all.
+legal_candidates() {
+  transition_facts allowed \
+    "$TRANSITION_STAGE" "$TRANSITION_INTENT" "$TRANSITION_MODE" \
+    "$TRANSITION_QUALITY" "$TRANSITION_EXPLORATION" "$TRANSITION_APPETITE"
+}
+
+do_next() {
+  # The legal moves from the current stage, under the current review mode.
+  #
+  # The router used to re-derive this with its own awk/grep over the
+  # transitions reference: a fourth implementation of the rule, coarser than
+  # the helper's (no intent route, no review mode). It accepted moves the
+  # helper then refused — `diff-gate` in Auto — and the workflow stalled
+  # between the two answers. One owner: the helper asks itself.
+  resolve_transition_context
+  local allowed forward
+  allowed=$(legal_candidates) || die "no transition defined from stage '$TRANSITION_STAGE'"
+  forward=$(transition_facts forward \
+    "$TRANSITION_STAGE" "$TRANSITION_INTENT" "$TRANSITION_MODE" \
+    "$TRANSITION_QUALITY" "$TRANSITION_EXPLORATION" "$TRANSITION_APPETITE") || forward=""
+  if [ "${1:-}" = "--json" ]; then
+    python3 - "$TRANSITION_STAGE" "$TRANSITION_INTENT" "$TRANSITION_MODE" "$allowed" "$forward" <<'PY'
+import json, sys
+stage, intent, mode, allowed, forward = sys.argv[1:6]
+print(json.dumps({
+    "stage": stage,
+    "intent": intent,
+    "review_mode": mode,
+    "allowed": [c for c in allowed.split("\n") if c],
+    "forward": [c for c in forward.split("\n") if c],
+}, indent=2))
 PY
+    return 0
+  fi
+  printf '%s\n' "$allowed"
 }
 
 do_advance() {
   local candidate="$1"
   [ -n "$candidate" ] || die "advance requires a <candidate> argument"
-  [ -f "$STATE" ] || die "state.md not found at $STATE (run /stelow entry first)"
-  local current
-  current=$(yaml_get current_stage "$STATE" 2>/dev/null) || die "state.md has no current_stage (run /stelow entry first)"
-  local intent allowed
-  intent=$(yaml_get intent "$STATE" 2>/dev/null || echo "unknown")
-  allowed=$(allowed_candidates_for_stage "$current" "$intent") || die "no transition defined from stage '$current'"
+  resolve_transition_context
+  local current="$TRANSITION_STAGE" intent="$TRANSITION_INTENT" review_mode="$TRANSITION_MODE" allowed
+  allowed=$(legal_candidates) || die "no transition defined from stage '$current'"
 
-  # Mode-skipped passthroughs: when a gate/stage does not exist in the active
-  # review mode, its successor becomes a legal target directly — otherwise the
-  # worker deadlocks (refused AT the gate by the block below, rejected PAST it
-  # here). Unknown/missing review_mode (or knobs) skips enforcement.
-  review_mode=$(yaml_get review_mode "$STATE" 2>/dev/null || true)
-  exploration_count=$(yaml_get exploration_count "$STATE" 2>/dev/null || true)
-  legacy_appetite=$(yaml_get appetite "$STATE" 2>/dev/null || true)
-  if [ -z "$exploration_count" ]; then
-    case "$legacy_appetite" in
-      Lean) exploration_count="2" ;;
-      Complete) exploration_count="5" ;;
-      Core|"") exploration_count="3" ;;
-      *) exploration_count="3" ;;
-    esac
+  # A stage that does not run in this review mode must never be entered: it
+  # parks the worker waiting for a review nobody configured. Refuse with the
+  # redirect instead of mutating — and say so BEFORE the legality check,
+  # because a skipped stage is not a legal move and the generic "invalid
+  # transition" would hide the reason and the way out.
+  local redirect
+  redirect=$(transition_facts redirect "$candidate" "$intent" "$review_mode") || die "could not resolve the review-mode policy"
+  if [ -n "$redirect" ]; then
+    die "$candidate is skipped in '$review_mode' review mode — advance directly to $redirect instead"
   fi
-  if [ -n "$review_mode" ]; then
-    case "$current" in
-      planning)
-        case "$review_mode" in
-          "Product Spec + Interface + Tech Review"|"Product Spec + Interface + Tech Review + Code Diff") ;;
-          *) allowed=$(printf "%s\nexecution" "$allowed") ;;
-        esac
-        ;;
-      verification)
-        case "$review_mode" in
-          "Product Spec + Interface + Tech Review + Code Diff") ;;
-          *) allowed=$(printf "%s\naudit" "$allowed") ;;
-        esac
-        ;;
-      setup)
-        has_knobs=$(yaml_get quality "$STATE" 2>/dev/null || true)
-        trivial=0
-        [ "$exploration_count" = "1" ] && trivial=1
-        { [ -z "$has_knobs" ] && [ "$legacy_appetite" = "Lean" ]; } && trivial=1
-        if [ "$trivial" = "1" ] && [ "$review_mode" = "Auto" ]; then allowed=$(printf "%s\nshape" "$allowed"); fi
-        ;;
-    esac
-  fi
+
   echo "$allowed" | grep -qx "$candidate" ||
     die "invalid transition '$current' -> '$candidate' (allowed: $(echo "$allowed" | paste -sd, -))"
-
-  # Mode-skipped gates: plan-gate and diff-gate do not exist in modes that
-  # skip them (see Gate Conditions in transitions.md). Entering one parks the
-  # worker waiting for a review nobody configured, so refuse with the
-  # redirect instead of mutating. Unknown/missing review_mode skips enforcement.
-  if [ -n "$review_mode" ]; then
-    case "$candidate" in
-      plan-gate)
-        case "$review_mode" in
-          "Product Spec + Interface + Tech Review"|"Product Spec + Interface + Tech Review + Code Diff") ;;
-          *) die "plan-gate is skipped in '$review_mode' review mode — advance directly to execution instead" ;;
-        esac
-        ;;
-      diff-gate)
-        case "$review_mode" in
-          "Product Spec + Interface + Tech Review + Code Diff") ;;
-          *) die "diff-gate is skipped in '$review_mode' review mode — advance directly to audit instead" ;;
-        esac
-        ;;
-    esac
-  fi
 
   # pre-condition: required artifacts, resolved against the workflow's own
   # state dir first, then the repo root.
@@ -3263,6 +3401,7 @@ $PROG — stelow workflow helper (status / advance / doctor / seed / schema / as
 Usage:
   $PROG status [--json]
   $PROG advance <candidate> [--dry-run] [--json]
+  $PROG next [--json]
   $PROG doctor [--json]
   $PROG seed --name <n> --intent <i> [--quality production|experimental] [--exploration-count 1-5] [--exploration-hybrid true|false | --no-hybrid] [--review-mode M] [--red-first strict|advisory|off] [--guard-judge strict|advisory|off] [--json]
   (--appetite Lean|Core|Complete still accepted as a deprecated alias)
@@ -3311,6 +3450,14 @@ case "${1:-}" in
     done
     [ -n "$candidate" ] || usage_error "advance requires <candidate>"
     do_advance "$candidate"
+    ;;
+  next)
+    shift
+    case "${1:-}" in
+      --json) do_next --json ;;
+      "") do_next ;;
+      *) usage_error "next: unknown arg '$1'" ;;
+    esac
     ;;
   seed)
     shift

@@ -1,76 +1,111 @@
 #!/usr/bin/env python3
-"""scope3_blocks.py — append the dual-mode contract blocks to every
-stelow-product-* / stelow-workflow-* skill (SCOPE-3 deliverable).
+"""scope3_blocks.py — the dual-mode contract block every skill carries.
 
-Reads stages.yaml for stage metadata, reads each skill's first paragraph to
-infer its stage (by filename heuristic + description scan), and appends:
+Usage:
+  python3 scripts/scope3_blocks.py           # write the blocks
+  python3 scripts/scope3_blocks.py --check   # CI gate: exit 1 on drift
 
-  ## Entry (mode detection)       (boilerplate, identical per skill)
-  ## Hand-off (workflow mode)     (per-stage: stage/status/next-candidate/gate/rework-on)
-  ### Workflow slice              (per-stage summary)
+The blocks tell a skill how to behave in workflow mode: which stage it is,
+whether it needs an approval, and the shape of the hand-off it must emit.
 
-Idempotent: skips files that already carry the blocks (idempotency header
-check on `## Entry (mode detection)`).
+They are GENERATED from `stages.yaml`, and `--check` fails when a committed
+block disagrees with the source. The script used to be a one-shot writer
+with no check: it skipped any skill that already carried a block, so a
+stage renamed in stages.yaml left every shipped skill naming the old one,
+forever, with a green CI.
+
+Two facts the blocks used to get wrong, both from parsing stages.yaml by
+hand instead of reading it:
+
+  - `gate` was always "none", because the hand-rolled parser never read
+    `requires_approval` — so a skill that owns plan-gate told the worker it
+    needed no approval.
+  - `next-candidate` was a static copy of the graph edge. That edge is not
+    the same in every review mode: `diff-gate` does not run in Auto, and
+    the helper refuses it there. A copy of the graph is a graph that goes
+    stale, so the block asks the helper instead.
 """
 
 from __future__ import annotations
-import os, re, sys, glob, pathlib
 
-ROOT = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else ".").resolve()
+import pathlib
+import sys
+
+try:
+    import yaml
+except ImportError:
+    print("scope3_blocks: PyYAML required (python3 -c 'import yaml')", file=sys.stderr)
+    sys.exit(2)
+
+BEGIN = "<!-- stelow:scope3:begin -->"
+END = "<!-- stelow:scope3:end -->"
+ENTRY_HEADING = "## Entry (mode detection)"
+
+ROOT = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 and not sys.argv[1].startswith("-") else ".").resolve()
+STAGES_YAML = ROOT / "skills/stelow-workflow-orchestrator/stages.yaml"
 
 # 1. Read stages.yaml once.
-stages_yaml = (ROOT / "skills/stelow-workflow-orchestrator/stages.yaml").read_text()
-stages = []
-current = None
-for line in stages_yaml.splitlines():
-    m = re.match(r"^\s*-\s*name:\s*(\S+)", line)
-    if m:
-        current = {"name": m.group(1), "transitions": {}, "description": ""}
-        stages.append(current); continue
-    if current is None: continue
-    dm = re.match(r"^\s*description:\s*(.*)$", line)
-    if dm: current["description"] = dm.group(1).strip().strip('"')
-    for k in ("next", "accept", "reject", "rework", "annotate"):
-        m = re.match(rf"^\s+{k}:\s*\[([^\]]*)\]", line)
-        if m:
-            current["transitions"][k] = [x.strip().strip('"') for x in m.group(1).split(",") if x.strip()]
-            break
-
+try:
+    data = yaml.safe_load(STAGES_YAML.read_text())
+except (OSError, yaml.YAMLError) as exc:
+    print(f"scope3_blocks: cannot read {STAGES_YAML}: {exc}", file=sys.stderr)
+    sys.exit(1)
+stages = data.get("stages") or []
+if not stages:
+    print("scope3_blocks: no stages in stages.yaml", file=sys.stderr)
+    sys.exit(2)
 STAGE_BY_NAME = {s["name"]: s for s in stages}
 
-# 2. Map skill directory -> stage (heuristic: filename contains stage, else description).
-#    Falls back to a generic template.
+# 2. Map skill -> stage.
 #
-#    A hint that names a stage the graph does not have is a typo, and a typo
-#    used to be written into a shipped skill: `ads` pointed at "promotions",
-#    which is not a stage, so the skill told a workflow to hand off to a
-#    stage that does not exist. The check below refuses to write that.
+#    The stage catalog OWNS the mapping for the skills that own a stage:
+#    stages.yaml says which skill each stage dispatches to, and that is the
+#    fact the hand-off must agree with. The hint map below only carries the
+#    skills that own NO stage — the standalone playbooks and the extra
+#    workflow skills that feed a stage without running it.
+#
+#    The two used to be one map, and the one map was wrong: it said
+#    `scope-executor` was the `scope` stage (the catalog says `execution`)
+#    and `execution-critique` was the `execution` stage (the catalog says
+#    `audit`). The committed blocks followed the catalog; the script that
+#    claims to generate them followed the map. A generator that disagrees
+#    with the file it writes is a generator nobody runs.
+STAGE_OWNED_BY_SKILL = {
+    stage["skill"]: stage["name"] for stage in stages if stage.get("skill")
+}
+
+# Skills that own no stage but whose work belongs to one.
 STAGE_HINTS = {
-    "shape-up": "shape",
-    "plan-critique": "critique",
-    "ux-critique": "int-gate",
-    "tech-planning": "planning",
-    "interface-alternatives": "interface",
-    "architecture-alternatives": "architecture",
-    "scope-executor": "scope",
-    "testing-ai-code": "verification",
-    "testing-execution": "verification",
-    "execution-critique": "execution",
-    "codebase-critique": "diff-gate",
-    "discovery": "context",
-    "multi-method-market-analysis": "context",
-    "job-to-be-done": "context",
-    "evolutionary-principles": "context",
-    "opportunity-mapping": "triage",
     "ads": "shape",
     "business-models": "shape",
-    "coding-standards": "execution",
+    "discovery": "context",
+    "evolutionary-principles": "context",
     "health": "audit",
+    "job-to-be-done": "context",
     "marketplace-playbook": "shape",
+    "multi-method-market-analysis": "context",
     "open-source": "shape",
+    "opportunity-mapping": "triage",
+    "paywall": "shape",
     "pricing": "shape",
     "promotions": "shape",
     "trust-building": "shape",
+    "architecture-alternatives": "architecture",
+    "architecture-contrast": "architecture",
+    "codebase-critique": "diff-gate",
+    "coding-standards": "execution",
+    "interface-alternatives": "interface",
+    "testing-ai-code": "verification",
+    "ux-critique": "int-gate",
+}
+
+# The control plane does not run a stage, so it emits no stage hand-off.
+# The router CONSUMES a hand-off block and appends its own; giving it the
+# workflow-mode template would invite it to emit one.
+CONTROL_PLANE = {
+    "stelow-workflow-orchestrator",
+    "stelow-workflow-entry",
+    "stelow-workflow-router",
 }
 
 _unknown_hints = {skill: stage for skill, stage in STAGE_HINTS.items() if stage not in STAGE_BY_NAME}
@@ -95,46 +130,57 @@ fi
 In **standalone mode** (no marker), run the existing skill body unchanged.
 In **workflow mode**, skip to `### Workflow slice` and emit a complete
 `## Hand-off (workflow mode)` block at the end. See
-`references/host-levers.md` for the full marker protocol (SCOPE-9).
+`../stelow-workflow-entry/SKILL.md` for the full marker protocol.
 """
+
+
+def gate_of(stage_info: dict) -> str:
+    """The gate the stage really carries — `requires_approval`, not a guess."""
+    if not stage_info.get("requires_approval"):
+        return "none"
+    tool = stage_info.get("approval_tool") or "approval"
+    return f"approval-required ({tool})"
+
 
 def hand_off_block(stage_name: str, stage_info: dict | None) -> str:
     if stage_info is None:
         return f"""## Hand-off (workflow mode)
 
 ```
-stage          : {stage_name}  (no transitions defined in stages.yaml)
+stage          : {stage_name}
 status         : <done|partial|blocked>
 artifacts      : <paths created or modified>
-next-candidate : <next stage from stages.yaml>
-gate           : <none|approval-required>
-rework-on      : <previous stage if rework path>
+next-candidate : <the stage scripts/stelow next reports — run `scripts/stelow next`>
+gate           : none
+rework-on      : (none)
 ```
 
-Workflow mode: emit the above Hand-off block verbatim, then stop.
+Workflow mode: emit the above Hand-off block verbatim, then stop. Fill
+`next-candidate` from `scripts/stelow next`: it is the workflow's own
+answer, already accounting for this run's intent route and review mode.
 """
 
-    trans = stage_info["transitions"]
-    next_list = trans.get("next", []) or trans.get("accept", [])
-    rework_list = trans.get("rework", []) or trans.get("reject", [])
-    next_str = ", ".join(next_list) if next_list else "(terminal)"
+    trans = stage_info.get("transitions") or {}
+    next_list = trans.get("next") or trans.get("accept") or []
+    rework_list = trans.get("rework") or trans.get("reject") or []
     rework_str = ", ".join(rework_list) if rework_list else "(none)"
-    gate = "approval-required (visual_review)" if stage_info.get("requires_approval") else "none"
-    desc = stage_info.get("description", "").strip().strip('"')
+    desc = str(stage_info.get("description", "")).strip()
     return f"""## Hand-off (workflow mode)
 
 ```
 stage          : {stage_name}
-description    : {desc[:120]}
+description    : {desc}
 status         : <done|partial|blocked>
 artifacts      : <paths created or modified>
-next-candidate : {next_str}
-gate           : {gate}
+next-candidate : <the stage scripts/stelow next reports — run `scripts/stelow next`>
+gate           : {gate_of(stage_info)}
 rework-on      : {rework_str}
 ```
 
-Workflow mode: emit the above Hand-off block verbatim, then stop. The
-router skill consumes the next-candidate field and calls
+Workflow mode: emit the above Hand-off block verbatim, then stop. Fill
+`next-candidate` from `scripts/stelow next`: it is the workflow's own
+answer, already accounting for this run's intent route and review mode.
+The router skill consumes the next-candidate field and calls
 `scripts/stelow advance <next-candidate>` to move state forward.
 """
 
@@ -146,70 +192,122 @@ def workflow_slice_block(stage_name: str, stage_info: dict | None) -> str:
 Standalone (non-workflow) steps are not part of the workflow slice. In
 workflow mode this skill emits the Hand-off block and exits.
 """
-    desc = stage_info.get("description", "").strip().strip('"')
-    primary = stage_info.get("primary_actions", []) or []
+    desc = str(stage_info.get("description", "")).strip()
+    primary = stage_info.get("primary_actions") or []
     pa = ", ".join(primary) if primary else "read, write"
     return f"""### Workflow slice
 
 Workflow mode for the **{stage_name}** stage. Standalone behavior lives in
 the rest of this file (unchanged). Summary:
 
-> {desc[:160]}
+> {desc}
 
 Primary actions (per stages.yaml): `{pa}`. Run only the actions that
 produce the artifacts promised in `## Hand-off`; skip anything that does
 not advance the workflow.
 """
 
+
 def detect_stage(skill_name: str, description: str) -> tuple[str | None, dict | None]:
-    # strip "stelow-product-" prefix
-    stem = skill_name.replace("stelow-product-", "")
+    """The stage this skill belongs to, and that stage's metadata.
+
+    The owner mapping comes from the catalog. The hint map covers the skills
+    that own no stage. The substring fallback is the last resort, and it
+    runs on the name with BOTH prefixes stripped: the prefix is
+    `stelow-product-` for the playbooks and `stelow-workflow-` for the
+    workflow skills, and stripping only the first left every workflow skill
+    on the fallback — which matched `critique` inside `codebase-critique`
+    and handed the diff-gate skill the critique stage.
+    """
+    if skill_name in STAGE_OWNED_BY_SKILL:
+        owned = STAGE_OWNED_BY_SKILL[skill_name]
+        return owned, STAGE_BY_NAME.get(owned)
+    stem = skill_name
+    for prefix in ("stelow-product-", "stelow-workflow-"):
+        if stem.startswith(prefix):
+            stem = stem[len(prefix):]
+            break
     hint = STAGE_HINTS.get(stem)
     if hint:
         return hint, STAGE_BY_NAME.get(hint)
-    # try direct match (e.g., "shape" in stem)
     for sname in STAGE_BY_NAME:
         if sname in stem:
             return sname, STAGE_BY_NAME[sname]
     return None, None
 
-def process_skill(path: pathlib.Path) -> str:
-    text = path.read_text()
-    if "## Entry (mode detection)" in text:
-        return "skip-already-has-blocks"
-    skill_name = path.parent.name
-    # description is the first 'description:' block in the frontmatter
-    desc_match = re.search(r"description:\s*\n((?:\s+.*\n)+?)\n\S", text)
-    description = (desc_match.group(1).strip() if desc_match else "")[:200]
-    stage_name, stage_info = detect_stage(skill_name, description)
+
+def render_region(stage_name: str, stage_info: dict | None) -> str:
     blocks = (
         ENTRY_BLOCK
         + "\n"
-        + hand_off_block(stage_name or skill_name, stage_info)
+        + hand_off_block(stage_name, stage_info)
         + "\n"
-        + workflow_slice_block(stage_name or skill_name, stage_info)
-        + "\n"
+        + workflow_slice_block(stage_name, stage_info)
     )
-    # append after a trailing blank line
-    if not text.endswith("\n\n"): text = text.rstrip() + "\n\n"
-    text += blocks
-    path.write_text(text)
-    return f"appended (stage={stage_name or 'generic'})"
+    return f"{BEGIN}\n{blocks}\n{END}\n"
 
-def main():
+
+def current_region(text: str) -> str | None:
+    """The generated region as it stands in the file, or None."""
+    if BEGIN in text and END in text:
+        start = text.index(BEGIN)
+        stop = text.index(END) + len(END)
+        return text[start:stop]
+    # A file written before the region was delimited: the block runs from the
+    # entry heading to the end of the file.
+    if ENTRY_HEADING in text:
+        start = text.index(ENTRY_HEADING)
+        return text[start:].rstrip("\n")
+    return None
+
+
+def apply_region(text: str, region: str) -> str:
+    existing = current_region(text)
+    if existing is None:
+        prefix = text.rstrip("\n")
+        return (prefix + "\n\n" if prefix else "") + region
+    start = text.index(existing)
+    before = text[:start].rstrip("\n")
+    after = text[start + len(existing):].lstrip("\n")
+    head = (before + "\n\n") if before else ""
+    tail = ("\n" + after) if after else "\n"
+    return head + region.rstrip("\n") + "\n" + tail
+
+
+def main() -> int:
+    check = "--check" in sys.argv
     skills_dir = ROOT / "skills"
-    targets = sorted(glob.glob(str(skills_dir / "stelow-*-*/SKILL.md")))
-    targets = [t for t in targets if "orchestrator" not in t]
-    results = []
-    for t in targets:
-        try:
-            r = process_skill(pathlib.Path(t))
-            results.append((t, r))
-        except Exception as ex:
-            results.append((t, f"ERROR: {ex}"))
-    for t, r in results:
-        print(f"{r:35} {t}")
-    print(f"\n{len(results)} skills processed.")
+    targets = sorted(
+        p for p in skills_dir.glob("stelow-*/SKILL.md")
+        if p.parent.name not in CONTROL_PLANE
+    )
+    drifted: list[str] = []
+    for path in targets:
+        text = path.read_text()
+        skill_name = path.parent.name
+        # description is the first 'description:' block in the frontmatter
+        desc_match = __import__("re").search(r"description:\s*\n((?:\s+.*\n)+?)\n\S", text)
+        description = (desc_match.group(1).strip() if desc_match else "")[:200]
+        stage_name, stage_info = detect_stage(skill_name, description)
+        region = render_region(stage_name or skill_name, stage_info)
+        existing = current_region(text)
+        if existing == region.rstrip("\n"):
+            continue
+        drifted.append(f"{path.relative_to(ROOT)} (stage={stage_name or 'generic'})")
+        if not check:
+            path.write_text(apply_region(text, region))
+    if drifted:
+        verb = "stale" if check else "rewrote"
+        print(f"scope3_blocks: {verb} {len(drifted)} skill block(s):", file=sys.stderr)
+        for item in drifted:
+            print(f"  {item}", file=sys.stderr)
+        if check:
+            print("scope3_blocks: run `python3 scripts/scope3_blocks.py` to regenerate", file=sys.stderr)
+            return 1
+    else:
+        print(f"scope3_blocks: ok ({len(targets)} skills)")
+    return 0
+
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

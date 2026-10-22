@@ -193,6 +193,194 @@ describe("mode-skipped passthroughs", () => {
 
 // ---------------------------------------------------------------------------
 
+/**
+ * The review-mode policy has ONE owner: the generated block in the
+ * transitions reference. The helper used to enforce it from a `case`
+ * statement, so a mode added to stages.yaml left the helper running the old
+ * rules — and a stage declared skipped was only refused for the two gates
+ * somebody remembered to hardcode.
+ *
+ * The proof patches the REFERENCE (never the helper) and shows the helper's
+ * behaviour move with it.
+ */
+describe("the review-mode policy comes from the reference, not from the helper", () => {
+  function patchedReference(extra: string): string {
+    const dir = mkdtempSync(join(tmpdir(), "stelow-policy-"));
+    dirs.push(dir);
+    const path = join(dir, "transitions.md");
+    const text = readFileSync(TRANSITIONS, "utf8");
+    // Insert the probe mode right after the first mode block.
+    const marker = "review_mode: Auto\n";
+    const at = text.indexOf(marker);
+    expect(at, "the reference carries a review-mode block").toBeGreaterThan(-1);
+    const end = text.indexOf("\n\n", at);
+    writeFileSync(path, text.slice(0, end + 1) + extra + "\n" + text.slice(end + 1));
+    return path;
+  }
+
+  it("a stage the reference declares skipped is refused, with the successor named", () => {
+    const reference = patchedReference("review_mode: Mutation Probe\nskipped:    critique\nno_human_wait: (none)");
+    const dir = gitRepo();
+    const stateDir = makeStateDir(dir, "shape", "Mutation Probe");
+    const r = run(["advance", "critique", "--dry-run"], dir, {
+      STELOW_STATEDIR: stateDir,
+      STELOW_TRANSITIONS: reference,
+    });
+    expect(r.status).not.toBe(0);
+    expect(r.stderr).toContain("critique is skipped in 'Mutation Probe' review mode");
+    expect(r.stderr).toContain("advance directly to gate instead");
+  });
+
+  it("the predecessor of a skipped stage moves straight to the successor", () => {
+    const reference = patchedReference("review_mode: Mutation Probe\nskipped:    critique\nno_human_wait: (none)");
+    const dir = gitRepo();
+    const stateDir = makeStateDir(dir, "shape", "Mutation Probe");
+    seedArtifact(stateDir, "plans/spec-product_v1.md");
+    const r = run(["advance", "gate", "--dry-run"], dir, {
+      STELOW_STATEDIR: stateDir,
+      STELOW_TRANSITIONS: reference,
+    });
+    expect(r.status, r.stderr).toBe(0);
+  });
+
+  it("a stage the reference declares skipped is NOT refused in a mode that keeps it", () => {
+    // The same stage, a different mode: the policy decides, not the stage.
+    const dir = gitRepo();
+    const stateDir = makeStateDir(dir, "shape", "Auto");
+    seedArtifact(stateDir, "plans/spec-product_v1.md");
+    const r = run(["advance", "critique", "--dry-run"], dir, {
+      STELOW_STATEDIR: stateDir,
+      STELOW_TRANSITIONS: TRANSITIONS,
+    });
+    expect(r.status, r.stderr).toBe(0);
+  });
+});
+
+describe("an unusable review mode fails fast", () => {
+  it("an unknown review mode is refused, naming the modes it knows", () => {
+    // The vocabulary is closed and owned by stages.yaml. A mode the helper
+    // does not know used to skip enforcement entirely: the worker walked
+    // into a stage that does not run in its mode and parked there.
+    const dir = gitRepo();
+    const stateDir = makeStateDir(dir, "planning", "Product Spec + Interface + Code Diff");
+    const before = readFileSync(join(stateDir, "state.md"));
+    const r = run(["advance", "execution", "--dry-run"], dir, {
+      STELOW_STATEDIR: stateDir,
+      STELOW_TRANSITIONS: TRANSITIONS,
+    });
+    expect(r.status).not.toBe(0);
+    expect(r.stderr).toContain("unknown review_mode");
+    expect(r.stderr).toContain("Product Spec + Interface + Tech Review + Code Diff");
+    expect(Buffer.compare(before, readFileSync(join(stateDir, "state.md")))).toBe(0);
+  });
+
+  it("a state with no review mode is refused instead of silently unguarded", () => {
+    const dir = gitRepo();
+    const stateDir = makeStateDir(dir, "planning", "Auto");
+    const path = join(stateDir, "state.md");
+    writeFileSync(path, readFileSync(path, "utf8").replace(/^\s*review_mode:.*$/m, ""));
+    const before = readFileSync(path);
+    const r = run(["advance", "execution", "--dry-run"], dir, {
+      STELOW_STATEDIR: stateDir,
+      STELOW_TRANSITIONS: TRANSITIONS,
+    });
+    expect(r.status).not.toBe(0);
+    expect(r.stderr).toContain("no review_mode");
+    expect(Buffer.compare(before, readFileSync(path))).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+
+/**
+ * `stelow next` is the ONE answer to "what can I move to from here".
+ *
+ * The router used to re-derive it with its own awk/grep over the
+ * transitions reference — a fourth implementation of the rule, coarser than
+ * the helper's (no intent route, no review mode). It accepted moves the
+ * helper then refused, and the workflow stalled between the two answers.
+ * The command exists so there is nothing left to re-derive.
+ */
+describe("stelow next answers with the helper's own rule", () => {
+  function nextJson(stateDir: string, dir: string): { allowed: string[]; forward: string[] } {
+    const r = run(["next", "--json"], dir, {
+      STELOW_STATEDIR: stateDir,
+      STELOW_TRANSITIONS: TRANSITIONS,
+    });
+    expect(r.status, r.stderr).toBe(0);
+    return JSON.parse(r.stdout);
+  }
+
+  it("reports the same set `advance` accepts, and names the forward move", () => {
+    const dir = gitRepo();
+    const stateDir = makeStateDir(dir, "planning", "Auto");
+    const body = nextJson(stateDir, dir);
+    // plan-gate does not run in Auto: it is not a legal move, and the
+    // successor is.
+    expect(body.allowed).toContain("execution");
+    expect(body.allowed).not.toContain("plan-gate");
+    expect(body.forward).toEqual(["execution"]);
+  });
+
+  it("every candidate it reports is one `advance` accepts", () => {
+    const dir = gitRepo();
+    for (const [stage, mode] of [
+      ["planning", "Auto"],
+      ["planning", "Product Spec + Interface + Tech Review + Code Diff"],
+      ["verification", "Auto"],
+      ["int-gate", "Auto"],
+    ] as const) {
+      const stateDir = makeStateDir(dir, stage, mode);
+      const body = nextJson(stateDir, dir);
+      for (const candidate of body.allowed) {
+        const r = run(["advance", candidate, "--dry-run"], dir, {
+          STELOW_STATEDIR: stateDir,
+          STELOW_TRANSITIONS: TRANSITIONS,
+        });
+        // A candidate can still be refused by the artifact guard (the
+        // pre-condition), but never by the transition rule.
+        expect(
+          r.stderr,
+          `advance ${stage} -> ${candidate} (${mode}) must be accepted by the rule`,
+        ).not.toMatch(/invalid transition|is skipped in/);
+      }
+    }
+  });
+
+  it("the forward move is the one that goes forward, not the reject edge", () => {
+    // `planning` rejects to `architecture`, which is BEHIND it. Reporting
+    // that as the forward move would walk the workflow backwards.
+    const dir = gitRepo();
+    const stateDir = makeStateDir(dir, "planning", "Auto");
+    const body = nextJson(stateDir, dir);
+    expect(body.allowed).toContain("architecture");
+    expect(body.forward).not.toContain("architecture");
+  });
+});
+
+describe("a stage that waits for nobody still runs", () => {
+  it("selection is NOT bypassed in Auto: no human pick is not no stage", () => {
+    // `no_human_wait` and `skipped` are different kinds. `selection` runs in
+    // Auto — the agent decides the pick instead of parking for one — and it
+    // produces the two artifacts the architecture stage reads. Bypassing it
+    // would hand the next stage a prose interface with no graph.
+    const dir = gitRepo();
+    const stateDir = makeStateDir(dir, "int-gate", "Auto");
+    const bypass = run(["advance", "architecture", "--dry-run"], dir, {
+      STELOW_STATEDIR: stateDir,
+      STELOW_TRANSITIONS: TRANSITIONS,
+    });
+    expect(bypass.status).not.toBe(0);
+    expect(bypass.stderr).toContain("invalid transition");
+
+    const into = run(["advance", "selection", "--dry-run"], dir, {
+      STELOW_STATEDIR: stateDir,
+      STELOW_TRANSITIONS: TRANSITIONS,
+    });
+    expect(into.status, into.stderr).toBe(0);
+  });
+});
+
 describe("transition token hygiene", () => {
   it("prose words from parenthetical comments never become candidates", () => {
     const dir = gitRepo();

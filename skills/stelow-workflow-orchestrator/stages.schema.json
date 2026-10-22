@@ -23,7 +23,7 @@
   "$defs": {
     "phase": { "type": "object", "required": ["id", "label"], "additionalProperties": false, "properties": { "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" }, "label": { "type": "string", "minLength": 1 } } },
     "routes": { "type": "object", "minProperties": 1, "additionalProperties": { "type": "array", "items": { "type": "string" }, "uniqueItems": true } },
-    "review-routes": { "type": "object", "minProperties": 1, "additionalProperties": { "type": "object", "required": ["skipped"], "additionalProperties": false, "properties": { "skipped": { "type": "array", "items": { "type": "string" }, "uniqueItems": true } } } },
+    "review-routes": { "type": "object", "minProperties": 1, "additionalProperties": { "type": "object", "required": ["skipped", "no_human_wait"], "additionalProperties": false, "properties": { "skipped": { "type": "array", "items": { "type": "string" }, "uniqueItems": true }, "no_human_wait": { "type": "array", "items": { "type": "string" }, "uniqueItems": true } } } },
     "capabilities": { "enum": ["fanout", "pipeline", "structured-output", "durable-run", "resume", "cancel", "status", "hidden-workers", "human-input", "per-call-model", "per-call-permission", "isolated-workspace", "file-claims"] },
     "execution": {
       "type": "object",

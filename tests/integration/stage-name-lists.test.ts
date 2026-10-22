@@ -25,6 +25,19 @@ const PROSE = [
   { path: "skills/stelow-workflow-orchestrator/references/state-contract.md", label: "the state contract" },
 ];
 
+/**
+ * Files that enumerate the review modes but not the stage names. The entry
+ * skill's scaffold listed four of the six modes — "Product Spec + Interface
+ * Gates" was missing — and nothing caught it: the list was prose, and prose
+ * has no gate. The catalog is the owner; these files must name every mode it
+ * publishes.
+ */
+const MODE_PROSE = [
+  ...PROSE,
+  { path: "skills/stelow-workflow-entry/SKILL.md", label: "the entry skill" },
+  { path: "skills/stelow-workflow-orchestrator/stages/context.md", label: "the context stage" },
+];
+
 const stageNames: string[] = (CATALOG.stages ?? []).map((stage: { id: string }) => stage.id);
 const reviewModes: string[] = Object.keys(CATALOG.routes?.review_modes ?? {});
 
@@ -43,7 +56,7 @@ describe("the prose lists match the catalog", () => {
     ).toEqual([]);
   });
 
-  it.each(PROSE)("$label names every review mode the catalog publishes", ({ path }) => {
+  it.each(MODE_PROSE)("$label names every review mode the catalog publishes", ({ path }) => {
     const text = readFileSync(join(ROOT, path), "utf8");
     const missing = reviewModes.filter((mode) => !text.includes(mode));
     expect(

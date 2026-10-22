@@ -407,6 +407,7 @@ Should NOT activate: "run the build" (execution).
 If a tool is unavailable, see [Tool Availability & Fallbacks](#-tool-availability--fallbacks) above.
 For subagent and large-output patterns, see `references/cli-tools/`.
 
+<!-- stelow:scope3:begin -->
 ## Entry (mode detection)
 
 When this skill loads, check for the stelow workflow marker:
@@ -428,26 +429,30 @@ In **workflow mode**, skip to `### Workflow slice` and emit a complete
 
 ```
 stage          : audit
-description    : Final audit. Verify the finished work, classify gaps, and record evidence.
+description    : Final audit. Verify all requirements met.
 status         : <done|partial|blocked>
 artifacts      : <paths created or modified>
-next-candidate : <none — audit is terminal; execution only when rework is required>
+next-candidate : <the stage scripts/stelow next reports — run `scripts/stelow next`>
 gate           : none
 rework-on      : execution
 ```
 
-Workflow mode: this is the terminal `audit` stage. Do not advance with
-`scripts/stelow` after a passing audit; let the host record completion. If
-the gap registry contains ESCALATED work, make that explicit in the report
-and return to `execution` through the host's reject/rework path.
+Workflow mode: emit the above Hand-off block verbatim, then stop. Fill
+`next-candidate` from `scripts/stelow next`: it is the workflow's own
+answer, already accounting for this run's intent route and review mode.
+The router skill consumes the next-candidate field and calls
+`scripts/stelow advance <next-candidate>` to move state forward.
 
 ### Workflow slice
 
 Workflow mode for the **audit** stage. Standalone behavior lives in
 the rest of this file (unchanged). Summary:
 
-> Final audit. Verify all requirements met and preserve the evidence.
+> Final audit. Verify all requirements met.
 
-Primary actions (per stages.yaml): `read, write`. Run only the actions that
+Primary actions (per stages.yaml): `read, grep`. Run only the actions that
 produce the artifacts promised in `## Hand-off`; skip anything that does
 not advance the workflow.
+
+<!-- stelow:scope3:end -->
+

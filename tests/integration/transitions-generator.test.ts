@@ -125,4 +125,43 @@ describe("the enforced mirror follows the source", () => {
     expect(mutated).not.toBe(readFileSync(OUTPUT, "utf8"));
     expect(mutated).toContain("rework:    context");
   });
+
+  /**
+   * The review-mode layer had THREE owners: the list in stages.yaml, a
+   * hand-typed gate table in the template, and a `case` statement in the
+   * helper. Two of them are prose the runtime never reads. Now the list is
+   * the only owner and the table is rendered from it — so a mode that skips
+   * a new stage moves the enforced table with it, or the table is a lie.
+   */
+  it("changing a review mode's skip set changes the enforced block AND the gate table", () => {
+    const mutated = renderWith((yaml) =>
+      yaml.replace(
+        "    Auto:\n      skipped: [plan-gate, diff-gate]",
+        "    Auto:\n      skipped: [plan-gate, diff-gate, critique]",
+      ),
+    );
+    expect(mutated).not.toBe(readFileSync(OUTPUT, "utf8"));
+    // The machine-readable block the helper parses.
+    expect(mutated).toContain("skipped:    plan-gate, diff-gate, critique");
+    // The human table, rendered from the same data.
+    expect(mutated).toContain("| critique | Auto | skip | skipped; the predecessor moves straight to the successor |");
+  });
+
+  it("the no-human-wait kind is rendered separately from the skip kind", () => {
+    // One list for both was a vocabulary that lied: `selection` does not
+    // run in Auto, it runs WITHOUT a human — the helper must not bypass it.
+    const text = readFileSync(OUTPUT, "utf8");
+    const autoBlock = text.slice(text.indexOf("review_mode: Auto"));
+    expect(autoBlock).toContain("skipped:    plan-gate, diff-gate");
+    expect(autoBlock).toContain("no_human_wait: selection");
+    expect(autoBlock).not.toMatch(/^skipped:.*selection/m);
+  });
+
+  it("the template no longer hand-types the gate table (it is rendered)", () => {
+    const template = readFileSync(TEMPLATE, "utf8");
+    expect(template).toContain("{{REVIEW_MODE_TABLE}}");
+    expect(template).toContain("{{REVIEW_MODES}}");
+    // A hand-typed row would be a second owner of the same fact.
+    expect(template).not.toMatch(/^\| plan-gate \| Auto \| skip \|/m);
+  });
 });

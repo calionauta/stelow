@@ -311,6 +311,7 @@ If agent_browser is not available (e.g. other CLIs), use Codebase mode
 
 See `../stelow-workflow-orchestrator/references/cli-tools/agent_browser.md` for availability details.
 
+<!-- stelow:scope3:begin -->
 ## Entry (mode detection)
 
 When this skill loads, check for the stelow workflow marker:
@@ -335,13 +336,15 @@ stage          : int-gate
 description    : Interface gate. Visual review of all interface proposals. Use `visual_review` tool (not bash).
 status         : <done|partial|blocked>
 artifacts      : <paths created or modified>
-next-candidate : selection
-gate           : none
+next-candidate : <the stage scripts/stelow next reports — run `scripts/stelow next`>
+gate           : approval-required (visual_review)
 rework-on      : interface
 ```
 
-Workflow mode: emit the above Hand-off block verbatim, then stop. The
-router skill consumes the next-candidate field and calls
+Workflow mode: emit the above Hand-off block verbatim, then stop. Fill
+`next-candidate` from `scripts/stelow next`: it is the workflow's own
+answer, already accounting for this run's intent route and review mode.
+The router skill consumes the next-candidate field and calls
 `scripts/stelow advance <next-candidate>` to move state forward.
 
 ### Workflow slice
@@ -351,7 +354,9 @@ the rest of this file (unchanged). Summary:
 
 > Interface gate. Visual review of all interface proposals. Use `visual_review` tool (not bash).
 
-Primary actions (per stages.yaml): `read, write`. Run only the actions that
+Primary actions (per stages.yaml): `read`. Run only the actions that
 produce the artifacts promised in `## Hand-off`; skip anything that does
 not advance the workflow.
+
+<!-- stelow:scope3:end -->
 

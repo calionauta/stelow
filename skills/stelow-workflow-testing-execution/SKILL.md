@@ -374,6 +374,7 @@ Input:
 - **stelow-workflow-testing-ai-code**: Use this BEFORE implementation to generate testing strategy, coverage/risk targets, and test scopes. This execution skill uses those targets as quality gates.
 - `../stelow-workflow-orchestrator/references/cli-tools/subagents.md` — Subagent task structure patterns
 
+<!-- stelow:scope3:begin -->
 ## Entry (mode detection)
 
 When this skill loads, check for the stelow workflow marker:
@@ -398,13 +399,15 @@ stage          : verification
 description    : Verification. Run full test suite, code review, UI audit, browser testing.
 status         : <done|partial|blocked>
 artifacts      : <paths created or modified>
-next-candidate : diff-gate
+next-candidate : <the stage scripts/stelow next reports — run `scripts/stelow next`>
 gate           : none
 rework-on      : execution
 ```
 
-Workflow mode: emit the above Hand-off block verbatim, then stop. The
-router skill consumes the next-candidate field and calls
+Workflow mode: emit the above Hand-off block verbatim, then stop. Fill
+`next-candidate` from `scripts/stelow next`: it is the workflow's own
+answer, already accounting for this run's intent route and review mode.
+The router skill consumes the next-candidate field and calls
 `scripts/stelow advance <next-candidate>` to move state forward.
 
 ### Workflow slice
@@ -414,7 +417,9 @@ the rest of this file (unchanged). Summary:
 
 > Verification. Run full test suite, code review, UI audit, browser testing.
 
-Primary actions (per stages.yaml): `read, write`. Run only the actions that
+Primary actions (per stages.yaml): `bash, write`. Run only the actions that
 produce the artifacts promised in `## Hand-off`; skip anything that does
 not advance the workflow.
+
+<!-- stelow:scope3:end -->
 

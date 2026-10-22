@@ -106,37 +106,45 @@
     "review_modes": {
       "Auto": {
         "skipped": [
-          "selection",
           "plan-gate",
           "diff-gate"
+        ],
+        "no_human_wait": [
+          "selection"
         ]
       },
       "Product Spec Gate": {
         "skipped": [
-          "selection",
           "plan-gate",
           "diff-gate"
+        ],
+        "no_human_wait": [
+          "selection"
         ]
       },
       "Product Spec + Interface Gates": {
         "skipped": [
           "plan-gate",
           "diff-gate"
-        ]
+        ],
+        "no_human_wait": []
       },
       "Product Spec + Interface + Scopes": {
         "skipped": [
           "plan-gate",
           "diff-gate"
-        ]
+        ],
+        "no_human_wait": []
       },
       "Product Spec + Interface + Tech Review": {
         "skipped": [
           "diff-gate"
-        ]
+        ],
+        "no_human_wait": []
       },
       "Product Spec + Interface + Tech Review + Code Diff": {
-        "skipped": []
+        "skipped": [],
+        "no_human_wait": []
       }
     },
     "entry_stages": {

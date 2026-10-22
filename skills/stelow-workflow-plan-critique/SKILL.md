@@ -395,6 +395,7 @@ proceeding to tech planning.
 - **stelow-workflow-codebase-critique**: For codebase architecture critique (use instead when you have a code directory)
 - **stelow-workflow-execution-critique**: Post-implementation audit (runs after execution to verify completeness)
 
+<!-- stelow:scope3:begin -->
 ## Entry (mode detection)
 
 When this skill loads, check for the stelow workflow marker:
@@ -416,25 +417,30 @@ In **workflow mode**, skip to `### Workflow slice` and emit a complete
 
 ```
 stage          : critique
-description    : Product review. Decides whether the proposal is accepted, rejected, or reworked. 
+description    : Plan critique. Pre-flight check before gate.
 status         : <done|partial|blocked>
 artifacts      : <paths created or modified>
-next-candidate : gate
+next-candidate : <the stage scripts/stelow next reports — run `scripts/stelow next`>
 gate           : none
 rework-on      : shape
 ```
 
-Workflow mode: emit the above Hand-off block verbatim, then stop. The
-router skill consumes the next-candidate field and calls
+Workflow mode: emit the above Hand-off block verbatim, then stop. Fill
+`next-candidate` from `scripts/stelow next`: it is the workflow's own
+answer, already accounting for this run's intent route and review mode.
+The router skill consumes the next-candidate field and calls
 `scripts/stelow advance <next-candidate>` to move state forward.
 
 ### Workflow slice
 
-Workflow mode for the **plan-gate** stage. Standalone behavior lives in
+Workflow mode for the **critique** stage. Standalone behavior lives in
 the rest of this file (unchanged). Summary:
 
-> Tech plan gate. Visual review of spec-tech.md via visual review. Only in Product Spec + Interface + Tech Review or Code Diff mode.
+> Plan critique. Pre-flight check before gate.
 
 Primary actions (per stages.yaml): `read, write`. Run only the actions that
 produce the artifacts promised in `## Hand-off`; skip anything that does
 not advance the workflow.
+
+<!-- stelow:scope3:end -->
+
