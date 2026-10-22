@@ -3,6 +3,26 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.83.2-alpha] - 2026-10-22
+
+### Added
+
+- **`scripts/mutation-gate.py` — does the suite actually pin the rules?**
+  The off-the-shelf mutators cover JavaScript; this repo's rules live in
+  `scripts/stelow`, a shell script with Python inside it, so the tools that
+  would answer the question do not reach it. Each entry in the catalog is a
+  SEMANTIC change to one rule, and the gate requires the suite to FAIL under
+  it. A surviving mutant is a rule nobody pins. `npm run test:mutation`.
+
+### Fixed
+
+- **The drift gate was only tested on the green path.** The suite proved
+  that `generate-transitions.py --check` PASSES on a clean tree — which a
+  neutered gate also does. Nothing checked the refusal, so the one check
+  between a hand edit and a published mirror could be turned off and the
+  suite stayed green. The mutation gate caught exactly this: the
+  `generator-drift-allowed` mutant survived until the refusal had a test.
+
 ## [0.83.1-alpha] - 2026-10-22
 
 ### Changed
