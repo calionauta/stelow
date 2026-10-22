@@ -16,13 +16,18 @@ tasks:
 # that mattered (the proposals WITH wireframes) never reached the interface
 # gate. The gate is a VISUAL review; an option with no wireframe cannot be
 # looked at.
+# Breadth controls the COUNT of proposals, never whether they happen: the
+# decide chain depends on them, so gating the producer on fan-out skipped the
+# whole recipe at breadth 1 (the host's width check refuses a recipe that can
+# collapse to zero tasks). At breadth 1 this generates one proposal — which is
+# what the visual gate needs — and the contrast compares whatever exists.
 - id: alternatives
   skill: stelow-workflow-interface-alternatives
   depends_on: []
   output: interfaces/alternatives.json
   output_schema: schemas/interface-alternatives.json
+  when: always
   human_boundary: none
-  when: exploration_supports_fanout
   failure_policy: fail
   requirements:
   - fanout

@@ -3,6 +3,30 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.81.0-alpha] - 2026-10-22
+
+### Fixed
+
+- **A single-breadth run executed nothing.** The proposal task in the
+  `interface-contrast` and `architecture-contrast` recipes was gated on
+  `exploration_supports_fanout`, and every task after it depends on it. At
+  breadth 1 the gate skipped the producer, the cascade skipped the verify, the
+  hybrid, the contrast and the readable interface — the whole stage silently
+  ran zero tasks. Breadth controls the **count** of proposals, never whether
+  they happen: at breadth 1 the recipe now generates one proposal (which is
+  what the visual gate needs) and the contrast compares whatever exists. The
+  gate is now `when: always`, and the standalone alternatives recipes follow
+  the same rule so the two copies cannot disagree.
+- **Verification silently lost its report without a UI.** The report depended
+  on the optional `ui-review` task, and the cascade skips a dependent of a
+  skipped task — so any non-UI project ran tests and then produced no
+  `verification/report.md` at all. The report now depends only on the tests
+  and reads the UI review when it exists.
+- **The graph rule is now a test.** "An unconditional task must not depend on
+  a conditional one" is checked for every recipe in the generated catalog, so
+  the next recipe that reintroduces the shape fails instead of shipping a
+  stage that runs zero tasks.
+
 ## [0.80.0-alpha] - 2026-10-22
 
 ### Changed

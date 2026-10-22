@@ -11,8 +11,8 @@ tasks:
   depends_on: []
   output: interfaces/alternatives.json
   output_schema: schemas/interface-alternatives.json
+  when: always
   human_boundary: none
-  when: exploration_supports_fanout
   failure_policy: fail
   requirements:
   - fanout
