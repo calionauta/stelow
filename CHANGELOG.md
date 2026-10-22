@@ -3,6 +3,16 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.83.1-alpha] - 2026-10-22
+
+### Changed
+
+- **The helper read the same state file six times per transition.** Every
+  key cost its own python process, so a transition parsed the state six
+  times and the mode policy was read in a seventh. The knobs now come from
+  one parse, and the mode check moved into the query that needs it — the
+  reason for a refusal is now written by one place instead of two.
+
 ## [0.83.0-alpha] - 2026-10-22
 
 ### Fixed

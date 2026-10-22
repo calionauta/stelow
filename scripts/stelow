@@ -99,6 +99,51 @@ sys.exit(1)
 PY
 }
 
+# The state's scalars, read in ONE pass.
+#
+# Every key used to cost its own python process: a transition read six of
+# them — the same file, parsed six times — and every host that asks the
+# helper "what is legal from here" paid for all six. One parse, one process.
+#
+# Prints "key<TAB>value" per key that is present; a key that is absent is
+# simply not printed, which is how the callers tell "missing" from "empty".
+yaml_get_all() {
+  local file="$1"; shift
+  [ -f "$file" ] || return 1
+  python3 - "$file" "$@" <<'PYEOF'
+import sys, re
+path, keys = sys.argv[1], sys.argv[2:]
+text = open(path).read()
+m = re.match(r"^---\n(.*?)\n---", text, re.DOTALL)
+if not m: sys.exit(1)
+lines = m.group(1).splitlines()
+for key in keys:
+    pattern = re.compile(r"^" + re.escape(key) + r":\s*(.*)$")
+    nested = re.compile(r"^  " + re.escape(key) + r":\s*(.*)$")
+    value = None
+    # First pass: top-level scalar match.
+    for line in lines:
+        mm = pattern.match(line)
+        if mm:
+            value = mm.group(1).strip()
+            break
+    # Second pass: a scalar one level under a "config:" block.
+    if value is None:
+        in_block = None
+        for line in lines:
+            if re.match(r"^[A-Za-z_][\w-]*:\s*$", line):
+                in_block = line.rstrip(":").strip()
+                continue
+            if in_block == "config":
+                mm = nested.match(line)
+                if mm:
+                    value = mm.group(1).strip()
+                    break
+    if value is not None:
+        print(key + "\t" + value)
+PYEOF
+}
+
 status_text() {
   local name intent stage status quality exploration_count exploration_hybrid review_mode
   name=$(yaml_get name "$STATE" 2>/dev/null || echo "?")
@@ -244,7 +289,6 @@ lock_acquire() {
 # The transition facts, read from the transitions reference — the one file that
 # carries the graph, the intent routes and the review-mode policy.
 #
-#   transition_facts modes                                  -> the known review modes
 #   transition_facts allowed <stage> <intent> <mode> <quality> <exploration> <appetite>
 #                                                          -> the legal candidates
 #   transition_facts redirect <candidate> <intent> <mode>  -> the successor of a
@@ -302,10 +346,6 @@ def parse_route(text, intent):
     return [part.strip() for part in m.group(1).split("→")]
 
 modes = parse_review_modes(text)
-
-if query == "modes":
-    print("\n".join(modes))
-    sys.exit(0)
 
 if query == "redirect":
     candidate, intent, mode = args[0], args[1], args[2]
@@ -443,27 +483,40 @@ TRANSITION_APPETITE=""
 
 resolve_transition_context() {
   [ -f "$STATE" ] || die "state.md not found at $STATE (run /stelow entry first)"
-  TRANSITION_STAGE=$(yaml_get current_stage "$STATE" 2>/dev/null) || die "state.md has no current_stage (run /stelow entry first)"
-  TRANSITION_INTENT=$(yaml_get intent "$STATE" 2>/dev/null || echo "unknown")
-  TRANSITION_MODE=$(yaml_get review_mode "$STATE" 2>/dev/null || true)
+  # One parse of the state, not one per key.
+  local knobs
+  knobs=$(yaml_get_all "$STATE" current_stage intent review_mode quality exploration_count appetite) || die "state.md has no readable front-matter"
+  TRANSITION_STAGE=""
+  TRANSITION_INTENT=""
+  TRANSITION_MODE=""
+  TRANSITION_QUALITY=""
+  TRANSITION_EXPLORATION=""
+  TRANSITION_APPETITE=""
+  while IFS="$(printf '\t')" read -r key value; do
+    case "$key" in
+      current_stage) TRANSITION_STAGE="$value" ;;
+      intent) TRANSITION_INTENT="$value" ;;
+      review_mode) TRANSITION_MODE="$value" ;;
+      quality) TRANSITION_QUALITY="$value" ;;
+      exploration_count) TRANSITION_EXPLORATION="$value" ;;
+      appetite) TRANSITION_APPETITE="$value" ;;
+    esac
+  done <<< "$knobs"
+  [ -n "$TRANSITION_STAGE" ] || die "state.md has no current_stage (run /stelow entry first)"
+  [ -n "$TRANSITION_INTENT" ] || TRANSITION_INTENT="unknown"
   [ -n "$TRANSITION_MODE" ] || die "state.md has no review_mode (run stelow seed, or set config.review_mode)"
-  TRANSITION_QUALITY=$(yaml_get quality "$STATE" 2>/dev/null || true)
-  TRANSITION_EXPLORATION=$(yaml_get exploration_count "$STATE" 2>/dev/null || true)
-  TRANSITION_APPETITE=$(yaml_get appetite "$STATE" 2>/dev/null || true)
-  local known_modes
-  known_modes=$(transition_facts modes) || die "could not read the review-mode policy"
-  if ! printf '%s\n' "$known_modes" | grep -qxF -- "$TRANSITION_MODE"; then
-    die "unknown review_mode '$TRANSITION_MODE' (known: $(printf '%s\n' "$known_modes" | paste -sd, -))"
-  fi
 }
 
 # The candidates `advance` accepts from the current stage, under the current
-# review mode. Exits 1 when the stage has no transition at all.
+# review mode. Exits 1 when the stage has no transition at all, and prints
+# the reason on stderr when it is the mode that is wrong (the vocabulary is
+# closed, so an unknown mode is a bug, not a lenient default).
 legal_candidates() {
   transition_facts allowed \
     "$TRANSITION_STAGE" "$TRANSITION_INTENT" "$TRANSITION_MODE" \
     "$TRANSITION_QUALITY" "$TRANSITION_EXPLORATION" "$TRANSITION_APPETITE"
 }
+
 
 do_next() {
   # The legal moves from the current stage, under the current review mode.
@@ -475,7 +528,18 @@ do_next() {
   # between the two answers. One owner: the helper asks itself.
   resolve_transition_context
   local allowed forward
-  allowed=$(legal_candidates) || die "no transition defined from stage '$TRANSITION_STAGE'"
+  local reason_file
+  reason_file=$(mktemp)
+  local status
+  allowed=$(legal_candidates 2>"$reason_file") && status=0 || status=$?
+  if [ "$status" -ne 0 ]; then
+    local reason
+    reason=$(cat "$reason_file")
+    rm -f "$reason_file"
+    [ -n "$reason" ] && die "$reason"
+    die "no transition defined from stage '$TRANSITION_STAGE'"
+  fi
+  rm -f "$reason_file"
   forward=$(transition_facts forward \
     "$TRANSITION_STAGE" "$TRANSITION_INTENT" "$TRANSITION_MODE" \
     "$TRANSITION_QUALITY" "$TRANSITION_EXPLORATION" "$TRANSITION_APPETITE") || forward=""
@@ -501,7 +565,18 @@ do_advance() {
   [ -n "$candidate" ] || die "advance requires a <candidate> argument"
   resolve_transition_context
   local current="$TRANSITION_STAGE" intent="$TRANSITION_INTENT" review_mode="$TRANSITION_MODE" allowed
-  allowed=$(legal_candidates) || die "no transition defined from stage '$current'"
+  local reason_file
+  reason_file=$(mktemp)
+  local status
+  allowed=$(legal_candidates 2>"$reason_file") && status=0 || status=$?
+  if [ "$status" -ne 0 ]; then
+    local reason
+    reason=$(cat "$reason_file")
+    rm -f "$reason_file"
+    [ -n "$reason" ] && die "$reason"
+    die "no transition defined from stage '$current'"
+  fi
+  rm -f "$reason_file"
 
   # A stage that does not run in this review mode must never be entered: it
   # parks the worker waiting for a review nobody configured. Refuse with the
