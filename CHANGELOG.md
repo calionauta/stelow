@@ -3,6 +3,62 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.83.0-alpha] - 2026-10-22
+
+### Fixed
+
+- **The review-mode skip layer had three owners.** `stages.yaml` declared
+  which stages a review mode skips, the transitions template hand-tabulated
+  the same fact in prose, and the helper enforced a third copy in a `case`
+  statement. Editing `stages.yaml` changed the published catalog and left
+  the helper running the old rules; only the two gates somebody remembered
+  to hardcode were refused, and every other skipped stage was enterable. The
+  generator now renders the machine-readable policy, the gate-condition
+  table and the per-gate prose from the one list, and the helper parses
+  that instead of a `case`.
+- **One list said two things.** `selection` sat in the same list as
+  `plan-gate`, so "skipped" meant both "does not run" and "runs without a
+  human". But `selection` RUNS in Auto — the agent decides the pick — and
+  it produces the two artifacts the architecture stage reads. The kinds are
+  now named: `skipped` (the stage does not run) and `no_human_wait` (it
+  runs, but nobody is asked to pick). The validator refuses a mode that
+  declares only one, and a stage that claims to be both.
+- **An unknown review mode skipped enforcement entirely.** The vocabulary is
+  closed and owned by `stages.yaml`, so a mode the helper did not know used
+  to leave the worker free to walk into a stage that does not run in its
+  mode, and park there. It now fails fast, naming the modes it knows.
+- **Every skill's hand-off block claimed it needed no approval.** The script
+  that writes the blocks parsed `stages.yaml` by hand and never read
+  `requires_approval`, so the plan-gate and diff-gate skills told the worker
+  their gate was `none`. The blocks are now generated from the YAML.
+- **A workflow skill's stage was found by accident.** The script stripped
+  only the `stelow-product-` prefix, so every `stelow-workflow-*` skill fell
+  to a substring match: the diff-gate skill (`codebase-critique`) matched
+  `critique` and handed off to the wrong stage. The skill-to-stage mapping
+  now comes from the catalog, which owns it.
+- **The hand-off blocks had no drift check.** The script was a one-shot
+  writer that skipped any skill already carrying a block, so a stage renamed
+  in `stages.yaml` left every shipped skill naming the old one — forever,
+  with a green CI. It is a checked generator now, and `verify:execution`
+  fails on drift.
+- **The next candidate was a copy of a graph edge.** Every hand-off block
+  pre-filled `next-candidate` with a static edge, and that edge is not the
+  same in every review mode: `diff-gate` does not run in Auto and the
+  helper refuses it there. The block now asks the helper.
+- **The router re-derived the transition rule a fourth time.** It parsed
+  `transitions.md` with its own awk and grep — no intent route, no review
+  mode — and accepted moves the helper then refused, so the workflow stalled
+  between the two answers. `stelow next` is the one answer now, computed by
+  the same rule `advance` enforces.
+
+### Added
+
+- **`stelow next`** — the legal moves from the current stage under the
+  current review mode, with the forward move named. `advance` enforces the
+  set; `next` reports it.
+- **`scripts/scope3_blocks.py --check`** — the drift gate for the skills'
+  hand-off blocks, wired into `verify:execution`.
+
 ## [0.82.0-alpha] - 2026-10-22
 
 ### Fixed
