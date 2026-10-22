@@ -23,6 +23,12 @@ def render() -> str:
             if schema_path:
                 task["output_schema_contract"] = json.loads((REPO / schema_path).read_text())
         recipes.append(recipe)
+    # An empty catalog is published as a valid one: the host reads it, finds
+    # no recipe, and runs no stage while every gate reports green. The
+    # transitions generator fails loud on an empty stage list; this one must
+    # too.
+    if not recipes:
+        raise SystemExit("generate-recipe-catalog: no recipes found — refusing to publish an empty catalog")
     return json.dumps({"version": 1, "recipes": recipes}, indent=2, ensure_ascii=False) + "\n"
 
 

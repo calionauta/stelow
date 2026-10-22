@@ -91,7 +91,10 @@ describe("seed", () => {
     expect(statePath).toMatch(/\.stelow\/\d{4}-\d{2}-\d{2}\/sw-[a-z0-9-]+\/state\.md$/);
     expect(existsSync(statePath)).toBe(true);
     const blob = readFileSync(statePath, "utf8");
-    expect(blob).toMatch(/current_stage:\s*setup/);
+    // Every intent route in stages.yaml starts at triage, so every intent
+    // starts at triage. The seed used to start every intent but new-product
+    // at setup, which no route declared.
+    expect(blob).toMatch(/current_stage:\s*triage/);
     const tracking = JSON.parse(readFileSync(join(wd.dir, "stelow.json"), "utf8"));
     expect(tracking.workflows).toHaveLength(1);
     expect(tracking.workflows[0].dirHash).toMatch(/^sw-/);
@@ -170,9 +173,9 @@ describe("advance flags", () => {
     const statePath = seeded(wd);
     const env = { STELOW_STATEDIR: statePath.replace(/\/state\.md$/, "") };
     const before = readFileSync(statePath);
-    const r = run(wd, ["advance", "context", "--dry-run"], env);
+    const r = run(wd, ["advance", "select", "--dry-run"], env);
     expect(r.status).toBe(0);
-    expect(r.stdout).toContain("would advance setup -> context");
+    expect(r.stdout).toContain("would advance triage -> select");
     expect(Buffer.compare(before, readFileSync(statePath))).toBe(0);
   });
 
@@ -189,9 +192,9 @@ describe("advance flags", () => {
     const wd = makeWorkdir();
     const statePath = seeded(wd);
     const env = { STELOW_STATEDIR: statePath.replace(/\/state\.md$/, "") };
-    const r = run(wd, ["advance", "context", "--json"], env);
+    const r = run(wd, ["advance", "select", "--json"], env);
     expect(r.status).toBe(0);
-    expect(JSON.parse(r.stdout)).toEqual({ advanced_to: "context", previous_stage: "setup" });
+    expect(JSON.parse(r.stdout)).toEqual({ advanced_to: "select", previous_stage: "triage" });
   });
 });
 

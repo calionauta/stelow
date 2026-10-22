@@ -3,7 +3,7 @@
 ## Hard Constraints (NEVER violate)
 
 1. **NEVER skip stages** — Always follow stages/ sequence
-2. **NEVER skip Gate approval** — Visual review via Plannotator is mandatory
+2. **NEVER skip Gate approval** — Visual review is mandatory
 3. **NEVER call tools directly from skills** — Use tool references in references/cli-tools/
 
 ## Safety Boundaries
@@ -14,17 +14,11 @@
 
 ## Tool Restrictions Per Stage
 
-See `skills/stelow-workflow-orchestrator/stages.yaml` for current tool restrictions.
-
-| Stage | Blocked Tools |
-|-------|---------------|
-| triage | edit, write, bash, subagent, agent_browser |
-| setup | bash, write, agent_browser |
-| selection | bash, write, agent_browser |
-| shape | bash, agent_browser |
-| gate | edit, write, bash, subagent, agent_browser |
-| execution | (none - all allowed) |
-| audit | bash |
+See `skills/stelow-workflow-orchestrator/stages.yaml` for the current tool
+restrictions — `blocked_tools` and `allowed_tools` per stage. That file is the
+only copy; a table here was a second owner of the same fact, and it had
+drifted on every row (it named `Plannotator`, a tool the vocabulary no longer
+has, and listed restrictions for stages that allow everything).
 
 ## Enforcement
 

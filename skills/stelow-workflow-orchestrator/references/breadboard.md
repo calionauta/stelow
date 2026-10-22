@@ -181,12 +181,17 @@ never reaches.
 gaps advances with the findings printed. A workflow cannot get past a broken
 map by forgetting to look.
 
-Two severities, and the difference matters:
+Two severities, and the difference matters. Every check below is executable —
+the writer never has to remember it:
 
-| Severity | Meaning | Examples |
+| Severity | Meaning | The checks |
 |---|---|---|
-| **error** | The map is wrong; no judgement needed to agree | unknown id in a wire, duplicate id, `kind` contradicting the id prefix, undeclared place, a violation of `schemas/breadboard.json` |
-| **gap** | The map may be incomplete; the writer decides | a display with no source, a code affordance that connects to nothing, a store nothing reads, a placeholder name, navigation written as containment |
+| **error** | The map is wrong; no judgement needed to agree | ids are unique; the id prefix matches the kind; every wire resolves to a declared id; nothing wires to itself; every affordance belongs to a declared place; every subplace has its parent; navigation lands on a place; the map satisfies `schemas/breadboard.json` |
+| **gap** | The map may be incomplete; the writer decides | a place with nothing to act on; a display with no source; a code affordance that connects to nothing; a store nothing reads; a placeholder name |
+
+The numbered list below is the same set, one rule per line, with the design
+reason each exists. Rules marked *(guidance)* are not checks: they are how to
+read the map, and no runner applies them.
 
 1. **Every display has a source.** A UI affordance with `control: "render"`
    must have something feeding it — an incoming return from a store or a
@@ -196,15 +201,19 @@ Two severities, and the difference matters:
 2. **Every code affordance connects.** It wires out, returns to, or something
    wires into it. A leaf at the end of a call chain is connected by the call
    that reaches it; one with no incoming wire and no outgoing wire is dead
-   code or missing wiring.
+   code or missing wiring. A wire to *itself* does not count: an affordance
+   cannot trigger itself, and a store cannot read itself.
 
-3. **Every store is read.** A store whose own return goes nowhere is state
-   nothing consumes — or its reader is missing from the map.
+3. **Every store is read.** A store whose data never reaches anything outside
+   the store layer is state nothing consumes — or its reader is missing from
+   the map. Following the data flow to the first non-store is what "receives
+   its data" means, so a loop of stores that feeds only itself is a gap even
+   though every store in it declares a reader.
 
-4. **Both flows trace.** Follow the navigation flow (Place to Place) and the
-   data flow (what fills each display). They are orthogonal: navigation can
-   happen without a data change, and a data change can happen without
-   navigation.
+4. **Both flows trace.** *(guidance)* Follow the navigation flow (Place to
+   Place) and the data flow (what fills each display). They are orthogonal:
+   navigation can happen without a data change, and a data change can happen
+   without navigation. Nothing runs this; it is how to read the map you wrote.
 
 5. **Navigation lands on Places.** Reaching a UI affordance in another Place
    is navigation; wiring directly to it hides that the whole screen changed.
@@ -213,7 +222,12 @@ Two severities, and the difference matters:
    move the user.
 
 6. **Names are real.** For code affordances, the actual method or property.
-   `DATABASE` is not a name. `userRepo.save()` is.
+   `DATABASE` is not a name. `userRepo.save()` is. The check refuses an
+   abstraction as a name — `database`, `db`, `api`, `service`, `backend`,
+   `frontend`, `store`, `data`, `server`, `client`, `handler`, `logic`,
+   `helper`, `util`, `utils`, `model`, `component`, `module`, `system`,
+   `thing`, `stuff`, `tbd`, `todo`, `n/a`, `na` — because a name you cannot
+   point at is a name nobody will implement.
 
 7. **Ids are unique, and the prefix matches the kind.** `U…` is UI, `N…` is
    code, `S…` is a store. A `U1` that declares `kind: "code"` is a row the
@@ -229,9 +243,14 @@ Two severities, and the difference matters:
    map the widget renders as a screen of its own, which is the opposite of what
    containment means.
 
-The schema check runs the published contract (`schemas/breadboard.json`) and
-is fail-closed: a property the map invents (`wiresout`) is an error rather
-than a silently ignored field.
+The contract check is fail-closed: a property the map invents (`wiresout`) is
+an error rather than a silently ignored field. `schemas/breadboard.json` is the
+published contract; the helper carries the copy it enforces, because the
+helper has to stay one portable file that a host can run with `bash` and no
+dependencies. The two are bound by a test that **derives its cases from the
+schema** (`tests/integration/breadboard-check.test.ts`): a rule added to the
+schema and not implemented in the helper fails the suite, and so does a rule
+the helper implements that the schema no longer declares.
 
 `--json` prints `{path, ok, counts, contract, problems}` for a host that wants
 to render the verdict itself. Exit codes: `0` valid (gaps allowed), `1` errors
@@ -282,6 +301,12 @@ a scope id and says whether this interface **serves** it or creates
 **friction** (with a note saying where). When no map exists, the field is
 omitted and the contrast brief says why — never invent coverage.
 
+The check verifies the **shape** of that table (ids are strings, notes are
+strings, the field is an array). It does not compare the scope ids with the
+Scope Map: nothing in the map is cross-checked against the scopes, so
+coverage is a claim the writer makes, and the writer is the one who can
+confirm it.
+
 Scope ids and affordance ids are separate namespaces that can look alike: a
 store `S1` and a scope `S1` are unrelated. The coverage table is the only
 place a scope id appears in this map.
@@ -297,11 +322,14 @@ node <stelow-checkout>/scripts/render-diagram.mjs breadboard \
 
 Two views, two jobs:
 
-- `breadboard.md` (from `--emit-markdown`) is what the **visual review**
-  reads: the same tables as this document, plus the diagram source when
+- `breadboard.md` (from `--emit-markdown`) is the **readable view of the map**:
+  the same tables as this document, plus the diagram source when
   `--with-diagram` is set, plus a section listing the checks' findings. It is
   written next to the map and registered by `stelow advance` like any other
-  workflow file.
+  workflow file. No review gate reads it today — the visual review at
+  `int-gate` looks at the alternatives, and the map is written afterwards, at
+  selection — so treat it as the artifact a human opens, not as one a gate
+  consumes.
 - `breadboard.html` (from `--out`) is the durable, self-contained page: inline
   SVG, zoom, light/dark theme, and **no external request**. Send it, open it
   offline, keep it beside the plan.

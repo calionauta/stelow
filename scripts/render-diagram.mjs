@@ -620,7 +620,11 @@ export function assertRenderable(map, path) {
  */
 function readVerdict(inputPath) {
   const helper = join(MODULE_DIR, "stelow");
-  const result = spawnSync(helper, ["check", "breadboard", inputPath, "--json"], { encoding: "utf8" });
+  // `bash "$SELF"`, not "$SELF": hosts sync the helper as a 0644 file and run
+  // it with `bash` (server/runtime/helper-script.ts). Executing it directly
+  // fails on every host with "Permission denied", which turned a documented
+  // degradation into a hard failure.
+  const result = spawnSync("bash", [helper, "check", "breadboard", inputPath, "--json"], { encoding: "utf8" });
   if (result.error) throw new Error(`cannot run the checker at ${helper}: ${result.error.message}`);
   const stdout = (result.stdout ?? "").trim();
   if (!stdout) {

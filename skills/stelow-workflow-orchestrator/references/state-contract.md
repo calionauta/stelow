@@ -85,7 +85,7 @@ second index or filename-based stage inference.
 ### Valid Stage Names
 
 `triage`, `select`, `setup`, `context`, `shape`, `critique`, `gate`,
-`scope`, `interface`, `int-gate`, `selection`, `planning`,
+`scope`, `interface`, `int-gate`, `selection`, `architecture`, `planning`,
 `plan-gate`, `execution`, `verification`, `diff-gate`, `audit`.
 
 ### Valid Stage Statuses
@@ -98,7 +98,8 @@ second index or filename-based stage inference.
 
 ### Valid Review Modes
 
-`Auto` | `Product Spec Gate` | `Product Spec + Interface + Scopes` |
+`Auto` | `Product Spec Gate` | `Product Spec + Interface Gates` |
+`Product Spec + Interface + Scopes` | `Product Spec + Interface + Tech Review` |
 `Product Spec + Interface + Tech Review + Code Diff`.
 
 ### Authorship Rules

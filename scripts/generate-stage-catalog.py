@@ -34,7 +34,6 @@ def catalog(data: dict) -> dict:
         "tools": data["tools"],
         "phases": data["phases"],
         "routes": data.get("routes", {}),
-        "entry_stages": data.get("routes", {}).get("entry_stages", {}),
         "stages": stages,
     }
 

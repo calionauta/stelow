@@ -9,10 +9,10 @@ metadata:
   frequency: weekly
   category: product
   execution:
-    mode: reference
-    recipe: null
-    capabilities: []
-    write_policy: none
+    mode: orchestrated
+    recipe: scope-map
+    capabilities: [pipeline, structured-output]
+    write_policy: artifact
     permission_profile: inherit
   context-cost: medium
   author: calionauta

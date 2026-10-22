@@ -56,7 +56,7 @@ history: []
 - **config.exploration_count** — `1`–`5` (default `3`)
 - **config.exploration_hybrid** — `true` (default whenever count ≥ 2)
 - **config.appetite** — DEPRECATED alias (`Lean` | `Core` | `Complete`), accepted and mapped once, then rewritten to knobs
-- **config.review_mode** — `Auto` (default) | `Product Spec Gate` | `Product Spec + Interface + Scopes` | `Product Spec + Interface + Tech Review + Code Diff`
+- **config.review_mode** — `Auto` (default) | `Product Spec Gate` | `Product Spec + Interface Gates` | `Product Spec + Interface + Scopes` | `Product Spec + Interface + Tech Review` | `Product Spec + Interface + Tech Review + Code Diff`
 - **config.product_type** — `software` (default) | `docs` | `infra` | `data` | `research`
 - **stages** — all 18 stage names; values: `pending` | `in-progress` | `done` | `skipped`
 - **artifacts** — typed list of produced files: `stage`, `kind`, `label`, `path`, `generated_at`; paths are relative to project root
@@ -65,7 +65,7 @@ history: []
 ## Valid stage names
 
 `triage`, `select`, `setup`, `context`, `shape`, `critique`, `gate`,
-`scope`, `interface`, `int-gate`, `selection`, `planning`,
+`scope`, `interface`, `int-gate`, `selection`, `architecture`, `planning`,
 `plan-gate`, `execution`, `verification`, `diff-gate`, `audit`.
 
 ## Rules

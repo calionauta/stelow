@@ -3,10 +3,13 @@
  *
  * The map is the truth; this is the reading view. It exists for two reasons:
  *
- *   1. The visual review gate reviews MARKDOWN. Without this file the gate
- *      never sees the chosen interface's shape — it sees the proposals, not
- *      the map that was picked.
- *   2. A reader without a renderer still gets the whole thing.
+ *   1. A reader without a renderer still gets the whole thing — the tables,
+ *      the two flows kept apart, and the checks' findings.
+ *   2. The findings travel with the map, so whoever opens it sees what the
+ *      checker said without running the checker.
+ *
+ * No review gate reads this file today: the visual review at `int-gate` looks
+ * at the alternatives, and the map is written afterwards, at selection.
  *
  * The structure follows the MAP, not a narrative: places in order, each with
  * the affordances inside it, then the two flows kept apart. Ryan Singer's rule

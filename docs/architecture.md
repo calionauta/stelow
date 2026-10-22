@@ -64,13 +64,21 @@ It is the source of truth for the interface's shape, and the prose in
 `selected-interface.md` is its commentary — the same "the map is the truth,
 the text explains it" rule the rest of the workflow already follows.
 
-The map's rules live in the portable helper: `stelow check breadboard` runs the
-contract in `schemas/breadboard.json` and the affordance checks, and
+The map's rules live in the portable helper: `stelow check breadboard` enforces
+the contract and the affordance checks, and
 `stelow advance` runs it on the `selection` transition — a map with errors is
 refused, a map with only gaps advances with the findings printed. The placement
 is deliberate: the helper is the one artifact every execution environment runs
 (the host spawns it for `advance`), so the check happens where the map is
 written instead of in repo-side scripting a workflow never reaches.
+
+The helper carries its own copy of the contract rather than reading
+`schemas/breadboard.json` at runtime, because it has to stay one portable file
+a host can run with `bash` and no dependencies. The two are bound by
+`tests/integration/breadboard-check.test.ts`, which derives its cases from the
+schema: a rule the schema declares and the helper does not implement fails the
+suite, and so does a rule the helper implements that the schema no longer
+declares.
 
 `scripts/render-diagram.mjs` projects the map into Mermaid and then into
 views: a self-contained HTML file (inline SVG, zoom, CSS-variable theme, no

@@ -158,12 +158,13 @@ In **workflow mode**, skip to `### Workflow slice` and emit a complete
 ## Hand-off (workflow mode)
 
 ```
-stage          : promotions  (no transitions defined in stages.yaml)
+stage          : shape
+description    : Shape stage. Define run knobs, hill chart, rabbit holes.
 status         : <done|partial|blocked>
 artifacts      : <paths created or modified>
-next-candidate : <next stage from stages.yaml>
-gate           : <none|approval-required>
-rework-on      : <previous stage if rework path>
+next-candidate : critique
+gate           : none
+rework-on      : shape
 ```
 
 Workflow mode: emit the above Hand-off block verbatim, then stop.

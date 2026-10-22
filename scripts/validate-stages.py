@@ -27,6 +27,32 @@ WRITES = {"none", "artifact", "state", "workspace"}
 PARTITIONS = {"none", "dependencies", "target-files", "transitive-impact", "custom"}
 SLUG = re.compile(r"^[a-z][a-z0-9-]*$")
 
+# The verbs the helper parses out of the transitions mirror. A verb outside
+# this set is a typo, and a typo used to vanish: the generator emitted no
+# line for it, the mirror stayed byte-identical, and the stage lost an edge
+# with a green CI.
+TRANSITION_VERBS = {"next", "accept", "reject", "rework", "annotate"}
+
+
+def recipe_conditions() -> set[str]:
+    """The recipe condition vocabulary, read from the schema that owns it.
+
+    `recipes.schema.json` is the single declaration of which `when` values
+    exist. The host that evaluates them reads the same file, so a condition
+    added here is a condition the host has not implemented yet — and the host's
+    own drift gate fails on that. A second list in this script would be a
+    second owner of the same vocabulary, which is how the three host copies
+    drifted apart in the first place.
+    """
+    try:
+        schema = json.loads((REPO / "recipes.schema.json").read_text())
+        declared = schema["$defs"]["condition"]["enum"]
+    except (OSError, json.JSONDecodeError, KeyError, TypeError) as exc:
+        fail(f"recipes.schema.json: cannot read the condition vocabulary: {exc}")
+    if not isinstance(declared, list) or not declared or not all(isinstance(value, str) for value in declared):
+        fail("recipes.schema.json: $defs.condition.enum must be a non-empty list of strings")
+    return set(declared)
+
 
 def fail(message: str) -> None:
     raise ValueError(message)
@@ -73,7 +99,7 @@ def load_recipes() -> dict[str, dict]:
     return recipes
 
 
-def validate_recipe(recipe_id: str, recipe: dict) -> None:
+def validate_recipe(recipe_id: str, recipe: dict, conditions: set[str]) -> None:
     if recipe.get("skill") and not (REPO / "skills" / recipe["skill"] / "SKILL.md").is_file():
         fail(f"recipe {recipe_id}: missing skill {recipe['skill']}")
     if recipe.get("mode") not in MODES:
@@ -112,6 +138,11 @@ def validate_recipe(recipe_id: str, recipe: dict) -> None:
             fail(f"recipe {recipe_id}/{task_id}: invalid human_boundary")
         if not isinstance(task.get("when"), str) or not task["when"]:
             fail(f"recipe {recipe_id}/{task_id}: when is required")
+        elif task["when"] not in conditions:
+            fail(
+                f"recipe {recipe_id}/{task_id}: unknown condition {task['when']!r}; "
+                f"known conditions are {sorted(conditions)}"
+            )
         deps = task.get("depends_on", [])
         if not isinstance(deps, list) or any(not isinstance(dep, str) for dep in deps):
             fail(f"recipe {recipe_id}/{task_id}: depends_on must be a string list")
@@ -197,8 +228,9 @@ def validate_stages() -> dict:
     if len(phase_ids) != len(phases) or any(not SLUG.fullmatch(p) for p in phase_ids if p):
         fail("stages.yaml: invalid or duplicate phase")
     recipes = load_recipes()
+    conditions = recipe_conditions()
     for recipe_id, recipe in recipes.items():
-        validate_recipe(recipe_id, recipe)
+        validate_recipe(recipe_id, recipe, conditions)
     stages = data.get("stages")
     if not isinstance(stages, list) or not stages:
         fail("stages.yaml: stages are required")
@@ -233,7 +265,16 @@ def validate_stages() -> dict:
             fail(f"stage {name}: missing recipe {recipe}")
         if execution.get("mode") == "direct" and recipe is not None:
             fail(f"stage {name}: direct stages cannot require a recipe")
+        if recipe is not None and recipes[recipe].get("skill") != skill:
+            fail(
+                f"stage {name}: recipe {recipe} runs skill {recipes[recipe].get('skill')!r}, but this stage "
+                f"is owned by {skill!r} — the recipe and the stage name two different owners"
+            )
         for verb, targets in (stage.get("transitions") or {}).items():
+            if verb not in TRANSITION_VERBS:
+                fail(
+                    f"stage {name}: unknown transition verb {verb!r}; the verbs are {sorted(TRANSITION_VERBS)}"
+                )
             if not isinstance(targets, list) or any(target not in names for target in targets):
                 fail(f"stage {name}: transition {verb} has an unknown target")
         playbook = stage.get("playbook")
@@ -253,7 +294,47 @@ def validate_stages() -> dict:
             fail(f"entry stage {phase}: unknown phase or stage")
     for path in sorted((REPO / "skills").glob("stelow-*/SKILL.md")):
         validate_skill(path, set(recipes))
+    validate_stage_skill_binding(stages, recipes)
     return data
+
+
+def validate_stage_skill_binding(stages: list[dict], recipes: dict[str, dict]) -> None:
+    """A skill that owns ONE stage must agree with that stage about the recipe.
+
+    The stage's `execution` block says how the stage runs the skill; the
+    skill's frontmatter says how the skill runs. A host reading one and a
+    host reading the other must reach the same answer — otherwise the stage
+    runs a recipe the skill does not know about, or the skill runs with no
+    recipe at all and the stage produces nothing while looking successful.
+
+    The orchestrator is exempt: it hosts many stages and has one frontmatter
+    block, so it cannot name ten recipes. Every other single-stage owner has
+    exactly one binding and can be held to it.
+    """
+    owners: dict[str, list[dict]] = {}
+    for stage in stages:
+        owners.setdefault(stage.get("skill"), []).append(stage)
+    for skill, owned in owners.items():
+        if len(owned) != 1 or skill == "stelow-workflow-orchestrator":
+            continue
+        stage = owned[0]
+        recipe = (stage.get("execution") or {}).get("recipe")
+        path = REPO / "skills" / skill / "SKILL.md"
+        if not path.is_file():
+            continue
+        meta = frontmatter(path)
+        declared = (meta.get("metadata", {}).get("execution") or {}).get("recipe")
+        if recipe is None:
+            if declared is not None:
+                fail(
+                    f"stage {stage['name']}: skill {skill} declares recipe {declared!r}, but the stage runs no recipe"
+                )
+            continue
+        if declared != recipe:
+            fail(
+                f"stage {stage['name']}: runs recipe {recipe!r}, but skill {skill} declares "
+                f"recipe {declared!r} — the stage and the skill must name the same recipe"
+            )
 
 
 def main() -> int:

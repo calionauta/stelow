@@ -30,8 +30,9 @@ after any change to verify.
 {{TRANSITIONS:triage:next}}
 {{TRANSITIONS:triage:accept}}
 reject:    (none — stays at triage)
-rework:    (none)
+{{REWORK:triage}}
 gate:      (none — triage has no gate)
+{{ARTIFACTS:triage}}
 ```
 
 ### select
@@ -41,7 +42,7 @@ gate:      (none — triage has no gate)
 {{TRANSITIONS:select:accept}}
 {{TRANSITIONS:select:reject}}
 {{ARTIFACTS:select}}
-rework:    (none)
+{{REWORK:select}}
 gate:      (none)
 ```
 
@@ -52,7 +53,7 @@ gate:      (none)
 {{TRANSITIONS:setup:accept}}
 {{TRANSITIONS:setup:reject}}
 {{ARTIFACTS:setup}}
-rework:    (none)
+{{REWORK:setup}}
 gate:      (none)
 ```
 
@@ -63,7 +64,7 @@ gate:      (none)
 {{TRANSITIONS:context:accept}}
 {{TRANSITIONS:context:reject}}
 {{ARTIFACTS:context}}
-rework:    (none)
+{{REWORK:context}}
 gate:      context:5 — Product Spec Gate and Auto skip this stage
            (other review modes use reduced ask; this affects pipeline
            routing but not the transitions table)
@@ -76,7 +77,7 @@ gate:      context:5 — Product Spec Gate and Auto skip this stage
 {{TRANSITIONS:shape:accept}}
 {{TRANSITIONS:shape:reject}}
 {{ARTIFACTS:shape}}
-rework:    shape    (shape rework — same stage)
+{{REWORK:shape}}    (shape rework — same stage)
 gate:      (none)
 ```
 
@@ -87,7 +88,7 @@ gate:      (none)
 {{TRANSITIONS:critique:accept}}
 {{TRANSITIONS:critique:reject}}
 {{ARTIFACTS:critique}}
-rework:    (none)
+{{REWORK:critique}}
 gate:      (none — critique feeds the gate, gate handles approval)
 ```
 
@@ -98,7 +99,7 @@ gate:      (none — critique feeds the gate, gate handles approval)
 {{TRANSITIONS:gate:accept}}
 {{TRANSITIONS:gate:reject}}
 {{ARTIFACTS:gate}}
-rework:    (none)
+{{REWORK:gate}}
 gate:      requires_approval: true
            approval_tool: visual_review
            Visual approval required before advancing.
@@ -112,7 +113,7 @@ gate:      requires_approval: true
 {{TRANSITIONS:scope:accept}}
 {{TRANSITIONS:scope:reject}}
 {{ARTIFACTS:scope}}
-rework:    (none)
+{{REWORK:scope}}
 gate:      (none)
 ```
 
@@ -123,7 +124,7 @@ gate:      (none)
 {{TRANSITIONS:interface:accept}}
 {{TRANSITIONS:interface:reject}}
 {{ARTIFACTS:interface}}
-rework:    (none)
+{{REWORK:interface}}
 gate:      (none)
 ```
 
@@ -134,7 +135,7 @@ gate:      (none)
 {{TRANSITIONS:int-gate:accept}}
 {{TRANSITIONS:int-gate:reject}}
 {{ARTIFACTS:int-gate}}
-rework:    (none)
+{{REWORK:int-gate}}
 gate:      requires_approval: true
            approval_tool: visual_review
            Visual review of all interface proposals required.
@@ -147,7 +148,7 @@ gate:      requires_approval: true
 {{TRANSITIONS:selection:accept}}
 {{TRANSITIONS:selection:reject}}
 {{ARTIFACTS:selection}}
-rework:    (none)
+{{REWORK:selection}}
 gate:      (none)
 ```
 
@@ -163,7 +164,7 @@ planning stages reading prose where a graph belongs.
 {{TRANSITIONS:architecture:accept}}
 {{TRANSITIONS:architecture:reject}}
 {{ARTIFACTS:architecture}}
-rework:    (none)
+{{REWORK:architecture}}
 gate:      (none)
 ```
 
@@ -177,7 +178,7 @@ that cites the selected architecture. No dedicated architecture gate stage.
 {{TRANSITIONS:planning:accept}}
 {{TRANSITIONS:planning:reject}}
 {{ARTIFACTS:planning}}
-rework:    (none)
+{{REWORK:planning}}
 gate:      (none)
 ```
 
@@ -188,7 +189,7 @@ gate:      (none)
 {{TRANSITIONS:plan-gate:accept}}
 {{TRANSITIONS:plan-gate:reject}}
 {{ARTIFACTS:plan-gate}}
-rework:    (none)
+{{REWORK:plan-gate}}
 gate:      requires_approval: true
            approval_tool: visual_review
            Only in: "Product Spec + Interface + Tech Review",
@@ -204,7 +205,7 @@ gate:      requires_approval: true
 {{TRANSITIONS:execution:accept}}
 {{TRANSITIONS:execution:reject}}
 {{ARTIFACTS:execution}}
-rework:    shape    (full rework path — returns to shape)
+{{REWORK:execution}}    (full rework path — returns to shape)
 gate:      (none)
 ```
 
@@ -215,7 +216,7 @@ gate:      (none)
 {{TRANSITIONS:verification:accept}}
 {{TRANSITIONS:verification:reject}}
 {{ARTIFACTS:verification}}
-rework:    (none)
+{{REWORK:verification}}
 gate:      (none)
 ```
 
@@ -226,7 +227,7 @@ gate:      (none)
 {{TRANSITIONS:diff-gate:accept}}
 {{TRANSITIONS:diff-gate:reject}}
 {{ARTIFACTS:diff-gate}}
-rework:    (none)
+{{REWORK:diff-gate}}
 {{TRANSITIONS:diff-gate:annotate}}
 gate:      requires_approval: true
            approval_tool: visual_review
@@ -242,7 +243,7 @@ next:      (done — workflow complete)
 accept:    (done)
 {{TRANSITIONS:audit:reject}}
 {{ARTIFACTS:audit}}
-rework:    (none)
+{{REWORK:audit}}
 gate:      (none)
 ```
 
@@ -294,16 +295,16 @@ from a missing file glob.
 
 Minimal pipelines (no stage skipped without a gate rule):
 
-**new-product:** triage → select → setup → context → shape → critique → gate → scope → interface → int-gate → selection → architecture → planning → plan-gate → execution → verification → diff-gate → audit
+{{INTENT:new-product}}
 
-**feature:** triage → select → setup → context → shape → critique → gate → scope → interface → int-gate → selection → architecture → planning → plan-gate → execution → verification → diff-gate → audit
+{{INTENT:feature}}
 
-**bugfix:** triage → select → setup → context → shape → critique → gate → execution → verification → audit
+{{INTENT:bugfix}}
 *(interface/int-gate/selection/architecture/planning/plan-gate/diff-gate skipped unless review_mode adds them)*
 
-**refactor:** triage → select → setup → context → planning → plan-gate → execution → verification → audit
+{{INTENT:refactor}}
 
-**investigate:** triage → select → setup → context → audit
+{{INTENT:investigate}}
 
 ---
 

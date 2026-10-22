@@ -6,10 +6,17 @@ Usage:
   python3 scripts/generate-transitions.py --check   # CI gate: exit 1 on drift
 
 What is generated vs curated (see transitions.template.md banner):
-  - GENERATED: {{STAGE_ORDER}} rows and {{TRANSITIONS:<stage>:<verb>}}
-    lines for next/accept/reject/annotate (bare token lists only).
-  - CURATED (pass through verbatim): gate prose, (none) lines, commented
-    rework lines, gate-condition/artifact tables, intent stubs, all headers.
+  - GENERATED: {{STAGE_ORDER}} rows, {{TRANSITIONS:<stage>:<verb>}} lines
+    for next/accept/reject/rework/annotate, {{REWORK:<stage>}} lines,
+    {{ARTIFACTS:<stage>}} lines, and {{INTENT:<intent>}} route lines.
+  - CURATED (pass through verbatim): gate prose, (none) lines, gate-condition
+    table, all headers.
+
+Every layer the runtime PARSES is generated. The helper reads the intent
+route and the rework edges out of this file, so a layer that lived only in the
+template was a second owner of a fact `stages.yaml` already declared: editing
+`routes.intents` changed the published catalog and left the enforced mirror
+byte-identical, with a green CI.
 """
 import re
 import sys
@@ -26,17 +33,21 @@ STAGES_YAML = REPO / "skills/stelow-workflow-orchestrator/stages.yaml"
 TEMPLATE = REPO / "skills/stelow-workflow-orchestrator/references/transitions.template.md"
 OUTPUT = REPO / "skills/stelow-workflow-orchestrator/references/transitions.md"
 
-VERB_ORDER = ("next", "accept", "reject", "annotate")
+VERB_ORDER = ("next", "accept", "reject", "rework", "annotate")
 
 
 def load_stages(path):
-    with open(path) as handle:
-        data = yaml.safe_load(handle)
+    try:
+        with open(path) as handle:
+            data = yaml.safe_load(handle)
+    except (OSError, yaml.YAMLError) as exc:
+        print(f"generate-transitions: cannot read {path}: {exc}", file=sys.stderr)
+        sys.exit(1)
     stages = data.get("stages") or []
     if not stages:
         print("generate-transitions: no stages in stages.yaml", file=sys.stderr)
         sys.exit(2)
-    return stages
+    return stages, data
 
 
 def order_rows(stages):
@@ -54,8 +65,9 @@ def verb_lines(stage):
 
 
 def render():
-    stages = load_stages(STAGES_YAML)
+    stages, data = load_stages(STAGES_YAML)
     by_name = {s["name"]: s for s in stages}
+    intents = ((data.get("routes") or {}).get("intents") or {})
     template = TEMPLATE.read_text().split("\n")
     if template and template[-1] == "":
         template.pop()
@@ -76,7 +88,7 @@ def render():
             for artifact in by_name[name].get("artifacts", []):
                 out.append(f"artifact:   {artifact}")
             continue
-        marker = re.fullmatch(r"\{\{TRANSITIONS:([a-z][a-z0-9-]*):(next|accept|reject|annotate)\}\}", stripped)
+        marker = re.fullmatch(r"\{\{TRANSITIONS:([a-z][a-z0-9-]*):(next|accept|reject|rework|annotate)\}\}", stripped)
         if marker:
             name, verb = marker.group(1), marker.group(2)
             if name not in by_name:
@@ -85,6 +97,32 @@ def render():
             values = (by_name[name].get("transitions") or {}).get(verb) or []
             if values:
                 out.append(f"{verb + ':':<11}{', '.join(values)}")
+            continue
+        # The rework edge. The runtime reads `rework:` out of this file, so it
+        # is generated: a stage whose rework edge lives only in the template is
+        # a second owner of a fact `stages.yaml` declares, and the two can
+        # disagree with a green CI.
+        marker = re.search(r"\{\{REWORK:([a-z][a-z0-9-]*)\}\}", line)
+        if marker:
+            name = marker.group(1)
+            if name not in by_name:
+                print(f"generate-transitions: template references unknown stage '{name}'", file=sys.stderr)
+                sys.exit(1)
+            values = (by_name[name].get("transitions") or {}).get("rework") or []
+            expanded = f"rework:    {', '.join(values)}" if values else "rework:    (none)"
+            out.append(line.replace(marker.group(0), expanded))
+            continue
+        # The intent route. The runtime reads `**<intent>:**` out of this file
+        # to scope which stage a workflow may reach, so the route is generated
+        # from `routes.intents` — the same list the published catalog carries.
+        marker = re.search(r"\{\{INTENT:([a-z][a-z0-9-]*)\}\}", line)
+        if marker:
+            intent = marker.group(1)
+            route = intents.get(intent)
+            if not route:
+                print(f"generate-transitions: stages.yaml declares no route for intent '{intent}'", file=sys.stderr)
+                sys.exit(1)
+            out.append(line.replace(marker.group(0), f"**{intent}:** " + " → ".join(route)))
             continue
         out.append(line)
     return "\n".join(out) + "\n"

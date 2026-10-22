@@ -3,6 +3,76 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.82.0-alpha] - 2026-10-22
+
+### Fixed
+
+- **The intent route the runtime enforces was not the route the source
+  declares.** `stages.yaml` owns `routes.intents`, but the helper parsed the
+  route out of a hand-written prose block in the transitions template, and
+  the `rework` edges were hand-written too. Editing `stages.yaml` changed the
+  published catalog and left the enforced mirror byte-identical, with a
+  green CI: two owners of one fact. The generator now expands the routes and
+  the rework edges from `stages.yaml`, and a test renders a mutated source to
+  prove the mirror moves with it. The regenerated mirror is byte-identical to
+  the committed one — the curated prose happened to agree.
+- **`stelow seed` started every intent but `new-product` at `setup`** — a
+  stage no intent route declares. The entry skill, the routes, and the host
+  all start at `triage`; only the helper disagreed, and a test pinned the
+  wrong answer. The seed now reads the first stage of the intent's route.
+- **The breadboard contract accepted a boolean for a number.** `schemaVersion:
+  true` passed the check, because Python says `True != 1` is False while the
+  contract says a boolean is not a number. The parity test now covers the
+  `type` keyword, which is the gap that let it through.
+- **`advance` could skip the breadboard check in silence.** The
+  pre-condition accepted any file ending in `interfaces/breadboard.json`
+  while the guard resolved two exact paths, so a map parked in a
+  subdirectory satisfied "the artifact exists" and the check was skipped
+  without a word. The guard now checks every map the pre-condition accepts.
+- **A store that only talked to itself counted as read.** A self-wire
+  satisfied the "connects" and "is read" rules, and a loop of stores that
+  feeds only itself passed every check — a map that looked complete and said
+  nothing. A self-wire is now an error; a store whose data never leaves the
+  store layer is a gap.
+- **The scope stage and its skill named different recipes.** `stages.yaml`
+  bound the stage to the `scope-map` recipe while the skill's frontmatter
+  said `recipe: null`, so a host reading one ran what the other did not
+  describe. The skill now names the recipe the stage runs, and the validator
+  refuses a single-stage owner whose frontmatter disagrees.
+- **A transition verb typo vanished.** An unknown verb was accepted by the
+  schema and the validator, and the generator emitted no line for it — the
+  edge disappeared from the enforced mirror with a green CI. The verbs are
+  now enumerated.
+- **A stage's own recipe could name a different skill.** Nothing compared a
+  stage with the recipe it runs, so a rename could leave two owners.
+- **Two shipped hand-off blocks named the wrong stage.** The critique skill
+  handed off to `plan-gate` (skipping `gate`), and the ads skill handed off
+  to `promotions`, which is not a stage at all. Both are fixed, and a test
+  checks every hand-off block against the graph.
+- **The prose lists of valid values had drifted.** The state template said
+  "all 18 stage names" and listed 17 — `architecture` was missing — and both
+  it and the state contract listed 4 of the 6 review modes. The lists now
+  match the catalog, and a test binds them to it.
+- **`doctor` reported "ok" without the transitions reference**, and the
+  advance pre-condition required nothing when the stage had no section. Both
+  failed open; both now fail loud.
+- **The recipe catalog generator published an empty catalog** and exited 0.
+  A host reading it found no recipe for any stage and ran none, with every
+  gate green. It now refuses to publish one.
+- **The renderer ran the helper as an executable** instead of through
+  `bash`, which fails on every host that syncs the helper as a 0644 file.
+
+### Added
+
+- **The recipe condition vocabulary has one owner.** `recipes.schema.json`
+  declares every `when` value a recipe task may carry; the validator reads
+  that declaration instead of keeping its own list, and the generated catalog
+  may only carry declared values. The host evaluates exactly the vocabulary
+  the schema declares.
+- **The two catalog generators are covered by a test.** The transitions
+  mirror had one; the stage and recipe catalogs did not, so `npm test`
+  passed on a catalog that no longer matched its source.
+
 ## [0.81.0-alpha] - 2026-10-22
 
 ### Fixed
