@@ -168,9 +168,9 @@ name the exact tests at risk (TDAD impact subset) and run those.
 
 **If no tests exist:** Create unit tests only for critical business logic (auth, payment, data validation). Skip for CRUD/standard paths.
 
-**Wiring check — exercised, not just present:** a green suite proves nothing if the new tests assert text existence instead of behavior. Reject presence-only assertions (source-text grep/regex, string-presence checks) unless they constrain topology, counts, or refusal shapes. New behavior must be *executed* by a test that fails when the behavior is inverted or removed — verify by hand-mutation (see `stelow-workflow-testing-ai-code`, hand-mutation). Runnable-but-shallow is the most common LLM test failure mode (VibeCheck, Sep 2026: weak assertions and missing edge cases outnumber blocking failures).
+**Wiring check — exercised, not just present:** see `../stelow-workflow-testing-ai-code/references/guard-contract.md` (5 questions). Reject presence-only assertions unless they constrain topology, counts, or refusal shapes.
 
-**Block until tests pass.** Do not proceed with failing tests. BLOCK missing acceptance test — an AC with no mapped test (AC-sem-teste) stops this phase: the case must be described by the human or a fresh-oracle reviewer, written, red-proofed, and only then green — never self-certified by the implementing agent to unblock itself (DeepSWE Oct 2026).
+**Block until tests pass.** Do not proceed with failing tests. BLOCK AC-sem-teste per `../stelow-workflow-testing-ai-code/references/guard-contract.md` — never self-certified by the implementing agent.
 
 ## Phase 4: Parallel Code Review via Subagents
 

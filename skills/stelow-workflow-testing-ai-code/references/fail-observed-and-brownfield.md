@@ -1,5 +1,7 @@
 ## Fail-Observed Guard Guidance (Research-Based)
 
+> Canonical ritual + gates: `guard-contract.md` (same directory). This file keeps research tables and brownfield patterns.
+
 **Empirical findings on TDD with AI agents:**
 
 | Research | Key Finding |

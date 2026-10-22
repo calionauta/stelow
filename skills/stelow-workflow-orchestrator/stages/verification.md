@@ -82,8 +82,8 @@ surface fast. When `sem` is absent, run the full suite directly.
 
 ### Guard red-proof (a passing test proves nothing until it can fail)
 
-A green suite is a claim, not evidence. For every test or guard this
-verification adds or changes, prove it can fail **before** counting it:
+Canonical: `../../stelow-workflow-testing-ai-code/references/guard-contract.md` (ritual, fields, layers).
+A green suite is a claim, not evidence — prove every added/changed guard can fail before counting it:
 
 ```bash
 # Mutate the behavior the test claims to guard, run it, expect failure.
@@ -95,12 +95,7 @@ cp /tmp/foo.bak lib/foo.mjs
 node --test tests/foo.test.mjs   # MUST PASS
 ```
 
-Record the mutation and its result in `verification/tests.json`. A guard you
-did not see fail is a guard you know nothing about — that is how a card ships
-five consecutive cycles where verification finds something every earlier gate
-passed. Cross-check the scope contract freeze evidence: `test_map` covers
-every AC (AC-sem-teste=reject), `freeze_sha` matches the frozen acceptance,
-`red_proof` shows the observed FAIL, `baseline` shows pre-change exits.
+Record the mutation and its result in `verification/tests.json`. Cross-check freeze evidence per `guard-contract.md` (`test_map` / `freeze_sha` / `red_proof` / `baseline`).
 
 **Independence:** the agent that wrote the behavior may not be the only author
 of the test that guards it. Hand a fresh subagent the requirement plus the

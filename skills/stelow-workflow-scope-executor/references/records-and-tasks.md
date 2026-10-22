@@ -1,5 +1,8 @@
 #### 3e-bis. Record convention (claim-proof evidence before close)
 
+> Field contract: `../../stelow-workflow-testing-ai-code/references/guard-contract.md`.
+> This file owns the `## Record` template and task tracking.
+
 **Convention (v1 — advisory, no enforcement):** every completed scope must have a `## Record` section in its iteration-state file (`docs/{YYYY-MM-DD}/{slug}/iteration-state-{SCOPE-ID}.md`). The Record is the **claim-proof artifact** that proves the scope did what it claimed, under the conditions that existed, with the limitations and non-claims spelled out. Without it, the ✅ is unearned.
 
 Template (copy into `iteration-state-{SCOPE-ID}.md` on scope start, fill on close):
@@ -126,11 +129,6 @@ if (wf?.scopes) {
 - Pre-commit hook at `scripts/pre-commit-record.sh` blocks commits with
   completed/done scopes missing `verified` or any of the red-first three
   (`red_proof`, `freeze_sha`, `baseline`).
-- `STELOW_VALIDATE=1` enables runtime validation (see `scripts/pre-commit-record.sh`). The
-  record validators check every scope's `record` and `tasks`
-  before persisting the tracking file.
-- Pre-commit hook at `scripts/pre-commit-record.sh` blocks commits with
-  unverified completed scopes.
 
 #### 3e-ter. Task tracking — Shape Up hill chart inside a scope
 

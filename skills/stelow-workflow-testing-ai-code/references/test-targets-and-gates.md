@@ -1,5 +1,9 @@
 ### Step 4: Generate Quality-Specific Test Targets
 
+> Canonical guard reference: `guard-contract.md` (5 questions, ritual, anti-patterns, gates).
+> This file keeps only quality-specific breadth tables (Steps 4–5) and the mutation-fit rationale (Step 6).
+> Do not copy anti-patterns or gates here — link to `guard-contract.md`.
+
 From research: coverage alone is insufficient. A test suite can execute every line but still miss behavioral bugs, security gaps, and non-deterministic agent failures. Quality selects breadth; risk selects which paths inside that breadth are mandatory. A legacy `appetite:` line maps to `production` for every legacy value.
 
 | Quality | Path Type | Testing Depth |
@@ -43,18 +47,7 @@ For each IN scope in the spec-product, add corresponding test scopes. Quality co
 | Replay past tasks | `test-simulation` | Verify consistency | Brownfield |
 | Impact analysis | `test-impact` | TDAD-style | Brownfield |
 
-Based on MSR 2026 research (agents use mocks 36% vs 26% humans):
-
-**Anti-patterns to flag:**
-- ❌ Mock count > 3 per test
-- ❌ Mocks for simple objects (use real objects instead)
-- ❌ 100% coverage target (coverage ≠ test quality)
-- ❌ Snapshot tests for non-UI components
-- ❌ Single-run validation (agents are non-deterministic)
-- ❌ Same AI for both code AND test generation (circular validation)
-- ❌ Presence tests — assertions that source text exists (grep/regex over code, string-presence checks). They pass on broken logic and break on refactors. Allowed only when they constrain topology, counts, or refusal shapes, with the caught regression named.
-- ❌ Assertion Roulette — many assertions per test with no single behavior under test (AI tests show higher assertion density than human tests, MSR 2026). One behavior per test; a failure must name its cause.
-- ❌ Unreasoned oracles — assertions that execute code without capturing faulty behavior. LLM faults that matter are missed because oracles don't assert the failure mode (Hamidi et al., Sep 2026). Every assertion must answer: "which wrong behavior would make this fail?"
+**Anti-patterns:** canonical list in `guard-contract.md` — do not copy here.
 
 ### Step 6: Evaluate Mutation Testing Fit
 
@@ -82,32 +75,11 @@ Rationale: fix the weak-test signal, then stop — don't chase scores.
 5. Repeat (plateau ~4 iterations)
 ```
 
-**Anti-patterns for mutation testing with AI code:**
-- ❌ Same model that wrote code generates tests AND judges equivalent mutants (circular bias)
-- ❌ Full-suite mutation as per-PR gate (hours of CI, Zenseact 2023)
-- ❌ Any score target as a goal — no minimum is owed (not 50%, not 70%); stop when the weak-test signal is exhausted
-- ❌ No equivalent-mutant filter (>50% survival = noise, Facebook 2020)
-- ❌ Chasing 100% mutation score (adequacy is not the goal — kill the weak-test signal, then stop)
+**Mutation anti-patterns:** canonical list in `guard-contract.md` — do not copy here.
 
 ### Step 7: Create CI/CD Gates
 
-```yaml
-GATES:
-  critical_path_coverage:
-    condition: "missing required tests"
-    action: BLOCK
-    rationale: "Critical paths need executable regression checks"
-  
-  security_findings:
-    condition: "> 0 on critical paths"
-    action: BLOCK
-    rationale: "45% of AI code contains vulnerabilities (Veracode 2025)"
-  
-  flaky_rate:
-    condition: "> 5%"
-    action: WARN
-    rationale: "Agents generate non-deterministic tests"
-```
+Canonical table in `guard-contract.md` — do not copy here.
 
 ---
 

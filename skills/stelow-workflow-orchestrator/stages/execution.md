@@ -186,27 +186,8 @@ The columns that remain are the enforcement that does run, per scope type:
 
 ### execution:20 — Testing Gates (AI-Aware Testing for Software Products)
 
-**For test-* scopes, hard blocks are enforced:**
-
-| Gate | Condition | Action | Rationale |
-|------|-----------|--------|----------|
-| **Critical Path Tests** | missing required tests | 🔴 BLOCK | AI code has 1.7x more bugs; critical paths need executable regression checks |
-| **Security Findings** | security_findings > 0 on critical paths | 🔴 BLOCK | 45% of AI code contains vulnerabilities (Veracode 2025) |
-| **Flaky Tests** | flaky_rate > 5% | 🟡 WARN | Agents generate non-deterministic tests |
-| **Test Execution** | duration > 10min | 🟡 WARN | CI/CD pipeline impact |
-
-**Security scanning:**
-- Run SAST on every commit for critical paths
-- Block if CVSS >= 7.0 vulnerabilities found
-- 2.5x more critical vulnerabilities in AI code (ACM TOSEM)
-
-**Anti-patterns to detect:**
-- ❌ Over-mocking (>3 mocks per test) — agents use mocks 36% vs 26% for humans
-- ❌ 100% coverage target — coverage ≠ test quality
-- ❌ Single-run validation — agents are non-deterministic
-- ❌ Snapshot tests for non-UI components
-
-See the `stelow-workflow-testing-ai-code` skill
+Canonical gates + anti-patterns: `../../stelow-workflow-testing-ai-code/references/guard-contract.md`.
+For test-* scopes, hard blocks enforced per that contract. See the `stelow-workflow-testing-ai-code` skill.
 
 ## Execution — AUTOMATIC
 
