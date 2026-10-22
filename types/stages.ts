@@ -87,6 +87,30 @@ export interface StageRoute {
   intents?: Record<string, string[]>;
   review_modes?: Record<string, ReviewModePolicy>;
   entry_stages?: Record<string, string>;
+  stage_policies?: StagePolicy[];
+}
+
+/**
+ * A rule that removes a stage under a condition of the run knobs.
+ *
+ * `when` is a conjunction: every key must hold, and the value is the set
+ * of allowed values. `any_of` adds a disjunction inside it: at least one
+ * of its keys must hold.
+ */
+export interface StageSkipCondition {
+  [knob: string]: string[] | Record<string, string[]>;
+  any_of?: Record<string, string[]>;
+}
+
+/**
+ * One stage's policy: when it does not run, and how much it asks when it
+ * does. The gate and the published matrix are both rendered from this.
+ */
+export interface StagePolicy {
+  stage: string;
+  id: string;
+  skip?: { when: StageSkipCondition };
+  ask?: Record<string, "reduced" | "full">;
 }
 
 export interface Stage {
@@ -125,6 +149,7 @@ export interface StagesConfig {
     intents?: Record<string, string[]>;
     review_modes?: Record<string, ReviewModePolicy>;
     entry_stages?: Record<string, string>;
+    stage_policies?: StagePolicy[];
   };
   stages: Stage[];
 }

@@ -20,13 +20,15 @@ Before executing `context:10` or `context:20`, check the declared quality and re
 - If intent is `refactor` or `bugfix` AND the request carries no product/domain signals (none of the `context:20` signal phrases, no pricing/growth/trust/marketplace/discovery language) AND the baseline is verifiable (typecheck, lint, and tests runnable in the workspace): **Reduced ask** regardless of quality — present the 5 strategic approaches as opt-in with the one-line rationale "refactor/bugfix with a verifiable baseline — strategic analyses are usually overhead here", no automatic parallel subagents. Log the rationale to `session.log`.
 - Otherwise: fall through to the quality/mode matrix below.
 
-**Gate matrix:**
+**Gate matrix** (a decision table — the FIRST matching row wins):
 
-| Quality | Review Mode | `context:10` (Strategic Approaches — 5 options) | `context:20` (Domain Libraries — 8 options) |
-|---|---|---|---|
-| `experimental` | `Auto` | **Skip** entire Context stage → go directly to `shape:10` | **Skip** (not reached) |
-| `experimental` | `Product Spec Gate` / `Product Spec + Interface Gates` / `Product Spec + Interface + Scopes` / `Product Spec + Interface + Tech Review` / `Product Spec + Interface + Tech Review + Code Diff` | **Reduced ask**: present all 5 strategic approaches, but mark execution as opt-in per approach (no automatic parallel subagents) | **Reference-only**: detect domain signals and load the 8 libraries as passive context for Shape/Scope; do not execute subagents per library |
-| `production` | any | **Full ask** (current behavior): present all 5, execute selected in parallel, consolidate into `strategic-insights.md` | **Full detect + execute**: 1..N of the 8 libraries via parallel subagents, inject into Shape/Scope/Interface |
+<!-- stelow:policy:begin -->
+| Condition | Review Mode | `context:10` (Strategic Approaches — 5 options) | `context:20` (Domain Libraries — 8 options) |
+|---|---|---|---|---|
+| `quality` is `experimental` or `exploration_count` is `1` | `Auto` | **Skip** entire Context stage → go directly to `shape:10` | **Skip** (not reached) |
+| `quality` is `experimental` | any | **Reduced ask**: present all 5 strategic approaches, but mark execution as opt-in per approach (no automatic parallel subagents) | **Reference-only**: detect domain signals and load the 8 libraries as passive context for Shape/Scope; do not execute subagents per library |
+| `quality` is `production` | any | **Full ask** (current behavior): present all 5, execute selected in parallel, consolidate into `strategic-insights.md` | **Full detect + execute**: 1..N of the 8 libraries via parallel subagents, inject into Shape/Scope/Interface |
+<!-- stelow:policy:end -->
 
 **Skip log (when `experimental` + `Auto`):**
 

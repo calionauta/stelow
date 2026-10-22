@@ -288,6 +288,26 @@ gate:      (none)
 
 ---
 
+## Stage Skips
+
+<!-- generated from stages.yaml routes.stage_policies — do not edit -->
+
+The helper parses this block. A rule names a stage that does NOT
+run while its condition holds: the stage is refused, and the stage
+before it moves straight to the stage after it.
+
+`when` is a conjunction: every key must hold, and the value is the
+set of allowed values. `any_of` adds a disjunction inside it: at
+least one of its keys must hold.
+
+stage_skip: context-spike
+stage: context
+when: review_mode Auto
+any_of: quality experimental
+any_of: exploration_count 1
+
+---
+
 ## Gate Conditions by review_mode
 
 | Stage | review_mode | Blocked? | Gate rule |

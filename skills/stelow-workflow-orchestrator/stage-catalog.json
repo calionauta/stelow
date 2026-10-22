@@ -152,7 +152,32 @@
       "planning": "critique",
       "execution": "execution",
       "review": "diff-gate"
-    }
+    },
+    "stage_policies": [
+      {
+        "stage": "context",
+        "id": "context-spike",
+        "skip": {
+          "when": {
+            "review_mode": [
+              "Auto"
+            ],
+            "any_of": {
+              "quality": [
+                "experimental"
+              ],
+              "exploration_count": [
+                1
+              ]
+            }
+          }
+        },
+        "ask": {
+          "experimental": "reduced",
+          "production": "full"
+        }
+      }
+    ]
   },
   "stages": [
     {

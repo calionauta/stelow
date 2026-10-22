@@ -339,6 +339,62 @@ def parse_review_modes(text):
                 modes[current][m.group(1)] = [v.strip() for v in value.split(",") if v.strip()]
     return modes
 
+def parse_stage_skips(text):
+    """The stage-skip rules, parsed out of the generated block.
+
+    A rule names a stage that does NOT run while its condition holds. The
+    condition is a conjunction of `when` keys plus an optional `any_of`
+    disjunction, and the rule comes from stages.yaml — the same source the
+    published matrix is rendered from, so the gate and the policy cannot
+    disagree.
+    """
+    section = re.search(r"^## Stage Skips\s*$(.*?)(?=^## )", text, re.MULTILINE | re.DOTALL)
+    if not section:
+        fail("transitions reference has no '## Stage Skips' section — regenerate it "
+             "(python3 scripts/generate-transitions.py)")
+    rules, current = [], None
+    for line in section.group(1).splitlines():
+        m = re.match(r"^stage_skip:\s*(\S+)\s*$", line)
+        if m:
+            current = {"id": m.group(1), "stage": None, "when": {}, "any_of": {}}
+            rules.append(current)
+            continue
+        if current is None:
+            continue
+        m = re.match(r"^stage:\s*(\S+)\s*$", line)
+        if m:
+            current["stage"] = m.group(1)
+            continue
+        m = re.match(r"^when:\s*(\S+)\s*(.*)$", line)
+        if m:
+            current["when"][m.group(1)] = [v.strip() for v in m.group(2).split(",") if v.strip()]
+            continue
+        m = re.match(r"^any_of:\s*(\S+)\s*(.*)$", line)
+        if m:
+            current["any_of"][m.group(1)] = [v.strip() for v in m.group(2).split(",") if v.strip()]
+    for rule in rules:
+        if not rule["stage"]:
+            fail(f"stage skip '{rule['id']}' names no stage")
+    return rules
+
+def condition_holds(condition, any_of, knobs):
+    """The condition shape: a conjunction, plus an optional disjunction."""
+    for key, allowed in condition.items():
+        if str(knobs.get(key, "")) not in allowed:
+            return False
+    if not any_of:
+        return True
+    return any(str(knobs.get(key, "")) in allowed for key, allowed in any_of.items())
+
+def absent_by_policy(rules, knobs):
+    """The stages that do not run under the run knobs."""
+    absent = []
+    for rule in rules:
+        if condition_holds(rule["when"], rule["any_of"], knobs):
+            if rule["stage"] not in absent:
+                absent.append(rule["stage"])
+    return absent
+
 def parse_route(text, intent):
     m = re.search(r"^\*\*" + re.escape(intent) + r":\*\*\s*(.+)$", text, re.MULTILINE)
     if not m:
@@ -347,29 +403,59 @@ def parse_route(text, intent):
 
 modes = parse_review_modes(text)
 
+def knobs_from(args):
+    """The run knobs, as the strings the state carries them."""
+    quality = args[3] if len(args) > 3 else ""
+    exploration = args[4] if len(args) > 4 else ""
+    appetite = args[5] if len(args) > 5 else ""
+    return {"quality": quality, "exploration_count": exploration, "appetite": appetite}
+
+def absent_stages(mode, knobs):
+    """The stages that do not run: the mode's own, plus the policy's.
+
+    Two kinds, and the difference matters: a review mode says the stage
+    does not exist in that mode (nobody to approve it), and a stage policy
+    says it does not exist under a condition of the run knobs (the spike
+    has no question to answer). Both leave a hole in the route, and both
+    are answered the same way: the stage is refused, and the stage before
+    it moves straight to the stage after it.
+
+    Returns the stages with the kind that removed each, so the refusal
+    can say WHY.
+    """
+    absent = {stage: "mode" for stage in modes[mode]["skipped"]}
+    # The condition may name the review mode, so the mode is one of the
+    # knobs the rule is evaluated against.
+    scoped = dict(knobs)
+    scoped["review_mode"] = mode
+    for stage in absent_by_policy(parse_stage_skips(text), scoped):
+        absent.setdefault(stage, "policy")
+    return absent
+
 if query == "redirect":
     candidate, intent, mode = args[0], args[1], args[2]
     if mode not in modes:
         fail(f"unknown review_mode '{mode}' (known: {', '.join(modes)})")
     route = parse_route(text, intent) or []
-    skipped = modes[mode]["skipped"]
-    if candidate not in skipped:
+    absent = absent_stages(mode, knobs_from(args))
+    if candidate not in absent:
         sys.exit(0)                      # not refused here
+    successor = "(the stage after it)"
     if candidate in route:
         idx = route.index(candidate)
         if idx + 1 < len(route):
-            print(route[idx + 1])
-            sys.exit(0)
-    print("(the stage after it)")
+            successor = route[idx + 1]
+    print(successor + "\t" + absent[candidate])
     sys.exit(0)
 
 if query not in ("allowed", "forward"):
     fail(f"transition_facts: unknown query '{query}'")
 
-stage, intent, mode, quality, exploration, appetite = args[0], args[1], args[2], args[3], args[4], args[5]
+stage, intent, mode = args[0], args[1], args[2]
 if mode not in modes:
     fail(f"unknown review_mode '{mode}' (known: {', '.join(modes)})")
-skipped = modes[mode]["skipped"]
+knobs = knobs_from(args)
+skipped = list(absent_stages(mode, knobs))
 
 block = re.search(r"^### " + re.escape(stage) + r"\s*\n(.*?)(?=^### |\Z)", text, re.MULTILINE | re.DOTALL)
 if not block:
@@ -439,15 +525,6 @@ for skipped_stage in skipped:
         continue
     if route[idx - 1] == stage:
         allowed.append(("next", route[idx + 1]))
-
-# The context skip is a QUALITY rule, not a review-mode rule: a trivial
-# probe has nothing to explore. The knobs come from the state; the rule
-# lives here so `advance` and `next` cannot disagree about it.
-if not exploration:
-    exploration = {"Lean": "2", "Complete": "5"}.get(appetite, "3")
-trivial = exploration == "1" or (not quality and appetite == "Lean")
-if trivial and mode == "Auto" and stage == "setup":
-    allowed.append(("next", "shape"))
 
 seen = set()
 unique = []
@@ -583,9 +660,16 @@ do_advance() {
   # redirect instead of mutating — and say so BEFORE the legality check,
   # because a skipped stage is not a legal move and the generic "invalid
   # transition" would hide the reason and the way out.
-  local redirect
-  redirect=$(transition_facts redirect "$candidate" "$intent" "$review_mode") || die "could not resolve the review-mode policy"
+  local redirect redirect_kind
+  redirect=$(transition_facts redirect "$candidate" "$intent" "$review_mode" \
+    "$TRANSITION_QUALITY" "$TRANSITION_EXPLORATION" "$TRANSITION_APPETITE") \
+    || die "could not resolve the review-mode policy"
   if [ -n "$redirect" ]; then
+    redirect_kind="${redirect##*$'\t'}"
+    redirect="${redirect%%$'\t'*}"
+    if [ "$redirect_kind" = "policy" ]; then
+      die "$candidate does not run under this workflow's policy — advance directly to $redirect instead"
+    fi
     die "$candidate is skipped in '$review_mode' review mode — advance directly to $redirect instead"
   fi
 

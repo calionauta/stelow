@@ -181,13 +181,86 @@ describe("mode-skipped passthroughs", () => {
     expect(r.status).toBe(0);
   });
 
-  it("setup -> shape passes in Lean+Auto only", () => {
+  it("a legacy appetite state resolves through the documented mapping", () => {
+    // A state with only `appetite` and no knobs resolves as the mapping
+    // says: Lean -> {production, 2}. The context stage RUNS for a
+    // production run with two directions, so setup -> shape is refused.
+    // The old rule cut the context for a legacy Lean state — a third copy
+    // of the rule, contradicting the mapping that replaced it.
     const lean = gitRepo();
     const leanDir = makeStateDir(lean, "setup", "Auto", "Lean");
-    expect(run(["advance", "shape", "--dry-run"], lean, { STELOW_STATEDIR: leanDir, STELOW_TRANSITIONS: TRANSITIONS }).status).toBe(0);
-    const core = gitRepo();
-    const coreDir = makeStateDir(core, "setup", "Auto", "Core");
-    expect(run(["advance", "shape", "--dry-run"], core, { STELOW_STATEDIR: coreDir, STELOW_TRANSITIONS: TRANSITIONS }).status).not.toBe(0);
+    const r = run(["advance", "shape", "--dry-run"], lean, { STELOW_STATEDIR: leanDir, STELOW_TRANSITIONS: TRANSITIONS });
+    expect(r.status).not.toBe(0);
+    expect(r.stderr).toContain("invalid transition");
+  });
+});
+
+/**
+ * The context stage is a spike: it answers "which strategic approach?".
+ * It does not run when its answer changes no consequential decision AND
+ * nobody reviews it.
+ *
+ * The published matrix and the enforced gate used to disagree in BOTH
+ * directions: the matrix skipped only for experimental+Auto, while the
+ * helper skipped for a single direction too — so a worker following the
+ * policy was refused by the gate with no redirect, and a worker following
+ * the gate ran a stage the policy said to skip.
+ */
+describe("the context skip rule has one owner", () => {
+  function allowedFromSetup(quality: string, count: string, mode: string): string[] {
+    const dir = gitRepo();
+    const stateDir = makeStateDir(dir, "setup", mode);
+    const path = join(stateDir, "state.md");
+    writeFileSync(
+      path,
+      readFileSync(path, "utf8")
+        .replace("  review_mode: " + mode, `  quality: ${quality}\n  exploration_count: ${count}\n  review_mode: ${mode}`),
+    );
+    const r = run(["next", "--json"], dir, { STELOW_STATEDIR: stateDir, STELOW_TRANSITIONS: TRANSITIONS });
+    expect(r.status, r.stderr).toBe(0);
+    return (JSON.parse(r.stdout) as { allowed: string[] }).allowed;
+  }
+
+  it("a probe in Auto mode does not run the context stage", () => {
+    expect(allowedFromSetup("experimental", "3", "Auto")).toContain("shape");
+    expect(allowedFromSetup("experimental", "3", "Auto")).not.toContain("context");
+  });
+
+  it("a single direction in Auto mode does not run the context stage", () => {
+    // The human chose "one direct direction, trivial changes only, by
+    // explicit choice": there is no divergence to explore.
+    expect(allowedFromSetup("production", "1", "Auto")).toContain("shape");
+    expect(allowedFromSetup("production", "1", "Auto")).not.toContain("context");
+  });
+
+  it("a production run with directions runs the context stage", () => {
+    expect(allowedFromSetup("production", "3", "Auto")).toContain("context");
+  });
+
+  it("a gated mode runs the context stage: a human reviews its output", () => {
+    // The gate is the consumer. Cutting the discovery in a mode where a
+    // person reads it removes their input.
+    for (const mode of ["Product Spec Gate", "Product Spec + Interface + Tech Review + Code Diff"]) {
+      expect(allowedFromSetup("experimental", "3", mode), mode).toContain("context");
+      expect(allowedFromSetup("production", "1", mode), mode).toContain("context");
+    }
+  });
+
+  it("entering the context stage is refused with the way out named", () => {
+    const dir = gitRepo();
+    const stateDir = makeStateDir(dir, "setup", "Auto");
+    const path = join(stateDir, "state.md");
+    writeFileSync(
+      path,
+      readFileSync(path, "utf8").replace(
+        "  review_mode: Auto",
+        "  quality: experimental\n  exploration_count: 3\n  review_mode: Auto",
+      ),
+    );
+    const r = run(["advance", "context", "--dry-run"], dir, { STELOW_STATEDIR: stateDir, STELOW_TRANSITIONS: TRANSITIONS });
+    expect(r.status).not.toBe(0);
+    expect(r.stderr).toContain("does not run under this workflow's policy");
+    expect(r.stderr).toContain("advance directly to shape instead");
   });
 });
 
