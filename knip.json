@@ -1,0 +1,9 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "ignore": [
+    "scripts/scan-test-value.ts",
+    "site/mascot.js",
+    "site/search/minisearch.js",
+    "site/search/search.js"
+  ]
+}
