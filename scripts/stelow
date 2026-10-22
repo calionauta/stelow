@@ -386,8 +386,13 @@ m = re.search(r"^### " + re.escape(current) + r"\s*\n(.*?)(?=^### |\Z)", trans, 
 if not m: sys.exit(0)
 
 def is_inside(child, parent):
+    # realpath, not abspath: on macOS tmpdir() is /var/folders/... (a symlink
+    # to /private/var/...), and git reports the physical path. Comparing
+    # abspath made the workflow's own dir look OUTSIDE .stelow, so the guard
+    # fell back to the root and could be satisfied by a DIFFERENT workflow's
+    # artifact — the exact hole the no-fallback rule exists to close.
     try:
-        return os.path.commonpath([os.path.abspath(child), os.path.abspath(parent)]) == os.path.abspath(parent)
+        return os.path.commonpath([os.path.realpath(child), os.path.realpath(parent)]) == os.path.realpath(parent)
     except ValueError:
         return False
 

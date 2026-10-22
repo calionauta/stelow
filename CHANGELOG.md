@@ -50,6 +50,12 @@ All notable changes to this project are documented in this file, following
   Planning read it, and neither did. Both now read the map: architecture
   directions must name where the map's code affordances live and which stores
   they read, and planning must trace each scope to affordances in it.
+- **The advance guard fell through to the repo root on macOS.** `tmpdir()` is a
+  symlink to `/private/var/...` there while git reports the physical path, and
+  the guard compared `abspath`, so a workflow's own nested dir looked outside
+  `.stelow` and the root fallback could satisfy the guard with ANOTHER
+  workflow's `plans/spec-product` artifact. It compares `realpath` now, and the
+  test drives the helper through a symlink so Linux catches this too.
 
 ### Changed
 
