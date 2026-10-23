@@ -120,6 +120,32 @@ describe("per-skill host-agnostic compliance", () => {
         }
       });
 
+      it("never shows a code block that writes state.md or stelow.json", () => {
+        // The helper owns both writes (seed, advance, sync-scopes, scope). A
+        // skill that shows an agent setting `current_stage` and saving the file
+        // teaches a bypass: the guard refuses the next real advance, and until
+        // the next sync the two files disagree about where the card is. This
+        // exact shape shipped once — a node -e block that assigned
+        // `wf.stage.current_stage = NEW_SLUG` and wrote `stelow.json` — and
+        // nothing caught it, because prose that contradicts a guard is not a
+        // test failure until someone writes the test.
+        //
+        // Narrow on purpose: fences across this corpus legitimately mention the
+        // state files and legitimately write other files, and a rule that flags
+        // those gets deleted instead of obeyed.
+        for (const file of files) {
+          const fences = stripFrontmatter(readFileSync(file, "utf8")).match(/```[\s\S]*?```/g) ?? [];
+          for (const fence of fences) {
+            const namesState = /current_stage/.test(fence);
+            const writesState = /writeFileSync|fs\.writeFile|json\.dump\(|write_text\(/.test(fence);
+            expect(
+              namesState && writesState,
+              `${file}: a code block writes a state file the helper owns`,
+            ).toBe(false);
+          }
+        }
+      });
+
       it("body has no host-private review receipts or CLI invocations", () => {
         for (const file of files) {
           if (isExemptFromAudit(file)) continue;
