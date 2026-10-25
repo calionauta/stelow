@@ -307,67 +307,57 @@ audit — Execution Critique
 
 Each tool in `references/cli-tools/` documents its own fallback.
 
-## Stage State Management — Single Source of Truth
+## Stage State Management — One Owner
 
-The workflow state is tracked in a **single file**: `stelow.json` at the project root.
-No other state files are needed — this is the canonical source for TUI display, resume,
-cross-CLI adapters, and LLM stage tracking.
+State lives in two files, and the helper writes both:
 
-The file contains a `workflows[]` array. Each active workflow has:
-- `currentPhase` (number index into PHASE_NAMES)
-- `phases[]` (array of {id, name, status})
-- `stage` (object with `current_stage`, `previous_stage`, `transitioned_at`, `history`)
+| File | Role | Writer |
+|---|---|---|
+| `state.md` (per workflow, under the state dir) | the machine: `current_stage`, stage statuses, artifacts, history | `scripts/stelow` |
+| `stelow.json` (project root) | the tracking projection: `workflows[]`, read by TUIs, resume and host adapters | `scripts/stelow` — `seed`, `advance`, `sync-scopes`, `scope` |
+
+Editing either one by hand is a bypass, not a shortcut. The helper is the only
+thing that knows the transition table, the review-mode skips and the stage
+policies, so a hand-written `current_stage` is a stage the guard refuses the
+moment anyone advances for real — and until the next `sync-scopes` overwrites
+one of the two files, they disagree about where the card is. A worker that
+"fixed" the state by hand did not move the card; it moved one copy of it.
 
 ### Stage Transitions
 
-When completing a stage and moving to the next:
+**Auto-advance is the default.** Do NOT ask the user for permission and do not
+wait for a `/sw-next` command: advance, then continue in the same response.
 
-**Auto-advance is the default.** Do NOT ask the user for permission or wait for `/sw-next`.
-Update the tracking file directly via bash, then continue to the next stage in the same response.
+```bash
+scripts/stelow advance <stage>
+```
 
-**Mechanism (all harnesses):** Update `stelow.json` directly — it is the canonical source of truth. No manual sync needed.
+A host that wraps the helper exposes its own equivalent command; the helper's is
+the contract, and the host's is a wrapper around it.
 
-   ```bash
-   node -e "
-   const fs = require('fs');
+The helper validates the move against the transition table and the run knobs,
+writes `state.md`, updates the `stelow.json` projection, and on refusal exits
+non-zero with a message that names the legal alternative. Read that message: every
+refusal names an exit, and the refusal is the guard working — not an obstacle to
+route around.
 
-   // 1. Update stelow.json (canonical source of truth)
-   const file = 'stelow.json';
-   const raw = fs.readFileSync(file, 'utf-8');
-   const t = JSON.parse(raw);
-   const idx = t.workflows.findIndex(w => w.status === 'in-progress');
-   if (idx === -1) { console.log('No active workflow'); process.exit(1); }
+**Finding the state dir:** `scripts/stelow status --json` prints it. Never build
+the path by hand: the layout is `{date}/{dirhash}` and the hash is not derivable
+from the card id.
 
-   const NEW = NEW_PHASE_INDEX;  // set this (e.g. 3 for Context)
-   const NEW_SLUG = 'new-stage-slug';  // set this (e.g. 'context')
-   const wf = t.workflows[idx];
-
-   wf.currentPhase = NEW;
-   wf.phases.forEach((p, i) => {
-     p.status = i < NEW ? 'completed' : i === NEW ? 'in-progress' : 'pending';
-   });
-   wf.stage.previous_stage = wf.stage.current_stage;
-   wf.stage.current_stage = NEW_SLUG;
-   wf.stage.transitioned_at = new Date().toISOString();
-   wf.stage.history.push({ stage: NEW_SLUG, entered_at: new Date().toISOString(), exited_at: null });
-   wf.updated = new Date().toISOString();
-   t.updated = wf.updated;
-   fs.writeFileSync(file, JSON.stringify(t, null, 2));
-   console.log('Main tracking updated:', NEW_SLUG, '— index.json mirror is automatic.');
-   "
-   ```
-
-**For paused workflows only:** Use `/sw-next` or `/sw-setphase phasename=<stage>`.
-The extension handles all three tracking mechanisms (TUI, resume, tool restrictions).
+**Paused workflows** resume from the projection; `status --json` is the authority
+for which workflow is active.
 
 ### Cross-CLI Portability
 
-The single file works on ALL harnesses:
-- **Any agentskills-compatible agent** reads `stelow.json` directly via
-  the standard `read` / `bash` tools; the orchestrator interprets `currentPhase`
-  per `stages.yaml`
-- **Resume** reads the active workflow's `currentPhase` from this file
-- **LLM auto-advance** updates this file via bash (node -e) and proceeds without /sw-next
+Every harness reaches the same state the same way — by running the helper:
+
+- **Agentskills-compatible agents** call `scripts/stelow status --json` /
+  `advance` through their shell tool.
+- **Hosts that cannot run a shell** read `stelow.json` as a read-only projection
+  and write through the host's own command surface; they never write the file.
+- **Resume** reads the projection, then verifies it against `state.md` through
+  the helper before continuing.
 
 ## Tool Restrictions
 
