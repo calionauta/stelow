@@ -41,11 +41,11 @@ this page, once you know which stage you are in.
 |---|---|---|---|
 | 1 | Find and understand the audience | `stelow-product-audience-market` | interview notes |
 | 2 | Define the market | `stelow-product-audience-market` | GPN story (group, purpose, needs) |
-| 3 | Define and prioritize solutions | `references/02-stage-3-solutions.md` | prioritized solution list |
-| 4 | Develop and evaluate the offer | `references/03-stages-4-and-6.md` | offer definition |
+| 3 | Define and prioritize solutions | `stelow-product-solutions` | prioritized solution list |
+| 4 | Develop and evaluate the offer | `stelow-product-offer` | offer definition |
 | 5 | Assess commitment | `stelow-product-launch-validation` | pre-sales / waitlist counts |
-| 6 | Discover the process | `references/03-stages-4-and-6.md` | manual delivery script |
-| 7 | Evolve to a viable business | `references/04-stage-7.md` | product-market fit verdict + channel |
+| 6 | Discover the process | `stelow-product-manual-process` | manual delivery script |
+| 7 | Evolve to a viable business | `stelow-product-viable-business` | product-market fit verdict + channel |
 | 8 | The pulse of the system | `references/05-stage-8-signals.md` | signal tension read |
 
 Before any stage, the reliability rules for evidence live in
@@ -55,11 +55,13 @@ convincing but weak.
 ## Reference files
 
 - `references/01-experimentation-principles.md` — criteria for reliable data + 6 principles
-- `references/02-stage-3-solutions.md` — stage 3 only (9 components, impact/risk matrix)
-- `references/03-stages-4-and-6.md` — stages 4 and 6 (offer, manual process)
-- `references/04-stage-7.md` — stage 7 (viable business, product-market fit, channels)
-- `references/05-stage-8-signals.md` — stage 8 (pulse of the system, signals in tension)
+- `references/05-stage-8-signals.md` — stage 8 detail: success and counterbalance signals
 - `references/06-solutions-strategies-and-sources.md` — product shapes, 5 JTBD strategies, sources
+
+Every other stage now lives in its own skill, so it carries a completeness contract,
+examples and edge cases. Only stage 8 still resolves to a reference, because
+`stelow-product-health` covers the framework while this file keeps the signal-level
+detail the skill summarises.
 
 ## Domain skills
 
