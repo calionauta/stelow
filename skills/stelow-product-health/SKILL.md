@@ -22,7 +22,9 @@ disable-model-invocation: true
 
 In a world that pushes for incessant number optimization, it's easy to fall into the trap of pursuing signals in isolation — focusing on what grows fastest or looks most impressive (like number of new users or frequency of use).
 
-This practice carries silent risks: the **"cobra effect"** — when trying to solve a problem with one signal, we end up generating unexpected negative consequences in other areas. Optimizing a single signal can lead to a product that "works", but generates unwanted human costs: addiction, anxiety, loss of time, or superficial use that doesn't deliver real value.
+This practice carries silent risks: the **"cobra effect"** — when trying to solve a problem with one signal, we end up generating unexpected negative consequences in other areas. It is like a treadmill: the person is active, but not progressing. Optimizing a single signal can lead to a product that "works", but generates unwanted human costs: addiction, anxiety, loss of time, or superficial use that doesn't deliver real value.
+
+Systems are complex and interconnected. What seems like an improvement at one end can unbalance the whole.
 
 ## The Proposal: Sets of Signals in Tension
 
@@ -67,12 +69,16 @@ This set is the **heart of monitoring a healthy system**, seeking balance betwee
 - Language learning platform: "the percentage of users who complete one lesson per day for 3 consecutive weeks"
 - Financial management tool: "the percentage of users who record their expenses weekly for one month"
 
+**Justification**: repeating this action indicates habit formation — a sign that the solution is integrating into the user's routine to accomplish the purpose.
+
 #### Efficacy Counterbalance — *Is the Habit Not Generating Progress?*
 **What to observe**: look for a signal that shows whether continuous use is, in fact, leading the user to progress in their main purpose. We want to avoid **"treadmill habit"** — there's activity, but no progress.
 
 **Intuitive Examples**:
 - Language learning platform: "the percentage of users who complete lessons regularly, but don't advance levels or don't improve on proficiency tests"
 - Financial tool: "the percentage of users who record expenses, but don't decrease their spending or don't reach their savings goals"
+
+**Justification**: distinguishes use that leads to a result (the job to be done) from a "treadmill habit". It is the way to remove stagnation.
 
 #### Well-Being Counterbalance — *Is the Habit, Even if Effective, Harmful?*
 **What to observe**: identify a signal that monitors the **"human cost" of use**. Ensures that the product doesn't become extractive or addictive, generating anxiety, loss of time, or other negative impacts.
@@ -96,12 +102,16 @@ As a product evolves, optimization for more experienced users can, unintentional
 - Video editing software: "the percentage of users with more than 6 months of use who would answer 'very disappointed' if the software ceased to exist"
 - Online community: "the frequency of contributions from veteran users in complex discussions"
 
+**Justification**: a thermometer of importance for users who validate the core of the product. Indicates the depth of value delivered to those who have incorporated the solution into their routine.
+
 #### Counterbalance Signal — *By Pleasing the Base, Are We Worsening the Experience for Those Arriving?*
 **What to observe**: monitor the experience of new users, ensuring that the evolution of the product for the "faithful" doesn't create barriers for "newcomers".
 
 **Intuitive Examples**:
 - Video editing software: "the completion rate of the initial tutorial by new users" or "the satisfaction level (CSAT) of users with less than 30 days of use"
 - Online community: "the rate of new members who make their first post or comment in their first week"
+
+**Justification**: ensures that optimizing for more experienced users doesn't make the product hostile or too complex for those arriving — it measures the direct impact of evolution on the health of the top of the funnel.
 
 ## Completeness contract
 
