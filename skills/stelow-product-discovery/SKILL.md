@@ -46,22 +46,19 @@ this page, once you know which stage you are in.
 | 5 | Assess commitment | `stelow-product-launch-validation` | pre-sales / waitlist counts |
 | 6 | Discover the process | `stelow-product-manual-process` | manual delivery script |
 | 7 | Evolve to a viable business | `stelow-product-viable-business` | product-market fit verdict + channel |
-| 8 | The pulse of the system | `references/05-stage-8-signals.md` | signal tension read |
+| 8 | The pulse of the system | `stelow-product-health` | signal tension read |
 
-Before any stage, the reliability rules for evidence live in
-`references/01-experimentation-principles.md`. Read it when a stage result looks
-convincing but weak.
+Before any stage, the reliability rules for evidence live in the Evidence section of
+this file, below. Read it when a stage result looks convincing but weak.
 
 ## Reference files
 
-- `references/01-experimentation-principles.md` — criteria for reliable data + 6 principles
-- `references/05-stage-8-signals.md` — stage 8 detail: success and counterbalance signals
-- `references/06-solutions-strategies-and-sources.md` — product shapes, 5 JTBD strategies, sources
+- `references/inspirations.md` — the works and authors this method draws on
 
-Every other stage now lives in its own skill, so it carries a completeness contract,
-examples and edge cases. Only stage 8 still resolves to a reference, because
-`stelow-product-health` covers the framework while this file keeps the signal-level
-detail the skill summarises.
+Stages 1 through 8 all resolve to skills. Two things remain here because they belong to
+the method as a whole rather than to any one stage: the evidence rules (below, absorbed
+into this file) and the bibliography. Product shapes and the five strategic postures
+moved into `stelow-product-solutions`, where they are used.
 
 ## Domain skills
 
@@ -125,6 +122,74 @@ This skill was translated and adapted by permission and attribution to the origi
 **Original Repository**: [github.com/calionauta/my-opencode-config](https://github.com/calionauta/my-opencode-config)
 
 ---
+
+## Evidence: collecting what really matters
+
+### Why experiment?
+
+Ideas bump into 3 fundamental challenges:
+- **Interpretation**: what you imagine can be radically different from what another person understands or needs.
+- **Prediction**: without concrete data, the ability to predict what people will do (and pay for) is extremely low.
+- **Confirmation bias**: natural tendency to seek evidence that confirms beliefs and ignore signs of error.
+
+Building a complete product based only on an idea = betting all your chips on a single number at the roulette table.
+
+**The alternative**: experiment. Verify through experience. Stop debating opinions and start collecting real data, with real people.
+
+---
+
+### Four criteria for reliable data
+
+**1. Recent**
+The more recent the data, the more relevant. The world moves fast; a truth from yesterday can be a fragile assumption today. Focus on what was observed in the last few days, weeks, or months.
+
+**2. Strong relevance**
+The data must directly answer the main assumption and context. Pragmatic filter: *"Does this information help me decide on the next step?"*
+
+**3. Provenance**
+Knowing where the data comes from — who collected it, in what context, with what intention. The origin calibrates trust.
+
+**4. Learning saturation (sufficient sample)**
+The answer to "how many people?" depends on the moment:
+
+**Moment 1 — Exploration (High Uncertainty)**
+- Intention: to understand, not to prove a thesis.
+- Seek depth and variety, not large numbers.
+- Talk to people with different approaches and perspectives.
+- Focus on: recent frustrations, attempts to solve, time/money spent.
+- Stop when you reach saturation: new conversations only repeat what you already know.
+- **Few rich conversations > hundreds of superficial responses.**
+
+**Moment 2 — Experimentation (Well-Defined Hypothesis)**
+- You already have a simulated, low-cost version of the idea.
+- It's no longer just conversation; you're observing commitment and usage.
+- Sample size gains greater importance here.
+
+---
+
+### Six principles for experimentation
+
+Use as filters to learn more effectively and economically:
+
+**Smaller distance**
+Where I am or very close to me. Proximity to the source reduces complexity and collection time.
+
+**Smaller dependency**
+Myself (or someone available) with what I have now. Less dependency on external resources = more agility.
+
+**Smaller time**
+Now or as soon as possible. Impose a time limit:
+- Noah Kagan: *"Validating is finding 3 customers in 48 hours who will pay money for your idea."*
+- Marty Cagan: *"Never go more than two weeks without putting your ideas in front of real users and customers."*
+
+**Smaller money**
+Free or as cheap as possible. The value is in the learning, not in the initial investment.
+
+**Adjust before giving up**
+It's unlikely that the first version will be the "right" one. Initial data are invitations to adjust, refine, and test again. **Test → adjust → repeat.**
+
+**Confirm before evolving**
+Conduct more experiments before considering that you have a stable solution. Seek validation that you're on the right track, not confirmation of arrival at the final destination.
 
 ## Completeness contract
 

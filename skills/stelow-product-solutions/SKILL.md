@@ -123,6 +123,49 @@ Evaluate candidate solutions in a matrix.
 
 **Rule**: start with what has very high positive impact and very low risk.
 
+## Product shapes and strategic postures
+
+### Micro products to explore
+
+Types of micro products to explore:
+- Directory list / directory marketplace
+- Job board
+- Small e-commerce boutique or antique shop
+- Platform to connect local producers (physical product or service) with local or external buyers
+- Forum or community
+- Internet browser extension (e.g., Chrome Store, Firefox)
+- Tools (embed app, plugins, or bots) for existing platforms (Telegram, WhatsApp, WordPress, Shopify, Slack, Discord, Salesforce, or others)
+- API mashup: ideas that combine already available APIs
+- Micro-SaaS with a specific feature
+- Micro-app for mobile with a specific feature
+- Two-sided marketplace
+- Live event or workshop
+- Consulting or mentoring
+- Niche authority blog
+- Affiliate marketing
+- Service provision
+- Dropshipping
+
+### Five product strategies (jobs to be done lens)
+
+**Differentiated**: serve underserved consumers. Offers better performance in accomplishing the job, charging more for it. Offers unique benefits or features not found in other products, meeting specific needs in a differentiated way.
+*Examples*: Uber Black, iPhone.
+
+**Dominant**: serve all types of consumers (underserved and well-served). Offer better performance in accomplishing the job and charge less. Become the best solution in the category for a specific job, outperforming the competition in performance or value.
+*Examples*: UberX, Netflix — more convenient and cheaper.
+
+**Sustaining**: continue serving current customers with incremental improvements in existing products or services to continuously meet the constantly evolving needs of customers. No major differentiations in performance or price.
+
+**Discreet**: serve consumers with restricted options. Charge more for limited or worse performance. Focus on niches or success criteria of ignored customers, attending to jobs that are not the main focus of large competitors.
+*Examples*: food sales and ATM at airports; lending to indebted people.
+
+**Disruptive**: serve over-served consumers and non-consumers. Charge less and with limited or worse performance. Introduce changes that redefine how a job is accomplished, usually making it cheaper or more accessible.
+*Example*: Uber Pool.
+
+---
+
+---
+
 ## Completeness contract
 
 The host validates these minima — never submit fewer:
