@@ -32,6 +32,10 @@
     { "id": "discovery", "skill": "stelow-product-discovery", "contract": "single" },
     { "id": "audience-market", "skill": "stelow-product-audience-market", "contract": "single" },
     { "id": "launch-validation", "skill": "stelow-product-launch-validation", "contract": "single" },
+    { "id": "solutions", "skill": "stelow-product-solutions", "contract": "single" },
+    { "id": "offer", "skill": "stelow-product-offer", "contract": "single" },
+    { "id": "manual-process", "skill": "stelow-product-manual-process", "contract": "single" },
+    { "id": "viable-business", "skill": "stelow-product-viable-business", "contract": "single" },
     { "id": "product-health", "skill": "stelow-product-health", "contract": "single" },
     { "id": "trust-building", "skill": "stelow-product-trust-building", "contract": "single" }
   ]
