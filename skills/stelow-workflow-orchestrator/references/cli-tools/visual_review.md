@@ -17,8 +17,9 @@ The contract is `{ decision, feedback }`, with `decision` in
 2. **Structured ask.** When no native tool exists, put the artifact under
    decision in the host's structured ask (`ask_user_question` or equivalent),
    with an option to approve and an option to request changes. A selected gate
-   must never approve itself: only `Auto` may write an agent receipt without a
-   human decision, and it records `approved_via: auto` / `selected_by: llm`.
+   must never approve itself. An **unselected** gate (or `Auto`) may write an
+   agent receipt without a human decision, and it records `approved_via: auto` /
+   `selected_by: llm`.
 3. **CLI fallback.** If the host has the Plannotator CLI, `plannotator annotate
    <file> --gate --json` returns the same decision. Install the binary only
    (checksum-verified, no hooks or skills):

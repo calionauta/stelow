@@ -27,7 +27,8 @@ describe("review gate fallback", () => {
   it("never lets a selected gate silently approve itself", () => {
     expect(visualReview).not.toMatch(/must silently approve/i);
     expect(visualReview).toMatch(/structured ask/i);
-    expect(visualReview).toMatch(/only `Auto`/i);
+    expect(visualReview).toMatch(/unselected/i);
+    expect(visualReview).toMatch(/selected gate/i);
   });
 
   it("keeps the receipt as the portable contract", () => {
@@ -48,5 +49,13 @@ describe("review gate fallback", () => {
     const planGate = read("stages/plan-gate.md");
     expect(planGate).toMatch(/structured ask/i);
     expect(planGate).toMatch(/never silently approve/i);
+    expect(planGate).toMatch(/unselected/i);
+  });
+
+  it("keeps the gate fallback rule in the human-gates reference", () => {
+    const humanGates = read("references/human-gates.md");
+    expect(humanGates).toMatch(/selected/i);
+    expect(humanGates).toMatch(/structured ask/i);
+    expect(humanGates).toMatch(/phantom wait/i);
   });
 });
