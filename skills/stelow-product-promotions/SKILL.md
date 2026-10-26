@@ -22,6 +22,8 @@ A simple offer, but communicated unequivocally, tends to work better than a bril
 
 ## MAGIC Structure
 
+*(Concept adapted from Alex Hormozi — $100M Offers)*
+
 **M (Magnet → Reason)**: what is the magnetic reason for this offer to exist now? (discount, special launch condition, seasonal offer) Creates the context.
 
 **A (Avatar → Avatar)**: who is this offer for? Naming the audience helps the person immediately identify. (small business owners? writers? those seeking a healthy lifestyle?)

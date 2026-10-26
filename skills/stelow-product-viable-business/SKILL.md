@@ -31,6 +31,8 @@ risk**.
 The search is not for a final state called "success" but for a **dynamic equilibrium**
 between four fits:
 
+*(Framing from the article "The Intersection of Fit: Market ∩ Product ∩ Channel ∩ Model".)*
+
 1. **Market-product fit** — the product solves a real problem and there is demand.
 2. **Model-market fit** — the business model is viable and sustainable in that market.
 3. **Channel-model fit** — sales, marketing and delivery channels suit the model.

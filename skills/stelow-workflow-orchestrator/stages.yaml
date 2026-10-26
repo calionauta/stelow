@@ -472,7 +472,7 @@ stages:
   - name: selection
     order: 100
     model_hint: standard
-    description: Interface selection. Human pick via structured question in Interface-Gates modes; LLM decides in Auto / Product Spec Gate (see references/human-gates.md). Records the chosen interface and its breadboard map.
+    description: Interface selection. Human pick via structured question in Interface-Gates modes; LLM decides in Auto / Product Spec Gate (see `../stelow-workflow-orchestrator/references/human-gates.md`). Records the chosen interface and its breadboard map.
     label: Interface Choice
     produces: "Selects which interface variant to implement, and maps it into a breadboard."
     artifacts: [interfaces/selected-interface.md, interfaces/breadboard.json]
@@ -517,7 +517,7 @@ stages:
   - name: architecture
     order: 105
     model_hint: best
-    description: Architecture selection. Diverges construction directions, then a human pick via structured question in Tech-Review modes; worker adopts below that threshold (see references/human-gates.md).
+    description: Architecture selection. Diverges construction directions, then a human pick via structured question in Tech-Review modes; worker adopts below that threshold (see `../stelow-workflow-orchestrator/references/human-gates.md`).
     label: Architecture Choice
     produces: "Selects which construction direction to plan and implement."
     artifacts: [architecture/selected-architecture.md]

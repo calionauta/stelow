@@ -18,6 +18,8 @@ disable-model-invocation: true
 
 # Building Trust: Perception and Guarantee
 
+*(Trust pillars, guarantees and bonuses in this skill draw on Alex Hormozi — $100M Leads and $100M Offers.)*
+
 ## Increasing Success Perception
 
 When someone seeks us out, they carry the weight of past experiences, skepticism, and the fear of making the wrong decision once again. The person is not just asking themselves "does this work?", but rather "**will this work for me?**".

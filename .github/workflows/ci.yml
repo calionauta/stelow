@@ -8,6 +8,11 @@ on:
 jobs:
   test:
     runs-on: ${{ matrix.os }}
+    # A test run is ~40s on ubuntu and ~100s on macos. The 20-minute ceiling is
+    # there so a runner that never gets scheduled (or a hung install) fails
+    # loudly instead of sitting in the queue looking "pending" forever. It is
+    # deliberately generous: GitHub's default is 360 minutes.
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:

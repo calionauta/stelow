@@ -53,12 +53,10 @@ this file, below. Read it when a stage result looks convincing but weak.
 
 ## Reference files
 
-- `references/inspirations.md` — the works and authors this method draws on
-
-Stages 1 through 8 all resolve to skills. Two things remain here because they belong to
-the method as a whole rather than to any one stage: the evidence rules (below, absorbed
-into this file) and the bibliography. Product shapes and the five strategic postures
-moved into `stelow-product-solutions`, where they are used.
+None. Stages 1 through 8 all resolve to skills, and the evidence rules live in this file.
+The method's sources (Maurya, Kagan, Savoia, Lavingia, Hormozi, Ulwick, NFX and others)
+are credited where they are used, in the skill that applies them — there is no central
+bibliography, because a list of books nobody opens is not a reference.
 
 ## Domain skills
 
@@ -190,6 +188,12 @@ It's unlikely that the first version will be the "right" one. Initial data are i
 
 **Confirm before evolving**
 Conduct more experiments before considering that you have a stable solution. Seek validation that you're on the right track, not confirmation of arrival at the final destination.
+
+**Where these rules come from** — the discipline above is not invented here: Alberto Savoia's
+*The Right It* (validate before building), Justin Wilcox's FOCUS framework, and Ryan
+Robinson's 30-day / under-$500 validation routine all describe the same constraint from
+different angles. When a stage feels like it deserves an exception, those are the sources
+to check first.
 
 ## Completeness contract
 

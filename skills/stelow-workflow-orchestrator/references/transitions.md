@@ -27,8 +27,8 @@ after any change to verify.
 | 70 | scope | Owns the approved Scope Map for feature routes. Shape may propose candidate slices; this stage finalizes the map without creating a second stage. Narrow mechanical refactors may bypass Scope. |
 | 80 | interface | Interface exploration + reaction-first contrast. Generates bounded alternatives with wireframes, preserves the first reaction, compares them, and emits a named disposition. |
 | 90 | int-gate | Interface gate. Visual review of all interface proposals. Use `visual_review` tool (not bash). |
-| 100 | selection | Interface selection. Human pick via structured question in Interface-Gates modes; LLM decides in Auto / Product Spec Gate (see references/human-gates.md). Records the chosen interface and its breadboard map. |
-| 105 | architecture | Architecture selection. Diverges construction directions, then a human pick via structured question in Tech-Review modes; worker adopts below that threshold (see references/human-gates.md). |
+| 100 | selection | Interface selection. Human pick via structured question in Interface-Gates modes; LLM decides in Auto / Product Spec Gate (see `human-gates.md`). Records the chosen interface and its breadboard map. |
+| 105 | architecture | Architecture selection. Diverges construction directions, then a human pick via structured question in Tech-Review modes; worker adopts below that threshold (see `human-gates.md`). |
 | 110 | planning | Tech planning. Typed scopes + sequencing. |
 | 115 | plan-gate | Tech plan gate. Visual review of spec-tech.md via visual review. Only in Product Spec + Interface + Tech Review or Code Diff mode. |
 | 120 | execution | Implementation. Execute planned scopes. |

@@ -70,7 +70,7 @@ command -v sem && HAS_SEM=1 || HAS_SEM=0
 
 # Check cymbal (structural overview: entry points, hotspots)
 command -v cymbal && HAS_CYMBAL=1 || HAS_CYMBAL=0
-# Full tool ladder (orient → navigate → structural): references/cli-tools/code-map.md
+# Full tool ladder (orient → navigate → structural): `../stelow-workflow-orchestrator/references/cli-tools/code-map.md`
 
 # Check if HEAD~1 exists (new repos, first commit)
 git rev-parse HEAD~1 >/dev/null 2>&1 && HAS_PREV=1 || HAS_PREV=0

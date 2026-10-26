@@ -51,7 +51,21 @@ def load_stages(path):
 
 
 def order_rows(stages):
-    return [f"| {s['order']} | {s['name']} | {s['description']} |" for s in stages]
+    return [
+        f"| {s['order']} | {s['name']} | {_rebase_refs(s['description'])} |" for s in stages
+    ]
+
+
+def _rebase_refs(text):
+    """Rewrite `../stelow-workflow-orchestrator/references/x.md` for this file.
+
+    stages.yaml is read from the orchestrator skill root, where the correct
+    pointer is `../stelow-workflow-orchestrator/references/x.md`. The generated
+    transitions.md lives one level deeper, inside `references/`, so the same
+    string points at a directory that does not exist. Both spellings are
+    valid in their own file; only this cross-depth copy needs rewriting.
+    """
+    return text.replace("../stelow-workflow-orchestrator/references/", "")
 
 
 def verb_lines(stage):
