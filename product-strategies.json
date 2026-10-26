@@ -30,6 +30,8 @@
     { "id": "pricing", "skill": "stelow-product-pricing", "contract": "single" },
     { "id": "ads", "skill": "stelow-product-ads", "contract": "single" },
     { "id": "discovery", "skill": "stelow-product-discovery", "contract": "single" },
+    { "id": "audience-market", "skill": "stelow-product-audience-market", "contract": "single" },
+    { "id": "launch-validation", "skill": "stelow-product-launch-validation", "contract": "single" },
     { "id": "product-health", "skill": "stelow-product-health", "contract": "single" },
     { "id": "trust-building", "skill": "stelow-product-trust-building", "contract": "single" }
   ]
