@@ -106,13 +106,18 @@ install_skills_flat() {
   #   1. Skills no longer in the project (natural orphans)
   #   2. Skills explicitly listed in retired-skills.yaml (retirements)
   #
-  # Only touches skills with managed prefix.
+  # Only touches skills this project owns. The prefix list must cover every
+  # naming generation, not just the current one: `stelow-product-*` and
+  # `stelow-workflow-*` used to be the only patterns, so any skill outside
+  # them (`stelow-entry`, `stelow-router`, `cali-product-*`) was invisible to
+  # the prune and stayed orphaned forever. Match the whole namespace instead —
+  # no other project ships skills named `stelow-*` or `cali-*`.
   local retired_list="$SCRIPT_DIR/retired-skills.yaml"
   local pruned=0
   for entry in "$SKILLS_DIR"/*/; do
     local name="$(basename "$entry")"
     case "$name" in
-      stelow-product-*|stelow-workflow-*) ;;
+      stelow-*|cali-*) ;;
       *) continue ;;
     esac
     # Source 1: not in the project's active skills (natural orphan)

@@ -39,6 +39,10 @@ A skill for producing rigorous, structured market analysis using multiple comple
 
 When either variant relies on external market facts rather than context the user supplied, use the shared web-research contract (`../stelow-workflow-orchestrator/references/cli-tools/web-research.md`). It establishes source quality, recency, coverage, and no-fabrication rules; `last30days` is complementary when current signals materially affect the analysis.
 
+When a market claim rests on a news item, announcement, or rumor (competitor launch, funding round, "everyone is saying"), run `calionauta-news-critical-evaluation` at quick depth on it first and carry its Status and Unknowns into the analysis. Treat engagement-ranked social signals as sentiment, not as evidence.
+
+That skill is not bundled here — it is published in the agent-sync-public hub (`https://github.com/calionauta/agent-sync-public/tree/main/skills/local/calionauta-news-critical-evaluation`). It evaluates one claim, where this skill evaluates a market: use it as an input gate on individual inputs, never as a substitute for the market work. It is most load-bearing for the Weekly Canvas, whose Top Announcements and Delphi sections are exactly news and rumor.
+
 ---
 
 ## Variant 1: General Deep Market Analysis

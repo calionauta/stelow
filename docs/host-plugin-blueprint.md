@@ -759,7 +759,7 @@ encode the rules above as tested pure functions: `worker-action-policy`,
 `workspace-recovery`, `workflow-config`, `remote-url`, `trackables`,
 `trackable-contracts`, `trackable-relations`, `trackable-evidence`,
 `trackable-events`, `tracking-paths`, `spec-scope-reader`, `build-gates`,
-`scope-command`, `artifact-roles`, `reliable-preset`,
+`scope-command`, `artifact-roles`, `artifact-review`, `reliable-preset`,
 `preset-staleness`, `decision-api`, `decision-points`, `preset-judge`,
 `hill-position`, `card-metrics`, `skill-criteria`, `task-evidence`,
 `delegation-evidence`, `inbox-severity`, `delegation-map`, `draft-burst`,
@@ -850,6 +850,57 @@ Two host-shape facts to carry into any port:
 - **The walk is shared, not re-implemented.** If a second surface needs the
   tree, export the walk; two walks of one directory is how the disagreement
   starts.
+
+### A reviewed mark is a claim about a version, never a checkbox
+
+A per-item `reviewed: boolean` is a progress counter that refuses nothing and
+cannot be wrong: a preference dressed as a rule. The portable shape binds the
+mark to a fingerprint of the item the reader actually saw.
+
+- Store `(owner_id, item_path) → fingerprint`, with the fingerprint taken from
+  a value the surface already displays. An mtime-derived timestamp is enough;
+  hashing would put a file read on every open. Additive, no backfill: absence
+  means "not reviewed", which is true of every older row. This is the opposite
+  of a column whose absence means "still waiting" — that one needs a gated
+  backfill on the boot that adds it.
+- Derive three states, not two: fresh (mark equals the current fingerprint),
+  stale (a mark exists, the fingerprint differs), and unmarked. Stale is NOT
+  reviewed — it leaves the count — but it stays visible, is named in the row's
+  tone, and has its own Clear. A mark whose item left the list is ignored,
+  never resurrected; clearing it must still be allowed, or a renamed/deleted
+  file leaves a row nobody can remove.
+- Resolve the fingerprint on the SERVER, from the same read the surface renders.
+  The client sends identity (`owner_id`, `item_path`) and never the fingerprint;
+  a strict input schema is what stops an old mark from being written as
+  current. Write the mirror consequence down too: a file rewritten between
+  render and click is marked at the new version, because the server refuses to
+  trust what the client saw.
+- Accepted weaknesses belong in the module, not in a reviewer's head: a content
+  change that preserves mtime reads fresh, and a host read with no mtime falls
+  back to the record's `updated_at`, so an unrelated edit can turn marks stale.
+- The mark is not a gate. It must not resolve an inbox event, move a stage, or
+  satisfy a review requirement: it is a fact about an item, not a disposition
+  of the work. Keep mark/clear as two named reversible actions, never a
+  transition target; a closed owner renders the marks as facts and offers no
+  control every click would refuse.
+- One owner for the summary sentence. Derive `3 of 7 reviewed` plus
+  `· 1 reviewed before the file changed` once and share it between the server
+  line and any surface that must derive its own. A section that renders only a
+  subset of the owner's items (rounds outliving a manifest) counts the rows it
+  actually shows, and only rows the server marked, or the fraction can never
+  reach its total.
+- Unreadable is UNKNOWN, not empty. A thrown read or a missing workspace gets
+  its own refusal naming the reopen, never "this path is not an item here" —
+  which sends the reader to a section that will show the file as soon as the
+  workspace returns.
+
+The suite mirrors the shape: table-driven derivation (no marks, all fresh, one
+stale, a vanished item, a mark for an unknown path, empty, single, mixed),
+store upsert/clear/owner isolation, both doors' refusals, a forged client
+fingerprint, an end-to-end mark→surface join, and a rendered control test for
+unmarked/reviewed/stale/closed/pending. Removing the fingerprint comparison or
+the join must turn it red. The delete test disables foreign keys so a declared
+cascade cannot hide a missing explicit cleanup.
 
 Feature slices use those modules as their pure seam: test each rule directly
 with a node test, then test the host adapter only where the wiring or injected

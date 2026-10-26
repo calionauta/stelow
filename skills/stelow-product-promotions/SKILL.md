@@ -97,6 +97,36 @@ Instead of giving a price discount, you **add more value to the original offer**
 - **Differential in the freebie**: the extra sessions can include a premium service that's not in the normal package
 - **Limit**: to create urgency, the offer can be limited to the first 5 customers
 
+## Adding Value: Bonuses
+
+A bonus can be any resource that requires an initial investment of time or money to
+create, but that can be replicated afterward with low or no marginal cost.
+
+Ideally, the perceived value of the **set of bonuses could exceed the value of the main
+solution**. Bonuses should contain elements you consider important for the person's
+journey, preventing useful information from being lost.
+
+Bonuses that deliver value directly and can be easily replicated (whether digital or
+physical) are more sustainable.
+
+### Types of bonuses
+
+- **Checklists, tools, reference files, scripts, templates, tickets for a virtual
+experience.**
+- **Partnership with adjacent local or virtual suppliers**, offering other people's
+products as a bonus. Negotiate group discounts and commissions:
+  - With pre-negotiated discounts or free periods/units
+  - With pre-negotiated discounts or free periods/units + affiliate commissions
+  - With pre-negotiated fees and exclusive resources/licenses + affiliate commissions
+- **A higher service level for a determined time** (e.g. VIP support for one month) —
+whose cost to you is fixed.
+- **Resolution of a next step**: anticipate and solve the next problem the person will
+likely hit after using your main solution. The bonus becomes the bridge to the next
+phase of their journey.
+- **Any other resource** that would demand considerable time and effort for the person
+to create on their own.
+
+
 ## Completeness contract
 
 The host validates these minima — never submit fewer:

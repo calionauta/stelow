@@ -1,14 +1,14 @@
 ---
 name: stelow-product-discovery
 description: >
-  [stelow] Complete expert in the short-cycle product learning method,
-  based on the e-book "Guide to Creating Products with Short Learning Cycles" by calionauta.
-  Use this skill whenever the user asks about: idea validation, customer discovery,
-  product experimentation, jobs to be done, pricing strategies, business models, marketing channels,
-  early adopters, MVP, product-market fit, pre-sales, launch strategies, product innovation,
-  product lifecycle, building customer trust, marketplace, open source as strategy,
-  or any concept related to creating and validating digital products with low risk and fast learning.
-  This skill contains ALL the method details — do not skip any detail.
+  [stelow] Orchestrator for the short-cycle product learning method: routes the eight
+  stages to the skill or reference that holds each one, and names what each stage
+  produces. Use this skill whenever the user asks about: idea validation, customer
+  discovery, product experimentation, jobs to be done, pricing, business models,
+  marketing channels, early adopters, MVP, product-market fit, pre-sales, launch
+  strategies, product innovation, product lifecycle, trust, marketplace, open source
+  as strategy, or any question about creating and validating digital products with low
+  risk and fast learning. Start here; it points at the right skill for the stage.
 metadata:
   frequency: monthly
   category: product
@@ -23,112 +23,106 @@ metadata:
   author-url: https://github.com/calionauta
 ---
 
-# Product with Short Learning Cycles
+# Product with Short Learning Cycles — Router
 
-This guide is a method to replace speculation with evidence, step by step.
-**Core principle**: experiment before building. Reduce uncertainty with small, fast, and cheap experiments.
+This guide replaces speculation with evidence, step by step.
+**Core principle**: experiment before building. Reduce uncertainty with small, fast,
+cheap experiments.
 
 > "Life is too short to build something that nobody wants." — Ash Maurya
 
-## Method Structure
+The method has **8 stages**, not necessarily linear. This skill routes; the content of
+each stage lives in the skill or reference named in the map below. Read the target, not
+this page, once you know which stage you are in.
 
-The process has **8 stages** (not necessarily linear):
-1. Find and understand the audience
-2. Define the market
-3. Define and prioritize solutions
-4. Develop and evaluate the offer
-5. Assess commitment
-6. Discover the process
-7. Evolve to a viable business
-8. The pulse of the system: signals in tension
+## Stage map
 
-**→ Read reference files as needed:**
+| # | Stage | Where it lives | Artifact it produces |
+|---|---|---|---|
+| 1 | Find and understand the audience | `stelow-product-audience-market` | interview notes |
+| 2 | Define the market | `stelow-product-audience-market` | GPN story (group, purpose, needs) |
+| 3 | Define and prioritize solutions | `references/02-stage-3-solutions.md` | prioritized solution list |
+| 4 | Develop and evaluate the offer | `references/03-stages-4-and-6.md` | offer definition |
+| 5 | Assess commitment | `stelow-product-launch-validation` | pre-sales / waitlist counts |
+| 6 | Discover the process | `references/03-stages-4-and-6.md` | manual delivery script |
+| 7 | Evolve to a viable business | `references/04-stage-7.md` | product-market fit verdict + channel |
+| 8 | The pulse of the system | `references/05-stage-8-signals.md` | signal tension read |
+
+Before any stage, the reliability rules for evidence live in
+`references/01-experimentation-principles.md`. Read it when a stage result looks
+convincing but weak.
+
+## Reference files
+
 - `references/01-experimentation-principles.md` — criteria for reliable data + 6 principles
-- `references/02-stages-1-to-3.md` — audience, market, solutions
-- `references/03-stages-4-to-6.md` — offer, commitment, manual process
-- `references/04-stage-7.md` — viable business, product-market fit, channels
-- `references/05-stage-8-signals.md` — pulse of the system, signals in tension
-- `references/06-appendix-business-models.md` — business models, open source, pricing
-- `references/07-appendix-strategies.md` — marketplace, solutions, trust, bonuses, promotions, ads, lifecycle
+- `references/02-stage-3-solutions.md` — stage 3 only (9 components, impact/risk matrix)
+- `references/03-stages-4-and-6.md` — stages 4 and 6 (offer, manual process)
+- `references/04-stage-7.md` — stage 7 (viable business, product-market fit, channels)
+- `references/05-stage-8-signals.md` — stage 8 (pulse of the system, signals in tension)
+- `references/06-solutions-strategies-and-sources.md` — product shapes, 5 JTBD strategies, sources
 
-## When to Read Each Reference
+## Domain skills
 
-| User asks about... | Read... |
+These are not stages. They are cuts you reach for by topic, in any order, when the
+question is about that domain rather than about where you are in the method:
+
+| Question | Skill |
 |---|---|
-| How to validate an idea / experiment | 01, 02 |
-| Target audience, market, jobs to be done | 02 |
-| Solution, product, features | 02, 03 |
-| Offer, advertisement, early adopters | 03 |
-| Pre-sale, commitment, waitlist | 03 |
-| MVP, manual process, concierge, wizard of oz | 03 |
-| Product-market fit, channels, viable business | 04 |
-| Metrics, retention, growth | 04, 05 |
-| Pricing, pricing models | 06 |
-| Business models, revenue, costs | 06 |
-| Open source as strategy | 06 |
-| Marketplace, supply and demand | 07 |
-| Trust, guarantees, social proof | 07 |
-| Bonuses, launch promotions | 07 |
-| Online ads, stages of awareness | 07 |
-| Product lifecycle, innovation | 07 |
+| Who is the customer, what job are they hiring for? | `stelow-product-job-to-be-done` |
+| Where is the opportunity? | `stelow-product-opportunity-mapping` |
+| What does the market look like? | `stelow-product-multi-method-market-analysis` |
+| How do I price it? | `stelow-product-pricing` |
+| What business model? | `stelow-product-business-models` |
+| How do I build trust? | `stelow-product-trust-building` |
+| How do I run the launch promotion? | `stelow-product-promotions` |
+| How do I advertise? | `stelow-product-ads` |
+| Is it a paywall funnel? | `stelow-product-paywall` |
+| Marketplace dynamics? | `stelow-product-marketplace-playbook` |
+| Open source as strategy? | `stelow-product-open-source` |
+| Is the product healthy? | `stelow-product-health` |
+| How does it evolve over time? | `stelow-product-evolutionary-principles` |
+| How do I break this into delivery scopes? | `stelow-product-scope-mapping` |
 
-## Interaction Tool Guidelines
+## Interaction tool guidelines
 
-**IMPORTANT**: When the user needs to choose between predefined options, ALWAYS use the `question` tool (if available) with enumerated format:
+**IMPORTANT**: When the user needs to choose between predefined options, ALWAYS use
+the `question` tool (if available) with enumerated format:
 - Options with short `label` and `description`
 - Examples: topic selection, next steps, etc.
 
-When `question` tool is not available, use enumerated text in chat (A/B/C/D or 1/2/3).
+When the `question` tool is not available, use enumerated text in chat (A/B/C/D or 1/2/3).
 
-**Note for this skill**: This is primarily a reference/exploratory skill. If the user wants to explore a specific concept, you may ask clarifying questions to understand context before recommending which references to read or which stage to focus on.
+This is primarily a reference/exploratory skill. If the user wants to explore a specific
+concept, you may ask clarifying questions to understand context before recommending
+which stage to focus on.
 
----
+## Rules for using this skill
 
-## Rules for Using This Skill
-
-1. **Never omit details** — the e-book is already concise; every detail matters.
-2. **Use concrete examples** from the method when explaining concepts.
-3. **Reference specific tools and tactics** mentioned in the method.
+1. **Route before answering.** Name the stage or domain, then read the skill that holds
+   it. Do not answer a stage question from this page — it carries no stage detail.
+2. **Never omit details** once routed — the e-book is already concise; every detail matters.
+3. **Use concrete examples** from the method when explaining concepts.
 4. **Preserve the order and logic** of stages when guiding the user.
-5. **Combine stages** when context demands (e.g., stages 4 and 5 often go together).
+5. **Combine stages** when context demands (e.g., stages 4 and 5 often go together;
+   they now live in two different places, so read both).
 
 ---
 
 ## Attribution
 
-This skill is based on the e-book **"Guia para criar produtos com aprendizado em ciclos curtos"** (Guide to Creating Products with Short Learning Cycles) by **calionauta**.
+This skill is based on the e-book **"Guia para criar produtos com aprendizado em
+ciclos curtos"** (Guide to Creating Products with Short Learning Cycles) by
+**calionauta**.
 
-**Author**: calionauta  
-**Substack**: [Practical Guide to Validate Ideas](https://calionauta.substack.com/p/roteiro-pratico-para-validar-ideias)  
+**Author**: calionauta
+**Substack**: [Practical Guide to Validate Ideas](https://calionauta.substack.com/p/roteiro-pratico-para-validar-ideias)
 **GitHub**: [@calionauta](https://github.com/calionauta)
 
 This skill was translated and adapted by permission and attribution to the original author.
 
----
-
 **Original Repository**: [github.com/calionauta/my-opencode-config](https://github.com/calionauta/my-opencode-config)
 
 ---
-
-## Extended Deep-Dives (Optional)
-
-For specialized analysis, these standalone skills are vendored in this repo
-under `skills/` (historically published at
-[github.com/calionauta/agent-sync-public](https://github.com/calionauta/agent-sync-public/tree/main/skills)):
-
-| Skill | Description | Lines |
-|-------|-----------|--------|
-| `stelow-product-health` | Product health monitoring via signals in tension | ~100 |
-| `stelow-product-pricing` | Pricing strategy: Exchange Base, Consumption Control, Interest Alignment, Trust Pact | ~100 |
-| `stelow-product-open-source` | OSS as business strategy: Proprietary Problem, Org Structures, Competition Protection | ~60 |
-| `stelow-product-trust-building` | 10 pillars of trust, guarantees, perception, commitment | ~60 |
-| `stelow-product-promotions` | MAGIC framework, 4 launch strategies, bonuses | ~60 |
-| `stelow-product-business-models` | Cost reduction & revenue generation models | ~80 |
-| `stelow-product-ads` | 5 awareness stages, ad categories | ~50 |
-| `stelow-product-paywall` | Paywall & onboarding monetization funnel (paywall-first build order, 3 funnel benchmarks, trial policy, web2app) | ~310 |
-
-**Install:** already vendored in this repo — no separate install needed.
-**Note:** These are optional enhancements. The core method works without them — the references/ contain all the necessary content.
 
 ## Completeness contract
 
