@@ -573,10 +573,14 @@ X ago" + inventory dialog) — silent syncs become mystery meat otherwise.
   completes only at the terminal stage, research/explore only with
   passing artifact checks and no pending question.
 - **Retry transient start failures with backoff, bounded and idempotent**
-  (one in flight per card, attempts claimed per failed thread,
-  fresh-state revalidation; inbox pings only on exhaustion).
-  Deterministic failures fail fast — backoff never fixes the same input
-  failing twice.
+  (one in flight per card, attempts claimed per failure **episode** — the
+  budget spans replacement threads and clears only when a worker produces
+  output or a person starts/restarts the card — plus fresh-state
+  revalidation; inbox pings only on exhaustion). Retryability is decided by
+  the specific cause (the thread's own `system/error` detail), never by a
+  generic `thread.start failed` wrapper that would keep respawning a
+  permanent provider refusal. Deterministic failures fail fast — backoff
+  never fixes the same input failing twice.
 - **Let models veto, never act, where a heuristic owns the decision.**
   When deterministic rules already decide (e.g. idle resume on fresh
   output within budget), a model judgment may only cancel a cleared
@@ -607,6 +611,11 @@ X ago" + inventory dialog) — silent syncs become mystery meat otherwise.
   locally and save through one button; a save refreshes only its own
   section, never the board — flipping a select must not fire a request
   by itself.
+- **Offer only choices that can act**: a provider whose model list is
+  empty is not rendered as a section ("Cursor · 0 / No models listed"
+  reads as a configuration the reader forgot to make), and a save button
+  is enabled by the same *effective* value the form displays — never by a
+  raw field the fallback already filled.
 - **Project picker with re-anchor**: any cross-project dialog offers every
   project, defaults to the board's, and re-anchors on every open, so a
   stale pick never writes to the wrong project.
@@ -752,7 +761,7 @@ encode the rules above as tested pure functions: `worker-action-policy`,
 `trackable-contracts`, `trackable-relations`, `trackable-evidence`,
 `trackable-events`, `tracking-paths`, `spec-scope-reader`, `build-gates`,
 `scope-command`, `artifact-roles`, `artifact-review`, `reliable-preset`,
-`preset-staleness`, `decision-api`, `decision-points`, `preset-judge`,
+`preset-staleness`, `preset-selection`, `decision-api`, `decision-points`, `preset-judge`,
 `hill-position`, `card-metrics`, `skill-criteria`, `task-evidence`,
 `delegation-evidence`, `inbox-severity`, `delegation-map`, `draft-burst`,
 `app-support-state`, `board-list-presentation`, `board-views`,
