@@ -3,6 +3,69 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.85.0-alpha] - 2026-10-26
+
+Every `stelow-product-*` stage below 8 is now its own skill. `discovery` stops
+carrying the book and becomes the router that sequences them.
+
+### Added
+
+- **Four stage skills.** `solutions` (stage 3: nine components, impact/risk
+  matrix, TTFV), `offer` (stage 4: Pioneer Program, five promoter types,
+  warm/cold/free/paid channels), `manual-process` (stage 6: concierge, wizard
+  of oz, repackaging), `viable-business` (stage 7: the four fits).
+  `stelow-product-health` absorbed stage 8's signals and justifications.
+
+- **Lockfile contract.** `skills-lock.json` declares what
+  `npx skills add calionauta/stelow` installs and had drifted by four skills
+  (three workflow from the architecture stage, one product). Nothing read the
+  file in this repo, so nothing noticed. The new test derives the expected
+  list from `skills/` instead of restating a count.
+
+- **README count guard outside the section.** The contract only parsed the
+  `## Skills` block, so a bare "All 32 skills live flat" line just above the
+  heading survived three skill additions. Every `<n> skills` phrase in the
+  file must now agree with the filesystem.
+
+### Changed
+
+- **`discovery` is an orchestrator, not a book.** It has zero reference files.
+  The evidence rules moved into its SKILL.md, product shapes and the five
+  strategic postures into `solutions`, and stage 8's survival signals into
+  `health`.
+
+- **Sources are credited where they are used.** `references/inspirations.md`
+  listed 13 authors; six were credited in no skill and the rest duplicated
+  attribution already present. Deleted. Hormozi now appears in `promotions`
+  and `trust-building`, Ulwick in `solutions`, the four-fits article in
+  `viable-business`, NFX in `marketplace-playbook`, and Savoia/Wilcox/Robinson
+  as the sources for the discovery evidence discipline.
+
+- **Test counts derive from disk.** `tests/support/skill-inventory.ts` replaces
+  six hardcoded numbers spread across three files.
+
+### Fixed
+
+- **Four broken skill links.** `architecture-alternatives`,
+  `architecture-contrast`, `execution-critique` and `tech-planning` pointed at
+  `references/human-gates.md` and `references/cli-tools/*.md` from the skill
+  root, where those paths do not exist. The fix is in `stages.yaml`, not the
+  generated files, because the generator copies descriptions verbatim.
+
+- **`generate-transitions.py` cross-depth pointers.**
+  `references/transitions.md` sits one level below the skill root, so a pointer
+  correct in `stages.yaml` broke on copy. The generator now rebases it for its
+  own output depth.
+
+- **`install.sh` pruned by current prefixes.** The `case` matched only the
+  prefixes of the generation being installed, so any project skill outside them
+  was invisible to the prune and survived forever. It now matches the whole
+  namespace.
+
+- **`ci.yml` had no job timeout.** A runner that never got scheduled sat
+  looking "pending" for 15 minutes before being cancelled, against GitHub's
+  six-hour default. Capped at 20 minutes (a run is ~40s ubuntu, ~100s macos).
+
 ## [0.84.2-alpha] - 2026-10-22
 
 ### Added
