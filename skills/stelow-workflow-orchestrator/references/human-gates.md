@@ -25,10 +25,12 @@ decision** under each `review_mode` (frontmatter in `spec-product.md`,
 - **Execution start**: always automatic after planning approval. Never ask
   "shall I proceed" — that question is the workflow stalling, not diligence.
 - **Gate tool fallback**: when a gate *tool* (`visual_review`) is
-  unavailable in the host, do NOT park in chat waiting. In `Auto`, write
-  the approval receipt yourself (`.stelow/approvals/{dirHash}/{file}.approved.md`)
-  and advance; in gated modes, open a structured ask instead. A wait with
-  neither tool receipt nor open ask is a phantom wait — forbidden.
+  unavailable in the host, do NOT park in chat waiting. For a **selected**
+  gate, open the host's structured ask with the artifact under decision and
+  wait for the answer. For an **unselected** gate (or `Auto`), write the
+  approval receipt yourself (`.stelow/approvals/{dirHash}/{file}.approved.md`)
+  with `selected_by: llm` and advance. A wait with neither tool receipt nor
+  open ask is a phantom wait — forbidden.
 
 ## Rules
 
