@@ -70,13 +70,13 @@ Full onboarding for both paths:
 
 ## 📋 Skills
 
-All 32 skills live flat in `skills/` and install into `~/.agents/skills/`: **17 workflow skills + 15 product skills**. `stelow-workflow-entry` and `stelow-workflow-router` are workflow control-plane skills (bootstrap + navigation).
+All 32 skills live flat in `skills/` and install into `~/.agents/skills/`: **17 workflow skills + 17 product skills**. `stelow-workflow-entry` and `stelow-workflow-router` are workflow control-plane skills (bootstrap + navigation).
 
 | Prefix | Count | Meaning | Distribution |
 |---|---|---|---|
 | `stelow-workflow-*` | 17 | Skills that run the 18-stage workflow: the orchestrator, the stage skills, and the execution/verification support they invoke | **Core** — auto-vendored into `bb-plugin-stelow` and auto-refreshed from this repo (no manual step) |
-| `stelow-product-*` | 15 | Product strategy and domain libraries consulted during stages (reference only, none execute stages) | **Vendored too** — `bb-plugin-stelow` ships all 32 and auto-refreshes them; standalone install via `npx skills`/`install.sh` unchanged |
-| Total | **17 workflow skills + 15 product skills = 32** | Entry and router are part of the workflow family | — |
+| `stelow-product-*` | 17 | Product strategy and domain libraries consulted during stages (reference only, none execute stages) | **Vendored too** — `bb-plugin-stelow` ships all 34 and auto-refreshes them; standalone install via `npx skills`/`install.sh` unchanged |
+| Total | **17 workflow skills + 17 product skills = 34** | Entry and router are part of the workflow family | — |
 
 ### 🏗️ Workflow (17)
 
@@ -105,14 +105,16 @@ All 32 skills live flat in `skills/` and install into `~/.agents/skills/`: **17 
 
 </details>
 
-### 📚 Product (15)
+### 📚 Product (17)
 
 <details>
-<summary>15 product skills (machine-readable list — human inventory at <a href="https://calionauta.github.io/stelow/docs/skills/">docs/skills</a>)</summary>
+<summary>17 product skills (machine-readable list — human inventory at <a href="https://calionauta.github.io/stelow/docs/skills/">docs/skills</a>)</summary>
 
 | Skill | Strategy |
 |-------|----------|
-| `stelow-product-discovery` | Product discovery and validation (the short-cycle learning method) |
+| `stelow-product-discovery` | Product discovery router — routes the 8 stages to the skill or reference holding each |
+| `stelow-product-audience-market` | Stages 1-2: find the audience (SEDIF), define the market (GPN story) |
+| `stelow-product-launch-validation` | Stage 5: assess commitment — pre-sale, waitlists, fake doors, pioneer programs |
 | `stelow-product-job-to-be-done` | Job To Be Done - understand what job users hire the product to do |
 | `stelow-product-opportunity-mapping` | Map opportunities to see where to focus |
 | `stelow-product-scope-mapping` | Break a proposal into coherent vertical delivery scopes with explicit boundaries, dependencies, and open decisions |

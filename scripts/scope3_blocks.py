@@ -77,11 +77,13 @@ STAGE_OWNED_BY_SKILL = {
 # Skills that own no stage but whose work belongs to one.
 STAGE_HINTS = {
     "ads": "shape",
+    "audience-market": "context",
     "business-models": "shape",
     "discovery": "context",
     "evolutionary-principles": "context",
     "health": "audit",
     "job-to-be-done": "context",
+    "launch-validation": "shape",
     "marketplace-playbook": "shape",
     "multi-method-market-analysis": "context",
     "open-source": "shape",

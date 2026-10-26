@@ -95,9 +95,15 @@ The way price is presented has a profound impact on how it is perceived.
 
 **Magnitude Perception (Endings 5, 7, and 9)**: left-digit effect — the brain processes the first digit from the left as an anchor for magnitude perception. That's why 9.99 seems significantly cheaper than 10.00.
 
+**Fluency (Abbreviations)**: for larger numbers, presenting "1.2k" instead of "1,200" shortens the number, making it visually lighter and faster to read, inserting it into a more digital and modern language.
+
 **Time (Temporal Reframing)**: fractioning into smaller and more palatable time unit. Software that costs R$ 365 per year can be presented as "just R$ 1 per day". Anchors the cost to a trivial daily expense.
 
 **Decoy (The Decoy Effect)**: introduce a third price option intentionally less attractive, to make one of the others look better in comparison.
+
+**Sum of Parts (Partitioned Pricing)**: instead of a single price, break the total cost into smaller parts (e.g. R$ 80 for the product + R$ 20 for shipping instead of R$ 100 with free shipping). The bet is that the customer anchors on the lower base price. ⚠️ Requires care — if the partitioning is not transparent it reads as a "hidden fee" and generates distrust.
+
+**Discount Frame — the "Rule of 100"**: for products costing less than 100, a percentage discount seems larger (25% off an R$ 80 item sounds better than R$ 20 off); for products above 100, the absolute value seems more significant (R$ 250 off a R$ 1,000 item sounds better than 25% off). Use the frame that presents the largest nominal number.
 
 **Recontextualization (Value Anchoring)**: instead of anchoring the price on direct competitors, anchor on the **value of the solution you replace**. Example: an AI agent that performs sales should not be compared to other software, but rather to the cost of a salesperson's salary.
 
@@ -110,7 +116,7 @@ In a saturated market, where customers feel increasingly trapped in services by 
 Building a "trust pact" means designing the commercial relationship in a way that gives power and autonomy to the customer. It rests on three principles:
 
 **1. Contractual Freedom (The Right to Exit)**
-The customer can end the relationship whenever they want, without bureaucratic barriers or punitive fines. *The message: the customer stays for the quality of the service, not for a contractual obligation.*
+The customer can end the relationship whenever they want, without bureaucratic barriers or punitive fines. In finite-term licence plans the relationship ends by default, with no automatic renewals; in recurring plans, cancellation is simple and immediate. *The message: the customer stays for the quality of the service, not for a contractual obligation.*
 
 **2. Financial Freedom (Insurance Against Initial Risk)**
 Ensures that if a customer changes their mind — especially in the first few months — they don't lose their entire investment. Mechanics: fair refund with the returned value deducting only the usage period calculated based on the standard price, without discount.
