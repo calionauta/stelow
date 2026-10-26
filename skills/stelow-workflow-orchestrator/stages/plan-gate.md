@@ -17,6 +17,11 @@ The tool returns `{ decision, feedback }`:
 - `annotated` — review feedback and revise the tech plan, then re-submit to plan-gate
 - `dismissed` — skip gate and proceed (rare)
 
+If the host registers no review tool, use its structured ask
+(`ask_user_question` or equivalent) with `plans/spec-tech_v{N}.md` attached and
+the same approve / request-changes / dismiss options. A selected gate must
+never silently approve; only `Auto` may self-approve with a receipt.
+
 ## On Approval
 
 Proceed to Execution phase.
