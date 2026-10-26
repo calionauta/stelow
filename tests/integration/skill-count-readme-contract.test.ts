@@ -258,7 +258,7 @@ describe('SW-015 — README skill-count contract', () => {
       const fromFind = runCanonicalFind();
       const fromFs = enumerateImmediateSkillDirs();
       expect(fromFind).toEqual(fromFs);
-      // Both must converge on exactly 32 source paths.
+      // Both must converge on the count derived from disk.
       expect(fromFind.length).toBe(expected.total);
       // Every entry must be an immediate child directory of skills/.
       for (const p of fromFind) {
@@ -342,6 +342,26 @@ describe('SW-015 — README skill-count contract', () => {
       expect(readme).not.toMatch(/^### .*Code\s*\(\d+\)/m);
       expect(readme).not.toMatch(/^### .*Meta\s*\(\d+\)/m);
     });
+
+    it('no bare skill-count phrase anywhere in the README disagrees with disk', () => {
+      // The section-scoped parsers above only see the `## 📋 Skills` block.
+      // A count stated elsewhere (the old "All 32 skills live flat" line sat
+      // just above the heading) was invisible to them and stayed wrong through
+      // three skill additions. Every "<n> skills" / "<a> + <b> skills" phrase
+      // in the file must agree with the filesystem.
+      const phrases = [...readme.matchAll(/(\d+)\s+skills?\b/g)];
+      expect(phrases.length, 'README states at least one skill count').toBeGreaterThan(0);
+      const known = new Set([
+        expected.workflow.length,
+        expected.product.length,
+        expected.total,
+      ]);
+      for (const [, n] of phrases) {
+        expect(known.has(Number(n)), `README says "${n} skills" but disk has ${[...known].join('/')}`).toBe(
+          true,
+        );
+      }
+    });
   });
 
   describe('Skills section summary table', () => {
@@ -354,7 +374,7 @@ describe('SW-015 — README skill-count contract', () => {
       expect(summaryRows.length).toBeGreaterThanOrEqual(3);
     });
 
-    it('reports the total "17 workflow skills + 17 product skills = 34"', () => {
+    it('reports the total "17 workflow skills + 21 product skills = 38"', () => {
       const totals = summaryRows.filter((r) =>
         r.count.includes(`${expected.workflow.length} workflow skills + ${expected.product.length} product skills = ${expected.total}`),
       );
@@ -417,7 +437,7 @@ describe('SW-015 — README skill-count contract', () => {
       return parseSkillRowsFromBlock(block!.body);
     }
 
-    it('Workflow block lists exactly the 17 workflow skills, including the orchestrator', () => {
+    it('Workflow block lists exactly the workflow skills on disk, including the orchestrator', () => {
       const rows = rowsFor('Workflow').sort();
       const expected = [...skillsByGroup.workflow].sort();
       expect(rows).toEqual(expected);

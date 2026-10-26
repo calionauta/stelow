@@ -148,6 +148,8 @@ Types of micro products to explore:
 
 ### Five product strategies (jobs to be done lens)
 
+*(Jobs-to-be-done framing from Tony Ulwick / Strategyn — Outcome-Driven Innovation.)*
+
 **Differentiated**: serve underserved consumers. Offers better performance in accomplishing the job, charging more for it. Offers unique benefits or features not found in other products, meeting specific needs in a differentiated way.
 *Examples*: Uber Black, iPhone.
 

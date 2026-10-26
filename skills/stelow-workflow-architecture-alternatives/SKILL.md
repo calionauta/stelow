@@ -240,7 +240,7 @@ In **workflow mode**, skip to `### Workflow slice` and emit a complete
 
 ```
 stage          : architecture
-description    : Architecture selection. Diverges construction directions, then a human pick via structured question in Tech-Review modes; worker adopts below that threshold (see references/human-gates.md).
+description    : Architecture selection. Diverges construction directions, then a human pick via structured question in Tech-Review modes; worker adopts below that threshold (see `../stelow-workflow-orchestrator/references/human-gates.md`).
 status         : <done|partial|blocked>
 artifacts      : <paths created or modified>
 next-candidate : <the stage scripts/stelow next reports — run `scripts/stelow next`>
@@ -259,7 +259,7 @@ The router skill consumes the next-candidate field and calls
 Workflow mode for the **architecture** stage. Standalone behavior lives in
 the rest of this file (unchanged). Summary:
 
-> Architecture selection. Diverges construction directions, then a human pick via structured question in Tech-Review modes; worker adopts below that threshold (see references/human-gates.md).
+> Architecture selection. Diverges construction directions, then a human pick via structured question in Tech-Review modes; worker adopts below that threshold (see `../stelow-workflow-orchestrator/references/human-gates.md`).
 
 Primary actions (per stages.yaml): `ask_user_question`. Run only the actions that
 produce the artifacts promised in `## Hand-off`; skip anything that does

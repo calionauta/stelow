@@ -70,7 +70,7 @@ Full onboarding for both paths:
 
 ## 📋 Skills
 
-All 32 skills live flat in `skills/` and install into `~/.agents/skills/`: **17 workflow skills + 21 product skills**. `stelow-workflow-entry` and `stelow-workflow-router` are workflow control-plane skills (bootstrap + navigation).
+All 38 skills live flat in `skills/` and install into `~/.agents/skills/`: **17 workflow skills + 21 product skills**. `stelow-workflow-entry` and `stelow-workflow-router` are workflow control-plane skills (bootstrap + navigation).
 
 | Prefix | Count | Meaning | Distribution |
 |---|---|---|---|
