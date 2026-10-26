@@ -254,18 +254,18 @@ describe('SW-015 — README skill-count contract', () => {
       const fromFs = enumerateImmediateSkillDirs();
       expect(fromFind).toEqual(fromFs);
       // Both must converge on exactly 32 source paths.
-      expect(fromFind.length).toBe(32);
+      expect(fromFind.length).toBe(34);
       // Every entry must be an immediate child directory of skills/.
       for (const p of fromFind) {
         expect(p).toMatch(/^skills\/(stelow-product-|stelow-workflow-)[^/]+\/SKILL\.md$/);
       }
     });
 
-    it('contains exactly 32 paths, exactly one orchestrator, exactly 31 other skills', () => {
-      expect(sources).toHaveLength(32);
+    it('contains exactly 34 paths, exactly one orchestrator, exactly 33 other skills', () => {
+      expect(sources).toHaveLength(34);
       const orchestrators = sources.filter((s) => s.dirName === ORCHESTRATOR_DIR);
       expect(orchestrators).toHaveLength(1);
-      expect(subSkills).toHaveLength(31);
+      expect(subSkills).toHaveLength(33);
       expect(orchestrator).toBeDefined();
     });
 
@@ -280,14 +280,14 @@ describe('SW-015 — README skill-count contract', () => {
   });
 
   describe('frontmatter group counts (derived from source)', () => {
-    it('inclusive counts are workflow 17 / product 15', () => {
+    it('inclusive counts are workflow 17 / product 17', () => {
       // Inclusive: entry/router, orchestrator, and every stage skill.
       expect(skillsByGroup.workflow).toHaveLength(17);
-      expect(skillsByGroup.product).toHaveLength(15);
-      // Sanity: 17 + 15 = 32.
+      expect(skillsByGroup.product).toHaveLength(17);
+      // Sanity: 17 + 17 = 34.
       expect(
         skillsByGroup.workflow.length + skillsByGroup.product.length,
-      ).toBe(32);
+      ).toBe(34);
     });
 
     it('frontmatter category matches the directory prefix for every skill', () => {
@@ -349,9 +349,9 @@ describe('SW-015 — README skill-count contract', () => {
       expect(summaryRows.length).toBeGreaterThanOrEqual(3);
     });
 
-    it('reports the total "17 workflow skills + 15 product skills = 32"', () => {
+    it('reports the total "17 workflow skills + 17 product skills = 34"', () => {
       const totals = summaryRows.filter((r) =>
-        r.count.includes('17 workflow skills + 15 product skills = 32'),
+        r.count.includes('17 workflow skills + 17 product skills = 34'),
       );
       expect(totals.length).toBeGreaterThanOrEqual(1);
       // The row is the totals row; its category label can be `Total` or
@@ -362,7 +362,7 @@ describe('SW-015 — README skill-count contract', () => {
       }
     });
 
-    it('reports inclusive numeric counts: workflow 17 / product 15', () => {
+    it('reports inclusive numeric counts: workflow 17 / product 17', () => {
       function expectRowWith(categoryToken: string, expectedCount: number) {
         const matching = summaryRows.filter((r) =>
           r.category.toLowerCase().includes(categoryToken.toLowerCase()),
@@ -375,7 +375,7 @@ describe('SW-015 — README skill-count contract', () => {
         }
       }
       expectRowWith('workflow', 17);
-      expectRowWith('product', 15);
+      expectRowWith('product', 17);
     });
   });
 
@@ -386,9 +386,9 @@ describe('SW-015 — README skill-count contract', () => {
     const blocksByHeading = new Map<string, Level3Block>();
     for (const b of blocks) blocksByHeading.set(b.title, b);
 
-    it('contains exactly 2 level-3 blocks: Workflow (17) / Product (15)', () => {
+    it('contains exactly 2 level-3 blocks: Workflow (17) / Product (17)', () => {
       expect(blocks).toHaveLength(2);
-      const expectedHeadings = ['Workflow (17)', 'Product (15)'];
+      const expectedHeadings = ['Workflow (17)', 'Product (17)'];
       const actualLabels = blocks.map((b) => {
         const parsed = extractSkillNameCountFromHeading(b.title);
         return parsed ? `${parsed.label} (${parsed.count})` : b.title;
@@ -425,7 +425,7 @@ describe('SW-015 — README skill-count contract', () => {
       expect(rows).toEqual(expected);
     });
 
-    it('blocks are disjoint and union with orchestrator equals all 32 source names', () => {
+    it('blocks are disjoint and union with orchestrator equals all 34 source names', () => {
       const workflowRows = rowsFor('Workflow');
       const productRows = rowsFor('Product');
       const allRows = [...workflowRows, ...productRows];
@@ -439,7 +439,7 @@ describe('SW-015 — README skill-count contract', () => {
       // Set equality with the canonical source set.
       const expected = new Set(sources.map((s) => s.dirName));
       expect(new Set(allRows)).toEqual(expected);
-      expect(allRows).toHaveLength(32);
+      expect(allRows).toHaveLength(34);
     });
   });
 });

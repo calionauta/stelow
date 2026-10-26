@@ -1,85 +1,10 @@
-# Stages 1 to 3: Audience, Market, and Solutions
+# Stage 3: Define and Prioritize Solutions
 
 ---
 
-## Stage 1 🔎 — Find and Understand the Audience
-
-**Objective**: explore the "problem space" — contexts, difficulties, and needs of people who are actively seeking to solve something. It's not to validate your idea, but to deeply understand the audience.
-
-**Tips**:
-1. If you already have a solution idea, it's still worth going through this stage to better understand the audience.
-2. If you don't have time/resources, explore with AI — especially purposes that people want to accomplish and related needs.
-3. Useful tools: GummySearch, AnswerThePublic, Glimpse, Google Trends, Globe.engineer.
-
-### How to Find People — SEDIF Model
-
-*(S=Follow, E=Entertain, D=Invest Money, I=Go/Attend, F=Frequent — 4 practical dimensions)*
-
-**Follow**: who do they follow or which people inspire them? (friend network, work colleagues, authors and influencers on social media)
-
-**Entertain**: how do they have fun? (hobbies, places)
-
-**Invest**: what do they invest money and time in? (conferences, events, stores that sell resources they use)
-
-**Frequent**: what places do they usually frequent (physical or virtual) to talk about the subject? (forums and communities — Facebook, Reddit, etc.)
-
-### How to Create a Space to Gather People:
-- **Webinar** on the topic — to register, ask for name and contact.
-- **WhatsApp or Telegram group** bringing together people who want to discuss the topic (or Discord server).
-- **Quiz** on the topic helping the person evaluate their knowledge — to receive the result, ask for name and email. Tools: Tally, Scoreapp, Limesurvey (open-source).
-
-### How to Understand People:
-Discover:
-- What is the person's context when facing the current challenge?
-- What is the person's purpose at that moment?
-- What are the needs related to that purpose?
-
-**Conduct interviews** as open conversations without pressure or fixed structure — people should feel like they're "chatting". Consult the summary of the book *The Mom Test* to learn how to have this type of conversation.
-
-Other sources: past conversations, interviews, and surveys on the subject (company files, internet), support tickets.
-
-**Remember**:
-- Don't talk about your idea: focus on the problem you want to understand.
-- Talk about past experiences, not the future. Instead of "what would you do if...?", ask "tell me about the last time you needed...".
-
----
-
-## Stage 2 🗺 — Define the Market
-
-**Objective**: translate learnings from stage 1 into a clear market definition — not generic, but as a group of people trying to accomplish a specific purpose.
-
-**Market Definition (Jobs to Be Done)**:
-> A **(1) group of people** who want to accomplish a **(2) functional purpose** (action or expected result).
-
-⚠️ Focus on **functional purpose** (action or expected result), not emotional or social purposes. Emotional and social are important for improving experience and communication, but don't offer practical direction for innovation.
-
-### Examples of Markets with Functional Purposes:
-- [Music enthusiast] who wants to [listen to music]
-- [Person] who wants to [find a new job]
-
-### Segments
-Segment = group of people trying to achieve the same purpose, but facing different challenges.
-
-Examples:
-- [Music enthusiast] who wants to [listen to music] [while on the street]
-- [Unemployed person with long professional experience] who wants to [find a new job]
-- [Person] who wants to [find a new job] [in a new city or country]
-
-Your definition can be the broad group or directly a specific segment. Strategically, focus on 1–3 segments.
-
-### GPN Story (Group, Purpose, Needs)
-
-After defining the market and refining the list of needs, elaborate:
-
-> As [group — general or segment] who wants to [purpose] [optional: context], I want a solution that makes it easier, faster, cheaper, and more accurate to: [need 1], [need 2], [need 3]...
-
-**Example**:
-> As [unemployed person with long professional experience] who wants to [find a new job], I want a solution that makes it easier, faster, cheaper, and more accurate to:
-> - Identify opportunities for my experience level
-> - Demonstrate the value of my experience
-> - Prepare for the selection process
-
----
+> Stages 1 and 2 (find the audience, define the market) now live in the
+> `stelow-product-audience-market` skill, where they carry their own contract,
+> examples and edge cases. This file keeps stage 3 only.
 
 ## Stage 3 ✨ — Define and Prioritize Solutions
 

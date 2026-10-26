@@ -95,69 +95,9 @@ Interest: e.g., curiosity to know more, clicks on ads, email responses, etc.
 
 ---
 
-## Stage 5 🤝 — Assess Commitment
+> Stage 5 (assess commitment: pre-sale, waitlists, fake doors, pioneer programs,
+> price discovery) now lives in the `stelow-product-launch-validation` skill.
 
-**Objective**: go beyond curiosity and test real commitment. Ask people to invest something valuable: **their time or their money**. Separate curious people from true early adopters.
-
-**Tips**:
-1. Stages 4 and 5 will potentially be carried out together.
-2. Consult the pricing topic in the appendix.
-
-### Methods
-
-#### Pre-Sale
-- **Direct pre-sale to small group**: for 10 people you already have a connection with (family, friends, colleagues, referrals) — via in-person conversations, phone, or messengers.
-- **Pre-sale to email list**: if you already have an email list related to the topic, create an email with a pre-sale opportunity.
-- **Pre-sale on landing page**: create a landing page with pre-sale functionality and observe the number of sales. Tools: Notion (public page), Tally, Gumroad, Instapage, or create with AI.
-- **Pre-sale at live event or recorded webinar**: if you chose to do an event/webinar, you can do a pre-sale in it.
-- **Lifetime Deals**: to generate initial cash flow and user base quickly. Lifetime access for a single payment with a massive discount. Platforms: AppSumo. ⚠️ Platforms keep a high commission and the customer profile can be demanding. Evaluate with caution.
-
-#### Waitlist
-- **👉 Referral**: ask for email for waitlist and then ask for referral of up to 3 people. ⚠️ Very low commitment — serves only as a "sniff" before validating with higher commitment. But by combining with referral, you reach people you wouldn't have access to before. Tool: GetWaitlist. When contacting referred people, inform who referred them to serve as a trust bridge and increase social proof.
-
-- **🪙🏷 Symbolic Investment with Proportional Discount**: ask for email + symbolic investment to enter the list. Offer a discount proportional to the invested amount when the solution is launched. Example: to enter the list, minimum investment of R$50. When launching, discount multiplied by a predetermined factor (e.g., paid R$10, factor 10, gets R$100 discount).
-
-- **🪙💲 Symbolic Investment + Predicted Price + Proportional Discount**: variation above displaying what the predicted value of the solution is. Validates closer to reality, as people know the price beforehand. Allows changing the predicted value and seeing if more people invest the minimum amount — signal of the balance between business financial needs and the audience.
-
-- **🏷🎯 Discount with Correct Guess — Price Discovery**: ask for email for the list and ask the person to guess the price of the solution. If they guess within a 10% interval up or down, they get 30% off at launch. Allows discovering the price people are willing to pay.
-
-#### Other Methods
-- **Marketplace ad**: advertise and observe sales (Facebook Marketplace, Mercado Livre, OLX, Reddit, etc.)
-- **Contact after interview**: ask for email and phone right after interviewing about the solution to offer when it's ready. The last part (offer when ready) is important to know the level of commitment.
-- **App**: a mobile app with just one basic functionality to measure number of downloads and opens.
-- **Fake Door**: measure intention without having the product or feature. People believe that by "knocking on the door" they can "enter" — but there's nothing behind it yet. ⚠️ When someone "knocks", deliver some value to them. Delight, even without having a solution.
-- **Influencer**: offer free to an influential person in the niche, either a prototype or service for an experimentation period. In exchange, you can negotiate that they share with the audience about the future solution (with % of future sales, or don't ask for anything and enhance natural sharing).
-
-#### Pioneer Program in Exchange for Feedback
-Validates the commitment to use and collaborate. While pre-sale tests willingness to pay, here you test willingness to invest time and attention.
-
-**How it works**: execute the Pioneer Program offer defined in stage 4. For a limited group of users, grant free access and in exchange they commit to being an active source of insights.
-
-**What to observe**:
-- **Adhesion rate**: how many of the contacted pioneers accept the terms (access in exchange for feedback)?
-- **Quality of commitment**: do they actually show up for calls? Respond to surveys? Is the feedback superficial or in-depth?
-
-A pioneer who pays with time and ideas can be as committed as one who pays with money.
-
----
-
-### Pricing for Pre-Sale
-💡 Experiment with pre-sale and launch strategies described in the "Pricing" topic in the appendix.
-
-### What Risk Are We Mitigating?
-Value risk (whether people will commit: pay or use).
-
-### What to Observe (Signals)?
-As soon as "commitment" is high enough, you can validate and create a simplified version of the solution.
-
-Examples of possibilities to measure commitment:
-- X pre-sales for the next product or service
-- X subscribers on the waitlist
-- R$ X in commissions generated from affiliates
-- X listeners on your first podcast episode
-- Fully fund or X% of a crowdfunding campaign
-
----
 
 ## Stage 6 📝 — Discover the Process
 
