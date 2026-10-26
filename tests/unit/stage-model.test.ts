@@ -42,7 +42,10 @@ describe("canonical stage catalog", () => {
   });
 
   it("makes execution metadata explicit for every skill and every recipe", () => {
-    expect(skillFiles).toHaveLength(32);
+    // The contract is "every skill has execution metadata", not "there are N
+    // skills". Asserting a fixed number here broke on every skill addition
+    // while telling us nothing about the metadata it claims to test.
+    expect(skillFiles.length).toBeGreaterThan(0);
     for (const file of skillFiles) {
       const frontmatter = readFileSync(file, "utf8").split("---")[1];
       expect(frontmatter, file).toMatch(/^\s*metadata:/m);

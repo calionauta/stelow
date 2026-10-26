@@ -117,7 +117,11 @@ Invariants (encode every one; each has bitten us):
   way the phase-entry path derives it and never touch the stage.
 
 - **One primary action per state.** Destructive actions (archive, delete,
-  reseed) live behind confirm dialogs; never as the prominent choice.
+  reseed — and configuration deletes: presets, automation rules) live
+  behind confirm dialogs; never as the prominent choice. A disabled
+  control is not the protection: the RPC and the CLI reach the same
+  handler the dialog calls, so the refusal is enforced at the save
+  boundary and asserted by a server test.
 - **Completed reopens only through defined paths** (user comment on
   lightweight tracks; explicit reseed/move) — never as a poll side effect.
 - **Done is an explicit commit, never an inference.** The worker declares
@@ -686,6 +690,10 @@ X ago" + inventory dialog) — silent syncs become mystery meat otherwise.
   run files, and what explicitly survives (e.g. Git checkouts) before
   anything runs — the dialog text must match what the handler deletes,
   in both directions (no silent leftovers, no silent preservation).
+  Name it from data the dialog already loads (band and role pins) rather
+  than a static sentence that rots; what the dialog cannot see (card
+  pins) stays a post-confirm server refusal, surfaced where the action
+  was taken instead of inside a collapsed disclosure.
 - **Sync is the refresh signal for file-owned state**: when workers edit
   tracking files the host cannot watch, an idempotent sync command the
   worker runs after each edit doubles as the notify — the host publishes

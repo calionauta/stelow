@@ -28,7 +28,7 @@ independent of the orchestrator.
 | `stelow-workflow-testing-execution` | Post-implementation testing protocol |
 | `stelow-workflow-coding-standards` | Coding standards (KISS, DRY, LoB, SoC, Fail Fast, YAGNI, size limits) |
 
-## Product (15)
+## Product (21)
 
 Nine are **domain libraries**, detected from your language at the context stage (eight carry explicit signal rows; paywall is consulted without one); six are **method playbooks** used across the context, triage, and scope stages.
 
@@ -43,7 +43,13 @@ Nine are **domain libraries**, detected from your language at the context stage 
 | `stelow-product-health` | domain | Product health metrics (signals in tension) |
 | `stelow-product-marketplace-playbook` | domain | Marketplace dynamics |
 | `stelow-product-business-models` | domain | Business model options |
-| `stelow-product-discovery` | method | Short-cycle product validation |
+| `stelow-product-discovery` | method | Short-cycle method router: 8 stages → owning skill/reference |
+| `stelow-product-audience-market` | method | Stages 1-2: find the audience, define the market |
+| `stelow-product-launch-validation` | method | Stage 5: assess commitment before building |
+| `stelow-product-solutions` | method | the 9 components of a desirable solution, impact/risk matrix |
+| `stelow-product-offer` | method | the offer, Pioneer Program, promoters, channels |
+| `stelow-product-manual-process` | method | valuable manual process — concierge, wizard of oz, high-risk system validation |
+| `stelow-product-viable-business` | method | four fits, first stepping stone, channels, signal lenses |
 | `stelow-product-job-to-be-done` | method | Segmentation, job map, desired outcomes |
 | `stelow-product-opportunity-mapping` | method | Ranked solutions for a problem |
 | `stelow-product-multi-method-market-analysis` | method | PESTLE, foresight, Delphi, Wardley maps |

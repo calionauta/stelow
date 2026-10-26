@@ -305,6 +305,64 @@ Balance:
 with
 - exploration.
 
+# Innovating the Product Lifecycle
+
+Lifecycle activities complement the innovation strategy by meeting success criteria in
+each stage. Doing so optimizes the user's perception and experience with the solution
+and with the providers involved.
+
+It can be the **main** innovation strategy when the product has become a commodity.
+
+> Tony Ulwick: *"The goal is to innovate the product so that the jobs in the
+> consumption chain disappear — create a product that doesn't need to be installed,
+> configured, interacted with, repaired, maintained, and so on. Eliminating the need to
+> execute one or more jobs in the consumption chain makes a product easier to use and
+> less expensive."*
+
+**As a general rule**: people don't want to perform these activities. They deal with
+them out of necessity.
+
+**Attention**: automating or removing *all* activities can backfire. The **Ikea Effect**
+describes how consumers attribute disproportionate value to products they partly or
+fully created — a level of effort can be positive. Some people also use apparently
+trivial tasks to practise mindfulness and connect with the present.
+
+## Consumption chain (timeline and activities)
+
+**Pre-contemplation**
+- Recognise a need (problem or frustration)
+- Seek information on how to solve it
+
+**Contemplation**
+- Search for existing solutions for this specific problem
+
+**Preparation**
+- Compare solutions
+- Acquire the product (order, pay, or subscribe)
+- Pick it up from the supplier or receive it
+- Check it is the correct product
+- Store it
+
+**Action**
+- Install the product
+- Learn to use it
+- Configure it
+- Test it
+- Import settings or data from the previous solution
+- Integrate it with other solutions
+- Prepare for use
+- Use it
+
+**Maintenance**
+- Clean the product
+- Perform preventive maintenance
+- Repair it
+- Store it when not in use
+- Replace or update it
+
+**Dispose of the product**
+- Cancel, recycle, sell, donate, or discard
+
 ---
 
 # Interaction & Output

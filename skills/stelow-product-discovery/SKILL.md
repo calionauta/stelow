@@ -1,14 +1,14 @@
 ---
 name: stelow-product-discovery
 description: >
-  [stelow] Complete expert in the short-cycle product learning method,
-  based on the e-book "Guide to Creating Products with Short Learning Cycles" by calionauta.
-  Use this skill whenever the user asks about: idea validation, customer discovery,
-  product experimentation, jobs to be done, pricing strategies, business models, marketing channels,
-  early adopters, MVP, product-market fit, pre-sales, launch strategies, product innovation,
-  product lifecycle, building customer trust, marketplace, open source as strategy,
-  or any concept related to creating and validating digital products with low risk and fast learning.
-  This skill contains ALL the method details — do not skip any detail.
+  [stelow] Orchestrator for the short-cycle product learning method: routes the eight
+  stages to the skill or reference that holds each one, and names what each stage
+  produces. Use this skill whenever the user asks about: idea validation, customer
+  discovery, product experimentation, jobs to be done, pricing, business models,
+  marketing channels, early adopters, MVP, product-market fit, pre-sales, launch
+  strategies, product innovation, product lifecycle, trust, marketplace, open source
+  as strategy, or any question about creating and validating digital products with low
+  risk and fast learning. Start here; it points at the right skill for the stage.
 metadata:
   frequency: monthly
   category: product
@@ -23,112 +23,177 @@ metadata:
   author-url: https://github.com/calionauta
 ---
 
-# Product with Short Learning Cycles
+# Product with Short Learning Cycles — Router
 
-This guide is a method to replace speculation with evidence, step by step.
-**Core principle**: experiment before building. Reduce uncertainty with small, fast, and cheap experiments.
+This guide replaces speculation with evidence, step by step.
+**Core principle**: experiment before building. Reduce uncertainty with small, fast,
+cheap experiments.
 
 > "Life is too short to build something that nobody wants." — Ash Maurya
 
-## Method Structure
+The method has **8 stages**, not necessarily linear. This skill routes; the content of
+each stage lives in the skill or reference named in the map below. Read the target, not
+this page, once you know which stage you are in.
 
-The process has **8 stages** (not necessarily linear):
-1. Find and understand the audience
-2. Define the market
-3. Define and prioritize solutions
-4. Develop and evaluate the offer
-5. Assess commitment
-6. Discover the process
-7. Evolve to a viable business
-8. The pulse of the system: signals in tension
+## Stage map
 
-**→ Read reference files as needed:**
-- `references/01-experimentation-principles.md` — criteria for reliable data + 6 principles
-- `references/02-stages-1-to-3.md` — audience, market, solutions
-- `references/03-stages-4-to-6.md` — offer, commitment, manual process
-- `references/04-stage-7.md` — viable business, product-market fit, channels
-- `references/05-stage-8-signals.md` — pulse of the system, signals in tension
-- `references/06-appendix-business-models.md` — business models, open source, pricing
-- `references/07-appendix-strategies.md` — marketplace, solutions, trust, bonuses, promotions, ads, lifecycle
+| # | Stage | Where it lives | Artifact it produces |
+|---|---|---|---|
+| 1 | Find and understand the audience | `stelow-product-audience-market` | interview notes |
+| 2 | Define the market | `stelow-product-audience-market` | GPN story (group, purpose, needs) |
+| 3 | Define and prioritize solutions | `stelow-product-solutions` | prioritized solution list |
+| 4 | Develop and evaluate the offer | `stelow-product-offer` | offer definition |
+| 5 | Assess commitment | `stelow-product-launch-validation` | pre-sales / waitlist counts |
+| 6 | Discover the process | `stelow-product-manual-process` | manual delivery script |
+| 7 | Evolve to a viable business | `stelow-product-viable-business` | product-market fit verdict + channel |
+| 8 | The pulse of the system | `stelow-product-health` | signal tension read |
 
-## When to Read Each Reference
+Before any stage, the reliability rules for evidence live in the Evidence section of
+this file, below. Read it when a stage result looks convincing but weak.
 
-| User asks about... | Read... |
+## Reference files
+
+None. Stages 1 through 8 all resolve to skills, and the evidence rules live in this file.
+The method's sources (Maurya, Kagan, Savoia, Lavingia, Hormozi, Ulwick, NFX and others)
+are credited where they are used, in the skill that applies them — there is no central
+bibliography, because a list of books nobody opens is not a reference.
+
+## Domain skills
+
+These are not stages. They are cuts you reach for by topic, in any order, when the
+question is about that domain rather than about where you are in the method:
+
+| Question | Skill |
 |---|---|
-| How to validate an idea / experiment | 01, 02 |
-| Target audience, market, jobs to be done | 02 |
-| Solution, product, features | 02, 03 |
-| Offer, advertisement, early adopters | 03 |
-| Pre-sale, commitment, waitlist | 03 |
-| MVP, manual process, concierge, wizard of oz | 03 |
-| Product-market fit, channels, viable business | 04 |
-| Metrics, retention, growth | 04, 05 |
-| Pricing, pricing models | 06 |
-| Business models, revenue, costs | 06 |
-| Open source as strategy | 06 |
-| Marketplace, supply and demand | 07 |
-| Trust, guarantees, social proof | 07 |
-| Bonuses, launch promotions | 07 |
-| Online ads, stages of awareness | 07 |
-| Product lifecycle, innovation | 07 |
+| Who is the customer, what job are they hiring for? | `stelow-product-job-to-be-done` |
+| Where is the opportunity? | `stelow-product-opportunity-mapping` |
+| What does the market look like? | `stelow-product-multi-method-market-analysis` |
+| How do I price it? | `stelow-product-pricing` |
+| What business model? | `stelow-product-business-models` |
+| How do I build trust? | `stelow-product-trust-building` |
+| How do I run the launch promotion? | `stelow-product-promotions` |
+| How do I advertise? | `stelow-product-ads` |
+| Is it a paywall funnel? | `stelow-product-paywall` |
+| Marketplace dynamics? | `stelow-product-marketplace-playbook` |
+| Open source as strategy? | `stelow-product-open-source` |
+| Is the product healthy? | `stelow-product-health` |
+| How does it evolve over time? | `stelow-product-evolutionary-principles` |
+| How do I break this into delivery scopes? | `stelow-product-scope-mapping` |
 
-## Interaction Tool Guidelines
+## Interaction tool guidelines
 
-**IMPORTANT**: When the user needs to choose between predefined options, ALWAYS use the `question` tool (if available) with enumerated format:
+**IMPORTANT**: When the user needs to choose between predefined options, ALWAYS use
+the `question` tool (if available) with enumerated format:
 - Options with short `label` and `description`
 - Examples: topic selection, next steps, etc.
 
-When `question` tool is not available, use enumerated text in chat (A/B/C/D or 1/2/3).
+When the `question` tool is not available, use enumerated text in chat (A/B/C/D or 1/2/3).
 
-**Note for this skill**: This is primarily a reference/exploratory skill. If the user wants to explore a specific concept, you may ask clarifying questions to understand context before recommending which references to read or which stage to focus on.
+This is primarily a reference/exploratory skill. If the user wants to explore a specific
+concept, you may ask clarifying questions to understand context before recommending
+which stage to focus on.
 
----
+## Rules for using this skill
 
-## Rules for Using This Skill
-
-1. **Never omit details** — the e-book is already concise; every detail matters.
-2. **Use concrete examples** from the method when explaining concepts.
-3. **Reference specific tools and tactics** mentioned in the method.
+1. **Route before answering.** Name the stage or domain, then read the skill that holds
+   it. Do not answer a stage question from this page — it carries no stage detail.
+2. **Never omit details** once routed — the e-book is already concise; every detail matters.
+3. **Use concrete examples** from the method when explaining concepts.
 4. **Preserve the order and logic** of stages when guiding the user.
-5. **Combine stages** when context demands (e.g., stages 4 and 5 often go together).
+5. **Combine stages** when context demands (e.g., stages 4 and 5 often go together;
+   they now live in two different places, so read both).
 
 ---
 
 ## Attribution
 
-This skill is based on the e-book **"Guia para criar produtos com aprendizado em ciclos curtos"** (Guide to Creating Products with Short Learning Cycles) by **calionauta**.
+This skill is based on the e-book **"Guia para criar produtos com aprendizado em
+ciclos curtos"** (Guide to Creating Products with Short Learning Cycles) by
+**calionauta**.
 
-**Author**: calionauta  
-**Substack**: [Practical Guide to Validate Ideas](https://calionauta.substack.com/p/roteiro-pratico-para-validar-ideias)  
+**Author**: calionauta
+**Substack**: [Practical Guide to Validate Ideas](https://calionauta.substack.com/p/roteiro-pratico-para-validar-ideias)
 **GitHub**: [@calionauta](https://github.com/calionauta)
 
 This skill was translated and adapted by permission and attribution to the original author.
-
----
 
 **Original Repository**: [github.com/calionauta/my-opencode-config](https://github.com/calionauta/my-opencode-config)
 
 ---
 
-## Extended Deep-Dives (Optional)
+## Evidence: collecting what really matters
 
-For specialized analysis, these standalone skills are vendored in this repo
-under `skills/` (historically published at
-[github.com/calionauta/agent-sync-public](https://github.com/calionauta/agent-sync-public/tree/main/skills)):
+### Why experiment?
 
-| Skill | Description | Lines |
-|-------|-----------|--------|
-| `stelow-product-health` | Product health monitoring via signals in tension | ~100 |
-| `stelow-product-pricing` | Pricing strategy: Exchange Base, Consumption Control, Interest Alignment, Trust Pact | ~100 |
-| `stelow-product-open-source` | OSS as business strategy: Proprietary Problem, Org Structures, Competition Protection | ~60 |
-| `stelow-product-trust-building` | 10 pillars of trust, guarantees, perception, commitment | ~60 |
-| `stelow-product-promotions` | MAGIC framework, 4 launch strategies, bonuses | ~60 |
-| `stelow-product-business-models` | Cost reduction & revenue generation models | ~80 |
-| `stelow-product-ads` | 5 awareness stages, ad categories | ~50 |
-| `stelow-product-paywall` | Paywall & onboarding monetization funnel (paywall-first build order, 3 funnel benchmarks, trial policy, web2app) | ~310 |
+Ideas bump into 3 fundamental challenges:
+- **Interpretation**: what you imagine can be radically different from what another person understands or needs.
+- **Prediction**: without concrete data, the ability to predict what people will do (and pay for) is extremely low.
+- **Confirmation bias**: natural tendency to seek evidence that confirms beliefs and ignore signs of error.
 
-**Install:** already vendored in this repo — no separate install needed.
-**Note:** These are optional enhancements. The core method works without them — the references/ contain all the necessary content.
+Building a complete product based only on an idea = betting all your chips on a single number at the roulette table.
+
+**The alternative**: experiment. Verify through experience. Stop debating opinions and start collecting real data, with real people.
+
+---
+
+### Four criteria for reliable data
+
+**1. Recent**
+The more recent the data, the more relevant. The world moves fast; a truth from yesterday can be a fragile assumption today. Focus on what was observed in the last few days, weeks, or months.
+
+**2. Strong relevance**
+The data must directly answer the main assumption and context. Pragmatic filter: *"Does this information help me decide on the next step?"*
+
+**3. Provenance**
+Knowing where the data comes from — who collected it, in what context, with what intention. The origin calibrates trust.
+
+**4. Learning saturation (sufficient sample)**
+The answer to "how many people?" depends on the moment:
+
+**Moment 1 — Exploration (High Uncertainty)**
+- Intention: to understand, not to prove a thesis.
+- Seek depth and variety, not large numbers.
+- Talk to people with different approaches and perspectives.
+- Focus on: recent frustrations, attempts to solve, time/money spent.
+- Stop when you reach saturation: new conversations only repeat what you already know.
+- **Few rich conversations > hundreds of superficial responses.**
+
+**Moment 2 — Experimentation (Well-Defined Hypothesis)**
+- You already have a simulated, low-cost version of the idea.
+- It's no longer just conversation; you're observing commitment and usage.
+- Sample size gains greater importance here.
+
+---
+
+### Six principles for experimentation
+
+Use as filters to learn more effectively and economically:
+
+**Smaller distance**
+Where I am or very close to me. Proximity to the source reduces complexity and collection time.
+
+**Smaller dependency**
+Myself (or someone available) with what I have now. Less dependency on external resources = more agility.
+
+**Smaller time**
+Now or as soon as possible. Impose a time limit:
+- Noah Kagan: *"Validating is finding 3 customers in 48 hours who will pay money for your idea."*
+- Marty Cagan: *"Never go more than two weeks without putting your ideas in front of real users and customers."*
+
+**Smaller money**
+Free or as cheap as possible. The value is in the learning, not in the initial investment.
+
+**Adjust before giving up**
+It's unlikely that the first version will be the "right" one. Initial data are invitations to adjust, refine, and test again. **Test → adjust → repeat.**
+
+**Confirm before evolving**
+Conduct more experiments before considering that you have a stable solution. Seek validation that you're on the right track, not confirmation of arrival at the final destination.
+
+**Where these rules come from** — the discipline above is not invented here: Alberto Savoia's
+*The Right It* (validate before building), Justin Wilcox's FOCUS framework, and Ryan
+Robinson's 30-day / under-$500 validation routine all describe the same constraint from
+different angles. When a stage feels like it deserves an exception, those are the sources
+to check first.
 
 ## Completeness contract
 

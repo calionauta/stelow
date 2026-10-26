@@ -26,6 +26,12 @@
       "install": "npx skills add calionauta/stelow -g",
       "skills": [
         "stelow-product-discovery",
+        "stelow-product-viable-business",
+        "stelow-product-manual-process",
+        "stelow-product-offer",
+        "stelow-product-solutions",
+        "stelow-product-audience-market",
+        "stelow-product-launch-validation",
         "stelow-product-job-to-be-done",
         "stelow-product-opportunity-mapping",
         "stelow-product-multi-method-market-analysis",

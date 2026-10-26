@@ -18,6 +18,8 @@ disable-model-invocation: true
 
 # Stimulating Marketplace: Supply and Demand
 
+*(The "white-hot center" concept used here comes from NFX.)*
+
 ## 19 Tactics to Stimulate Marketplaces
 
 ### Getting the Core Dynamics Right

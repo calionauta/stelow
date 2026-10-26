@@ -2,7 +2,7 @@
 name: stelow-workflow-tech-planning
 description: >
   [stelow] Technical planning and scope sequencing skill. Generates typed scopes
-  (feature/optimization/spike + test-*), sequences them, and creates goals (see references/cli-tools/goals.md).
+  (feature/optimization/spike + test-*), sequences them, and creates goals (see `../stelow-workflow-orchestrator/references/cli-tools/goals.md`).
   For software products, also generates testing-strategy.md via stelow-workflow-testing-ai-code.
   Part of stelow but can be used standalone.
 metadata:
