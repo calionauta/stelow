@@ -3,6 +3,64 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.86.0-alpha] - 2026-10-27
+
+The JTBD skill now answers instead of filling. Every slot carries a status, and
+the artifact a run produces depends on what the person does with it.
+
+### Added
+
+- **`references/00-evidence-policy.md`.** Six statuses, the warrant test with the
+  verb check, and three intake lanes (`material`, `research`, `none`). An item
+  that cannot cite the fragment which entails it is a bet, not a finding.
+
+- **`references/11-switch-interview.md`.** Timeline plus the four forces (push,
+  pull, anxiety, habit). `SKILL.md` promised a forces diagram since the skill was
+  written and no prompt produced one.
+
+- **The betting record.** `option → step`, the bet, the check, and the step where
+  the causal chain starts. Six bet kinds — Boundary, Actor, Step, Segment, Value,
+  Option — of which only the last needs an options table.
+
+### Changed
+
+- **Quotas became depth bands.** Exactly 5 thinking styles, 20 contextual jobs,
+  12 role headings and 30→20 financial criteria were counted targets the material
+  could not support. Bands scale with `quick`/`standard`/`deep`, and `deep` is
+  capped by the lane: detail over absent material is structure, not evidence.
+
+- **Phases are coverage tags, not map structure.** The map no longer forces two
+  steps per phase. A phase may hold zero, with a reason.
+
+- **Twelve role verdicts instead of a cast.** Every role is answered — populated,
+  hypothesis, not applicable, same actor, or open — and none is filled with an
+  invented person.
+
+- **Metrics per risky step.** Time, error, effort and completion, each with a
+  required source. `nenhuma` downgrades the metric to a bet.
+
+- **Emotional and social jobs are anchored to a step**, with an observable
+  signal. A feeling with no moment cannot be designed for.
+
+- **Closing is not depth.** Every run ends in a reading; a bet and an option
+  table are independent extensions, so a consultant can want a deep map plus a
+  bet, and a founder a quick bet with no report.
+
+### Fixed
+
+- **A forces diagram that was promised and never produced.**
+- **A rule forbidding `write` while a phase was named `Document and Share`.**
+- **Per-segment outcomes and constraints** duplicated Prompt 7 at lower quality;
+  replaced by scene, observable difference and cost of failure.
+- **Two identical runs produced opposite verdicts.** Asymmetry now precedes tie:
+  if one option's failure can produce the other's symptom, the verdict is
+  directional with the chain named.
+
+### Removed
+
+- **`Alternative` as a per-criterion field.** The rewrite stays as a QA step and
+  one short cell in the summary table.
+
 ## [0.85.0-alpha] - 2026-10-26
 
 Every `stelow-product-*` stage below 8 is now its own skill. `discovery` stops
