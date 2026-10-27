@@ -246,7 +246,7 @@ Verify the proposal is technically achievable.
 - [ ] Complexity is expressed in relation to other scopes, not in isolation
 - [ ] Justification: "Scope A is more complex than Scope B because..."
 
-### Scope Fit (appetite_fit):
+### Scope Fit (legacy `appetite_fit` field):
 - [ ] Scope count within the ceiling of 9 (discovered, never a target)
 - [ ] Exploration depth matches declared breadth (direction counts + hybrid)
 - [ ] Verification rigor matches declared quality (production full, experimental reduced and marked as probe)
