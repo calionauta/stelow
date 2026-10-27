@@ -338,7 +338,7 @@ Used in the setup stage for workflow stage selection and safe-change.
 > **Batching rule:** ask independent questions in ONE `ask_user_question`
 > call (repeat question blocks, as below) — the user answers them together
 > instead of being pinged one by one. Ask dependent questions (Q2 needs
-> Q1's answer) one at a time. Exception: Appetite (Pattern 7) and Review
+> Q1's answer) one at a time. Exception: Run Knobs (Pattern 7) and Review
 > Mode (Pattern 8) stay separate calls — that split is deliberate decision
 > sequencing, not data dependency.
 
@@ -360,7 +360,7 @@ Select the desired stages:`,
         },
         {
           label: "Interface Alternatives",
-          description: "Explore appetite-scaled interface directions with ASCII wireframes, breadboarding and trade-offs. → Automatically activates Product Critique + Review Gate."
+          description: "Explore knob-scaled interface directions with ASCII wireframes, breadboarding and trade-offs. → Automatically activates Product Critique + Review Gate."
         },
         {
           label: "Tech Planning Sequencing",
@@ -505,7 +505,7 @@ Review Mode will be asked separately in the next step.`,
 When presenting knob options to the user:
 
 1. **NEVER reference time or calendar duration** (days, weeks, months, sprints, etc.) in the question text, option labels, or descriptions. Knobs define **consideration breadth and verification rigor only**.
-2. **NEVER say "Lean = 1 week" or similar time-based framing, and NEVER map the old appetite labels to time.** The original method used appetite as a calendar window (6 weeks); stelow caps breadth and rigor, not calendar duration. Wall-clock time is not predictable under LLM execution.
+2. **NEVER say "Lean = 1 week" or similar time-based framing, and NEVER map the retired Lean/Core/Complete labels to time.** The original method used a calendar window (6 weeks); stelow caps breadth and rigor, not calendar duration. Wall-clock time is not predictable under LLM execution.
 3. If the user asks "how long will this take?", respond: "Knobs control breadth and rigor, not duration. Execution time depends on scope complexity, not the knob labels."
 4. If the user asks for the old Lean/Core/Complete labels, map them once through the legacy table above and continue with knobs.
 
@@ -513,10 +513,10 @@ When presenting knob options to the user:
 
 ## Pattern 8: Review Mode
 
-Used by `setup:16` after appetite is declared. Defines which gates and approvals are active.
+Used by `setup:16` after the run knobs are declared. Defines which gates and approvals are active.
 
-> **Trigger:** After appetite selection, before stage selection.
-> **⚠️ This is a SEPARATE question from Pattern 7 (Appetite).** Always call it as its own `ask_user_question` call. Never combine it with the appetite question.
+> **Trigger:** After knob selection, before stage selection.
+> **⚠️ This is a SEPARATE question from Pattern 7 (Run Knobs).** Always call it as its own `ask_user_question` call. Never combine it with the knobs question.
 
 ```typescript
 ask_user_question({
@@ -524,7 +524,7 @@ ask_user_question({
     question: `How much human review during the workflow?
 Review Mode sets which gates, questions, and approvals are active.
 It also controls gap resolution — who resolves gaps the Plan Critique finds.
-Review Mode is orthogonal to appetite: appetite defines depth, review mode defines human oversight.`,
+Review Mode is orthogonal to the knobs: the knobs define depth, review mode defines human oversight.`,
     header: "Review",
     options: [
       {
@@ -661,7 +661,7 @@ Rules for this pattern:
    openable source of truth — they compose, never compete. A missing file
    degrades to the preview and never blocks the question.
 8. **Batch independent questions** in one call (repeat question blocks);
-   sequence dependent ones. Appetite (Pattern 7) and Review Mode
+   sequence dependent ones. Run Knobs (Pattern 7) and Review Mode
    (Pattern 8) always stay separate — deliberate sequencing, not dependency
 9. **Stage-gate options carry their destination and the recommendation.**
    Every option ends with where it goes ("→ goes to critique", "→ back
