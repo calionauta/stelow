@@ -1,125 +1,116 @@
-# Prompt 5: Job Actors — All Actors Involved in the Job and Market
+# Prompt 5: Job Actors — twelve verdicts
 
 **Source:** https://calionauta.substack.com/p/prompt-ia-descoberta-dos-atores-envolvidos
 
-**When to use:** To identify all actors involved in a Job To Be Done: beneficiaries,
-performers, providers, decision makers, buyers, influencers, experts, and more.
+**When to use:** to find every role around a job — who benefits, who performs, who
+pays, who decides, who is exposed. Run after the job is defined.
 
-**Variables to fill in:**
-- `[include here the market definition of the segment, if chosen by the user, or job to be done mapped]`
+**Variables:** `{{Job}}`, optional `{{Segment}}`, `{{Depth}}`.
+
+**Read first:** `00-evidence-policy.md`.
 
 ---
 
-## Prompt Completo
+## Prompt
 
 ```
-## Discover the actors involved in the Job To Be Done
-{{Job to be done}}: [include here the market definition of the segment, if chosen by the user, or job to be done mapped] 
+Job: {{Job}}
+Segment: {{Segment}}
 
-### Roles
+The twelve roles are slots that must be ANSWERED, not populated. Every role gets
+one verdict. A role the job cannot have is `Not applicable` with a reason, never
+a fabricated actor.
 
-*   **Beneficiary:**
-    *   Group of people who directly benefit from the Job To Be Done.
-    *   "Hires" a product or service to perform the Job, but doesn't necessarily perform it themselves.
-    *   Must be plural.
-    *   The job to be done must describe what the beneficiary wants to achieve, not what the performer does.
-    *   The performer's role is to enable the beneficiary to achieve that desired outcome.
-    *   Be as specific as possible but don't assume a restricted group that could exclude other possible groups.
-    *   **List up to 3 beneficiaries, if they exist, and there may be only 1.**
+## Roles
 
-*   **Performer:**
-    *   Group of people (important: not solutions, devices or technologies) who perform the core action of the Job to be Done, especially when the Beneficiary cannot do it.
-    *   The Job to be Done statement of the Performer must be identical to the Beneficiary's, with the addition of the context like 'for the benefit of [Beneficiary]' when the groups are distinct.
-    *   Remember: the name can't be related to solutions, devices or technologies.
-    *   The focus should be on the core action that satisfies the Beneficiary's need.
-    *   **List up to 3 performers, if they exist, and there may be only 1.**
+- **Beneficiary** — who benefits from the job, whether or not they perform it.
+- **Performer** — who performs the core action when the beneficiary cannot or does
+  not. Never a solution, device or technology.
+- **Provider** — who enables the performer.
+- **Indirect Beneficiary** — who else benefits from the same result.
+- **Threatened** — who (people, living beings, systems) can be harmed when the job
+  is done well.
+- **Assistant** — who assists at the moment of execution.
+- **Decision Maker** — who authorizes the job to be done.
+- **Purchaser** — who decides the form of payment and contracting.
+- **Buyer** — who makes the purchase in the specific context.
+- **Supervisor** — who answers for the final result.
+- **Influencer** — who pushes someone to perform the job or choose a solution.
+- **Expert** — who knows the job deeply without executing it.
 
-*   **Provider:**
-    *   Group of people who provide, help, or enable the performer to perform the Job.
-    *   Must be plural.
-    *   List the top 3 if more than one provider exists.
-    *   The Job to be done must describe what the provider does.
-    *   The provider role is to enable the performer to achieve that desired outcome.
-    *   Be as specific as possible but don't assume a restricted group that could exclude other possible groups.
+## Rules
 
-*   **Indirect Beneficiary:**
-    *   Group of people who indirectly benefit from the job in addition to the performer and the direct beneficiary, or who could benefit from the same result of the job as the beneficiary themselves.
-    *   Indicate the 3 main indirect beneficiaries, different from the direct beneficiary.
+1. All twelve roles appear, in order. Silent omission is not allowed.
+2. `Input-derived` or `Inference — high confidence` requires a warrant: the
+   fragment of the job, the segment or the user's material that entails the role.
+   No warrant, no high confidence.
+3. `Hypothesis — bet` has a ceiling of three per map, each with the cheapest check
+   that would confirm or kill it.
+4. Never a person. No first name, no invented tenure, no invented title, no emoji.
+   A role class — "compras corporativas", not "Marina, gerente de compras".
+5. A role that exists but is not distinct is `Mesmo ator que {role}`. Reserve
+   `Not applicable` for a role the job genuinely cannot have.
+6. `Not applicable` cites scope: say which part of the job leaves the role out. If
+   the exclusion rests on an assumption, the status is `Hypothesis — bet`.
+7. Beneficiary is a role class, never a segment. "Small accounting firms" is a
+   segment; the beneficiary is "owners and partners of the firms".
+8. If the job statement names an actor, decide whether it is the Beneficiary or the
+   Performer, and say which.
+9. Beneficiary and Performer market statement: `{role class} trying to {job, verb
+   first} {context}`. No possessive pronouns, no redundancy between actor and job.
 
-*   **Threatened:**
-    *   Group of people, living beings, or systems that may end up suffering negative consequences when this job is done.
-    *   Consider different contexts and circumstances.
-    *   Give a quick explanation of the reasons.
-    *   Give the top 3.
+## Output
 
-*   **Assistant:**
-    *   Group of people who assist the performer at the time of executing the Job.
-    *   For example: in surgery, the nurse assists the doctor who performs the surgery.
-    *   Give the top 3.
+The header row is fixed and stays in English: it is schema, like the statuses.
+Translate the content, never the headers.
 
-*   **Decision Maker:**
-    *   Group of people who decide and allow the job to be done.
-    *   Give the top 3.
+| Role | Status | Actor | Market | Warrant |
+|---|---|---|---|---|
 
-*   **Purchaser:**
-    *   Group of people who decide on the form of payment and contracting of a solution to carry out the job.
-    *   Give the top 3.
+## Closing
+- Summary — with evidence: {n} · hipóteses: {n} · não aplicáveis: {n} · mesmo ator:
+  {n} · abertos: {n}
+- O papel que mais muda a decisão: {role} — {why}
+- O papel que você suspeita existir e não conseguiu decidir: {role} — {what would
+  settle it}
+```
 
-*   **Buyer:**
-    *   Group of people who make the purchase of the solution to carry out the job in the specific/individual context.
-    *   Give the top 3.
+## Why a verdict table instead of twelve headings
 
-*   **Supervisor:**
-    *   Who supervises and is responsible for the final result of the job.
-    *   Give more than one.
+Twelve headings with three actors each invites a cast. One line per role answers
+the same question — does this role exist for this job — and makes the absence
+visible instead of filling it. It also costs one line instead of five.
 
-*   **Influencer:**
-    *   Who usually influences someone to perform the job or to choose a solution to perform the job.
-    *   Give the top 3.
+## Completeness contract
 
-*   **Expert:**
-    *   Group of people who have deep knowledge about the performance of the job, without necessarily executing it directly.
-    *   Give the top 3.
-
-### Rules
-
-*   If Job To Be Done describes the actor of the Job To Be Done, find out if it is the beneficiary or the performer.
-*   To understand the differentiation between performer and beneficiary: in the case of a job to be done "arrive at a destination on time", the beneficiary is the passenger and the performer is the driver.
-*    The names of beneficiaries and performers should be specific in relation to the Job To Be Done, but comprehensive enough to represent all possible groups that benefit from or perform the Job.
-    *   For example, if the Job To Be Done was "access written information", a bad actor name that would break the rules would be "Librarians" because it would be a specific group, excluding other possible ones. A good name would be "Readers" as it would cover several groups and is directly related to the job to be done. If you don't find a name for the actor, use "People".
-*   If the job was "Manage finances together" and the name of the actor/group was "Family members with elderly people", then the market could be "[Family members] trying to [manage finances together] [with their elderly family member]".
-*   The actor's name should be simple enough and work within the market definition: "{actor name} trying to {job to be done adapted to start with the verb in the infinitive} {comprehensive context related to the actor and job}. IMPORTANT: Evaluate the names using this formula!
-*   Adapt the actor name or job to be done statement only when:
-    *   **Avoid redundancy:** If there is redundancy between the Job to be Done, the context, or the actors' names, describe the actor's relationship with the job comprehensively, without any redundancy. First, try adapting the actor's name. If this does not resolve the redundancy satisfactorily (i.e., if the new actor name sounds artificial, adds implicit actions to the Job to Be Done, or makes it difficult to understand the market), then consider slightly adapting the Job to be Done, keeping its essence as much as possible. **Example:** If the Job to be Done is "Listen to music" and the initial actor name was "Music Listeners," the best approach would be to adapt the actor name to something more generic like "Music Enthusiasts." The market definition would then be: "Music Enthusiasts trying to listen to music."  **In cases like "Work remotely from a coffee shop", avoid actor names like "Professionals who work remotely". Prefer more generic names like "Professionals" or "Workers" that represent the group without redundancy. The market definition would then be: "Professionals trying to work remotely from a coffee shop." This preserves the original JTBD and offers a more concise and less redundant actor description.**
-    *   **Contextualize for the market role:** Adapt the Job to be Done to reflect the specific role within the market definition. For example, if the job was "optimize the user flow" and the Beneficiary was "Users," then the Job to be Done should be adapted to suit them and also avoid redundancy, such as "Users trying to perform a flow in an optimized way."
-    *   **Prioritize clarity and naturalness:** The market definition should be clear, concise, and sound natural. Avoid complex grammatical constructions or jargon.
-*   Avoid mentioning specific solutions, methods or technologies, unless mentioned in the Job To Be Done.
-*   Do not mention or refer to the names of the roles, e.g. Performers or Beneficiaries.
-*   Avoid mentioning/using possessive pronouns in the market statement and job statement of the Beneficiary or Performer.
-*   Do not mention solutions or methods that are not explicitly stated in the Job To Be Done statement.
-*   Do not mention or refer to the names of the roles, e.g. Performers or Beneficiaries.
-*   Avoid mentioning/using possessive pronouns in the market statement and job statement of the Beneficiary or Performer.
-
-### Output Format
-
-Follow this output format, replacing the placeholders [] and {}, and translating to the same language user used in the Jbo To Be Done statement:
-
-## {Role}
-### {a respectful emoji that represents the actor} {actor name in plural}
-- {market definition of the actor: [actor name] + " trying to " + [job to be done: start with verb in the infinitive]}
-
-Completeness contract (the host validates these counts — never submit fewer):
-- All 12 roles present, each under its own ## heading with at least one named actor plus market definition: Beneficiary, Performer, Provider, Indirect Beneficiary, Threatened, Assistant, Decision Maker, Purchaser, Buyer, Supervisor, Influencer, Expert.
-- Roles that ask for "top 3" list 3 entries; Beneficiary and Performer list 1–3.
+- All twelve roles, in order, each with a status.
+- Every high-confidence or input-derived role carries a warrant containing the
+  role's action.
+- Every `Not applicable` carries a scope reason; every `Mesmo ator` names the role.
+- At most three `Hypothesis — bet`, each with a check.
+- Zero invented persons.
 
 criteria:
+  - id: table-shape
+    kind: presence
+    text: "The role table has the fixed columns: Role, Status, Actor, Market, Warrant"
   - id: role-count
     kind: count
-    text: "All 12 roles present under their own headings with a named actor each"
-  - id: entry-counts
-    kind: count
-    text: "Top-3 roles list 3 entries; Beneficiary and Performer list 1–3"
-  - id: actor-concreteness
+    text: "All twelve roles present, in order, each with a status"
+  - id: warrant-present
+    kind: presence
+    text: "Every populated role carries a fragment containing the role's action"
+  - id: absence-reason
+    kind: presence
+    text: "Every Not applicable carries a scope reason; every Mesmo ator names the role"
+  - id: no-persons
     kind: semantic
-    text: "Actors are named roles in real organizations, not abstract personas"
-```
+    text: "Actors are role classes in plural, never invented people, titles or emoji"
+  - id: hypothesis-cap
+    kind: count
+    text: "At most three Hypothesis entries, each with a disconfirming check"
+
+*Synthetic — not evidence:* a two-person internal reporting job populates
+Beneficiary, Performer and Supervisor, marks `Threatened`, `Assistant`,
+`Influencer` and `Expert` as `Not applicable`, collapses `Buyer` into
+`Mesmo ator que Purchaser`, and leaves `Decision Maker` as `Open`.

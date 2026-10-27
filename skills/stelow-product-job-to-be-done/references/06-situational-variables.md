@@ -1,69 +1,97 @@
-# Prompt 6: Situational Variables Discovery
+# Prompt 6: Situational Variables
 
 **Source:** https://calionauta.substack.com/p/prompt-ia-descoberta-de-variaveis
 
-**When to use:** To discover the situational factors and variables that influence job execution.
-Feeds directly into Prompt 7 (Functional Needs). Run this before discovering desired outcomes.
+**When to use:** when the job is clear but the circumstances that change its
+outcome are not. Feeds Prompt 7 with the conditions, and Prompt 10 with the
+context of each step.
 
-**Variables to fill in:**
-- `{fill in here}`: The Job To Be Done to be analyzed
+**Variables:** `{{Job}}`, optional `{{Segment}}`.
 
-## Research Assist (optional)
-
-When the user's context does not expose the niche's environment, constraints,
-or workarounds, use the shared web-research contract
-(`../../stelow-workflow-orchestrator/references/cli-tools/web-research.md`) to
-generate candidate situational variables. Use `last30days` only for recent
-context shifts. Treat the result as hypotheses about circumstances, not claims
-about their frequency or impact, until interviews or observation validate them.
-When research contributed, append the required [Research-led Draft Bets](../SKILL.md#hypothesis-and-bet-discipline)
-section after the native output.
+**Read first:** `00-evidence-policy.md`.
 
 ---
 
-## Prompt Completo
+## Prompt
 
 ```
-{{Job To Be Done}}: {fill in here}
+Job to be done: {{Job}}
+Segment: {{Segment}}
 
-Discover situational factors that significantly influence the performance of the above Job.
+Discover the situational factors that significantly change how this job is
+performed.
 
-* Where (Physical Environment): Tangible and immediate characteristics of the space (location, environmental conditions, available resources).
-* With Whom & Local Culture (Social Environment): Presence and influence of other people and culture at the time (presence/absence, type of interaction, immediate social norms).
-* When (Time): Temporal dimension of the situation (specific moment, period of time, cyclical rhythms).
-* Why (Greater Purpose): The fundamental reason behind the execution of the job, the ultimate goal.
-* How (Internal State with Integrated Experience):
-    * Personal History: Values, beliefs, past experiences and ingrained habits.
-    * Perception of the Situation: Assessment of the situation.
-    * Emotional State: Emotions and feelings present.
-    * Physiological and Cognitive State: Physical and cognitive conditions.
-    * Experience: Knowledge, skills and experiences directly related to the Job in question.
-    * Strategies and Planning: Actions and strategies adopted to achieve the purpose.
+## Categories
 
-Rules:
-Iterate over each category above and explore the MAXIMUM number of situational factors that strongly impact the outcome of the Job.
-For each situational factor explore the MAXIMUM possible variables that influence the outcome of the Job, and examples.
-If the Job is about someone performing something for someone else, consider the perspectives of both.
-Factors must be specific and detailed. Avoid abstractions, adjectives and adverbs.
-Factors must be mutually exclusive, collectively EXHAUSTIVE and non-redundant.
+- **Where** — physical environment: location, conditions, available resources.
+- **With whom & local culture** — presence and influence of other people, norms in
+  the moment.
+- **When** — moment, period, rhythm, deadline pressure.
+- **Why** — the reason behind doing the job, the goal above it.
+- **How** — internal state, in six parts: personal history (values, beliefs, past
+  experience, ingrained habits); perception of the situation; emotional state;
+  physiological and cognitive state; experience (knowledge and skills for this
+  job); strategies and planning (what they do to reach the purpose).
 
-Template for result (replacing the placeholder {} by the content):
-## Category: {Category}
-### Situational factor: {Situational factor}: {description}
-- {place the variable name}: {justification and specific examples}
+For each category, list the factors that most change the outcome, and for each
+factor the variables that matter, with a concrete example.
 
-Completeness contract (the host validates these counts — never submit fewer):
-- All 5 categories present (Where, With Whom & Local Culture, When, Why, How), each under its own ## Category heading.
-- Every category holds at least 2 situational factors (### headings); every factor holds at least 2 variables with justification and examples.
+## Rules
+
+- Specific and observable. No abstractions, no adjectives, no adverbs.
+- Mutually exclusive, collectively non-redundant. Exhaustive is a direction, not
+  a quota: a factor that changes nothing does not belong in the list.
+- If the job is done for someone else, consider both perspectives.
+- A factor without an example is a label. Either give the example or drop it.
+
+## Output
+
+## Where / With whom / When / Why / How
+
+| Fator | Variável | Exemplo concreto | Status |
+|---|---|---|---|
+
+## O que mais muda o resultado
+
+| # | Fator | Por que muda | 
+|---|---|---|
+| 1 | ... | ... |
+| 2 | ... | ... |
+| 3 | ... | ... |
+
+## Closing
+- O fator que o usuário não tinha considerado: {factor} — {why it matters}
+- O fator que parece óbvio e não muda nada: {factor} — {why it can be dropped}
+```
+
+## Why the ranking is the artifact
+
+The taxonomy is process. What Prompt 7 consumes, and what a person reads, is the
+three factors that actually move the outcome. A list of forty variables with no
+ranking is a worksheet, not a finding.
+
+The full table stays as the appendix: it is the evidence for the ranking, and it
+disappears when the ranking is read.
+
+## Completeness contract
+
+- All five categories present.
+- Every factor carries at least one variable and one concrete example.
+- A ranking of exactly three factors, each with why it moves the outcome.
+- No factor without an example.
 
 criteria:
   - id: category-count
     kind: count
-    text: "All 5 categories present under their own headings"
+    text: "All five categories present"
   - id: factor-density
+    kind: presence
+    text: "Every factor carries a variable and a concrete example"
+  - id: ranking
     kind: count
-    text: "Every category holds 2+ factors; every factor holds 2+ variables with justification"
+    text: "Exactly three ranked factors, each with a reason"
   - id: situational-specificity
     kind: semantic
     text: "Variables describe observable situations, not demographics or truisms"
-```
+
+*Synthetic — not evidence.*

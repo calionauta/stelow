@@ -2,71 +2,82 @@
 
 **Source:** https://calionauta.substack.com/p/prompt-ia-descoberta-de-competidores
 
-**When to use:** To map competitors through the JTBD lens — not limited to product categories,
-but any solution that fulfills the same job. Includes direct, indirect, and hidden competitors.
+**When to use:** to see everything the user is hired *instead of* the product —
+including the workarounds nobody calls competition.
 
-**Variables to fill in:**
-- `[fill in]`: The Job To Be Done to be analyzed
+**Variables:** `{{Job}}`, optional `{{Steps}}` from Prompt 10.
 
-## Evidence Policy
-
-Start with the user's examples and the LLM's solution categories to form
-candidate direct, indirect, and hidden competitors. When naming specific
-existing products or making claims about the current market, verify them
-through the shared web-research contract (`../../stelow-workflow-orchestrator/references/cli-tools/web-research.md`).
-Use `last30days` only when recent launches, practitioner discussion, or niche
-movement could change the map; it complements primary sources and does not
-prove that people hire a solution for this job. Distinguish unverified
-hypotheses from findings, record coverage limitations, and do not invent
-competitors when research coverage is incomplete. When research contributed,
-append the required [Research-led Draft Bets](../SKILL.md#hypothesis-and-bet-discipline)
-section after the native output.
+**Read first:** `00-evidence-policy.md`.
 
 ---
 
-## Prompt Completo
+## Prompt
 
 ```
-You are a specialist on identify competitors through the lens of Jobs To Be Done.
-Goal: Identify competitors when hiring a new product to get the job done. 
-Job To Be Done: [fill in]
+Job to be done: {{Job}}
+Steps, if the map exists: {{Steps}}
 
-Competition isn't limited to product, software, or service categories. It's about fulfilling the job, regardless of the type of solution. 
+Competition is not a product category. It is whatever gets hired for this job.
 
-Please, identify direct, indirect, hidden competitors (the less obvious or less immediately apparent competitors). 
-I need a comprehensive list. Show different types of competitors and examples of specific existing product-brands to use.
+## Output
 
-Use this structured output:
-# Competitor Analysis
+## Direct competitors
+Products or services that solve the same job.
+| Competitor | What it does | Step it serves | Status |
+|---|---|---|---|
 
-## Direct Competitors
-*Products/services that directly solve the same job*
-- [List specific examples with brief descriptions]
+## Indirect competitors
+Solutions that address the job differently.
+| Competitor | What it does | Step it serves | Status |
+|---|---|---|---|
 
-## Indirect Competitors
-*Alternative solutions that address the job differently*
-- [List specific examples with brief descriptions]
+## Hidden competitors
+Workarounds nobody calls competition: a spreadsheet, a WhatsApp group, memory,
+doing nothing, delegating to a person.
+| Workaround | What it replaces | Step it serves | Status |
+|---|---|---|---|
 
-## Hidden Competitors
-*Non-obvious solutions or workarounds*
-- [List specific examples with brief descriptions]
+## Key insights
+- ...
 
-## Key Insights
-*Strategic observations about the competitive landscape*
-- [List key takeaways]
+Rules:
+- Every named brand carries `Status`: `verificado` (with source) or `candidato`
+  (unverified). A brand without a source is `candidato` and is never presented as
+  market fact.
+- `Step it serves` ties the competitor to the job map when it exists. A competitor
+  with no step is not competing for this job — say so or drop it.
+- Hidden competitors must be non-obvious. The market leader restated is not hidden.
+- "Doing nothing" is a legitimate competitor and usually the strongest.
+```
 
-Completeness contract (the host validates these counts — never submit fewer):
-- All four sections present: Direct, Indirect, Hidden Competitors, Key Insights.
-- Each competitor section names at least 3 examples with brief descriptions; Key Insights holds at least 3 takeaways.
+## Why the step column
+
+Prompt 10 locates where the job breaks. A competitor list without that column is
+a market summary; with it, it answers "who wins at step 4". That is the only form
+in which the list changes a decision.
+
+## Completeness contract
+
+- Four sections: Direct, Indirect, Hidden, Key insights.
+- Each competitor section holds at least 3 entries with a status.
+- Every entry names the step it serves, or says it serves none.
+- At least one hidden competitor is a non-tool workaround.
 
 criteria:
   - id: section-presence
     kind: count
-    text: "All four sections present (Direct, Indirect, Hidden, Key Insights)"
+    text: "Direct, Indirect, Hidden and Key insights present"
   - id: example-density
     kind: count
-    text: "Each competitor section names 3+ examples; Key Insights holds 3+ takeaways"
+    text: "Each competitor section holds 3+ entries"
+  - id: status-per-entry
+    kind: presence
+    text: "Every named brand carries verificado or candidato"
+  - id: step-link
+    kind: presence
+    text: "Every entry names the step it serves or states that it serves none"
   - id: hidden-genuineness
     kind: semantic
-    text: "Hidden competitors are non-obvious substitutes, not market leaders restated"
-```
+    text: "Hidden competitors are workarounds, not market leaders restated"
+
+*Synthetic — not evidence.*

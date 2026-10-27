@@ -2,99 +2,120 @@
 
 **Source:** https://calionauta.substack.com/p/prompt-ia-descoberta-de-jobs-to-be-done
 
-**When to use:** To discover and reframe Jobs To Be Done from a solution, action, or outcome.
-Useful when the user has a product/solution idea and wants to understand the underlying jobs.
+**When to use:** when the user arrives with a solution, an action or an outcome
+and needs the job behind it. The cheapest reframe in the skill.
 
-**Variables to fill in:**
-- `[if the user has already chosen a segment, fill in with the market of the segment, otherwise fill in with the job to be done or solution filled in by the user]`
+**Variables:** `{{Variable}}` — the solution, action or outcome; `{{Depth}}`
+(`quick` 6–10 contextual jobs, `standard` 10–15, `deep` 15–20).
 
-## Research Assist (optional)
-
-For an unfamiliar or fast-moving niche, use the shared web-research contract
-(`../../stelow-workflow-orchestrator/references/cli-tools/web-research.md`) to
-surface the language, workarounds, and contexts that may imply candidate Jobs.
-Use `last30days` only when recent practitioner signals could reveal a new or
-changed context. A source mentioning a solution is not evidence of the Job it
-serves: return each research-led Job as a draft hypothesis and name the next
-interview or observation that could disconfirm it. When research contributed,
-append the required [Research-led Draft Bets](../SKILL.md#hypothesis-and-bet-discipline)
-section after the native output.
+**Read first:** `00-evidence-policy.md`.
 
 ---
 
-## Prompt Completo
+## Prompt
 
 ```
-{{Variable}} (action, outcome, or solution): [if the user has already chosen a segment, fill in with the market of the segment, otherwise fill in with the job to be done or solution filled in by the user].
+Variable: {{Variable}}
+Depth: {{Depth}}
 
-Process to follow:
- Identify if {Variable} is an ACTION (verb), OUTCOME (something to achieve) or a SOLUTION (platform, technology, product or place).
-If {Variable} is a SOLUTION: Discover what a person wants to achieve WHEN USING this solution in the Jobs To Be Done (JTBDs) statements. If the solution is a name of a specific product, rewrite to the type of solution instead of the name of solution. Use the solution as the context in the statements of the discovered Jobs.
+## 1. Classify
 
- General RULES for JTBDs:
-  * Start with imperative verbs. Complete sentences, not just verbs.
-  * Functional Jobs (functional action or outcome). Not emotional (feel) or social (be perceived).
-  * NO adjectives or adverbs.
-  * NO conjunctions ("and", "or", etc.).
-  * NO specific solutions, unless {Variable} is a solution or has a solution. In that case, be EXPLICIT writing the solution as context in ALL Job to be done in the result. If it's a specific product name, use the *type* of that solution instead of the product name.
-  * **Use Common and Stable Language:** When formulating JTBDs, especially Rewritten JTBDs, prioritize using language that is **commonly understood by the target audience** for this type of job. Consider how people **naturally describe their needs and goals** in this situation. Seek phrases that are **stable and comprehensible over time**, avoiding jargon, fads, or overly technical terms, unless they are intrinsic to the audience and type of solution. Strive for a balance between being specific to the solution's context and using widely accessible language. Ask yourself: "How would a typical person describe trying to achieve this?". If there are multiple options, consider which is the most frequently used, least ambiguous, and most enduring.
-  * **Explicitly include {Variable} (solution) context in all JTBDs (Rewritten, Contextual, Higher).**
+Is the variable an ACTION (a verb), an OUTCOME (something to reach) or a SOLUTION
+(platform, technology, product, place)?
 
-Specific Rules for Contextual Jobs:
-They are common JTBDs **IN THE SAME TIME AND PLACE** due to **SAME SITUATIONAL FACTORS**, but **DISTINCT ACTIVITIES** from {Variable}.
-For each Contextual Job, question (with {Variable} broken down into potential Jobs):
-1. Does eliminating or ignoring this Job prevent the success of ({Variable}) Jobs? (If no, discard)
-2. **Functionally Distinct Activity:** Is this activity fundamentally different in purpose and nature from the core function of {Variable}? It should not be a mere sub-step, stage, or an obvious and immediate consequence of using {Variable}. The contextual activity should be a different type of action happening in the same context as {Variable}, but not simply part of the process of using {Variable} for its main purpose.
+If it is a SOLUTION:
+- Discover what a person wants to achieve WHEN USING it.
+- If it names a specific product, rewrite to the type of solution.
+- The solution stays as CONTEXT in every statement below.
 
-   * **Examples of NOT Separate Activities (for Cafeteria):**
-      * Pay for food at the cafeteria.
-      * Choose a dish from the cafeteria menu.
-      * Look for a place to sit AFTER already having cafeteria food.
-      * Dispose of lunch waste AFTER eating at the cafeteria.
+## 2. Rules for every job
 
-   * **Examples of SEPARATE Activities (Potential Contextual Jobs for Cafeteria):**
-      * Socialize with friends in the cafeteria.
-      * Work remotely from the cafeteria.
-      * Wait for someone in the cafeteria (unrelated to eating at the cafeteria).
-      * Read a book in the cafeteria (unrelated to the dining experience).
+- Starts with an imperative verb; a complete sentence, not a bare verb.
+- Functional: an action or a result — not a feeling, not a perception.
+- No adjectives, no adverbs.
+- No conjunctions ("and", "or").
+- No specific solutions, unless the variable is a solution — then the solution
+  appears as context in every statement.
+- Common, stable language: how a typical person would describe trying to achieve
+  this, not jargon, not a fad.
 
-3. **Functional Independence:** Can the primary function of {Variable} be achieved even if this Contextual Job is *not* performed in the same context? (Even if it's less convenient or ideal?) (If no, discard)
-4. **Independent Need:** Does this Contextual Job fulfill a need that is functionally independent from the core need addressed by {Variable}, even though both occur in the same situational context? (If no, discard)
-5. **Enabled by Context and Attributes, Not Just Optimizing {Variable}**: Is this contextual activity **distinct** and **significantly enabled or facilitated** by the **context** of {Variable} (environment, location, situation) **OR** by the **inherent attributes** of {Variable} (features, services)? This enabling should be more than just a coincidental location. The attributes or context should contribute **significantly to the execution of the Contextual Activity itself**, and not just make the **use of {Variable} better or more efficient**. Crucially, the Contextual Activity must serve a **functionally independent purpose** from the main purpose of {Variable}. It should not be just an activity that **optimizes**, **improves**, or is a **natural extension** of the core functionality of {Variable}.
+## 3. Rewritten jobs
 
-   * **Examples to illustrate "Optimizing {Variable}" vs. "Functionally Independent Purpose" (for Cafeteria):**
+Improve the wording while keeping the meaning. Same job, better said.
 
-      * **Optimizing {Variable} (NOT a Contextual Job):** "Purchase an additional coffee at the cafeteria." (This optimizes the experience of using the cafeteria for a meal, complements the meal, but is not a functionally independent purpose. The purpose is still centered on eating/drinking at the cafeteria).
+## 4. Contextual jobs
 
-      * **Functionally Independent Purpose (Contextual Job):** "Work remotely from the cafeteria." (The main purpose is "to work," which is functionally independent of "eating." The cafeteria offers a location and environment that *facilitates* remote work, but the work is not to *optimize* the experience of eating at the cafeteria.)
+Jobs that happen IN THE SAME TIME AND PLACE because of the SAME SITUATIONAL
+FACTORS, but are DISTINCT ACTIVITIES from the variable.
 
+Five tests. A candidate stays only if it passes all five:
 
-PROCESS:
-1. List Rewritten Improved JTBDs, improving wording and phrasing while maintaining meaning and **including {Variable} context.**
-2. List 20 Contextual JTBDs, ensuring they meet the 'Specific Rules' and 'Distinctness Checklist'. **Remember to include {Variable} context in each JTBD.**
-3. List Higher functional JTBDs, identifying jobs that {Variable} enables and contributes to at a higher functional level, and **considering/including {Variable} context.**
+| # | Test | Question |
+|---|---|---|
+| F | Functionally distinct | Is it a different kind of action, not a sub-step of using the variable? |
+| I | Independence | Can the variable's main purpose still be achieved without this job? |
+| C | Cost of omission | Does ignoring this job prevent the variable's success? |
+| E | Enabling | Is it enabled by the context or the attributes of the variable — not merely made more convenient by them? |
+| O | Own need | Does it serve a need independent of the variable's core need? |
 
- <TEMPLATE FOR the result>
+Examples for a cafeteria:
+
+- **Not separate**: pay for food, choose a dish, find a seat after eating, throw
+  away the tray. These are steps of eating there.
+- **Separate**: socialise with friends, work remotely, wait for someone unrelated
+  to eating, read a book.
+- **Optimising, not separate**: buy an extra coffee. It improves the meal; it is
+  not an independent purpose.
+- **Independent purpose**: work remotely. The purpose is work, which the cafeteria
+  enables without being the point.
+
+## 5. Higher functional jobs
+
+What the variable contributes to one level up.
+
+## Output
+
 ## Rewritten JTBDs
--
-## Contextual JTBDs
--
-## Higher functional JTBDs
--
- </TEMPLATE FOR the result>
+- ...
 
-Completeness contract (the host validates these counts — never submit fewer):
-- All three sections present: Rewritten JTBDs, Contextual JTBDs, Higher functional JTBDs.
-- Contextual JTBDs holds exactly 20 jobs meeting the Specific Rules; Rewritten and Higher hold at least 1 job each.
+## Contextual JTBDs
+
+| # | Job | T | Status |
+|---|---|---|---|
+| 1 | ... | pass / F / I / C / E / O | ... |
+
+`T` names the first test the candidate fails, or `pass`. Only `pass` enters the
+list. The count is an outcome, not a quota: if the job does not support the depth
+band, say which tests killed the rest.
+
+## Higher functional JTBDs
+- ...
+
+## Closing
+- O job que o usuário não tinha nomeado: {job} — {why}
+- O que ainda é solução disfarçada de job: {candidate} — {why}
+```
+
+## Completeness contract
+
+- Three sections: Rewritten, Contextual, Higher.
+- Every contextual candidate carries a `T` result; only `pass` stays.
+- No adjectives, adverbs or conjunctions in any job statement.
+- The solution appears as context when the variable is a solution, and never as a
+  product name.
 
 criteria:
   - id: section-presence
     kind: count
-    text: "All three sections present (Rewritten, Contextual, Higher)"
+    text: "Rewritten, Contextual and Higher sections present"
+  - id: test-result
+    kind: presence
+    text: "Every contextual candidate carries a T result naming a test or pass"
   - id: contextual-count
     kind: count
-    text: "Contextual JTBDs holds exactly 20 jobs"
+    text: "Contextual jobs inside the depth band, with the failures accounted for"
   - id: rules-compliance
     kind: semantic
-    text: "Jobs follow the Specific Rules (situational, outcome-measurable, actor-named)"
-```
+    text: "No adjectives, adverbs or conjunctions; the solution is context, not object"
+
+*Synthetic — not evidence.*

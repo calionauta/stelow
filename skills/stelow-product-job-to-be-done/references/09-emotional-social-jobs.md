@@ -1,72 +1,95 @@
-# Prompt 9: Emotional & Social Jobs Discovery
+# Prompt 9: Emotional & Social Jobs
 
 **Source:** https://calionauta.substack.com/p/prompt-ia-descoberta-de-jobs-emocionais
 
-**When to use:** To discover emotional jobs (how the person wants to feel/avoid feeling) and
-social jobs (how they want to be perceived/avoid being perceived) related to the functional job.
+**When to use:** after the map exists, to find what the person wants to feel and
+how they want to be seen while doing the job. Without a step to attach to, this
+prompt produces adjectives.
 
-**Variables to fill in:**
-- `[include here the market definition of the segment, if chosen by the user, or job to be done mapped]`
-- `[segment chosen by the user]` — segment information, if available
+**Variables:** `{{Job}}`, `{{Steps}}` from Prompt 10, `{{Segment}}`, `{{Depth}}`.
 
-## Research Guardrail
-
-Do not use web research to assert what people feel, fear, value, or want others
-to think of them. Research may surface language for candidate emotional or
-social Jobs, but it cannot establish their prevalence, intensity, or cause.
-Return research-led statements as hypotheses for interview validation, and
-append the required [Research-led Draft Bets](../SKILL.md#hypothesis-and-bet-discipline)
-section only when research contributed.
+**Read first:** `00-evidence-policy.md`.
 
 ---
 
-## Prompt Completo
+## Prompt
 
 ```
-Goal: Discover the emotional and social jobs related to a job to be done.
-Job to be done: [include here the market definition of the segment, if chosen by the user, or job to be done mapped] 
-<segment: all info>
-[segment chosen by the user]
-</segment>
-Emotional Jobs:
-- Express how the job performer would like to feel or avoid feeling in a context.
-- Focus on the person themselves.
+Job: {{Job}}
+Segment: {{Segment}}
+Steps: {{the steps, riskiest first}}
+Depth: {{Depth}}
 
-Social Jobs:
-- Express how the job performer would like to be perceived or avoid being perceived in a context.
-- Express how the job performer would like to connect or avoid connecting with other people in a context.
-- Express how the job performer would like to belong or not belong to a group in a context.
-- Focus on relationships or the perception of other people.
+## Definitions
 
-Statement rules for all statements: 
-- Use a positive phrasing to describe what the person want to achieve directly, or a negative phrasing (almost always starting with 'Avoid') to describe what the person want to prevent.
-- Focus on distinct aspects of the experience and add specific context. But DO NOT create opposing statements for the same desired outcome (e.g. DO NOT use both, 'Be strong' and 'Avoid being weak'). Choose the phrasing that best captures the specific nuance.
-- Start the statements with imperative verbs. A statement is never just the verb, but rather a sentence.
-- DO NOT use conjunctions ("and", "or", etc.).
+Emotional job — how the performer wants to feel, or avoid feeling, at a moment of
+the job. Focus on the person.
 
-Process:
-- Consider the segments presented at the top.
-- List as many as possible Emotional Jobs and 20 Social Jobs.
-- Filter the list to keep only the most relevant ones that don't break the rules above.
+Social job — how the performer wants to be perceived, or avoid being perceived;
+how they want to connect or belong, or avoid it. Focus on other people.
 
-### Template for the output
-### Emotional Jobs: 
-  - {bullet points}
-### Social Jobs:
-  - {bullet points}
+## Anchor every job to a step
 
-Completeness contract (the host validates these counts — never submit fewer):
-- Both sections present: Emotional Jobs and Social Jobs.
-- At least 5 Emotional Jobs and at least 5 Social Jobs, each a full statement following the statement rules (no opposing pairs for the same outcome).
+A feeling with no moment cannot be designed for. For each step, ask what the
+person feels and what they fear being seen as, right there.
+
+Steps with no plausible emotional or social stake get `Nenhum` and a reason. That
+is a finding: back-office steps often carry no social stake, and inventing one
+produces decoration.
+
+## Statement rules
+
+- Positive phrasing, or `Avoid` phrasing — never both for the same outcome.
+- Imperative verb, complete sentence.
+- Specific context: the moment, not a category.
+- No conjunctions.
+- One clear nuance per statement; do not restate the same fear in two forms.
+
+## Output
+
+| Etapa | Job | Tipo | O que a pessoa faz quando acontece | Status |
+|---|---|---|---|---|
+| {step} | {statement} | Emocional / Social | {observable signal} | {status} |
+
+How many steps:
+
+- `quick` — the 3 riskiest
+- `standard` — the 6 riskiest
+- `deep` — all
+
+If the map does not exist, run Prompt 10 first or ask for the step list. An
+unanchored list is the last resort, and the output says it is one.
+
+## Closing
+- O medo que mais trava a etapa: {statement} — {step}
+- Onde o medo é social e não funcional: {step} — {why}
+```
+
+## Why anchoring changes the output
+
+`Avoid feeling exposed` is a mood. `Avoid feeling exposed when sending an expense
+that will be questioned` is a design brief: it names the moment, the object and
+the audience. The second one can be solved; the first one can only be agreed with.
+
+## Completeness contract
+
+- One emotional and one social job per anchored step, by depth.
+- Every row names the step, the statement and an observable signal.
+- No opposing pairs for the same outcome.
+- Steps without a stake are `Nenhum` with a reason.
 
 criteria:
-  - id: section-presence
+  - id: anchored-rows
+    kind: presence
+    text: "Every job row names the step it belongs to"
+  - id: pair-per-step
     kind: count
-    text: "Both sections present (Emotional Jobs, Social Jobs)"
-  - id: job-counts
-    kind: count
-    text: "5+ Emotional Jobs and 5+ Social Jobs as full statements"
+    text: "One emotional and one social job per anchored step, by depth"
+  - id: observable-signal
+    kind: presence
+    text: "Every row carries an observable signal"
   - id: no-opposing-pairs
     kind: semantic
-    text: "No opposing pairs claim the same outcome; statements follow the statement rules"
-```
+    text: "No opposing pair claims the same outcome; statements follow the rules"
+
+*Synthetic — not evidence.*
