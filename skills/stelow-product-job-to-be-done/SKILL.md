@@ -193,6 +193,34 @@ Only when there are competing options. Omit the section otherwise.
 <the prompts that would add information, and what each would add>
 ```
 
+### What a bet can be about
+
+A bet is not only "build A instead of B". It is any claim about the job that, if
+false, changes the next move. The option case is the rarest.
+
+| kind | claim | check |
+|---|---|---|
+| **Boundary** | the job starts or ends elsewhere than assumed | watch one run end to end |
+| **Actor** | the decider is X, not Y | follow one case to the decision |
+| **Step** | the break is at step N, not later | classify tickets by step |
+| **Segment** | the pain concentrates in group G | split churn or tickets by G |
+| **Value** | this job justifies a POC or a partner conversation | 3 conversations with the map in hand |
+| **Option** | build A, not B | the counted test that separates them |
+
+Only `Option` needs the option table. A `Boundary`, `Actor`, `Step`, `Segment` or
+`Value` bet closes with the claim, its falsifier and its check.
+
+Examples of a non-option bet:
+
+- **Boundary:** "the job is monthly close, not continuous entry — the entry is a
+  step, not the job." Falsified by finding firms whose pain is in entry itself.
+  Check: watch one close and time each step.
+- **Actor:** "the approver is the firm owner, not the owner's client." Falsified
+  by an expense that waits on the client. Check: follow three expenses to the
+  decision.
+- **Value:** "this is worth a POC with two partners." Falsified by neither partner
+  recognising the map. Check: two conversations, the map on the table.
+
 Rules:
 
 - `bet` is required whenever the record exists; `options` and `verdict` are not.
