@@ -122,11 +122,40 @@ The band is a contract. Deviating from it needs the user's explicit override.
 **Restate before a full run.** One line: job, actor, depth. Proceed unless
 corrected.
 
-## The decision record
+## Closing
 
-When the run moves a decision — which of two things to build, fund or change — the
-last artifact is a record, not a summary. It is the only artifact that carries
-frontmatter, because it is the only one a script should index.
+Every run closes with a **reading**. Two extensions are optional and independent
+of the surface, the tab, and the depth:
+
+- **Bet** — when the user needs a direction: to build, to test with partners, to
+  justify a POC, to keep exploring. A bet is a claim with a falsifier, not
+  necessarily a build decision.
+- **Option table** — only when the bet is between concrete alternatives. Without
+  competing options there is nothing to tabulate, and forcing one invents a
+  choice the user does not have.
+
+A consultant in research may want `deep + reading + bet` (the map is the
+deliverable, the bet is what to test next). A founder in build may want
+`quick + bet` (a Friday decision, not a report). Complete analysis and a bet are
+not the same axis.
+
+What the extensions depend on:
+
+| question | if yes | if no |
+|---|---|---|
+| is there a choice between concrete options? | option table | bet only, or reading only |
+| is there something to test (POC, partner, interview)? | bet + check | reading |
+| is being wrong expensive or irreversible? | deeper + a counted check | `quick` is enough |
+| who reads it? | partner or investor → needs credibility (metrics, sources) | internal use → `quick` |
+
+The surface sets only a starting default: research starts lighter, build starts
+with a bet. Both are overridable, and the user can ask for the other at any point.
+
+## The betting record
+
+When the run carries a bet, the last artifact is a record, not a summary. It is
+the only artifact that carries frontmatter, because it is the only one a script
+should index. The `Option → step` table is present only when there are options.
 
 ```markdown
 ---
@@ -134,12 +163,16 @@ job: <the job statement>
 segment: <segment name>
 depth: quick | standard | deep
 lane: material | research | none
+bet: <the claim the run is willing to defend>
+confidence: low | medium | high
+# the two below exist only when there are competing options
 options: [<option A>, <option B>]
 verdict: <option A or B or undecided>
-confidence: low | medium | high
 ---
 
 ## Option → step
+Only when there are competing options. Omit the section otherwise.
+
 | Option | Steps it touches | What it covers | What it leaves out |
 |---|---|---|---|
 
@@ -157,6 +190,9 @@ confidence: low | medium | high
 
 Rules:
 
+- `bet` is required whenever the record exists; `options` and `verdict` are not.
+  A bet without competing options is the normal case for a POC, a partner
+  conversation, or a research direction.
 - `verdict` may be `undecided`. That is a result, not a failure, and the check is
   what resolves it.
 - **Asymmetry comes before tie.** Before declaring a tie, ask whether one symptom
