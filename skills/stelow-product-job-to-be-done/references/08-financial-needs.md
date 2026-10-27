@@ -1,121 +1,113 @@
-# Prompt 8: Financial Needs Discovery
+# Prompt 8: Financial Needs
 
 **Source:** https://calionauta.substack.com/p/prompt-ia-descoberta-de-necessidades-financeiras
 
-**When to use:** To discover financial success criteria for solution acquisition related to the job.
-Focuses on the perspective of the financial decision maker — whoever approves the solution purchase.
+**When to use:** when someone other than the user pays, and the price or the risk
+of the purchase is part of the decision. Skip it for a small self-serve
+subscription: there is no financial job to discover.
 
-**Variables to fill in:**
-- `[include here the market definition of the segment, if chosen by the user, or job to be done mapped]`
-- `[all info of the segment chosen by the user]` — if available
+**Variables:** `{{Job or segment}}`, `{{Purchaser}}` from Prompt 5, `{{Ticket}}`
+(order of magnitude), `{{Depth}}`.
 
-## Research Assist (optional)
-
-When current alternatives, pricing, buying constraints, or cost structures
-would materially change the candidate financial needs, use the shared
-web-research contract (`../../stelow-workflow-orchestrator/references/cli-tools/web-research.md`).
-Use `last30days` only when recent pricing, procurement, or category changes
-could alter the candidate set. Treat all research-led scores as **bet
-prioritization**, not measurements of demand, willingness to pay, or solution
-failure. When research contributed, append the required
-[Research-led Draft Bets](../SKILL.md#hypothesis-and-bet-discipline) section
-after the native output.
+**Read first:** `00-evidence-policy.md`.
 
 ---
 
-## Prompt Completo
+## Gate
+
+Ask two things before running:
+
+1. **Who pays?** The purchaser from Prompt 5. If the answer is "the user, on a
+   card, without thinking", stop: financial needs is three lines, not a prompt.
+2. **What is the ticket?** Below a month of someone's salary, the financial job is
+   small; above it, it is a purchase process with its own actors.
+
+If the gate fails, say so and return the three lines:
+`custo de aquisição`, `custo de troca`, `custo de erro` — each one sentence, each
+with a status.
+
+## Prompt
 
 ```
-Job to be done: [include here the market definition of the segment, if chosen by the user, or job to be done mapped] 
-Perspective Role: Solution Acquisition Decision Maker
-`<segment:>`
-[all info of the segment chosen by the user]
-`</segment>`
+Job: {{Job or segment}}
+Perspective: the person who approves the purchase, for the beneficiary
+Ticket: {{Ticket}}
+Depth: {{Depth}}
 
-# Process to follow:
+Explore the solutions that could get this job done for the beneficiary.
 
-- Explore all possible solutions that could help the beneficiary complete {Job to be done}
+As the purchaser, whose objective is to approve the most financially sound option:
 
-- Assume the role of a Solution Acquisition Decision Maker whose objective is to **approve the most financially solution for the beneficiary to complete their Job to be done.** Evaluate each potential solution by considering only the financial implications **for the beneficiary when acquiring and using the solution.**.
-- From this, discover at least 30 success criteria statements by answering the question: "What needs to happen to successfully achieve my financial ideal outcome?". Ensure to follow all Statement Rules.
-- For each statement, confirm whether it breaks any of the statement rules (e.g. Did it use an adverb or an adjective? Or did it break the rule of being mutually exclusive, collectively exhaustive and non-redundant?). If a rule is violated, improve or discard the statement. Show this step process. 
-- Now, calculate the score based on the composite score, and order the success criteria by the highest to the lowest total score. Filter for a maximum of top 20 success criteria.
+- Discover the cost criteria that matter for THIS ticket size.
+- 10 raw at `quick`, 20 at `standard`, 30 at `deep`.
+- Keep the top 5 / 10 / 20 by depth.
 
+## Statement rules
 
-# Statement Rules:
+- Starts with **Minimize the cost of** — from the payer's perspective.
+- Specific to a solution, objectively measurable, actionable.
+- No conjunctions, no adjectives, no adverbs.
+- MECE: no criterion repeats another.
 
-- Ensure that success criteria always start with "Minimize the cost of" from the perspective of the Financial Decision-Maker who is paying for the solution for the beneficiary.
-- Ensure that every success criteria is a desired financial outcome for the Financial Decision-Maker evaluating solution purchase.
-- IMPORTANT: Each criterion should be specific to a solution, Objectively Measurable and Actionable.
-- DO NOT use conjunctions ("and", "or", etc.").
-- Always avoid adjectives and adverbs. Avoid ambiguity. Use nouns and verbs.
-- Criteria must be mutually exclusive, collectively exhaustive and non-redundant. Avoid any redundancy among them.
-- The result should be a bulleted list of several success criteria.
+## Prioritize
 
+Same composite as Prompt 7: `(R + P + H) × (Inc + Inv)`, each 1–5, every score
+with a **Basis**. The composite ranks work; it is not a measurement of willingness
+to pay, and is never presented as one.
 
+## Output
 
-# Composite Score for Prioritization:
+## Raw criteria
+- {the depth's raw count, one line each}
 
-Use a composite score to prioritize criteria, based on evaluating each criterion on the following (scale 1 to 5):
+## Top criteria
 
-*  **Risk of Failure (R):** The likelihood that a current, state-of-the-art solution will fail to meet this specific criterion (1 = Extremely Unlikely, 5 = Extremely Likely).
+#### 1/{N} {criterion}
+- **Justification:** why this cost is still not solved today
+- **Score:** {composite} — **Basis:** {…}
+- **Metrics:** {the unit: R$, hours, risk exposure; how to measure}
+- **Current alternative:** {what people do today to avoid this cost — type, plus
+  one example brand when it is known, marked `candidate`}
 
-*  **Job Performance Gain (P):** The improvement in how well the customer can execute the Job-to-be-Done when the criterion is met (1 = No Improvement, 5 = Maximum Improvement).
+## Disposition
+| Critério descartado | Por quê |
+|---|---|
 
-*  **Job Failure Harm (H):** The harm to the customer's Job-to-be-Done caused by failing to meet this criterion (1 = No Harm, 5 = Maximum Harm).
+## Closing
+- O custo que decide a compra: {criterion} — {why}
+- O custo que parece grande e não pesa: {criterion} — {why}
+- O que faria este comprador dizer não: {one line}
+```
 
-*  **Result Inconsistency (Inc):** The difficulty in achieving consistent results when attempting to meet the criterion (1 = Perfectly Consistent, 5 = Highly Inconsistent).
+## Why the top list is short
 
-*  **Investment (Inv):** The resources required (time, skills, people, and additional solutions) to meet the criterion with currently existing single solutions (1 = Minimal Investment, 5 = Maximum Investment).
+Twenty criteria with five fields each is a hundred fields for a decision that
+needs five. The raw list exists to diverge; the top list is the artifact, and it
+is as long as the ticket justifies. The disposition table keeps the discarded ones
+auditable without printing them in full.
 
+## Completeness contract
 
-
-## FORMULA
-
-Composite Score = (R + P + H) * (Inc + Inv)
-
-
-
-`<Template of the output>`
-
-## 30 Raw Success Criteria
-
-- {Success criteria statement}
-
-
-
-## Top 20:
-
-#### {#Current Criteria/#Total Criteria, e.g.: 1/20} {Success criteria statement}:
-
-- Alternative: {rewrite the success criteria in an alternative way following all the rules, except starting with "Ensure" or "Avoid", but starting with verb in the imperative}
-
-- Justification: {"Why is this still considered an financial ideal for my role, rather than a solved criteria? And why isn't it easily solved these days?}
-
-- Score: {explain how it impacts each factor of the composition score}
-
-- Metrics: {multiple metrics with detailed count, proportion or average metrics with detailed explanation of how to measure}
-
-- Current solutions: {types of existing solutions (mental, physical, virtual, procedural or methodological) with examples of specific existing product-brands to use}
-
-`</Template of the output>`
-
-Completeness contract (the host validates these counts — never submit fewer):
-- A ## 30 Raw Success Criteria section with 30 bulleted statements.
-- A ## Top 20 section with exactly 20 detailed criteria (#### 1/20 … 20/20 headings).
-- Every Top 20 criterion carries all five fields: Alternative, Justification, Score, Metrics, Current solutions.
+- The depth's raw count, one line each.
+- The depth's top count, each with the four fields.
+- Every score carries a `Basis`.
+- A disposition row for every discarded criterion.
 
 criteria:
   - id: raw-count
     kind: count
-    text: "30 Raw Success Criteria bulleted statements"
-  - id: top20-count
+    text: "Raw criteria holds the depth's raw count"
+  - id: top-count
     kind: count
-    text: "Top 20 section with exactly 20 detailed criteria"
+    text: "Top criteria holds 5/10/20 by depth"
   - id: criterion-fields
     kind: presence
-    text: "Every Top 20 criterion carries the five fields"
+    text: "Every top criterion carries Justification, Score with Basis, Metrics and Current alternative"
   - id: financial-quantification
     kind: semantic
-    text: "Criteria quantify money, time, or risk — not comfort words"
-```
+    text: "Criteria quantify money, time or risk exposure, not comfort words"
+  - id: disposition
+    kind: presence
+    text: "Every discarded criterion has a disposition row"
+
+*Synthetic — not evidence.*

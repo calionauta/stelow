@@ -1,15 +1,14 @@
 ---
 name: stelow-product-job-to-be-done
 description: >
-  [stelow] Complete set of specialized prompts for Jobs To Be Done (JTBD) analysis and discovery,
-  based on the methodology by calionauta. Use this skill whenever the user wants
-  to perform any kind of JTBD analysis: contextual market segmentation, thinking styles
-  (Indi Young), JTBD discovery, competitor mapping, job actors, situational variables,
-  job map steps, functional needs (desired outcomes), financial needs, or emotional/social
-  jobs. Contains 10 professional prompts ready to run with AI agents. Trigger whenever the
-  user mentions: jobs to be done, JTBD, contextual segmentation, thinking styles, Indi Young,
-  job map, job steps, desired outcomes, user needs, JTBD competitors, job actors, situational
-  variables, emotional jobs, social jobs, or any combination of these terms.
+  [stelow] Jobs To Be Done (JTBD) analysis and discovery. Contextual
+  segmentation, thinking styles (Indi Young), JTBD discovery, competitor
+  mapping, job actors, situational variables, job map steps, functional needs
+  (desired outcomes), financial needs, emotional/social jobs, and switch
+  interviews. Use whenever the user mentions jobs to be done, JTBD, contextual
+  segmentation, thinking styles, Indi Young, job map, job steps, desired
+  outcomes, user needs, JTBD competitors, job actors, situational variables,
+  emotional jobs, social jobs, forces diagram, or switch interview.
 metadata:
   frequency: monthly
   category: product
@@ -26,165 +25,229 @@ metadata:
 
 # Jobs To Be Done — Complete Skill
 
-This skill contains **10 specialized prompts** for conducting comprehensive Jobs To Be Done analyses.
-Each prompt corresponds to a specific step or dimension of the JTBD methodology.
+Eleven specialized prompts for a JTBD analysis. Every prompt is a slot that must
+be **answered**, never a slot that must be **filled**. An answer may be
+`Not applicable` or `Open`; a fabricated answer may not.
 
----
+## What this skill is not
 
-## Prompt Map — When to Use Each
+- Not a research method. It structures what the user brings; it does not
+  generate evidence.
+- Not an interview service. Prompt 11 is a switch-interview protocol; other
+  interview styles are out of scope.
+- Not a prioritization model. The composite score ranks work; it does not
+  estimate demand.
+- Not a publisher. Nothing here writes to an external tool.
+
+## Prompt map
 
 | # | Prompt | When to use |
-|---|--------|-------------|
-| 1 | **Contextual Segmentation** | Create market segments based on situational factors (not demographics) |
-| 2 | **Thinking Styles (Indi Young)** | Identify significantly different thinking patterns of a performer toward a purpose |
-| 3 | **JTBD Discovery** | Discover and reframe Jobs from a solution, action, or outcome |
-| 4 | **Competitor Discovery** | Map direct, indirect, and hidden competitors through the JTBD lens |
-| 5 | **Job Actors** | Identify all actors involved in the job and market |
-| 6 | **Situational Variables** | Discover factors and variables that impact job execution |
-| 7 | **Functional Needs** | Discover functional success criteria (desired outcomes) |
-| 8 | **Financial Needs** | Discover financial success criteria for solution acquisition |
-| 9 | **Emotional & Social Jobs** | Discover emotional and social jobs related to the functional job |
-| 10 | **Job Map Steps** | Map the stages and steps of the job to build a Job Map |
+|---|---|---|
+| 1 | Contextual Segmentation | Segment a market by situation, not demographics |
+| 2 | Thinking Styles (Indi Young) | Distinct ways a performer thinks about a purpose |
+| 3 | JTBD Discovery | Reframe a solution, action or outcome into jobs |
+| 4 | Competitor Discovery | Direct, indirect and hidden competitors |
+| 5 | Job Actors | Every role around the job, including the ones that do not exist |
+| 6 | Situational Variables | Factors and variables that change the outcome |
+| 7 | Functional Needs | `Ensure` / `Avoid` success criteria |
+| 8 | Financial Needs | `Minimize the cost of` criteria for the buyer |
+| 9 | Emotional & Social Jobs | How the performer wants to feel and be seen |
+| 10 | Job Map Steps | Chronological steps, tagged by phase |
+| 11 | Switch Interview | Timeline and the four forces behind one switch |
 
----
+## Routing, intake, depth
 
-## Recommended Flow
+**Intake, before generating.** Two batches, never one wall.
 
-For a complete JTBD analysis, follow this logical sequence:
+**Batch 1 — material.** Ask before anything else: *do you have interviews,
+notes, support tickets, messages, recordings or links?* Three lanes:
 
-```
-1. Contextual Segmentation      → define the market
-   ↓
-2. Thinking Styles              → segment by cognition/behavior
-   ↓
-3. JTBD Discovery               → define the jobs
-   ↓
-4. Job Actors                   → identify who is involved
-   ↓
-5. Situational Variables        → understand the context
-   ↓
-6. Job Map Steps                → map the journey
-   ↓
-7. Functional Needs             → success criteria
-   ↓
-8. Financial Needs              → financial criteria
-   ↓
-9. Emotional & Social Jobs      → human dimension
-   ↓
-10. Competitor Discovery        → who else solves the job
-```
+| lane | what it means | what changes |
+|---|---|---|
+| **material** | the user supplies transcripts, tickets, docs or recordings | read them first; quotes are `Input-derived`; findings may be `Inference — high confidence` |
+| **research** | no material, but the web may supply candidate language, context and alternatives | everything is `Research-derived` or `Hypothesis — bet`; the web never establishes that a job exists |
+| **none** | nothing to read | hypothesis mode: the most plausible bet at every slot, each with its check |
 
----
+The lane is declared on the **first line** of every output — `Lane: material`,
+`Lane: research` or `Lane: none` — and does not change mid-run. Omission is not
+neutral: two runs of the same skill classified the same input differently when
+the line was optional. Moving from `none` to `material` means a new run, not a
+patch. Quotes the user repeats from their own support channel count as
+`material`, and the lane is then `material (thin)`.
 
-## Interaction Tool Guidelines
+**Batch 2 — frame.** Required: the job (or the solution, which gets reframed),
+the actor, and the decision the output supports. Optional: segment, depth.
+Missing required input is a question, not a guess. Four short questions total
+across both batches.
 
-**IMPORTANT**: When the user needs to choose between predefined options, ALWAYS ask through the portable ask contract (`../stelow-workflow-orchestrator/references/cli-tools/ask.md` — host-native question tool, else `stelow ask`, else enumerated text) with enumerated format:
-- Options with short `label` and `description`
-- Examples: prompt selection (1-10), analysis type, next steps, etc.
+**Route from the user's words.** If the ask names a prompt, go there. Ask only
+when the ask is genuinely ambiguous or spans prompts that produce different
+artifacts. Never open with an eleven-option question.
 
----
+**Route by lane, not by topic.** What the ask can deliver depends on what exists
+to read. The lane from intake decides which prompts are allowed:
 
-## General Instructions for the Agent
+| ask | material | research | none |
+|---|---|---|---|
+| what job is this? | 3 | 3 | 3 |
+| who is involved, who approves? | 5 | 5 | 5 |
+| where does it break? | 10 | 10 | 10 |
+| why do they switch or churn? | 11 | 11 as a plan | 11 as a plan |
+| how do they think? | 2 | **blocked** | **blocked** |
+| how do they feel, how do they want to be seen? | 9 | 9, hypothesis | 9, hypothesis |
+| which segment? | 1 | 1 | 1 |
+| who competes? | 4 | 4 | 4 |
+| what does good mean? | 7 | 7 | 7 |
+| what does it cost them? | 8, if the gate passes | 8 | 8 |
+| **which of these two do I build?** | 5 + 10 + record | same | same |
 
-- **Ask which prompt the user wants to run** (unless already clear from context) — offer three modes: **Full Mapping** (run all ten prompts sequentially), **Targeted** (exactly one prompt), or **Recommend** (agent picks from context):
-  - Use the portable ask contract with options 1-10 for the 10 JTBD prompts
-  - Always include option: "I want you to recommend based on context" (in the user's language)
-  - Fallback: "Which JTBD analysis do you want to perform? (1-10, or 'recommend based on context')"
-- **Fill in the variables** indicated by `[brackets]` or `{{braces}}` with the information provided by the user before executing the prompt.
-- **Chain prompts sequentially** when the user wants a full analysis — the output of one prompt feeds into the next (e.g., Situational Variables → Functional Needs).
-- **Language of output**: The prompts are written in English (instructions to the LLM), but results should be delivered in the language used by the user.
-- Read the appropriate file from `references/` before executing a prompt.
+`blocked` is literal: Prompt 2 without interviews produces five invented
+personalities. Say what material would unlock it, and stop.
 
----
+**Decision route.** When the user is choosing between two or more things, do not
+run a full mapping. Run Prompt 5 and Prompt 10 at `quick`, then write the
+**decision record** (below). That route exists because it was the single most
+useful output of the empirical rounds, and it started as an improvisation.
 
-## Research Mode (current or niche context)
+**Depth** (default `standard`):
 
-JTBD is grounded first in the user's context and in interviews. The LLM and
-external research can generate useful candidates — they do not invent evidence
-about people or replace validation.
+| depth | segments | contextual jobs | styles | steps | Prompt 7 top | Prompt 8 top |
+|---|---|---|---|---|---|---|
+| `quick` | 4–6 | 6–10 | 3–4 | 5–8 | 5 | 10 |
+| `standard` | 6–8 | 10–15 | 4–6 | 8–14 | 10 | 20 |
+| `deep` | 8–10 | 15–20 | 5–7 | 14–20 | 10 | 30 |
 
-Use the shared web-research contract (`../stelow-workflow-orchestrator/references/cli-tools/web-research.md`)
-when current or niche-specific material can help discover or test candidates:
+The band is a contract. Deviating from it needs the user's explicit override.
 
-- language people use for a struggle, workaround, or desired progress;
-- possible Jobs, situational variables, Job Map steps, and desired outcomes;
-- named competitors or alternatives, a changing category, or an emerging
-  practice; and
-- a score that relies on the current solution landscape.
+**Restate before a full run.** One line: job, actor, depth. Proceed unless
+corrected.
 
-Use host-native search and primary sources to establish what exists and what
-has changed. Add `last30days` when recent launches, practitioner discussion,
-or a current niche signal could change the candidate set or its priority. It
-complements primary evidence; a frequent discussion or launch is never proof
-of a Job, a struggle, prevalence, or causal relationship.
+## The decision record
 
-### Hypothesis and Bet Discipline
-
-When research contributes to a JTBD output, call it a **draft guide**, not a
-market finding. Mark each research-led Job, step, desired outcome, or ranking
-as a **hypothesis**. Prioritize hypotheses as **bets** using the decision
-context, fit with the supplied evidence, source coverage, and recency — not as
-a scientific measurement of demand or truth.
-
-For a prioritized research-led bet, record:
-
-- **Bet:** the candidate Job, step, outcome, or segment;
-- **Why now:** the supplied context and signals that made it worth exploring;
-- **Evidence, origin, and bias:** whether it is user-provided input, external
-  research, or a simulation; source types, gaps, recency, and whose
-  perspective is overrepresented or missing;
-- **Confidence:** directional only (low, medium, or high), never a statistical
-  claim; and
-- **Next validation:** the cheapest interview, observation, or behavioral-data
-  check that could disconfirm it.
-
-### Source and Status for Evidence
-
-User-provided interviews and research are first-class inputs. Use them when
-they support the analysis, and make their origin clear without inventing a
-sample size, method, or representativeness. Use one of these statuses wherever
-an insight, example, or voice depends on supplied material:
-
-- **Input-derived — direct quote:** exact wording present in the material the
-  user supplied; preserve its meaning and do not add a participant identity.
-- **Input-derived — paraphrase:** a faithful restatement of one supplied
-  account; do not put it in quotation marks.
-- **Input-derived — synthesis:** a pattern drawn from multiple supplied
-  interviews or research artifacts; state the supplied scope and limitations.
-- **Simulated hypothesis — not participant data:** a plausible invented
-  example used to make a candidate concrete, never evidence about a group.
-
-This provenance discipline applies to every JTBD prompt. Only call a finding
-validated when the supplied material actually supports it; otherwise preserve
-it as a hypothesis or bet. Keep participant information anonymized and avoid
-repeating unnecessary sensitive details.
-
-### Required Research Appendix
-
-When research contributed to the output, append this section after the native
-prompt output. Do not add an empty appendix when no research was used.
+When the run moves a decision — which of two things to build, fund or change — the
+last artifact is a record, not a summary. It is the only artifact that carries
+frontmatter, because it is the only one a script should index.
 
 ```markdown
-## Research-led Draft Bets
-
-> Directional guide, not a market measurement or validated JTBD finding.
-
-### Bet: [candidate Job, step, outcome, segment, or alternative]
-- **Why now:** [decision context and signals]
-- **Evidence, origin, and bias:** [user-provided input, external sources, or simulation; recency, coverage gaps, and missing or overrepresented perspectives]
-- **Confidence:** [low | medium | high — directional only]
-- **Next validation:** [the cheapest interview, observation, or behavioral-data check that could disconfirm it]
-```
-
-Interviews and user-provided behavioral evidence establish why people hire,
-switch, or struggle. Record coverage limitations and do not fabricate findings
-when research is unavailable.
-
+---
+job: <the job statement>
+segment: <segment name>
+depth: quick | standard | deep
+lane: material | research | none
+options: [<option A>, <option B>]
+verdict: <option A or B or undecided>
+confidence: low | medium | high
 ---
 
-## References
+## Option → step
+| Option | Steps it touches | What it covers | What it leaves out |
+|---|---|---|---|
 
-The 10 complete prompts are located in:
+## Bet
+<the chosen option, as a `Hypothesis — bet`, with the failure that would disprove it>
+**Direction:** <A can cause B, not the reverse> | `symmetric`
+**Chain starts at:** <step N>
+
+## Check
+<the cheapest test with what the user already has, with a number and a cost>
+
+## Not run
+<the prompts that would add information, and what each would add>
+```
+
+Rules:
+
+- `verdict` may be `undecided`. That is a result, not a failure, and the check is
+  what resolves it.
+- **Asymmetry comes before tie.** Before declaring a tie, ask whether one symptom
+  can *produce* the other. If option A failing can generate option B's symptom,
+  the choice is not symmetric: favor A, and write the direction explicitly —
+  `A can cause B, not the reverse` — plus the check that would confirm the causal
+  link. Two symptoms at different steps are not automatically a tie; they are a
+  tie only when neither can produce the other.
+- **Tie rule.** When neither symptom can produce the other, and the strongest
+  argument for A mirrors the strongest argument for B, the verdict is
+  `undecided`, and the check must be the test that separates them. Picking one
+  anyway is a coin flip with a rationale.
+- **Every verdict names the chain.** `verdict` is not enough: the record states
+  which step starts the chain it bets on. A verdict with no step is a preference.
+- `confidence` is directional. It is never a probability.
+- The record is written **after** the map and the actors, never instead of them.
+- A run that only produces the record has skipped the work that justifies it.
+
+## The one rule that governs all eleven prompts
+
+Every item carries a `Status`. Read `references/00-evidence-policy.md` before
+running any prompt. The short version:
+
+`Input-derived` · `Research-derived` · `Inference — high confidence` ·
+`Hypothesis — bet` · `Not applicable` · `Mesmo ator que {role}` · `Open`
+
+`Inference — high confidence` requires a **warrant**: the fragment of the job
+statement or segment that entails the item. No quotable fragment, no high
+confidence. For a step or a job, the warrant must contain the action.
+
+**Reproduce this legend verbatim at the top of every output.** The first round
+lost three statuses to paraphrase. Free-text provenance ("vem do que você falou")
+is not a status and is not allowed.
+
+**Line budget** (excluding the Q&A log): `quick` ≤ 120 lines, `standard` ≤ 200,
+`deep` ≤ 320. The floor is set by the structure — twelve roles plus six steps
+plus metrics plus the record already costs about a hundred lines. Over budget
+means padding or the wrong depth, not richness.
+
+## Pass-forward
+
+Every prompt ends with the block the next one consumes. A missing field is a
+visible gap, not a silent invention.
+
+```
+## Pass-forward
+job      : <the job statement this prompt settled on>
+segment  : <segment name + one-line market definition>
+actors   : <populated role classes only>
+carry    : <the artifact the next prompt needs>
+open     : <what is Hypothesis or Open>
+```
+
+## Interaction
+
+When the user must choose between options, use the portable ask contract
+(`../stelow-workflow-orchestrator/references/cli-tools/ask.md` — host-native
+question tool, else `stelow ask`, else enumerated text). Options carry a short
+`label` and a `description`. Include an "you choose" option in the user's
+language.
+
+Output language: the prompts are written in English; the result is delivered in
+the language the user writes in.
+
+## Research
+
+Research may surface candidate language, contexts, competitors and alternatives.
+It never establishes that a job exists, that people struggle, or how many do.
+Use the shared web-research contract
+(`../stelow-workflow-orchestrator/references/cli-tools/web-research.md`).
+Research-led items are `Research-derived` or `Hypothesis — bet`, never
+`Input-derived`.
+
+## Close
+
+End any standalone run with these five lines:
+
+```
+built   : <what this run produced>
+not run : <prompts that would add information, and what they would add>
+open    : <what is Hypothesis or Open>
+riskiest: <the one assumption that would sink the decision>
+next    : <the cheapest check, or the next prompt>
+```
+
+`not run` exists because absence must never be implicit. If the run produced a map
+without metrics, say so and name Prompt 7. If it produced roles without steps,
+say so and name Prompt 10.
+
+## References
+- `references/00-evidence-policy.md` — statuses, warrant test, banners
 - `references/01-contextual-segmentation.md`
 - `references/02-thinking-styles.md`
 - `references/03-jtbd-discovery.md`
@@ -195,51 +258,54 @@ The 10 complete prompts are located in:
 - `references/08-financial-needs.md`
 - `references/09-emotional-social-jobs.md`
 - `references/10-job-map-steps.md`
-
-Read the specific prompt file before executing it.
-
----
+- `references/11-switch-interview.md`
 
 ## Attribution
 
-This skill and all its prompts were developed by **calionauta** 🇧🇷 — product strategist and JTBD practitioner from Brazil.
+The method and the original prompts are by **calionauta** — product strategist
+and JTBD practitioner. Each rewritten reference keeps its source line:
 
-These prompts are the result of years of experimentation and refinement, documented and shared through:
+- Prompts 1–10: [Jobs To Be Done in Portuguese](https://calionauta.substack.com/p/e-book-jobs-to-be-done-em-portugues),
+  [Recursos Principais](https://calionauta.substack.com/p/recursos-principais),
+  [Substack](https://calionauta.substack.com).
+- Prompt 11 (switch interview) is new; the four forces and the switch timeline
+  follow Bob Moesta's work, restated here as a protocol, not quoted.
 
-- 📚 **E-book**: [Jobs To Be Done in Portuguese](https://calionauta.substack.com/p/e-book-jobs-to-be-done-em-portugues) — comprehensive guide to JTBD methodology
-- 🔗 **Resources**: [Recursos Principais](https://calionauta.substack.com/p/recursos-principais) — collection of prompts, frameworks, and tools
-- ✍️ **Substack**: Regular articles and experiments on JTBD, product strategy, and innovation
+## When to use & test cases
 
-The prompts in this skill represent a curated, production-ready selection of the most effective JTBD analyses developed through extensive real-world application.
+Use when segmenting by situation or mapping a job to be done — never by
+demographics.
 
-## When to Use & Test Cases
+Should activate: "segment this market by situation", "map the jobs for expense
+approvals", "who is involved in this job", "why did this customer switch".
 
-Use when segmenting markets by context or mapping jobs to be done — never demographics.
-
-Should activate: "segment this market by situation", "map the jobs for expense approvals".
-Should NOT activate: "personas by age and income" (explicitly out of scope).
+Should NOT activate: "build personas by age and income" (out of scope).
 
 ## Examples
 
-### Example: why users hire a note app
+### Example: why accounting firms churn
 
-**Input:** "Users say they love us but keep churning. Why?"
+**Input:** "support hears 'não sei onde aprovar' and 'o relatório não fecha'".
 
-**Steps:**
-1. Run a JTBD interview (past-tense, struggle-first, no feature questions).
-2. Extract the job (e.g. "feel in control Monday morning").
-3. Map competing hires (spreadsheets, memory, nothing).
+**Steps:** intake (job, actor, decision) → Prompt 5 for the roles, with four of
+them `Not applicable` → Prompt 10 for the map, at `quick` depth → one
+`Hypothesis — bet` naming the cheapest check.
 
-**Output:** Job statement + forces diagram + what the product must do to win the hire.
+**Output:** a role table where every role is populated, hypothetical or
+explicitly absent, and a map where at least one phase holds zero steps and says
+why. *Synthetic — not evidence.*
 
-## Edge Cases
+## Edge cases
 
-### Interviewee talks features
-- Redirect to the last time they struggled; features are solutions, not jobs.
-### Multiple jobs surface
-- Rank by struggle intensity; design for the strongest, note the rest.
-### Job is emotional, not functional
-- Keep it: progress has functional, emotional, and social dimensions.
+- **The user names a tool, not a job.** Reframe until solution-agnostic, restate
+  the reframe, then map.
+- **A role has no plausible actor.** `Not applicable — <reason>`. Never a name.
+- **The user has no material at all.** Hypothesis mode banner, then proceed;
+  every item is a bet with its disconfirming check.
+- **A criterion cannot be measured by speed, ease and consistency together.**
+  Rewrite it; do not keep it and hope.
+- **Two thinking styles would merge.** Merge them and say so. Fewer distinct
+  styles is a finding, not a gap.
 
 <!-- stelow:scope3:begin -->
 ## Entry (mode detection)
@@ -289,4 +355,3 @@ produce the artifacts promised in `## Hand-off`; skip anything that does
 not advance the workflow.
 
 <!-- stelow:scope3:end -->
-

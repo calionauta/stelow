@@ -1,97 +1,125 @@
-# Prompt 1: Contextual Segmentation for Jobs To Be Done
+# Prompt 1: Contextual Segmentation
 
 **Source:** https://calionauta.substack.com/p/prompt-ia-segmentacao-por-contexto
 
-**When to use:** To identify market segments based on situational factors and contextual variables —
-avoiding demographic segmentation. Recommended first step in a JTBD analysis.
+**When to use:** to cut a market into groups that differ by *situation*, not by
+demographics. First step when the user does not know who to serve.
 
-**Variables to fill in:**
-- `[fill in with the market definition]`: The market definition or job to be done being analyzed
+**Variables:** `{{Market or job}}`, `{{Depth}}` (`quick` 4–6 final segments,
+`standard` 6–8, `deep` 8–10).
 
-## Evidence Policy
-
-Generate situational segments from the job and user/interview context first.
-When demand, purchasing power, ease of reach, or barriers are ranked using
-current niche conditions rather than supplied evidence, use the shared
-web-research contract (`../../stelow-workflow-orchestrator/references/cli-tools/web-research.md`).
-Use `last30days` only if a recent signal could change the segment ranking;
-treat it as context, not validation that the segment has the stated struggle.
-When research contributed, append the required
-[Research-led Draft Bets](../SKILL.md#hypothesis-and-bet-discipline) section
-after the native output.
+**Read first:** `00-evidence-policy.md`.
 
 ---
 
-## Prompt Completo
+## Prompt
 
 ```
-Goal: Identification of contextual segments.
-Job to be done: [fill in with the market definition]
+Goal: contextual segments for a job.
 
-Process:
-1. List 20 possible segments, briefly showing only the name, market definition and justification, without further data.
-2. Filter or group into a maximum of 10 segments, ensuring that they are mutually exclusive, collectively exhaustive and non-redundant based on situational factors and variables. 
-3. Prioritize (not filter) the segments of the step 2 using the prioritization criteria.
-4. Display the final list following the rules below.
+Job to be done: {{Market or job}}
+Depth: {{Depth}}
 
-Rules:
-- Define SIGNIFICANTLY different segments, interconnecting diverse and specific situational factors and variables, which most impact the outcome of the Job to be done. Avoid any demographic segments, unless this is critically necessary and there is no other way to segment. Example of demographic factors to avoid
-    - Age, gender, income, education level, occupation, marital status, family size, geographic location, ethnicity, religion, company size, industry, annual revenue, number of employees, growth stage, business type, technology used, profession role, purchase volume, industry-specific needs.
-- The segments must be mutually exclusive, collectively exhaustive and non-redundant.
-- Use the criteria below for prioritizing segments (the higher, the better, except for "Frequency" and "Barrier to Entry"):
+## Process
 
-| Criterion | Description | Evaluation |
-|-------------------|--------------------------------------------------------------------------------|------------|
-| Impact | Level of impact of the context on the Job. | Low/Medium/High |
-| Demand | Volume of people performing the Job in the context. | Low/Medium/High |
-| Effort | Level of effort when performing the Job in the context. | Low/Medium/High |
-| Purchasing Power | Financial capacity to acquire solutions related to the Job. | Low/Medium/High |
-| Ease of Reach | Ease of finding/segmenting the group. | Low/Medium/High |
-| Frequency | Frequency with which the Job is performed in the context. | Low/Medium/High |
-| Barrier to Entry | Restrictions on the entry of new companies in the market. | Low/Medium/High |
+1. List 20 candidate segments. Name only — one line each, no data.
+2. Group or filter them into the depth's final count. The groups must be
+   mutually exclusive, collectively exhaustive and non-redundant, and the cut is
+   situational: same job, different circumstance.
+3. Prioritize (do not discard) with the table below.
+4. Show the disposition of the 20 candidates.
+5. Show the final segments.
 
-Rules for each segment:
-- Give each a representative name, easy for reference on a daily basis.
-- Define the market for the specific segment following the model: "{group of people} trying to {job to be done adapted to start with the verb in the infinitive} {comprehensive context involved in the group of people}. Adapt the Job to be done and context, based on the name of the group, to describe in a super comprehensive way the relationship of the actor with the job and describe the market with this formula. Examples:
-    - if the job was "Manage finances together" and the name of the group was "Family members with elderly people", then the market could be "[People] trying to [manage finances together] [with their elderly family member]".
-    - if the name of the group was "People who care for elderly family members" a bad market statement would be "People who care for elderly family members trying to manage finances together" because two groups of people are before the verb "wanting", which should be separated one at the beginning and one in the job to be done. A better market statement would be "[People] trying to [manage finances together] [with their elderly family member]".
-- They have SIGNIFICANTLY DIFFERENT needs that therefore demand totally different and customized solutions, even when performing the same Job to be done.
-- Give a justification for the exclusivity in how you consider the group significantly different from the others listed.
-- Highlight the top 3 significantly different desired outcomes (starting with verbs) + top 3 significantly different constraints compared to the other groups that have a major impact on the outcome of the Job to be done.
+## What is forbidden
 
+Demographics, unless there is no other way and you say why: age, gender, income,
+education, occupation, marital status, family size, location, ethnicity,
+religion, company size, industry, revenue, headcount, growth stage, business
+type, technology, role title, purchase volume.
 
-Template and fields for result:
-## {Segment Name}
-- Market:
-- Justification:
-- Situational factors: {key situational factors AND variables of the segment, noting how they may interact with each other}
-- Desired Outcomes: 
-    - 
-    - 
-    - 
-- Constraints:
-    - 
-    - 
-    -
+## Priority criteria
 
-Completeness contract (the host validates these counts — never submit fewer):
-- 20 initial candidate segments, then a maximum of 10 final segments.
-- Every final segment has all five fields: Market, Justification, Situational factors, 3 Desired Outcomes, 3 Constraints.
+Higher is better, except Frequency and Barrier to Entry, where it depends on the
+model.
+
+| Criterion | Means |
+|---|---|
+| Impact | how much the context changes the job |
+| Demand | how many people perform the job in that context |
+| Effort | how hard the job is in that context |
+| Purchasing power | ability to pay for a solution |
+| Ease of reach | how findable the group is |
+| Frequency | how often the job happens |
+| Barrier to entry | restrictions on new entrants |
+
+## Market statement
+
+`{people} trying to {job, verb first} {context}`
+
+The people go before the verb; the context after the object. Never two groups
+before the verb.
+
+- Job "manage finances together", group "family members with an elderly parent"
+  → "family members trying to manage finances together with their elderly parent".
+- Wrong: "people who care for elderly parents trying to manage finances together".
+
+## Output
+
+## {Segment name}
+
+- **Status:** `Input-derived` | `Inference — high confidence` | `Hypothesis — bet`
+- **Market:** {people} trying to {job} {context}
+- **Justification:** the factor that separates this group from the others, in one
+  sentence.
+- **Situational factors:** the key factors and variables, and how they interact.
+- **Scene:** one sentence, present tense, who/when/where — concrete enough that the
+  reader recognises a Tuesday.
+- **Observable difference:** what this group does today that the others do not. A
+  behaviour, not a need.
+- **Cost of failure:** what happens to them when the job fails.
+
+## Disposition of the candidates
+
+| Candidate | Disposition | Why |
+|---|---|---|
+| ... | kept / merged into X / dropped | one line |
+
+## Closing
+
+- Segmento que mais muda a decisão: {name} — {why}
+- Segmento que você suspeita ser o maior e não conseguiu decidir: {name} — {what
+  would settle it}
+```
+
+## Why there are no desired outcomes here
+
+`Desired Outcomes` and `Constraints` per segment were removed on purpose. They are
+Prompt 7's artifact, at a lower quality and without the situational input, and
+they were the main reason a segment grew six fields without becoming clearer.
+If the user needs the needs of a segment, run Prompt 7 with that segment.
+
+## Completeness contract
+
+- 20 candidates listed, with a disposition row for each.
+- Final count inside the depth band.
+- Every segment carries all seven fields above.
+- No demographic cut unless justified.
 
 criteria:
   - id: candidate-count
     kind: count
-    text: "20 initial candidate segments listed"
+    text: "20 candidate segments listed, each with a disposition row"
   - id: final-count
     kind: count
-    text: "At most 10 final segments"
+    text: "Final segments inside the depth band"
   - id: segment-fields
     kind: presence
-    text: "Every final segment carries all five fields (Market, Justification, Situational factors, 3 Desired Outcomes, 3 Constraints)"
+    text: "Every segment carries Status, Market, Justification, factors, Scene, Observable difference, Cost of failure"
   - id: segment-specificity
     kind: semantic
-    text: "Segments name concrete situations and actors, not generic demographics"
-  - id: outcome-quality
+    text: "Segments name concrete situations and actors, not demographics"
+  - id: scene-concreteness
     kind: semantic
-    text: "Desired Outcomes state measurable end states, not activities"
-```
+    text: "Scene is a present-tense scene, not a category description"
+
+*Synthetic — not evidence.*

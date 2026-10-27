@@ -2,89 +2,92 @@
 
 **Source:** https://calionauta.substack.com/p/prompt-ia-thinking-styles-indi-young
 
-**When to use:** To identify significantly different thinking styles of a performer when trying to
-achieve a purpose. Useful for segmenting by behavior/cognition instead of demographics. Run after
-Contextual Segmentation to enrich each segment with cognitive profiles.
+**When to use:** to separate performers by how they think about the same purpose.
+Behavior and cognition, not demographics.
 
-**Variables to fill in:**
-- `{{Purpose}}`: The goal or outcome the performer is trying to achieve
-- `{{Performer}}`: The group of people trying to achieve that purpose
+**Variables:**
+- `{{Purpose}}`: what the performer is trying to achieve
+- `{{Performer}}`: the group
+- `{{Depth}}`: `quick` 3–4 styles | `standard` 4–6 | `deep` 5–7
 
-## Research Guardrail
-
-Do not use web research to infer a performer's inner thoughts, emotions, or
-personal rules. Research may surface candidate language or context, but every
-thinking style remains a hypothesis to validate in interviews. Every **Voice
-example** must carry a **Source & status** value from the main skill's
-[Source and Status for Evidence](../SKILL.md#source-and-status-for-evidence)
-rules. A simulated voice is illustrative, never a real quote or representative
-of the group. When research contributed, append the required
-[Research-led Draft Bets](../SKILL.md#hypothesis-and-bet-discipline) section
-after the native output.
+**Read first:** `00-evidence-policy.md`.
 
 ---
 
-## Complete Prompt
+## Research guardrail
+
+Do not use research to infer someone's inner thoughts, emotions or personal
+rules. Research may surface candidate language. Every thinking style stays a
+hypothesis until an interview supports it.
+
+Every `Voice example` carries a `Source & status`. A simulated voice is
+illustrative, never a quote from a person.
+
+**When the user supplied no interview or notes**, the output opens with the
+hypothesis-mode banner and every row is `Hypothesis — bet`.
+
+---
+
+## Prompt
 
 ```
 {{Purpose}}:
 {{Performer}}:
+Depth: {{Depth}}
 
-Identify *five* significantly different thinking styles of {{Performer}} when trying to {{Purpose}}, considering inner thoughts (inner thinking), emotional reactions, and personal rules (intentional or unintentional habits and customs) in the context of the purpose (constraints, challenges, opportunities, elements, people).
+Identify the significantly different thinking styles of {{Performer}} when trying
+to {{Purpose}}: inner thinking, emotional reactions, and personal rules (habits,
+customs, intentions) in the context of the purpose.
 
-Thinking style: Pattern of behavior and cognition influenced by context and purpose, expressed through thoughts, emotions, and personal rules. Unlike archetypes, which are deeper and more stable patterns, thinking styles are contextual and mutable.
+Thinking style: a pattern of behavior and cognition influenced by context and
+purpose. Contextual and mutable, unlike an archetype.
 
-For each style, provide:
+## How many
 
-## Name: (Start with verb in infinitive. Short and objective phrase).
+Between 3 and 7, at the depth band. The number is a finding, not a target:
+if two candidates would think and act the same way, merge them and say so.
+Justify the final number, and justify any pair you considered merging.
 
+## For each style
+
+## {Name} — verb first, short
 | Element | Description | Voice example | Source & status |
 |---|---|---|---|
-| Thought | Inner thoughts related to the purpose. | "I think that..." | [Choose: Input-derived — direct quote / Input-derived — paraphrase / Input-derived — synthesis / Simulated hypothesis — not participant data] |
-| Emotion | Emotional reactions when trying to achieve the purpose. | "I feel..." | [Choose a status from the Source and Status for Evidence rules] |
-| Personal Rule | Habits, customs, or principles that influence behavior in relation to the purpose. | "I always/never..." | [Choose a status from the Source and Status for Evidence rules] |
+| Thought | inner thinking about the purpose | "..." | {status} |
+| Emotion | emotional reaction while pursuing it | "..." | {status} |
+| Personal Rule | habit, custom or principle | "I always/never..." | {status} |
 
-- Brief description (maximum 1 line).
+- **Warrant:** the fragment of the purpose or of the supplied material this
+  style follows from. Without one, this style is `Hypothesis — bet` and says so.
+- Brief description (one line).
 - Context.
-- How it differs from other styles and how the solution should be adapted.
-- Top 3 Functional Jobs (actions/results).
-- Top 2 Emotional Jobs (feelings/avoid feelings).
-- Top 2 Social Jobs (perceptions/avoid perceptions).
+- How it differs from the others, and how a solution would adapt.
+- Top 3 functional jobs, top 2 emotional jobs, top 2 social jobs.
 
-Justify the choice of the five styles.
+## Closing
+- Por que {n} estilos, e não {n-1} nem {n+1}.
+- Pares que quase se fundiram: {pair} — {why kept apart, or merged}.
+```
 
-Example:
+## Completeness contract
 
-## Maintain Control:
-
-| Element | Description | Voice example | Source & status |
-|---|---|---|---|
-| Thought | Focus on planning and organization to minimize unforeseen events. | "I need to have everything under control." | Simulated hypothesis — not participant data |
-| Emotion | Anxiety in the face of unexpected situations. | "I get very nervous when things go off plan." | Simulated hypothesis — not participant data |
-| Personal Rule | Follow routines and procedures to ensure efficiency. | "I always make a checklist before starting anything." | Simulated hypothesis — not participant data |
-
-- Brief description: Seeks predictability and efficiency.
-- Context: Work with tight deadlines.
-- Differentiation/Solution Adaptation: Prioritize organization and planning tools.
-- Functional Jobs: Plan tasks, monitor progress, optimize resources.
-- Emotional Jobs: Feel secure, avoid frustration.
-- Social Jobs: Be perceived as organized, avoid being seen as negligent.
-
-Completeness contract (the host validates these counts — never submit fewer):
-- Exactly 5 thinking styles, each under its own ## Name heading.
-- Every style carries the 3-row Element table (Thought, Emotion, Personal Rule) with Voice example and Source & status, plus: 1-line description, Context, Differentiation/Solution Adaptation, Top 3 Functional Jobs, Top 2 Emotional Jobs, Top 2 Social Jobs.
-- A closing justification of why these five styles were chosen.
+- Between 3 and 7 styles, inside the depth band.
+- Every style carries the three-row table with `Voice example` and
+  `Source & status`, plus warrant, description, context, differentiation and the
+  3/2/2 job lists.
+- A closing that justifies the number and the near-merges.
+- With no supplied material: hypothesis-mode banner at the top, all rows
+  `Hypothesis — bet`.
 
 criteria:
   - id: style-count
     kind: count
-    text: "Exactly 5 thinking styles under their own headings"
+    text: "3 to 7 styles, inside the depth band"
   - id: style-fields
     kind: presence
-    text: "Every style carries the Element table, Voice example, Source & status, description, Context, adaptations, Top 3/2/2 jobs"
+    text: "Every style carries table, warrant, description, context, differentiation, 3/2/2 jobs"
   - id: style-distinctness
     kind: semantic
-    text: "Styles describe incompatible ways of thinking, not the same person relabeled"
+    text: "Styles are incompatible ways of thinking, not one person relabeled; near-merges are named"
 
-Respond without introduction.
-```
+*Synthetic — not evidence.*
