@@ -119,6 +119,11 @@ useful output of the empirical rounds, and it started as an improvisation.
 
 The band is a contract. Deviating from it needs the user's explicit override.
 
+**Depth is capped by the lane.** In lane `none`, `deep` needs an explicit
+override and the output says the extra detail is structure, not evidence. More
+fields over the same absence of material multiply invention, not insight: a
+twelve-step map built on nothing is twelve guesses with a table around them.
+
 **Restate before a full run.** One line: job, actor, depth. Proceed unless
 corrected.
 
