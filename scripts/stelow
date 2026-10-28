@@ -2967,7 +2967,16 @@ CONTROL_FILES = {"state.md", "audit-trail.md", "invariants.json"}
 # comment + thread output. Never deliverables, so the strict gate (and the
 # host's unregistered list) must not trip on them — a draft burst blocks
 # no completion.
-DISPOSABLE_DIRS = {"drafts", "lock"}
+#
+# `runs` is the same kind of thing for a different reason: it holds one
+# directory per execution, written by the host that ran it. Its reports carry
+# deliverable titles — the native audit stage's report is literally titled
+# "Execution Critique Report" — so a gate that counts them as card documents
+# demands they be registered, and registering one then fails the artifact
+# contracts, which were written for documents a worker authors for review.
+# That dead end (unregistered = refused, registered = malformed) blocked a card
+# whose test run, security scan and PR were all green.
+DISPOSABLE_DIRS = {"drafts", "lock", "runs"}
 def workflow_output(absolute):
     """A durable workflow output, excluding the CLI's own control files."""
     relative = os.path.relpath(os.path.realpath(absolute), os.path.realpath(statedir)).replace(os.sep, "/")
