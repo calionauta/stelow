@@ -588,6 +588,21 @@ describe("audit-trail", () => {
     expect(run(wd, ["audit-trail", "check", "--strict"], env).status).toBe(0);
   });
 
+  // A run's own output is evidence, not a card document. Its reports carry
+  // deliverable titles (the native audit stage's is literally "Execution
+  // Critique Report"), so counting them demanded registration — and registering
+  // one then failed the artifact contracts, which are written for documents a
+  // worker authors for review. That dead end blocked a card whose test run,
+  // security scan and PR were all green.
+  it("--strict ignores a run's own output under runs/", () => {
+    const { stateDir, env } = setup();
+    mkdirSync(join(stateDir, "runs", "exec_1", "audit"), { recursive: true });
+    writeFileSync(join(stateDir, "runs", "exec_1", "audit", "evidence.md"), "# Evidence\n");
+    writeFileSync(join(stateDir, "runs", "exec_1", "audit", "requirements.md"), "# Requirements\n");
+    expect(run(wd, ["audit-trail", "build", "--strict"], env).status).toBe(0);
+    expect(run(wd, ["audit-trail", "check", "--strict"], env).status).toBe(0);
+  });
+
   it("--strict refuses unregistered non-Markdown output", () => {
     const { stateDir, env } = setup();
     writeFileSync(join(stateDir, "verification.json"), '{"passed":true}\n');
