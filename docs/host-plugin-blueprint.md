@@ -917,6 +917,64 @@ service is part of the contract. Keep regex pins for topology, counts, and
 terminal refusals; behavior belongs in executable tests. Mirror the pattern
 rather than copying the code.
 
+### A release record is read, never reconstructed
+
+A surface that answers "what shipped recently" reads the project's own release
+record — tags and the changelog — not the card ledger. Cards record work,
+releases record shipment, and a project can ship without finishing a card.
+Two sources, two ranks, never merged into one claim.
+
+Three layers, and the split is the pattern:
+
+1. **Pure assembly** takes the tag spine and the changelog text as arguments
+   and returns rows: which headings are releases, which body belongs to which
+   version, what a row says when it has no text. Pure, so every join rule is
+   stated in a test without a repository on disk.
+2. **A strict reader** owns the process call and the typed absence states. A
+   soft runner that collapses every failure into an empty success is right for
+   "did anything change" and fatal here: an unreadable repository must read as
+   unreadable, never as "no releases". Five project states (`no repo`, `no
+   tags`, `no record`, `path missing`, `unreadable`) plus one row state (`no
+   notes`) travel as data, never as prose a component has to parse.
+3. **One validated call** answers the filtered view and the fleet, so a board
+   with and without a filter cannot drift apart. Every scalar is present;
+   absence is `null` or a named state, never an omitted key. A failed project
+   is a row inside a successful call; a failed host read is the call's own
+   failure, and the surface says so.
+
+Rules that were paid for:
+
+- **Order by the record's own day, then semver precedence, then version text.**
+  Version-text order puts `0.9.0` above `0.10.0` and names an older release as
+  the newest; version order alone puts a six-week-old `v1.x` line above
+  yesterday's `v0.8x`. The date that orders a row is the date the row prints,
+  computed once on the server as `YYYY-MM-DD`.
+- **Read the changelog at the release tag, not in the working tree.** A
+  checkout can sit dozens of commits behind its own tags. Read at the tag, and
+  read at the newest *release* tag: a `nightly-…` or `archive/…` ref can be
+  newer than every version tag and carries no changelog, so reading there marks
+  documented releases undocumented.
+- **A body ends at the next release heading, never at the next `## `.** One
+  changelog dialect reuses the second level for body sections (`## What's
+  Changed`), and splitting there yields empty takeaways.
+- **A takeaway is quoted, never generated**: the release's own prose paragraph,
+  else its first bullet, else a fixed sentence saying no notes were written.
+  A model-written summary of a release is a second source of truth about what
+  shipped.
+- **A failed read is not an absent file.** Only git's "path does not exist"
+  answer counts as absence; a timeout, an abort or a buffer overrun is
+  `unreadable`, because marking every row undocumented is a quiet lie.
+- **Bound the work, not just the answer.** A deadline on a promise leaves a
+  hung child running; abort the process, cap how many projects are read at
+  once, and cap each command's output.
+- **Never couple the release line to a finished-card strip.** That strip renders
+  nothing when no card has finished, so a project that shipped without
+  finishing a card would show nothing — and the reader learns that "nothing
+  finished" and "nothing shipped" are the same fact.
+- **A surface that could not read a fleet says so.** "None recorded" is a claim
+  about the projects; "could not read 8 of 14" is a claim about the read. The
+  second is the honest one when the first is unknown.
+
 ## 9. Anti-patterns (each paid for at least once)
 
 - **A rule that trusts a signal nobody refreshes.** The sharpest one here,
