@@ -1360,7 +1360,11 @@ Archive the entire prior scope array with source/target versions and hashes.
 At application, coordinate participating writers, reserve the tracking and
 target plan files, back up exact prior bytes outside artifact discovery, and
 publish through the host's atomic compare-and-swap writer. A competing tracker
-or target-plan edit refuses migration. Describe the cooperative reservation
+write or a target-plan edit detected before publication refuses migration.
+An edit crossing the tracker publication boundary must be reported as
+committed-but-stale by a post-write check: preserve the reviewed hash, inspect
+the backup and current tracking, and publish a new plan version rather than
+automatically rolling back over another writer. Describe the cooperative reservation
 boundary honestly; do not claim a cross-file transaction against arbitrary
 external writers. Release only owned reservations and report cleanup failures,
 distinguishing committed migration from pre-commit refusal. A repeated request
