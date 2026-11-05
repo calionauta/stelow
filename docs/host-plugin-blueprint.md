@@ -1342,6 +1342,38 @@ See `references/execution-contract.md` for the vocabulary and
 
 ### Scope Map and decision-artifact portability
 
+**Approval compares the bytes that were reviewed.** A host that publishes an
+approval with a compare-and-swap file API must supply the SHA-256 of the exact
+raw content it read. A null expected hash means create-only, not “replace this
+unchanged draft.” Re-serializing JSON before hashing also changes the version
+being compared. Apply the same rule to any existing state mirror; genuine
+intervening edits refuse approval and name the re-read/retry route.
+
+**A new technical plan is not permission to erase execution history.** Before
+replacing nonempty tracking, require explicit reconciliation and a read-only
+preview. Use the canonical parser in disposable storage. Preserve operational
+records, clocks, task results, discovered tasks and unrelated workflows. Seed
+only new work pending; refuse reused task IDs with changed meaning, expanded
+completed scopes and unfinished retired tasks without explicit destinations.
+Archive the entire prior scope array with source/target versions and hashes.
+
+At application, coordinate participating writers, reserve the tracking and
+target plan files, back up exact prior bytes outside artifact discovery, and
+publish through the host's atomic compare-and-swap writer. A competing tracker
+or target-plan edit refuses migration. Describe the cooperative reservation
+boundary honestly; do not claim a cross-file transaction against arbitrary
+external writers. Release only owned reservations and report cleanup failures,
+distinguishing committed migration from pre-commit refusal. A repeated request
+against the same version is unchanged; an edited active version is refused.
+
+Execution advance must propagate synchronization refusals before any lifecycle
+mutation. Its dry-run must expose the same refusal without live sync side
+effects. A read projection compares the persisted plan version and any recorded
+hash with the candidate before calling it synced: a positive scope count alone
+can describe an earlier plan. Independent tests should exercise actual writes,
+real compare-and-swap races, read-only previews, other-workflow isolation and
+preservation of historical evidence, rather than matching implementation text.
+
 A host that supports the Scope Map pattern should keep the map in the canonical
 stage data rather than inventing a parallel scope state. The existing `scope`
 stage owns the approved map; Shape may produce candidate slices, and planning
