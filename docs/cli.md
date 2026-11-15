@@ -32,7 +32,7 @@ scripts/stelow schema [command]
 |---|---|
 | `status` | One-screen project summary (`--json` for machines). Passive — never mutates. |
 | `advance <stage>` | Moves `current_stage` after validating the stage exists, required artifacts exist, and the `.stelow/lock` can be acquired. Fails before touching anything: a bad candidate leaves state byte-identical. `--dry-run` validates without mutating. |
-| `doctor` | Six drift classes — `stale-lock` (warn), `missing-dir` (warn), `parallel-lock` (info), `orphan-pid` (warn), `state-transitions-drift` (error), `transitions-missing` (error) — plus the recipe check: a stage naming an `execution.recipe` with no `recipes/<id>.yaml` is an error. `--json` never exits non-zero on warn/info. |
+| `doctor` | Six drift classes — `stale-lock` (warn), `missing-dir` (warn), `parallel-lock` (info), `orphan-pid` (warn), `state-transitions-drift` (error), `transitions-missing` (error) — plus the stage-recipe check: `recipe-missing` (error) when a stage names an `execution.recipe` with no `recipes/<id>.yaml`, `recipes-dir-missing` (error) when the directory is gone, `stages-missing` / `stages-unreadable` (error) when `STELOW_STAGES` points at nothing or cannot be read, `stages-unchecked` (info) when there is no declaration file at the default path, and `stages-unparsed` / `stages-empty` (warn) when no declaration could be read. `--json` never exits non-zero on warn/info. |
 | `seed` | Scaffolds a workflow (run knobs + `--review-mode` set the control dimensions once; `--appetite` still accepted as a deprecated alias). |
 | `ask` | Records a structured question (single- or multi-choice, batchable groups, optional `--contract` binding it to a decision contract). |
 | `sync-scopes` | Parses `[SCOPE-N]` blocks from the latest `spec-tech_*.md` into `wf.scopes[]`. Idempotent; preserves host/worker overlays and re-houses rework scopes. The single canonical scope parser — hosts shell out instead of mirroring it. |
@@ -46,5 +46,7 @@ scripts/stelow schema [command]
 `/sw-*` skill commands are conversational aliases agents recognize while
 reading a skill (`/sw-status` → `status`, `/sw-advance` → `advance`,
 `/sw-doctor` → `doctor`). They are not a portable interface — automation
-calls the CLI subcommand. Env override: `STELOW_LOCK_TTL_SEC` (default
-120; `advance` auto-clears stale locks past TTL).
+calls the CLI subcommand. Env overrides: `STELOW_LOCK_TTL_SEC` (default
+120; `advance` auto-clears stale locks past TTL), and `STELOW_STAGES` /
+`STELOW_RECIPES` (the declaration file and the recipes directory `doctor`
+compares, both defaulting to the repo layout).

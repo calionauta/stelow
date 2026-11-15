@@ -53,14 +53,16 @@ candidate leaves both files byte-identical.
 | `recipes-dir-missing` | error | declarations exist but the recipes directory does not |
 | `stages-missing` | error | `STELOW_STAGES` is set and points at nothing |
 | `stages-unreadable` | error | the stages file exists but cannot be read |
-| `stages-unparsed` | warn | a `recipe:` line outside a stage block's `execution:` mapping (message names the line) |
+| `stages-unparsed` | warn | a `recipe:` line outside a stage block's `execution:` mapping, or an `execution:` mapping written inline — an indentation reader cannot see a recipe there (message names the line) |
 | `stages-empty` | warn | the stages file parsed to zero declarations |
 | `stages-unchecked` | info | no stages file at the default path — the recipe check did not run |
 
 A declaration is the value of `recipe:` inside a stage block's `execution:`
 mapping; `null`, `~`, `""`, an absent key and the plural `recipes:` are not
 declarations. Nothing outside `recipes/` is ever touched: a recipe file no
-stage declares is not a finding.
+stage declares is not a finding. `doctor` is not a schema verdict — it asks
+whether a declared recipe has a file behind it, and what a recipe *contains*
+stays the validator's job (`npm run validate:stages`).
 
 `--json` returns `{"findings": [...], "ok": <bool>}` and never exits non-zero
 on `warn` / `info`; only `error` flips `ok` to false. `doctor: ok (no drift)`
@@ -140,6 +142,8 @@ workers call that, and nothing in the core simulates a slash command.
 | Var | Default | Effect |
 |---|---|---|
 | `STELOW_LOCK_TTL_SEC` | `120` | lock TTL in seconds; advance auto-clears stale locks past TTL |
+| `STELOW_STAGES` | `skills/stelow-workflow-orchestrator/stages.yaml` | the declaration file the recipe check reads |
+| `STELOW_RECIPES` | `recipes/` | the directory every declaration must resolve in |
 
 ## AC coverage
 
