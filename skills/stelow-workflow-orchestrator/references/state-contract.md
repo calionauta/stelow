@@ -82,6 +82,12 @@ in the workflow directory with the stage it is leaving — `.md` files as
 Hosts can therefore show each artifact beside its producing stage without a
 second index or filename-based stage inference.
 
+**An artifact is handed over as a file.** The manifest names it and the host
+carries it; the hand-off message says what the artifact means and never carries
+the artifact itself. A spec, a wireframe, a contrast table or a plan pasted into
+a message cannot be read as a document, downloaded, or diffed against the next
+version, and the next stage receives a paraphrase instead of the artifact.
+
 ### Valid Stage Names
 
 `triage`, `select`, `setup`, `context`, `shape`, `critique`, `gate`,

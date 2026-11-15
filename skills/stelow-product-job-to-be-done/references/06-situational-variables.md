@@ -48,20 +48,20 @@ factor the variables that matter, with a concrete example.
 
 ## Where / With whom / When / Why / How
 
-| Fator | Variável | Exemplo concreto | Status |
+| Factor | Variable | Concrete example | Status |
 |---|---|---|---|
 
-## O que mais muda o resultado
+## What most changes the result
 
-| # | Fator | Por que muda | 
+| # | Factor | Why it changes it | 
 |---|---|---|
 | 1 | ... | ... |
 | 2 | ... | ... |
 | 3 | ... | ... |
 
 ## Closing
-- O fator que o usuário não tinha considerado: {factor} — {why it matters}
-- O fator que parece óbvio e não muda nada: {factor} — {why it can be dropped}
+- The factor the user had not considered: {factor} — {why it matters}
+- The factor that looks obvious and changes nothing: {factor} — {why it can be dropped}
 ```
 
 ## Why the ranking is the artifact

@@ -42,7 +42,25 @@ All notable changes to this project are documented in this file, following
   `references/cli-tools/context-efficiency.md`; the tool references live in
   `cli-tools/`, indexed by its README.
 
+### Changed
+
+- **The job-to-be-done skill speaks English.** Eleven reference files carried
+  Portuguese in their examples, their output templates and their contract
+  vocabulary, in a repository whose own convention says code and artifacts are
+  English. The vocabulary moved with them: `evidência` / `pesquisa` /
+  `inferência` are now `evidence` / `research` / `inference`, `Mesmo ator` is
+  `Same actor`, and the job-map table columns are `Who runs it` / `Who decides`
+  / `Output` / `Failure mode` / `Source`. Criterion ids and kinds are unchanged;
+  only the words a worker reads and writes are. The archived design docs
+  under `docs/archive/` keep their original language: they record what was
+  written at the time, and rewriting them would make the archive lie.
+
 ### Added
+
+- **An artifact is handed over as a file.** `state-contract.md` said the manifest
+  names each artifact but never said the artifact itself travels; hosts filled
+  the gap by pasting plans and wireframes into hand-off messages, where the next
+  stage and the person reviewing could not download or diff them.
 
 - **The jtbd completeness contract as data.** Each of the eleven reference files
   ends with a `criteria:` block written for a human reader. A host that needed
@@ -1500,7 +1518,7 @@ carrying the book and becomes the router that sequences them.
 - **Dead cli-tools orphans** (`context-efficiency.md`, `execution-loop.md`)
   and the `cli-agents/` directory (absorbed into `HOSTING.md`).
 
-## [Unreleased]
+## [0.88.0-alpha] - 2026-11-15
 
 ## [0.67.0-alpha] - 2026-09-19
 

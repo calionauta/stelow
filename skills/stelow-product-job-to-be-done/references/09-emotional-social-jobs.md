@@ -61,8 +61,8 @@ If the map does not exist, run Prompt 10 first or ask for the step list. An
 unanchored list is the last resort, and the output says it is one.
 
 ## Closing
-- O medo que mais trava a etapa: {statement} — {step}
-- Onde o medo é social e não funcional: {step} — {why}
+- The fear that blocks the step most: {statement} — {step}
+- Where the fear is social and not functional: {step} — {why}
 ```
 
 ## Why anchoring changes the output

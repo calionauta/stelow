@@ -61,7 +61,7 @@ Composite score, 1–5 each:
 
 `Composite = (R + P + H) × (Inc + Inv)`
 
-Every score carries a **Basis**: `evidência` | `pesquisa` | `inferência`. The
+Every score carries a **Basis**: `evidence` | `research` | `inference`. The
 composite is a ranking heuristic over judgment. It orders work; it does not
 estimate demand.
 
@@ -86,8 +86,8 @@ estimate demand.
 | ... | ... |
 
 ## Closing
-- O critério que o usuário não tinha visto: {criterion} — {why}
-- O critério que parece óbvio e já está resolvido: {criterion} — {evidence}
+- The criterion the user had not seen: {criterion} — {why}
+- The criterion that looks obvious and is already solved: {criterion} — {evidence}
 ```
 
 ## Why the rewrite is not a field
