@@ -71,7 +71,7 @@ This critique should be invoked **after the complete plan exists** and **before 
    ├── Choose input mode: Plan / Codebase / Site
    ├── Choose resolve mode: Auto vs Ask per gap
    │   ├── Auto: resolves all → updates artifact
-   │   └── Manual: pergunta sobre cada gap 🚨+🤔
+   │   └── Manual: asks about each gap 🚨+🤔
    └── Revise and persist artifact
 5. Review Gate → submit for approval
 6. Execution

@@ -102,7 +102,7 @@ Material: {{Interview}}
 ## Completeness contract
 
 - The five timeline stages, even when a stage is `Open`.
-- The four forces, each with at least one entry or an explicit `Nenhuma` with a
+- The four forces, each with at least one entry or an explicit `None` with a
   reason.
 - A reading with the strongest force, the movable one and the immovable one.
 - Hypothesis mode banner whenever no material was supplied.

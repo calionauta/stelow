@@ -56,12 +56,12 @@ From the scope definition in spec-tech.md, extract:
 
 ---
 
-#### 3b-bis. Fail-observed: observar-falha + congelar antes de implementar (FAIL-OBSERVED-FREEZE-PASS)
+#### 3b-bis. Fail-observed: observe the failure, then freeze before implementing (FAIL-OBSERVED-FREEZE-PASS)
 
 Canonical: `../../stelow-workflow-testing-ai-code/references/guard-contract.md`.
-Gere a guarda a partir do `test_map` ANTES de implementar (AC-sem-teste=reject).
-Ordem: GUARDA → RED (`red_proof`) → FREEZE (`freeze_sha`) → PASSAR → BASELINE.
-`scope done` cobra `verified + red_proof + freeze_sha + baseline` em `red_first=strict`. Detalhe do Record: `records-and-tasks.md`.
+Build the guard from the `test_map` BEFORE implementing (AC-without-test=reject).
+Order: GUARD → RED (`red_proof`) → FREEZE (`freeze_sha`) → PASS → BASELINE.
+`scope done` collects `verified + red_proof + freeze_sha + baseline` under `red_first=strict`. Detalhe do Record: `records-and-tasks.md`.
 
 ---
 
