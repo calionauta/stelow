@@ -8,13 +8,14 @@
 //   - status (text + --json, nested config:, missing state.md)
 //   - advance validation (valid candidate, invalid candidate, byte-identical revert)
 //   - advance lock (mkdir contention, TTL auto-cleanup)
-//   - doctor (4 drift classes)
+//   - doctor (6 drift classes, incl. stale-lock / missing-dir / orphan-pid,
+//     and the recipe-declaration check: a stage naming a recipe with no file)
 //
 // To run:  npm run test:unit -- stelow-helper
 
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import { execSync, spawnSync } from "node:child_process";
-import { mkdtempSync, writeFileSync, mkdirSync, readFileSync, existsSync, realpathSync, rmSync, symlinkSync, utimesSync } from "node:fs";
+import { mkdtempSync, writeFileSync, mkdirSync, readFileSync, existsSync, realpathSync, rmSync, symlinkSync, utimesSync, chmodSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { randomBytes } from "node:crypto";
@@ -88,6 +89,27 @@ stages:
 ---
 # t
 `);
+}
+
+// A stage block in the shape `stages.yaml` really uses: two-space list entry,
+// `execution:` at four, `recipe:` at six. `null` is the eight-times-repeated
+// spelling in the real file — it is *not* a declaration.
+function stageBlock(name: string, recipe: string | null): string {
+  return `  - name: ${name}\n    order: 10\n    playbook: stages/${name}.md\n    execution:\n      mode: direct\n      recipe: ${recipe === null ? "null" : recipe}\n      write_policy: none\n`;
+}
+
+function stagesYaml(blocks: string[]): string {
+  return `version: 2\n\nstages:\n${blocks.join("\n")}`;
+}
+
+function writeStages(wd: Workdir, yaml: string): void {
+  mkdirSync(join(wd.dir, "skills", "stelow-workflow-orchestrator"), { recursive: true });
+  writeFileSync(join(wd.dir, "skills", "stelow-workflow-orchestrator", "stages.yaml"), yaml);
+}
+
+function writeRecipe(wd: Workdir, id: string): void {
+  mkdirSync(join(wd.dir, "recipes"), { recursive: true });
+  writeFileSync(join(wd.dir, "recipes", `${id}.yaml`), `id: ${id}\n`);
 }
 
 function seedArtifact(statedir: string, relativePath: string): void {
@@ -348,10 +370,14 @@ describe("doctor", () => {
   let wd: Workdir;
   beforeEach(() => { wd = makeWorkdir(); });
 
-  it("reports ok on clean repo", () => {
+  it("does not print the trusted sentence when the check could not run", () => {
+    // The fixture pins no stages.yaml, so after S3/S8 this run reports
+    // `stages-unchecked` and the trusted sentence correctly stops printing.
+    // Softening this back would restore the silence the card removes.
     const r = run(wd, ["doctor"]);
     expect(r.status).toBe(0);
-    expect(r.stdout).toContain("ok (no drift)");
+    expect(r.stdout).toMatch(/info\s+stages-unchecked/);
+    expect(r.stdout).not.toContain("ok (no drift)");
   });
 
   it("--json returns valid JSON with ok=true on clean repo", () => {
@@ -394,6 +420,231 @@ stages: {}
     const r = run(wd, ["doctor", "--json"]);
     const j = JSON.parse(r.stdout);
     expect(j.findings.some((f: any) => f.class === "missing-dir")).toBe(true);
+  });
+});
+
+describe("doctor recipe declarations", () => {
+  let wd: Workdir;
+  beforeEach(() => { wd = makeWorkdir(); });
+
+  function findings(r: { stdout: string }): any[] {
+    return JSON.parse(r.stdout).findings;
+  }
+  function rows(r: { stdout: string }, klass: string): any[] {
+    return findings(r).filter((f: any) => f.class === klass);
+  }
+
+  it("U1: a declaration with no file is an error naming stage, recipe and path", () => {
+    writeStages(wd, stagesYaml([stageBlock("shape", "'nope'")]));
+    mkdirSync(join(wd.dir, "recipes"));
+    const r = run(wd, ["doctor"]);
+    expect(r.status).toBe(1);
+    expect(r.stdout).toMatch(/error\s+recipe-missing\s+stage shape: recipe 'nope' has no file at recipes\/nope\.yaml/);
+  });
+
+  it("U2: the same declaration is clean once the recipe file exists", () => {
+    writeStages(wd, stagesYaml([stageBlock("shape", "nope")]));
+    writeRecipe(wd, "nope");
+    const r = run(wd, ["doctor"]);
+    expect(r.status).toBe(0);
+    expect(r.stdout).not.toContain("recipe-missing");
+    expect(r.stdout).toContain("ok (no drift)");
+  });
+
+  it("U3: `recipe: null` is not a declaration (the real file has eight)", () => {
+    writeStages(wd, stagesYaml([
+      stageBlock("triage", null), stageBlock("select", null), stageBlock("gate", null),
+      stageBlock("int-gate", null), stageBlock("selection", null), stageBlock("plan-gate", null),
+      stageBlock("diff-gate", null), stageBlock("audit", null),
+    ]));
+    const r = run(wd, ["doctor", "--json"]);
+    // Zero declarations is S4's stages-empty warn; it is not a missing recipe.
+    expect(r.status).toBe(0);
+    expect(rows(r, "recipe-missing")).toHaveLength(0);
+    expect(JSON.parse(r.stdout).ok).toBe(true);
+    expect(rows(r, "stages-empty")).toHaveLength(1);
+  });
+
+  it("U4: no stages file at the default path is info, and never the ok line", () => {
+    const r = run(wd, ["doctor", "--json"]);
+    expect(r.status).toBe(0);
+    expect(rows(r, "stages-unchecked")).toHaveLength(1);
+    expect(rows(r, "stages-unchecked")[0].severity).toBe("info");
+    expect(run(wd, ["doctor"]).stdout).not.toContain("ok (no drift)");
+  });
+
+  it("U5: an explicit STELOW_STAGES pointing at nothing is an error", () => {
+    const r = run(wd, ["doctor", "--json"], { STELOW_STAGES: join(wd.dir, "nope", "stages.yaml") });
+    expect(r.status).toBe(1);
+    expect(rows(r, "stages-missing")).toHaveLength(1);
+    expect(rows(r, "stages-missing")[0].severity).toBe("error");
+    expect(r.stderr).not.toContain("Traceback");
+  });
+
+  it("U6: an unreadable stages file is an error, not a traceback", () => {
+    if (process.getuid?.() === 0) return; // root reads anything
+    writeStages(wd, stagesYaml([stageBlock("shape", "nope")]));
+    chmodSync(join(wd.dir, "skills", "stelow-workflow-orchestrator", "stages.yaml"), 0o000);
+    const r = run(wd, ["doctor", "--json"]);
+    expect(r.status).toBe(1);
+    expect(rows(r, "stages-unreadable")).toHaveLength(1);
+    expect(r.stderr).not.toContain("Traceback");
+    chmodSync(join(wd.dir, "skills", "stelow-workflow-orchestrator", "stages.yaml"), 0o644);
+  });
+
+  it("U7: a stages file with no declarations warns stages-empty", () => {
+    writeStages(wd, "version: 2\n\nstages:\n");
+    writeRecipe(wd, "orphan");
+    const r = run(wd, ["doctor", "--json"]);
+    expect(r.status).toBe(0);
+    expect(rows(r, "stages-empty")).toHaveLength(1);
+    expect(rows(r, "stages-empty")[0].severity).toBe("warn");
+  });
+
+  it("U8: a recipe line outside a stage block warns with its line number", () => {
+    writeStages(wd, `version: 2\nrecipe: nope\n\nstages:\n${stageBlock("shape", null)}`);
+    const r = run(wd, ["doctor", "--json"]);
+    expect(r.status).toBe(0);
+    const unparsed = rows(r, "stages-unparsed");
+    expect(unparsed).toHaveLength(1);
+    expect(unparsed[0].severity).toBe("warn");
+    expect(unparsed[0].message).toContain("line 2");
+  });
+
+  it("U9: the plural execution.recipes is deliberately unread", () => {
+    writeStages(wd, "version: 2\n\nstages:\n  - name: shape\n    execution:\n      recipes: [a, b]\n");
+    const r = run(wd, ["doctor", "--json"]);
+    expect(r.status).toBe(0);
+    expect(rows(r, "recipe-missing")).toHaveLength(0);
+  });
+
+  it("U10: a recipes dir inside ROOT prints a relative path", () => {
+    writeStages(wd, stagesYaml([stageBlock("shape", "nope")]));
+    mkdirSync(join(wd.dir, "recipes"));
+    const r = run(wd, ["doctor", "--json"]);
+    expect(rows(r, "recipe-missing")[0].message).toBe("stage shape: recipe 'nope' has no file at recipes/nope.yaml");
+  });
+
+  it("U11: a recipes dir outside ROOT prints the absolute path it looked in", () => {
+    writeStages(wd, stagesYaml([stageBlock("shape", "nope")]));
+    const outside = mkdtempSync(join(tmpdir(), "stelow-recipes-outside-"));
+    try {
+      const r = run(wd, ["doctor", "--json"], { STELOW_RECIPES: outside });
+      expect(rows(r, "recipe-missing")[0].message).toBe(
+        `stage shape: recipe 'nope' has no file at ${realpathSync(outside)}/nope.yaml`);
+    } finally {
+      rmSync(outside, { recursive: true, force: true });
+    }
+  });
+
+  it("U12: a recipe file no stage declares is not a finding", () => {
+    writeStages(wd, stagesYaml([stageBlock("shape", "present")]));
+    writeRecipe(wd, "present");
+    writeRecipe(wd, "orphan");
+    const r = run(wd, ["doctor", "--json"]);
+    expect(r.status).toBe(0);
+    expect(findings(r)).toHaveLength(0);
+  });
+
+  it("U13: a directory named <recipe>.yaml does not satisfy the declaration", () => {
+    writeStages(wd, stagesYaml([stageBlock("shape", "nope")]));
+    mkdirSync(join(wd.dir, "recipes", "nope.yaml"), { recursive: true });
+    const r = run(wd, ["doctor", "--json"]);
+    expect(r.status).toBe(1);
+    expect(rows(r, "recipe-missing")).toHaveLength(1);
+  });
+
+  it("U14: --json carries the finding with severity, class and ok=false", () => {
+    writeStages(wd, stagesYaml([stageBlock("shape", "nope")]));
+    mkdirSync(join(wd.dir, "recipes"));
+    const r = run(wd, ["doctor", "--json"]);
+    expect(r.status).toBe(1);
+    const j = JSON.parse(r.stdout);
+    expect(j.ok).toBe(false);
+    expect(j.findings).toHaveLength(1);
+    expect(j.findings[0].severity).toBe("error");
+    expect(j.findings[0].class).toBe("recipe-missing");
+  });
+
+  it("U15: findings follow stages-file order, after the existing classes", () => {
+    makeState(wd, "no-such-stage-anywhere");
+    writeStages(wd, stagesYaml([stageBlock("shape", "nope"), stageBlock("critique", "gone")]));
+    mkdirSync(join(wd.dir, "recipes"));
+    const r = run(wd, ["doctor", "--json"]);
+    expect(r.status).toBe(1);
+    const classes = findings(r).map((f: any) => f.class);
+    expect(classes[0]).toBe("state-transitions-drift");
+    expect(classes.filter((c: string) => c === "recipe-missing")).toHaveLength(2);
+    const messages = rows(r, "recipe-missing").map((f: any) => f.message);
+    expect(messages[0]).toContain("stage shape");
+    expect(messages[1]).toContain("stage critique");
+  });
+
+  it("U16: the check is read-only", () => {
+    writeStages(wd, stagesYaml([stageBlock("shape", "nope")]));
+    run(wd, ["doctor"]);
+    expect(existsSync(join(wd.dir, ".stelow"))).toBe(false);
+  });
+
+  it("U17: declarations with no recipes directory is one error, not ten", () => {
+    writeStages(wd, stagesYaml([stageBlock("shape", "nope")]));
+    const r = run(wd, ["doctor", "--json"]);
+    expect(r.status).toBe(1);
+    expect(rows(r, "recipes-dir-missing")).toHaveLength(1);
+    expect(rows(r, "recipes-dir-missing")[0].severity).toBe("error");
+    expect(rows(r, "recipe-missing")).toHaveLength(0);
+  });
+
+  it("U18: inside-ness follows realpath, not spelling (relative, trailing /, symlink)", () => {
+    writeStages(wd, stagesYaml([stageBlock("shape", "nope")]));
+    writeRecipe(wd, "other"); // the recipes dir exists; nope.yaml does not
+    const expected = "stage shape: recipe 'nope' has no file at recipes/nope.yaml";
+    for (const spelling of ["./recipes", "./recipes/", join(wd.dir, "recipes")]) {
+      expect(rows(run(wd, ["doctor", "--json"], { STELOW_RECIPES: spelling }), "recipe-missing")[0].message)
+        .toBe(expected);
+    }
+    // A symlink inside ROOT pointing at the real recipes dir keeps the relative form.
+    symlinkSync(join(wd.dir, "recipes"), join(wd.dir, "linked-recipes"));
+    expect(rows(run(wd, ["doctor", "--json"], { STELOW_RECIPES: join(wd.dir, "linked-recipes") }), "recipe-missing")[0].message)
+      .toBe(expected);
+    // A symlink inside ROOT pointing outside it prints where it looked.
+    const outside = mkdtempSync(join(tmpdir(), "stelow-link-outside-"));
+    try {
+      symlinkSync(outside, join(wd.dir, "escape"));
+      expect(rows(run(wd, ["doctor", "--json"], { STELOW_RECIPES: join(wd.dir, "escape") }), "recipe-missing")[0].message)
+        .toBe(`stage shape: recipe 'nope' has no file at ${realpathSync(outside)}/nope.yaml`);
+    } finally {
+      rmSync(outside, { recursive: true, force: true });
+    }
+  });
+});
+
+// The only case that can catch a reader resolving four of ten declarations.
+describe("doctor recipe declarations — real repository", () => {
+  const repoW: Workdir = { dir: REPO_ROOT, helper: HELPER_SRC };
+  const STAGES = ["setup", "context", "shape", "critique", "scope", "interface", "planning",
+                  "execution", "verification", "audit"];
+
+  it("RR1: the checked-out repo is clean and the check actually ran", () => {
+    const r = run(repoW, ["doctor", "--json"], {}, REPO_ROOT);
+    expect(r.status).toBe(0);
+    const j = JSON.parse(r.stdout);
+    expect(j.findings).toEqual([]);
+    expect(j.ok).toBe(true);
+    expect(run(repoW, ["doctor"], {}, REPO_ROOT).stdout).toContain("ok (no drift)");
+  });
+
+  it("RR2: an empty recipes dir yields exactly the ten real declarations", () => {
+    const empty = mkdtempSync(join(tmpdir(), "stelow-recipes-empty-"));
+    try {
+      const r = run(repoW, ["doctor", "--json"], { STELOW_RECIPES: empty }, REPO_ROOT);
+      expect(r.status).toBe(1);
+      const rows = JSON.parse(r.stdout).findings.filter((f: any) => f.class === "recipe-missing");
+      expect(rows).toHaveLength(10);
+      expect(rows.map((f: any) => f.message.match(/^stage (\S+):/)[1])).toEqual(STAGES);
+    } finally {
+      rmSync(empty, { recursive: true, force: true });
+    }
   });
 });
 

@@ -3,6 +3,24 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+
+- **`doctor` checks that a recipe declaration has a file.** `stages.yaml` names
+  a recipe per stage and a runner reads a 404 as "this stage has no recipe", so
+  a declaration with nothing behind it was silent: the file named ten recipes
+  and five existed. `doctor` now resolves every `execution.recipe:` against
+  `recipes/<id>.yaml` and reports `recipe-missing` (error) with stage, recipe
+  and the path it looked in, `recipes-dir-missing` when the directory itself is
+  gone, and `stages-missing` / `stages-unreadable` when the declaration file
+  cannot be read. `STELOW_STAGES` and `STELOW_RECIPES` override the two paths
+  (documented in `stelow doctor` schema output).
+- **A check that could not run doesn't read as a clean bill.** Absent stages
+  file is `stages-unchecked` (info), an unreadable one is an error, and
+  `doctor: ok (no drift)` prints only when there are no findings at all. Two
+  warn classes were also undocumented: `orphan-pid` and `transitions-missing`.
+
 ## [0.88.2-alpha] - 2026-11-15
 
 - **Number the promises.** The spec mints a stable id per promise (`S1`, `S2`), and design, tech, build and audit cite the id instead of restating the promise. On the Multica smoke run the audit had to translate between its own findings and the spec's promises, because both sides described them in prose: a requirement with two names is a requirement nobody can trace.

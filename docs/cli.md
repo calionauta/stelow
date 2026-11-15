@@ -32,7 +32,7 @@ scripts/stelow schema [command]
 |---|---|
 | `status` | One-screen project summary (`--json` for machines). Passive — never mutates. |
 | `advance <stage>` | Moves `current_stage` after validating the stage exists, required artifacts exist, and the `.stelow/lock` can be acquired. Fails before touching anything: a bad candidate leaves state byte-identical. `--dry-run` validates without mutating. |
-| `doctor` | Four drift classes: `stale-lock` (warn), `missing-dir` (warn), `parallel-lock` (info), `state-transitions-drift` (error). `--json` never exits non-zero on warn/info. |
+| `doctor` | Six drift classes — `stale-lock` (warn), `missing-dir` (warn), `parallel-lock` (info), `orphan-pid` (warn), `state-transitions-drift` (error), `transitions-missing` (error) — plus the recipe check: a stage naming an `execution.recipe` with no `recipes/<id>.yaml` is an error. `--json` never exits non-zero on warn/info. |
 | `seed` | Scaffolds a workflow (run knobs + `--review-mode` set the control dimensions once; `--appetite` still accepted as a deprecated alias). |
 | `ask` | Records a structured question (single- or multi-choice, batchable groups, optional `--contract` binding it to a decision contract). |
 | `sync-scopes` | Parses `[SCOPE-N]` blocks from the latest `spec-tech_*.md` into `wf.scopes[]`. Idempotent; preserves host/worker overlays and re-houses rework scopes. The single canonical scope parser — hosts shell out instead of mirroring it. |
