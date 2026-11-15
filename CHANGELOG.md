@@ -13,8 +13,11 @@ All notable changes to this project are documented in this file, following
   `execution.recipe:` against `recipes/<id>.yaml` and reports `recipe-missing`
   (error) with stage, recipe and the path it looked in, `recipes-dir-missing`
   when the directory itself is gone, and `stages-missing` /
-  `stages-unreadable` when the declaration file cannot be read. `STELOW_STAGES`
-  and `STELOW_RECIPES` override the two paths (documented in `stelow doctor`
+  `stages-unreadable` when the declaration file cannot be read. A `recipe:` the
+  reader cannot bind — outside an `execution:` mapping, or inside an
+  `execution:` written inline on one line — is `stages-unparsed` (warn) naming
+  the line, never a finding charged to the stage above it. `STELOW_STAGES` and
+  `STELOW_RECIPES` override the two paths (documented in `stelow doctor`
   schema output).
 - **A check that could not run doesn't read as a clean bill.** Absent stages
   file is `stages-unchecked` (info), an unreadable one is an error, and

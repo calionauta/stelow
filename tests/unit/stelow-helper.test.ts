@@ -512,10 +512,15 @@ describe("doctor recipe declarations", () => {
   });
 
   it("U9: the plural execution.recipes is deliberately unread", () => {
-    writeStages(wd, "version: 2\n\nstages:\n  - name: shape\n    execution:\n      recipes: [a, b]\n");
+    // The sibling declaration is what proves the reader ran: it is read and
+    // reported, while the plural spelling above it produces no row at all.
+    writeStages(wd, `version: 2\n\nstages:\n  - name: shape\n    execution:\n      recipes: [a, b]\n  - name: critique\n    execution:\n      recipe: gone\n`);
+    mkdirSync(join(wd.dir, "recipes"));
     const r = run(wd, ["doctor", "--json"]);
-    expect(r.status).toBe(0);
-    expect(rows(r, "recipe-missing")).toHaveLength(0);
+    expect(r.status).toBe(1);
+    const missing = rows(r, "recipe-missing");
+    expect(missing).toHaveLength(1);
+    expect(missing[0].message).toContain("stage critique");
   });
 
   it("U10: a recipes dir inside ROOT prints a relative path", () => {
@@ -538,12 +543,19 @@ describe("doctor recipe declarations", () => {
   });
 
   it("U12: a recipe file no stage declares is not a finding", () => {
-    writeStages(wd, stagesYaml([stageBlock("shape", "present")]));
+    writeStages(wd, stagesYaml([
+      stageBlock("shape", "present"),
+      stageBlock("critique", "gone"),
+    ]));
     writeRecipe(wd, "present");
     writeRecipe(wd, "orphan");
     const r = run(wd, ["doctor", "--json"]);
-    expect(r.status).toBe(0);
-    expect(findings(r)).toHaveLength(0);
+    const missing = rows(r, "recipe-missing");
+    // The declared-and-present stage and the undeclared file stay silent; the
+    // sibling declaration proves the reader looked at all three.
+    expect(missing).toHaveLength(1);
+    expect(missing[0].message).toContain("stage critique");
+    expect(r.stdout).not.toContain("orphan");
   });
 
   it("U13: a directory named <recipe>.yaml does not satisfy the declaration", () => {
@@ -582,7 +594,11 @@ describe("doctor recipe declarations", () => {
 
   it("U16: the check is read-only", () => {
     writeStages(wd, stagesYaml([stageBlock("shape", "nope")]));
-    run(wd, ["doctor"]);
+    mkdirSync(join(wd.dir, "recipes"));
+    const r = run(wd, ["doctor"]);
+    // The finding proves the check ran; the absent dir proves it wrote nothing.
+    expect(r.status).toBe(1);
+    expect(r.stdout).toMatch(/error\s+recipe-missing/);
     expect(existsSync(join(wd.dir, ".stelow"))).toBe(false);
   });
 
@@ -616,6 +632,51 @@ describe("doctor recipe declarations", () => {
     } finally {
       rmSync(outside, { recursive: true, force: true });
     }
+  });
+
+  it("U19: a trailing comment on a `- name:` line cannot charge its recipe to the stage above", () => {
+    // Valid YAML, and `validate:stages` accepts it: a reader that keeps the
+    // previous stage standing here reports a false `recipe-missing` for shape
+    // and never checks critique.
+    writeStages(wd, `version: 2\n\nstages:\n  - name: shape\n    execution:\n      recipe: present\n  - name: critique  # the second entry\n    execution:\n      recipe: gone\n`);
+    writeRecipe(wd, "present");
+    const r = run(wd, ["doctor", "--json"]);
+    expect(rows(r, "recipe-missing")).toHaveLength(0);
+    const unparsed = rows(r, "stages-unparsed");
+    expect(unparsed).toHaveLength(1);
+    expect(unparsed[0].severity).toBe("warn");
+    expect(unparsed[0].message).toContain("line 9");
+    expect(r.status).toBe(0);
+  });
+
+  it("U20: a quoted stage id prints without its quotes", () => {
+    writeStages(wd, `version: 2\n\nstages:\n  - name: "shape"\n    execution:\n      recipe: nope\n`);
+    mkdirSync(join(wd.dir, "recipes"));
+    expect(rows(run(wd, ["doctor", "--json"]), "recipe-missing")[0].message)
+      .toBe("stage shape: recipe 'nope' has no file at recipes/nope.yaml");
+  });
+
+  it("U21: an inline execution mapping is reported, not skipped", () => {
+    writeStages(wd, `version: 2\n\nstages:\n  - name: shape\n    execution: {mode: direct, recipe: absent}\n  - name: critique\n    execution:\n      recipe: gone\n`);
+    mkdirSync(join(wd.dir, "recipes"));
+    const r = run(wd, ["doctor", "--json"]);
+    const unparsed = rows(r, "stages-unparsed");
+    expect(unparsed).toHaveLength(1);
+    expect(unparsed[0].severity).toBe("warn");
+    expect(unparsed[0].message).toContain("line 5");
+    const missing = rows(r, "recipe-missing");
+    expect(missing).toHaveLength(1);
+    expect(missing[0].message).toContain("stage critique");
+  });
+
+  it("U22: a recipe line under another top-level key is still unparsed", () => {
+    writeStages(wd, `version: 2\nother:\n  recipe: nope\n\nstages:\n  - name: shape\n    execution:\n      recipe: absent\n`);
+    writeRecipe(wd, "absent");
+    const r = run(wd, ["doctor", "--json"]);
+    expect(rows(r, "recipe-missing")).toHaveLength(0);
+    const unparsed = rows(r, "stages-unparsed");
+    expect(unparsed).toHaveLength(1);
+    expect(unparsed[0].message).toContain("line 3");
   });
 });
 

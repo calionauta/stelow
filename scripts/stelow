@@ -1126,9 +1126,24 @@ def recipe_value(raw):
         v = v.strip()
     return None if v in ("", "null", "Null", "NULL", "~") else v
 
+def stage_id(raw):
+    """A `- name:` value with one matching pair of quotes removed."""
+    if raw[:1] in ("'", '"'):
+        end = raw.find(raw[0], 1)
+        if end != -1:
+            return raw[1:end]
+    return raw
+
 def read_stage_recipes(path):
-    """Stage recipe declarations in file order, plus unbound `recipe:` lines."""
-    decls, unbound = [], []
+    """Stage recipe declarations in file order, plus lines that declare nothing.
+
+    Returns `(declarations, unbound_lines, inline_lines)`: a declaration is the
+    value of a `recipe:` key inside a stage block's `execution:` mapping, kept
+    with its stage; `unbound_lines` are `recipe:` lines that sit outside such a
+    mapping; `inline_lines` are `execution:` mappings written on the key's own
+    line, whose recipe an indentation reader cannot see.
+    """
+    decls, unbound, inline = [], [], []
     in_stages, stage, section = False, None, None
     with open(path, "r", errors="replace") as fh:
         for lineno, raw in enumerate(fh, 1):
@@ -1144,16 +1159,33 @@ def read_stage_recipes(path):
                 if stripped.startswith("recipe:"):
                     unbound.append(lineno)
                 continue
-            if in_stages and indent == 2:
+            if not in_stages:
+                # Outside the stage list every `recipe:` belongs to no stage.
+                if stripped.startswith("recipe:"):
+                    unbound.append(lineno)
+                continue
+            if indent == 2:
+                # Every line here starts a stage block or breaks one. A `- name:`
+                # this reader cannot match (a trailing comment is enough) must
+                # clear the previous stage, or the entry's recipe is charged to
+                # the stage above it and the entry itself is never checked.
                 name = re.match(r"^- name:\s*(\S+)\s*$", stripped)
+                section = None
                 if name:
-                    stage, section = name.group(1), None
+                    stage = stage_id(name.group(1))
                     decls.append([stage, None])
-                    continue
-            if stage is not None and indent == 4:
-                key = re.match(r"^([A-Za-z_][\w-]*):", stripped)
-                if key:
-                    section = key.group(1)
+                else:
+                    stage = None
+                    if stripped.startswith("recipe:"):
+                        unbound.append(lineno)
+                continue
+            if indent == 4:
+                key = re.match(r"^([A-Za-z_][\w-]*):(.*)$", stripped)
+                section = key.group(1) if key else None
+                rest = (key.group(2) if key else "").split("#", 1)[0].strip()
+                if section == "recipe" or (section == "execution" and rest):
+                    inline.append(lineno)
+                continue
             recipe = re.match(r"^recipe:(.*)$", stripped)
             if recipe:
                 value = recipe_value(recipe.group(1))
@@ -1161,7 +1193,7 @@ def read_stage_recipes(path):
                     unbound.append(lineno)
                 elif value is not None:
                     decls[-1][1] = value
-    return decls, unbound
+    return decls, unbound, inline
 
 def display_path(path):
     """The resolved path: project-relative inside the root, absolute outside it.
@@ -1183,7 +1215,7 @@ recipes_knob = os.environ.get("STELOW_RECIPES", "")
 stages_path = stages_knob or STAGES_DEFAULT
 recipes_dir = recipes_knob or RECIPES_DEFAULT
 
-decls, unbound = [], []
+decls, unbound, inline = [], [], []
 if not os.path.exists(stages_path):
     if stages_knob:
         add("error", "stages-missing",
@@ -1193,7 +1225,7 @@ if not os.path.exists(stages_path):
             f"stage recipes not checked: no stages file at {display_path(STAGES_DEFAULT)}")
 else:
     try:
-        decls, unbound = read_stage_recipes(stages_path)
+        decls, unbound, inline = read_stage_recipes(stages_path)
     except OSError as exc:
         # An unreadable file is not "no drift": the check did not run.
         add("error", "stages-unreadable",
@@ -1202,6 +1234,9 @@ else:
         for lineno in unbound:
             add("warn", "stages-unparsed",
                 f"stages file line {lineno}: recipe: is not inside a stage block's execution mapping")
+        for lineno in inline:
+            add("warn", "stages-unparsed",
+                f"stages file line {lineno}: execution: is written inline, so its recipe cannot be checked")
         if not any(recipe for _stage, recipe in decls):
             add("warn", "stages-empty",
                 f"no stage in {display_path(stages_path)} declares a recipe — the recipe check verified nothing")
