@@ -4,7 +4,8 @@ The `scripts/stelow` CLI is the canonical state machine behind the `/sw-*`
 skill commands. It reads/writes the project `state.md` and `.stelow/invariants.json`,
 validates stage transitions against
 `skills/stelow-workflow-orchestrator/references/transitions.md`, and exposes
-a passive doctor that detects four classes of drift.
+a passive doctor that classifies thirteen kinds of finding: six drift
+classes and seven about stage recipes.
 
 ## Usage
 
@@ -152,7 +153,7 @@ workers call that, and nothing in the core simulates a slash command.
 | `stelow advance bogus` exits != 0 and leaves state.md byte-identical | manual: md5sum before/after matches |
 | second concurrent `advance` fails with lock message | manual: held lock manually, second `advance` returned "lock held by ..." exit=1 |
 | missing required artifact blocks transition | enforced in `advance` pre-condition (Python check on `artifact:` lines) |
-| `stelow doctor` flags fixture drift | four-class detection wired; `--json` returns structured findings |
+| `stelow doctor` flags fixture drift | thirteen-class detection wired (six drift + seven recipe); `--json` returns structured findings |
 | `stelow status --json` emits valid JSON | passes `python3 -m json.tool` |
 
 ## NFR
