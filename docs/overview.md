@@ -9,17 +9,19 @@ autonomous execution.
 > Its public release line is `0.x`; APIs, workflow contracts, and skills may
 > change incompatibly before a stable `1.0.0`.
 
-## Two ways to run it
+## Three ways to run it
 
 | Path | What you get | Start here |
 |---|---|---|
 | **A — bb + plugin** (recommended) | Visual board, quiet inbox, blocking questions, agent presets, `bb stelow` worker CLI | [getting-started.md](getting-started.md) (Path A), [plugin/install-bb.md](plugin/install-bb.md) |
-| **B — skills-only** | The same 32 skills + `scripts/stelow` CLI on any Agent Skills-compatible host | [getting-started.md](getting-started.md) (Path B) |
+| **B — skills-only** | The same 38 skills + `scripts/stelow` CLI on any Agent Skills-compatible host | [getting-started.md](getting-started.md) (Path B) |
+| **C — Multica board** | Three workflows on a real tracker: the build chain per repository, plus shared explore and research lanes | [host-multica.md](host-multica.md), [getting-started.md](getting-started.md) (Path C) |
 
-Both paths run the identical workflow. The plugin is a visual layer; it never
+All three run the identical workflow. The plugin and the tracker are layers; neither
 replaces the workflow state (`stelow.json`, `.stelow/`, `state.md` remain the
 source of truth). What the plugin adds is listed in
-[plugin/what-plugin-adds.md](plugin/what-plugin-adds.md).
+[plugin/what-plugin-adds.md](plugin/what-plugin-adds.md); what a tracker forced is
+in [host-multica.md](host-multica.md).
 
 ## How it works, in five lines
 
