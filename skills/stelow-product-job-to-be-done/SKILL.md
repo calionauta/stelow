@@ -250,14 +250,14 @@ Every item carries a `Status`. Read `references/00-evidence-policy.md` before
 running any prompt. The short version:
 
 `Input-derived` · `Research-derived` · `Inference — high confidence` ·
-`Hypothesis — bet` · `Not applicable` · `Mesmo ator que {role}` · `Open`
+`Hypothesis — bet` · `Not applicable` · `Same actor as {role}` · `Open`
 
 `Inference — high confidence` requires a **warrant**: the fragment of the job
 statement or segment that entails the item. No quotable fragment, no high
 confidence. For a step or a job, the warrant must contain the action.
 
 **Reproduce this legend verbatim at the top of every output.** The first round
-lost three statuses to paraphrase. Free-text provenance ("vem do que você falou")
+lost three statuses to paraphrase. Free-text provenance ("it came from what you said")
 is not a status and is not allowed.
 
 **Line budget** (excluding the Q&A log): `quick` ≤ 120 lines, `standard` ≤ 200,
@@ -354,7 +354,8 @@ Should NOT activate: "build personas by age and income" (out of scope).
 
 ### Example: why accounting firms churn
 
-**Input:** "support hears 'não sei onde aprovar' and 'o relatório não fecha'".
+**Input:** "support hears 'I don't know where it gets approved' and 'the report
+does not reconcile'".
 
 **Steps:** intake (job, actor, decision) → Prompt 5 for the roles, with four of
 them `Not applicable` → Prompt 10 for the map, at `quick` depth → one

@@ -86,8 +86,8 @@ before the verb.
 
 ## Closing
 
-- Segmento que mais muda a decisão: {name} — {why}
-- Segmento que você suspeita ser o maior e não conseguiu decidir: {name} — {what
+- Segment that most changes the decision: {name} — {why}
+- Segment you suspect is the largest and could not decide: {name} — {what
   would settle it}
 ```
 

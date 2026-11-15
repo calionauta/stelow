@@ -12,7 +12,7 @@ decides what the item may claim.
 | `Inference — high confidence` | entailed by the job statement or the segment | **warrant**: the clause it follows from |
 | `Hypothesis — bet` | plausible, unvalidated | the cheapest check that would kill it |
 | `Not applicable` | the slot cannot exist for this job | one-line reason |
-| `Mesmo ator que {role}` | the role exists, but is not a distinct group | the role it collapses into |
+| `Same actor as {role}` | the role exists, but is not a distinct group | the role it collapses into |
 | `Open` | cannot be decided now | the input that would decide it |
 
 Sub-status for quotes only, when the user supplied interviews: `direct quote`,
@@ -23,9 +23,9 @@ Sub-status for quotes only, when the user supplied interviews: `direct quote`,
 An item is `Inference — high confidence` **only if you can quote the fragment of
 the job statement or the segment that entails it.**
 
-- Job: "aprovar despesas de reembolso até sexta". → the `Decision Maker` is
-  entailed: someone approves. Warrant: "aprovar".
-- Job: "registrar despesas próprias". → the `Purchaser` is **not** entailed.
+- Job: "approve expense reimbursements by Friday". → the `Decision Maker` is
+  entailed: someone approves. Warrant: "approve".
+- Job: "record your own expenses". → the `Purchaser` is **not** entailed.
   There is no purchase in the job. It is `Open` or `Not applicable`, never a
   named buyer.
 
@@ -37,20 +37,20 @@ third option.
 A quote that merely *coexists* with the item is not a warrant. When the item is a
 step or a job, the quoted fragment must contain the action.
 
-- Quote: "não sei onde aprova". Step: "envio a despesa para aprovação". The quote
-  entails that an approval exists. It does not entail that the analyst sends
-  anything. → `Hypothesis — bet`.
-- Quote: "os analistas lançam as despesas". Step: "recebo as despesas com os
-  comprovantes". The quote entails entering expenses, not receiving them with
+- Quote: "I don't know where it gets approved". Step: "I send the expense for
+  approval". The quote entails that an approval exists. It does not entail that
+  the analyst sends anything. → `Hypothesis — bet`.
+- Quote: "the analysts enter the expenses". Step: "I receive the expenses with
+  the receipts". The quote entails entering expenses, not receiving them with
   receipts. → `Hypothesis — bet`.
-- Quote: "o relatório não fecha". Step: "corrijo lançamentos que não fecham". The
-  quote entails a reconciliation failure, not a correction step. →
-  `Hypothesis — bet`.
+- Quote: "the report does not reconcile". Step: "I fix entries that do not
+  reconcile". The quote entails a reconciliation failure, not a correction
+  step. → `Hypothesis — bet`.
 
 **Self-check:** read the warrant and the item together. If the same warrant would
 support a different item equally well, it is context, not a warrant.
 
-Never write free-text provenance ("vem do que você falou") without a status. A
+Never write free-text provenance ("it came from what you said") without a status. A
 source is a status plus a fragment, or it does not exist.
 
 ## What the statuses forbid
@@ -73,8 +73,8 @@ Four requirements:
 1. **Plausible for this context.** It follows from the job, the segment, the
    actor and the two facts the user gave. A bet that could belong to any company
    is not a bet, it is a template.
-2. **Concrete.** Who, when, what they do or say. "O analista descobre a aprovação
-   no grupo de WhatsApp do escritório" is a bet. "A comunicação é informal" is
+2. **Concrete.** Who, when, what they do or say. "The analyst finds out about the
+   approval in the office WhatsApp group" is a bet. "Communication is informal" is
    not.
 3. **One disconfirming check.** The cheapest thing that would show it is wrong.
 4. **Defensible.** If you would not say it to the user's face, delete it. If you
@@ -92,9 +92,9 @@ A simulated quote is **one plausible case, never a sample**. It may not be
 counted, averaged, or presented as something "users say". The check travels with
 it: "would this person actually say this? what would they say instead?"
 
-Bad: `"Eu me sinto perdido no processo."`
-Good: `"Eu lanço e fico esperando. Quando ninguém aprova até sexta, eu fecho
-assim mesmo."` — `Hypothesis — bet`, check: ask one analyst what happens on the
+Bad: `"I feel lost in the process."`
+Good: `"I submit it and then wait. When nobody approves by Friday, I close the
+month on a guess."` — `Hypothesis — bet`, check: ask one analyst what happens on the
 Friday nobody approved.
 
 ## Hypothesis mode
@@ -127,11 +127,11 @@ as a claim.
 Prompts 7 and 8 rank criteria with a composite score. Every score carries a
 `Basis`:
 
-- `evidência` — the rating follows from supplied material;
-- `pesquisa` — the rating follows from a cited source;
-- `inferência` — the rating is model judgment.
+- `evidence`: the rating follows from supplied material;
+- `research`: the rating follows from a cited source;
+- `inference`: the rating is model judgment.
 
-`inferência` is legitimate and must be labeled. The composite is a ranking
+`inference` is legitimate and must be labeled. The composite is a ranking
 heuristic over judgment. It orders work. It does not estimate demand, and it is
 never presented as a measurement.
 

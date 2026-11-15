@@ -23,7 +23,7 @@ Ask two things before running:
    small; above it, it is a purchase process with its own actors.
 
 If the gate fails, say so and return the three lines:
-`custo de aquisição`, `custo de troca`, `custo de erro` — each one sentence, each
+`acquisition cost`, `switching cost`, `error cost` — each one sentence, each
 with a status.
 
 ## Prompt
@@ -70,13 +70,13 @@ to pay, and is never presented as one.
   one example brand when it is known, marked `candidate`}
 
 ## Disposition
-| Critério descartado | Por quê |
+| Discarded criterion | Why |
 |---|---|
 
 ## Closing
-- O custo que decide a compra: {criterion} — {why}
-- O custo que parece grande e não pesa: {criterion} — {why}
-- O que faria este comprador dizer não: {one line}
+- The cost that decides the purchase: {criterion} — {why}
+- The cost that looks big and does not weigh: {criterion} — {why}
+- What would make this buyer say no: {one line}
 ```
 
 ## Why the top list is short

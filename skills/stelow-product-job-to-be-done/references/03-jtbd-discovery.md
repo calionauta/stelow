@@ -92,8 +92,8 @@ band, say which tests killed the rest.
 - ...
 
 ## Closing
-- O job que o usuário não tinha nomeado: {job} — {why}
-- O que ainda é solução disfarçada de job: {candidate} — {why}
+- The job the user had not named: {job} — {why}
+- What is still a solution disguised as a job: {candidate} — {why}
 ```
 
 ## Completeness contract

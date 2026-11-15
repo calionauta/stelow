@@ -68,10 +68,10 @@ Translate the content, never the headers.
 |---|---|---|---|---|
 
 ## Closing
-- Summary — with evidence: {n} · hipóteses: {n} · não aplicáveis: {n} · mesmo ator:
-  {n} · abertos: {n}
-- O papel que mais muda a decisão: {role} — {why}
-- O papel que você suspeita existir e não conseguiu decidir: {role} — {what would
+- Summary — with evidence: {n} · hypotheses: {n} · not applicable: {n} · same actor:
+  {n} · open: {n}
+- The role that most changes the decision: {role} — {why}
+- The role you suspect exists and could not decide: {role} — {what would
   settle it}
 ```
 
