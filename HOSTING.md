@@ -13,6 +13,10 @@ layer on top (like [bb-plugin-stelow](https://github.com/calionauta/bb-plugin-st
 | Workflow activation (`STELOW_WORKFLOW=1` + `STELOW_STATE=<path>`) | ✅ | Recipes per harness: `references/host-levers.md` |
 | Scheduler / inbox surface | ❌ optional | Host-owned (background tasks, cron, autopilot). The bb plugin is the reference implementation |
 | Native review UI for `visual_review` | ❌ optional | Fallback is portable approval receipts under `.stelow/approvals/` |
+| **Waiting marker + nudge** | ✅ if work can wait on a person | A waiting card must be distinguishable from a dead one *without reading it*, and must come back on its own. Status, label, field — whatever the host has |
+| **Board reader** | ✅ | Enumerate cards, their statuses, what is running, and what happened: the input to stall detection, back-edge counting and artifact counting |
+| **Zero-cost checkup** | ✅ if the host is a tracker | A timer that reads state and starts no work, so noticing costs no model calls. Rotate its log; count failures |
+| **Container cardinality** | ✅ to know | How many flows can one container hold? One binds one flow (per-repo project), some allow per-card flows, some have no container. See blueprint §16 |
 
 ## What a host consumes (the contract)
 
