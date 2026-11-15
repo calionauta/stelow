@@ -71,12 +71,51 @@ there is no host command registry. Setup asks for run knobs and Review mode
 explicitly; gates without a native review UI fall back to portable approval
 receipts under `.stelow/approvals/`.
 
+## Path C — Multica workspace (the flow on a real board)
+
+A tracker gives you what a chat cannot: a column per stage, an agent handler per
+column, and a durable timeline per idea. Provision stelow onto a
+[Multica](https://multica.ai) workspace with
+[`stelow-host-multica`](https://github.com/calionauta/stelow-host-multica):
+
+```bash
+git clone https://github.com/calionauta/stelow-host-multica.git
+cd stelow-host-multica
+python3 bin/stelow-host sync              # pin this stelow release
+python3 bin/stelow-host plan --all-workflows
+python3 bin/stelow-host install --check   # does the workspace match?
+python3 bin/stelow-host install           # converge it
+```
+
+What lands there is three workflows, because a tracker binds one workflow per
+project and a project is a repository:
+
+| workflow | what runs | project |
+|---|---|---|
+| `stelow` | the chain from `stages.yaml` (11 columns for `feature`) | one per repository |
+| `stelow-explore` | one `stelow-workflow-*` skill per card (14) | shared **Explore** |
+| `stelow-research` | one `stelow-product-*` skill per card (21) | shared **Research** |
+
+A lane card is created with `ask` and names its strategy, so the run picks the
+skill instead of guessing:
+
+```bash
+python3 bin/stelow-host ask explore "does the CLI refuse a recipe the host does not declare?" --skill codebase-critique
+python3 bin/stelow-host ask research "is the current price defensible?" --skill pricing
+```
+
+Multica is a tracker, not an agent host: the agents that run each column live in
+your workspace (any runtime you have online), and stelow reaches them as skills.
+Prerequisites, the two environment variables, and the failure modes worth
+knowing are in that repository's `AGENTS.md`.
+
 ## Check it worked
 
 ```bash
 scripts/stelow status [--json]   # from a workflow checkout (Path B)
 scripts/stelow doctor [--json]   # detects drift: stale locks, missing dirs
 bb stelow status --project <id>  # Path A equivalent
+python3 bin/stelow-host install --check  # Path C: three workflows + project bindings
 ```
 
 If `status` reports no workflow, the scaffold step (`/sw-start` or the board

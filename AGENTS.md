@@ -59,7 +59,7 @@ extracted lifecycle, inbox, ask/answer, sync, and UI rules with the
 Stage/skill/command counts are pinned to the canonical sources by regression
 tests — not from this file:
 
-- **Skills (32)**: `find skills -maxdepth 2 -name SKILL.md \( -path '*/stelow-product-*' -o -path '*/stelow-workflow-*' \) | wc -l` (17 workflow + 15 product). Pinned against the README `## 📋 Skills` section by `tests/integration/skill-count-readme-contract.test.ts`.
+- **Skills (38)**: `find skills -maxdepth 2 -name SKILL.md \( -path '*/stelow-product-*' -o -path '*/stelow-workflow-*' \) | wc -l` (17 workflow + 21 product). Pinned against the README `## 📋 Skills` section by `tests/integration/skill-count-readme-contract.test.ts`.
 - **Stages (18)**: `skills/stelow-workflow-orchestrator/stages.yaml` + its mirror `references/transitions.md` (the `triage`..`audit` chain).
 - **Stage transitions and conditional gates**: `skills/stelow-workflow-orchestrator/stages.yaml`.
 - **JTBD completeness contract**: `skills/stelow-product-job-to-be-done/references/contracts.json` renders from the `criteria:` block that ends each reference file, in `product-strategies.json` order (`python3 scripts/generate-jtbd-contracts.py`; `--check` for the freshness test `verify:generated` runs). A host reads the criteria; any depth floor it adds on top is its own policy, not stelow's.
