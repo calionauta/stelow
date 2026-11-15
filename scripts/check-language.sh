@@ -8,7 +8,7 @@
 set -uo pipefail
 cd "$(dirname "$0")/.." || exit 2
 
-pattern='\b(mesmo|não|são|você|também|então|etapa|etapas|usuário|usuários|nenhum|nenhuma|evidência|pesquisa|inferência|sobre|deve ser|pode ser|guarda|cliente|conceito)\b'
+pattern='\b(mesmo|não|são|você|também|então|etapa|etapas|usuário|usuários|nenhum|nenhuma|evidência|pesquisa|inferência|sobre|deve ser|pode ser|guarda|cliente|conceito|auto-incrementado|incrementado|sugerido|recomendado|criado|gerado|definido|escolhido|editado|usado)\b'
 
 hits=$(grep -rniE "$pattern" skills/ docs/design/ docs/*.md tests/ types/ *.md 2>/dev/null \
   | grep -v '^CHANGELOG.md' \

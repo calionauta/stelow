@@ -5,6 +5,14 @@ All notable changes to this project are documented in this file, following
 
 ## [0.87.0-alpha] - 2026-11-15
 
+### Added
+
+- **Number the promises.** The spec mints a stable id per promise (`S1`, `S2`),
+  and design, tech, build and audit cite the id instead of restating the promise.
+  On the Multica smoke run the audit had to translate between its own findings
+  and the spec's promises, because both sides described them in prose: a
+  requirement with two names is a requirement nobody can trace.
+
 ### Changed
 
 - **The generated dual-mode block is a third smaller.** Every skill carries a
