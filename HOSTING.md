@@ -8,7 +8,7 @@ layer on top (like [bb-plugin-stelow](https://github.com/calionauta/bb-plugin-st
 
 | Capability | Required? | Notes |
 |---|---|---|
-| Skill directories (`~/.agents/skills/<name>/SKILL.md`, agentskills.io) | ✅ | How workers load the 32 skills |
+| Skill directories (`~/.agents/skills/<name>/SKILL.md`, agentskills.io) | ✅ | How workers load the 38 skills |
 | Delegate/subagent capability (any tier: acceptance-native, isolated, headless, generic — see `skills/stelow-workflow-orchestrator/references/cli-tools/subagents.md`) | ✅ | At minimum the generic tier (same-session + files) |
 | Workflow activation (`STELOW_WORKFLOW=1` + `STELOW_STATE=<path>`) | ✅ | Recipes per harness: `references/host-levers.md` |
 | Scheduler / inbox surface | ❌ optional | Host-owned (background tasks, cron, autopilot). The bb plugin is the reference implementation |
@@ -91,11 +91,25 @@ notifications and holds no downstream secrets: push-model fan-out needs
 one secret and one workflow file per consumer and does not scale past
 the first one.
 
-## Reference implementation
+## Reference implementations
 
-`bb-plugin-stelow` vendors all 30 skills + `scripts/stelow` and auto-syncs
-them from this repo (see [host-plugin-blueprint](docs/host-plugin-blueprint.md),
-the build guide extracted from it: lifecycle, explicit completion, inbox,
-ask/answer protocol, host-served playbook, sync recipe, UI patterns). Its `workflow-contracts` test pins the shared
-surface (18 stages, board order, transitions) — the executable version of
-this contract.
+Two, from opposite ends of the spectrum — read the one shaped like your host.
+
+**`bb-plugin-stelow`** is the visual one: a board, an inbox, worker threads and a
+card per idea, on top of the host's own agent runtime. It vendors all 38 skills +
+`scripts/stelow` and auto-syncs them from this repo (see
+[host-plugin-blueprint](docs/host-plugin-blueprint.md), the build guide extracted
+from it: lifecycle, explicit completion, inbox, ask/answer protocol, host-served
+playbook, sync recipe, UI patterns). Its `workflow-contracts` test pins the shared
+surface (18 stages, board order, transitions) — the executable version of this
+contract.
+
+**`stelow-host-multica`** is the tracker one: a provisioner, not a plugin, for
+[Multica](https://multica.ai). It puts the same methodology on a workspace as
+three workflows — the build chain (one project per repository), `explore` (the 14
+stage skills) and `research` (the 21 product skills) — each bound to a project,
+each card naming the skill that judges it. Worth reading for the two things a
+tracker forced that a plugin never had to answer: a status key cannot carry a
+menu, so the working column has to, and a container (a project) is usually a
+repository, so the flow count is N + 2 projects rather than three flows in one
+board.
