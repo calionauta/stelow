@@ -3,7 +3,7 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [0.87.0-alpha] - 2026-11-15
 
 ### Changed
 
@@ -43,6 +43,15 @@ All notable changes to this project are documented in this file, following
   `cli-tools/`, indexed by its README.
 
 ### Added
+
+- **The jtbd completeness contract as data.** Each of the eleven reference files
+  ends with a `criteria:` block written for a human reader. A host that needed
+  the same list as data had to retype it, and one did — re-adding a word-count
+  floor stelow never declared and refusing artifacts against it as if it were
+  methodology. `scripts/generate-jtbd-contracts.py` renders those blocks to
+  `references/contracts.json` in `product-strategies.json` order, and
+  `verify:generated` fails when the render goes stale. Criteria cross over;
+  depth floors stay the host's own policy.
 
 - **`state-contract.md#who-mints-what`.** Which state facts a host may mint
   (position, hand-off delivery, gate receipts) and which never leave stelow
