@@ -29,6 +29,19 @@ All notable changes to this project are documented in this file, following
   `.stelow/teste/plans/spec-tech_v1.md`; the canonical layout is
   `.stelow/<date>/<dir>/plans/`.
 
+### Fixed
+
+- **A cache claim the markup cannot keep.** `AGENTS.md` described a
+  `CACHE BOUNDARY` marker as a cache-friendly layout; providers place the
+  prompt-cache breakpoints themselves, and a comment inside a skill cannot move
+  one. The section now states what a skill actually controls — being
+  byte-identical between runs, the generated block staying last, nothing varying
+  above the marker — and the orchestrator's comment says the same.
+
+- **A reference to a file that does not exist.** The same section pointed at
+  `references/cli-tools/context-efficiency.md`; the tool references live in
+  `cli-tools/`, indexed by its README.
+
 ### Added
 
 - **`state-contract.md#who-mints-what`.** Which state facts a host may mint

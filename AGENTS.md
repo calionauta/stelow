@@ -249,11 +249,19 @@ All optional — workflow runs without them. `./install.sh` offers install (defa
 
 ## Token Efficiency
 
-See `skills/stelow-workflow-orchestrator/references/cli-tools/context-efficiency.md` for patterns:
+See `skills/stelow-workflow-orchestrator/references/cli-tools/README.md` for the
+per-tool references:
 - Batch multi-symbol cymbal lookups (`show X Y Z`)
 - Batch agent_browser extractions (`snapshot` + batch `get text`)
 - Output truncation with `offset/limit` instead of full `read`
-- Cache-friendly SKILL.md layout (stable prefix before `CACHE BOUNDARY`)
+
+Skills are cache-friendly by construction, not by markup. The provider places the
+prompt-cache breakpoints; a skill's contribution is being **byte-identical**
+between runs. Two rules follow: the generated block stays last in every
+`SKILL.md`, so a `stages.yaml` change never shifts the text above it, and nothing
+that varies per run (dates, sha, ids) goes above the `CACHE BOUNDARY` line in the
+orchestrator. That comment is a note for whoever edits the file — it does not
+control caching, and no other skill needs one.
 
 ## Detailed references
 
