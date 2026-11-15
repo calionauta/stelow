@@ -1518,6 +1518,32 @@ carrying the book and becomes the router that sequences them.
 - **Dead cli-tools orphans** (`context-efficiency.md`, `execution-loop.md`)
   and the `cli-agents/` directory (absorbed into `HOSTING.md`).
 
+## [0.88.1-alpha] - 2026-11-15
+
+The English pass in 0.88.0 was checked with an accent scan, and an accent scan
+cannot see `Mesmo ator`, `Etapa`, `Nenhum` or `compras corporativas`. Those
+survived into the rendered contracts, which is how a host ends up enforcing a
+vocabulary the methodology claims it retired.
+
+### Fixed
+
+- **The Portuguese that carried no accent.** `05-job-actors.md` kept `Mesmo ator`
+  in five places (including a criterion another host reads as data),
+  `09-emotional-social-jobs.md` kept a whole table header and the `Nenhum`
+  status, `11-switch-interview.md` kept `Nenhuma`, and two workflow references
+  (`plan-critique-context.md`, `step-3-feature.md`) kept Portuguese instructions
+  and step names. All English now.
+
+- **`docs/study-goal-vs-plannotator.md`** was a Portuguese study note in a
+  repository that says documents are English.
+
+### Added
+
+- **`scripts/check-language.sh`**, wired into `verify:generated`. It looks for
+  Portuguese words and phrases, not for accents, skips the frozen archive, the
+  changelog and URLs, and fails on a hit. A future translation pass that misses
+  an unaccented word now fails in CI instead of shipping in the data.
+
 ## [0.88.0-alpha] - 2026-11-15
 
 ## [0.67.0-alpha] - 2026-09-19
