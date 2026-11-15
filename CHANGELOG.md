@@ -3,15 +3,61 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [0.87.0-alpha] - 2026-11-15
+## [0.88.2-alpha] - 2026-11-15
+
+- **Number the promises.** The spec mints a stable id per promise (`S1`, `S2`), and design, tech, build and audit cite the id instead of restating the promise. On the Multica smoke run the audit had to translate between its own findings and the spec's promises, because both sides described them in prose: a requirement with two names is a requirement nobody can trace.
+
+## [0.88.1-alpha] - 2026-11-15
+
+The English pass in 0.88.0 was checked with an accent scan, and an accent scan
+cannot see `Mesmo ator`, `Etapa`, `Nenhum` or `compras corporativas`. Those
+survived into the rendered contracts, which is how a host ends up enforcing a
+vocabulary the methodology claims it retired.
+
+### Fixed
+
+- **The Portuguese that carried no accent.** `05-job-actors.md` kept `Mesmo ator`
+  in five places (including a criterion another host reads as data),
+  `09-emotional-social-jobs.md` kept a whole table header and the `Nenhum`
+  status, `11-switch-interview.md` kept `Nenhuma`, and two workflow references
+  (`plan-critique-context.md`, `step-3-feature.md`) kept Portuguese instructions
+  and step names. All English now.
+
+- **`docs/study-goal-vs-plannotator.md`** was a Portuguese study note in a
+  repository that says documents are English.
 
 ### Added
 
-- **Number the promises.** The spec mints a stable id per promise (`S1`, `S2`),
-  and design, tech, build and audit cite the id instead of restating the promise.
-  On the Multica smoke run the audit had to translate between its own findings
-  and the spec's promises, because both sides described them in prose: a
-  requirement with two names is a requirement nobody can trace.
+- **`scripts/check-language.sh`**, wired into `verify:generated`. It looks for
+  Portuguese words and phrases, not for accents, skips the frozen archive, the
+  changelog and URLs, and fails on a hit. A future translation pass that misses
+  an unaccented word now fails in CI instead of shipping in the data.
+
+## [0.88.0-alpha] - 2026-11-15
+
+### Changed
+
+- **The job-to-be-done skill speaks English.** Eleven reference files carried
+  Portuguese in their examples, their output templates and their contract
+  vocabulary, in a repository whose own convention says code and artifacts are
+  English. The vocabulary moved with them: `evidência` / `pesquisa` /
+  `inferência` are now `evidence` / `research` / `inference`, `Mesmo ator` is
+  `Same actor`, and the job-map table columns are `Who runs it` / `Who decides`
+  / `Output` / `Failure mode` / `Source`. Criterion ids and kinds are unchanged;
+  only the words a worker reads and writes are. The archived design docs
+  under `docs/archive/` keep their original language: they record what was
+  written at the time, and rewriting them would make the archive lie.
+
+### Added
+
+- **An artifact is handed over as a file.** `state-contract.md` said the manifest
+  names each artifact but never said the artifact itself travels; hosts filled
+  the gap by pasting plans and wireframes into hand-off messages, where the next
+  stage and the person reviewing could not download or diff them.
+
+## [0.87.0-alpha] - 2026-11-15
+
+### Added
 
 ### Changed
 
@@ -52,23 +98,7 @@ All notable changes to this project are documented in this file, following
 
 ### Changed
 
-- **The job-to-be-done skill speaks English.** Eleven reference files carried
-  Portuguese in their examples, their output templates and their contract
-  vocabulary, in a repository whose own convention says code and artifacts are
-  English. The vocabulary moved with them: `evidência` / `pesquisa` /
-  `inferência` are now `evidence` / `research` / `inference`, `Mesmo ator` is
-  `Same actor`, and the job-map table columns are `Who runs it` / `Who decides`
-  / `Output` / `Failure mode` / `Source`. Criterion ids and kinds are unchanged;
-  only the words a worker reads and writes are. The archived design docs
-  under `docs/archive/` keep their original language: they record what was
-  written at the time, and rewriting them would make the archive lie.
-
 ### Added
-
-- **An artifact is handed over as a file.** `state-contract.md` said the manifest
-  names each artifact but never said the artifact itself travels; hosts filled
-  the gap by pasting plans and wireframes into hand-off messages, where the next
-  stage and the person reviewing could not download or diff them.
 
 - **The jtbd completeness contract as data.** Each of the eleven reference files
   ends with a `criteria:` block written for a human reader. A host that needed
@@ -1525,34 +1555,6 @@ carrying the book and becomes the router that sequences them.
   `/sisyphus`, `/supervise`, `pause_goal`, `goal-tweak` vocabulary.
 - **Dead cli-tools orphans** (`context-efficiency.md`, `execution-loop.md`)
   and the `cli-agents/` directory (absorbed into `HOSTING.md`).
-
-## [0.88.1-alpha] - 2026-11-15
-
-The English pass in 0.88.0 was checked with an accent scan, and an accent scan
-cannot see `Mesmo ator`, `Etapa`, `Nenhum` or `compras corporativas`. Those
-survived into the rendered contracts, which is how a host ends up enforcing a
-vocabulary the methodology claims it retired.
-
-### Fixed
-
-- **The Portuguese that carried no accent.** `05-job-actors.md` kept `Mesmo ator`
-  in five places (including a criterion another host reads as data),
-  `09-emotional-social-jobs.md` kept a whole table header and the `Nenhum`
-  status, `11-switch-interview.md` kept `Nenhuma`, and two workflow references
-  (`plan-critique-context.md`, `step-3-feature.md`) kept Portuguese instructions
-  and step names. All English now.
-
-- **`docs/study-goal-vs-plannotator.md`** was a Portuguese study note in a
-  repository that says documents are English.
-
-### Added
-
-- **`scripts/check-language.sh`**, wired into `verify:generated`. It looks for
-  Portuguese words and phrases, not for accents, skips the frozen archive, the
-  changelog and URLs, and fails on a hit. A future translation pass that misses
-  an unaccented word now fails in CI instead of shipping in the data.
-
-## [0.88.0-alpha] - 2026-11-15
 
 ## [0.67.0-alpha] - 2026-09-19
 
