@@ -1107,9 +1107,9 @@ elif os.path.exists(state_path):
 
 # 5. stage recipes: a stage that names a recipe with no file behind it
 # `stages.yaml` is the source of truth for which stage runs which recipe, and a
-# runner reads a 404 as "this stage has no recipe" — a silent hole. The file
-# named ten recipes and five existed when this check was added, and nothing
-# said so. A host must add files, never edit the declaration list.
+# runner reads a 404 as "this stage has no recipe" — a silent hole, because
+# nothing else compares the declaration against the directory. A host must add
+# files, never edit the declaration list.
 STAGES_DEFAULT = os.path.join(root, "skills", "stelow-workflow-orchestrator", "stages.yaml")
 RECIPES_DEFAULT = os.path.join(root, "recipes")
 

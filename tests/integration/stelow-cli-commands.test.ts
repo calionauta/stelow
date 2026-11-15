@@ -300,7 +300,8 @@ describe("ask file protocol", () => {
 
 // ---------------------------------------------------------------------------
 
-describe("read-only commands never touch the filesystem", () => {  it("status/doctor/dry-run do not create a missing state dir", () => {
+describe("read-only commands never touch the filesystem", () => {
+  it("status/doctor/dry-run do not create a missing state dir", () => {
     const wd = makeWorkdir();
     const ghost = join(wd.dir, ".stelow", "2099-01-01", "sw-ghost");
     const env = { STELOW_STATEDIR: ghost, STELOW_TRANSITIONS: TRANSITIONS_SRC };
