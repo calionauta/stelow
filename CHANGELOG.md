@@ -3,6 +3,61 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.87.0-alpha] - 2026-11-15
+
+### Changed
+
+- **The generated dual-mode block is a third smaller.** Every skill carries a
+  `## Entry` + `## Hand-off` + `### Workflow slice` region generated from
+  `stages.yaml`; the boilerplate in it restated what the block's own fields say.
+  The region is now 151 words instead of 236 (8% of the skill corpus, was 12%),
+  and it still stands alone: no extra file to open, no round trip.
+
+- **Hand-off instructions name the helper, not the graph.** The block already
+  deferred `next-candidate` to `scripts/stelow next`; the prose around it now
+  says so in one line instead of five, so a worker cannot read the paragraph as
+  describing a static edge.
+
+### Fixed
+
+- **`state-contract.md` named one lock and the section below it named another.**
+  `doctor` checks the advance lock (`.stelow/lock/`); the per-file locks live
+  under `.stelow/locks/`. The doc now says which is which, instead of sending a
+  worker to the wrong directory.
+
+- **An example path that never existed.** `execution-critique`'s example read
+  `.stelow/teste/plans/spec-tech_v1.md`; the canonical layout is
+  `.stelow/<date>/<dir>/plans/`.
+
+### Fixed
+
+- **A cache claim the markup cannot keep.** `AGENTS.md` described a
+  `CACHE BOUNDARY` marker as a cache-friendly layout; providers place the
+  prompt-cache breakpoints themselves, and a comment inside a skill cannot move
+  one. The section now states what a skill actually controls — being
+  byte-identical between runs, the generated block staying last, nothing varying
+  above the marker — and the orchestrator's comment says the same.
+
+- **A reference to a file that does not exist.** The same section pointed at
+  `references/cli-tools/context-efficiency.md`; the tool references live in
+  `cli-tools/`, indexed by its README.
+
+### Added
+
+- **The jtbd completeness contract as data.** Each of the eleven reference files
+  ends with a `criteria:` block written for a human reader. A host that needed
+  the same list as data had to retype it, and one did — re-adding a word-count
+  floor stelow never declared and refusing artifacts against it as if it were
+  methodology. `scripts/generate-jtbd-contracts.py` renders those blocks to
+  `references/contracts.json` in `product-strategies.json` order, and
+  `verify:generated` fails when the render goes stale. Criteria cross over;
+  depth floors stay the host's own policy.
+
+- **`state-contract.md#who-mints-what`.** Which state facts a host may mint
+  (position, hand-off delivery, gate receipts) and which never leave stelow
+  (`intent`, `review_mode`, `invariants`, artifact typing), with the rule that a
+  host minting position is an optimization and never a precondition.
+
 ## [0.86.0-alpha] - 2026-10-27
 
 The JTBD skill now answers instead of filling. Every slot carries a status, and

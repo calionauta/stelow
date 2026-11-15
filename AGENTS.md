@@ -62,6 +62,7 @@ tests — not from this file:
 - **Skills (32)**: `find skills -maxdepth 2 -name SKILL.md \( -path '*/stelow-product-*' -o -path '*/stelow-workflow-*' \) | wc -l` (17 workflow + 15 product). Pinned against the README `## 📋 Skills` section by `tests/integration/skill-count-readme-contract.test.ts`.
 - **Stages (18)**: `skills/stelow-workflow-orchestrator/stages.yaml` + its mirror `references/transitions.md` (the `triage`..`audit` chain).
 - **Stage transitions and conditional gates**: `skills/stelow-workflow-orchestrator/stages.yaml`.
+- **JTBD completeness contract**: `skills/stelow-product-job-to-be-done/references/contracts.json` renders from the `criteria:` block that ends each reference file, in `product-strategies.json` order (`python3 scripts/generate-jtbd-contracts.py`; `--check` for the freshness test `verify:generated` runs). A host reads the criteria; any depth floor it adds on top is its own policy, not stelow's.
 - **Recipe wiring**: one recipe runs per stage — the host refuses any recipe that is not the stage's canonical `execution.recipe`. `supporting_recipes` is metadata only; tasks that must run in a stage live inside that stage's recipe.
 - **Interface map**: `schemas/breadboard.json` is the published contract for the interface's places/affordances/wiring; `skills/stelow-workflow-orchestrator/references/breadboard.md` holds the writing rules. `stelow check breadboard` enforces them, and `advance` runs it on the `selection` transition (errors refuse, gaps are reported). The map is the source of truth; the prose is its commentary. The helper carries its own copy of the contract because it must stay one portable file a host can run with `bash`; `tests/integration/breadboard-check.test.ts` derives its cases from the schema, so a rule the two do not share fails the suite.
 - **Recipe conditions**: `recipes.schema.json` (`$defs.condition`) declares every `when` value a recipe task may carry. `scripts/validate-stages.py` reads that declaration instead of listing the vocabulary, and the host evaluates exactly the vocabulary the schema declares.
@@ -249,11 +250,19 @@ All optional — workflow runs without them. `./install.sh` offers install (defa
 
 ## Token Efficiency
 
-See `skills/stelow-workflow-orchestrator/references/cli-tools/context-efficiency.md` for patterns:
+See `skills/stelow-workflow-orchestrator/references/cli-tools/README.md` for the
+per-tool references:
 - Batch multi-symbol cymbal lookups (`show X Y Z`)
 - Batch agent_browser extractions (`snapshot` + batch `get text`)
 - Output truncation with `offset/limit` instead of full `read`
-- Cache-friendly SKILL.md layout (stable prefix before `CACHE BOUNDARY`)
+
+Skills are cache-friendly by construction, not by markup. The provider places the
+prompt-cache breakpoints; a skill's contribution is being **byte-identical**
+between runs. Two rules follow: the generated block stays last in every
+`SKILL.md`, so a `stages.yaml` change never shifts the text above it, and nothing
+that varies per run (dates, sha, ids) goes above the `CACHE BOUNDARY` line in the
+orchestrator. That comment is a note for whoever edits the file — it does not
+control caching, and no other skill needs one.
 
 ## Detailed references
 

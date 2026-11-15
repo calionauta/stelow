@@ -1,6 +1,6 @@
 {
   "name": "@calionauta/stelow",
-  "version": "0.86.0-alpha",
+  "version": "0.87.0-alpha",
   "description": "stelow — opinionated product workflow. stellar clarity. low friction.",
   "keywords": [
     "ai-coding-agent",
@@ -40,10 +40,12 @@
     "gen:policies:check": "python3 scripts/generate-stage-policies.py --check",
     "gen:handoff:check": "python3 scripts/scope3_blocks.py --check",
     "gen:handoff": "python3 scripts/scope3_blocks.py",
+    "gen:jtbd-contracts": "python3 scripts/generate-jtbd-contracts.py",
+    "gen:jtbd-contracts:check": "python3 scripts/generate-jtbd-contracts.py --check",
     "gen:site": "node site/build.mjs",
     "gen:site:check": "node site/build.mjs --check",
     "validate:stages": "python3 scripts/validate-stages.py",
-    "verify:execution": "npm run validate:stages && npm run gen:transitions:check && npm run gen:catalog:check && npm run gen:recipes:check && npm run gen:policies:check && npm run gen:handoff:check",
+    "verify:execution": "npm run validate:stages && npm run gen:transitions:check && npm run gen:catalog:check && npm run gen:recipes:check && npm run gen:policies:check && npm run gen:handoff:check && npm run gen:jtbd-contracts:check",
     "test": "vitest run",
     "test:unit": "vitest run tests/unit",
     "test:integration": "vitest run tests/integration",

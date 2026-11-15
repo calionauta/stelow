@@ -1,9 +1,9 @@
-# stages.yaml — Metadados de stage
+# stages.yaml — stage metadata
 # Complements stages/*.md (behavior), does NOT replace them
 # Source of truth for: tools per stage, transitions, supervisor, gates
 #
-# Espelho data-only: references/transitions.md é regenerado a partir deste
-# arquivo e é o que scripts/stelow advance valida (não edite manualmente).
+# Data-only mirror: references/transitions.md is regenerated from this file and
+# is what scripts/stelow advance validates against (do not edit it by hand).
 
 version: 2
 
