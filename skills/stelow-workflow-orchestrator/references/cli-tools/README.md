@@ -35,6 +35,37 @@ was not expensive to think about; it was expensive to look at.
 - **Do not re-derive what an artifact already cites.** Open a file to check a claim,
   not to re-read the repository around it.
 
+### One script beats ten commands
+
+A chain of small calls is the most expensive shape an agent can take: each round trip
+re-sends the conversation and every result stays in it. Measured on a finished card,
+one build run made 601 shell calls and carried all of their outputs to the end.
+
+Write the chain as one script and print only the answer you decided on:
+
+```bash
+cat > .stelow-probe.sh <<'EOF'
+set -e
+grep -c "add(" scripts/stelow
+sed -n '1050,1075p' scripts/stelow
+EOF
+bash .stelow-probe.sh
+```
+
+One call in, one screen out. What the script read never enters the context — which is
+the whole point on a long card. Long suites follow the same rule from the other side:
+start them once in the background, keep working, read the tail when you need the
+verdict.
+
+### Start from the handoff, not the repository
+
+A fitted line over 43 measured runs puts the fixed cost of a run at roughly **1.2M
+tokens before it does anything**, and most of that is re-deriving context the previous
+stage already had. Open a stage with what the previous one left — artifact paths, the
+decisions, what is still open — and read a file only to check a line you are about to
+act on. The artifacts are the handoff; a comment thread is not, and neither is your
+memory of the last run.
+
 ## Detection Strategy
 
 The orchestrator picks the path at runtime via two mechanisms:
