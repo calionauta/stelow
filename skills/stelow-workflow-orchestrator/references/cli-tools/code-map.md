@@ -49,9 +49,10 @@ ripwire . --impact=SYM            # what breaks if it changes
 ripwire . --from-trace=FILE       # stack trace → responsible symbols
 ```
 
-Use it to orient and pick entry points, then drill in with cymbal. ripwire is
-read-only context — it never replaces refs/impact verification before a
-refactor decision.
+Use it to orient and pick entry points. Do not chain it into cymbal by reflex:
+both are rungs of one ladder, and taking two when one answers is the extra round
+trip described below. ripwire is read-only context — it never replaces
+refs/impact verification before a refactor decision.
 
 ### 1st — cymbal: navigate symbols
 
@@ -103,6 +104,32 @@ Read `xerj.md` before the first call: node lifecycle, ignore and secret rules,
 the 30-day corpus staleness refusal, and what it must never be used for. When
 there is no node, no corpus, or the tree is small, `grep -rn` is the whole
 answer — say that instead of booting an index mid-stage.
+
+## When a rung costs more than it saves
+
+A map is not a substitute for reading. It says *where*; the edit still needs the
+code. So a rung pays only when it **replaces** a search you would have run
+anyway. When it merely precedes the read of the same symbol, it is one extra
+round trip, and every round trip re-sends the conversation.
+
+- **You can already name the symbol** → `ffgrep`/`grep -n`, then `read` with
+  `offset`/`limit`: two calls, and the second returns the code. `cymbal impact`
+  earns its call only when "who calls this" is genuinely ambiguous — dynamic
+  dispatch, string-built names, DI containers, a refactor across packages.
+- **Unfamiliar repo, change touches ≥3 files** → `ripwire --for` pays: one call
+  replaces several blind searches and ranks what to open first.
+- **One file, one obvious home** → no map. Open the file.
+- **Docs versus code** → xerj answers "which prose says X"; on a small tree
+  `grep -rn` answers it in one call, and a contract test answers "does the doc
+  still match the code" better than any index.
+- **After a diff** → `sem diff` or `ripwire --situ` replaces `git diff` at the
+  same cost; they earn the call whenever the diff is larger than a screen.
+
+Measured, not assumed: on SWE-bench Verified, structure-aware retrieval raised
+agent cost by up to **28%** while improving results inconsistently
+([arXiv 2609.30725](https://arxiv.org/abs/2609.30725)) — the extra hop is the
+mechanism. Prefer the rung that returns the code with the location, and treat a
+map-first habit as a cost with a hoped-for benefit, not a free upgrade.
 
 ## Tier boundaries (no overlap)
 
