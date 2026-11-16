@@ -3,6 +3,23 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.88.10-alpha] - 2026-11-16
+
+### Added
+
+- **A host without a command-prefix key can still win the bookkeeping.** opencode's
+  `"shell"` only names a binary, so the prefix is a two-line wrapper that exports
+  `BASH_ENV`, plus a `bashenv` that sets `pipefail` and puts the tool directory on
+  `PATH`. The same three checks apply, and they were run through the host
+  (`opencode run` returned exit 1 for a failing pipeline) rather than read off the
+  config schema. The "what a host must implement" table gains the row.
+
+### Changed
+
+- The harness reference now states the part prompt text cannot buy: a session that
+  carried a "one call per question" rule made 85 consecutive direct calls and zero
+  scripted ones. Bookkeeping belongs to the harness.
+
 ## [0.88.9-alpha] - 2026-11-16
 
 ### Changed
