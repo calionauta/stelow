@@ -3,6 +3,27 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.88.5-alpha] - 2026-11-16
+
+### Changed
+
+- **`harness.md` names the surgical enforcement, not the blunt one.**
+  `{"defaultTools": ["+codemode", "-bash"]}` changes the inherited selection, so
+  `read`/`edit`/`write` stay declared and the shell becomes reachable only from a
+  script; `codemode.mode: "only"` hides everything, including the exact-match edit
+  that a script does worse. Verified on pi 0.88: a fresh session lists
+  `read, edit, write, codemode`, no `bash`.
+- **opencode 2.3.0 needs no flag** — Code Mode is built in (`experimental.codemode_vm`
+  is deprecated and ignored, "Code Mode always runs on the VM") and MCP servers are
+  exposed through it by default. A per-tool deny needs a plugin plus a `policies`
+  entry.
+
+### Fixed
+
+- **`AGENTS.md` no longer states the navigation ladder as a reflex.** ripwire and
+  cymbal are conditional, with the situation that pays for each and the measured
+  reason (up to 28% more cost, [arXiv 2609.30725](https://arxiv.org/abs/2609.30725)).
+
 ## [0.88.4-alpha] - 2026-11-15
 
 ### Added
