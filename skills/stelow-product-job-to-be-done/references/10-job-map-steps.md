@@ -87,7 +87,7 @@ the line out: an unstated boundary reads as a stated one.
 the same line, always. One sentence, solution agnostic.
 
 If the clarifier is unknown, write the sentence without it and mark it `Open` on
-the same line. If you inferred the clarifier, say so: `· Hypothesis — bet`. An
+the same line. If you inferred the clarifier, say so: `· Hypothesis - bet`. An
 inferred scope written without a status reads as a fact, and that is the exact
 failure this line exists to prevent.
 
@@ -98,46 +98,49 @@ Translate the content, never the headers.
 
 | # | Step | Phase | Executor | Decider | Output | Failure mode | Status |
 |---|-------|------|--------------|-------------|-------|---------------|--------|
-| 1 | ... | ... | classe de papel | classe de papel, ou `—` | o que a etapa produz | como ela falha | `Input-derived` / `Hypothesis — bet` / ... |
+| 1 | ... | ... | role class | role class, or `-` | what the step produces | how it fails | `Input-derived` / `Hypothesis - bet` / ... |
 
-- **Quem executa** é a classe de papel que faz a etapa. **Quem decide** é quem
-  autoriza, aprova ou libera a etapa. Quando o papel não é conhecido, escreva
-  `Open` — não deixe a coluna vazia, e não invente. A coluna `Quem decide` é o
-  que permite apontar onde o aprovador desconhecido entra no fluxo.
-- **Saída** é o artefato ou estado que a etapa entrega para a próxima. Sem saída,
-  a etapa não terminou.
-- **Modo de falha** é o que quebra nesta etapa, na linguagem de quem executa.
-- **Status** usa os nomes de `00-evidence-policy.md`. O warrant, quando houver,
-  vai entre parênteses no fim da linha.
-- Proibido escrever proveniência em texto livre ("vem do que você falou"). Ou é
-  status mais fragmento, ou é `Hypothesis — bet`.
+- **Who runs it** is the role class that performs the step. **Who decides** is who
+  authorizes, approves or releases the step. When the role is not known, write
+  `Open` - do not leave the column empty, and do not invent one. The `Who decides`
+  column is what lets you point to where the unknown approver enters the flow.
+- **Output** is the artifact or state the step hands to the next one. Without an
+  output, the step has not finished.
+- **Failure mode** is what breaks in this step, in the language of the person
+  running it.
+- **Status** uses the names from `00-evidence-policy.md`. The warrant, when there
+  is one, goes in parentheses at the end of the line.
+- Writing provenance as free text is forbidden ("it comes from what you said").
+  It is either a status plus a fragment, or `Hypothesis - bet`.
 
-### A última etapa é o estado final
+### The last step is the final state
 
-A última etapa entrega o resultado do job, não a última correção. Se o job
-termina com o período fechado, a etapa final é "período fechado e conferido";
-corrigir é um laço que volta para conferir, não o fim da lista. Um mapa que
-termina em "corrijo" modela o retrabalho como se fosse o objetivo.
+The last step delivers the outcome of the job, not the last correction. If the
+job ends with the period closed, the final step is "period closed and checked";
+correcting is a loop that goes back to checking, not the end of the list. A map
+that ends in "I correct" models rework as if it were the goal.
 
-### Métricas
+### Metrics
 
-Métrica por etapa não é o critério de sucesso do Prompt 7. Aqui é o sinal que
-mostra se *esta* etapa funcionou.
+A metric per step is not the Prompt 7 success criterion. Here it is the signal
+that shows whether *this* step worked.
 
-Produza para as **3 etapas mais arriscadas** (`quick` e `standard`) ou para todas
-(`deep`). Quatro tipos:
+Produce them for the **3 riskiest steps** (`quick` and `standard`) or for all of
+them (`deep`). Four types:
 
-| Etapa | Métrica | Tipo | Como medir | Fonte | Status |
+| Step | Metric | Type | How to measure | Source | Status |
 |---|---|---|---|---|---|
-| ... | ... | Tempo / Erro / Esforço / Conclusão | ... | ticket, log, entrevista, `nenhuma` | ... |
+| ... | ... | Time / Error / Effort / Completion | ... | ticket, log, interview, `none` | ... |
 
-- **Tempo** — quanto a etapa leva, e quanto leva para se recuperar quando falha.
-- **Erro** — com que frequência a saída sai errada ou volta para correção.
-- **Esforço** — quantas ações, pessoas ou handoffs a etapa exige.
-- **Conclusão** — se a etapa termina: onde para, quem para, quanto tempo parada.
+- **Time** - how long the step takes, and how long recovery takes when it fails.
+- **Error** - how often the output comes out wrong or comes back for correction.
+- **Effort** - how many actions, people or handoffs the step requires.
+- **Completion** - whether the step ends: where it stops, who stops it, how long it
+  stays stopped.
 
-`Fonte` é obrigatória. `nenhuma` é resposta válida e rebaixa a métrica para
-`Hypothesis — bet` com a checagem. Métrica sem fonte é aposta, não medida.
+`Source` is mandatory. `none` is a valid answer and downgrades the metric to
+`Hypothesis - bet` with the check. A metric without a source is a bet, not a
+measurement.
 
 ## Coverage
 
@@ -146,9 +149,9 @@ Produza para as **3 etapas mais arriscadas** (`quick` e `standard`) ou para toda
 | Define and Plan | 0 | {reason, or the step names} |
 | ... | ... | ... |
 
-- Onde uma falha apareceria primeiro: {phase} — {why}
-- A fase mais arriscada para este job: {phase} — {why}
-- Etapas que o ator faria e você não sabe se faz: {list} — {Status}
+- Where a failure would show up first: {phase} - {why}
+- The riskiest phase for this job: {phase} - {why}
+- Steps the actor would take and you do not know whether they do: {list} - {Status}
 ```
 
 ## Completeness contract
@@ -195,18 +198,18 @@ criteria:
 
 ## Worked example — synthetic, not evidence
 
-Job: `qualificar um pacote de sensor de reposição para serviço de gás ácido`.
+Job: `qualify a replacement sensor package for sour gas service`.
 Actor: plant reliability engineer. Depth: `quick`, 7 steps.
 
 | # | Step | Phase |
 |---|---|---|
-| 1 | Travar o envelope operacional e as obrigações de certificação | Define and Plan |
-| 2 | Reunir normas aplicáveis e pacotes de certificado anteriores | Prepare and Execute |
-| 3 | Montar a folha de restrições a partir do envelope e dos certificados | Prepare and Execute |
-| 4 | Decidir o escopo go/no-go contra as regras do site e do seguro | Evaluate and Adjust |
-| 5 | Especificar a configuração de reposição contra o envelope travado | Prepare and Execute |
-| 6 | Resolver divergências entre a configuração ofertada e o envelope | Evaluate and Adjust |
-| 7 | Fechar a aceitação com artefatos de rastreabilidade | Conclude and Organize |
+| 1 | Lock the operating envelope and the certification obligations | Define and Plan |
+| 2 | Gather the applicable standards and prior certificate packages | Prepare and Execute |
+| 3 | Assemble the constraint sheet from the envelope and the certificates | Prepare and Execute |
+| 4 | Decide the go/no-go scope against site and insurer rules | Evaluate and Adjust |
+| 5 | Specify the replacement configuration against the locked envelope | Prepare and Execute |
+| 6 | Resolve divergences between the offered configuration and the envelope | Evaluate and Adjust |
+| 7 | Close acceptance with traceability artifacts | Conclude and Organize |
 
 `Document and Share` and `Monitor subsequent effects` hold **zero** steps here.
 That is intentional, not an error: the job ends at acceptance, and handoff is

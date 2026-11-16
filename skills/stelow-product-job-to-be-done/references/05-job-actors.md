@@ -47,8 +47,8 @@ a fabricated actor.
 3. `Hypothesis — bet` has a ceiling of three per map, each with the cheapest check
    that would confirm or kill it.
 4. Never a person. No first name, no invented tenure, no invented title, no emoji.
-   A role class — "compras corporativas", not "Marina, gerente de compras".
-5. A role that exists but is not distinct is `Mesmo ator que {role}`. Reserve
+   A role class — "corporate procurement", not "Marina, purchasing manager".
+5. A role that exists but is not distinct is `Same actor as {role}`. Reserve
    `Not applicable` for a role the job genuinely cannot have.
 6. `Not applicable` cites scope: say which part of the job leaves the role out. If
    the exclusion rests on an assumption, the status is `Hypothesis — bet`.
@@ -68,10 +68,10 @@ Translate the content, never the headers.
 |---|---|---|---|---|
 
 ## Closing
-- Summary — with evidence: {n} · hipóteses: {n} · não aplicáveis: {n} · mesmo ator:
-  {n} · abertos: {n}
-- O papel que mais muda a decisão: {role} — {why}
-- O papel que você suspeita existir e não conseguiu decidir: {role} — {what would
+- Summary — with evidence: {n} · hypotheses: {n} · not applicable: {n} · same actor:
+  {n} · open: {n}
+- The role that most changes the decision: {role} — {why}
+- The role you suspect exists and could not decide: {role} — {what would
   settle it}
 ```
 
@@ -86,7 +86,7 @@ visible instead of filling it. It also costs one line instead of five.
 - All twelve roles, in order, each with a status.
 - Every high-confidence or input-derived role carries a warrant containing the
   role's action.
-- Every `Not applicable` carries a scope reason; every `Mesmo ator` names the role.
+- Every `Not applicable` carries a scope reason; every `Same actor` names the role.
 - At most three `Hypothesis — bet`, each with a check.
 - Zero invented persons.
 
@@ -102,7 +102,7 @@ criteria:
     text: "Every populated role carries a fragment containing the role's action"
   - id: absence-reason
     kind: presence
-    text: "Every Not applicable carries a scope reason; every Mesmo ator names the role"
+    text: "Every Not applicable carries a scope reason; every Same actor names the role"
   - id: no-persons
     kind: semantic
     text: "Actors are role classes in plural, never invented people, titles or emoji"
@@ -113,4 +113,4 @@ criteria:
 *Synthetic — not evidence:* a two-person internal reporting job populates
 Beneficiary, Performer and Supervisor, marks `Threatened`, `Assistant`,
 `Influencer` and `Expert` as `Not applicable`, collapses `Buyer` into
-`Mesmo ator que Purchaser`, and leaves `Decision Maker` as `Open`.
+`Same actor as Purchaser`, and leaves `Decision Maker` as `Open`.

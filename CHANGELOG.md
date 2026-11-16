@@ -3,6 +3,192 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.88.5-alpha] - 2026-11-16
+
+### Changed
+
+- **`harness.md` names the surgical enforcement, not the blunt one.**
+  `{"defaultTools": ["+codemode", "-bash"]}` changes the inherited selection, so
+  `read`/`edit`/`write` stay declared and the shell becomes reachable only from a
+  script; `codemode.mode: "only"` hides everything, including the exact-match edit
+  that a script does worse. Verified on pi 0.88: a fresh session lists
+  `read, edit, write, codemode`, no `bash`.
+- **opencode 2.3.0 needs no flag** — Code Mode is built in (`experimental.codemode_vm`
+  is deprecated and ignored, "Code Mode always runs on the VM") and MCP servers are
+  exposed through it by default. A per-tool deny needs a plugin plus a `policies`
+  entry.
+
+### Fixed
+
+- **`AGENTS.md` no longer states the navigation ladder as a reflex.** ripwire and
+  cymbal are conditional, with the situation that pays for each and the measured
+  reason (up to 28% more cost, [arXiv 2609.30725](https://arxiv.org/abs/2609.30725)).
+
+## [0.88.4-alpha] - 2026-11-15
+
+### Added
+
+- **`cli-tools/harness.md`: the three harness capabilities a stage cannot ask
+  for, with the setting that enforces each.** A prompt can request economy; only
+  the harness can make it true. Programmatic tool calling is the big one —
+  `{"defaultTools": ["+codemode"], "codemode": {"mode": "only"}}` hides the
+  built-in tools and makes the model reach them through scripts, where the
+  default `"on"` only appends a note to each description. The file also covers
+  the two-tool MCP surface (`search_tools` + `execute`), the workdir-script
+  fallback when a host has neither, tool-result pruning, why a gate must name a
+  workspace member rather than a role, and the two measurements to repeat on the
+  next card.
+
+### Changed
+
+- **`code-map.md` says when a navigation rung costs more than it saves.** A map
+  says *where*; the edit still needs the code, so a rung pays only when it
+  replaces a search. Named symbol → `ffgrep` + `read --offset`: two calls, the
+  second returns the code. `ripwire --for` for an unfamiliar repo touching three
+  or more files. Structure-aware retrieval raised agent cost by up to 28% on
+  SWE-bench Verified ([arXiv 2609.30725](https://arxiv.org/abs/2609.30725)) — the
+  extra hop is the mechanism, so the ladder no longer chains ripwire into cymbal
+  by reflex.
+
+### Fixed
+
+- **`npm run build` failed on `types/stages.ts`** — `StageSkipCondition`'s index
+  signature did not admit `undefined`, which its optional `any_of` requires. CI
+  runs `typecheck`, not `build`, so the documented command was broken without a
+  red pipeline.
+
+## [0.88.3-alpha] - 2026-11-15
+
+### Added
+
+- **`doctor` checks that a recipe declaration has a file.** `stages.yaml` names
+  a recipe per stage and a runner reads a 404 as "this stage has no recipe", so
+  a declaration with nothing behind it was silent. `doctor` now resolves every
+  `execution.recipe:` against `recipes/<id>.yaml` and reports `recipe-missing`
+  (error) with stage, recipe and the path it looked in, `recipes-dir-missing`
+  when the directory itself is gone, and `stages-missing` /
+  `stages-unreadable` when the declaration file cannot be read. A `recipe:` the
+  reader cannot bind — outside an `execution:` mapping, or inside an
+  `execution:` written inline on one line — is `stages-unparsed` (warn) naming
+  the line, never a finding charged to the stage above it. `STELOW_STAGES` and
+  `STELOW_RECIPES` override the two paths (documented in `stelow doctor`
+  schema output).
+- **A check that could not run doesn't read as a clean bill.** Absent stages
+  file is `stages-unchecked` (info), an unreadable one is an error, and
+  `doctor: ok (no drift)` prints only when there are no findings at all. Two
+  warn classes were also undocumented: `orphan-pid` and `transitions-missing`.
+
+## [0.88.2-alpha] - 2026-11-15
+
+- **Number the promises.** The spec mints a stable id per promise (`S1`, `S2`), and design, tech, build and audit cite the id instead of restating the promise. On the Multica smoke run the audit had to translate between its own findings and the spec's promises, because both sides described them in prose: a requirement with two names is a requirement nobody can trace.
+
+## [0.88.1-alpha] - 2026-11-15
+
+The English pass in 0.88.0 was checked with an accent scan, and an accent scan
+cannot see `Mesmo ator`, `Etapa`, `Nenhum` or `compras corporativas`. Those
+survived into the rendered contracts, which is how a host ends up enforcing a
+vocabulary the methodology claims it retired.
+
+### Fixed
+
+- **The Portuguese that carried no accent.** `05-job-actors.md` kept `Mesmo ator`
+  in five places (including a criterion another host reads as data),
+  `09-emotional-social-jobs.md` kept a whole table header and the `Nenhum`
+  status, `11-switch-interview.md` kept `Nenhuma`, and two workflow references
+  (`plan-critique-context.md`, `step-3-feature.md`) kept Portuguese instructions
+  and step names. All English now.
+
+- **`docs/study-goal-vs-plannotator.md`** was a Portuguese study note in a
+  repository that says documents are English.
+
+### Added
+
+- **`scripts/check-language.sh`**, wired into `verify:generated`. It looks for
+  Portuguese words and phrases, not for accents, skips the frozen archive, the
+  changelog and URLs, and fails on a hit. A future translation pass that misses
+  an unaccented word now fails in CI instead of shipping in the data.
+
+## [0.88.0-alpha] - 2026-11-15
+
+### Changed
+
+- **The job-to-be-done skill speaks English.** Eleven reference files carried
+  Portuguese in their examples, their output templates and their contract
+  vocabulary, in a repository whose own convention says code and artifacts are
+  English. The vocabulary moved with them: `evidência` / `pesquisa` /
+  `inferência` are now `evidence` / `research` / `inference`, `Mesmo ator` is
+  `Same actor`, and the job-map table columns are `Who runs it` / `Who decides`
+  / `Output` / `Failure mode` / `Source`. Criterion ids and kinds are unchanged;
+  only the words a worker reads and writes are. The archived design docs
+  under `docs/archive/` keep their original language: they record what was
+  written at the time, and rewriting them would make the archive lie.
+
+### Added
+
+- **An artifact is handed over as a file.** `state-contract.md` said the manifest
+  names each artifact but never said the artifact itself travels; hosts filled
+  the gap by pasting plans and wireframes into hand-off messages, where the next
+  stage and the person reviewing could not download or diff them.
+
+## [0.87.0-alpha] - 2026-11-15
+
+### Added
+
+### Changed
+
+- **The generated dual-mode block is a third smaller.** Every skill carries a
+  `## Entry` + `## Hand-off` + `### Workflow slice` region generated from
+  `stages.yaml`; the boilerplate in it restated what the block's own fields say.
+  The region is now 151 words instead of 236 (8% of the skill corpus, was 12%),
+  and it still stands alone: no extra file to open, no round trip.
+
+- **Hand-off instructions name the helper, not the graph.** The block already
+  deferred `next-candidate` to `scripts/stelow next`; the prose around it now
+  says so in one line instead of five, so a worker cannot read the paragraph as
+  describing a static edge.
+
+### Fixed
+
+- **`state-contract.md` named one lock and the section below it named another.**
+  `doctor` checks the advance lock (`.stelow/lock/`); the per-file locks live
+  under `.stelow/locks/`. The doc now says which is which, instead of sending a
+  worker to the wrong directory.
+
+- **An example path that never existed.** `execution-critique`'s example read
+  `.stelow/teste/plans/spec-tech_v1.md`; the canonical layout is
+  `.stelow/<date>/<dir>/plans/`.
+
+### Fixed
+
+- **A cache claim the markup cannot keep.** `AGENTS.md` described a
+  `CACHE BOUNDARY` marker as a cache-friendly layout; providers place the
+  prompt-cache breakpoints themselves, and a comment inside a skill cannot move
+  one. The section now states what a skill actually controls — being
+  byte-identical between runs, the generated block staying last, nothing varying
+  above the marker — and the orchestrator's comment says the same.
+
+- **A reference to a file that does not exist.** The same section pointed at
+  `references/cli-tools/context-efficiency.md`; the tool references live in
+  `cli-tools/`, indexed by its README.
+
+### Changed
+
+### Added
+
+- **The jtbd completeness contract as data.** Each of the eleven reference files
+  ends with a `criteria:` block written for a human reader. A host that needed
+  the same list as data had to retype it, and one did — re-adding a word-count
+  floor stelow never declared and refusing artifacts against it as if it were
+  methodology. `scripts/generate-jtbd-contracts.py` renders those blocks to
+  `references/contracts.json` in `product-strategies.json` order, and
+  `verify:generated` fails when the render goes stale. Criteria cross over;
+  depth floors stay the host's own policy.
+
+- **`state-contract.md#who-mints-what`.** Which state facts a host may mint
+  (position, hand-off delivery, gate receipts) and which never leave stelow
+  (`intent`, `review_mode`, `invariants`, artifact typing), with the rule that a
+  host minting position is an optimization and never a precondition.
+
 ## [0.86.0-alpha] - 2026-10-27
 
 The JTBD skill now answers instead of filling. Every slot carries a status, and
@@ -1444,8 +1630,6 @@ carrying the book and becomes the router that sequences them.
   `/sisyphus`, `/supervise`, `pause_goal`, `goal-tweak` vocabulary.
 - **Dead cli-tools orphans** (`context-efficiency.md`, `execution-loop.md`)
   and the `cli-agents/` directory (absorbed into `HOSTING.md`).
-
-## [Unreleased]
 
 ## [0.67.0-alpha] - 2026-09-19
 

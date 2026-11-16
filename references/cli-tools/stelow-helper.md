@@ -4,7 +4,8 @@ The `scripts/stelow` CLI is the canonical state machine behind the `/sw-*`
 skill commands. It reads/writes the project `state.md` and `.stelow/invariants.json`,
 validates stage transitions against
 `skills/stelow-workflow-orchestrator/references/transitions.md`, and exposes
-a passive doctor that detects four classes of drift.
+a passive doctor that classifies thirteen kinds of finding: six drift
+classes and seven about stage recipes.
 
 ## Usage
 
@@ -39,16 +40,35 @@ If any check fails the helper exits non-zero **before** touching `state.md`
 or `.stelow/invariants.json`. Revertibility is therefore trivial: a bad
 candidate leaves both files byte-identical.
 
-`doctor` runs the four drift checks:
+`doctor` runs the drift checks **and** the recipe check:
+
 | Class | Severity | Trigger |
 |---|---|---|
 | `stale-lock` | warn | `.stelow/lock` mtime older than TTL (default 120s) |
 | `missing-dir` | warn | `state.md` intent is not one of the 5 known intents |
 | `parallel-lock` | info | another live pid holds `.stelow/lock/pid` |
+| `orphan-pid` | warn | `.stelow/lock/pid` names a dead process |
 | `state-transitions-drift` | error | `state.md current_stage` not found in `transitions.md` |
+| `transitions-missing` | error | the transitions reference itself is not on disk |
+| `recipe-missing` | error | a stage declares `execution.recipe: <id>` and `recipes/<id>.yaml` does not exist |
+| `recipes-dir-missing` | error | declarations exist but the recipes directory does not |
+| `stages-missing` | error | `STELOW_STAGES` is set and points at nothing |
+| `stages-unreadable` | error | the stages file exists but cannot be read |
+| `stages-unparsed` | warn | a `recipe:` line outside a stage block's `execution:` mapping, or an `execution:` mapping written inline — an indentation reader cannot see a recipe there (message names the line) |
+| `stages-empty` | warn | the stages file parsed to zero declarations |
+| `stages-unchecked` | info | no stages file at the default path — the recipe check did not run |
+
+A declaration is the value of `recipe:` inside a stage block's `execution:`
+mapping; `null`, `~`, `""`, an absent key and the plural `recipes:` are not
+declarations. Nothing outside `recipes/` is ever touched: a recipe file no
+stage declares is not a finding. `doctor` is not a schema verdict — it asks
+whether a declared recipe has a file behind it, and what a recipe *contains*
+stays the validator's job (`npm run validate:stages`).
 
 `--json` returns `{"findings": [...], "ok": <bool>}` and never exits non-zero
-on `warn` / `info`; only `error` flips `ok` to false.
+on `warn` / `info`; only `error` flips `ok` to false. `doctor: ok (no drift)`
+prints only when `findings` is empty, so a check that could not run never reads
+as a clean bill.
 
 `sync-scopes` parses `[SCOPE-N]` blocks from the latest `spec-tech_*.md` into
 `wf.scopes[]` (`id`, `type`, `name`, `blockedBy`, `targetFiles`,
@@ -123,6 +143,8 @@ workers call that, and nothing in the core simulates a slash command.
 | Var | Default | Effect |
 |---|---|---|
 | `STELOW_LOCK_TTL_SEC` | `120` | lock TTL in seconds; advance auto-clears stale locks past TTL |
+| `STELOW_STAGES` | `skills/stelow-workflow-orchestrator/stages.yaml` | the declaration file the recipe check reads |
+| `STELOW_RECIPES` | `recipes/` | the directory every declaration must resolve in |
 
 ## AC coverage
 
@@ -131,7 +153,7 @@ workers call that, and nothing in the core simulates a slash command.
 | `stelow advance bogus` exits != 0 and leaves state.md byte-identical | manual: md5sum before/after matches |
 | second concurrent `advance` fails with lock message | manual: held lock manually, second `advance` returned "lock held by ..." exit=1 |
 | missing required artifact blocks transition | enforced in `advance` pre-condition (Python check on `artifact:` lines) |
-| `stelow doctor` flags fixture drift | four-class detection wired; `--json` returns structured findings |
+| `stelow doctor` flags fixture drift | thirteen-class detection wired (six drift + seven recipe); `--json` returns structured findings |
 | `stelow status --json` emits valid JSON | passes `python3 -m json.tool` |
 
 ## NFR

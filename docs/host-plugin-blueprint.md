@@ -1074,6 +1074,10 @@ rather than copying the code.
 
 ## 10. Contract tests to mirror
 
+The five tracker-shaped assertions (waiting marker, finished is not abandoned,
+neutral entry is orphaned, back-edge budget, declaration versus state) are in
+[§16](#16-container-cardinality-and-what-a-tracker-shaped-host-must-add).
+
 Pin the shared surface so upstream changes break your build loudly, not
 your users silently: stage count + board order + transitions (see
 `workflow-contracts`), card-insert placeholders derived from columns,
@@ -1665,3 +1669,92 @@ record beside the fields the gate already reads, so the count comes from the sam
 scan that decides whether a review exists, with no new table and no second reader.
 Records written before the field existed are uncounted rather than reported as
 records that read everything.
+
+## 16. Container cardinality, and what a tracker-shaped host must add
+
+Everything above assumes the host can carry a card. What it does not say is how
+many *flows* one place can hold, and that single question decides the whole
+topology — which is why it is here rather than in the summary table.
+
+### The three cardinalities
+
+| cardinality | what it means | what follows |
+|---|---|---|
+| **one flow per container** | work is filed under a container (usually one per repository) and the container has exactly one flow attached | several shapes must become **tracks inside one flow**, or you get one container per shape |
+| **flow chosen per card** | the card names its flow, or its type selects one | separate flows are fine; nothing to merge |
+| **no container** | work is files, queues or sessions | tracks are paths or queues; a "board" is whatever the host renders |
+
+Ask which one you have before designing anything. The failure mode of missing
+this question is expensive and looks reasonable at the time: one container per
+repository becomes three, one per flow shape, and now every request needs a
+person to decide **which container it belongs in before anything runs**. That
+triage lands at the worst moment — when the request is freshest and least
+structured — and it silently deletes the property the board existed for.
+
+If a container binds one flow, do not add containers. Add tracks:
+
+- the flow carries a run of statuses per track;
+- the status key names the track (`explore_run`), because keys are usually
+  restricted to lowercase letters, digits and one separator;
+- a card's **first status selects the track**, so no field, label or type is
+  needed to say which shape it walks;
+- the entry command moves the card to that first status, so nothing waits in a
+  neutral status where no handler runs.
+
+Two consequences are easy to miss. A neutral entry status with no handler is a
+place cards go to die quietly: it looks alive on the board and nothing will ever
+pick it up, so a board reader must treat it as an orphan rather than as a column.
+And if statuses are workspace-level while the flow is container-level, create the
+statuses **before** wiring the flow: a step that points at a status created in the
+same request is rejected, and replacing a flow can otherwise drop a column a card
+is sitting in.
+
+### The five mechanisms a tracker-shaped host must add
+
+A host that renders cards and statuses has storage but no vigilance. Each of
+these exists because its absence was observed on a real card, and each is cheap
+compared to the failure it prevents.
+
+1. **A waiting marker and a nudge.** Waiting on a person and a run that died look
+   identical on a board: both are a card with no active work. Mark waiting
+   (status, label, field) and arm a timed re-entry. A card whose only signal is a
+   comment waits until somebody scrolls past it.
+2. **A board reader.** Enumerate cards, statuses, what is running, and what
+   happened. Without it a host can render the board and cannot answer "which card
+   is stuck", "how many rounds has this card spent", or "did this stage attach
+   anything". Every later mechanism is built on this one.
+3. **A stall restarter.** Work that ended without moving the card must be
+   restarted by a mechanism, not by a person noticing. A mention is not a
+   mechanism; it is a human doing the host's job, and it does not scale past the
+   second card.
+4. **A zero-cost checkup.** A timer that reads state and starts no work: mark
+   waiting cards, restart stalled columns, count back-edge rounds, surface cards
+   idle past a threshold. Because it starts nothing, its interval is free — which
+   is what makes noticing cheap enough to be frequent. Rotate its log and count
+   consecutive failures, or it becomes a log nobody reads.
+5. **Declarations apart from state.** The repository declares what the flows are;
+   the host holds the cards. Never a copy of state in the repository: it will
+   drift. Provide an idempotent install and a check that compares the two. The
+   same rule applies to artifacts — a naming convention enforced by declarations
+   needs an alias map for anything attached before the convention existed, or a
+   correct card reports as broken.
+
+### Contract tests to mirror
+
+Five assertions, each of which failed on a real card before it was written:
+
+1. A card in a place where it waits on a person carries the waiting marker, and a
+   card whose work is running does not.
+2. A finished card is not reported as abandoned.
+3. A neutral entry status is reported as orphaned, not as a healthy column.
+4. A round trip past the budget is reported, and the budget is read from the
+   declaration rather than repeated in prose.
+5. The check that compares declaration to live state fails when a container points
+   at another flow, and passes on a correct workspace.
+
+### What this section does not change
+
+None of it touches the stage model, the gates, the artifacts or the one-skill
+rule. It is plumbing, and it belongs to the host: the methodology says a card
+waits, stops or finishes; the host is what makes those three states visible and
+self-correcting.

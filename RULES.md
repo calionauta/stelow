@@ -26,5 +26,7 @@ has, and listed restrictions for stages that allow everything).
   `scripts/stelow` enforces the mechanics programmatically on every host:
   `advance` refuses invalid candidates (fail-closed, `state.md` stays
   byte-identical) and guards stage transitions against `transitions.md`;
-  `doctor` flags drift (stale-lock, missing-dir, parallel-lock,
-  state-transitions).
+  `doctor` flags drift (stale-lock, missing-dir, parallel-lock, orphan-pid,
+  state-transitions, transitions-missing) and stage recipes that name a file
+  which is not on disk — a declaration with nothing behind it runs as "no
+  recipe for this stage" and says nothing.

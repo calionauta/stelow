@@ -14,6 +14,58 @@ documents how to invoke a specific capability on two surfaces:
     installed at `~/.agents/skills/<name>/` and the agent picks them up
     automatically.
 
+## Reading: one call, not six
+
+Every tool call is a turn that re-sends the whole conversation, so the cheapest
+work for a person — looking — is the most expensive thing an agent does. Measured
+on a finished card: one build run made **601 shell calls** (123 `sed`, 104 `grep`,
+33 `cat`, 125 one-line `python3`) and wrote 0.4% of its tokens as output. The card
+was not expensive to think about; it was expensive to look at.
+
+- **Read a file with `read`**, `offset`/`limit` for a range — not `sed -n`, not `cat`.
+- **Search with the search tools** (`ffgrep` with `context`, `ast_grep_search` for
+  structure) instead of `grep | sed | read`: one call returns the location *and* the
+  lines around it.
+- **Ask the tracking system once per decision** (`<cli> issue get <id> --output json`
+  returns status, labels and every attachment in one answer) rather than re-fetching
+  before each step to confirm what is already known.
+- **Batch independent commands** into a single shell call when the answer fits on a
+  screen: `git status --porcelain; git diff --stat; <test> 2>&1 | tail -20` is one
+  turn, not three.
+- **Do not re-derive what an artifact already cites.** Open a file to check a claim,
+  not to re-read the repository around it.
+
+### One script beats ten commands
+
+A chain of small calls is the most expensive shape an agent can take: each round trip
+re-sends the conversation and every result stays in it. Measured on a finished card,
+one build run made 601 shell calls and carried all of their outputs to the end.
+
+Write the chain as one script and print only the answer you decided on:
+
+```bash
+cat > .stelow-probe.sh <<'EOF'
+set -e
+grep -c "add(" scripts/stelow
+sed -n '1050,1075p' scripts/stelow
+EOF
+bash .stelow-probe.sh
+```
+
+One call in, one screen out. What the script read never enters the context — which is
+the whole point on a long card. Long suites follow the same rule from the other side:
+start them once in the background, keep working, read the tail when you need the
+verdict.
+
+### Start from the handoff, not the repository
+
+A fitted line over 43 measured runs puts the fixed cost of a run at roughly **1.2M
+tokens before it does anything**, and most of that is re-deriving context the previous
+stage already had. Open a stage with what the previous one left — artifact paths, the
+decisions, what is still open — and read a file only to check a line you are about to
+act on. The artifacts are the handoff; a comment thread is not, and neither is your
+memory of the last run.
+
 ## Detection Strategy
 
 The orchestrator picks the path at runtime via two mechanisms:
@@ -91,6 +143,8 @@ cli-binary ...args
 | `file-locking.md` | Convention-based scope locking (no git worktrees) |
 | `web-research.md` | Layered web evidence procedure (host search → primary sources → agent-reach → last30days) |
 | `acceptance-checklist.md` | Candidate acceptance criteria from checklist.design (shaping + verification) |
+| `harness.md` | What the harness must enforce (PTC, result pruning, gate owner) and how to measure it |
+| `code-map.md` | Which navigation tool answers which question — and when a rung costs more than it saves |
 
 > **See also:** `../../../stelow-workflow-orchestrator/references/permissions.md` (stage permissions) and `../../../stelow-workflow-orchestrator/references/capabilities.md` (allowed tools per stage)
 

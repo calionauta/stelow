@@ -33,7 +33,7 @@ how they want to connect or belong, or avoid it. Focus on other people.
 A feeling with no moment cannot be designed for. For each step, ask what the
 person feels and what they fear being seen as, right there.
 
-Steps with no plausible emotional or social stake get `Nenhum` and a reason. That
+Steps with no plausible emotional or social stake get `None` and a reason. That
 is a finding: back-office steps often carry no social stake, and inventing one
 produces decoration.
 
@@ -47,9 +47,9 @@ produces decoration.
 
 ## Output
 
-| Etapa | Job | Tipo | O que a pessoa faz quando acontece | Status |
+| Step | Job | Type | What the person does when it happens | Status |
 |---|---|---|---|---|
-| {step} | {statement} | Emocional / Social | {observable signal} | {status} |
+| {step} | {statement} | Emotional / Social | {observable signal} | {status} |
 
 How many steps:
 
@@ -61,8 +61,8 @@ If the map does not exist, run Prompt 10 first or ask for the step list. An
 unanchored list is the last resort, and the output says it is one.
 
 ## Closing
-- O medo que mais trava a etapa: {statement} — {step}
-- Onde o medo é social e não funcional: {step} — {why}
+- The fear that blocks the step most: {statement} — {step}
+- Where the fear is social and not functional: {step} — {why}
 ```
 
 ## Why anchoring changes the output
@@ -76,7 +76,7 @@ the audience. The second one can be solved; the first one can only be agreed wit
 - One emotional and one social job per anchored step, by depth.
 - Every row names the step, the statement and an observable signal.
 - No opposing pairs for the same outcome.
-- Steps without a stake are `Nenhum` with a reason.
+- Steps without a stake are `None` with a reason.
 
 criteria:
   - id: anchored-rows

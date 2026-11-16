@@ -54,7 +54,7 @@ The user should review and approve there first.
 docs/{YYYY-MM-DD}/{slug}/plans/spec-product_{v}.md
 ```
 - `{slug}` is kebab-case (e.g. `login-system`)
-- `{v}` auto-incrementado
+- `{v}` auto-incremented
 
 ### Guidelines:
 - lowercase kebab-case
@@ -69,6 +69,20 @@ docs/{YYYY-MM-DD}/{slug}/plans/spec-product_{v}.md
 - sequencing
 - recommendations
 - selected interface direction
+
+### Number the promises
+
+Every promise the proposal makes gets a stable id in the spec: `S1`, `S2`, `S3`.
+One promise per id, minted once, never renumbered. Design, tech, build and audit
+then cite the id instead of restating the promise.
+
+The reason is the audit: a requirement rewritten at each stage cannot be traced
+to what shipped, and the person reviewing reads four descriptions of one promise
+and has to decide which is current. An id that survives the chain is the whole
+traceability story.
+
+A promise that changes gets a new id, and the old one is marked dropped with the
+reason, so the audit reports it as dropped instead of it silently never shipping.
 
 **After persistence:**
 - inform the full saved path

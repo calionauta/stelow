@@ -1,7 +1,7 @@
 # Skills
 
-32 skills, flat in `skills/`, installed into `~/.agents/skills/`: 17 that
-run the workflow (`stelow-workflow-*`, the machinery) + 15 consulted as
+38 skills, flat in `skills/`, installed into `~/.agents/skills/`: 17 that
+run the workflow (`stelow-workflow-*`, the machinery) + 21 consulted as
 knowledge while doing it (`stelow-product-*`, reference only — none
 executes a stage). Every skill is self-contained and invokable standalone,
 independent of the orchestrator.
@@ -30,7 +30,7 @@ independent of the orchestrator.
 
 ## Product (21)
 
-Nine are **domain libraries**, detected from your language at the context stage (eight carry explicit signal rows; paywall is consulted without one); six are **method playbooks** used across the context, triage, and scope stages.
+Nine are **domain libraries**, detected from your language at the context stage (eight carry explicit signal rows; paywall is consulted without one); twelve are **method playbooks** used across the context, triage, and scope stages.
 
 | Skill | Kind | Strategy |
 |---|---|---|
@@ -62,7 +62,7 @@ skill add/remove/rename updates that registry in the same commit.
 
 ## Distribution
 
-- In bb, the plugin vendors all 30 and auto-syncs them from this repo —
+- In bb, the plugin vendors all 38 and auto-syncs them from this repo —
   no manual step (`bb skill list` to confirm).
 - Everywhere else, `./install.sh` or `npx skills add calionauta/stelow -g`
   installs them standalone. Never hand-edit vendored copies downstream;

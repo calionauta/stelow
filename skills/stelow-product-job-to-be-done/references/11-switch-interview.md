@@ -78,14 +78,14 @@ Material: {{Interview}}
 - ...
 
 ## Reading
-- A força mais forte: {force} — {why}
-- A força que o produto pode mover: {force} — {how, without naming a feature}
-- A força que o produto não move: {force} — {why not}
-- O que ainda falta perguntar: {question} — {what it would settle}
+- The strongest force: {force} — {why}
+- The force the product can move: {force} — {how, without naming a feature}
+- The force the product cannot move: {force} — {why not}
+- What is still left to ask: {question} — {what it would settle}
 
 ## Closing
-- Status geral: `Input-derived` | `Hypothesis — bet`
-- Se hypothesis mode: a entrevista mínima que produziria o diagrama de verdade.
+- Overall status: `Input-derived` | `Hypothesis — bet`
+- If hypothesis mode: the minimum interview that would produce the diagram for real.
 ```
 
 ## Rules
@@ -102,7 +102,7 @@ Material: {{Interview}}
 ## Completeness contract
 
 - The five timeline stages, even when a stage is `Open`.
-- The four forces, each with at least one entry or an explicit `Nenhuma` with a
+- The four forces, each with at least one entry or an explicit `None` with a
   reason.
 - A reading with the strongest force, the movable one and the immovable one.
 - Hypothesis mode banner whenever no material was supplied.

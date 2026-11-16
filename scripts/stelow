@@ -11,7 +11,7 @@
 #   scripts/stelow status [--json]
 #   scripts/stelow advance <candidate> [--dry-run] [--json]
 #   scripts/stelow next [--json]
-#   scripts/stelow doctor [--json]
+#   scripts/stelow doctor [--json]           # drift + stage-recipe declarations
 #   scripts/stelow seed --name <n> --intent <i> [--json]
 #   scripts/stelow schema [command]
 #   scripts/stelow check breadboard <map.json> [--json] [--strict]
@@ -1105,6 +1105,154 @@ elif os.path.exists(state_path):
             add("error", "state-transitions-drift",
                 f"state.md current_stage '{cur}' not in transitions.md")
 
+# 5. stage recipes: a stage that names a recipe with no file behind it
+# `stages.yaml` is the source of truth for which stage runs which recipe, and a
+# runner reads a 404 as "this stage has no recipe" — a silent hole, because
+# nothing else compares the declaration against the directory. A host must add
+# files, never edit the declaration list.
+STAGES_DEFAULT = os.path.join(root, "skills", "stelow-workflow-orchestrator", "stages.yaml")
+RECIPES_DEFAULT = os.path.join(root, "recipes")
+
+def recipe_value(raw):
+    """`recipe:`'s value, or None for the spellings that declare no recipe."""
+    v = raw.strip()
+    if v[:1] in ("'", '"'):
+        end = v.find(v[0], 1)
+        v = v[1:end] if end != -1 else v[1:]
+    else:
+        comment = v.find("#")
+        if comment != -1:
+            v = v[:comment]
+        v = v.strip()
+    return None if v in ("", "null", "Null", "NULL", "~") else v
+
+def stage_id(raw):
+    """A `- name:` value with one matching pair of quotes removed."""
+    if raw[:1] in ("'", '"'):
+        end = raw.find(raw[0], 1)
+        if end != -1:
+            return raw[1:end]
+    return raw
+
+def read_stage_recipes(path):
+    """Stage recipe declarations in file order, plus lines that declare nothing.
+
+    Returns `(declarations, unbound_lines, inline_lines)`: a declaration is the
+    value of a `recipe:` key inside a stage block's `execution:` mapping, kept
+    with its stage; `unbound_lines` are `recipe:` lines that sit outside such a
+    mapping; `inline_lines` are `execution:` mappings written on the key's own
+    line, whose recipe an indentation reader cannot see.
+    """
+    decls, unbound, inline = [], [], []
+    in_stages, stage, section = False, None, None
+    with open(path, "r", errors="replace") as fh:
+        for lineno, raw in enumerate(fh, 1):
+            line = raw.rstrip("\n")
+            stripped = line.strip()
+            if not stripped or stripped.startswith("#"):
+                continue
+            indent = len(line) - len(line.lstrip(" "))
+            if indent == 0:
+                # A top-level key ends the stage list, and a `recipe:` outside
+                # it belongs to no stage at all.
+                in_stages, stage, section = stripped == "stages:", None, None
+                if stripped.startswith("recipe:"):
+                    unbound.append(lineno)
+                continue
+            if not in_stages:
+                # Outside the stage list every `recipe:` belongs to no stage.
+                if stripped.startswith("recipe:"):
+                    unbound.append(lineno)
+                continue
+            if indent == 2:
+                # Every line here starts a stage block or breaks one. A `- name:`
+                # this reader cannot match (a trailing comment is enough) must
+                # clear the previous stage, or the entry's recipe is charged to
+                # the stage above it and the entry itself is never checked.
+                name = re.match(r"^- name:\s*(\S+)\s*$", stripped)
+                section = None
+                if name:
+                    stage = stage_id(name.group(1))
+                    decls.append([stage, None])
+                else:
+                    stage = None
+                    if stripped.startswith("recipe:"):
+                        unbound.append(lineno)
+                continue
+            if indent == 4:
+                key = re.match(r"^([A-Za-z_][\w-]*):(.*)$", stripped)
+                section = key.group(1) if key else None
+                rest = (key.group(2) if key else "").split("#", 1)[0].strip()
+                if section == "recipe" or (section == "execution" and rest):
+                    inline.append(lineno)
+                continue
+            recipe = re.match(r"^recipe:(.*)$", stripped)
+            if recipe:
+                value = recipe_value(recipe.group(1))
+                if stage is None or section != "execution":
+                    unbound.append(lineno)
+                elif value is not None:
+                    decls[-1][1] = value
+    return decls, unbound, inline
+
+def display_path(path):
+    """The resolved path: project-relative inside the root, absolute outside it.
+
+    Inside-ness and what is printed come from the same realpath, so a
+    symlinked or ../../../-spelled knob cannot show a relative prefix for a
+    directory that is not under the project.
+    """
+    real, root_real = os.path.realpath(path), os.path.realpath(root)
+    try:
+        if real == root_real or os.path.commonpath([real, root_real]) == root_real:
+            return os.path.relpath(real, root_real)
+    except ValueError:
+        pass
+    return real
+
+stages_knob = os.environ.get("STELOW_STAGES", "")
+recipes_knob = os.environ.get("STELOW_RECIPES", "")
+stages_path = stages_knob or STAGES_DEFAULT
+recipes_dir = recipes_knob or RECIPES_DEFAULT
+
+decls, unbound, inline = [], [], []
+if not os.path.exists(stages_path):
+    if stages_knob:
+        add("error", "stages-missing",
+            f"stages file not found at {stages_path} — STELOW_STAGES points at nothing")
+    else:
+        add("info", "stages-unchecked",
+            f"stage recipes not checked: no stages file at {display_path(STAGES_DEFAULT)}")
+else:
+    try:
+        decls, unbound, inline = read_stage_recipes(stages_path)
+    except OSError as exc:
+        # An unreadable file is not "no drift": the check did not run.
+        add("error", "stages-unreadable",
+            f"stages file at {stages_path} cannot be read ({exc.__class__.__name__})")
+    else:
+        for lineno in unbound:
+            add("warn", "stages-unparsed",
+                f"stages file line {lineno}: recipe: is not inside a stage block's execution mapping")
+        for lineno in inline:
+            add("warn", "stages-unparsed",
+                f"stages file line {lineno}: execution: is written inline, so its recipe cannot be checked")
+        if not any(recipe for _stage, recipe in decls):
+            add("warn", "stages-empty",
+                f"no stage in {display_path(stages_path)} declares a recipe — the recipe check verified nothing")
+
+declared = [(stage, recipe) for stage, recipe in decls if recipe]
+if declared and not os.path.isdir(recipes_dir):
+    knob = "STELOW_RECIPES" if recipes_knob else "the default $ROOT/recipes"
+    add("error", "recipes-dir-missing",
+        f"recipes directory not found at {display_path(recipes_dir)} ({knob})")
+elif declared:
+    for stage, recipe in declared:
+        if not os.path.isfile(os.path.join(recipes_dir, recipe + ".yaml")):
+            add("error", "recipe-missing",
+                f"stage {stage}: recipe '{recipe}' has no file at "
+                f"{display_path(recipes_dir)}/{recipe}.yaml")
+
 if want_json == "--json":
     print(json.dumps({"findings": findings,
                        "ok": not any(f["severity"] == "error" for f in findings)},
@@ -1311,7 +1459,8 @@ commands = {
   "doctor": {
     "usage": "stelow doctor [--json]",
     "flags": ["--json"],
-    "env": ["STELOW_STATE", "STELOW_STATEDIR", "STELOW_TRANSITIONS", "STELOW_LOCK_TTL_SEC"],
+    "env": ["STELOW_STATE", "STELOW_STATEDIR", "STELOW_TRANSITIONS", "STELOW_LOCK_TTL_SEC",
+            "STELOW_STAGES", "STELOW_RECIPES"],
     "exit_codes": {"0": "ok or warnings only", "1": "findings with severity error"},
     "output": "text lines or {findings: [{severity, class, message}], ok}",
   },
@@ -2967,7 +3116,16 @@ CONTROL_FILES = {"state.md", "audit-trail.md", "invariants.json"}
 # comment + thread output. Never deliverables, so the strict gate (and the
 # host's unregistered list) must not trip on them — a draft burst blocks
 # no completion.
-DISPOSABLE_DIRS = {"drafts", "lock"}
+#
+# `runs` is the same kind of thing for a different reason: it holds one
+# directory per execution, written by the host that ran it. Its reports carry
+# deliverable titles — the native audit stage's report is literally titled
+# "Execution Critique Report" — so a gate that counts them as card documents
+# demands they be registered, and registering one then fails the artifact
+# contracts, which were written for documents a worker authors for review.
+# That dead end (unregistered = refused, registered = malformed) blocked a card
+# whose test run, security scan and PR were all green.
+DISPOSABLE_DIRS = {"drafts", "lock", "runs"}
 def workflow_output(absolute):
     """A durable workflow output, excluding the CLI's own control files."""
     relative = os.path.relpath(os.path.realpath(absolute), os.path.realpath(statedir)).replace(os.sep, "/")

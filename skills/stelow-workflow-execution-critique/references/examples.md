@@ -2,7 +2,7 @@
 
 ### Example 1: Workflow mode (spec-tech.md path)
 
-**Input:** "@.stelow/teste/plans/spec-tech_v1.md — audit implementation"
+**Input:** "@.stelow/2026-08-13/abc123/plans/spec-tech_v1.md — audit implementation"
 
 **Output:**
 ```markdown

@@ -65,8 +65,8 @@ Justify the final number, and justify any pair you considered merging.
 - Top 3 functional jobs, top 2 emotional jobs, top 2 social jobs.
 
 ## Closing
-- Por que {n} estilos, e não {n-1} nem {n+1}.
-- Pares que quase se fundiram: {pair} — {why kept apart, or merged}.
+- Why {n} styles, and not {n-1} or {n+1}.
+- Pairs that almost merged: {pair} — {why kept apart, or merged}.
 ```
 
 ## Completeness contract

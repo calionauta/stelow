@@ -98,7 +98,7 @@ export interface StageRoute {
  * of its keys must hold.
  */
 export interface StageSkipCondition {
-  [knob: string]: string[] | Record<string, string[]>;
+  [knob: string]: string[] | Record<string, string[]> | undefined;
   any_of?: Record<string, string[]>;
 }
 

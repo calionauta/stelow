@@ -1,24 +1,25 @@
 /**
- * Scope-executor red-first (Fase 1 Executor — pacote executor).
+ * Scope-executor red-first (Phase 1, executor package).
  *
  * Bugs it catches:
- *  1. `scope done` fecha escopo sem evidencia red-first: aceita Record com
- *     verified:true mas sem red_proof / freeze_sha / baseline. O CLI de
- *     producao (scripts/stelow, `scope done`) deve recusar com exit 1 em
- *     red_first=strict, nomeando os campos ausentes.
- *  2. `scope done` fecha feature com test-* aberto: test-* e bloqueante de
- *     feature — fechar feature com test-unit/integration/security/behavior
- *     pendente deve recusar com exit 1 em strict.
- *  3. `scripts/pre-commit-record.sh` deixa passar escopo `done` (o status
- *     que o CLI grava) sem os tres campos — o hook so olhava `completed`
- *     e so exigia verified.
+ *  1. `scope done` closes a scope with no red-first evidence: it accepts a
+ *     Record with verified:true but no red_proof / freeze_sha / baseline. The
+ *     production CLI (scripts/stelow, `scope done`) must refuse with exit 1
+ *     under red_first=strict, naming the missing fields.
+ *  2. `scope done` closes a feature with an open test-*: test-* blocks a
+ *     feature, so closing one with test-unit/integration/security/behavior
+ *     pending must refuse with exit 1 under strict.
+ *  3. `scripts/pre-commit-record.sh` lets a scope through as `done` (the
+ *     status the CLI writes) without the three fields - the hook only looked
+ *     at `completed` and only demanded verified.
  *
- * Nenhuma logica de veredicto vive aqui: todos os veredictos vêm do codigo
- * de producao (scripts/stelow e scripts/pre-commit-record.sh executados de
- * verdade contra git repos temporarios). Assercoes de texto cobrem apenas
- * recusas (motivo certo no stderr) mais exit codes e estado final.
- * red_proof estruturado de cada falha: {failed_command, exit_code,
- * output_excerpt} — o comando que falhou, seu exit e o trecho do stderr.
+ * No verdict logic lives here: every verdict comes from the production code
+ * (scripts/stelow and scripts/pre-commit-record.sh, run for real against
+ * temporary git repos). Text assertions cover only refusals (the right reason
+ * on stderr) plus exit codes and final state.
+ * Structured red_proof per failure: {failed_command, exit_code,
+ * output_excerpt} - the command that failed, its exit code and the stderr
+ * excerpt.
  */
 import { describe, it, expect, afterAll } from "vitest";
 import { spawnSync, execSync } from "node:child_process";

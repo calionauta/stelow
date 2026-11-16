@@ -82,6 +82,12 @@ in the workflow directory with the stage it is leaving — `.md` files as
 Hosts can therefore show each artifact beside its producing stage without a
 second index or filename-based stage inference.
 
+**An artifact is handed over as a file.** The manifest names it and the host
+carries it; the hand-off message says what the artifact means and never carries
+the artifact itself. A spec, a wireframe, a contrast table or a plan pasted into
+a message cannot be read as a document, downloaded, or diffed against the next
+version, and the next stage receives a paraphrase instead of the artifact.
+
 ### Valid Stage Names
 
 `triage`, `select`, `setup`, `context`, `shape`, `critique`, `gate`,
@@ -227,6 +233,33 @@ database and the worker itself can read it for continuity:
 
 ---
 
+## Who mints what
+
+The state has two halves, and only one of them is a host's business.
+
+| fact | may a host mint it? | fallback when it does not |
+|---|---|---|
+| **position** (current stage) | yes — a board column, a card lane, a PR state | `state.md#current_stage` |
+| **hand-off delivery** (where the block lands) | yes — a comment, a card message, a receipt | append to `state.md#history` |
+| **gate receipt** (who approved, when) | yes — an inbox item, a decision record | `.stelow/approvals/` |
+| **artifacts** (paths produced) | no — always derived from the state dir | — |
+| **intent** (which route this run takes) | **never** | `state.md#intent` |
+| **review_mode** (which stages run) | **never** | `state.md#config` |
+| **invariants** (scopes, tasks, discovered) | **never** | `.stelow/invariants.json` |
+| **artifact → stage typing** | **never** | the state dir layout |
+
+A host that mints position is an *optimization*, never a precondition: when it
+is absent, the file backend above is the whole contract and the workflow runs
+unchanged. A host that would have to invent `intent`, `review_mode`,
+`invariants`, or artifact typing has forked the method — refuse it, and let the
+worker read them from the file instead.
+
+Host implementations: `bb-plugin-stelow` (cards mint position, receipts mint
+gates) and `stelow-host-multica` (issue status mints position, the issue
+comment mints the hand-off, gates are columns).
+
+---
+
 ## Anti-Drift Rules
 
 - One canonical state path per workflow: `$STELOW_STATE` / `$STELOW_STATEDIR`
@@ -235,7 +268,8 @@ database and the worker itself can read it for continuity:
   state copies.
 - `stelow doctor` compares `state.md` artifact paths against on-disk
   directories to detect orphans and drift.
-- `stelow doctor` checks for stale or parallel locks in `.stelow/locks/`.
+- `stelow doctor` checks the advance lock (`.stelow/lock/`) for staleness and a live
+  pid, and reports the per-file locks held under `.stelow/locks/`.
 
 ---
 
