@@ -146,11 +146,19 @@ FIT=$(grep -oP '^appetite_fit:\s*\K\S+' "$SPEC_FILE" 2>/dev/null || echo "fits")
 The parent applies mode-based behavior after consolidation.
 This keeps subagents pure detectors, regardless of mode.
 
-**Check scope fit (constraint check, not estimation):**
+**Check scope fit (constraint check, not estimation).**
+
+> **Vocabulary rule (2026-10-27).** The config exposes `quality` and the
+> exploration knobs; it no longer exposes an appetite. A legacy
+> `appetite_fit:` field is read as the scope-fit verdict for compatibility,
+> but a question to the human must never call the constraint an appetite or
+> an estimate. Say "the declared quality and exploration knobs" and name the
+> surface that would come off. A human asked to compare work against a setting
+> the config does not expose cannot answer the question.
 
 ```bash
-# appetite_fit is the LLM's assessment of whether the shaped proposal
-# fits within the human-declared knobs (constraint).
+# scope fit (legacy appetite_fit field) is the LLM's assessment of whether
+# the shaped proposal fits within the human-declared knobs (constraint).
 # Knobs are NOT targets — they are bounds. The LLM does not estimate effort.
 # It checks: does this shaped design fit the declared bounds?
 case "$FIT" in
