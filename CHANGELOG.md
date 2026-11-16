@@ -3,6 +3,18 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.88.8-alpha] - 2026-11-16
+
+### Changed
+
+- **`harness.md` says what `codemode.mode: "only"` actually bought, measured.**
+  Four runs on pi 1.5.2, one host, one model: on a task that wanted enumeration,
+  `"only"` produced the right answer at 44.8k tokens against 35.9k and the same
+  four calls; on a task that wanted one edit, three calls against five. It does
+  not reduce round trips — the claim it is sold on — so the entry keeps `"on"`
+  as the default and reserves `"only"` for volume jobs, with a note to measure
+  before believing it.
+
 ## [0.88.7-alpha] - 2026-11-16
 
 ### Fixed
