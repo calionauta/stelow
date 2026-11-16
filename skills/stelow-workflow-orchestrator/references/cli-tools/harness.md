@@ -83,6 +83,20 @@ silently covers 25 of 50 items reads as success — one reported run did exactly
 that — and code mode does not improve a tool whose output is wrong, it only makes
 the wrong answer cheaper to obtain.
 
+**Measured on pi 1.5.2 — and `only` does not pay by default.** Four runs, one host,
+one model, the same two prompts:
+
+| task | mode `"on"` | mode `"only"` |
+|---|---|---|
+| count the functions in a 3.9k-line script and name the three longest | 4 calls, 35.9k tokens, longest three **wrong** | 4 calls, 44.8k tokens, longest three **right** |
+| replace one line in a four-line file | 3 calls, exact | 5 calls, exact |
+
+`only` bought accuracy where the task wanted enumeration and cost 25% more tokens
+plus two extra calls where the task wanted one edit. It did **not** reduce round
+trips, which is the whole claim. Keep `"on"` and use the rule below; reach for
+`"only"` on volume jobs (batch triage, an audit over many items) where the loop is
+the point, and measure the run before believing it.
+
 **The MCP shape**, if the host fronts many tools: advertise *two* — `search_tools`
 and `execute` — and run the script in a sandbox. Intermediate responses never
 reach the model, so a three-tool chain that returns 200 bytes costs 200 bytes
