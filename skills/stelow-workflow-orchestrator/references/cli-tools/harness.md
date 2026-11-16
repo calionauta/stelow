@@ -161,12 +161,41 @@ exit status of `tail`, which is how this project once tagged a release from a re
 suite; with pipefail the failing step *is* the verdict, and benign pipelines
 (`echo hi | head -1`, `ls | wc -l`) still exit 0.
 
+**opencode has no prefix key — wrap the shell instead.** `"shell"` there names the
+binary, nothing more. Point it at a two-line wrapper that exports `BASH_ENV`, and
+bash sources that file for every non-interactive call opencode makes:
+
+```bash
+# ~/bin/<host>-shell
+#!/usr/bin/env bash
+export BASH_ENV="$HOME/.config/opencode/bashenv"
+exec /bin/bash "$@"
+```
+
+```bash
+# ~/.config/opencode/bashenv
+set -o pipefail
+export PATH="$HOME/bin:$PATH"
+```
+
+The checks are the same three the prefix earns: `<wrapper> -c 'command -v <tool>'`
+exits 0 without an `export`, `'prog-does-not-exist | head -1'` exits non-zero, and
+`'echo hi | head -1'` exits 0. Verify it inside the host too — one `opencode run`
+asking for a failing pipeline's exit code, which came back `1`, was the only proof
+that `"shell"` was wired and not just accepted by the schema.
+
+Prompt text cannot do this job: the same session that carried a "one call per
+question" rule made 85 consecutive direct calls and zero scripted ones. Bookkeeping
+(`cd`, `export PATH`, `timeout`) is the harness's work; a rule that asks the model to
+repeat it each turn is a tax on attention, and it loses.
+
 ## What a host must implement
 
 | Capability | Enforced by | Checkable |
 |---|---|---|
 | PTC | `defaultTools: ["+codemode"]` (enable), `codemode.mode: "only"` (hide the declarations, keep them scriptable), and a rule for when to script | tool mix per session (see below) |
 | Result pruning | host compaction / context editing | context tokens per turn, not per card |
+| Shell bookkeeping | `shellCommandPrefix` (pi) or a wrapper behind `shell` + `BASH_ENV` (opencode) | `prog-does-not-exist \| head -1` exits non-zero |
 | Gate owner is a member | stored member id + `doctor` gate check | `doctor` fails, does not warn |
 
 ## Measuring it
