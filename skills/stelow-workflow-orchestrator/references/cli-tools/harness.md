@@ -146,6 +146,21 @@ A host implements this as data, not prose: resolve the gate owner to a workspace
 step names anything else. `stelow-host human <name>` writes the choice and
 `stelow-host doctor` checks every gated workflow against it.
 
+**The harness can delete the bookkeeping.** Over one 2 000-call session, ~30% of
+8 265 shell segments were not work: `cd` 2 005, `export PATH` 487, `timeout` 810. A
+stateless shell makes every call restate its location and environment. Two mechanical
+fixes, neither of them prompt text:
+
+- **a prefix on every call** (`shellCommandPrefix` in pi) that sets the PATH tools live
+  in, so `multica`/`gh` resolve without an `export` per call;
+- **a persistent cwd**, or running from the card's worktree so `cd` is only for
+  leaving it.
+
+Put `set -o pipefail` in that prefix. A pipeline that ends in `| tail -2` reports the
+exit status of `tail`, which is how this project once tagged a release from a red
+suite; with pipefail the failing step *is* the verdict, and benign pipelines
+(`echo hi | head -1`, `ls | wc -l`) still exit 0.
+
 ## What a host must implement
 
 | Capability | Enforced by | Checkable |
