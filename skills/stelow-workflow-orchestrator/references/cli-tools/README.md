@@ -14,6 +14,27 @@ documents how to invoke a specific capability on two surfaces:
     installed at `~/.agents/skills/<name>/` and the agent picks them up
     automatically.
 
+## Reading: one call, not six
+
+Every tool call is a turn that re-sends the whole conversation, so the cheapest
+work for a person — looking — is the most expensive thing an agent does. Measured
+on a finished card: one build run made **601 shell calls** (123 `sed`, 104 `grep`,
+33 `cat`, 125 one-line `python3`) and wrote 0.4% of its tokens as output. The card
+was not expensive to think about; it was expensive to look at.
+
+- **Read a file with `read`**, `offset`/`limit` for a range — not `sed -n`, not `cat`.
+- **Search with the search tools** (`ffgrep` with `context`, `ast_grep_search` for
+  structure) instead of `grep | sed | read`: one call returns the location *and* the
+  lines around it.
+- **Ask the tracking system once per decision** (`<cli> issue get <id> --output json`
+  returns status, labels and every attachment in one answer) rather than re-fetching
+  before each step to confirm what is already known.
+- **Batch independent commands** into a single shell call when the answer fits on a
+  screen: `git status --porcelain; git diff --stat; <test> 2>&1 | tail -20` is one
+  turn, not three.
+- **Do not re-derive what an artifact already cites.** Open a file to check a claim,
+  not to re-read the repository around it.
+
 ## Detection Strategy
 
 The orchestrator picks the path at runtime via two mechanisms:
