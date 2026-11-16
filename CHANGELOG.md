@@ -3,6 +3,25 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.88.9-alpha] - 2026-11-16
+
+### Changed
+
+- **The shell rule is an outcome, not a tool.** The previous entry told the worker to
+  put "two or more commands" into a `codemode` script. Measured over a 2 000-call
+  session: 99% of calls already carried more than one command (4.2 on average), and
+  `codemode` was written **0 times in 85 calls after the rule was added**. A rule that
+  prescribes an instrument is inert when the behaviour it wants already happens — so
+  the entry now states the invariant ("one call per question, filter inside the call,
+  one screen out") and names `codemode` only for what shell does badly: tool
+  orchestration and JSON the shell would mangle.
+- **`harness.md` puts the bookkeeping on the harness.** ~30% of 8 265 shell segments
+  were `cd` (2 005), `export PATH` (487) and `timeout` (810) — a stateless shell making
+  every call restate where it is and what it can run. The fix is a shell prefix and a
+  persistent cwd, plus `set -o pipefail`: a pipeline ending in `| tail -2` reports the
+  exit status of `tail`, which is how this project once tagged a release from a red
+  suite.
+
 ## [0.88.8-alpha] - 2026-11-16
 
 ### Changed

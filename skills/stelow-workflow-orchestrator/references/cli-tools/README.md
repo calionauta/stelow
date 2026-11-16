@@ -35,25 +35,26 @@ was not expensive to think about; it was expensive to look at.
 - **Do not re-derive what an artifact already cites.** Open a file to check a claim,
   not to re-read the repository around it.
 
-### One script beats ten commands
+### One call per question — the shape is the harness's business
 
 A chain of small calls is the most expensive shape an agent can take: each round trip
 re-sends the conversation and every result stays in it. Measured on a finished card,
 one build run made 601 shell calls and carried all of their outputs to the end.
 
-Write the chain as one script and print only the answer you decided on:
+The invariant is **calls per question**, not the tool. Measured over a 2 000-call
+session that carried a rule saying "two or more commands → a `codemode` script": 99%
+of the calls already carried more than one command (4.2 on average, 377 heredocs, 84
+loops) while `codemode` was used **0 times in 85 calls after the rule existed**. A rule
+that prescribes an instrument is inert when the behaviour it wants already happens;
+write the invariant instead, and let the host pick the shape:
 
 ```bash
-cat > .stelow-probe.sh <<'EOF'
-set -e
-grep -c "add(" scripts/stelow
-sed -n '1050,1075p' scripts/stelow
-EOF
-bash .stelow-probe.sh
+grep -c "add(" scripts/stelow; sed -n '1050,1075p' scripts/stelow
 ```
 
-One call in, one screen out. What the script read never enters the context — which is
-the whole point on a long card. Long suites follow the same rule from the other side:
+One call in, one screen out; what the call read never returns with it. A heredoc when
+the logic needs it, a `codemode` script when the work is tool orchestration rather
+than shell — same invariant. Long suites follow the same rule from the other side:
 start them once in the background, keep working, read the tail when you need the
 verdict.
 
