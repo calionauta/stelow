@@ -103,8 +103,8 @@ function nodeLine(item, indent) {
  *   - one subgraph per place, with its subplaces NESTED inside it (containment
  *     is the model's relationship; flat siblings would say a subplace is a
  *     separate screen)
- *   - control flow as solid arrows
- *   - data flow as dashed arrows
+ *   - control flow as solid arrows, each labeled with the trigger verb
+ *   - data flow as dashed arrows, each labeled with how the source produced it
  *   - a navigation wire lands on the place boundary, not on a node inside it
  *
  * @param {object} breadboard the parsed breadboard map
@@ -149,14 +149,27 @@ export function toMermaid(breadboard) {
     lines.push(nodeLine(item, "  "));
   }
 
-  // Control flow: solid arrows. Data flow: dashed arrows. Both read forward:
-  // the arrow starts at the affordance the map names first.
+  // Control flow: solid arrows labeled with the trigger. Data flow: dashed
+  // arrows labeled with how the source produced it. Both read forward: the
+  // arrow starts at the affordance the map names first, and the label is that
+  // affordance's own control verb — never invented text. A verb is escaped
+  // the same way a node label is, so a hostile control cannot close the
+  // label and open a node.
+  const edgeLabel = (item) => {
+    const verb = typeof item.control === "string" ? item.control.trim() : "";
+    return verb ? `"${label(verb)}"` : null;
+  };
   for (const item of affordances) {
+    const verb = edgeLabel(item);
     for (const target of item.wiresOut ?? []) {
-      lines.push(`  ${nodeId(item.id)} --> ${nodeId(target)}`);
+      lines.push(verb
+        ? `  ${nodeId(item.id)} -- ${verb} --> ${nodeId(target)}`
+        : `  ${nodeId(item.id)} --> ${nodeId(target)}`);
     }
     for (const target of item.returnsTo ?? []) {
-      lines.push(`  ${nodeId(item.id)} -.-> ${nodeId(target)}`);
+      lines.push(verb
+        ? `  ${nodeId(item.id)} -. ${verb} .-> ${nodeId(target)}`
+        : `  ${nodeId(item.id)} -.-> ${nodeId(target)}`);
     }
   }
 
