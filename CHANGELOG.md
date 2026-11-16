@@ -3,6 +3,19 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.88.6-alpha] - 2026-11-16
+
+### Changed
+
+- **The human-facing question stops naming a retired ladder.** The run-knobs
+  migration replaced the appetite, but `ask-patterns.md` still told the worker to
+  ask about "Pattern 7 (Appetite)" and `plan-critique` to say the estimate was
+  "bigger than the appetite" — against a config that no longer exposes one. The
+  question now names the declared `quality` and exploration knobs and the surface
+  that would come off, and the legacy `appetite:` line stays readable for
+  projects that still carry it. Merged from the branch opened on 2026-10-27, after
+  rebasing onto main.
+
 ## [0.88.5-alpha] - 2026-11-16
 
 ### Changed
