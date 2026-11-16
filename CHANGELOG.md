@@ -3,6 +3,24 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.88.7-alpha] - 2026-11-16
+
+### Fixed
+
+- **`harness.md` no longer recommends `-bash`, because it amputates instead of
+  enforcing.** A `codemode` script can call only *active direct* tools plus
+  `codemode`/`deferred` tools, so removing `bash` from `defaultTools` removes it
+  from the session entirely: measured on pi 1.4.0 and 1.5.2, `tools.bash does not
+  exist`, `ALL_TOOLS` lists no `bash`, and the agent is left with no shell. The
+  entry now enables `codemode` and removes nothing, names `codemode.mode: "only"`
+  as the one hard enforcement that keeps capability, and says what `exposure:
+  "codemode"` would cost for a built-in (re-registering it, truncation and hooks
+  included).
+- **`harness.md` says what PTC buys**: roughly 4.3M → 149k tokens on a measured
+  50-item triage, break-even on a single small task, with the two failure modes
+  worth naming (a script that silently covers half the items, and a wrong tool made
+  cheaper to call).
+
 ## [0.88.6-alpha] - 2026-11-16
 
 ### Changed
