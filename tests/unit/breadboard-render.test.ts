@@ -112,22 +112,32 @@ describe("breadboard → Mermaid serializer", () => {
     expect(mermaid).toContain("classDef kindCode stroke:#8a63d2");
   });
 
-  it("wires control flow solid and data flow dashed", () => {
+  it("wires control flow solid and labeled, data flow dashed and labeled", () => {
     const mermaid = toMermaid(MAP);
-    // Control flow: what triggers what.
-    expect(mermaid).toContain("U1 --> P2");
-    expect(mermaid).toContain("N1 --> N2");
-    // Data flow: where the output goes.
-    expect(mermaid).toContain("U2 -.-> S1");
-    expect(mermaid).toContain("N1 -.-> S2");
-    expect(mermaid).toContain("S1 -.-> U2");
+    // Control flow: what triggers what, in the trigger's own verb.
+    expect(mermaid).toContain('U1 -- "click" --> P2');
+    expect(mermaid).toContain('N1 -- "call" --> N2');
+    // Data flow: where the output goes, and how the source produced it.
+    expect(mermaid).toContain('U2 -. "type" .-> S1');
+    expect(mermaid).toContain('N1 -. "call" .-> S2');
+    expect(mermaid).toContain('S1 -. "write" .-> U2');
+  });
+
+  it("labels every edge with its source control verb, never invented text", () => {
+    const mermaid = toMermaid(MAP);
+    // Every arrow in the projection carries a quoted verb from the map.
+    for (const line of mermaid.split("\n")) {
+      if (line.includes("-->") || line.includes(".->")) {
+        expect(line).toContain('"');
+      }
+    }
   });
 
   it("lands a navigation wire on the place boundary, not on an affordance inside it", () => {
     // The rule: navigation wires to the PLACE. Wiring to an affordance
     // inside it hides the fact that the whole screen changed.
     const mermaid = toMermaid(MAP);
-    expect(mermaid).toContain("U1 --> P2");
+    expect(mermaid).toContain('U1 -- "click" --> P2');
     expect(mermaid).not.toContain("U1 --> U2");
   });
 
@@ -153,7 +163,7 @@ describe("breadboard → Mermaid serializer", () => {
     };
     const mermaid = toMermaid(withReference);
     expect(mermaid).toContain('ref_letter_2d_browser["_letter-browser: Letter browser"]');
-    expect(mermaid).toContain("ref_letter_2d_browser --> P2");
+    expect(mermaid).toContain('ref_letter_2d_browser -- "render" --> P2');
     expect(() => renderMermaid(mermaid)).not.toThrow();
   });
 
@@ -239,6 +249,24 @@ describe("breadboard → Mermaid serializer", () => {
     // The quote in the name must not close the label and open a new node.
     expect(mermaid).not.toContain('--> P9["injected');
     expect(mermaid).toContain("&quot;");
+  });
+
+  it("escapes a control verb that carries Mermaid syntax instead of emitting it as syntax", () => {
+    const hostile = {
+      ...MAP,
+      affordances: [{ id: "U1", kind: "ui", name: "Button", place: "P1", control: 'click"] --> P9["injected', wiresOut: ["P2"] }],
+    };
+    const mermaid = toMermaid(hostile);
+    expect(mermaid).toContain('U1 -- "click&quot;');
+    expect(mermaid).not.toContain('--> P9["injected');
+  });
+
+  it("draws a plain arrow when the verb is missing, rather than refusing the view", () => {
+    const verbless = {
+      ...MAP,
+      affordances: [{ id: "U1", kind: "ui", name: "Button", place: "P1", control: "", wiresOut: ["P2"] }],
+    };
+    expect(toMermaid(verbless)).toContain("U1 --> P2");
   });
 
   it("emits an affordance whose place is not declared, rather than dropping it", () => {

@@ -133,6 +133,13 @@ MUTANTS = [
         "test": "tests/integration/stelow-cli-commands.test.ts",
     },
     {
+        "id": "artifacts-add-not-registered",
+        "rule": "artifacts add puts the artifact in the manifest",
+        "find": '  write_manifest "$stage" "$STATEDIR" "$entry"',
+        "replace": '  write_manifest "$stage" "$STATEDIR" "[]"',
+        "test": "tests/integration/artifacts-command.test.ts",
+    },
+    {
         "id": "generator-drift-allowed",
         "rule": "the generated transitions reference cannot drift from its source",
         "find": 'if current != rendered:\n            print("generate-transitions: transitions.md is stale — run python3 scripts/generate-transitions.py", file=sys.stderr)\n            return 1',
