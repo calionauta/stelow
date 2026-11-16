@@ -3,6 +3,39 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.88.4-alpha] - 2026-11-15
+
+### Added
+
+- **`cli-tools/harness.md`: the three harness capabilities a stage cannot ask
+  for, with the setting that enforces each.** A prompt can request economy; only
+  the harness can make it true. Programmatic tool calling is the big one —
+  `{"defaultTools": ["+codemode"], "codemode": {"mode": "only"}}` hides the
+  built-in tools and makes the model reach them through scripts, where the
+  default `"on"` only appends a note to each description. The file also covers
+  the two-tool MCP surface (`search_tools` + `execute`), the workdir-script
+  fallback when a host has neither, tool-result pruning, why a gate must name a
+  workspace member rather than a role, and the two measurements to repeat on the
+  next card.
+
+### Changed
+
+- **`code-map.md` says when a navigation rung costs more than it saves.** A map
+  says *where*; the edit still needs the code, so a rung pays only when it
+  replaces a search. Named symbol → `ffgrep` + `read --offset`: two calls, the
+  second returns the code. `ripwire --for` for an unfamiliar repo touching three
+  or more files. Structure-aware retrieval raised agent cost by up to 28% on
+  SWE-bench Verified ([arXiv 2609.30725](https://arxiv.org/abs/2609.30725)) — the
+  extra hop is the mechanism, so the ladder no longer chains ripwire into cymbal
+  by reflex.
+
+### Fixed
+
+- **`npm run build` failed on `types/stages.ts`** — `StageSkipCondition`'s index
+  signature did not admit `undefined`, which its optional `any_of` requires. CI
+  runs `typecheck`, not `build`, so the documented command was broken without a
+  red pipeline.
+
 ## [0.88.3-alpha] - 2026-11-15
 
 ### Added

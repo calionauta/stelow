@@ -143,6 +143,8 @@ cli-binary ...args
 | `file-locking.md` | Convention-based scope locking (no git worktrees) |
 | `web-research.md` | Layered web evidence procedure (host search → primary sources → agent-reach → last30days) |
 | `acceptance-checklist.md` | Candidate acceptance criteria from checklist.design (shaping + verification) |
+| `harness.md` | What the harness must enforce (PTC, result pruning, gate owner) and how to measure it |
+| `code-map.md` | Which navigation tool answers which question — and when a rung costs more than it saves |
 
 > **See also:** `../../../stelow-workflow-orchestrator/references/permissions.md` (stage permissions) and `../../../stelow-workflow-orchestrator/references/capabilities.md` (allowed tools per stage)
 
