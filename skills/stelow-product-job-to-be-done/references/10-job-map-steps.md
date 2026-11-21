@@ -1,85 +1,218 @@
-# Prompt 10: Job Map Steps Discovery
+# Prompt 10: Job Map Steps — chronological steps, phase tags
 
 **Source:** https://calionauta.substack.com/p/prompt-ia-descoberta-das-etapas-job
 
-**When to use:** To map the stages and steps (Job Steps) that make up the Job Map — the complete
-sequence of actions the customer needs to execute to complete the job. Use after defining the job and segment.
+**When to use:** to map the steps a person actually takes to get the job done.
+Run after the job and the actor are defined.
 
-**Variables to fill in:**
-- `[job to be done chosen by the user]`: The defined job to be done
-- `[segment chosen by the user; if none chosen, consider all discovered]`: Segment (optional)
-- `[actor chosen by the user]`: Perspective/actor to be considered (e.g., Beneficiary, Performer)
+**Variables:**
+- `{{Job}}`: the job statement
+- `{{Actor}}`: the perspective
+- `{{Depth}}`: `quick` (5–8 steps) | `standard` (8–14) | `deep` (14–20)
+- `{{Map kind}}`: `core` | `consumption` (default `core`)
+- `{{Start}}` / `{{End}}`: optional boundaries
 
-## Research Assist (optional)
-
-Use the shared web-research contract
-(`../../stelow-workflow-orchestrator/references/cli-tools/web-research.md`) to
-surface candidate steps, tools, handoffs, and failure points when the job or
-niche is unfamiliar. Use `last30days` only when a recent workflow change could
-matter. The resulting Job Map remains a draft guide: label research-led steps
-as bets and validate their sequence, frequency, and importance with people who
-perform the job. When research contributed, append the required
-[Research-led Draft Bets](../SKILL.md#hypothesis-and-bet-discipline) section
-after the native output.
+**Read first:** `00-evidence-policy.md`.
 
 ---
 
-## Prompt Completo
+## Prompt
 
 ```
-Goal: Describe the steps to successfully perform a "Job To Be Done".
+## Job map
+Job: {{Job}}
+Actor: {{Actor}}
+Depth: {{Depth}} — the step count comes from here, not from the phases
+Map kind: {{Map kind}}
+Boundaries: {{Start}} → {{End}} (optional)
 
-<Context>
-Job To Be Done: [job to be done chosen by the user]
-<segment: all info>
-[segment chosen by the user; if none chosen, consider all discovered]
-</segment>
-Perspective: [actor chosen by the user]
-</Context>
+## The distinction that governs this prompt
 
-Glossary:
-Stage: Phase of the process to perform the Job To Be Done.
-Step: Specific action performed within each stage.
+PHASES ARE TAGS. STEPS ARE THE MAP.
 
-Instructions:
-Imagine you are the {{Perspective}}. Describe the steps to perform the {{Job To Be Done}}, considering the {{Segment}} and the possible {{Themes}}.
+The six phases below label and audit coverage. They are not the structure of the
+map, and they never set the step count. A phase may hold zero, one or many steps.
 
-For each stage below, list specific steps you need to take with a brief explanation next to it.
-<Stages>
-Define and Plan: What do you need to define and plan before you start?
-Prepare and Execute: How do you prepare for the job? What do you need to do to achieve the main objective of the job? What can you document during the process?
-Evaluate and Adjust: What do you need to evaluate and adjust during the process?
-Conclude and Organize: What do you need to finalize and organize when finishing the job?
-Document and Share: What do you need to document and share after completing the job?
-Monitor subsequent effects: What effects do you need to monitor after completing the job?
-</Stages>
+Phases:
+1. Define and Plan — what must be known or decided before starting
+2. Prepare and Execute — preparing inputs, then the core action
+3. Evaluate and Adjust — checking during the work, and correcting
+4. Conclude and Organize — finishing and putting things away
+5. Document and Share — recording and handing off
+6. Monitor subsequent effects — watching what happens after
 
-`<Result format>`
-# {Stage}
-### {Job Step}: {brief description}
-`</Result format>`
+## Steps
 
-Rules:
-- Each step should be a specific action of what the person is trying to accomplish in a faster, easier and more accurate way.
-- Each step should be written in the first person singular and start with an infinitive verb.
-- Next to the step name there should be a brief explanation, starting with the infinitive verb.
-- Avoid generic and vague steps, such as the name of the stage itself.
-- The steps MUST NECESSARILY be mutually exclusive, collectively exhaustive and non-redundant.
-- Do not use conjunctions "AND" or "OR" to combine steps.
-- Do not mention any specific solution or method that did not exist 10,000 years ago (e.g. "write", "bank accounts", "photos", "online", "WhatsApp", "spreadsheets", etc.) except if it is specified in the job to be done.
+1. Write the chronological steps for THIS job and THIS actor, at the depth band.
+2. Each step: verb-led name, one line of *what* (not *how*, not a tool), one
+   phase tag.
+3. Dense phases (usually Prepare and Execute) may hold several steps. Quiet
+   phases may hold none.
+4. After drafting, read only the steps. Do they cover the job without overlap?
+   Is any phase's absence a real gap, or just a scope choice?
+5. Respect the boundaries if given.
 
-Completeness contract (the host validates these counts — never submit fewer):
-- All 6 stages present, each under its own # heading: Define and Plan, Prepare and Execute, Evaluate and Adjust, Conclude and Organize, Document and Share, Monitor subsequent effects.
-- Every stage holds at least 2 steps (### headings with brief explanations).
+## Rules
+
+- Steps are first person singular, verb first.
+- No solution brand, no tool name, no technology in a step. A method word is
+  allowed only when the job cannot be described without it — say why.
+- No vague verbs: manage, facilitate, empower, enable, ensure, oversee.
+- No conjunctions joining two actions into one step.
+- A phase with zero steps is allowed. It requires one line of reason, not a
+  filler step. `Document and Share` names a coverage area, not a method: the
+  steps inside it still have to pass the no-tool rule.
+
+## Output
+
+### Boundary first
+
+Before the table, state both ends of the map. A map without a start has no
+trigger, and a trigger outside step 1 is the most common reason a step looks
+missing.
+
+```
+## Boundaries
+- Starts: <the event that makes the job begin> · <status>
+- Ends: <the state that means the job is done> · <status>
+```
+
+Both ends carry a status on the same line, no exceptions. If either is unknown,
+say `Open` and name what would settle it. Never leave
+the line out: an unstated boundary reads as a stated one.
+
+### Job line
+
+`Job: <verb> + <object> + <contextual clarifier> · <status>` — the status sits on
+the same line, always. One sentence, solution agnostic.
+
+If the clarifier is unknown, write the sentence without it and mark it `Open` on
+the same line. If you inferred the clarifier, say so: `· Hypothesis - bet`. An
+inferred scope written without a status reads as a fact, and that is the exact
+failure this line exists to prevent.
+
+## The map
+
+The header row is fixed and stays in English: it is schema, like the statuses.
+Translate the content, never the headers.
+
+| # | Step | Phase | Executor | Decider | Output | Failure mode | Status |
+|---|-------|------|--------------|-------------|-------|---------------|--------|
+| 1 | ... | ... | role class | role class, or `-` | what the step produces | how it fails | `Input-derived` / `Hypothesis - bet` / ... |
+
+- **Who runs it** is the role class that performs the step. **Who decides** is who
+  authorizes, approves or releases the step. When the role is not known, write
+  `Open` - do not leave the column empty, and do not invent one. The `Who decides`
+  column is what lets you point to where the unknown approver enters the flow.
+- **Output** is the artifact or state the step hands to the next one. Without an
+  output, the step has not finished.
+- **Failure mode** is what breaks in this step, in the language of the person
+  running it.
+- **Status** uses the names from `00-evidence-policy.md`. The warrant, when there
+  is one, goes in parentheses at the end of the line.
+- Writing provenance as free text is forbidden ("it comes from what you said").
+  It is either a status plus a fragment, or `Hypothesis - bet`.
+
+### The last step is the final state
+
+The last step delivers the outcome of the job, not the last correction. If the
+job ends with the period closed, the final step is "period closed and checked";
+correcting is a loop that goes back to checking, not the end of the list. A map
+that ends in "I correct" models rework as if it were the goal.
+
+### Metrics
+
+A metric per step is not the Prompt 7 success criterion. Here it is the signal
+that shows whether *this* step worked.
+
+Produce them for the **3 riskiest steps** (`quick` and `standard`) or for all of
+them (`deep`). Four types:
+
+| Step | Metric | Type | How to measure | Source | Status |
+|---|---|---|---|---|---|
+| ... | ... | Time / Error / Effort / Completion | ... | ticket, log, interview, `none` | ... |
+
+- **Time** - how long the step takes, and how long recovery takes when it fails.
+- **Error** - how often the output comes out wrong or comes back for correction.
+- **Effort** - how many actions, people or handoffs the step requires.
+- **Completion** - whether the step ends: where it stops, who stops it, how long it
+  stays stopped.
+
+`Source` is mandatory. `none` is a valid answer and downgrades the metric to
+`Hypothesis - bet` with the check. A metric without a source is a bet, not a
+measurement.
+
+## Coverage
+
+| Phase | Steps | Why this count |
+|---|---|---|
+| Define and Plan | 0 | {reason, or the step names} |
+| ... | ... | ... |
+
+- Where a failure would show up first: {phase} - {why}
+- The riskiest phase for this job: {phase} - {why}
+- Steps the actor would take and you do not know whether they do: {list} - {Status}
+```
+
+## Completeness contract
+
+- Steps within the depth band, or an explicit user override.
+- Every step carries exactly one phase tag from the six, one executor, one
+  decider (or `Open`), one output, one failure mode and one status.
+- The last step is the job's outcome state, not a correction.
+- The coverage table lists all six phases, including the ones with zero steps.
+- No filler: a zero-step phase has a reason, not an invented step.
+- No vague verbs, no brand names in steps.
 
 criteria:
-  - id: stage-count
+  - id: boundaries
+    kind: presence
+    text: "Both ends stated with a status, or Open with what would settle it"
+  - id: table-shape
+    kind: presence
+    text: "The step table has the fixed columns: Step, Phase, Executor, Decider, Output, Failure mode, Status"
+  - id: depth-band
     kind: count
-    text: "All 6 stages present under their own headings"
-  - id: step-density
-    kind: count
-    text: "Every stage holds 2+ steps with brief explanations"
-  - id: step-actionability
+    text: "Step count inside the depth band, or an explicit override"
+  - id: step-fields
+    kind: presence
+    text: "Every step carries phase, executor, decider, output, failure mode and status"
+  - id: actor-step-link
+    kind: presence
+    text: "The decider column names a role class or Open; no unknown approver is left blank"
+  - id: final-state
     kind: semantic
-    text: "Steps name who does what, not phase restatements"
-```
+    text: "The last step is the job's completed outcome, with corrections modelled as a loop"
+  - id: metrics
+    kind: presence
+    text: "The riskiest steps carry a metric with type, measurement and source"
+  - id: phase-coverage
+    kind: presence
+    text: "All six phases appear in the coverage table, with zero-step phases justified"
+  - id: no-filler
+    kind: semantic
+    text: "No step exists only to populate a phase; each step is an action the actor takes"
+  - id: no-vague-verbs
+    kind: semantic
+    text: "No step opens with manage, facilitate, empower, enable, ensure or oversee"
+
+## Worked example — synthetic, not evidence
+
+Job: `qualify a replacement sensor package for sour gas service`.
+Actor: plant reliability engineer. Depth: `quick`, 7 steps.
+
+| # | Step | Phase |
+|---|---|---|
+| 1 | Lock the operating envelope and the certification obligations | Define and Plan |
+| 2 | Gather the applicable standards and prior certificate packages | Prepare and Execute |
+| 3 | Assemble the constraint sheet from the envelope and the certificates | Prepare and Execute |
+| 4 | Decide the go/no-go scope against site and insurer rules | Evaluate and Adjust |
+| 5 | Specify the replacement configuration against the locked envelope | Prepare and Execute |
+| 6 | Resolve divergences between the offered configuration and the envelope | Evaluate and Adjust |
+| 7 | Close acceptance with traceability artifacts | Conclude and Organize |
+
+`Document and Share` and `Monitor subsequent effects` hold **zero** steps here.
+That is intentional, not an error: the job ends at acceptance, and handoff is
+absorbed into step 7. The coverage table says so.
+
+*Synthetic — not evidence.*

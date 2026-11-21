@@ -17,7 +17,8 @@
         "functional-needs",
         "financial-needs",
         "emotional-social-jobs",
-        "job-map-steps"
+        "job-map-steps",
+        "switch-interview"
       ]
     },
     { "id": "promotions", "skill": "stelow-product-promotions", "contract": "single" },

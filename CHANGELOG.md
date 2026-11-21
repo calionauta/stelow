@@ -3,6 +3,329 @@
 All notable changes to this project are documented in this file, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.88.10-alpha] - 2026-11-16
+
+### Added
+
+- **A host without a command-prefix key can still win the bookkeeping.** opencode's
+  `"shell"` only names a binary, so the prefix is a two-line wrapper that exports
+  `BASH_ENV`, plus a `bashenv` that sets `pipefail` and puts the tool directory on
+  `PATH`. The same three checks apply, and they were run through the host
+  (`opencode run` returned exit 1 for a failing pipeline) rather than read off the
+  config schema. The "what a host must implement" table gains the row.
+
+### Changed
+
+- The harness reference now states the part prompt text cannot buy: a session that
+  carried a "one call per question" rule made 85 consecutive direct calls and zero
+  scripted ones. Bookkeeping belongs to the harness.
+
+## [0.88.9-alpha] - 2026-11-16
+
+### Changed
+
+- **The shell rule is an outcome, not a tool.** The previous entry told the worker to
+  put "two or more commands" into a `codemode` script. Measured over a 2 000-call
+  session: 99% of calls already carried more than one command (4.2 on average), and
+  `codemode` was written **0 times in 85 calls after the rule was added**. A rule that
+  prescribes an instrument is inert when the behaviour it wants already happens — so
+  the entry now states the invariant ("one call per question, filter inside the call,
+  one screen out") and names `codemode` only for what shell does badly: tool
+  orchestration and JSON the shell would mangle.
+- **`harness.md` puts the bookkeeping on the harness.** ~30% of 8 265 shell segments
+  were `cd` (2 005), `export PATH` (487) and `timeout` (810) — a stateless shell making
+  every call restate where it is and what it can run. The fix is a shell prefix and a
+  persistent cwd, plus `set -o pipefail`: a pipeline ending in `| tail -2` reports the
+  exit status of `tail`, which is how this project once tagged a release from a red
+  suite.
+
+## [0.88.8-alpha] - 2026-11-16
+
+### Changed
+
+- **`harness.md` says what `codemode.mode: "only"` actually bought, measured.**
+  Four runs on pi 1.5.2, one host, one model: on a task that wanted enumeration,
+  `"only"` produced the right answer at 44.8k tokens against 35.9k and the same
+  four calls; on a task that wanted one edit, three calls against five. It does
+  not reduce round trips — the claim it is sold on — so the entry keeps `"on"`
+  as the default and reserves `"only"` for volume jobs, with a note to measure
+  before believing it.
+
+## [0.88.7-alpha] - 2026-11-16
+
+### Fixed
+
+- **`harness.md` no longer recommends `-bash`, because it amputates instead of
+  enforcing.** A `codemode` script can call only *active direct* tools plus
+  `codemode`/`deferred` tools, so removing `bash` from `defaultTools` removes it
+  from the session entirely: measured on pi 1.4.0 and 1.5.2, `tools.bash does not
+  exist`, `ALL_TOOLS` lists no `bash`, and the agent is left with no shell. The
+  entry now enables `codemode` and removes nothing, names `codemode.mode: "only"`
+  as the one hard enforcement that keeps capability, and says what `exposure:
+  "codemode"` would cost for a built-in (re-registering it, truncation and hooks
+  included).
+- **`harness.md` says what PTC buys**: roughly 4.3M → 149k tokens on a measured
+  50-item triage, break-even on a single small task, with the two failure modes
+  worth naming (a script that silently covers half the items, and a wrong tool made
+  cheaper to call).
+
+## [0.88.6-alpha] - 2026-11-16
+
+### Changed
+
+- **The human-facing question stops naming a retired ladder.** The run-knobs
+  migration replaced the appetite, but `ask-patterns.md` still told the worker to
+  ask about "Pattern 7 (Appetite)" and `plan-critique` to say the estimate was
+  "bigger than the appetite" — against a config that no longer exposes one. The
+  question now names the declared `quality` and exploration knobs and the surface
+  that would come off, and the legacy `appetite:` line stays readable for
+  projects that still carry it. Merged from the branch opened on 2026-10-27, after
+  rebasing onto main.
+
+## [0.88.5-alpha] - 2026-11-16
+
+### Changed
+
+- **`harness.md` names the surgical enforcement, not the blunt one.**
+  `{"defaultTools": ["+codemode", "-bash"]}` changes the inherited selection, so
+  `read`/`edit`/`write` stay declared and the shell becomes reachable only from a
+  script; `codemode.mode: "only"` hides everything, including the exact-match edit
+  that a script does worse. Verified on pi 0.88: a fresh session lists
+  `read, edit, write, codemode`, no `bash`.
+- **opencode 2.3.0 needs no flag** — Code Mode is built in (`experimental.codemode_vm`
+  is deprecated and ignored, "Code Mode always runs on the VM") and MCP servers are
+  exposed through it by default. A per-tool deny needs a plugin plus a `policies`
+  entry.
+
+### Fixed
+
+- **`AGENTS.md` no longer states the navigation ladder as a reflex.** ripwire and
+  cymbal are conditional, with the situation that pays for each and the measured
+  reason (up to 28% more cost, [arXiv 2609.30725](https://arxiv.org/abs/2609.30725)).
+
+## [0.88.4-alpha] - 2026-11-15
+
+### Added
+
+- **`cli-tools/harness.md`: the three harness capabilities a stage cannot ask
+  for, with the setting that enforces each.** A prompt can request economy; only
+  the harness can make it true. Programmatic tool calling is the big one —
+  `{"defaultTools": ["+codemode"], "codemode": {"mode": "only"}}` hides the
+  built-in tools and makes the model reach them through scripts, where the
+  default `"on"` only appends a note to each description. The file also covers
+  the two-tool MCP surface (`search_tools` + `execute`), the workdir-script
+  fallback when a host has neither, tool-result pruning, why a gate must name a
+  workspace member rather than a role, and the two measurements to repeat on the
+  next card.
+
+### Changed
+
+- **`code-map.md` says when a navigation rung costs more than it saves.** A map
+  says *where*; the edit still needs the code, so a rung pays only when it
+  replaces a search. Named symbol → `ffgrep` + `read --offset`: two calls, the
+  second returns the code. `ripwire --for` for an unfamiliar repo touching three
+  or more files. Structure-aware retrieval raised agent cost by up to 28% on
+  SWE-bench Verified ([arXiv 2609.30725](https://arxiv.org/abs/2609.30725)) — the
+  extra hop is the mechanism, so the ladder no longer chains ripwire into cymbal
+  by reflex.
+
+### Fixed
+
+- **`npm run build` failed on `types/stages.ts`** — `StageSkipCondition`'s index
+  signature did not admit `undefined`, which its optional `any_of` requires. CI
+  runs `typecheck`, not `build`, so the documented command was broken without a
+  red pipeline.
+
+## [0.88.3-alpha] - 2026-11-15
+
+### Added
+
+- **`doctor` checks that a recipe declaration has a file.** `stages.yaml` names
+  a recipe per stage and a runner reads a 404 as "this stage has no recipe", so
+  a declaration with nothing behind it was silent. `doctor` now resolves every
+  `execution.recipe:` against `recipes/<id>.yaml` and reports `recipe-missing`
+  (error) with stage, recipe and the path it looked in, `recipes-dir-missing`
+  when the directory itself is gone, and `stages-missing` /
+  `stages-unreadable` when the declaration file cannot be read. A `recipe:` the
+  reader cannot bind — outside an `execution:` mapping, or inside an
+  `execution:` written inline on one line — is `stages-unparsed` (warn) naming
+  the line, never a finding charged to the stage above it. `STELOW_STAGES` and
+  `STELOW_RECIPES` override the two paths (documented in `stelow doctor`
+  schema output).
+- **A check that could not run doesn't read as a clean bill.** Absent stages
+  file is `stages-unchecked` (info), an unreadable one is an error, and
+  `doctor: ok (no drift)` prints only when there are no findings at all. Two
+  warn classes were also undocumented: `orphan-pid` and `transitions-missing`.
+
+## [0.88.2-alpha] - 2026-11-15
+
+- **Number the promises.** The spec mints a stable id per promise (`S1`, `S2`), and design, tech, build and audit cite the id instead of restating the promise. On the Multica smoke run the audit had to translate between its own findings and the spec's promises, because both sides described them in prose: a requirement with two names is a requirement nobody can trace.
+
+## [0.88.1-alpha] - 2026-11-15
+
+The English pass in 0.88.0 was checked with an accent scan, and an accent scan
+cannot see `Mesmo ator`, `Etapa`, `Nenhum` or `compras corporativas`. Those
+survived into the rendered contracts, which is how a host ends up enforcing a
+vocabulary the methodology claims it retired.
+
+### Fixed
+
+- **The Portuguese that carried no accent.** `05-job-actors.md` kept `Mesmo ator`
+  in five places (including a criterion another host reads as data),
+  `09-emotional-social-jobs.md` kept a whole table header and the `Nenhum`
+  status, `11-switch-interview.md` kept `Nenhuma`, and two workflow references
+  (`plan-critique-context.md`, `step-3-feature.md`) kept Portuguese instructions
+  and step names. All English now.
+
+- **`docs/study-goal-vs-plannotator.md`** was a Portuguese study note in a
+  repository that says documents are English.
+
+### Added
+
+- **`scripts/check-language.sh`**, wired into `verify:generated`. It looks for
+  Portuguese words and phrases, not for accents, skips the frozen archive, the
+  changelog and URLs, and fails on a hit. A future translation pass that misses
+  an unaccented word now fails in CI instead of shipping in the data.
+
+## [0.88.0-alpha] - 2026-11-15
+
+### Changed
+
+- **The job-to-be-done skill speaks English.** Eleven reference files carried
+  Portuguese in their examples, their output templates and their contract
+  vocabulary, in a repository whose own convention says code and artifacts are
+  English. The vocabulary moved with them: `evidência` / `pesquisa` /
+  `inferência` are now `evidence` / `research` / `inference`, `Mesmo ator` is
+  `Same actor`, and the job-map table columns are `Who runs it` / `Who decides`
+  / `Output` / `Failure mode` / `Source`. Criterion ids and kinds are unchanged;
+  only the words a worker reads and writes are. The archived design docs
+  under `docs/archive/` keep their original language: they record what was
+  written at the time, and rewriting them would make the archive lie.
+
+### Added
+
+- **An artifact is handed over as a file.** `state-contract.md` said the manifest
+  names each artifact but never said the artifact itself travels; hosts filled
+  the gap by pasting plans and wireframes into hand-off messages, where the next
+  stage and the person reviewing could not download or diff them.
+
+## [0.87.0-alpha] - 2026-11-15
+
+### Added
+
+### Changed
+
+- **The generated dual-mode block is a third smaller.** Every skill carries a
+  `## Entry` + `## Hand-off` + `### Workflow slice` region generated from
+  `stages.yaml`; the boilerplate in it restated what the block's own fields say.
+  The region is now 151 words instead of 236 (8% of the skill corpus, was 12%),
+  and it still stands alone: no extra file to open, no round trip.
+
+- **Hand-off instructions name the helper, not the graph.** The block already
+  deferred `next-candidate` to `scripts/stelow next`; the prose around it now
+  says so in one line instead of five, so a worker cannot read the paragraph as
+  describing a static edge.
+
+### Fixed
+
+- **`state-contract.md` named one lock and the section below it named another.**
+  `doctor` checks the advance lock (`.stelow/lock/`); the per-file locks live
+  under `.stelow/locks/`. The doc now says which is which, instead of sending a
+  worker to the wrong directory.
+
+- **An example path that never existed.** `execution-critique`'s example read
+  `.stelow/teste/plans/spec-tech_v1.md`; the canonical layout is
+  `.stelow/<date>/<dir>/plans/`.
+
+### Fixed
+
+- **A cache claim the markup cannot keep.** `AGENTS.md` described a
+  `CACHE BOUNDARY` marker as a cache-friendly layout; providers place the
+  prompt-cache breakpoints themselves, and a comment inside a skill cannot move
+  one. The section now states what a skill actually controls — being
+  byte-identical between runs, the generated block staying last, nothing varying
+  above the marker — and the orchestrator's comment says the same.
+
+- **A reference to a file that does not exist.** The same section pointed at
+  `references/cli-tools/context-efficiency.md`; the tool references live in
+  `cli-tools/`, indexed by its README.
+
+### Changed
+
+### Added
+
+- **The jtbd completeness contract as data.** Each of the eleven reference files
+  ends with a `criteria:` block written for a human reader. A host that needed
+  the same list as data had to retype it, and one did — re-adding a word-count
+  floor stelow never declared and refusing artifacts against it as if it were
+  methodology. `scripts/generate-jtbd-contracts.py` renders those blocks to
+  `references/contracts.json` in `product-strategies.json` order, and
+  `verify:generated` fails when the render goes stale. Criteria cross over;
+  depth floors stay the host's own policy.
+
+- **`state-contract.md#who-mints-what`.** Which state facts a host may mint
+  (position, hand-off delivery, gate receipts) and which never leave stelow
+  (`intent`, `review_mode`, `invariants`, artifact typing), with the rule that a
+  host minting position is an optimization and never a precondition.
+
+## [0.86.0-alpha] - 2026-10-27
+
+The JTBD skill now answers instead of filling. Every slot carries a status, and
+the artifact a run produces depends on what the person does with it.
+
+### Added
+
+- **`references/00-evidence-policy.md`.** Six statuses, the warrant test with the
+  verb check, and three intake lanes (`material`, `research`, `none`). An item
+  that cannot cite the fragment which entails it is a bet, not a finding.
+
+- **`references/11-switch-interview.md`.** Timeline plus the four forces (push,
+  pull, anxiety, habit). `SKILL.md` promised a forces diagram since the skill was
+  written and no prompt produced one.
+
+- **The betting record.** `option → step`, the bet, the check, and the step where
+  the causal chain starts. Six bet kinds — Boundary, Actor, Step, Segment, Value,
+  Option — of which only the last needs an options table.
+
+### Changed
+
+- **Quotas became depth bands.** Exactly 5 thinking styles, 20 contextual jobs,
+  12 role headings and 30→20 financial criteria were counted targets the material
+  could not support. Bands scale with `quick`/`standard`/`deep`, and `deep` is
+  capped by the lane: detail over absent material is structure, not evidence.
+
+- **Phases are coverage tags, not map structure.** The map no longer forces two
+  steps per phase. A phase may hold zero, with a reason.
+
+- **Twelve role verdicts instead of a cast.** Every role is answered — populated,
+  hypothesis, not applicable, same actor, or open — and none is filled with an
+  invented person.
+
+- **Metrics per risky step.** Time, error, effort and completion, each with a
+  required source. `nenhuma` downgrades the metric to a bet.
+
+- **Emotional and social jobs are anchored to a step**, with an observable
+  signal. A feeling with no moment cannot be designed for.
+
+- **Closing is not depth.** Every run ends in a reading; a bet and an option
+  table are independent extensions, so a consultant can want a deep map plus a
+  bet, and a founder a quick bet with no report.
+
+### Fixed
+
+- **A forces diagram that was promised and never produced.**
+- **A rule forbidding `write` while a phase was named `Document and Share`.**
+- **Per-segment outcomes and constraints** duplicated Prompt 7 at lower quality;
+  replaced by scene, observable difference and cost of failure.
+- **Two identical runs produced opposite verdicts.** Asymmetry now precedes tie:
+  if one option's failure can produce the other's symptom, the verdict is
+  directional with the chain named.
+
+### Removed
+
+- **`Alternative` as a per-criterion field.** The rewrite stays as a QA step and
+  one short cell in the summary table.
+
 ## [0.85.0-alpha] - 2026-10-26
 
 Every `stelow-product-*` stage below 8 is now its own skill. `discovery` stops
@@ -1386,8 +1709,6 @@ carrying the book and becomes the router that sequences them.
   `/sisyphus`, `/supervise`, `pause_goal`, `goal-tweak` vocabulary.
 - **Dead cli-tools orphans** (`context-efficiency.md`, `execution-loop.md`)
   and the `cli-agents/` directory (absorbed into `HOSTING.md`).
-
-## [Unreleased]
 
 ## [0.67.0-alpha] - 2026-09-19
 

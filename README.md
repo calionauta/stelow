@@ -28,7 +28,7 @@ technical scopes ready for autonomous execution.
 
 The manual lives on the site, not in this file:
 **[https://calionauta.github.io/stelow/docs/](https://calionauta.github.io/stelow/docs/)**
-— overview, getting started (bb and skills-only paths), architecture,
+— overview, getting started (bb, skills-only and Multica paths), architecture,
 workflow (run knobs × review mode, gates), scopes/tasks/records, CLI,
 skill inventory, plugin guides, FAQ, and status.
 
@@ -63,7 +63,31 @@ cd stelow
 `./install.sh` variants: `--minimal`, `update`, `remove`, `--help`
 (`ASSUME_YES=1` for CI). Advanced options and rationale:
 [docs/INSTALLATION.md](docs/INSTALLATION.md).
-Full onboarding for both paths:
+
+**Path C — Multica workspace (the flow on a real board):**
+
+```bash
+git clone https://github.com/calionauta/stelow-host-multica.git
+cd stelow-host-multica
+python3 bin/stelow-host install --check   # does the workspace match?
+python3 bin/stelow-host install           # converge skills, agents, workflows, projects
+```
+
+Three workflows land on the workspace: the build chain (one project per
+repository), `explore` (the 14 `stelow-workflow-*` skills) and `research` (the
+21 `stelow-product-*` skills), each bound to its own project. Then a question
+goes onto a lane:
+
+```bash
+python3 bin/stelow-host ask research "is the current price defensible?" --skill pricing
+```
+
+Multica is a tracker, not an agent host: the agents that run each column live in
+your workspace, and stelow reaches them as skills. Prerequisites, environment
+and failure modes are in
+[that repository's `AGENTS.md`](https://github.com/calionauta/stelow-host-multica/blob/main/AGENTS.md).
+
+Full onboarding for all three paths:
 [docs/getting-started.md](docs/getting-started.md).
 
 ---

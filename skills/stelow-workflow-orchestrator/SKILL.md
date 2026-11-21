@@ -180,10 +180,12 @@ After completing each stage, the LLM **must proceed directly to the next stage**
 
 <!-- ════════════════════════════════════════════ -->
 <!-- PROMPT CACHE BOUNDARY                        -->
-<!-- Everything above is a stable prefix.         -->
-<!-- It is cached by the LLM provider across       -->
-<!-- multiple turns within the same session.       -->
-<!-- Do NOT add dynamic content above this line.   -->
+<!-- Everything above is a stable prefix: keep it  -->
+<!-- byte-identical between runs and add nothing   -->
+<!-- that varies (dates, sha, ids, paths) here.    -->
+<!-- The provider places the cache breakpoint;     -->
+<!-- this line only marks where the stable part    -->
+<!-- ends, so an edit below cannot invalidate it.  -->
 <!-- ════════════════════════════════════════════ -->
 
 <!-- Everything below is read fresh per turn.     -->

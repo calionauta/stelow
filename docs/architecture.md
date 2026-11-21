@@ -106,7 +106,9 @@ is not part of that degradation: it ships with the helper.
    check resolves the workflow's own directory from `STELOW_STATE`, so an
    artifact belonging to a DIFFERENT workflow cannot satisfy this one.
 4. `scripts/stelow doctor` detects drift classes (stale-lock, missing-dir,
-   parallel-lock, state-transitions) across the workflow tree.
+   parallel-lock, orphan-pid, state-transitions, transitions-missing) across
+   the workflow tree, and checks that every `recipe:` a stage declares in
+   `stages.yaml` has a file behind it in `recipes/`.
 
 ## Portability rules
 

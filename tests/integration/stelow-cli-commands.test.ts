@@ -18,7 +18,7 @@
  */
 import { describe, it, expect, afterAll } from "vitest";
 import { execSync, spawnSync, spawn } from "node:child_process";
-import { mkdtempSync, writeFileSync, mkdirSync, readFileSync, existsSync, rmSync } from "node:fs";
+import { mkdtempSync, writeFileSync, mkdirSync, readFileSync, existsSync, rmSync, utimesSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -150,6 +150,14 @@ describe("schema", () => {
       expect(Object.keys(j), `schema covers ${cmd}`).toContain(cmd);
       expect(j[cmd].usage, `${cmd} usage`).toBeTruthy();
       expect(j[cmd].exit_codes, `${cmd} exit codes`).toBeTruthy();
+    }
+  });
+
+  it("declares the two knobs doctor reads for the recipe check", () => {
+    const wd = makeWorkdir();
+    const j = JSON.parse(run(wd, ["schema"]).stdout);
+    for (const knob of ["STELOW_STAGES", "STELOW_RECIPES"]) {
+      expect(j.doctor.env, `schema documents ${knob}`).toContain(knob);
     }
   });
 
@@ -304,6 +312,41 @@ describe("read-only commands never touch the filesystem", () => {
 });
 
 // ---------------------------------------------------------------------------
+
+describe("doctor verdicts", () => {
+  const STAGES = "version: 2\n\nstages:\n  - name: shape\n    execution:\n      recipe: nope\n";
+
+  function writeStages(wd: Workdir, yaml: string): void {
+    mkdirSync(join(wd.dir, "skills", "stelow-workflow-orchestrator"), { recursive: true });
+    writeFileSync(join(wd.dir, "skills", "stelow-workflow-orchestrator", "stages.yaml"), yaml);
+  }
+
+  it("a warn-only run exits 0 and does not print the trusted sentence", () => {
+    const wd = makeWorkdir();
+    // Only the stale lock is wrong: stages and recipe both resolve.
+    writeStages(wd, STAGES);
+    mkdirSync(join(wd.dir, "recipes"), { recursive: true });
+    writeFileSync(join(wd.dir, "recipes", "nope.yaml"), "id: nope\n");
+    mkdirSync(join(wd.dir, ".stelow", "lock"), { recursive: true });
+    writeFileSync(join(wd.dir, ".stelow", "lock", "pid"), "1");
+    writeFileSync(join(wd.dir, ".stelow", "lock", "host"), "test");
+    const past = new Date(Date.now() - 5 * 60 * 1000);
+    utimesSync(join(wd.dir, ".stelow", "lock"), past, past);
+    const r = run(wd, ["doctor"]);
+    expect(r.status).toBe(0);
+    expect(r.stdout).toMatch(/warn\s+stale-lock/);
+    expect(r.stdout).not.toContain("ok (no drift)");
+  });
+
+  it("a missing recipe file exits 1 and names stage, recipe and path", () => {
+    const wd = makeWorkdir();
+    writeStages(wd, STAGES);
+    mkdirSync(join(wd.dir, "recipes"), { recursive: true });
+    const r = run(wd, ["doctor"]);
+    expect(r.status).toBe(1);
+    expect(r.stdout).toMatch(/error\s+recipe-missing\s+stage shape: recipe 'nope' has no file at recipes\/nope\.yaml/);
+  });
+});
 
 describe("sync-scopes", () => {
   const SPEC = [

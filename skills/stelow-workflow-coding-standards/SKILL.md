@@ -249,20 +249,10 @@ When applying these principles, produce code that:
 <!-- stelow:scope3:begin -->
 ## Entry (mode detection)
 
-When this skill loads, check for the stelow workflow marker:
-
-```bash
-if [ -n "$STELOW_WORKFLOW" ] && [ -n "$STELOW_STATE" ]; then
-  echo "stelow: workflow mode (state=$STELOW_STATE)"
-else
-  echo "stelow: standalone mode (no STELOW_WORKFLOW marker)"
-fi
-```
-
-In **standalone mode** (no marker), run the existing skill body unchanged.
-In **workflow mode**, skip to `### Workflow slice` and emit a complete
-`## Hand-off (workflow mode)` block at the end. See
-`../stelow-workflow-entry/SKILL.md` for the full marker protocol.
+`STELOW_WORKFLOW` + `STELOW_STATE` set → **workflow mode**: skip to
+`### Workflow slice`, then emit the `## Hand-off` block below and stop.
+Either unset → **standalone**: run the body above unchanged.
+Protocol: `../stelow-workflow-entry/SKILL.md`.
 
 ## Hand-off (workflow mode)
 
@@ -276,22 +266,16 @@ gate           : none
 rework-on      : shape
 ```
 
-Workflow mode: emit the above Hand-off block verbatim, then stop. Fill
-`next-candidate` from `scripts/stelow next`: it is the workflow's own
-answer, already accounting for this run's intent route and review mode.
-The router skill consumes the next-candidate field and calls
-`scripts/stelow advance <next-candidate>` to move state forward.
+Emit it verbatim, then stop. `next-candidate` is whatever
+`scripts/stelow next` prints — it already accounts for this run's intent
+route and review mode. The router calls
+`scripts/stelow advance <next-candidate>`.
 
 ### Workflow slice
 
-Workflow mode for the **execution** stage. Standalone behavior lives in
-the rest of this file (unchanged). Summary:
-
-> Implementation. Execute planned scopes.
-
-Primary actions (per stages.yaml): `edit, write, bash`. Run only the actions that
-produce the artifacts promised in `## Hand-off`; skip anything that does
-not advance the workflow.
+Workflow mode for the **execution** stage. Per stages.yaml the actions are
+`edit, write, bash`: run only those that produce the artifacts promised in `## Hand-off`,
+and skip anything that does not advance the workflow.
 
 <!-- stelow:scope3:end -->
 

@@ -1,0 +1,345 @@
+{
+  "skill": "stelow-product-job-to-be-done",
+  "generated_by": "scripts/generate-jtbd-contracts.py",
+  "source": "the criteria block under 'Completeness contract' in each reference",
+  "policies": [
+    {
+      "slug": "evidence-policy",
+      "ref": "references/00-evidence-policy.md",
+      "criteria": []
+    }
+  ],
+  "substeps": [
+    {
+      "slug": "contextual-segmentation",
+      "ref": "references/01-contextual-segmentation.md",
+      "criteria": [
+        {
+          "id": "candidate-count",
+          "kind": "count",
+          "text": "20 candidate segments listed, each with a disposition row"
+        },
+        {
+          "id": "final-count",
+          "kind": "count",
+          "text": "Final segments inside the depth band"
+        },
+        {
+          "id": "segment-fields",
+          "kind": "presence",
+          "text": "Every segment carries Status, Market, Justification, factors, Scene, Observable difference, Cost of failure"
+        },
+        {
+          "id": "segment-specificity",
+          "kind": "semantic",
+          "text": "Segments name concrete situations and actors, not demographics"
+        },
+        {
+          "id": "scene-concreteness",
+          "kind": "semantic",
+          "text": "Scene is a present-tense scene, not a category description"
+        }
+      ]
+    },
+    {
+      "slug": "thinking-styles",
+      "ref": "references/02-thinking-styles.md",
+      "criteria": [
+        {
+          "id": "style-count",
+          "kind": "count",
+          "text": "3 to 7 styles, inside the depth band"
+        },
+        {
+          "id": "style-fields",
+          "kind": "presence",
+          "text": "Every style carries table, warrant, description, context, differentiation, 3/2/2 jobs"
+        },
+        {
+          "id": "style-distinctness",
+          "kind": "semantic",
+          "text": "Styles are incompatible ways of thinking, not one person relabeled; near-merges are named"
+        }
+      ]
+    },
+    {
+      "slug": "jtbd-discovery",
+      "ref": "references/03-jtbd-discovery.md",
+      "criteria": [
+        {
+          "id": "section-presence",
+          "kind": "count",
+          "text": "Rewritten, Contextual and Higher sections present"
+        },
+        {
+          "id": "test-result",
+          "kind": "presence",
+          "text": "Every contextual candidate carries a T result naming a test or pass"
+        },
+        {
+          "id": "contextual-count",
+          "kind": "count",
+          "text": "Contextual jobs inside the depth band, with the failures accounted for"
+        },
+        {
+          "id": "rules-compliance",
+          "kind": "semantic",
+          "text": "No adjectives, adverbs or conjunctions; the solution is context, not object"
+        }
+      ]
+    },
+    {
+      "slug": "competitors",
+      "ref": "references/04-competitors.md",
+      "criteria": [
+        {
+          "id": "section-presence",
+          "kind": "count",
+          "text": "Direct, Indirect, Hidden and Key insights present"
+        },
+        {
+          "id": "example-density",
+          "kind": "count",
+          "text": "Each competitor section holds 3+ entries"
+        },
+        {
+          "id": "status-per-entry",
+          "kind": "presence",
+          "text": "Every named brand carries verificado or candidato"
+        },
+        {
+          "id": "step-link",
+          "kind": "presence",
+          "text": "Every entry names the step it serves or states that it serves none"
+        },
+        {
+          "id": "hidden-genuineness",
+          "kind": "semantic",
+          "text": "Hidden competitors are workarounds, not market leaders restated"
+        }
+      ]
+    },
+    {
+      "slug": "job-actors",
+      "ref": "references/05-job-actors.md",
+      "criteria": [
+        {
+          "id": "table-shape",
+          "kind": "presence",
+          "text": "The role table has the fixed columns: Role, Status, Actor, Market, Warrant"
+        },
+        {
+          "id": "role-count",
+          "kind": "count",
+          "text": "All twelve roles present, in order, each with a status"
+        },
+        {
+          "id": "warrant-present",
+          "kind": "presence",
+          "text": "Every populated role carries a fragment containing the role's action"
+        },
+        {
+          "id": "absence-reason",
+          "kind": "presence",
+          "text": "Every Not applicable carries a scope reason; every Same actor names the role"
+        },
+        {
+          "id": "no-persons",
+          "kind": "semantic",
+          "text": "Actors are role classes in plural, never invented people, titles or emoji"
+        },
+        {
+          "id": "hypothesis-cap",
+          "kind": "count",
+          "text": "At most three Hypothesis entries, each with a disconfirming check"
+        }
+      ]
+    },
+    {
+      "slug": "situational-variables",
+      "ref": "references/06-situational-variables.md",
+      "criteria": [
+        {
+          "id": "category-count",
+          "kind": "count",
+          "text": "All five categories present"
+        },
+        {
+          "id": "factor-density",
+          "kind": "presence",
+          "text": "Every factor carries a variable and a concrete example"
+        },
+        {
+          "id": "ranking",
+          "kind": "count",
+          "text": "Exactly three ranked factors, each with a reason"
+        },
+        {
+          "id": "situational-specificity",
+          "kind": "semantic",
+          "text": "Variables describe observable situations, not demographics or truisms"
+        }
+      ]
+    },
+    {
+      "slug": "functional-needs",
+      "ref": "references/07-functional-needs.md",
+      "criteria": [
+        {
+          "id": "criteria-count",
+          "kind": "count",
+          "text": "The depth's number of criteria, each under its own heading"
+        },
+        {
+          "id": "criterion-fields",
+          "kind": "presence",
+          "text": "Every criterion carries Justification, Score with Basis, Metrics and Current alternative"
+        },
+        {
+          "id": "rewrite-table",
+          "kind": "presence",
+          "text": "The summary table holds one rewritten variant per criterion"
+        },
+        {
+          "id": "metric-measurability",
+          "kind": "semantic",
+          "text": "Metrics name observable measurements across speed, ease and consistency"
+        }
+      ]
+    },
+    {
+      "slug": "financial-needs",
+      "ref": "references/08-financial-needs.md",
+      "criteria": [
+        {
+          "id": "raw-count",
+          "kind": "count",
+          "text": "Raw criteria holds the depth's raw count"
+        },
+        {
+          "id": "top-count",
+          "kind": "count",
+          "text": "Top criteria holds 5/10/20 by depth"
+        },
+        {
+          "id": "criterion-fields",
+          "kind": "presence",
+          "text": "Every top criterion carries Justification, Score with Basis, Metrics and Current alternative"
+        },
+        {
+          "id": "financial-quantification",
+          "kind": "semantic",
+          "text": "Criteria quantify money, time or risk exposure, not comfort words"
+        },
+        {
+          "id": "disposition",
+          "kind": "presence",
+          "text": "Every discarded criterion has a disposition row"
+        }
+      ]
+    },
+    {
+      "slug": "emotional-social-jobs",
+      "ref": "references/09-emotional-social-jobs.md",
+      "criteria": [
+        {
+          "id": "anchored-rows",
+          "kind": "presence",
+          "text": "Every job row names the step it belongs to"
+        },
+        {
+          "id": "pair-per-step",
+          "kind": "count",
+          "text": "One emotional and one social job per anchored step, by depth"
+        },
+        {
+          "id": "observable-signal",
+          "kind": "presence",
+          "text": "Every row carries an observable signal"
+        },
+        {
+          "id": "no-opposing-pairs",
+          "kind": "semantic",
+          "text": "No opposing pair claims the same outcome; statements follow the rules"
+        }
+      ]
+    },
+    {
+      "slug": "job-map-steps",
+      "ref": "references/10-job-map-steps.md",
+      "criteria": [
+        {
+          "id": "boundaries",
+          "kind": "presence",
+          "text": "Both ends stated with a status, or Open with what would settle it"
+        },
+        {
+          "id": "table-shape",
+          "kind": "presence",
+          "text": "The step table has the fixed columns: Step, Phase, Executor, Decider, Output, Failure mode, Status"
+        },
+        {
+          "id": "depth-band",
+          "kind": "count",
+          "text": "Step count inside the depth band, or an explicit override"
+        },
+        {
+          "id": "step-fields",
+          "kind": "presence",
+          "text": "Every step carries phase, executor, decider, output, failure mode and status"
+        },
+        {
+          "id": "actor-step-link",
+          "kind": "presence",
+          "text": "The decider column names a role class or Open; no unknown approver is left blank"
+        },
+        {
+          "id": "final-state",
+          "kind": "semantic",
+          "text": "The last step is the job's completed outcome, with corrections modelled as a loop"
+        },
+        {
+          "id": "metrics",
+          "kind": "presence",
+          "text": "The riskiest steps carry a metric with type, measurement and source"
+        },
+        {
+          "id": "phase-coverage",
+          "kind": "presence",
+          "text": "All six phases appear in the coverage table, with zero-step phases justified"
+        },
+        {
+          "id": "no-filler",
+          "kind": "semantic",
+          "text": "No step exists only to populate a phase; each step is an action the actor takes"
+        },
+        {
+          "id": "no-vague-verbs",
+          "kind": "semantic",
+          "text": "No step opens with manage, facilitate, empower, enable, ensure or oversee"
+        }
+      ]
+    },
+    {
+      "slug": "switch-interview",
+      "ref": "references/11-switch-interview.md",
+      "criteria": [
+        {
+          "id": "timeline-stages",
+          "kind": "count",
+          "text": "The five timeline stages present, each with a Status"
+        },
+        {
+          "id": "four-forces",
+          "kind": "presence",
+          "text": "Push, Pull, Anxiety and Habit each carry at least one statused entry"
+        },
+        {
+          "id": "no-invented-quotes",
+          "kind": "semantic",
+          "text": "Quotes are verbatim or absent; no quote is reconstructed from a persona"
+        }
+      ]
+    }
+  ]
+}
