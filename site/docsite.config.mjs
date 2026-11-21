@@ -6,8 +6,18 @@ export default {
   branch: "main",
   docsDir: "docs",
   outDir: "site",
-  // docs/ keeps RFCs and notes that are intentionally not published.
+  // docs/ keeps RFCs, plans, archive and design notes that are intentionally
+  // NOT site pages. They are declared rather than silently skipped: the build
+  // fails on an undeclared page, so "this file is repo-facing on purpose" is a
+  // statement someone made, not a rule someone has to remember.
   strictManifestLinks: false,
+  unpublishedDirs: ["archive/", "design/", "agents-md-refs/"],
+  unpublishedFiles: [
+    "FREEZE.md", "INSTALLATION.md", "SECURITY.md", "host-plugin-blueprint.md",
+    "rfc-parallel-scope-execution.md", "rfc-trackable-event-log.md",
+    "scope-execution-strategy.md", "scopes-tasks-flow.md",
+    "study-goal-vs-plannotator.md",
+  ],
   landingMenuBelow: 1320,
   releases: [
   { file: "CHANGELOG.md", origin: "core", repo: "calionauta/stelow", tagPrefix: "v" },

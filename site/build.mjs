@@ -15,7 +15,7 @@
 //   --check verifies every manifest file exists and every internal .md link
 //   resolves, without writing output. CI runs the build; reviewers run --check.
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from "node:fs";
 import { join, dirname, resolve, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { checkReleases, buildReleases } from "./releases.mjs";
@@ -136,6 +136,9 @@ main th{background:#f7f7f8}
 main blockquote{border-left:3px solid #0b5fff;margin:16px 0;padding:4px 16px;background:#f5f8ff}
 main hr{border:none;border-top:1px solid #e5e5e5;margin:32px 0}
 .prevnext{display:flex;justify-content:space-between;gap:16px;margin-top:40px;padding-top:16px;border-top:1px solid #eee;font-size:14px}
+.page-actions{margin:-4px 0 20px}
+.page-actions a{display:inline-block;font:13px ui-monospace,monospace;border:1px solid #ddd;border-radius:6px;padding:4px 9px;color:#555;text-decoration:none}
+.page-actions a:hover{border-color:#999;color:#111}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin:16px 0;padding:0;list-style:none}
 .card{display:flex;gap:12px;border:1px solid #e5e5e5;border-radius:12px;padding:14px 16px;background:#fafafa}
 .card .ic{font-size:22px;line-height:1.3}
@@ -191,12 +194,31 @@ function plainText(s) {
     .trim();
 }
 
-function inline(s, pageDir) {
+// Where an image lives. The builder copies no assets into site/, so a relative
+// image reference is broken on BOTH surfaces: the page renders it under
+// /docs/<slug>/ and the markdown copy renders it at the site root, and neither
+// directory holds the file. The file lives in the repository, so both surfaces
+// point there — one resolution, correct for a public repo, and a screenshot in
+// docs/ renders instead of showing a broken-image icon.
+function assetUrl(src, pageDir) {
+  if (/^(https?:|data:|\/\/|#)/.test(src)) return src;
+  const abs = resolve(DOCS, pageDir, src);
+  const relToRoot = relative(ROOT, abs).split(sep).join("/");
+  return `https://github.com/${config.repo}/raw/${config.branch || "master"}/${relToRoot}`;
+}
+
+// How a link is resolved is the ONE thing the HTML page and its per-page .md
+// copy disagree on: the page links to a directory URL, the markdown copy links
+// to the markdown file, so an agent that follows a link from the .md gets
+// markdown instead of a 404 for a repo-relative path. Everything else about
+// the render is shared, because two renderers are two things to fix.
+function inline(s, pageDir, opts = {}) {
+  const linkTo = opts.linkTo || rewrite;
   // images first
-  s = s.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, src) => `<img alt="${esc(alt)}" src="${esc(rewrite(src, pageDir))}">`);
+  s = s.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, src) => `<img alt="${esc(alt)}" src="${esc(assetUrl(src, pageDir))}">`);
   s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, text, href) => {
     if (/^(https?:|mailto:|#)/.test(href)) return `<a href="${esc(href)}">${esc(text)}</a>`;
-    return `<a href="${esc(rewrite(href, pageDir))}">${esc(text)}</a>`;
+    return `<a href="${esc(linkTo(href, pageDir))}">${esc(text)}</a>`;
   });
   s = s.replace(/`([^`]+)`/g, (_, code) => `<code>${esc(code)}</code>`);
   s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
@@ -227,7 +249,40 @@ function rewrite(href, pageDir) {
   return blob + hash;
 }
 
-function renderBody(md, pageDir) {
+// The same resolution for the per-page markdown copy: a link that stays inside
+// docs/ becomes the target's .md file (relative), because that is what an
+// agent reading the copy can dereference; a link that leaves docs/ has no
+// markdown equivalent, so it keeps the GitHub blob URL `rewrite` gives it.
+function rewriteMd(href, pageDir) {
+  // External and in-page anchors are already what a markdown reader wants: an
+  // image URL emitted as a file name (the bug this guard exists for) is a
+  // broken image in every copy.
+  if (/^(https?:|mailto:|#|\/)/.test(href)) return href;
+  // A fragment is carried through the rewrite, not dropped: `page.md#section`
+  // becomes `<slug>.md#section`, which still lands on the section.
+  const hashIdx = href.indexOf("#");
+  const path = hashIdx >= 0 ? href.slice(0, hashIdx) : href;
+  const hash = hashIdx >= 0 ? href.slice(hashIdx) : "";
+  if (!path.endsWith(".md")) return href;
+  const abs = resolve(DOCS, pageDir, path);
+  const relToDocs = relative(DOCS, abs).split(sep).join("/");
+  // Only a PUBLISHED page has a copy. Anything else under docs/ has no file at
+  // the site, so it becomes the GitHub blob URL the HTML page already links to
+  // — a copy that points at a sibling .md the build never emitted is a 404 that
+  // looks like a working link.
+  // The copies are named by SLUG, not by file name (`docs/research/index.md` is
+  // published as `research.md`), so the target is looked up rather than guessed
+  // from its basename.
+  const target = MANIFEST.find((x) => x.file === relToDocs);
+  if (relToDocs.startsWith("..") || !target) return rewrite(href, pageDir);
+  // Copies live at docs/<slug>.md. Relative to the copy being written, walk
+  // back to the site root and forward into docs/.
+  const up = "../".repeat((CUR_SLUG || "").split("/").length);
+  return `${up}docs/${target.slug}.md${hash}`;
+}
+
+function renderBody(md, pageDir, opts = {}) {
+  const inlineOf = (s) => inline(s, pageDir, opts);
   const lines = md.split("\n");
   const out = [];
   let i = 0;
@@ -236,7 +291,7 @@ function renderBody(md, pageDir) {
   // role="region" with no name is announced as "region" and adds nothing).
   let lastHeading = "";
   const flushPara = (buf) => {
-    if (buf.length) { out.push(`<p>${inline(buf.join(" "), pageDir)}</p>`); buf.length = 0; }
+    if (buf.length) { out.push(`<p>${inlineOf(buf.join(" "))}</p>`); buf.length = 0; }
   };
   let para = [];
   while (i < lines.length) {
@@ -258,7 +313,7 @@ function renderBody(md, pageDir) {
       const raw = h[2].replace(/\[([^\]]+)\]\([^)]+\)/g, "$1"); // strip links
       const id = slugify(raw);
       lastHeading = raw;
-      out.push(`<h${h[1].length}${id ? ` id="${esc(id)}"` : ""}>${inline(h[2], pageDir)}</h${h[1].length}>`);
+      out.push(`<h${h[1].length}${id ? ` id="${esc(id)}"` : ""}>${inlineOf(h[2])}</h${h[1].length}>`);
       i++;
       continue;
     }
@@ -272,7 +327,7 @@ function renderBody(md, pageDir) {
       flushPara(para);
       const quote = [];
       while (i < lines.length && /^>\s?/.test(lines[i])) { quote.push(lines[i].replace(/^>\s?/, "")); i++; }
-      out.push(`<blockquote>${inline(quote.join(" "), pageDir)}</blockquote>`);
+      out.push(`<blockquote>${inlineOf(quote.join(" "))}</blockquote>`);
       continue;
     }
     if (/^\s*([-*]|\d+\.)\s+/.test(line)) {
@@ -297,11 +352,11 @@ function renderBody(md, pageDir) {
           const m = t.match(EMOJI_RE);
           const rest = t.slice(m[0].length).trim();
           return `<div class="card"><span class="ic" aria-hidden="true">${esc(m[0])}</span>` +
-            `<div class="card-body">${inline(rest, pageDir)}</div></div>`;
+            `<div class="card-body">${inlineOf(rest)}</div></div>`;
         }).join("")}</div>`);
         continue;
       }
-      const items = texts.map((t) => `<li>${inline(t, pageDir)}</li>`);
+      const items = texts.map((t) => `<li>${inlineOf(t)}</li>`);
       out.push(ordered ? `<ol>${items.join("")}</ol>` : `<ul>${items.join("")}</ul>`);
       continue;
     }
@@ -322,8 +377,8 @@ function renderBody(md, pageDir) {
       // phone: the header row is hidden there, so the cell has to name its own
       // column or the card is a list of values with no meaning.
       const heads = head.map((c) => plainText(c));
-      out.push(`<div class="table-wrap" role="region" tabindex="0" aria-label="${escAttr(label)}"><table><thead><tr>${head.map((c) => `<th scope="col">${inline(c, pageDir)}</th>`).join("")}</tr></thead><tbody>${
-        body.map((r) => `<tr>${cells(r).map((c, ci) => `<td data-label="${escAttr(heads[ci] || "")}">${inline(c, pageDir)}</td>`).join("")}</tr>`).join("")
+      out.push(`<div class="table-wrap" role="region" tabindex="0" aria-label="${escAttr(label)}"><table><thead><tr>${head.map((c) => `<th scope="col">${inlineOf(c)}</th>`).join("")}</tr></thead><tbody>${
+        body.map((r) => `<tr>${cells(r).map((c, ci) => `<td data-label="${escAttr(heads[ci] || "")}">${inlineOf(c)}</td>`).join("")}</tr>`).join("")
       }</tbody></table></div>`);
       continue;
     }
@@ -388,19 +443,74 @@ function up(slug) {
   return "../".repeat(depth + 1);
 }
 
-function pageShell(title, cur, body, prevNext, navOverride) {
+// Absolute URL of a built page, for canonical and OG tags. Slugs are directory
+// URLs (docs/<slug>/); release articles are flat files (releases/<slug>.html).
+function pageUrl(slug) {
+  if (slug.startsWith("@")) return `${BASE}/releases/${slug.slice(1)}.html`;
+  return slug ? `${BASE}/docs/${slug}/` : `${BASE}/docs/`;
+}
+
+// The page's markdown copy, published next to the HTML (see the writer in
+// build()). GitHub Pages runs no rewrite, so `Accept: text/markdown` cannot
+// negotiate: the copy is a real file an agent can fetch by URL.
+function mdHref(slug) {
+  if (!slug || slug.startsWith("@")) return "";
+  const parts = slug.split("/");
+  return `${"../".repeat(parts.length)}${parts[parts.length - 1]}.md`;
+}
+
+// Per-page head metadata. It used to be a <title> and nothing else, so every
+// page was unindexable with a description sitting unused beside it in the
+// manifest, and a shared link had no title, description or image at all.
+// `desc` is the manifest's own one-liner; config.description covers the pages
+// that have none (the docs index, release articles).
+function headMeta(slug, title, desc) {
+  const url = pageUrl(slug);
+  const full = title === NAME ? `${NAME} docs` : `${title} — ${NAME}${slug && !slug.startsWith("@") ? " docs" : ""}`;
+  const d = desc || config.description || "";
+  const rel = config.socialPreview;
+  const image = !rel ? "" : /^https?:/.test(rel) ? rel : BASE + rel;
+  const a = (s) => escAttr(s);
+  let tags = `<link rel="canonical" href="${a(url)}">`;
+  tags += `<meta property="og:title" content="${a(full)}">`;
+  tags += `<meta property="og:type" content="article">`;
+  tags += `<meta property="og:url" content="${a(url)}">`;
+  tags += `<meta property="og:site_name" content="${a(NAME)}">`;
+  if (d) tags += `<meta name="description" content="${a(d)}">`;
+  if (d) tags += `<meta property="og:description" content="${a(d)}">`;
+  if (image) tags += `<meta property="og:image" content="${a(image)}">`;
+  tags += `<meta name="twitter:card" content="${image ? "summary_large_image" : "summary"}">`;
+  tags += `<meta name="twitter:title" content="${a(full)}">`;
+  if (d) tags += `<meta name="twitter:description" content="${a(d)}">`;
+  return tags;
+}
+
+// pageShell(title, cur, body, prevNext, navOverride, meta)
+//   meta.desc        one-liner for <meta name=description> and the OG pair
+//   meta.canonical   false omits rel=canonical (a markdown copy must not
+//                    compete with the page it duplicates)
+//   meta.noindex     the document is a mirror, not a search result
+function pageShell(title, cur, body, prevNext, navOverride, meta = {}) {
   const nav = navOverride !== undefined ? navOverride : sidebar(cur);
   // The same links in the phone menu, minus the leading home anchor (the
   // topbar already shows it).
   const menu = nav.replace(/^\s*<a class="home"[^>]*>[\s\S]*?<\/a>/, "");
-  const searchTop = SEARCH_ENABLED ? searchButton(up(cur)) : "";
-  const searchScripts = SEARCH_ENABLED ? searchAssets(up(cur)) : "";
+  const plain = meta.noChrome === true;
+  const searchTop = SEARCH_ENABLED && !plain ? searchButton(up(cur)) : "";
+  const searchScripts = SEARCH_ENABLED && !plain ? searchAssets(up(cur)) : "";
+  // One link, next to the content it mirrors. No dialog, no JS: the copy is a
+  // URL an agent (or a reader) can open and pipe into anything.
+  const md = plain || meta.noMarkdown ? "" : mdHref(cur);
+  const actions = md ? `<div class="page-actions"><a href="${md}">view markdown</a></div>` : "";
+  const headTitle = title === NAME ? `${NAME} docs` : `${title} — ${NAME}${cur && !cur.startsWith("@") ? " docs" : ""}`;
+  const head = headMeta(cur, title, meta.desc);
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${esc(title)} — ${NAME} docs</title>
+<title>${esc(headTitle)}</title>
+${head}${meta.noindex ? `<meta name="robots" content="noindex">` : ""}
 <style>${CSS}</style>
 </head>
 <body>
@@ -411,6 +521,7 @@ function pageShell(title, cur, body, prevNext, navOverride) {
 <div class="wrap">
 <nav class="side">${searchTop}${nav}</nav>
 <main>
+${actions}
 ${body}
 <div class="prevnext">${prevNext}</div>
 </main>
@@ -518,12 +629,42 @@ ${searchScripts}
 </html>`;
 }
 
+// Every .md under docs/ is either published (in the manifest) or declared
+// repo-facing. The rule used to live in one consumer's Go guard and had to be
+// rewritten in the next project; a page nobody publishes and nobody declares
+// reaches no reader at all, which is the failure this catches.
+function walkMd(dir, base = "") {
+  const out = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const rel = base ? `${base}/${entry.name}` : entry.name;
+    if (entry.isDirectory()) out.push(...walkMd(join(dir, entry.name), rel));
+    else if (entry.name.endsWith(".md")) out.push(rel);
+  }
+  return out;
+}
+
 function check() {
   let failed = 0;
   checkReleases(ROOT, RELEASE_SOURCES);
   for (const p of MANIFEST) {
     const path = join(DOCS, p.file);
     if (!existsSync(path)) { console.error(`missing manifest file: ${p.file}`); failed++; }
+  }
+  // Pages deliberately kept repo-facing: they describe trees that no longer
+  // exist (migration notes) or slices read while editing (domain cards).
+  const unpublishedDirs = config.unpublishedDirs || [];
+  const unpublishedFiles = config.unpublishedFiles || [];
+  const unpublished = (rel) => {
+    if (unpublishedFiles.includes(rel)) return true;
+    const base = dirname(rel) === "." ? "" : dirname(rel) + "/";
+    return unpublishedDirs.some((d) => rel === d || rel.startsWith(d) || base === d);
+  };
+  const published = new Set(MANIFEST.map((p) => p.file));
+  if (existsSync(DOCS)) for (const rel of walkMd(DOCS)) {
+    if (published.has(rel)) continue;
+    if (unpublished(rel)) continue;
+    console.error(`docs/${rel} is neither published (manifest) nor declared (unpublishedDirs / unpublishedFiles)`);
+    failed++;
   }
   if (SEARCH_ENABLED) for (const rel of ["search/minisearch.js", "search/search.js"]) {
     if (!existsSync(join(ROOT, "site", rel))) {
@@ -532,6 +673,20 @@ function check() {
     }
   }
   if (failed) { console.error(`${failed} check failure(s)`); process.exit(1); }
+  // Two agent indexes existed with nothing comparing them: the repo's curated
+  // llms.txt (the one an agent is told to read first) and the generated
+  // site/llms.txt. A page could be published for months and never be reachable
+  // from the index agents actually open. When the project keeps a curated index
+  // at the repo root, every published page must be named in it.
+  if (existsSync(join(ROOT, "llms.txt"))) {
+    const curated = readFileSync(join(ROOT, "llms.txt"), "utf8");
+    for (const p of MANIFEST) {
+      const cited = curated.includes(p.file) || curated.includes(`docs/${p.file}`)
+        || curated.includes(`${BASE}/docs/${p.slug}`);
+      if (!cited) { console.error(`llms.txt (repo root) never names docs/${p.file} (slug ${p.slug})`); failed++; }
+    }
+    if (failed) console.error(`${failed} page(s) missing from the curated agent index`);
+  }
   // every internal .md link must resolve (to a file, or to a manifest slug)
   for (const p of MANIFEST) {
     const md = readFileSync(join(DOCS, p.file), "utf8");
@@ -604,6 +759,107 @@ function check() {
   console.log(`check ok: ${MANIFEST.length} pages, all links and anchors resolve`);
 }
 
+// A markdown copy per page: the same body the HTML page renders, with the same
+// link rewriting, minus the navigation. Emitted at the site root as <slug>.md so
+// an agent fetches ONE url and gets that page's source — without it the only
+// agent surface was a 1 MB llms-full.txt whose `Source:` lines named
+// repo-relative paths that 404 on the site.
+function markdownCopy(p) {
+  const pageDir = dirname(p.file) === "." ? "" : dirname(p.file);
+  // Strip only the page's own title: it is the H1 of the rendered page and the
+  // first line of this document, so keeping it would give the copy two titles.
+  const body = p.md.replace(/^\s*#\s+.*\n/, "");
+  const html = renderBody(body, pageDir, { linkTo: rewriteMd });
+  return `# ${p.title}\n\n<!-- page: ${BASE}/docs/${p.slug}/ -->\n\n${toMarkdown(html).trim()}\n`;
+}
+
+// Lists back to markdown by walking the tag stream, so nesting is handled by a
+// stack instead of a regex that cannot see which list it is closing. A bullet
+// glued to the previous line by the SOURCE (`verbs.- describe`) stays one item
+// here on purpose: that is correct CommonMark, and the fix belongs in the
+// markdown, not in a heuristic that guesses where a list was meant to break.
+function toMarkdownLists(html) {
+  const stack = [];
+  let out = "";
+  let i = 0;
+  const TOKEN = /<\/?(ul|ol|li)>/g;
+  let m;
+  while ((m = TOKEN.exec(html)) !== null) {
+    out += html.slice(i, m.index);
+    i = m.index + m[0].length;
+    const [tag, name] = [m[0], m[1]];
+    if (name === "li") {
+      if (tag === "</li>") { out = out.replace(/\s+$/, ""); out += "\n"; continue; }
+      const depth = Math.max(stack.length - 1, 0);
+      const ordered = stack[stack.length - 1] === "ol";
+      const n = ordered ? (stack.count = (stack.count || 0) + 1) : 0;
+      out = out.replace(/\n+$/, "");
+      out += `${out && !out.endsWith("\n") ? "\n" : ""}${"  ".repeat(depth)}${ordered ? `${n}.` : "-"} `;
+      continue;
+    }
+    if (tag.startsWith("</")) { stack.pop(); out = out.replace(/\s+$/, "") + "\n"; continue; }
+    stack.push(name);
+    if (name === "ol") stack.count = 0;
+    out = out.replace(/\n+$/, "");
+    out += out && !out.endsWith("\n") ? "\n" : "";
+  }
+  return out + html.slice(i);
+}
+
+// Rendered HTML back to markdown: enough for the subset renderBody emits, and
+// one renderer instead of a second one that drifts from the page.
+function toMarkdown(html) {
+  const codes = [];
+  let s = html.replace(/<pre><code>([\s\S]*?)<\/code><\/pre>/g, (_, body) => {
+    codes.push(body);
+    return `\u0000PRE${codes.length - 1}\u0000`;
+  });
+  s = s.replace(/<h([1-6])[^>]*>([\s\S]*?)<\/h\1>/g, (_, lvl, t) => `${"#".repeat(Number(lvl))} ${t.trim()}\n`);
+  s = s.replace(/<img alt="([^"]*)" src="([^"]*)">/g, "![$1]($2)");
+  s = s.replace(/<a href="([^"]*)">([\s\S]*?)<\/a>/g, "[$2]($1)");
+  s = s.replace(/<code>([\s\S]*?)<\/code>/g, (_, c) => `\`${unent(c)}\``);
+  s = s.replace(/<(strong|em)>([\s\S]*?)<\/\1>/g, (_, tag, t) => (tag === "strong" ? `**${t}**` : `*${t}*`));
+  s = s.replace(/<blockquote>([\s\S]*?)<\/blockquote>/g, (_, t) =>
+    t.trim().split("\n").map((line) => `> ${line}`.trimEnd()).join("\n") + "\n");
+  // One emoji card is one bullet, so each ends with a newline: without it every
+  // card in a panel ran together on a single line (the whole architecture list).
+  s = s.replace(/<div class="card"><span class="ic" aria-hidden="true">([\s\S]*?)<\/span><div class="card-body">([\s\S]*?)<\/div><\/div>/g,
+    (_, icon, t) => `- ${icon.trim()} ${t.trim()}\n`);
+  s = s.replace(/<div class="(cards|table-wrap)"[^>]*>/g, "").replace(/<\/div>/g, "");
+  s = s.replace(/<table><thead><tr>([\s\S]*?)<\/tr><\/thead><tbody>([\s\S]*?)<\/tbody><\/table>/g, (_, head, body) => {
+    const ths = [...head.matchAll(/<th[^>]*>([\s\S]*?)<\/th>/g)].map((m) => m[1].trim());
+    const rows = [...body.matchAll(/<tr>([\s\S]*?)<\/tr>/g)]
+      .map((r) => [...r[1].matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)].map((c) => c[1].trim()));
+    const line = (cells) => `| ${cells.join(" | ")} |`;
+    return [line(ths), line(ths.map(() => "---")), ...rows.map(line)].join("\n") + "\n";
+  });
+  // List items are adjacent in the HTML, so they have to be split before the
+  // `- ` markers go in or a three-item list collapses into one line. Nested
+  // lists are why this is a scan and not three regexes: `<ul>([\s\S]*?)</ul>`
+  // stops at the FIRST closing tag, which truncates the outer list mid-item and
+  // glues the remainder to the next one (three real pages hit this).
+  s = toMarkdownLists(s);
+  s = s.replace(/<p>([\s\S]*?)<\/p>/g, "$1\n");
+  s = s.replace(/<hr>/g, "---");
+  s = s.replace(/<[^>]+>/g, "");
+  s = unent(s);
+  // Blocks must be separated by a blank line or markdown reads them as one: a
+  // quote glued to the last list item, or a heading glued to the paragraph above
+  // it, renders as neither. Table ROWS are the exception: a blank line between
+  // rows ends the table, so a row follows a row with nothing between.
+  s = s.replace(/([^\n|])\n(\| )/g, "$1\n\n$2");
+  s = s.replace(/([^\n])\n(> |#{1,6} )/g, "$1\n\n$2");
+  // ...and a row already separated from a row is one table: joining them back
+  // is what the paragraph rule above would otherwise undo.
+  s = s.replace(/(\| [^\n]*)\n\n(\| )/g, "$1\n$2");
+  s = s.replace(/\n{3,}/g, "\n\n");
+  return s.replace(/\u0000PRE(\d+)\u0000/g, (_, i) => `\n\`\`\`\n${codes[Number(i)]}\n\`\`\`\n`);
+}
+
+function unent(s) {
+  return s.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, "&");
+}
+
 function build() {
   check();
   for (const p of MANIFEST) {
@@ -621,7 +877,13 @@ function build() {
     const body = renderBody(p.md, pageDir);
     const dir = join(OUT, "docs", p.slug);
     mkdirSync(dir, { recursive: true });
-    writeFileSync(join(dir, "index.html"), pageShell(p.title, p.slug, body, nav));
+    writeFileSync(join(dir, "index.html"), pageShell(p.title, p.slug, body, nav, undefined, { desc: p.desc }));
+    // The markdown mirror sits beside its page's URL: docs/<slug>.md, so a
+    // nested slug (plugin/what-plugin-adds) still resolves relative to the
+    // page without a second lookup table.
+    const mdPath = join(OUT, "docs", `${p.slug}.md`);
+    mkdirSync(dirname(mdPath), { recursive: true });
+    writeFileSync(mdPath, markdownCopy(p));
   });
   // docs index
   let groups = "";
@@ -650,24 +912,36 @@ function build() {
   idxNav += `<h4>Releases</h4><a href="../releases/">All releases</a>`;
   mkdirSync(join(OUT, "docs"), { recursive: true });
   writeFileSync(join(OUT, "docs", "index.html"),
-    pageShell("Docs", "", `<h1>${esc(NAME)} docs</h1>\n${groups}`, `<a href="../">← ${NAME} home</a>`, idxNav));
-  // llms.txt (stable map: one line per page)
-  const llms = `# ${NAME} docs\n\n> Full-stack Go web app template that ships as one binary: Turso/SQLite + Templ + Datastar + Tailwind, plus seven complementary async layers (goqite, DagNats, Loro CRDT, SSE Hub record-sync, SSE Hub ephemeral signals, JetStream, GoAkt grains). Full map below; complete texts in llms-full.txt.\n\n` +
-    MANIFEST.map((p) => `## ${p.title}\n${p.desc}\n${BASE}/docs/${p.slug}/\n`).join("\n");
+    pageShell("Docs", "", `<h1>${esc(NAME)} docs</h1>\n${groups}`, `<a href="../">← ${esc(NAME)} home</a>`, idxNav, {
+      desc: config.description || `${NAME} documentation.`,
+      noMarkdown: true,
+    }));
+  // llms.txt (stable map: one line per page, plus the markdown mirror so an
+  // agent fetches one page's source instead of the whole llms-full.txt).
+  //
+  // The blurb used to be the gogogo product description, hardcoded in the
+  // engine: every project that vendored it announced itself as gogogo.
+  const blurb = config.description || `${NAME} documentation.`;
+  const llms = `# ${NAME} docs\n\n> ${blurb}\n\n` +
+    MANIFEST.map((p) => `## ${p.title}\n${p.desc}\n${BASE}/docs/${p.slug}/\n${BASE}/${p.slug}.md\n`).join("\n");
   writeFileSync(join(OUT, "llms.txt"), llms);
-  // llms-full.txt (concatenated sources)
-  const full = MANIFEST.map((p) => `# ${p.title}\n\nSource: docs/${p.file} — ${BASE}/docs/${p.slug}/\n\n${p.md.trim()}\n`).join("\n---\n\n");
+  // llms-full.txt (concatenated sources, naming SITE urls: a Source: line with
+  // a repo-relative path 404s for the only reader this file exists for)
+  const full = MANIFEST.map((p) => `# ${p.title}\n\nSource: ${BASE}/${p.slug}.md — page: ${BASE}/docs/${p.slug}/\n\n${p.md.trim()}\n`).join("\n---\n\n");
   writeFileSync(join(OUT, "llms-full.txt"), `# ${NAME} docs (full)\n\n${full}`);
   // search index
   const searchCount = SEARCH_ENABLED ? buildSearchIndex({ OUT, DOCS, MANIFEST }) : 0;
   // sitemap
-  const releaseUrls = buildReleases({ ROOT, OUT, NAME, SOURCES: RELEASE_SOURCES, h: { esc, renderBody, pageShell } });
-  const urls = ["", "docs/", ...MANIFEST.map((p) => `docs/${p.slug}/`), ...releaseUrls];
+  const releaseUrls = buildReleases({ ROOT, OUT, NAME, SOURCES: RELEASE_SOURCES, h: { esc, renderBody, pageShell }, meta: { desc: config.description } });
+  // The copies live at docs/<slug>.md, so the sitemap must say so: an entry for
+  // a path the build never wrote is a 404 advertised to a crawler.
+  const urls = ["", "docs/", ...MANIFEST.map((p) => `docs/${p.slug}/`),
+    ...MANIFEST.map((p) => `docs/${p.slug}.md`), ...releaseUrls];
   writeFileSync(join(OUT, "sitemap.xml"),
     `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
     urls.map((u) => `  <url><loc>${BASE}/${u}</loc></url>`).join("\n") + `\n</urlset>\n`);
   const searchLog = SEARCH_ENABLED ? ` + search (${searchCount} pages)` : "";
-  console.log(`built ${MANIFEST.length} pages + index${searchLog} + llms.txt + llms-full.txt + sitemap.xml + releases (${releaseUrls.length - 1} versions)`);
+  console.log(`built ${MANIFEST.length} pages + index + ${MANIFEST.length} markdown copies${searchLog} + llms.txt + llms-full.txt + sitemap.xml + releases (${releaseUrls.length - 1} versions)`);
 }
 
 if (process.argv.includes("--check")) check();

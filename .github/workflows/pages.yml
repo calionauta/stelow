@@ -34,6 +34,9 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: node site/build.mjs
+      # The copy contract: every published page also ships a docs/<slug>.md an
+      # agent can fetch without scraping HTML. No browser, so it fails first.
+      - run: node scripts/markdown-mirror.test.mjs
       # The layout contract: no clipped tables, navigation at every width,
       # prose inside its measure. Fails the publish, not the reader.
       - run: node scripts/site-layout.test.mjs
