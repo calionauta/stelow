@@ -46,6 +46,7 @@ check src/vendor/minisearch.js "$root/site/search/minisearch.js"
 check src/vendor/package.json "$root/site/search/package.json"
 check src/vendor/MINISEARCH-LICENSE.txt "$root/site/search/MINISEARCH-LICENSE.txt"
 check src/site-layout.test.mjs "$root/scripts/site-layout.test.mjs"
+check src/markdown-mirror.test.mjs "$root/scripts/markdown-mirror.test.mjs"
 # The checker is vendored too: an edited checker could hide every other drift.
 check scripts/check-drift.sh "$root/scripts/check-docsite-drift.sh"
 check scripts/bump.sh "$root/scripts/bump-docsite.sh"

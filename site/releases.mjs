@@ -154,7 +154,7 @@ export function tagUrl(e) {
 
 // h: { esc, renderBody, pageShell }. Emits index + one file per version.
 // Returns repo-root-relative sitemap paths.
-export function buildReleases({ ROOT, OUT, NAME, SOURCES, h }) {
+export function buildReleases({ ROOT, OUT, NAME, SOURCES, h, meta = {} }) {
   const entries = loadReleases(ROOT, SOURCES);
   const originTag = (e) => (e.origin ? ` <small>· ${h.esc(e.origin)}</small>` : "");
   const alsoTag = (e) =>
@@ -171,7 +171,10 @@ export function buildReleases({ ROOT, OUT, NAME, SOURCES, h }) {
   mkdirSync(join(OUT, "releases"), { recursive: true });
   writeFileSync(
     join(OUT, "releases", "index.html"),
-    h.pageShell(`Releases`, "", `<h1>Releases</h1>\n<ul>\n${rows}\n</ul>`, `<a href="../">← ${h.esc(NAME)} home</a>`, idxNav),
+    h.pageShell(`Releases`, "", `<h1>Releases</h1>\n<ul>\n${rows}\n</ul>`, `<a href="../">← ${h.esc(NAME)} home</a>`, idxNav, {
+      desc: meta.desc || `${NAME} release notes, one page per version.`,
+      noMarkdown: true,
+    }),
   );
 
   // one file per version, newest-first prev/next
@@ -189,7 +192,11 @@ export function buildReleases({ ROOT, OUT, NAME, SOURCES, h }) {
       `<h1>${h.esc(e.version)}${originTag(e)} <small>${h.esc(e.date)}</small></h1>\n` +
       (tag ? `<p><a href="${tag}">release ${h.esc(e.version)} on GitHub →</a></p>\n` : "") +
       h.renderBody(rootBlobLinks(e.body, e.repo), "@releases/");
-    writeFileSync(join(OUT, "releases", `${e.slug}.html`), h.pageShell(e.version, "", body, prevNext, nav));
+    // A release page is an article, so its description is the entry's own lede
+    // rather than the site blurb: it is the one sentence a share card needs.
+    const desc = lede(e.body) || meta.desc;
+    writeFileSync(join(OUT, "releases", `${e.slug}.html`),
+      h.pageShell(e.version, "", body, prevNext, nav, { desc, noMarkdown: true }));
   });
 
   console.log(`releases: index + ${entries.length} version page(s)`);
