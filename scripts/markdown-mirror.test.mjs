@@ -77,19 +77,31 @@ for (const p of pages) {
   if (!html.includes("view markdown")) bad(`docs/${p.slug}/index.html has no link to its markdown copy`);
 }
 
+// A build output the contract reads. Missing means the test ran before the
+// build, which is a wiring mistake in the caller, not a doc bug: say so once
+// instead of dying inside readFileSync with a stack trace.
+const built = (rel) => {
+  const path = join(SITE, rel);
+  if (!existsSync(path)) {
+    console.error(`markdown-mirror.test: site/${rel} does not exist — run \`node site/build.mjs\` first (this test reads the BUILD OUTPUT, not the sources).`);
+    process.exit(2);
+  }
+  return readFileSync(path, "utf8");
+};
+
 // llms-full.txt used to name repo-relative paths; that is the 404 this all
 // exists to remove. It also has to name every page exactly once.
-const full = readFileSync(join(SITE, "llms-full.txt"), "utf8");
+const full = built("llms-full.txt");
 if (/Source: docs\//.test(full)) bad("llms-full.txt still names repo-relative paths");
 const sources = (full.match(/^Source: https:/gm) || []).length;
 if (sources !== pages.length) bad(`llms-full.txt names ${sources} source(s) for ${pages.length} page(s)`);
 
 // llms.txt is the map an agent reads first: it must point at the copies.
-const llms = readFileSync(join(SITE, "llms.txt"), "utf8");
+const llms = built("llms.txt");
 for (const p of pages) if (!llms.includes(`/${p.slug}.md`)) bad(`llms.txt does not point at ${p.slug}.md`);
 
 // The sitemap is where a search engine finds the copies.
-const sitemap = readFileSync(join(SITE, "sitemap.xml"), "utf8");
+const sitemap = built("sitemap.xml");
 // The path is docs/<slug>.md, the same one the copy is written to: asserting a
   // bare /<slug>.md here is what let the sitemap advertise a 404 for 79 pages
   // while this test stayed green.
